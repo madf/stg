@@ -23,4 +23,4 @@
  $Date: 2009/08/05 09:24:01 $
  */
 
-#define SERVER_VERSION "2.407-rc2" 
+#define SERVER_VERSION "2.407-rc2 " 
