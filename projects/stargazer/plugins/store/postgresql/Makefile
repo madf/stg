@@ -1,0 +1,29 @@
+###############################################################################
+# $Id: Makefile,v 1.4 2010/04/26 12:44:42 faust Exp $
+###############################################################################
+
+include ../../../../../Makefile.conf
+
+PROG = mod_store_postgresql.so
+
+SRCS =	./postgresql_store.cpp \
+	./postgresql_store_admins.cpp \
+	./postgresql_store_corporations.cpp \
+	./postgresql_store_messages.cpp \
+	./postgresql_store_services.cpp \
+	./postgresql_store_tariffs.cpp \
+	./postgresql_store_users.cpp \
+	./postgresql_store_utils.cpp
+
+STGLIBS = -lstg_common -lstg_crypto
+
+PG_CFLAGS = $(shell pg_config --includedir)
+PG_LDFLAGS = $(shell pg_config --libdir)
+
+CXXFLAGS +=  -I $(PG_CFLAGS)
+LDFLAGS += -L $(PG_LDFLAGS)
+
+LIBS += -lpq
+
+include ../../Makefile.in
+

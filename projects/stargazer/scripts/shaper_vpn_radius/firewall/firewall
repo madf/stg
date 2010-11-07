@@ -1,0 +1,94 @@
+#!/bin/bash
+
+#adsl-start
+
+modprobe ip_queue
+
+int_addr=10.0.0.2
+ext_addr=192.168.1.34
+
+int_net=10.0.0.0/16
+ext_net=192.168.1.0/24
+
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+iptables -P INPUT DROP
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+iptables -t nat -F
+iptables -t filter -F
+
+# 
+#iptables -A INPUT  -d $ip1 -j ACCEPT
+#iptables -A OUTPUT -s $ip1 -j ACCEPT
+
+# Разрешам говорить самому с собой
+iptables -A INPUT  -d 127.0.0.1 -j ACCEPT
+iptables -A OUTPUT -s 127.0.0.1 -j ACCEPT
+
+#iptables -A INPUT  -d $ip4 -j ACCEPT
+#iptables -A INPUT  -s $ip4 -j ACCEPT
+#iptables -A OUTPUT -s $ip4 -j ACCEPT
+#iptables -A OUTPUT -d $ip4 -j ACCEPT
+
+iptables -A INPUT  -p icmp -j ACCEPT
+iptables -A OUTPUT -p icmp -j ACCEPT
+
+iptables -A INPUT  -p 47 -j ACCEPT
+iptables -A FORWARD -p 47 -j ACCEPT
+iptables -A OUTPUT -p 47 -j ACCEPT
+
+#SSH On this machine
+iptables -A INPUT  -p tcp -d $int_addr --dport 22 -j ACCEPT
+iptables -A OUTPUT -p tcp -s $int_addr --sport 22 -j ACCEPT
+iptables -A INPUT  -p tcp -d $ext_addr --dport 22 -j ACCEPT
+iptables -A OUTPUT -p tcp -s $ext_addr --sport 22 -j ACCEPT
+
+#WEB On this machine
+#iptables -A INPUT  -p tcp -d $ip2 --dport 80 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip2 --sport 80 -j ACCEPT
+#iptables -A INPUT  -p tcp -d $ip3 --dport 80 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip3 --sport 80 -j ACCEPT
+
+#PPTP
+iptables -A INPUT   -p tcp --dport 1723 -j ACCEPT
+iptables -A OUTPUT  -p tcp --sport 1723 -j ACCEPT
+iptables -A INPUT  -p udp --dport 1723 -j ACCEPT
+iptables -A OUTPUT -p udp --sport 1723 -j ACCEPT
+
+#FTP
+#iptables -A INPUT  -p tcp -d $ip2 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip2 -j ACCEPT
+#iptables -A INPUT  -p tcp -d $ip3 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip3 -j ACCEPT
+
+#iptables -A INPUT  -p tcp -d $ip2 --dport 20:21 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip2 --sport 20:21 -j ACCEPT
+#iptables -A INPUT  -p tcp -d $ip3 --dport 20:21 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip3 --sport 20:21 -j ACCEPT
+
+#iptables -A INPUT  -p tcp -d $ip2 --dport 1024:65535 --sport 1024:65535 -j ACCEPT
+#iptables -A INPUT  -p tcp -d $ip3 --dport 1024:65535 --sport 1024:65535 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip2 --sport 1024:65535 --dport 1024:65535 -j ACCEPT
+#iptables -A OUTPUT -p tcp -s $ip3 --sport 1024:65535 --dport 1024:65535 -j ACCEPT
+
+#DNS
+iptables -A INPUT  -p tcp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -A INPUT  -p udp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+
+#iptables -t nat -A PREROUTING -p tcp -d $ip1 --dport 80 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp -d $ip2 --dport 80 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp -d $ip3 --dport 80 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp -d $ip4 --dport 80 -j ACCEPT
+
+#iptables -t nat -A PREROUTING -p tcp -s 192.168.1.7 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp -s 192.168.1.16 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3128
+
+iptables -t nat -A POSTROUTING -d 0.0.0.0/0 -s 192.168.2.0/24 -j MASQUERADE
+
+
+

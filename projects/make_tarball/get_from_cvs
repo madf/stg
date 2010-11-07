@@ -1,0 +1,58 @@
+#!/usr/bin/expect
+
+# login_cvs host password
+
+set user    [lindex $argv 0]
+set pass    [lindex $argv 1]
+set host    [lindex $argv 2]
+set cvsroot [lindex $argv 3]
+set module  [lindex $argv 4]
+set dir     [lindex $argv 5]
+
+set timeout 30
+
+send_user "checkout module $module";
+
+spawn ssh $user@$host
+expect {
+    "(yes/no)? " { 
+        send  "yes\r"
+        send_user "Key accepted";
+        }
+    "assword:" {
+        close
+        send_user "Key accepting dont needed";
+        }
+    }
+    
+spawn cvs -d :ext:$user@$host:$cvsroot co -N -d $dir $module 
+expect {
+    "assword:" {
+        send "$pass\r"
+        expect {
+            "assword:" { 
+                send_user "<h3><font color=red>cvs checkout $module failed. Incorrect password</font></h3>";
+                exit 1
+                }
+            "aborted" {
+                 send_user "<h3><font color=red>cvs checkout $module failed.</font></h3>";
+                 exit 1
+                 }
+            expect eof {
+            if {[lindex [wait] 3]} {
+                send_user "<h3><font color=red>cvs checkout $module failed.</font></h3>"
+                exit 1
+                }
+                }
+            }
+        }
+        
+     "aborted" {
+         send_user "<h3><font color=red>cvs checkout $module failed.</font></h3>";
+         exit 1
+         }
+    }
+  
+
+
+

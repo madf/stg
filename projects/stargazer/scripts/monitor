@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Данный скрипт производит мониторинг СТГ-сервера на зависание и в 
+# случае его зависания перезапускает.
+# Для работы скрипта в настройках СТГ должен быть указан параметер
+# MonitorDir 
+# Скрипт отрабатывает один раз и выходит. Т.е. он не работает постоянно 
+# и следит за СТГ. Его нужно вызывать по крону или как-то еще с нужной
+# периодичностью!!!
+
+
+# Путь к файлам монитора. Должен совпадать со значением MonitorDir 
+# в настройках сервера
+MONITOR_DIR=/var/stargazer/monitor/
+
+
+# Максимальная задержка обновления файлов монитора в секундах.
+# При привышении этого значения сервер считается зависшим и будет 
+# перезапущен
+DT=300
+
+
+
+
+declare -i now=`date +%s`
+declare -i DT=300
+declare -i file_time=0
+
+stg_running=`ps ax | grep stargazer`
+if [ -z "$stg_running" ]
+then
+    echo "Stargazer is not running"
+    exit 0
+fi
+
+#wakeuper for traffcounter
+ping -c 1 127.0.0.1 > /dev/null
+sleep 1
+
+for mon in $MONITOR_DIR/*
+do
+    if [ ! -r $mon ]
+    then
+        echo "no monitor files"
+        exit 0
+    fi
+    file_time=`stat -c%Y $mon`
+
+    if (( $now - $file_time > $DT )) 
+    then
+        echo "Stargazer is deadlocked!"
+		
+	# Команда остаовки СТГ
+	killall -KILL stargazer
+		
+	rm -f $MONITOR_DIR/*
+	sleep 15
+	
+	# Команда запуска СТГ
+	/etc/init.d/stargazer start
+	
+    fi
+    
+done
+
+

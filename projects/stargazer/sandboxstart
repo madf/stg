@@ -1,0 +1,17 @@
+#!/bin/bash
+
+sandbox_dir=$1
+
+export LD_LIBRARY_PATH=$sandbox_dir/libs/
+
+$sandbox_dir/sbin/stargazer $sandbox_dir/etc/stargazer
+
+if [ $? == 0 ]
+then 
+    echo "Start successfull"
+	exit 0
+else
+    echo "Start failed"
+	exit 1
+fi
+

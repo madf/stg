@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Этот скрипт производит очистку файловой БД stargazer-а.
+# Его можно вызывать вручную или покрону, к примеру раз в неделю или раз в месяц.
+
+
+# Эта переменная задает сколько месяцев детальной статистики оставить в БД
+SAVE_MONTHS=3
+
+# Эта переменная задает сколько строк оставить в логах юзеров
+MAX_LOG_LINES=5000
+
+# Тут определяется путь к БД
+DB=/var/stargazer/
+
+
+
+
+declare -i NOW=`date +%s`
+declare -i DT=SAVE_MONTHS*31*24*3600
+declare -i stat_time=0
+
+for usr in $DB/users/*
+do
+    echo cleaning `basename $usr`
+    for ys in $usr/detail_stat/*
+    do
+	year=`basename $ys`
+	
+	for ms in $ys/*
+	do
+	    month=`basename $ms`
+            stat_time=`date --date="$year/$month/01" +%s`	    
+	    
+	    if (( $NOW - $stat_time > $DT ))
+	    then
+	        rm -fr $ms
+	    fi
+	done
+    done
+    tail -n $MAX_LOG_LINES $usr/log > /tmp/stg_usr_log.`basename $usr`
+    mv -f /tmp/stg_usr_log.`basename $usr` $usr/log
+done
+

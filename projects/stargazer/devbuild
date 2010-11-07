@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export CFLAGS=-DTRAFF_STAT_WITH_PORTS
+./build debug 
+

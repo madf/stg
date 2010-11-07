@@ -1,0 +1,76 @@
+array.o: array.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+blob.o: blob.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+database.o: database.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+date.o: date.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+dbkey.o: dbkey.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_dpb.o: _dpb.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+events.o: events.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+exception.o: exception.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_ibpp.o: _ibpp.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_ibs.o: _ibs.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_rb.o: _rb.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+row.o: row.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+service.o: service.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_spb.o: _spb.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+statement.o: statement.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+time.o: time.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+_tpb.o: _tpb.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+transaction.o: transaction.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<
+user.o: user.cpp _ibpp.h ibpp.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ibase.h iberror.h Makefile ../../Makefile.conf
+	$(CC) -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -DIBPP_LINUX -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -I ./ -DDEBUG -DLINUX -DSTG_TIME -c $<

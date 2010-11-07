@@ -1,0 +1,6 @@
+*.[ao]
+*.so
+*.swp
+*.diff
+*.patch
+CVS*

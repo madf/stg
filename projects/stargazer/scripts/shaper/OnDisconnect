@@ -1,0 +1,37 @@
+#!/bin/bash
+
+int_iface=eth1
+
+# Login
+LOGIN=$1
+
+#user IP
+IP=$2
+
+#cash
+CASH=$3
+
+#user ID
+ID=$4
+
+#Selected dirs to disconnect
+DIRS=$4
+
+mark=$(cat /var/stargazer/users/$LOGIN/shaper_mark)
+rate=$(cat /var/stargazer/users/$LOGIN/shaper_rate)
+
+if [ -n "$mark" ]
+then
+    iptables -t mangle -D FORWARD -d $IP -j MARK --set-mark $mark
+    while [ $? == 0 ]
+    do
+	    iptables -t mangle -D FORWARD -d $IP -j MARK --set-mark $mark
+    done
+fi
+
+tc filter del dev $int_iface parent 1: protocol ip prio 3 handle $mark fw classid 1:$mark
+tc class del dev $int_iface parent 1:1 classid 1:$mark htb rate $rate burst 40k
+
+#echo "D `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
+
+

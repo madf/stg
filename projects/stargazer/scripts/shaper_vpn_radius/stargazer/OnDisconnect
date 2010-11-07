@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Этот скрипт вызывается в момент, когда пользователь
+# желает отключится от интернета или вышел таймаут у пользователя
+# и сервер сам отключает пользователя
+# Задача скрипта подобна задаче скрипта OnConnect - перестроить 
+# файрвол так, что бы пользователю закрыть доступ в интернет
+
+# Login
+LOGIN=$1
+
+#user IP
+IP=$2
+
+#cash
+CASH=$3
+
+#user ID
+ID=$4
+
+#Selected dirs to disconnect
+DIRS=$4
+
+#echo "D `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
+
+iptables -D INPUT -s $IP -j QUEUE
+while [ $? == 0 ]
+do
+    iptables -D INPUT -s $IP -j QUEUE
+done
+
+iptables -D OUTPUT -d $IP -j QUEUE
+while [ $? == 0 ]
+do
+    iptables -D OUTPUT -d $IP -j QUEUE
+done
+
+iptables -D FORWARD -s $IP -j QUEUE
+while [ $? == 0 ]
+do
+    iptables -D FORWARD -s $IP -j QUEUE
+done
+
+iptables -D FORWARD -d $IP -j QUEUE
+while [ $? == 0 ]
+do
+    iptables -D FORWARD -d $IP -j QUEUE
+done
+
+
+
+declare -i mark=$ID+1
+
+iptables -t mangle -D FORWARD -d $IP -j MARK --set-mark $mark
+while [ $? == 0 ]
+do
+    iptables -t mangle -D FORWARD -d $IP -j MARK --set-mark $mark
+done
+
+
+if [ -f /var/stargazer/ifaces/$IP ]
+    ppp_iface=$(cat /var/stargazer/ifaces/$IP)
+else
+    exit 0
+fi
+
+tc qdisc del dev $ppp_iface root
+
+

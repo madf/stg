@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo $PPP_IFACE > /var/stargazer/ifaces/$PPP_REMOTE

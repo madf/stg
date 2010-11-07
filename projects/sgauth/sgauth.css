@@ -1,0 +1,78 @@
+H3
+{
+color: black;
+}
+
+body
+{
+background-color: silver;
+}
+
+#TraffTable
+{
+background-color: white;
+}
+
+#TraffTableCaptionRow
+{
+background-color: silver;
+}
+
+#TraffTableCaptionCellC,
+#TraffTableUMCellC,
+#TraffTableDMCellC,
+#TraffTableUSCellC,
+#TraffTableDSCellC
+{
+background-color: silver;
+}
+
+#TraffTableDMRow,
+#TraffTableDSRow
+{
+background-color: #f2f0cc;
+}
+
+#TraffTableUMRow,
+#TraffTableUSRow
+{
+background-color: white;
+}
+
+#ConnectionStateOnline
+{
+color: green;
+font-size: 20px
+}
+
+#ConnectionStateOffline
+{
+color: red;
+font-size: 20px
+}
+
+p
+{
+padding: 2px;
+margin: 0px;
+}
+
+#MessagesTable
+{
+background-color: white;
+}
+
+#MessagesTableRowC
+{
+background-color: silver;
+}
+
+
+#MessagesTableRow0,
+#MessagesTableRow2,
+#MessagesTableRow4,
+#MessagesTableRow6,
+#MessagesTableRow8
+{
+background-color: #f2f0cc;
+}

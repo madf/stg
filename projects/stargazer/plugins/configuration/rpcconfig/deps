@@ -1,0 +1,362 @@
+rpcconfig.o: rpcconfig.cpp rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ ../../../admins.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../users.h ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ ../../../user.h ../../../tariff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../tariffs.h ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h ../../../settings.h info_methods.h users_methods.h \
+ ../../../user.h tariffs_methods.h admins_methods.h messages_methods.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+user_helper.o: user_helper.cpp user_helper.h ../../../users.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../user.h ../../../tariff.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../admin.h utils.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+tariff_helper.o: tariff_helper.cpp tariff_helper.h ../../../tariff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+info_methods.o: info_methods.cpp info_methods.h ../../../users.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../user.h ../../../tariff.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../tariffs.h ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/version.h \
+ rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ ../../../admin.h ../../../admins.h ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+users_methods.o: users_methods.cpp users_methods.h ../../../users.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../user.h ../../../tariff.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../user.h rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ ../../../admin.h ../../../admins.h ../../../tariffs.h \
+ ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h ../../../settings.h user_helper.h utils.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+tariffs_methods.o: tariffs_methods.cpp rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ ../../../admins.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../users.h ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ ../../../user.h ../../../tariff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../tariffs.h ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h ../../../settings.h tariffs_methods.h tariff_helper.h \
+ ../../../tariff.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+admins_methods.o: admins_methods.cpp admins_methods.h ../../../admins.h \
+ ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../admin.h rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ ../../../users.h ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ ../../../user.h ../../../tariff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h ../../../tariffs.h ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h ../../../settings.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX
+messages_methods.o: messages_methods.cpp messages_methods.h \
+ ../../../users.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ ../../../settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/dotconfpp.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/mempool.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_logger.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../user.h ../../../tariff.h ../../../admin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.inc.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ ../../../curr_ip.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ ../../../user_property.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/notifer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ ../../../script_executer.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_auth.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ ../../../tariffs.h ../../../actions.h ../../../actions.inl.h \
+ ../../../eventloop.h rpcconfig.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/base_plugin.h \
+ ../../../admin.h ../../../admins.h ../../../tariffs.h \
+ ../../../traffcounter.h \
+ /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include/raw_ip_packet.h \
+ ../../../users.h ../../../settings.h utils.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -fPIC -I /home/faust/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX

@@ -1,0 +1,43 @@
+###############################################################################
+# $Id: Makefile.in,v 1.11 2009/03/03 15:49:35 faust Exp $
+###############################################################################
+
+SEARCH_DIRS = -I $(DIR_INCLUDE)
+
+OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
+
+LN = ln
+
+CXXFLAGS += -fPIC
+LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
+
+vpath %.so $(DIR_LIB)
+
+all: $(PROG)
+
+$(PROG): $(OBJS) $(STGLIBS)
+	$(CC) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
+
+clean:
+	rm -f deps $(PROG) *.o tags *.*~
+
+install:
+	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/lib/stg
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+
+uninstall:
+	rm -f $(PREFIX)/usr/lib/stg/$(PROG)
+
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),uninstall)
+-include deps
+endif
+endif
+
+deps:	$(SRCS) ../../../../../Makefile.conf
+	@>deps ;\
+	for file in $(SRCS); do\
+	  echo "`$(CC) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	done

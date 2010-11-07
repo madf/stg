@@ -1,0 +1,13 @@
+#!/bin/bash
+
+LD_LIBRARY_PATH=../../lib ./stargazer /etc/stargazer
+#./stargazer /etc/stargazer.a
+
+if [ $? == 0 ]
+then 
+    echo "Start successfull"
+else
+    echo "Start failed"
+fi
+
+#./stargazer /etc/stargazer

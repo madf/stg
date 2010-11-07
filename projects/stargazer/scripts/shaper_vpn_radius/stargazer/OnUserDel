@@ -1,0 +1,5 @@
+# Login
+login=$1
+
+#echo "deleted user $login" >> /var/stargazer/add_del.log
+

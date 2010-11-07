@@ -1,0 +1,30 @@
+mysql_store.o: mysql_store.cpp /usr/include/mysql/mysql.h \
+ /usr/include/mysql/mysql_version.h /usr/include/mysql/mysql_com.h \
+ /usr/include/mysql/mysql_time.h /usr/include/mysql/my_list.h \
+ /usr/include/mysql/typelib.h /usr/include/mysql/my_alloc.h \
+ /usr/include/mysql/errmsg.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/common.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/os_int.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_const.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_ips.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/resetable.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_locker.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/noncopyable.h \
+ mysql_store.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/base_store.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_stat.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/corp_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/service_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/admin_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/tariff_conf.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/base_settings.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/stg_message.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/user_traff.h \
+ /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include/blowfish.h Makefile ../../../../../Makefile.conf
+	$(CC) -c $< -g3 -W -Wall -I/usr/local/include -DARCH_LE -I/usr/include/mysql -DHAVE_ERRNO_AS_DEFINE=1 -DUNIV_LINUX -DUNIV_LINUX -fPIC -I /mnt/tank/home/Projects/STG/stg-2.5/projects/stargazer/../../include -DDEBUG -DLINUX

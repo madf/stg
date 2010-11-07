@@ -1,0 +1,94 @@
+###############################################################################
+# $Id: Makefile.in,v 1.28 2009/03/03 15:50:14 faust Exp $
+###############################################################################
+
+include ../../Makefile.conf
+
+PROG = lib$(LIB_NAME).so
+
+ifeq ($(PROT), on)
+DEFS += -DLINPROT
+endif
+
+ifeq ($(DEMO), on)
+DEFS += -DDEMO
+endif
+
+ifeq ($(OS), bsd)
+    ifeq ($(PROT), on)
+    DEFS += -DFREEBDSPROT
+    endif
+MAKE = gmake
+endif
+
+ifeq ($(OS), bsd5)
+    ifeq ($(PROT), on)
+    DEFS += -DFREEBDSPROT
+    endif
+MAKE = gmake
+endif
+
+ifeq ($(STG_TIME), yes)
+DEFS += -DSTG_TIME
+endif
+
+ifneq ($(ADD_DEFS_1),)
+DEFS += $(ADD_DEFS_1)
+endif
+
+SEARCH_DIRS = -I $(DIR_INCLUDE) -I ./
+
+OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
+
+INST_INCS = $(addprefix $(DIR_INCLUDE)/, $(notdir $(INCS)))
+INST_LIBS = $(DIR_LIB)/lib$(LIB_NAME)
+
+CXXFLAGS += -fPIC
+LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
+
+ifneq ($(ADD_CXXFLAGS_1),)
+CXXFLAGS += $(ADD_CXXFLAGS_1)
+endif
+
+vpath %.so $(DIR_LIB)
+
+all: $(PROG)
+
+$(PROG): $(OBJS) $(STGLIBS)
+	g++ $(LDFLAGS) -Wl,-soname,$(PROG) $^ $(LIBS) -o $(PROG) -L $(DIR_LIB) 
+	ar rc lib$(LIB_NAME).a $(OBJS)
+	ranlib lib$(LIB_NAME).a
+	cp *.so $(DIR_LIB)
+	cp *.a $(DIR_LIB)
+
+includes: $(INCS)
+	cp -p $(INCS) $(DIR_INCLUDE)
+
+clean:
+	rm -f deps $(PROG) *.o *.a *.so tags *.*~ 
+	for file in $(INCS); do \
+	    rm -f $(DIR_INCLUDE)/$$file; \
+	done
+
+install: $(PROG)
+	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/lib/stg
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+
+uninstall:
+	rm -f $(PREFIX)/usr/lib/stg/$(PROG)
+
+ifneq ($(MAKECMDGOALS),includes)
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),uninstall)
+-include deps
+endif
+endif
+endif
+
+deps:	$(SRCS) ../../Makefile.conf
+	@>deps ;\
+	for file in $(SRCS); do\
+	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -MM -MG $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -c $$<' >> deps ;\
+	done
+

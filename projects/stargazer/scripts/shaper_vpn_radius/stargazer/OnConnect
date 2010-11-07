@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#Этот скрипт вызывается в момент, когда пользователь
+#успешно прошел авторизацию на сервере. Задача скрипта - перестроить 
+#файрвол так, что бы пользователь получил доступ в интернет
+
+# Login
+LOGIN=$1
+
+#user IP
+IP=$2
+
+#cash
+CASH=$3
+
+#user ID
+ID=$4
+
+#Selected dirs to connect
+DIRS=$5
+
+iptables -A INPUT -s $IP -j QUEUE
+iptables -A OUTPUT -d $IP -j QUEUE
+iptables -A FORWARD -s $IP -j QUEUE
+iptables -A FORWARD -d $IP -j QUEUE
+
+# shaper
+
+default_speed=32
+
+speedR=$(grep -i "^Userdata0=" /var/stargazer/users/$LOGIN/conf | cut -f 2 -d"=")
+#echo "speedR=$speedR" >> /var/stargazer/users/$LOGIN/connect.log
+speed=$(echo $speedR | grep "^[0-9]*[0-9]$")
+
+if [ -z "$speed" ] 
+then
+    speed=$default_speed
+fi
+
+speedkbit=$speed"kbit"
+
+#echo "speed=$speedkbit" >> /var/stargazer/users/$LOGIN/connect.log
+declare -i mark=$ID+1
+
+iptables -t mangle -A FORWARD -d $IP -j MARK --set-mark $mark
+
+sleep 1
+
+if [ -f "/var/stargazer/ifaces/$IP" ]
+then
+    #echo "1" >> /var/stargazer/users/$LOGIN/connect.log
+    ppp_iface=$(cat /var/stargazer/ifaces/$IP)
+else
+    #echo "2" >> /var/stargazer/users/$LOGIN/connect.log
+    exit 0
+fi
+
+tc qdisc add dev $ppp_iface root handle 1: htb
+tc class add dev $ppp_iface parent 1: classid 1:1 htb rate 100mbit ceil 100mbit burst 200k
+tc class add dev $ppp_iface parent 1:1 classid 1:10 htb rate $speedkbit burst 20k
+tc filter add dev $ppp_iface parent 1: protocol ip prio 3 handle $mark fw classid 1:10
+
+#echo "C `date +%Y.%m.%d-%H.%M.%S` $IP $CASH $ID $mark $speed $ppp_iface" >> /var/stargazer/users/$LOGIN/connect.log
+

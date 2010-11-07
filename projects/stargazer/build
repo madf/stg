@@ -1,0 +1,413 @@
+    #!/bin/sh
+
+#   $Revision: 1.57 $
+#   $Author: faust $
+#   $Date: 2010/05/09 12:39:01 $
+######################################################
+
+# Installation path prefix
+
+PREFIX=""
+
+# Binaries access bits
+
+BIN_MODE=0755
+
+# Data files access bits
+
+DATA_MODE=0644
+
+# Binaries and data files owner
+
+OWNER=root
+
+# Name of the firebird's group
+# Need for chown directory with firebird db
+
+FIREBIRD_GROUP=firebird
+
+# Database address
+# Firebird must have priviledges to read/write for specified path
+
+DB_ADDRESS="localhost:/var/stargazer/stargazer.fdb"
+
+# Database user
+# This user must have priviledges to create database
+
+DB_USER="stg"
+
+# Database password
+
+DB_PASSWORD="123456"
+
+# Full path to isql utility
+# Note: Debian users have to specify path to isql-fb utility
+
+FIREBIRD_ISQL="/opt/firebird/bin/isql"
+
+OS=unknown
+sys=`uname -s`
+release=`uname -r | cut -b1`
+BUILD_DIR=`pwd`
+CONFFILE="../../Makefile.conf"
+VAR_DIR="./inst/var/stargazer"
+MIN_XMLRPCC_VERSION="1.06.27"
+XMLRPC_FEATURES="c++2 abyss-server"
+
+
+if [ -z $1 ]
+then
+    DEFS="$DEFS -DNDEBUG"
+    MAKEOPTS="-j1"
+else
+    if [ "$1" = "debug" ]
+    then
+        DEFS="$DEFS -DDEBUG"
+        MAKEOPTS="-j1"
+        CXXFLAGS="$CXXFLAGS -g3 -W -Wall"
+    else
+        DEFS="$DEFS -DNDEBUG"
+        MAKEOPTS="-j1"
+    fi
+fi
+
+CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
+
+if [ "$sys" = "Linux" ]
+then
+    OS=linux
+    release=""
+    ETC_DIR="./inst/linux/etc/stargazer"
+    MAKE="make"
+fi
+
+if [ "$sys" = "FreeBSD" ]
+then
+    case $release in
+        4) OS=bsd;;
+        5) OS=bsd5;;
+        6) OS=bsd5;;
+        7) OS=bsd7;;
+        8) OS=bsd7;;
+        *) OS=unknown;;
+    esac
+    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
+fi
+
+if [ "$OS" = "unknown" ]
+then 
+    echo "#############################################################################"
+    echo "# Sorry, but stargazer currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #"
+    echo "#############################################################################"
+    exit 1
+fi
+
+echo "#############################################################################"
+echo "       Building STG 2.4 for $sys $release"
+echo "#############################################################################"
+
+STG_LIBS="stg_logger.lib 
+          stg_locker.lib
+	  crypto.lib 
+	  common.lib 
+	  script_executer.lib 
+	  conffiles.lib
+          hostallow.lib 
+	  pinger.lib 
+	  dotconfpp.lib"
+
+PLUGINS="authorization/ao
+         authorization/inetaccess
+         configuration/sgconfig
+         other/ping
+         other/rscript
+         other/radius
+         store/files
+         capture/cap_nf"
+
+if [ "$OS" = "linux" ]
+then
+    DEFS="$DEFS -DLINUX"
+    PLUGINS="$PLUGINS
+             capture/ether_linux
+             capture/ipq_linux"
+    SHELL="/bin/bash"
+    LIB_THREAD=-lpthread
+else
+    if [ "$OS" = "bsd" ]
+    then
+        DEFS="$DEFS -DFREE_BSD"
+        LIB_THREAD=-lc_r
+    else
+        DEFS="$DEFS -DFREE_BSD5"
+        if [ "$OS" = "bsd7" ]
+        then
+            LIB_THREAD=-lpthread
+        else
+            LIB_THREAD=-lc_r
+        fi
+    fi
+    PLUGINS="$PLUGINS
+             capture/ether_freebsd
+             capture/divert_freebsd"
+    SHELL="/usr/local/bin/bash"
+fi
+
+echo -n "Checking endianess... "
+echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
+gcc $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    echo "FAIL!"
+    echo "Endianess checking failed"
+    exit;
+else
+    ./fake
+    if [ $? = 1 ]
+    then
+        ARCH=le
+        CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        echo "Little Endian"
+    else
+        ARCH=be
+        CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        echo "Big Endian"
+    fi
+fi
+rm -f fake
+
+echo -n "Checking for -lexpat... "
+echo "int main() { return 0; }" > build_check.c
+gcc $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_EXPAT=no
+    echo "no"
+else
+    CHECK_EXPAT=yes
+    echo "yes"
+fi
+rm -f fake
+
+echo -n "Checking for -lfbclient... "
+gcc $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_FBCLIENT=no
+    echo "no"
+else
+    CHECK_FBCLIENT=yes
+    echo "yes"
+fi
+rm -f fake
+
+echo -n "Checking for mysql_config... "
+MYSQL_VERSION=`mysql_config --version 2> /dev/null`
+if [ $? != 0 ]
+then
+    echo "no";
+    echo -n "Checking for -lmysqlclient... "
+    gcc $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_MYSQLCLIENT=no
+        echo "no"
+    else
+        CHECK_MYSQLCLIENT=yes
+        echo "yes"
+    fi
+    rm -f fake
+else
+    echo "yes"
+    echo -n "Checking for mysql_config --cflags... "
+    MYSQL_CFLAGS=`mysql_config --cflags 2> /dev/null`
+    if [ $? != 0 ]
+    then
+        CHECK_MYSQLCLIENT=no
+        echo "no"
+    else
+        #CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
+        echo "[$MYSQL_CFLAGS]"
+        echo -n "Checking for mysql_config --libs_r... "
+        MYSQL_LDFLAGS=`mysql_config --libs_r 2> /dev/null`
+        if [ $? != 0 ]
+        then
+            CHECK_MYSQLCLIENT=no
+            echo "no"
+        else
+            CHECK_MYSQLCLIENT=yes
+            #LDFLAGS="$LDFLAGS $MYSQL_LDFLAGS"
+            echo "[$MYSQL_LDFLAGS]"
+        fi
+    fi
+fi
+
+echo -n "Checking for pg_config... "
+PG_VERSION=`pg_config --version 2> /dev/null`
+if [ $? != 0 ]
+then
+    echo "no";
+    echo -n "Checking for -lpq... "
+    gcc $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_PQ=no
+        echo "no"
+    else
+        CHECK_PQ=yes
+        echo "yes"
+    fi
+    rm -f fake
+else
+    echo "yes";
+    echo -n "Checking for pg_config --includedir... "
+    PG_CFLAGS=`pg_config --includedir 2> /dev/null`
+    if [ $? != 0 ]
+    then
+        CHECK_PQ=no
+        echo "no"
+    else
+        echo "[$PG_CFLAGS]"
+        echo -n "Checking for pg_config --libdir... "
+        PG_LDFLAGS=`pg_config --libdir 2> /dev/null`
+        if [ $? != 0 ]
+        then
+            CHECK_PQ=no
+            echo "no"
+        else
+            CHECK_PQ=yes
+            echo "[$PG_LDFLAGS]"
+        fi
+    fi
+fi
+
+echo -n "Checking for xmlrpc-c-config... "
+XMLRPCC_VERSION=`xmlrpc-c-config $XMLRPC_FEATURES --version 2> /dev/null`
+if [ $? != 0 ]
+then
+    echo "no";
+    echo -n "Checking for -lxmlrpc... "
+    gcc $CXXFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_XMLRPC=no
+        echo "no"
+    else
+        CHECK_XMLRPC=yes
+        echo "yes"
+    fi
+    rm -f fake
+elif [ "$XMLRPCC_VERSION" \< "$MIN_XMLRPCC_VERSION" ]
+then
+    echo "no (need at least $MIN_XMLRPCC_VERSION, actual $XMLRPCC_VERSION)";
+    CHECK_XMLRPC=no
+else
+    echo "yes (version $XMLRPCC_VERSION)";
+    echo -n "Checking for xmlrpc-c-config --cflags... "
+    XMLRPC_CFLAGS=`xmlrpc-c-config $XMLRPC_FEATURES --cflags 2> /dev/null`
+    if [ $? != 0 ]
+    then
+        CHECK_XMLRPC=no
+        echo "no"
+    else
+        echo "[$XMLRPC_CFLAGS]"
+        echo -n "Checking for xmlrpc-c-config --libs... "
+        XMLRPC_LDFLAGS=`xmlrpc-c-config $XMLRPC_FEATURES --libs 2> /dev/null`
+        if [ $? != 0 ]
+        then
+            CHECK_XMLRPC=no
+            echo "no"
+        else
+            CHECK_XMLRPC=yes
+            echo "[$XMLRPC_LDFLAGS]"
+        fi
+    fi
+fi
+
+rm -f build_check.c
+
+if [ "$CHECK_EXPAT" != "yes" ]
+then
+    echo "-lexpat not found!"
+    exit 1
+fi
+
+if [ "$CHECK_FBCLIENT" = "yes" ]
+then
+    STG_LIBS="$STG_LIBS
+              ibpp.lib"
+    PLUGINS="$PLUGINS
+             store/firebird"
+fi
+
+if [ "$CHECK_PQ" = "yes" ]
+then
+    PLUGINS="$PLUGINS
+             store/postgresql"
+fi
+
+if [ "$CHECK_MYSQLCLIENT" = "yes" ]
+then
+    PLUGINS="$PLUGINS
+             store/mysql"
+fi
+
+if [ "$CHECK_XMLRPC" = "yes" ]
+then
+    PLUGINS="$PLUGINS
+             configuration/rpcconfig"
+fi
+
+echo "OS=$OS" > $CONFFILE
+echo "STG_TIME=yes" >> $CONFFILE
+echo "DIR_BUILD=$BUILD_DIR" >> $CONFFILE
+echo "DIR_LIB=\$(DIR_BUILD)/../../lib" >> $CONFFILE
+echo "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs" >> $CONFFILE
+echo "DIR_INCLUDE=\$(DIR_BUILD)/../../include" >> $CONFFILE
+echo "DIR_MOD=\$(DIR_BUILD)/modules" >> $CONFFILE
+echo "DIR_PLUGINS=\$(DIR_BUILD)/plugins" >> $CONFFILE
+echo "ARCH=$ARCH" >> $CONFFILE
+echo "CHECK_EXPAT=$CHECK_EXPAT" >> $CONFFILE
+echo "CHECK_FBCLIENT=$CHECK_FBCLIENT" >> $CONFFILE
+echo "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT" >> $CONFFILE
+echo "CHECK_PQ=$CHECK_PQ" >> $CONFFILE
+echo "CHECK_XMLRPC=$CHECK_XMLRPC" >> $CONFFILE
+echo "DEFS=$DEFS" >> $CONFFILE
+echo -n "STG_LIBS=" >> $CONFFILE
+for lib in $STG_LIBS
+do
+    echo -n "$lib " >> $CONFFILE
+done
+echo "" >> $CONFFILE
+echo -n "PLUGINS=" >> $CONFFILE
+for plugin in $PLUGINS
+do
+    echo -n "$plugin " >> $CONFFILE
+done
+echo "" >> $CONFFILE
+echo "SHELL=$SHELL" >> $CONFFILE
+echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
+echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
+echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
+echo "PREFIX=$PREFIX" >> $CONFFILE
+echo "BIN_MODE=$BIN_MODE" >> $CONFFILE
+echo "DATA_MODE=$DATA_MODE" >> $CONFFILE
+echo "OWNER=$OWNER" >> $CONFFILE
+echo "VAR_DIR=$VAR_DIR" >> $CONFFILE
+echo "ETC_DIR=$ETC_DIR" >> $CONFFILE
+echo "DB_ADDRESS=$DB_ADDRESS" >> $CONFFILE
+echo "DB_USER=$DB_USER" >> $CONFFILE
+echo "DB_PASSWORD=$DB_PASSWORD" >> $CONFFILE
+echo "FIREBIRD_ISQL=$FIREBIRD_ISQL" >> $CONFFILE
+echo "FIREBIRD_GROUP=$FIREBIRD_GROUP" >> $CONFFILE
+
+mkdir -p modules
+
+if [ "$1" != "debug" ]
+then
+    $MAKE $MAKEOPTS
+else
+    echo -e "\n\n\nDebug build. Type $MAKE explicitly"
+fi

@@ -1,0 +1,22 @@
+#Этот скрипт вызывается в момент, когда пользователь
+#успешно прошел авторизацию на сервере. Задача скрипта - перестроить 
+#файрвол так, что бы пользователь получил доступ в интернет
+
+# Login
+LOGIN=$1
+
+#user IP
+IP=$2
+
+#cash
+CASH=$3
+
+#user ID
+ID=$4
+
+#Selected dirs to connect
+DIRS=$5
+
+
+#echo "C `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
+

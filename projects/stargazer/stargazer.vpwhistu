@@ -1,0 +1,52 @@
+[Global]
+CurrentProject=stargazer.vpj
+[ProjectDates]
+../../stglibs/srvconf.lib/servconf.vpj=20080818103030000
+stargazer.vpj=20080818104412000
+[ActiveConfig]
+stargazer.vpj=,Debug
+../../stglibs/srvconf.lib/servconf.vpj=,Debug
+[TreeExpansion]
+stargazer.vpj 1 1 1 0 0 1
+[State]
+SCREEN: 1680 1050 0 0 1680 980 0 0 N 0 0 0 0 1353 829
+CWD: plugins/configuration/sgconfig/
+BUFFER: BN="plugins/configuration/sgconfig/parser.cpp"
+BI: MA=1 74 1  TABS=1 5  WWS=1 IWT=0 ST=0 IN=2 BW=0 US=32000 RO=0 SE=1 SN=0 BIN=0 MN=C	HM=0 MF=616 TL=0 MLL=0 ASE=0 LNL=6 LCF=0 CAPS=0 E=0 ESBU2=-1
+VIEW: LN=.0 CL=1 LE=0 CX=0 CY=0 WI=5 BI=32 HT=0 HN=0 HF=0 HC=4
+WINDOW: 200 200 913 559 0 0 M  WF=0 WT=2 "misc-nil,14,0,1"
+BUFFER: BN="plugins/configuration/sgconfig/parser.cpp"
+VIEW: LN=.8617 CL=34 LE=0 CX=33 CY=19 WI=157 BI=32 HT=0 HN=0 HF=0 HC=4
+FILEHIST: 9
+tariff.h
+../../stglibs/stg_logger.lib/stg_logger.h
+../../stglibs/stg_logger.lib/stg_logger.cpp
+tariff.cpp
+traffcounter.cpp
+../../include/user_conf.h
+../../../../tmp/OLYMP.CPP
+../../../../tmp/olymp.cpp
+plugins/configuration/sgconfig/parser.cpp
+DEBUG: 0 0 0 0 3 0
+printf
+strcpy
+std::*
+[TreeExpansion2]
++ ../../stglibs/srvconf.lib/servconf.vpj
+- stargazer.vpj
+  - Source Files
+    - Plugin Sources
+      - auth
+      + store
+      + other
+      + configuration
+      + capture
+        + debug_cap
+        + ipq_cap
+        + divert_cap
+  - Header Files
+    + Plugin Headers
+  + Resource Files
+  + Bitmaps
+  + Other Files
+scroll:23

@@ -1,0 +1,37 @@
+###############################################################################
+# $Id: Makefile,v 1.6 2009/03/03 15:50:15 faust Exp $
+###############################################################################
+
+LIB_NAME = ibpp
+PROG = lib$(LIB_NAME)
+
+SRCS = array.cpp \
+       blob.cpp \
+       database.cpp \
+       date.cpp \
+       dbkey.cpp \
+       _dpb.cpp \
+       events.cpp \
+       exception.cpp \
+       _ibpp.cpp \
+       _ibs.cpp \
+       _rb.cpp \
+       row.cpp \
+       service.cpp \
+       _spb.cpp \
+       statement.cpp \
+       time.cpp \
+       _tpb.cpp \
+       transaction.cpp \
+       user.cpp
+
+INCS = ibpp.h 
+
+ADD_CXXFLAGS_1 = -DIBPP_LINUX
+
+LIBS = -lfbclient
+       
+include ../Makefile.in
+
+
+

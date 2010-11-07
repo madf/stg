@@ -1,0 +1,54 @@
+#!/bin/bash
+
+int_iface=eth1
+
+# Login
+LOGIN=$1
+
+#user IP
+IP=$2
+
+#cash
+CASH=$3
+
+#user ID
+ID=$4
+
+#Selected dirs to connect
+DIRS=$5
+
+default_speed=32kbit
+
+# =========== shaping by tariff ===========
+#tariff=$(grep -i "^tariff=" /var/stargazer/users/$LOGIN/conf | cut -f 2 -d"=")
+#echo "tariff=$tariff" > /var/stargazer/users/$LOGIN/connect.log
+#case $tariff in
+#    minimum)  speedkb=128kbit;;  # 128 kbit
+#    middle)   speedkb=256kbit;;  # 256 kbi
+#    maximum)  speedkb=512kbit;;	 # 512 kbit
+#    *)        speedkb=$default_speed;;  # default speed
+#esac
+# ========= shaping by tariff end ========= 
+
+# ========= shaping by userdata0 ==========
+speedR=$(grep -i "^Userdata0=" /var/stargazer/users/$LOGIN/conf | cut -f 2 -d"=")
+speed=$(echo $speedR | grep "^[0-9]*[0-9]$")
+
+if [ -z "$speed" ] 
+then
+    speedkb=$default_speed
+else
+    speedkb="$speed"kbit
+fi
+# ======= shaping by userdata0 end ========
+
+declare -i mark=$ID+10
+
+echo "$mark" > /var/stargazer/users/$LOGIN/shaper_mark
+echo "$speedkb" > /var/stargazer/users/$LOGIN/shaper_rate
+
+iptables -t mangle -A FORWARD -d $IP -j MARK --set-mark $mark
+
+tc class add dev $int_iface parent 1:1 classid 1:$mark htb rate $speedkb burst 40k
+tc filter add dev $int_iface parent 1: protocol ip prio 3 handle $mark fw classid 1:$mark
+

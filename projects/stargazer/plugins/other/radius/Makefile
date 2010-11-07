@@ -1,0 +1,16 @@
+###############################################################################
+# $Id: Makefile,v 1.3 2010/04/26 12:44:42 faust Exp $
+###############################################################################
+
+include ../../../../../Makefile.conf
+
+LIBS += $(LIB_THREAD)
+
+PROG = mod_radius.so
+
+SRCS = ./radius.cpp
+
+STGLIBS = -lstg_common -lstg_crypto
+
+include ../../Makefile.in
+
