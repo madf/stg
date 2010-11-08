@@ -59,24 +59,24 @@ public:
     RPC_CONFIG();
     virtual ~RPC_CONFIG();
 
-    void                SetUsers(USERS * u) { users = u; };
-    void                SetTariffs(TARIFFS * t) { tariffs = t; };
-    void                SetAdmins(ADMINS * a) { admins = a; };
-    void                SetStore(BASE_STORE * s) { store = s; };
-    void                SetTraffcounter(TRAFFCOUNTER *) {};
-    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; };
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetTariffs(TARIFFS * t) { tariffs = t; }
+    void                SetAdmins(ADMINS * a) { admins = a; }
+    void                SetStore(BASE_STORE * s) { store = s; }
+    void                SetTraffcounter(TRAFFCOUNTER *) {}
+    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
-    bool                IsRunning() { return running && !stopped; };
+    int                 Reload() { return 0; }
+    bool                IsRunning() { return running && !stopped; }
 
-    const string      & GetStrError() const { return errorStr; };
-    const string        GetVersion() const { return RPC_CONFIG_VERSION; };
-    uint16_t            GetStartPosition() const { return 220; };
-    uint16_t            GetStopPosition() const { return 220; };
+    const string      & GetStrError() const { return errorStr; }
+    const string        GetVersion() const { return RPC_CONFIG_VERSION; }
+    uint16_t            GetStartPosition() const { return 220; }
+    uint16_t            GetStopPosition() const { return 220; }
 
     bool                GetAdminInfo(const std::string & cookie,
                                      ADMIN_INFO * info);
