@@ -63,7 +63,7 @@ if (StartTransaction())
     return -1;
     }
 
-result = PQexec(connection, "SELECT login FROM tb_admins");
+result = PQexec(connection, "SELECT login FROM tb_admins WHERE login <> '@stargazer'");
 
 if (PQresultStatus(result) != PGRES_TUPLES_OK)
     {
