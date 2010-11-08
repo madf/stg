@@ -1,18 +1,19 @@
  /*
- $Revision: 1.4 $
- $Date: 2010/01/19 11:07:57 $
+ $Revision: 1.5 $
+ $Date: 2010/10/07 19:45:52 $
  */
 
 
-#ifndef FILE_STORE_H
-#define FILE_STORE_H
+#ifndef MYSQL_STORE_H
+#define MYSQL_STORE_H
+
+#include <mysql/mysql.h>
 
 #include <string>
 
 #include "base_settings.h"
 #include "base_store.h"
 #include "user_traff.h"
-#include <mysql/mysql.h>
 
 using namespace std;
 //-----------------------------------------------------------------------------

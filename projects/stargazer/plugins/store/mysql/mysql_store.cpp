@@ -855,30 +855,29 @@ row = mysql_fetch_row(res);
 unsigned int startPos=0;
 
 char s[22];
-uint64_t traffU[DIR_NUM];
-uint64_t traffD[DIR_NUM];
 
 for (int i = 0; i < DIR_NUM; i++)
     {
+    uint64_t traff;
     sprintf(s, "D%d", i);
-    if (GetULongLongInt(row[startPos+i*2],&traffD[i], 0) != 0)
+    if (GetULongLongInt(row[startPos+i*2], &traff, 0) != 0)
         {
         mysql_free_result(res);
         errorStr = "User \'" + login + "\' stat not read. Parameter " + string(s);
         mysql_close(sock);
         return -1;
         }
-    stat->down = traffD;
+    stat->down[i] = traff;
 
     sprintf(s, "U%d", i);
-    if (GetULongLongInt(row[startPos+i*2+1], &traffU[i], 0) != 0)
+    if (GetULongLongInt(row[startPos+i*2+1], &traff, 0) != 0)
         {
         mysql_free_result(res);
         errorStr =   "User \'" + login + "\' stat not read. Parameter " + string(s);
         mysql_close(sock);
         return -1;
         }
-    stat->up = traffU;
+    stat->up[i] = traff;
     }//for
 
 startPos += (2*DIR_NUM);
