@@ -1,193 +1,327 @@
 #include "datathread.h"
 
-bool DataThread::Init()
+DataThread::DataThread()
+        : tid(-1),
+          users(NULL),
+          store(NULL),
+          sock(-1),
+          done(true),
+          pvList(NULL),
+          data(NULL),
+          dataSize(0)
 {
-    parser = XML_ParserCreate(NULL);
-    if (!parser) {
-        printfd(__FILE__, "Error creating XML parser\n");
+xmlParser = XML_ParserCreate(NULL);
+if (!xmlParser)
+    {
+    printfd(__FILE__, "DataThread::DataThread() Failed to create parser\n");
+    return;
     }
-    XML_SetStartElementHandler(parser, StartHandler);
-    XML_SetEndElementHandler(parser, EndHandler);
-    XML_SetCharacterDataHandler(parser, DataHandler);
+XML_SetElementHandler(xmlParser, DTXMLStart, DTXMLEnd);
 }
 
 DataThread::~DataThread()
 {
-    XML_ParserFree(parser);
+XML_ParserFree(xmlParser);
 }
 
-void * DataThread::Run(void * val)
+bool DataThread::Handle(int s)
 {
-    DataThread * dt = reinterpret_cast<DataThread *>(val);
+if (users == NULL)
+    {
+    printfd(__FILE__, "DataThread::Handle() Users not set\n");
+    return false;
+    }
+if (store == NULL)
+    {
+    printfd(__FILE__, "DataThread::Handle() Storage not set\n");
+    return false;
+    }
 
-    running = true;
-    stoppped = false;
-    while (running) {
-        if (sock >= 0) {
-            done = false;
-            dt->Handle();
-            done = true;
-            close(sock);
-            sock = -1;
-        } else {
-            usleep(1000);
+sock = s;
+
+if (pthread_create(&tid, NULL, Run, this))
+    {
+    printfd(__FILE__, "DataThread::Handle() Failed to create thread\n");
+    return false;
+    }
+if (pthread_detach(tid))
+    {
+    printfd(__FILE__, "DataThread::Handle() Cannot detach the thread\n");
+    }
+return true;
+}
+
+void * DataThread::Run(void * self)
+{
+DataThread * dt = reinterpret_cast<DataThread *>(self);
+
+dt->done = false;
+
+if (dt->ReadRequest())
+    {
+    if (dt->DecodeRequest())
+        {
+        if (dt->ParseRequest())
+            {
+            if (dt->MakeAnswer())
+                {
+                printfd(__FILE__, "DataThread::Run() All done\n");
+                }
+            else
+                {
+                printfd(__FILE__, "DataThread::Run() Failed to answer the request\n");
+                }
+            }
+        else
+            {
+            printfd(__FILE__, "DataThread::Run() Cannot parse the request\n");
+            }
+        }
+    else
+        {
+        printfd(__FILE__, "DataThread::Run() Cannot decode the request\n");
         }
     }
-    stopped = true;
-    running = false;
+else
+    {
+    printfd(__FILE__, "DataThread::Run() Cannot read the request\n");
+    }
 
-    return NULL;
+dt->Cleanup();
+
+return NULL;
 }
 
-void DataThread::Handle()
+bool DataThread::ReadRequest()
 {
-    int32_t size;
-    unsigned char * buf;
+int32_t size;
+char * buf;
 
-    if (!PrepareContext())
-        return;
-
-    res = read(sock, &size, sizeof(size));
-    if (res != sizeof(size))
+int res = read(sock, &size, sizeof(size));
+if (res != sizeof(size))
     {
-        printfd(__FILE__, "Reading stream size failed! Wanted %d bytes, got %d bytes.\n", sizeof(size), res);
-        return;
+    printfd(__FILE__, "DataThread::ReadRequest() Reading login size failed! Wanted %d bytes, got %d bytes.\n", sizeof(size), res);
+    done = true;
+    return false;
     }
 
-    printfd(__FILE__, "DataThread::Handle() size = %d\n", size);
-
-    if (size < 0) {
-        printfd(__FILE__, "DataThread::Handle() Invalid data size.\n");
-        return;
-    }
-
-    buf = new unsigned char[size];
-    res = read(sock, buf, size);
-    if (res != size)
+if (size < 0)
     {
-        printfd(__FILE__, "Reading stream failed! Wanted %d bytes, got %d bytes.\n", size, res);
-        return;
+    printfd(__FILE__, "DataThread::ReadRequest() Invalid login size.\n");
+    done = true;
+    return false;
     }
 
-    std::string data;
-    Decode(buf, data, size);
+buf = new char[size];
 
-    printfd(__FILE__, "Received XML: %s\n", data.c_str());
-
-    XML_ParserReset(parser, NULL);
-
-    if (XML_Parse(parser, data.c_str(), data.length(), true) == XML_STATUS_OK) {
-        SendReply();
-    } else {
-        SendError();
-    }
-
+res = read(sock, buf, size);
+if (res != size)
+    {
+    printfd(__FILE__, "DataThread::ReadRequest() Reading login failed! Wanted %d bytes, got %d bytes.\n", size, res);
     delete[] buf;
+    done = true;
+    return false;
+    }
 
+login.assign(buf, size);
+delete[] buf;
+
+res = read(sock, &size, sizeof(size));
+if (res != sizeof(size))
+    {
+    printfd(__FILE__, "DataThread::ReadRequest() Reading request size failed! Wanted %d bytes, got %d bytes.\n", sizeof(size), res);
+    done = true;
+    return false;
+    }
+
+if (size < 0)
+    {
+    printfd(__FILE__, "DataThread::ReadRequest() Invalid request size.\n");
+    done = true;
+    return false;
+    }
+
+data = new char[size + 1];
+dataSize = size;
+
+res = read(sock, data, size);
+if (res != size)
+    {
+    printfd(__FILE__, "DataThread::ReadRequest() Reading request failed! Wanted %d bytes, got %d bytes.\n", size, res);
+    done = true;
+    return false;
+    }
+data[res] = 0;
+
+return true;
+}
+
+bool DataThread::DecodeRequest()
+{
+if (users->FindByName(login, &(uit)))
+    {
+    printfd(__FILE__, "DataThread::DecodeRequest() User '%s' not found.\n", login.c_str());
+    done = true;
+    return false;
+    }
+
+std::string password = uit->property.password;
+
+BLOWFISH_CTX ctx;
+char * key = new char[password.length()];
+strncpy(key, password.c_str(), password.length());
+
+Blowfish_Init(&ctx,
+              reinterpret_cast<unsigned char *>(key),
+              password.length());
+
+for (int i = 0; i < dataSize / 8; ++i)
+    {
+    uint32_t a;
+    uint32_t b;
+    a = n2l(reinterpret_cast<unsigned char *>(data + i * 8));
+    b = n2l(reinterpret_cast<unsigned char *>(data + i * 8 + 4));
+    Blowfish_Decrypt(&ctx,
+                     &a,
+                     &b);
+    l2n(a, reinterpret_cast<unsigned char *>(data + i * 8));
+    l2n(b, reinterpret_cast<unsigned char *>(data + i * 8 + 4));
+    }
+
+delete[] key;
+
+return true;
+}
+
+bool DataThread::ParseRequest()
+{
+if (XML_Parse(xmlParser, data, dataSize, 1) != XML_STATUS_OK)
+    {
+    printfd(__FILE__, "DataThread::ParseRequest() Failed to parse the request\n");
+    request.isBad = true;
+    return false;
+    }
+return true;
+}
+
+bool DataThread::MakeAnswer()
+{
+if (MakeConf())
+    {
+    if (MakeStat())
+        {
+        if (SendAnswer())
+            {
+            // All is ok
+            }
+        else
+            {
+            printfd(__FILE__, "DataThread::MakeAnswer() Failed to send answer");
+            return false;
+            }
+        }
+    else
+        {
+        printfd(__FILE__, "DataThread::MakeAnswer() Failed to make stat answer\n");
+        return false;
+        }
+    }
+else
+    {
+    printfd(__FILE__, "DataThread::MakeAnswer() Failed to make conf answer\n");
+    return false;
+    }
+
+return true;
+}
+
+void DataThread::Cleanup()
+{
+delete[] data;
+dataSize = 0;
+login = "";
+done = false;
+data = NULL;
+request.conf.erase(request.conf.begin(), request.conf.end());
+request.stat.erase(request.stat.begin(), request.stat.end());
+request.login = "";
+request.isOk = true;
+request.isBad = false;
+}
+
+void DataThread::ParseTag(const std::string & name, const char ** attr)
+{
+if (request.isBad)
     return;
-}
-
-bool DataThread::PrepareContext()
-{
-    int32_t size;
-    char * login;
-
-    int res = read(sock, &size, sizeof(size));
-    if (res != sizeof(size))
+if (name == "request")
     {
-        printfd(__FILE__, "Reading stream size failed! Wanted %d bytes, got %d bytes.\n", sizeof(size), res);
+    if (attr == NULL)
+        {
+        printfd(__FILE__, "DataThread::ParseTag() 'request' tag require an attribute\n");
+        request.isBad = true;
         return;
+        }
+    else
+        {
+        std::string attrName(*attr++);
+        std::string attrValue(*attr++);
+        if (attr != NULL)
+            {
+            printfd(__FILE__, "DataThread::ParseTag() Extra attributes on tag 'request'\n");
+            }
+        if (attrName == "login")
+            {
+            if (attrValue != login)
+                {
+                printfd(__FILE__, "DataThread::ParseTag() Logins doesn't match\n");
+                request.isBad = true;
+                return;
+                }
+            }
+        else
+            {
+            printfd(__FILE__, "DataThread::ParseTag() Unexpected attribute '%s'\n", attrName.c_str());
+            request.isBad = true;
+            return;
+            }
+        }
     }
-
-    printfd(__FILE__, "DataThread::Handle() size = %d\n", size);
-
-    if (size < 0) {
-        printfd(__FILE__, "DataThread::Handle() Invalid data size.\n");
-        return;
-    }
-
-    login = new char[size];
-
-    res = read(sock, login, size);
-    if (res != size)
+else if (name == "conf")
     {
-        printfd(__FILE__, "Reading login failed! Wanted %d bytes, got %d bytes.\n", 32, res);
-        return;
+    pvList = &(request.conf);
     }
-
-    std::string l;
-    l.assign(login, size);
-    delete[] login;
-
-    user_iter it;
-    if (users->FindByName(l, &it))
+else if (name == "stat")
     {
-        printfd(__FILE__, "User '%s' not found.\n", login);
-        return;
+    pvList = &(request.stat);
     }
-
-    password = it->property.password;
-    
-    printfd(__FILE__, "DataThread::Handle() Requested user: '%s'\n", login);
-    printfd(__FILE__, "DataThread::Handle() Encryption initiated using password: '%s'\n", password.c_str());
-
-    char * key = new char[password.length()];
-    strncpy(key, password.c_str(), password.length());
-
-    Blowfish_Init(&ctx,
-                  reinterpret_cast<unsigned char *>(key),
-                  password.length());
-    delete[] key;
-
-    return true;
-}
-
-void DataThread::Encode(const std::string & src, char * dst, int size)
-{
-    const char * ptr = src.c_str();
-    for (int i = 0; i < size / 8; ++i) {
-        uint32_t a;
-        uint32_t b;
-        a = n2l(ptr + i * 8);
-        b = n2l(ptr + i * 8 + 4);
-        Blowfish_Encrypt(&ctx,
-                         &a,
-                         &b);
-        l2n(a, dst + i * 8);
-        l2n(b, dst + i * 8 + 4);
+else
+    {
+    (*pvList)[name];
     }
 }
 
-void DataThread::Decode(char * src, std::string & dst, int size)
+bool DataThread::MakeConf()
 {
-    char tmp[9];
-    tmp[8] = 0;
-    dst = "";
-
-    for (int i = 0; i < size / 8; ++i) {
-        uint32_t a;
-        uint32_t b;
-        a = n2l(src + i * 8);
-        b = n2l(src + i * 8 + 4);
-        Blowfish_Decrypt(&ctx,
-                         &a,
-                         &b);
-        l2n(a, tmp);
-        l2n(b, tmp + 4);
-
-        dst += tmp;
-    }
+return false;
 }
 
-void StartHandler(void *data, const char *el, const char **attr)
+bool DataThread::MakeStat()
 {
-    printfd(__FILE__, "Node: %s\n", el);
+return false;
 }
 
-void EndHandler(void *data, const char *el)
+bool DataThread::SendAnswer()
 {
+return false;
 }
 
-void DataHandler(void *data, const char *el)
+void DTXMLStart(void * data, const char * name, const char ** attr)
 {
+DataThread * dt = reinterpret_cast<DataThread *>(data);
+dt->ParseTag(name, attr);
+}
+
+void DTXMLEnd(void * data, const char * name)
+{
+//DataThread * dt = reinterpret_cast<DataThread *>(data);
 }

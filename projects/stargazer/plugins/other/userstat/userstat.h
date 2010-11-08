@@ -19,47 +19,26 @@
  */
 
 /*
- $Revision: 1.1 $
- $Date: 2008/07/05 12:35:53 $
- $Author: faust $
+ $Revision: $
+ $Date: $
+ $Author: $
 */
 
 #ifndef __USERSTAT_H__
 #define __USERSTAT_H__
 
-#include <expat.h>
+#include <string>
+#include <map>
+#include <functional>
+
 #include <pthread.h>
 #include <netinet/in.h>
 
 #include "base_plugin.h"
 
+#define USTAT_VERSION "UserStats 1.0_alt"
+
 extern "C" BASE_PLUGIN * GetPlugin();
-
-struct THREAD_INFO
-{
-    pthread_t thread;
-    USERS * users;
-    BASE_STORE * store;
-    int outerSocket;
-    bool done;
-};
-
-uint32_t n2l(unsigned char * c)
-{
-    uint32_t t = *c++ << 24;
-    t += *c++ << 16;
-    t += *c++ << 8;
-    t += *c;
-    return t;
-}
-
-void l2n(uint32_t t, unsigned char * c)
-{
-    *c++ = t >> 24 & 0x000000FF;
-    *c++ = t >> 16 & 0x000000FF;
-    *c++ = t >> 8 & 0x000000FF;
-    *c++ = t & 0x000000FF;
-}
 
 class USERSTAT : public BASE_PLUGIN
 {
@@ -85,9 +64,9 @@ public:
     virtual uint16_t        GetStopPosition() const { return 0; };
 
 private:
-    struct IsDone : public unary_function<THREAD_INFO, bool>
+    struct IsDone : public unary_function<DataThread, bool>
     {
-        bool operator()(const THREAD_INFO & info) { return info.done; };
+        bool operator()(const DataThread & info) { return info.IsDone(); };
     };
     struct ToLower : public unary_function<char, char>
     {
@@ -97,7 +76,7 @@ private:
     bool nonstop;
     std::string errorStr;
     std::string version;
-    std::vector<THREAD_INFO> pool;
+    std::vector<DataThread> pool;
     int listenSocket;
     int threads;
     unsigned maxThreads;
@@ -110,15 +89,10 @@ private:
 
     MODULE_SETTINGS settings;
 
-    XML_Parser xmlParser;
-
     int Prepare();
     int Finalize();
     static void * Run(void *);
     static void * Operate(void *);
-
-    friend void ParseXMLStart(void * data, char * name, char ** attr);
-    friend void ParseXMLEnd(void * data, char * name);
 };
 
 #endif

@@ -21,9 +21,9 @@ PG_DRIVER::~PG_DRIVER()
 bool PG_DRIVER::Connect()
 {
     std::stringstream params;
-    params << "host=" << host << " "
-	   << "dbname=" << database << " "
-	   << "user=" << user << " "
+    params << "host=" << host
+	   << "dbname=" << database
+	   << "user=" << user
 	   << "password=" << password;
     std::string str = params.str();
     conn = PQconnectdb(str.c_str());
@@ -35,7 +35,8 @@ bool PG_DRIVER::Disconnect()
 {
     if (PQstatus(conn) == CONNECTION_OK) {
 	PQfinish(conn);
-	conn = NULL;
+	errorMsg = PQerrorMessage(conn);
+	return PQstatus(conn) != CONNECTION_BAD;
     }
 
     return false;
@@ -43,6 +44,9 @@ bool PG_DRIVER::Disconnect()
 
 bool PG_DRIVER::Query(const std::string & query)
 {
+    cols.erase(cols.begin(), cols.end());
+    cols.reserve(columns);
+
     PQclear(result);
     result = PQexec(conn, query.c_str());
     errorMsg = PQerrorMessage(conn);
@@ -50,13 +54,9 @@ bool PG_DRIVER::Query(const std::string & query)
     columns = PQnfields(result);
     affected = atoi(PQcmdTuples(result));
 
-    cols.erase(cols.begin(), cols.end());
-    cols.reserve(columns);
-
     if (tuples) {
-	for (int i = 0; i < columns; ++i) {
+	for (int i = 0; i < columns; ++i)
 	    cols.push_back(PQfname(result, i));
-	}
     }
 
     if (!result)

@@ -1,5 +1,5 @@
 ###############################################################################
-# $Id: Makefile,v 1.1 2008/07/05 12:35:53 faust Exp $
+# $Id: Makefile,v 1.4 2007/09/26 14:07:28 faust Exp $
 ###############################################################################
 
 include ../../../../../Makefile.conf
@@ -20,7 +20,8 @@ endif
 
 PROG = mod_userstat.so
 
-SRCS = ./userstat.cpp
+SRCS = ./userstat.cpp \
+       ./datathread.cpp
 
 LIBS += -lstg_common \
 	-lstg_crypto

@@ -5,6 +5,9 @@
 
 #include "base_db.h"
 
+extern "C" BASE_DB * CreateDriver();
+extern "C" void DestroyDriver(BASE_DB *);
+
 class PG_DRIVER : public BASE_DB {
 public:
     virtual ~PG_DRIVER();
@@ -22,6 +25,7 @@ public:
 private:
     PGconn * conn;
     PGresult * result;
+    COLUMNS cols;
 };
 
 #endif
