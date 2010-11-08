@@ -4,3 +4,4 @@
 *.diff
 *.patch
 CVS*
+make_tarball.sh
