@@ -2,6 +2,7 @@
 #define __RPC_CONFIG_H__
 
 #include <string>
+#include <ctime>
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
