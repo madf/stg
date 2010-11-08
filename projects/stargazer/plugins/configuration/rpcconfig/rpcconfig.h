@@ -1,8 +1,9 @@
 #ifndef __RPC_CONFIG_H__
 #define __RPC_CONFIG_H__
 
-#include <string>
 #include <ctime>
+#include <string>
+#include <map>
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
