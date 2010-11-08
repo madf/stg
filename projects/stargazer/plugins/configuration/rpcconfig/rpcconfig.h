@@ -1,6 +1,8 @@
 #ifndef __RPC_CONFIG_H__
 #define __RPC_CONFIG_H__
 
+#include <pthread.h>
+
 #include <ctime>
 #include <string>
 #include <map>
@@ -8,8 +10,6 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 #include <xmlrpc-c/server_abyss.hpp>
-
-#include <pthread.h>
 
 #include "os_int.h"
 #include "base_plugin.h"
