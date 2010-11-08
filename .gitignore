@@ -6,3 +6,14 @@
 CVS*
 make_tarball.sh
 deps
+projects/rscriptd/On*
+projects/stargazer/On*
+projects/stargazer/stargazer.conf
+projects/stargazer/stargazer
+projects/stargazer/rules
+projects/stargazer/subnets
+projects/stargazer/conf.d
+projects/stargazer/var
+stglibs/smtp.lib
+stglibs/crypto.lib/blowfish.c
+Makefile.conf
