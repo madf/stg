@@ -10,6 +10,7 @@
 
 #include <pthread.h>
 
+#include "os_int.h"
 #include "base_plugin.h"
 #include "base_store.h"
 #include "base_settings.h"
