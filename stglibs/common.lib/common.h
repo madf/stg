@@ -215,6 +215,8 @@ const std::string & unsigned2str(varT x, std::string & s)
 //-----------------------------------------------------------------------------
 int str2x(const std::string & str, int & x);
 int str2x(const std::string & str, unsigned & x);
+int str2x(const std::string & str, long & x);
+int str2x(const std::string & str, unsigned long & x);
 int str2x(const std::string & str, long long & x);
 int str2x(const std::string & str, unsigned long long & x);
 //-----------------------------------------------------------------------------

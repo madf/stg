@@ -734,6 +734,26 @@ if (errno == ERANGE)
 return 0;
 }
 //---------------------------------------------------------------------------
+int str2x(const std::string & str, long & x)
+{
+x = strtol(str.c_str(), NULL, 10);
+
+if (errno == ERANGE)
+    return -1;
+
+return 0;
+}
+//---------------------------------------------------------------------------
+int str2x(const std::string & str, unsigned long & x)
+{
+x = strtoul(str.c_str(), NULL, 10);
+
+if (errno == ERANGE)
+    return -1;
+
+return 0;
+}
+//---------------------------------------------------------------------------
 int str2x(const std::string & str, long long & x)
 {
 x = strtoll(str.c_str(), NULL, 10);
