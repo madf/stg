@@ -779,6 +779,11 @@ const std::string & x2str(unsigned x, std::string & s)
 return unsigned2str(x, s);
 }
 //---------------------------------------------------------------------------
+const std::string & x2str(unsigned long x, std::string & s)
+{
+return unsigned2str(x, s);
+}
+//---------------------------------------------------------------------------
 const std::string & x2str(unsigned long long x, std::string & s)
 {
 return unsigned2str(x, s);

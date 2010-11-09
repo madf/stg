@@ -221,6 +221,7 @@ int str2x(const std::string & str, long long & x);
 int str2x(const std::string & str, unsigned long long & x);
 //-----------------------------------------------------------------------------
 const std::string & x2str(unsigned x, std::string & s);
+const std::string & x2str(unsigned long x, std::string & s);
 const std::string & x2str(unsigned long long x, std::string & s);
 //-----------------------------------------------------------------------------
 char * stg_strptime(const char *, const char *, struct tm *);
