@@ -23,8 +23,8 @@
  * Copyright 2005,2006,2007,2008  The FreeRADIUS server project
  */
 
-#include <freeradius/ident.h>
-RCSIDH(stats_h, "$Id: stats.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(stats_h, "$Id: stats.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 #ifdef WITH_STATS_64BIT
 typedef uint64_t fr_uint_t;

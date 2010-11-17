@@ -24,8 +24,8 @@
  * Copyright 2007 Alan DeKok <aland@deployingradius.com>
  */
 
-#include <freeradius/ident.h>
-RCSIDH(event_h, "$Id: event.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(event_h, "$Id: event.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 typedef struct fr_event_list_t fr_event_list_t;
 typedef struct fr_event_t fr_event_t;

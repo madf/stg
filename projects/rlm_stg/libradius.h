@@ -24,8 +24,8 @@
  * Copyright 1999,2000,2001,2002,2003,2004,2005,2006,2007,2008  The FreeRADIUS server project
  */
 
-#include <freeradius/ident.h>
-RCSIDH(libradius_h, "$Id: libradius.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(libradius_h, "$Id: libradius.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 #include <errno.h>
 
@@ -37,9 +37,10 @@ RCSIDH(libradius_h, "$Id: libradius.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include <freeradius/radius.h>
-#include <freeradius/token.h>
-#include <freeradius/hash.h>
+/*#include <freeradius/radius.h>
+#include <freeradius/hash.h>*/
+
+#include "token.h"
 
 #ifdef SIZEOF_UNSIGNED_INT
 #if SIZEOF_UNSIGNED_INT != 4
@@ -50,8 +51,8 @@ RCSIDH(libradius_h, "$Id: libradius.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 /*
  *  Include for modules.
  */
-#include <freeradius/sha1.h>
-#include <freeradius/md4.h>
+/*#include <freeradius/sha1.h>
+#include <freeradius/md4.h>*/
 
 #define EAP_START               2
 
@@ -465,6 +466,6 @@ void *fr_fifo_pop(fr_fifo_t *fi);
 void *fr_fifo_peek(fr_fifo_t *fi);
 int fr_fifo_num_elements(fr_fifo_t *fi);
 
-#include <freeradius/packet.h>
+//#include <freeradius/packet.h>
 
 #endif /*LIBRADIUS_H*/

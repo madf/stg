@@ -24,12 +24,12 @@
  *
  */
 
-#include <freeradius/ident.h>
-RCSIDH(radiusd_h, "$Id: radiusd.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(radiusd_h, "$Id: radiusd.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 #include "libradius.h"
-#include <freeradius/radpaths.h>
-#include "conf.h"
+//#include <freeradius/radpaths.h>
+//#include "conf.h"
 #include "conffile.h"
 #include "event.h"
 
@@ -100,7 +100,7 @@ typedef struct auth_req REQUEST;
 #endif
 
 #include "stats.h"
-#include "realms.h"
+/*#include "realms.h"*/
 
 
 /*
@@ -119,7 +119,7 @@ typedef struct radclient {
 	char			*login;
 	char			*password;
 	char			*server;
-	int			number;	/* internal use only */
+	int			number;
 	const CONF_SECTION	*cs;
 #ifdef WITH_STATS
 	fr_stats_t		*auth;
@@ -130,7 +130,7 @@ typedef struct radclient {
 
 #ifdef WITH_DYNAMIC_CLIENTS
 	int			lifetime;
-	int			dynamic; /* was dynamically defined */
+	int			dynamic;
 	time_t			created;
 	time_t			last_new_client;
 	char			*client_server;

@@ -31,10 +31,8 @@
 #include <cstring>
 
 extern "C" {
-//#include <freeradius/libradius.h>
-#include "radiusd.h"
+#include "radius.h"
 #include "modules.h"
-//#include <freeradius/conffile.h>
 }
 
 #include "stg_client.h"

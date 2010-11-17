@@ -8,11 +8,12 @@
  *
  */
 
-#include <freeradius/ident.h>
-RCSIDH(conffile_h, "$Id: conffile.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(conffile_h, "$Id: conffile.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 #include <stddef.h>
-#include <freeradius/token.h>
+//#include <freeradius/token.h>
+#include "libradius.h"
 
 /*
  * Export the minimum amount of information about these structs

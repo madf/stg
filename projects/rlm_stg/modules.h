@@ -8,10 +8,11 @@
 #ifndef RADIUS_MODULES_H
 #define RADIUS_MODULES_H
 
-#include <freeradius/ident.h>
-RCSIDH(modules_h, "$Id: modules.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
+//#include <freeradius/ident.h>
+//RCSIDH(modules_h, "$Id: modules.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
-#include "conffile.h"
+//#include "conffile.h"
+#include "radiusd.h"
 
 typedef int (*packetmethod)(void *instance, REQUEST *request);
 
