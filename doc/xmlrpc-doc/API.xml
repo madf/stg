@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+    <bookinfo>
+        <title>Описание XML-RPC API биллинговой системы Stargazer</title>
+        <author>i
+            <firstname>Maxim</firstname>
+            <surname>Mamontov</surname>
+            <email>faust@stg.dp.ua</email>
+        </author>
+        <date>22.05.2009</date>
+    </bookinfo>
+    <preface>
+        <title>Предисловие</title>
+        <para>XML-RPC API предоставляется посредством плагина mod_conf_rpc.so. Для его использования необходимо установить библиотеку xmlrpc-c версии не ниже 1.16.0.</para>
+        <para>Все API-вызовы сгруппированы по 4 категориям:</para>
+        <itemizedlist mark='opencircle'>
+            <listitem><para>Системные (авторизация, информация о системе и т.д.)</para></listitem>
+            <listitem><para>Управление пользователями</para></listitem>
+            <listitem><para>Управление тарифами</para></listitem>
+            <listitem><para>Управление админами</para></listitem>
+        </itemizedlist>
+        <para>Имя каждого вызова начинается с префикса "stargazer." (точка в конце обязательна). Обычно состоит из глагола, обозначающего дейстиве, и существительного, обозначающего объект. Например: <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link> или <link linkend="stargazer.add_tariff"><function>stargazer.add_tariff</function></link>.</para>
+        <para>Работа с системой имеет сессионный характер. При авторизации администратора в системе для него открывается сессия, идентифицируемая по сессионному cookie. Сессионный cookie &#151; уникальная строка, длиной в 64 символа, передаваемая во все API-вызовы в качетсве одного из параметров. Время жизни сессионного cookie ограничено вызовом <link linkend="stargazer.logout"><function>stargazer.logout</function></link> и тайм-аутом. Тайм-аут отсчитывается с момента последнего вызова API и конфигурируется на стороне сервера. Количество одновременно открытых сессий ограничено только ресурсами системы.</para>
+        <para>Вызовы <link linkend="stargazer.login"><function>stargazer.login</function></link> и <link linkend="stargazer.info"><function>stargazer.info</function></link> не требуют сессионного cookie.</para>
+        <para>Вызовы не предусматривающие возвращение какой-либо информации (например, <link linkend="stargazer.add_tariff"><function>stargazer.add_tariff</function></link> или <link linkend="stargazer.chg_admin"><function>stargazer.chg_admin</function></link>) возвращают результат типа boolean. true в случае успеха и false в случае неудачи. Если вызов возвращает какую-нибуть информацию (например, <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>) то в нее добавляется поле result типа boolean. Оно принимает значение true в случае успешного вызова и false в случае неудачи. Это поле является обязательным для всех возвращаемых структур.</para>
+    </preface>
+    <xi:include href="API-system.xml"/>
+    <xi:include href="API-tariffs.xml"/>
+    <xi:include href="API-user.xml"/>
+    <xi:include href="API-messages.xml"/>
+    <xi:include href="API-admins.xml"/>
+</book>

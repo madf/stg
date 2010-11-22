@@ -1,0 +1,1060 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<chapter xmlns="http://docbook.org/ns/docbook">
+    <title>Управление пользователями</title>
+    <refentry id="stargazer.get_user">
+        <refmeta>
+            <refentrytitle>stargazer.get_user</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.get_user</refname>
+            <refpurpose>Получение информации о пользователе</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.get_user</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.get_user</function> возвращает информацию о пользователе системы.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>
+                    Возвращает структуру:
+                    <variablelist>
+                        <varlistentry>
+                            <term>bool <structfield>result</structfield></term>
+                            <listitem>
+                                <para>Результат операции. true - успешно, false - неудача (неправильный или устаревший cookie, неправильный логин пользователя).</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>login</structfield></term>
+                            <listitem>
+                                <para>Логин пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>password</structfield></term>
+                            <listitem>
+                                <para>Пароль пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>cash</structfield></term>
+                            <listitem>
+                                <para>Количество денег на счету</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>freemb</structfield></term>
+                            <listitem>
+                                <para>Количество свободных мегабайт на счету</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>credit</structfield></term>
+                            <listitem>
+                                <para>Размер кредита</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>creditexpire</structfield></term>
+                            <listitem>
+                                <para>Время истечения срока кредита в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>tariff</structfield></term>
+                            <listitem>
+                                <para>Текущий тариф пользователя. В случае, если заказано изменение тарифа в следующем месяце возвращаются оба тарифа, разделенные символом "/" (косая черта)</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>note</structfield></term>
+                            <listitem>
+                                <para>Примечания</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>phone</structfield></term>
+                            <listitem>
+                                <para>Контактный телефон</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>address</structfield></term>
+                            <listitem>
+                                <para>Адрес пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>email</structfield></term>
+                            <listitem>
+                                <para>E-Mail пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>array of strings <structfield>userdata</structfield></term>
+                            <listitem>
+                                <para>Набор полей UserData</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>name</structfield></term>
+                            <listitem>
+                                <para>Реальное имя пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>group</structfield></term>
+                            <listitem>
+                                <para>Группа пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>status</structfield></term>
+                            <listitem>
+                                <para>Статус пользователя. true - подключен, false - отключен</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>aonline</structfield></term>
+                            <listitem>
+                                <para>Признак "Always Online"</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>down</structfield></term>
+                            <listitem>
+                                <para>Пользователь отключен</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>passive</structfield></term>
+                            <listitem>
+                                <para>Пользователь "заморожен"</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>disabledetailstat</structfield></term>
+                            <listitem>
+                                <para>Для пользователя отключено ведение детальной статистики</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>currip</structfield></term>
+                            <listitem>
+                                <para>Текущий IP-адрес пользователя в формате A.B.C.D</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>ips</structfield></term>
+                            <listitem>
+                                <para>IP-адреса, назначенные пользователю, разделенные символом "," (запятая)</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>lastcash</structfield></term>
+                            <listitem>
+                                <para>Последнее пополнение счета</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>lasttimecash</structfield></term>
+                            <listitem>
+                                <para>Время последнего пополнения счета в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>lastactivitytime</structfield></term>
+                            <listitem>
+                                <para>Время последней активности пользователя в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>pingtime</structfield></term>
+                            <listitem>
+                                <para>Время последнего пинга пользователя в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>struct <structfield>traff</structfield></term>
+                            <listitem>
+                                <para>Информация о трафике</para>
+                                <variablelist>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>mu</structfield></term>
+                                        <listitem>
+                                            <para>Исходяий трафик за месяц (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>md</structfield></term>
+                                        <listitem>
+                                            <para>Входящий трафик за месяц (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>su</structfield></term>
+                                        <listitem>
+                                            <para>Исходяий трафик за сессию (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>sd</structfield></term>
+                                        <listitem>
+                                            <para>Входящий трафик за сессию (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                </variablelist>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.get_users">
+        <refmeta>
+            <refentrytitle>stargazer.get_users</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.get_users</refname>
+            <refpurpose>Получение информации о пользователях</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.get_users</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.get_users</function> возвращает информацию о пользователях системы.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>
+                    Возвращает массив структур:
+                    <variablelist>
+                        <varlistentry>
+                            <term>bool <structfield>result</structfield></term>
+                            <listitem>
+                                <para>Результат операции. true - успешно, false - неудача (неправильный или устаревший cookie, неправильный логин пользователя).</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>login</structfield></term>
+                            <listitem>
+                                <para>Логин пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>password</structfield></term>
+                            <listitem>
+                                <para>Пароль пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>cash</structfield></term>
+                            <listitem>
+                                <para>Количество денег на счету</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>freemb</structfield></term>
+                            <listitem>
+                                <para>Количество свободных мегабайт на счету</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>credit</structfield></term>
+                            <listitem>
+                                <para>Размер кредита</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>creditexpire</structfield></term>
+                            <listitem>
+                                <para>Время истечения срока кредита в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>tariff</structfield></term>
+                            <listitem>
+                                <para>Текущий тариф пользователя. В случае, если заказано изменение тарифа в следующем месяце возвращаются оба тарифа, разделенные символом "/" (косая черта)</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>note</structfield></term>
+                            <listitem>
+                                <para>Примечания</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>phone</structfield></term>
+                            <listitem>
+                                <para>Контактный телефон</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>address</structfield></term>
+                            <listitem>
+                                <para>Адрес пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>email</structfield></term>
+                            <listitem>
+                                <para>E-Mail пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>array of strings <structfield>userdata</structfield></term>
+                            <listitem>
+                                <para>Набор полей UserData</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>name</structfield></term>
+                            <listitem>
+                                <para>Реальное имя пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>group</structfield></term>
+                            <listitem>
+                                <para>Группа пользователя</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>status</structfield></term>
+                            <listitem>
+                                <para>Статус пользователя. true - подключен, false - отключен</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>aonline</structfield></term>
+                            <listitem>
+                                <para>Признак "Always Online"</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>down</structfield></term>
+                            <listitem>
+                                <para>Пользователь отключен</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>passive</structfield></term>
+                            <listitem>
+                                <para>Пользователь "заморожен"</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>boolean <structfield>disabledetailstat</structfield></term>
+                            <listitem>
+                                <para>Для пользователя отключено ведение детальной статистики</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>currip</structfield></term>
+                            <listitem>
+                                <para>Текущий IP-адрес пользователя в формате A.B.C.D</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <structfield>ips</structfield></term>
+                            <listitem>
+                                <para>IP-адреса, назначенные пользователю, разделенные символом "," (запятая)</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>lastcash</structfield></term>
+                            <listitem>
+                                <para>Последнее пополнение счета</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>double <structfield>lasttimecash</structfield></term>
+                            <listitem>
+                                <para>Время последнего пополнения счета в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>lastactivitytime</structfield></term>
+                            <listitem>
+                                <para>Время последней активности пользователя в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <structfield>pingtime</structfield></term>
+                            <listitem>
+                                <para>Время последнего пинга пользователя в формате Unix-timestamp</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>struct <structfield>traff</structfield></term>
+                            <listitem>
+                                <para>Информация о трафике</para>
+                                <variablelist>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>mu</structfield></term>
+                                        <listitem>
+                                            <para>Исходяий трафик за месяц (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>md</structfield></term>
+                                        <listitem>
+                                            <para>Входящий трафик за месяц (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>su</structfield></term>
+                                        <listitem>
+                                            <para>Исходяий трафик за сессию (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                    <varlistentry>
+                                        <term>array of i8 <structfield>sd</structfield></term>
+                                        <listitem>
+                                            <para>Входящий трафик за сессию (по направлениям)</para>
+                                        </listitem>
+                                    </varlistentry>
+                                </variablelist>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
+                </para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.add_user">
+        <refmeta>
+            <refentrytitle>stargazer.add_user</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.add_user</refname>
+            <refpurpose>Регистрация нового пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.add_user</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.add_user</function> регистрирует в системе нового "пустого" пользователя. Для изменения регистрационной информации сразу после создания используется метод <function><link linkend="stargazer.chg_user">stargazer.chg_user</link></function></para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.chg_user">
+        <refmeta>
+            <refentrytitle>stargazer.chg_user</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.chg_user</refname>
+            <refpurpose>Изменение регистрационной информации и данных о трафике пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.chg_user</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>struct <parameter>info</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.chg_user</function> сохраняет регистрационную информацию и данные о трафике пользователя. Допустимо частичное указание параметров в структуре info. В этом случае изменение затронет только указанные параметры. Дополнительные поля структуры (не входящие в описание) будут проигнорированы.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>struct <parameter>info</parameter></term>
+                    <listitem>
+                        <para>
+                            Регистрационная информация и данные о трафике.
+                            <variablelist>
+                                <varlistentry>
+                                    <term>bool <structfield>result</structfield></term>
+                                    <listitem>
+                                        <para>Результат операции. true - успешно, false - неудача (неправильный или устаревший cookie, неправильный логин пользователя).</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>login</structfield></term>
+                                    <listitem>
+                                        <para>Логин пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>password</structfield></term>
+                                    <listitem>
+                                        <para>Пароль пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>double <structfield>freemb</structfield></term>
+                                    <listitem>
+                                        <para>Количество свободных мегабайт на счету</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>double <structfield>credit</structfield></term>
+                                    <listitem>
+                                        <para>Размер кредита</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>int <structfield>creditexpire</structfield></term>
+                                    <listitem>
+                                        <para>Время истечения срока кредита в формате Unix-timestamp</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>note</structfield></term>
+                                    <listitem>
+                                        <para>Примечания</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>phone</structfield></term>
+                                    <listitem>
+                                        <para>Контактный телефон</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>address</structfield></term>
+                                    <listitem>
+                                        <para>Адрес пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>email</structfield></term>
+                                    <listitem>
+                                        <para>E-Mail пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>array of strings <structfield>userdata</structfield></term>
+                                    <listitem>
+                                        <para>Набор полей UserData</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>name</structfield></term>
+                                    <listitem>
+                                        <para>Реальное имя пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>group</structfield></term>
+                                    <listitem>
+                                        <para>Группа пользователя</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>boolean <structfield>status</structfield></term>
+                                    <listitem>
+                                        <para>Статус пользователя. true - подключен, false - отключен</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>boolean <structfield>aonline</structfield></term>
+                                    <listitem>
+                                        <para>Признак "Always Online"</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>boolean <structfield>down</structfield></term>
+                                    <listitem>
+                                        <para>Пользователь отключен</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>boolean <structfield>passive</structfield></term>
+                                    <listitem>
+                                        <para>Пользователь "заморожен"</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>boolean <structfield>disabledetailstat</structfield></term>
+                                    <listitem>
+                                        <para>Для пользователя отключено ведение детальной статистики</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <structfield>ips</structfield></term>
+                                    <listitem>
+                                        <para>IP-адреса, назначенные пользователю, разделенные символом "," (запятая)</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>struct <structfield>traff</structfield></term>
+                                    <listitem>
+                                        <para>Информация о трафике</para>
+                                        <variablelist>
+                                            <varlistentry>
+                                                <term>array of i8 <structfield>mu</structfield></term>
+                                                <listitem>
+                                                    <para>Исходяий трафик за месяц (по направлениям)</para>
+                                                </listitem>
+                                            </varlistentry>
+                                            <varlistentry>
+                                                <term>array of i8 <structfield>md</structfield></term>
+                                                <listitem>
+                                                    <para>Входящий трафик за месяц (по направлениям)</para>
+                                                </listitem>
+                                            </varlistentry>
+                                        </variablelist>
+                                    </listitem>
+                                </varlistentry>
+                            </variablelist>
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.del_user">
+        <refmeta>
+            <refentrytitle>stargazer.del_user</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.del_user</refname>
+            <refpurpose>Удаление пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.del_user</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.del_user</function> удаляет из системы пользователя с указанным логином.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.add_cash">
+        <refmeta>
+            <refentrytitle>stargazer.add_cash</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.add_cash</refname>
+            <refpurpose>Добавление денег на счет пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.add_cash</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                    <paramdef>double <parameter>amount</parameter></paramdef>
+                    <paramdef>string <parameter>comment</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.add_cash</function> позволяет добавить деньги на счет указанного пользователя.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>double <parameter>amount</parameter></term>
+                    <listitem>
+                        <para>Добавляемая сумма</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>comment</parameter></term>
+                    <listitem>
+                        <para>Коментарий</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.set_cash">
+        <refmeta>
+            <refentrytitle>stargazer.set_cash</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.set_cash</refname>
+            <refpurpose>Установка состояния счета пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.set_cash</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                    <paramdef>double <parameter>cash</parameter></paramdef>
+                    <paramdef>string <parameter>comment</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.set_cash</function> позволяет установить состояние счета пользователя.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>double <parameter>cash</parameter></term>
+                    <listitem>
+                        <para>Устанавливаемая сумма</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>comment</parameter></term>
+                    <listitem>
+                        <para>Коментарий</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.change_tariff">
+        <refmeta>
+            <refentrytitle>stargazer.change_tariff</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.change_tariff</refname>
+            <refpurpose>Изменение тарифного плана пользователя</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.change_tariff</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                    <paramdef>string <parameter>tariff</parameter></paramdef>
+                    <paramdef>boolean <parameter>delayed</parameter></paramdef>
+                    <paramdef>string <parameter>comment</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.change_tariff</function> позволяет изменить тарифный план пользователя или запланировать его изменение на начало нового месяца.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>tariff</parameter></term>
+                    <listitem>
+                        <para>Название нового тарифа</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>boolean <parameter>delayed</parameter></term>
+                    <listitem>
+                        <para>Отложенное изменение тарифа (в начале следующего месяца)</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>comment</parameter></term>
+                    <listitem>
+                        <para>Коментарий</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает true в случае успеха и false в случае неудачи</para>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.get_online_ips">
+        <refmeta>
+            <refentrytitle>stargazer.get_online_ips</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.get_online_ips</refname>
+            <refpurpose>Получение списка IP-адресов online-пользователей</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.get_online_ips</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>array of strings <parameter>subnets</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.get_online_ips</function> позволяет получить список IP-адресов авторизованных пользователей системы для указанного списка подсетей.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>array of strings <parameter>subnets</parameter></term>
+                    <listitem>
+                        <para>Список подсетей в CIDR-нотации</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает структуру:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>bool <structfield>result</structfield></term>
+                        <listitem>
+                            <para>Результат операции. true - успешно, false - неудача (неправильный или устаревший cookie).</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>array of strings <structfield>ips</structfield></term>
+                        <listitem>
+                            <para>Список IP-адресов авторизованных пользователей из этих подсетей</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
+                <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>
+                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+</chapter>
+
