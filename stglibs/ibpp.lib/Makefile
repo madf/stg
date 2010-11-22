@@ -27,11 +27,8 @@ SRCS = array.cpp \
 
 INCS = ibpp.h 
 
-ADD_CXXFLAGS_1 = -DIBPP_LINUX
+ADD_DEFS = -DIBPP_LINUX
 
 LIBS = -lfbclient
        
 include ../Makefile.in
-
-
-
