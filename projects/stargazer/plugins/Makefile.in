@@ -16,7 +16,7 @@ vpath %.so $(DIR_LIB)
 all: $(PROG)
 
 $(PROG): $(OBJS) $(STGLIBS)
-	$(CC) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
 clean:
