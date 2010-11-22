@@ -1056,7 +1056,7 @@ std::stringstream query;
 query << "SELECT sp_add_param_log_entry("
             "'" << elogin << "', "
             "'" << eadminLogin << "', CAST('"
-            << inet_ntostring(admIP) << "/24' AS INET), "
+            << inet_ntostring(admIP) << "/32' AS INET), "
             "'" << eparam << "', "
             "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
             "'" << eold << "', "
