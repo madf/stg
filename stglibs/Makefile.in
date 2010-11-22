@@ -32,8 +32,8 @@ ifeq ($(STG_TIME), yes)
 DEFS += -DSTG_TIME
 endif
 
-ifneq ($(ADD_DEFS_1),)
-DEFS += $(ADD_DEFS_1)
+ifneq ($(ADD_DEFS),)
+DEFS += $(ADD_DEFS)
 endif
 
 SEARCH_DIRS = -I $(DIR_INCLUDE) -I ./
@@ -43,19 +43,15 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 INST_INCS = $(addprefix $(DIR_INCLUDE)/, $(notdir $(INCS)))
 INST_LIBS = $(DIR_LIB)/lib$(LIB_NAME)
 
-CXXFLAGS += -fPIC
+CXXFLAGS += -fPIC $(DEFS)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
-
-ifneq ($(ADD_CXXFLAGS_1),)
-CXXFLAGS += $(ADD_CXXFLAGS_1)
-endif
 
 vpath %.so $(DIR_LIB)
 
 all: $(PROG)
 
 $(PROG): $(OBJS) $(STGLIBS)
-	g++ $(LDFLAGS) -Wl,-soname,$(PROG) $^ $(LIBS) -o $(PROG) -L $(DIR_LIB) 
+	$(CXX) $(LDFLAGS) -Wl,-soname,$(PROG) $^ $(LIBS) -o $(PROG) -L $(DIR_LIB) 
 	ar rc lib$(LIB_NAME).a $(OBJS)
 	ranlib lib$(LIB_NAME).a
 	cp *.so $(DIR_LIB)
