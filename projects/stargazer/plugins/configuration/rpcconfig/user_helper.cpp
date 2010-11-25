@@ -195,6 +195,18 @@ if ((it = structVal.find("email")) != structVal.end())
         }
     }
 
+if ((it = structVal.find("cash")) != structVal.end())
+    {
+    bool res = iter->property.cash.Set(xmlrpc_c::value_double(it->second),
+                                       admin,
+                                       login,
+                                       &store);
+    if (!res)
+        {
+        return true;
+        }
+    }
+
 if ((it = structVal.find("creditexpire")) != structVal.end())
     {
     bool res = iter->property.creditExpire.Set(xmlrpc_c::value_int(it->second),
@@ -231,7 +243,7 @@ if ((it = structVal.find("freemb")) != structVal.end())
         }
     }
 
-if ((it = structVal.find("disabled")) != structVal.end())
+if ((it = structVal.find("down")) != structVal.end())
     {
     bool res = iter->property.disabled.Set(xmlrpc_c::value_boolean(it->second),
                                            admin,
@@ -352,12 +364,11 @@ if ((it = structVal.find("traff")) != structVal.end())
         static_cast<std::map<std::string, xmlrpc_c::value> >(xmlrpc_c::value_struct(it->second))
         );
 
-    std::vector<xmlrpc_c::value> data;
     DIR_TRAFF dtData;
     dtData = iter->property.up.Get();
     if ((it = traff.find("mu")) != traff.end())
         {
-        data = xmlrpc_c::value_array(it->second).vectorValueValue();
+        std::vector<xmlrpc_c::value> data(xmlrpc_c::value_array(it->second).vectorValueValue());
 
         for (int i = 0; i < std::min(DIR_NUM, static_cast<int>(data.size())); ++i)
             {
@@ -383,7 +394,7 @@ if ((it = structVal.find("traff")) != structVal.end())
     dtData = iter->property.down.Get();
     if ((it = traff.find("md")) != traff.end())
         {
-        data = xmlrpc_c::value_array(it->second).vectorValueValue();
+        std::vector<xmlrpc_c::value> data(xmlrpc_c::value_array(it->second).vectorValueValue());
 
         for (int i = 0; i < std::min(DIR_NUM, static_cast<int>(data.size())); ++i)
             {
