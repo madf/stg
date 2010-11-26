@@ -4,9 +4,10 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "../../../tariffs.h"
-
 class RPC_CONFIG;
+class TARIFFS;
+class USERS;
+class ADMINS;
 
 class METHOD_TARIFF_GET : public xmlrpc_c::method {
 public:

@@ -13,19 +13,16 @@
 
 #include "os_int.h"
 #include "base_plugin.h"
-#include "base_store.h"
-#include "base_settings.h"
 #include "admin_conf.h"
-#include "../../../admin.h"
-#include "../../../admins.h"
-#include "../../../users.h"
-#include "../../../tariffs.h"
-#include "../../../traffcounter.h"
-#include "../../../settings.h"
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
 extern "C" BASE_PLUGIN * GetPlugin();
+
+class ADMINS;
+class TARIFFS;
+class USERS;
+class BASE_STORE;
 
 class RPC_CONFIG_SETTINGS
 {

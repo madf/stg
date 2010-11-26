@@ -1,7 +1,17 @@
-#include "rpcconfig.h"
-
 #include <cstdlib>
 #include <csignal>
+
+#include "rpcconfig.h"
+
+#include "../../../admin.h"
+#include "../../../admins.h"
+#include "../../../users.h"
+#include "../../../tariffs.h"
+#include "../../../traffcounter.h"
+#include "../../../settings.h"
+#include "base_store.h"
+#include "base_settings.h"
+
 #include "info_methods.h"
 #include "users_methods.h"
 #include "tariffs_methods.h"
@@ -311,6 +321,7 @@ rpcRegistry.addMethod("stargazer.get_users", methodGetUsersPtr);
 xmlrpc_c::methodPtr const methodChgUserPtr(new METHOD_USER_CHG(
             this,
             admins,
+            tariffs,
             store,
             users
             ));
