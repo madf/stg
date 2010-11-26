@@ -4,9 +4,12 @@
 #include <string>
 
 #include <xmlrpc-c/base.hpp>
+
 #include "../../../users.h"
-#include "../../../admin.h"
-#include "base_store.h"
+
+class ADMIN;
+class BASE_STORE;
+class TARIFFS;
 
 class USER_HELPER
 {
@@ -21,7 +24,8 @@ public:
     bool SetUserInfo(const xmlrpc_c::value & info,
                      const ADMIN & admin,
                      const std::string & login,
-                     const BASE_STORE & store);
+                     const BASE_STORE & store,
+                     TARIFFS * tariffs);
 private:
     user_iter & iter;
 };

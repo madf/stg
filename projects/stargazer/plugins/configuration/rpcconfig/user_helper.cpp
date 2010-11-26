@@ -1,7 +1,11 @@
 #include "user_helper.h"
 
+#include "../../../tariffs.h"
+#include "../../../admin.h"
+#include "base_store.h"
 #include "user_ips.h"
 #include "utils.h"
+#include "common.h"
 
 //------------------------------------------------------------------------------
 
@@ -125,7 +129,8 @@ structVal["creditexpire"] = xmlrpc_c::value_int(iter->property.creditExpire.Get(
 bool USER_HELPER::SetUserInfo(const xmlrpc_c::value & info,
                               const ADMIN & admin,
                               const std::string & login,
-                              const BASE_STORE & store)
+                              const BASE_STORE & store,
+                              TARIFFS * tariffs)
 {
 std::map<std::string, xmlrpc_c::value> structVal(
     static_cast<std::map<std::string, xmlrpc_c::value> >(xmlrpc_c::value_struct(info))
@@ -135,196 +140,178 @@ std::map<std::string, xmlrpc_c::value>::iterator it;
 
 if ((it = structVal.find("password")) != structVal.end())
     {
-    bool res = iter->property.password.Set(xmlrpc_c::value_string(it->second),
-                                           admin,
-                                           login,
-                                           &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(xmlrpc_c::value_string(it->second));
+    if (iter->property.password.Get() != value)
+        if (!iter->property.password.Set(value,
+                                         admin,
+                                         login,
+                                         &store))
+            return true;
     }
 
 if ((it = structVal.find("ips")) != structVal.end())
     {
     USER_IPS ips;
     ips = StrToIPS(xmlrpc_c::value_string(it->second));
-    bool res = iter->property.ips.Set(ips,
-                                      admin,
-                                      login,
-                                      &store);
-    if (!res)
-        {
+    if (!iter->property.ips.Set(ips,
+                                admin,
+                                login,
+                                &store))
         return true;
-        }
     }
 
 if ((it = structVal.find("address")) != structVal.end())
     {
-    bool res = iter->property.address.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                          admin,
-                                          login,
-                                          &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.address.Get() != value)
+        if (!iter->property.address.Set(value,
+                                        admin,
+                                        login,
+                                        &store))
+            return true;
     }
 
 if ((it = structVal.find("phone")) != structVal.end())
     {
-    bool res = iter->property.phone.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                        admin,
-                                        login,
-                                        &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.phone.Get() != value)
+        if (!iter->property.phone.Set(value,
+                                      admin,
+                                      login,
+                                      &store))
+            return true;
     }
 
 if ((it = structVal.find("email")) != structVal.end())
     {
-    bool res = iter->property.email.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                        admin,
-                                        login,
-                                        &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.email.Get() != value)
+        if (!iter->property.email.Set(value,
+                                      admin,
+                                      login,
+                                      &store))
+            return true;
     }
 
 if ((it = structVal.find("cash")) != structVal.end())
     {
-    bool res = iter->property.cash.Set(xmlrpc_c::value_double(it->second),
-                                       admin,
-                                       login,
-                                       &store);
-    if (!res)
-        {
-        return true;
-        }
+    double value(xmlrpc_c::value_double(it->second));
+    if (iter->property.cash.Get() != value)
+        if (!iter->property.cash.Set(value,
+                                     admin,
+                                     login,
+                                     &store))
+            return true;
     }
 
 if ((it = structVal.find("creditexpire")) != structVal.end())
     {
-    bool res = iter->property.creditExpire.Set(xmlrpc_c::value_int(it->second),
-                                               admin,
-                                               login,
-                                               &store);
-    if (!res)
-        {
-        return true;
-        }
+    time_t value(xmlrpc_c::value_int(it->second));
+    if (iter->property.creditExpire.Get() != value)
+        if (!iter->property.creditExpire.Set(value,
+                                             admin,
+                                             login,
+                                             &store))
+            return true;
     }
 
 if ((it = structVal.find("credit")) != structVal.end())
     {
-    bool res = iter->property.credit.Set(xmlrpc_c::value_double(it->second),
-                                         admin,
-                                         login,
-                                         &store);
-    if (!res)
-        {
-        return true;
-        }
+    double value(xmlrpc_c::value_double(it->second));
+    if (iter->property.credit.Get() != value)
+        if (!iter->property.credit.Set(value,
+                                       admin,
+                                       login,
+                                       &store))
+            return true;
     }
 
 if ((it = structVal.find("freemb")) != structVal.end())
     {
-    bool res = iter->property.freeMb.Set(xmlrpc_c::value_double(it->second),
-                                         admin,
-                                         login,
-                                         &store);
-    if (!res)
-        {
-        return true;
-        }
+    double value(xmlrpc_c::value_double(it->second));
+    if (iter->property.freeMb.Get() != value)
+        if (!iter->property.freeMb.Set(value,
+                                       admin,
+                                       login,
+                                       &store))
+            return true;
     }
 
 if ((it = structVal.find("down")) != structVal.end())
     {
-    bool res = iter->property.disabled.Set(xmlrpc_c::value_boolean(it->second),
-                                           admin,
-                                           login,
-                                           &store);
-    if (!res)
-        {
-        return true;
-        }
+    bool value(xmlrpc_c::value_boolean(it->second));
+    if (iter->property.disabled.Get() != value)
+        if (!iter->property.disabled.Set(value,
+                                         admin,
+                                         login,
+                                         &store))
+            return true;
     }
 
 if ((it = structVal.find("passive")) != structVal.end())
     {
-    bool res = iter->property.passive.Set(xmlrpc_c::value_boolean(it->second),
-                                          admin,
-                                          login,
-                                          &store);
-    if (!res)
-        {
-        return true;
-        }
+    bool value(xmlrpc_c::value_boolean(it->second));
+    if (iter->property.passive.Get())
+        if (!iter->property.passive.Set(value,
+                                        admin,
+                                        login,
+                                        &store))
+            return true;
     }
 
 if ((it = structVal.find("aonline")) != structVal.end())
     {
-    bool res = iter->property.alwaysOnline.Set(xmlrpc_c::value_boolean(it->second),
-                                               admin,
-                                               login,
-                                               &store);
-    if (!res)
-        {
-        return true;
-        }
+    bool value(xmlrpc_c::value_boolean(it->second));
+    if (iter->property.alwaysOnline.Get() != value)
+        if (!iter->property.alwaysOnline.Set(value,
+                                             admin,
+                                             login,
+                                             &store))
+            return true;
     }
 
 if ((it = structVal.find("disableddetailstat")) != structVal.end())
     {
-    bool res = iter->property.disabledDetailStat.Set(xmlrpc_c::value_boolean(it->second),
-                                                     admin,
-                                                     login,
-                                                     &store);
-    if (!res)
-        {
-        return true;
-        }
+    bool value(xmlrpc_c::value_boolean(it->second));
+    if (iter->property.disabledDetailStat.Get() != value)
+        if (!iter->property.disabledDetailStat.Set(value,
+                                                   admin,
+                                                   login,
+                                                   &store))
+            return true;
     }
 
 if ((it = structVal.find("name")) != structVal.end())
     {
-    bool res = iter->property.realName.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                           admin,
-                                           login,
-                                           &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.realName.Get() != value)
+        if (!iter->property.realName.Set(value,
+                                         admin,
+                                         login,
+                                         &store))
+            return true;
     }
 
 if ((it = structVal.find("group")) != structVal.end())
     {
-    bool res = iter->property.group.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                        admin,
-                                        login,
-                                        &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.group.Get() != value)
+        if (!iter->property.group.Set(value,
+                                      admin,
+                                      login,
+                                      &store))
+            return true;
     }
 
 if ((it = structVal.find("note")) != structVal.end())
     {
-    bool res = iter->property.note.Set(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"),
-                                       admin,
-                                       login,
-                                       &store);
-    if (!res)
-        {
-        return true;
-        }
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    if (iter->property.note.Get() != value)
+        if (!iter->property.note.Set(value,
+                                     admin,
+                                     login,
+                                     &store))
+            return true;
     }
 
 if ((it = structVal.find("userdata")) != structVal.end())
@@ -347,14 +334,13 @@ if ((it = structVal.find("userdata")) != structVal.end())
 
     for (unsigned i = 0; i < userdata.size(); ++i)
         {
-        bool res = userdata[i]->Set(IconvString(xmlrpc_c::value_string(udata[i]), "UTF-8", "KOI8-R"),
-                                    admin,
-                                    login,
-                                    &store);
-        if (!res)
-            {
-            return true;
-            }
+        std::string value(IconvString(xmlrpc_c::value_string(udata[i]), "UTF-8", "KOI8-R"));
+        if (userdata[i]->Get() != value)
+            if (!userdata[i]->Set(value,
+                                  admin,
+                                  login,
+                                  &store))
+                return true;
         }
     }
 
@@ -374,22 +360,15 @@ if ((it = structVal.find("traff")) != structVal.end())
             {
             int64_t value;
             if (str2x(xmlrpc_c::value_string(data[i]), value))
-                {
                 printfd(__FILE__, "USER_HELPER::SetUserInfo(): 'Invalid month upload value'\n");
-                }
             else
-                {
                 dtData[i] = value;
-                }
             }
-        bool res = iter->property.up.Set(dtData,
-                                         admin,
-                                         login,
-                                         &store);
-        if (!res)
-            {
+        if (!iter->property.up.Set(dtData,
+                                   admin,
+                                   login,
+                                   &store))
             return true;
-            }
         }
     dtData = iter->property.down.Get();
     if ((it = traff.find("md")) != traff.end())
@@ -400,23 +379,45 @@ if ((it = structVal.find("traff")) != structVal.end())
             {
             int64_t value;
             if (str2x(xmlrpc_c::value_string(data[i]), value))
-                {
                 printfd(__FILE__, "USER_HELPER::SetUserInfo(): 'Invalid month download value'\n");
-                }
             else
-                {
                 dtData[i] = value;
-                }
             }
-        bool res = iter->property.down.Set(dtData,
-                                           admin,
-                                           login,
-                                           &store);
-        if (!res)
-            {
+        if (!iter->property.down.Set(dtData,
+                                     admin,
+                                     login,
+                                     &store))
             return true;
-            }
         }
+    }
+
+if ((it = structVal.find("tariff")) != structVal.end())
+    {
+    std::string tariff(xmlrpc_c::value_string(it->second));
+    size_t pos = tariff.find('/');
+    std::string nextTariff;
+    if (pos != std::string::npos)
+        {
+        nextTariff = tariff.substr(pos + 1);
+        tariff = tariff.substr(0, pos);
+        }
+
+    if (tariffs->FindByName(tariff))
+        if (iter->property.tariffName.Get() != tariff)
+            if (!iter->property.tariffName.Set(tariff,
+                                               admin,
+                                               login,
+                                               &store))
+                return true;
+
+    if (nextTariff != "" &&
+        tariffs->FindByName(nextTariff))
+        if (iter->property.nextTariff.Get() != nextTariff)
+            if (!iter->property.nextTariff.Set(tariff,
+                                               admin,
+                                               login,
+                                               &store))
+                return true;
     }
 
 return false;
