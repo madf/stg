@@ -1,10 +1,13 @@
 #include "users_methods.h"
 
+#include "../../../users.h"
+#include "../../../admins.h"
+#include "../../../tariffs.h"
+
 #include "rpcconfig.h"
 #include "user_helper.h"
 #include "user_ips.h"
 #include "utils.h"
-
 #include "common.h"
 
 //------------------------------------------------------------------------------
@@ -221,11 +224,11 @@ USER_HELPER uhelper(u);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
-    uhelper.SetUserInfo(info, admin, login, *store);
+    uhelper.SetUserInfo(info, admin, login, *store, tariffs);
     }
 else
     {
-    uhelper.SetUserInfo(info, admin, login, *store);
+    uhelper.SetUserInfo(info, admin, login, *store, tariffs);
     }
 
 u->WriteConf();
@@ -382,14 +385,17 @@ if (tariffs->FindByName(tariff))
             return;
             }
         }
-    if (u->property.tariffName.Set(tariff,
-                                   admin,
-                                   login,
-                                   store))
+    else
         {
-        u->WriteConf();
-        *retvalPtr = xmlrpc_c::value_boolean(true);
-        return;
+        if (u->property.tariffName.Set(tariff,
+                                       admin,
+                                       login,
+                                       store))
+            {
+            u->WriteConf();
+            *retvalPtr = xmlrpc_c::value_boolean(true);
+            return;
+            }
         }
     }
 

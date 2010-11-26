@@ -4,10 +4,13 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "../../../users.h"
-#include "../../../user.h"
 
 class RPC_CONFIG;
+class ADMINS;
+class TARIFFS;
+class USERS;
+class BASE_STORE;
+class IP_MASK;
 
 class METHOD_USER_GET : public xmlrpc_c::method {
 public:
@@ -83,10 +86,12 @@ class METHOD_USER_CHG : public xmlrpc_c::method {
 public:
     METHOD_USER_CHG(RPC_CONFIG * c,
                     ADMINS * a,
+                    TARIFFS * t,
                     BASE_STORE * s,
                     USERS * u)
         : config(c),
           admins(a),
+          tariffs(t),
           store(s),
           users(u)
     {
@@ -97,6 +102,7 @@ public:
 private:
     RPC_CONFIG * config;
     ADMINS * admins;
+    TARIFFS * tariffs;
     BASE_STORE * store;
     USERS * users;
 };
