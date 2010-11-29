@@ -1369,8 +1369,10 @@ void CHG_IP_NOTIFIER::Notify(const uint32_t & from, const uint32_t & to)
 {
     printfd(__FILE__, "Change IP from %s to %s\n", inet_ntostring(from).c_str(), inet_ntostring(to).c_str());
     if (from != 0)
-        user->Disconnect(false, "Change IP");
+        if (user->connected)
+            user->Disconnect(false, "Change IP");
     if (to != 0)
-        user->Connect(false);
+        if (user->IsInetable())
+            user->Connect(false);
 }
 //-----------------------------------------------------------------------------
