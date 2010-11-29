@@ -251,7 +251,7 @@ if ((it = structVal.find("down")) != structVal.end())
 if ((it = structVal.find("passive")) != structVal.end())
     {
     bool value(xmlrpc_c::value_boolean(it->second));
-    if (iter->property.passive.Get())
+    if (iter->property.passive.Get() != value)
         if (!iter->property.passive.Set(value,
                                         admin,
                                         login,
