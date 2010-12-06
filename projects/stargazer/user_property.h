@@ -131,6 +131,14 @@ private:
 
 public:
     USER_PROPERTIES(const SETTINGS * settings);
+
+    const USER_STAT & GetStat() const { return stat; }
+    const USER_CONF & GetConf() const { return conf; }
+    void SetStat(const USER_STAT & s) { stat = s; }
+    void SetConf(const USER_CONF & c) { conf = c; }
+
+    void SetProperties(const USER_PROPERTIES & p) { stat = p.stat; conf = p.conf; }
+
     USER_PROPERTY_LOGGED<double>            cash;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         up;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         down;

@@ -110,8 +110,6 @@ ipIndex = ipIdx;
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 connected = 0;
-/*traffStatInUse = 0;
-traffStat = &traffStatInternal[0];*/
 tariff = tariffs->GetNoTariff();
 ips = StrToIPS("*");
 deleted = false;
@@ -212,45 +210,7 @@ lastScanMessages = 0;
 
 writeFreeMbTraffCost = settings->GetWriteFreeMbTraffCost();
 
-// Conf
-password = u.password.ConstData();
-passive = u.passive.ConstData();
-disabled = u.disabled.ConstData();
-disabledDetailStat = u.disabledDetailStat.ConstData();
-alwaysOnline = u.alwaysOnline.ConstData();
-tariffName = u.tariffName.ConstData();
-nextTariff = u.nextTariff.ConstData();
-address = u.address.ConstData();
-phone = u.phone.ConstData();
-email = u.email.ConstData();
-note = u.note.ConstData();
-realName = u.realName.ConstData();
-group = u.group.ConstData();
-credit = u.credit.ConstData();
-nextTariff = u.nextTariff.ConstData();
-userdata0 = u.userdata0.ConstData();
-userdata1 = u.userdata1.ConstData();
-userdata2 = u.userdata2.ConstData();
-userdata3 = u.userdata3.ConstData();
-userdata4 = u.userdata4.ConstData();
-userdata5 = u.userdata5.ConstData();
-userdata6 = u.userdata6.ConstData();
-userdata7 = u.userdata7.ConstData();
-userdata8 = u.userdata8.ConstData();
-userdata9 = u.userdata9.ConstData();
-
-creditExpire = u.creditExpire.ConstData();
-ips = u.ips.ConstData();
-
-// Stats
-up = u.up.ConstData();
-down = u.down.ConstData();
-cash = u.cash.ConstData();
-freeMb = u.freeMb.ConstData();
-lastCashAdd = u.lastCashAdd.ConstData();
-lastCashAddTime = u.lastCashAddTime.ConstData();
-passiveTime = u.passiveTime.ConstData();
-lastActivityTime = u.lastActivityTime.ConstData();
+property.SetProperties(u.property);
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -276,9 +236,9 @@ id = userIDGenerator.GetNextID();
 int USER::ReadConf()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-USER_CONF uc;
+USER_CONF conf;
 
-if (store->RestoreUserConf(&uc, login))
+if (store->RestoreUserConf(&conf, login))
     {
     WriteServLog("Cannot read conf for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -287,33 +247,7 @@ if (store->RestoreUserConf(&uc, login))
     return -1;
     }
 
-password = uc.password;
-passive = uc.passive;
-disabled = uc.disabled;
-disabledDetailStat = uc.disabledDetailStat;
-alwaysOnline = uc.alwaysOnline;
-tariffName = uc.tariffName;
-address = uc.address;
-phone = uc.phone;
-email = uc.email;
-note = uc.note;
-realName = uc.realName;
-group = uc.group;
-credit = uc.credit;
-nextTariff = uc.nextTariff;
-userdata0 = uc.userdata[0];
-userdata1 = uc.userdata[1];
-userdata2 = uc.userdata[2];
-userdata3 = uc.userdata[3];
-userdata4 = uc.userdata[4];
-userdata5 = uc.userdata[5];
-userdata6 = uc.userdata[6];
-userdata7 = uc.userdata[7];
-userdata8 = uc.userdata[8];
-userdata9 = uc.userdata[9];
-
-creditExpire = uc.creditExpire;
-ips = uc.ips;
+property.SetConf(conf);
 
 tariff = tariffs->FindByName(tariffName);
 if (tariff == NULL)
@@ -329,9 +263,9 @@ return 0;
 int USER::ReadStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-USER_STAT us;
+USER_STAT stat;
 
-if (store->RestoreUserStat(&us, login))
+if (store->RestoreUserStat(&stat, login))
     {
     WriteServLog("Cannot read stat for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -340,14 +274,7 @@ if (store->RestoreUserStat(&us, login))
     return -1;
     }
 
-up = us.up;
-down = us.down;
-cash = us.cash;
-freeMb = us.freeMb;
-lastCashAdd = us.lastCashAdd;
-lastCashAddTime = us.lastCashAddTime;
-passiveTime = us.passiveTime;
-lastActivityTime = us.lastActivityTime;
+property.SetStat(stat);
 
 return 0;
 }
@@ -355,39 +282,11 @@ return 0;
 int USER::WriteConf()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-USER_CONF uc;
-
-uc.password = password;
-uc.passive = passive;
-uc.disabled = disabled;
-uc.disabledDetailStat = disabledDetailStat;
-uc.alwaysOnline = alwaysOnline;
-uc.tariffName = tariffName;
-uc.address = address;
-uc.phone = phone;
-uc.email = email;
-uc.note = note;
-uc.realName = realName;
-uc.group = group;
-uc.credit = credit;
-uc.nextTariff = nextTariff;
-uc.userdata[0] = userdata0;
-uc.userdata[1] = userdata1;
-uc.userdata[2] = userdata2;
-uc.userdata[3] = userdata3;
-uc.userdata[4] = userdata4;
-uc.userdata[5] = userdata5;
-uc.userdata[6] = userdata6;
-uc.userdata[7] = userdata7;
-uc.userdata[8] = userdata8;
-uc.userdata[9] = userdata9;
-
-uc.creditExpire = creditExpire;
-uc.ips = ips;
+USER_CONF conf(property.GetConf());
 
 printfd(__FILE__, "USER::WriteConf()\n");
 
-if (store->SaveUserConf(uc, login))
+if (store->SaveUserConf(conf, login))
     {
     WriteServLog("Cannot write conf for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -402,20 +301,11 @@ return 0;
 int USER::WriteStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-USER_STAT us;
-
-us.up = up;
-us.down = down;
-us.cash = cash;
-us.freeMb = freeMb;
-us.lastCashAdd = lastCashAdd;
-us.lastCashAddTime = lastCashAddTime;
-us.passiveTime = passiveTime;
-us.lastActivityTime = lastActivityTime;
+USER_STAT stat(property.GetStat());
 
 printfd(__FILE__, "USER::WriteStat()\n");
 
-if (store->SaveUserStat(us, login))
+if (store->SaveUserStat(stat, login))
     {
     WriteServLog("Cannot write stat for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -432,21 +322,11 @@ return 0;
 int USER::WriteMonthStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-USER_STAT us;
-struct tm * t1;
 time_t tt = stgTime - 3600;
-t1 = localtime(&tt);
+struct tm * t1 = localtime(&tt);
 
-us.up = up;
-us.down = down;
-us.cash = cash;
-us.freeMb = freeMb;
-us.lastCashAdd = lastCashAdd;
-us.lastCashAddTime = lastCashAddTime;
-us.passiveTime = passiveTime;
-us.lastActivityTime = lastActivityTime;
-
-if (store->SaveMonthStat(us, t1->tm_mon, t1->tm_year, login))
+USER_STAT stat(property.GetStat());
+if (store->SaveMonthStat(stat, t1->tm_mon, t1->tm_year, login))
     {
     WriteServLog("Cannot write month stat for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
