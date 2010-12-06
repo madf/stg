@@ -287,7 +287,7 @@ int oldIp2packetsSize = ip2packets.size();
 pp_iter pi;
 pi = packets.begin();
 std::map<RAW_PACKET, PACKET_EXTRA_DATA> newPackets;
-std::multimap<uint32_t, pp_iter> newIP2Packets;
+ip2packets.erase(ip2packets.begin(), ip2packets.end());
 while (pi != packets.end())
     {
     //Flushing
@@ -388,14 +388,13 @@ while (pi != packets.end())
         pair<pp_iter, bool> res = newPackets.insert(*pi);
         if (res.second)
             {
-            newIP2Packets.insert(make_pair(pi->first.GetSrcIP(), res.first));
-            newIP2Packets.insert(make_pair(pi->first.GetDstIP(), res.first));
+            ip2packets.insert(make_pair(pi->first.GetSrcIP(), res.first));
+            ip2packets.insert(make_pair(pi->first.GetDstIP(), res.first));
             }
         }
     ++pi;
     }
 swap(packets, newPackets);
-swap(ip2packets, newIP2Packets);
 printfd(__FILE__, "FlushAndRemove() packets: %d(rem %d) ip2packets: %d(rem %d)\n",
         packets.size(),
         oldPacketsSize - packets.size(),
