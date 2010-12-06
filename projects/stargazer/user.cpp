@@ -192,13 +192,10 @@ if (&u == this)
     return;
 
 connected = 0;
-//traffStatInUse = 0;
 
 ipIndex = u.ipIndex;
 
 deleted = u.deleted;
-/*traffStat = &traffStatInternal[traffStatInUse % 2];
-traffStatToWrite = &traffStatInternal[(traffStatInUse +1) % 2];*/
 
 lastWriteStat = u.lastWriteStat;
 lastWriteDeatiledStat = u.lastWriteDeatiledStat;
@@ -214,6 +211,46 @@ currIP.AddAfterNotifier(&ipNotifier);
 lastScanMessages = 0;
 
 writeFreeMbTraffCost = settings->GetWriteFreeMbTraffCost();
+
+// Conf
+password = u.password.ConstData();
+passive = u.passive.ConstData();
+disabled = u.disabled.ConstData();
+disabledDetailStat = u.disabledDetailStat.ConstData();
+alwaysOnline = u.alwaysOnline.ConstData();
+tariffName = u.tariffName.ConstData();
+nextTariff = u.nextTariff.ConstData();
+address = u.address.ConstData();
+phone = u.phone.ConstData();
+email = u.email.ConstData();
+note = u.note.ConstData();
+realName = u.realName.ConstData();
+group = u.group.ConstData();
+credit = u.credit.ConstData();
+nextTariff = u.nextTariff.ConstData();
+userdata0 = u.userdata0.ConstData();
+userdata1 = u.userdata1.ConstData();
+userdata2 = u.userdata2.ConstData();
+userdata3 = u.userdata3.ConstData();
+userdata4 = u.userdata4.ConstData();
+userdata5 = u.userdata5.ConstData();
+userdata6 = u.userdata6.ConstData();
+userdata7 = u.userdata7.ConstData();
+userdata8 = u.userdata8.ConstData();
+userdata9 = u.userdata9.ConstData();
+
+creditExpire = u.creditExpire.ConstData();
+ips = u.ips.ConstData();
+
+// Stats
+up = u.up.ConstData();
+down = u.down.ConstData();
+cash = u.cash.ConstData();
+freeMb = u.freeMb.ConstData();
+lastCashAdd = u.lastCashAdd.ConstData();
+lastCashAddTime = u.lastCashAddTime.ConstData();
+passiveTime = u.passiveTime.ConstData();
+lastActivityTime = u.lastActivityTime.ConstData();
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -567,10 +604,6 @@ if (store->WriteUserConnect(login, currIP))
 
 if (!fakeConnect)
     lastIPForDisconnect = currIP;
-
-//printfd(__FILE__, "Connect. user name \'%s\' ip=%s\n", login.c_str(), inet_ntostring(currIP).c_str());
-/*if (settings->GetLogUserConnectDisconnect())
-    WriteServLog("User \'%s\', %s: Connect.", login.c_str(), inet_ntostring(currIP).c_str());*/
 }
 //-----------------------------------------------------------------------------
 void USER::Disconnect(bool fakeDisconnect, const std::string & reason)
@@ -625,10 +658,6 @@ if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload, 
     WriteServLog("Cannot write disconnect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
     }
-
-//printfd(__FILE__, "Disconnect. User name \'%s\' ip=%s reason: '%s'\n", login.c_str(), inet_ntostring(lastIPForDisconnect).c_str(), reason.c_str());
-/*if (settings->GetLogUserConnectDisconnect())
-    WriteServLog("User \'%s\', %s: Disconnect.", login.c_str(), inet_ntostring(lastIPForDisconnect).c_str());*/
 
 if (!fakeDisconnect)
     lastIPForDisconnect = 0;
@@ -1029,29 +1058,8 @@ else
 Run();
 }
 //-----------------------------------------------------------------------------
-/*void USER::ResetDetailStat()
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-traffStatToWrite->erase(traffStatToWrite->begin(), traffStatToWrite->end());
-}*/
-//-----------------------------------------------------------------------------
 int USER::WriteDetailStat(bool hard)
 {
-/*STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-printfd(__FILE__, "USER::WriteDetailedStat(): size = %d\n", traffStatToWrite->size());
-
-if (traffStatToWrite->size() && !disabledDetailStat)
-    {
-    if (store->WriteDetailedStat(traffStatToWrite, lastWriteDeatiledStat, login))
-        {
-        WriteServLog("Cannot write detail stat for user %s.", login.c_str());
-        WriteServLog("%s", store->GetStrError().c_str());
-        }
-    }
-lastWriteDeatiledStat = lastSwapDeatiledStat;
-return 0;*/
 printfd(__FILE__, "USER::WriteDetailedStat() - queue size = %d\n", traffStatQueue.size());
 
 if (!traffStatQueue.empty())
@@ -1096,17 +1104,6 @@ if (ts.size() && !disabledDetailStat)
 lastWriteDeatiledStat = stgTime;
 return 0;
 }
-//-----------------------------------------------------------------------------
-/*int USER::SwapDetailStat()
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-lastSwapDeatiledStat = stgTime;
-traffStatToWrite = &traffStatInternal[traffStatInUse % 2];
-traffStat = &traffStatInternal[++traffStatInUse % 2];
-
-return 0;
-}*/
 //-----------------------------------------------------------------------------
 double USER::GetPassiveTimePart() const
 {

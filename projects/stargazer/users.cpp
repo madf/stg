@@ -352,9 +352,6 @@ return NULL;
 //-----------------------------------------------------------------------------
 void USERS::NewMinute(const struct tm * t)
 {
-int usersCnt = 0;
-list<USER>::iterator usr;
-
 //Write traff, reset session traff. Fake disconnect-connect
 if (t->tm_hour == 23 && t->tm_min == 59)
     {
@@ -365,11 +362,10 @@ if (t->tm_hour == 23 && t->tm_min == 59)
 if (TimeToWriteDetailStat(t))
     {
     //printfd(__FILE__, "USER::WriteInetStat\n");
-    //for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
-    usersCnt = 0;
+    int usersCnt = 0;
 
     // Пишем юзеров частями. В перерывах вызываем USER::Run
-    usr = users.begin();
+    list<USER>::iterator usr = users.begin();
     while (usr != users.end())
         {
         usersCnt++;
@@ -378,8 +374,6 @@ if (TimeToWriteDetailStat(t))
         if (usersCnt % 10 == 0)
             for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
         }
-
-    //for_each(users.begin(), users.end(), mem_fun_ref(&USER::ResetDetailStat));
     }
 
 RealDelUser();
@@ -495,7 +489,6 @@ if (isRunning)
 
 printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
-//for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
 for_each(users.begin(), users.end(), bind2nd(mem_fun_ref(&USER::WriteDetailStat), true));
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteStat));
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteConf));
@@ -753,16 +746,3 @@ switch (statTime)
     }
 return false;
 }
-//-----------------------------------------------------------------------------
-/*int USERS::SendMessage(const string & login,
-                       time_t sndTtime,
-                       time_t showTime,
-                       char type,
-                       const string & text) const
-{
-return 0;
-}*/
-//-----------------------------------------------------------------------------
-
-
-
