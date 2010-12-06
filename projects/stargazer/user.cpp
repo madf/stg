@@ -856,11 +856,11 @@ IP_DIR_PAIR idp(ip, dir);
 
 map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
 lb = traffStat.lower_bound(idp);
-if (lb == traffStat.end() || lb.first != idp)
+if (lb == traffStat.end() || lb->first != idp)
     {
     traffStat.insert(lb,
-                      pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                   STAT_NODE(len, 0, cost)));
+                     pair<IP_DIR_PAIR, STAT_NODE>(idp,
+                                                  STAT_NODE(len, 0, cost)));
     }
 else
     {
@@ -946,11 +946,11 @@ IP_DIR_PAIR idp(ip, dir);
 
 map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
 lb = traffStat.lower_bound(idp);
-if (lb == traffStat->end() || lb->first != idp)
+if (lb == traffStat.end() || lb->first != idp)
     {
-    traffStat->insert(lb,
-                      pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                   STAT_NODE(0, len, cost)));
+    traffStat.insert(lb,
+                     pair<IP_DIR_PAIR, STAT_NODE>(idp,
+                                                  STAT_NODE(0, len, cost)));
     }
 else
     {
