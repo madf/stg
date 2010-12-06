@@ -144,9 +144,9 @@ public:
     void            ResetPassiveTime() { passiveTime = 0; }
     void            SetPassiveTimeAsNewUser();
 
-    void            ResetDetailStat();
-    int             SwapDetailStat();
-    int             WriteDetailStat();
+    /*void            ResetDetailStat();
+    int             SwapDetailStat();*/
+    int             WriteDetailStat(bool hard = false);
 
     const TARIFF *  GetTariff() const { return tariff; }
     void            ResetNextTariff() { nextTariff = ""; }
@@ -235,10 +235,13 @@ private:
     const TARIFFS * tariffs;
     const TARIFF *  tariff;
 
-    map<IP_DIR_PAIR, STAT_NODE>     traffStatInternal[2];
+    /*map<IP_DIR_PAIR, STAT_NODE>     traffStatInternal[2];
     map<IP_DIR_PAIR, STAT_NODE> *   traffStat;
     map<IP_DIR_PAIR, STAT_NODE> *   traffStatToWrite;
-    int                             traffStatInUse;
+    int                             traffStatInUse;*/
+
+    TRAFF_STAT      traffStat;
+    std::list<std::pair<time_t, TRAFF_STAT> > traffStatQueue;
 
     const SETTINGS * settings;
 

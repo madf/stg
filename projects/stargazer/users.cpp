@@ -365,7 +365,7 @@ if (t->tm_hour == 23 && t->tm_min == 59)
 if (TimeToWriteDetailStat(t))
     {
     //printfd(__FILE__, "USER::WriteInetStat\n");
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
+    //for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
     usersCnt = 0;
 
     // Пишем юзеров частями. В перерывах вызываем USER::Run
@@ -379,7 +379,7 @@ if (TimeToWriteDetailStat(t))
             for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
         }
 
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::ResetDetailStat));
+    //for_each(users.begin(), users.end(), mem_fun_ref(&USER::ResetDetailStat));
     }
 
 RealDelUser();
@@ -495,8 +495,8 @@ if (isRunning)
 
 printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
-for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
-for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteDetailStat));
+//for_each(users.begin(), users.end(), mem_fun_ref(&USER::SwapDetailStat));
+for_each(users.begin(), users.end(), bind2nd(mem_fun_ref(&USER::WriteDetailStat), true));
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteStat));
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteConf));
 

@@ -110,8 +110,8 @@ ipIndex = ipIdx;
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 connected = 0;
-traffStatInUse = 0;
-traffStat = &traffStatInternal[0];
+/*traffStatInUse = 0;
+traffStat = &traffStatInternal[0];*/
 tariff = tariffs->GetNoTariff();
 ips = StrToIPS("*");
 deleted = false;
@@ -192,13 +192,13 @@ if (&u == this)
     return;
 
 connected = 0;
-traffStatInUse = 0;
+//traffStatInUse = 0;
 
 ipIndex = u.ipIndex;
 
 deleted = u.deleted;
-traffStat = &traffStatInternal[traffStatInUse % 2];
-traffStatToWrite = &traffStatInternal[(traffStatInUse +1) % 2];
+/*traffStat = &traffStatInternal[traffStatInUse % 2];
+traffStatToWrite = &traffStatInternal[(traffStatInUse +1) % 2];*/
 
 lastWriteStat = u.lastWriteStat;
 lastWriteDeatiledStat = u.lastWriteDeatiledStat;
@@ -855,25 +855,18 @@ IP_DIR_PAIR idp(ip, dir);
 #endif
 
 map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
-lb = traffStat->lower_bound(idp);
-if (lb == traffStat->end())
+lb = traffStat.lower_bound(idp);
+if (lb == traffStat.end() || lb.first != idp)
     {
-    traffStat->insert(lb,
+    traffStat.insert(lb,
                       pair<IP_DIR_PAIR, STAT_NODE>(idp,
                                                    STAT_NODE(len, 0, cost)));
     }
 else
-    if (lb->first.dir == dir && lb->first.ip == ip)
-        {
-        lb->second.cash += cost;
-        lb->second.up += len;
-        }
-    else
-        {
-        traffStat->insert(lb,
-                          pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                       STAT_NODE(len, 0, cost)));
-        }
+    {
+    lb->second.cash += cost;
+    lb->second.up += len;
+    }
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
@@ -952,25 +945,18 @@ IP_DIR_PAIR idp(ip, dir);
 #endif
 
 map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
-lb = traffStat->lower_bound(idp);
-if (lb == traffStat->end())
+lb = traffStat.lower_bound(idp);
+if (lb == traffStat->end() || lb->first != idp)
     {
     traffStat->insert(lb,
                       pair<IP_DIR_PAIR, STAT_NODE>(idp,
                                                    STAT_NODE(0, len, cost)));
     }
 else
-    if (lb->first.dir == dir && lb->first.ip == ip)
-        {
-        lb->second.cash += cost;
-        lb->second.down += len;
-        }
-    else
-        {
-        traffStat->insert(lb,
-                          pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                       STAT_NODE(0, len, cost)));
-        }
+    {
+    lb->second.cash += cost;
+    lb->second.down += len;
+    }
 }
 //-----------------------------------------------------------------------------
 void USER::AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
@@ -1043,16 +1029,16 @@ else
 Run();
 }
 //-----------------------------------------------------------------------------
-void USER::ResetDetailStat()
+/*void USER::ResetDetailStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 traffStatToWrite->erase(traffStatToWrite->begin(), traffStatToWrite->end());
-}
+}*/
 //-----------------------------------------------------------------------------
-int USER::WriteDetailStat()
+int USER::WriteDetailStat(bool hard)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+/*STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 printfd(__FILE__, "USER::WriteDetailedStat(): size = %d\n", traffStatToWrite->size());
 
@@ -1065,10 +1051,53 @@ if (traffStatToWrite->size() && !disabledDetailStat)
         }
     }
 lastWriteDeatiledStat = lastSwapDeatiledStat;
+return 0;*/
+printfd(__FILE__, "USER::WriteDetailedStat() - queue size = %d\n", traffStatQueue.size());
+
+if (!traffStatQueue.empty())
+    {
+    std::list<std::pair<time_t, TRAFF_STAT> >::iterator it;
+    for (it = traffStatQueue.begin(); it != traffStatQueue.end(); ++it)
+        {
+        if (store->WriteDetailedStat(it->second, it->first, login))
+            {
+            printfd(__FILE__, "USER::WriteDetailStat() - failed to write detail stat from queue\n");
+            WriteServLog("Cannot write detail stat from queue (of size %d recs) for user %s.", traffStatQueue.size(), login.c_str());
+            WriteServLog("%s", store->GetStrError().c_str());
+            return -1;
+            }
+        traffStatQueue.erase(it++);
+        }
+    }
+
+TRAFF_STAT ts;
+
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    ts.swap(traffStat);
+    }
+
+printfd(__FILE__, "USER::WriteDetailedStat() - size = %d\n", ts.size());
+
+if (ts.size() && !disabledDetailStat)
+    {
+    if (store->WriteDetailedStat(ts, lastWriteDeatiledStat, login))
+        {
+        printfd(__FILE__, "USER::WriteDetailStat() - failed to write current detail stat\n");
+        WriteServLog("Cannot write detail stat for user %s.", login.c_str());
+        WriteServLog("%s", store->GetStrError().c_str());
+        if (!hard)
+            {
+            printfd(__FILE__, "USER::WriteDetailStat() - pushing detail stat to queue\n");
+            traffStatQueue.push_back(std::make_pair(lastWriteDeatiledStat, ts));
+            }
+        }
+    }
+lastWriteDeatiledStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::SwapDetailStat()
+/*int USER::SwapDetailStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1077,7 +1106,7 @@ traffStatToWrite = &traffStatInternal[traffStatInUse % 2];
 traffStat = &traffStatInternal[++traffStatInUse % 2];
 
 return 0;
-}
+}*/
 //-----------------------------------------------------------------------------
 double USER::GetPassiveTimePart() const
 {
