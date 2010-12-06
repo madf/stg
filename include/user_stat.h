@@ -28,6 +28,7 @@
 #define USER_STAT_H
 
 #include <ctime>
+#include <map>
 
 #include "os_int.h"
 #include "resetable.h"
@@ -117,6 +118,8 @@ struct USER_STAT
     time_t      passiveTime;
     time_t      lastActivityTime;
 };
+//-----------------------------------------------------------------------------
+typedef std::map<IP_DIR_PAIR, STAT_NODE> TRAFF_STAT;
 //-----------------------------------------------------------------------------
 struct USER_STAT_RES
 {
