@@ -1766,7 +1766,7 @@ switch (td.tariffConf.traffType)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> * statTree,
+int FILES_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                    time_t lastStat,
                                    const string & login) const
 {
@@ -1899,9 +1899,9 @@ if (fprintf(statFile, "-> %02d.%02d.%02d - %02d.%02d.%02d\n",
     }
 
 map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
-stIter = statTree->begin();
+stIter = statTree.begin();
 
-while (stIter != statTree->end())
+while (stIter != statTree.end())
     {
     string u, d;
     x2str(stIter->second.up, u);

@@ -72,7 +72,7 @@ public:
                             double cash,
                             double freeMb,
                             const std::string & reason) const;
-    int WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> * statTree,
+    int WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
                           time_t lastStat,
                           const std::string & login) const;
 

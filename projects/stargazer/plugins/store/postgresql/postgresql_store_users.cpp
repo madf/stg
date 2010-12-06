@@ -1330,7 +1330,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> * statTree,
+int POSTGRESQL_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                       time_t lastStat,
                                       const string & login) const
 {
@@ -1370,7 +1370,7 @@ if (EscapeString(elogin))
 map<IP_DIR_PAIR, STAT_NODE>::const_iterator it;
 time_t currTime = time(NULL);
 
-for (it = statTree->begin(); it != statTree->end(); ++it)
+for (it = statTree.begin(); it != statTree.end(); ++it)
     {
     std::stringstream query;
     query << "INSERT INTO tb_detail_stats "

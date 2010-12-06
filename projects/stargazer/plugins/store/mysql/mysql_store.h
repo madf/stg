@@ -78,7 +78,7 @@ public:
                                     double freeMb,
                                     const std::string & reason) const;
 
-    virtual int WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> * statTree,
+    virtual int WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                   time_t lastStat,
                                   const string & login) const;
 

@@ -717,7 +717,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> * statTree,
+int FIREBIRD_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                       time_t lastStat,
                                       const string & login) const
 {
@@ -735,14 +735,14 @@ try
     {
     tr->Start();
     map<IP_DIR_PAIR, STAT_NODE>::const_iterator it;
-    it = statTree->begin();
+    it = statTree.begin();
     st->Prepare("insert into tb_detail_stats \
                     (till_time, from_time, fk_user, dir_num, \
                      ip, download, upload, cost) \
                  values (?, ?, (select pk_user from tb_users \
                                 where name = ?), \
                      ?, ?, ?, ?, ?)");
-    while (it != statTree->end())
+    while (it != statTree.end())
         {
         st->Set(1, now);
         st->Set(2, statTime);

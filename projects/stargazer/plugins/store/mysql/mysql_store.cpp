@@ -1689,7 +1689,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> * statTree, 
+int MYSQL_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree, 
                                    time_t lastStat, 
                                    const string & login) const
 {
@@ -1776,9 +1776,9 @@ strprintf(&res,"INSERT INTO detailstat_%02d_%4d SET login='%s',"\
 
 int retRes;
 map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
-stIter = statTree->begin();
+stIter = statTree.begin();
 
-while (stIter != statTree->end())
+while (stIter != statTree.end())
     {
         strprintf(&tempStr,"IP='%s', dir=%d, down=%lld, up=%lld, cash=%f", 
                 inet_ntostring(stIter->first.ip).c_str(),
