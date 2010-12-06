@@ -74,6 +74,22 @@ struct IP_DIR_PAIR
         return false;
         }
     //------------------------
+    bool operator!=(const IP_DIR_PAIR & rvalue) const
+        {
+        if (ip != rvalue.ip)
+            return true;
+
+        #ifdef TRAFF_STAT_WITH_PORTS
+        if (port != rvalue.port)
+            return true;
+        #endif
+
+        if (dir != rvalue.dir)
+            return true;
+
+        return false;
+        }
+    //------------------------
     uint32_t        ip;
     int             dir;
     #ifdef TRAFF_STAT_WITH_PORTS
