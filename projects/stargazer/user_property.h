@@ -213,8 +213,6 @@ if (value == newValue)
 
 typename set<PROPERTY_NOTIFIER_BASE<varT> *>::iterator ni;
 
-//printf("USER_PROPERTY<varT>::operator= (const varT& rhs)\n");
-
 varT oldVal = value;
 
 ni = beforeNotifiers.begin();
@@ -435,13 +433,7 @@ stgLogger("%s User \'%s\': \'%s\' parameter changed from \'%s\' to \'%s\'. %s",
           newValue.c_str(),
           msg.c_str());
 
-
-/*char userLogMsg[2048];
-sprintf(userLogMsg, "\'%s\' parameter changed from \'%s\' to \'%s\'. %s",
-         parameter.c_str(), oldValue.c_str(),
-         newValue.c_str(),  msg.c_str());*/
 store->WriteUserChgLog(login, admin.GetLogin(), admin.GetAdminIP(), parameter, oldValue, newValue, msg);
-//store->WriteLogString(userLogMsg, login);
 }
 //-------------------------------------------------------------------------
 template <typename varT>
@@ -449,7 +441,7 @@ void USER_PROPERTY_LOGGED<varT>::OnChange(const string & login,
                                           const string & paramName,
                                           const string & oldValue,
                                           const string & newValue,
-                                          const ADMIN  &)
+                                          const ADMIN  & admin)
 {
 string str1;
 
@@ -457,7 +449,7 @@ str1 = settings->GetConfDir() + "/OnChange";
 
 if (access(str1.c_str(), X_OK) == 0)
     {
-    string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\"");
+    string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin.GetLogin() + "\" \"" + admin.GetAdminIPStr() + "\"");
     ScriptExec(str2);
     }
 else
