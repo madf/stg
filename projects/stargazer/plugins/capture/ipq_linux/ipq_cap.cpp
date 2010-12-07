@@ -51,9 +51,13 @@ return "ipq_cap v.1.2";
 }
 //-----------------------------------------------------------------------------
 IPQ_CAP::IPQ_CAP()
+    : ipq_h(NULL),
+      nonstop(false),
+      isRunning(false),
+      capSock(-1),
+      traffCnt(NULL)
 {
-isRunning = false;
-nonstop = false;
+memset(buf, 0, BUFSIZE);
 }
 //-----------------------------------------------------------------------------
 void IPQ_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
