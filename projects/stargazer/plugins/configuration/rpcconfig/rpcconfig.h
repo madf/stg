@@ -83,6 +83,10 @@ public:
     bool                LogoutAdmin(const std::string & cookie);
 
 private:
+    static void *           Run(void *);
+    std::string             GetCookie() const;
+    void                    InitiateRegistry();
+
     mutable string          errorStr;
     RPC_CONFIG_SETTINGS     rpcConfigSettings;
     USERS *                 users;
@@ -98,10 +102,6 @@ private:
     pthread_t               tid;
     std::map<std::string,
              ADMIN_INFO>    cookies;
-
-    static void *           Run(void *);
-    std::string             GetCookie() const;
-    void                    InitiateRegistry();
 };
 
 #endif
