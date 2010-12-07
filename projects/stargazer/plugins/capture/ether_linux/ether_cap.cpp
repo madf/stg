@@ -92,9 +92,11 @@ return "Ether_cap v.1.2";
 }
 //-----------------------------------------------------------------------------
 ETHER_CAP::ETHER_CAP()
+    : nonstop(false),
+      isRunning(false),
+      capSock(-1),
+      traffCnt(NULL)
 {
-isRunning = false;
-nonstop = false;
 }
 //-----------------------------------------------------------------------------
 void ETHER_CAP::SetTraffcounter(TRAFFCOUNTER * tc)

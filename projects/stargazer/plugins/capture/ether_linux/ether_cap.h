@@ -26,8 +26,9 @@
 #ifndef ETHER_CAP_H
 #define ETHER_CAP_H
 
-#include <string>
 #include <pthread.h>
+
+#include <string>
 
 #include "base_plugin.h"
 #include "base_settings.h"
@@ -37,13 +38,6 @@ using namespace std;
 
 extern "C" BASE_PLUGIN * GetPlugin();
 
-//-----------------------------------------------------------------------------
-class ETHER_CAP_SETTINGS
-{
-public:
-    const string& GetStrError() const { static string s; return s; }
-    int ParseSettings(const MODULE_SETTINGS &) { return 0; }
-};
 //-----------------------------------------------------------------------------
 class ETHER_CAP :public BASE_PLUGIN
 {
@@ -76,8 +70,6 @@ private:
     int                 EthCapClose();
     int                 EthCapRead(void * buffer, int blen, char ** iface);
     bool                WaitPackets(int sd) const;
-
-    ETHER_CAP_SETTINGS  capSettings;
 
     mutable string      errorStr;
 
