@@ -41,10 +41,6 @@ char s[UNAME_LEN + 128];
 char un[UNAME_LEN];
 struct utsname utsn;
 
-int tariff_type;
-
-tariff_type = 2;
-
 uname(&utsn);
 un[0] = 0;
 
@@ -297,8 +293,9 @@ answerList->push_back(s);
 //  GET USERS
 //-----------------------------------------------------------------------------
 PARSER_GET_USERS::PARSER_GET_USERS()
+    : lastUserUpdateTime(0),
+      lastUpdateFound(false)
 {
-lastUserUpdateTime = 0;
 }
 //-----------------------------------------------------------------------------
 int PARSER_GET_USERS::ParseStart(void *, const char *el, const char ** attr)
@@ -719,12 +716,13 @@ return -1;
 //  PARSER CHG USER
 //-----------------------------------------------------------------------------
 PARSER_CHG_USER::PARSER_CHG_USER()
+    : usr(NULL),
+      ucr(NULL),
+      upr(NULL),
+      downr(NULL),
+      cashMustBeAdded(false),
+      res(0)
 {
-usr = NULL;
-ucr = NULL;
-upr = NULL;
-downr = NULL;
-
 Reset();
 }
 //-----------------------------------------------------------------------------
