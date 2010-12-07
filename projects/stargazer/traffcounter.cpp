@@ -409,7 +409,7 @@ printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
 pair<ip2p_iter, ip2p_iter> pi;
 
-STG_LOCKER(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 // Find all packets with IP belongs to this user
 pi = ip2packets.equal_range(uip);
 
@@ -446,7 +446,7 @@ void TRAFFCOUNTER::DelUser(uint32_t uip)
 printfd(__FILE__, "DelUser: %s \n", inet_ntostring(uip).c_str());
 pair<ip2p_iter, ip2p_iter> pi;
 
-STG_LOCKER(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 pi = ip2packets.equal_range(uip);
 
 while (pi.first != pi.second)

@@ -26,7 +26,7 @@ ACTIONS_LIST::~ACTIONS_LIST()
 {
 
     {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
     parent::iterator it(parent::begin());
     while (it != parent::end()) 
