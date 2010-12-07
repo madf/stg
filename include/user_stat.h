@@ -162,7 +162,7 @@ struct USER_STAT_RES
         down = us.down;
         return * this;
     };
-    operator USER_STAT()
+    operator USER_STAT() const
     {
         USER_STAT us;
         us.cash             = cash;
