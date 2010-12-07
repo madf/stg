@@ -113,9 +113,15 @@ return rpcc.GetPlugin();
 }
 
 RPC_CONFIG::RPC_CONFIG()
-    : rpcServer(NULL)
+    : users(NULL),
+      admins(NULL),
+      tariffs(NULL),
+      store(NULL),
+      stgSettings(NULL),
+      rpcServer(NULL),
+      running(false),
+      stopped(true)
 {
-
 }
 
 RPC_CONFIG::~RPC_CONFIG()
