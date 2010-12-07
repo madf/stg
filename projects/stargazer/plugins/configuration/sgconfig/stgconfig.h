@@ -52,7 +52,7 @@ public:
     virtual         ~STG_CONFIG_SETTINGS(){};
     const string &  GetStrError() const;
     int             ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t        GetPort();
+    uint16_t        GetPort() const;
 private:
     int     ParseIntInRange(const string & str, int min, int max, int * val);
     string  errorStr;

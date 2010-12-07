@@ -84,7 +84,7 @@ port = p;
 return 0;
 }
 //-----------------------------------------------------------------------------
-uint16_t STG_CONFIG_SETTINGS::GetPort()
+uint16_t STG_CONFIG_SETTINGS::GetPort() const
 {
 return port;
 }
@@ -104,9 +104,14 @@ return "Stg configurator v.0.08";
 }
 //-----------------------------------------------------------------------------
 STG_CONFIG::STG_CONFIG()
+    : nonstop(false),
+      isRunning(false),
+      users(NULL),
+      admins(NULL),
+      tariffs(NULL),
+      store(NULL),
+      stgSettings(NULL)
 {
-isRunning = false;
-nonstop = false;
 }
 //-----------------------------------------------------------------------------
 void STG_CONFIG::SetUsers(USERS * u)
