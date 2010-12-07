@@ -764,7 +764,6 @@ int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sp
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 // Тут собраны обработчики разных пакетов
 int pn = -1;
-int packetLen;
 const int offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
 IA_USER * iaUser = NULL;
@@ -833,8 +832,6 @@ else
     {
     pn = pi->second;
     }
-
-packetLen = *(int*)buff;
 
 if ((*user)->property.disabled.Get())
     {
