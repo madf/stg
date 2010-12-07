@@ -59,7 +59,7 @@ struct ADMIN_CONF
           login(rvalue.login),
           password(rvalue.password)
     {}
-    ADMIN_CONF(const PRIV pr, const std::string & l, const std::string & p)
+    ADMIN_CONF(const PRIV & pr, const std::string & l, const std::string & p)
         : priv(pr),
           login(l),
           password(p)
