@@ -287,12 +287,12 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 */
-const string & CONFIGPROTO::GetStrError()
+const string & CONFIGPROTO::GetStrError() const
 {
 return errorStr;
 }
 //-----------------------------------------------------------------------------
-uint32_t CONFIGPROTO::GetAdminIP()
+uint32_t CONFIGPROTO::GetAdminIP() const
 {
 return adminIP;
 }

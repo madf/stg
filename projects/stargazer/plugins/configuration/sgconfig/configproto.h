@@ -64,11 +64,11 @@ public:
     void            SetTariffs(TARIFFS * t);
     void            SetStore(BASE_STORE * s);
     void            SetStgSettings(const SETTINGS * s);
-    const string &  GetAdminLogin();
-    uint32_t        GetAdminIP();
+    //const string &  GetAdminLogin();
+    uint32_t        GetAdminIP() const;
     int             Prepare();
     int             Stop();
-    const string &  GetStrError();
+    const string &  GetStrError() const;
     static void *   Run(void * a);
 
 private:
