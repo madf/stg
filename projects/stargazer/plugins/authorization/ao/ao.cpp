@@ -85,8 +85,11 @@ return "Always Online authorizator v.1.0";
 }
 //-----------------------------------------------------------------------------
 AUTH_AO::AUTH_AO()
+    : users(NULL),
+      isRunning(false),
+      onAddUserNotifier(*this),
+      onDelUserNotifier(*this)
 {
-isRunning = false;
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::SetUsers(USERS * u)
@@ -115,8 +118,8 @@ GetUsers();
 
 list<user_iter>::iterator users_iter;
 
-onAddUserNotifier.SetAuthorizator(this);
-onDelUserNotifier.SetAuthorizator(this);
+/*onAddUserNotifier.SetAuthorizator(this);
+onDelUserNotifier.SetAuthorizator(this);*/
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
@@ -168,15 +171,15 @@ return 70;
 void AUTH_AO::SetUserNotifiers(user_iter u)
 {
 // ---------- AlwaysOnline -------------------
-CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier;
-CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier;
+CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier(*this, u);
+CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier(*this, u);
 
-BeforeChgAONotifier.SetAuthorizator(this);
-BeforeChgAONotifier.SetUser(u);
+/*BeforeChgAONotifier.SetAuthorizator(this);
+BeforeChgAONotifier.SetUser(u);*/
 BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
 
-AfterChgAONotifier.SetAuthorizator(this);
-AfterChgAONotifier.SetUser(u);
+/*AfterChgAONotifier.SetAuthorizator(this);
+AfterChgAONotifier.SetUser(u);*/
 AfterChgAONotifierList.push_front(AfterChgAONotifier);
 
 u->property.alwaysOnline.AddBeforeNotifier(&(*BeforeChgAONotifierList.begin()));
@@ -184,15 +187,15 @@ u->property.alwaysOnline.AddAfterNotifier(&(*AfterChgAONotifierList.begin()));
 // ---------- AlwaysOnline end ---------------
 
 // ---------- IP -------------------
-CHG_BEFORE_NOTIFIER<USER_IPS> BeforeChgIPNotifier;
-CHG_AFTER_NOTIFIER<USER_IPS>  AfterChgIPNotifier;
+CHG_BEFORE_NOTIFIER<USER_IPS> BeforeChgIPNotifier(*this, u);
+CHG_AFTER_NOTIFIER<USER_IPS>  AfterChgIPNotifier(*this, u);
 
-BeforeChgIPNotifier.SetAuthorizator(this);
-BeforeChgIPNotifier.SetUser(u);
+/*BeforeChgIPNotifier.SetAuthorizator(this);
+BeforeChgIPNotifier.SetUser(u);*/
 BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
 
-AfterChgIPNotifier.SetAuthorizator(this);
-AfterChgIPNotifier.SetUser(u);
+/*AfterChgIPNotifier.SetAuthorizator(this);
+AfterChgIPNotifier.SetUser(u);*/
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
 u->property.ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
@@ -336,13 +339,13 @@ return -1;
 template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(*auth, &AUTH_AO::Unauthorize, user);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>
 void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(*auth, &AUTH_AO::UpdateUserAuthorization, user);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
 }
 //-----------------------------------------------------------------------------
 

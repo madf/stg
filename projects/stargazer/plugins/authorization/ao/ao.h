@@ -45,28 +45,30 @@ template <typename varParamType>
 class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
 {
 public:
+                CHG_BEFORE_NOTIFIER(AUTH_AO & a, user_iter u) : user(u), auth(a) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    void        SetUser(user_iter u) { user = u; }
+    //void        SetUser(user_iter u) { user = u; }
     user_iter   GetUser() {return user; }
-    void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
+    //void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
 
 private:
     user_iter   user;
-    const       AUTH_AO * auth;
+    const       AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
 template <typename varParamType>
 class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
 {
 public:
+                CHG_AFTER_NOTIFIER(AUTH_AO & a, user_iter u) : user(u), auth(a) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    void        SetUser(user_iter u) { user = u; }
+    //void        SetUser(user_iter u) { user = u; }
     user_iter   GetUser() {return user; }
-    void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
+    //void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
 
 private:
     user_iter   user;
-    const AUTH_AO * auth;
+    const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
 class AUTH_AO_SETTINGS
@@ -136,33 +138,33 @@ private:
     class ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
     {
     public:
-        ADD_USER_NONIFIER(){};
+        ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {};
         virtual ~ADD_USER_NONIFIER(){};
 
-        void SetAuthorizator(AUTH_AO * a) { auth = a; }
+        //void SetAuthorizator(AUTH_AO * a) { auth = a; }
         void Notify(const user_iter & user)
             {
-            auth->AddUser(user);
+            auth.AddUser(user);
             }
 
     private:
-        AUTH_AO * auth;
+        AUTH_AO & auth;
     } onAddUserNotifier;
 
     class DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
     {
     public:
-        DEL_USER_NONIFIER(){};
+        DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {};
         virtual ~DEL_USER_NONIFIER(){};
 
-        void SetAuthorizator(AUTH_AO * a) { auth = a; }
+        //void SetAuthorizator(AUTH_AO * a) { auth = a; }
         void Notify(const user_iter & user)
             {
-            auth->DelUser(user);
+            auth.DelUser(user);
             }
 
     private:
-        AUTH_AO * auth;
+        AUTH_AO & auth;
     } onDelUserNotifier;
 
 };
