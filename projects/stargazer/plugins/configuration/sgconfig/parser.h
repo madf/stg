@@ -207,6 +207,8 @@ public:
     void Reset();
 private:
     string EncChar2String(const char *);
+    int CheckUserData();
+    int AplayChanges();
 
     USER_STAT_RES * usr;
     USER_CONF_RES * ucr;
@@ -214,9 +216,6 @@ private:
     RESETABLE<uint64_t> * downr;
     string cashMsg;
     string login;
-
-    int CheckUserData();
-    int AplayChanges();
     bool cashMustBeAdded;
     int res;
 };
