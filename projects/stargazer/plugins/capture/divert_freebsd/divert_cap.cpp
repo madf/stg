@@ -96,9 +96,11 @@ return "Divert_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 DIVERT_CAP::DIVERT_CAP()
+    : port(0),
+      nonstop(false),
+      isRunning(false),
+      traffCnt(NULL)
 {
-isRunning = false;
-nonstop = false;
 }
 //-----------------------------------------------------------------------------
 void DIVERT_CAP::SetTraffcounter(TRAFFCOUNTER * tc)

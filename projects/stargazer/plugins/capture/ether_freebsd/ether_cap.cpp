@@ -176,9 +176,11 @@ return "bpf_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
+    : nonstop(false),
+      isRunning(false),
+      capSock(-1),
+      traffCnt(NULL)
 {
-isRunning = false;
-nonstop = false;
 }
 //-----------------------------------------------------------------------------
 void BPF_CAP::SetSettings(const MODULE_SETTINGS & s)
