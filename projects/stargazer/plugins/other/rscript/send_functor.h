@@ -34,23 +34,22 @@
 
 #include "os_int.h"
 
-class PacketSender : public std::unary_function<uint32_t, void> {
+class PacketSender : public std::unary_function<uint32_t, int> {
     public:
         PacketSender(int s, char * b, int l, uint16_t p)
             : sock(s),
               buffer(b),
               length(l),
               port(p) {};
-        void operator() (uint32_t ip)
+        int operator() (uint32_t ip)
         {
-        int res;
         struct sockaddr_in sendAddr;
 
         sendAddr.sin_family = AF_INET;
         sendAddr.sin_port = port;
         sendAddr.sin_addr.s_addr = ip;
 
-        res = sendto(sock, buffer, length, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
+        return sendto(sock, buffer, length, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
         }
     private:
         int sock;
