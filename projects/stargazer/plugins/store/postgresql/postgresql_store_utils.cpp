@@ -101,7 +101,7 @@ if (error)
     {
     strError = PQerrorMessage(connection);
     printfd(__FILE__, "POSTGRESQL_STORE::EscapeString(): '%s'\n", strError.c_str());
-    delete buf;
+    delete[] buf;
     return -1;
     }
 
