@@ -438,7 +438,7 @@ mode_t FILES_STORE_SETTINGS::GetConfMode() const
 {
 return confMode;
 }
-//-----------------------------------------------------------------------------
+/*//-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetConfModeDir() const
 {
 mode_t mode = confMode;
@@ -446,7 +446,7 @@ if (statMode & S_IRUSR) mode |= S_IXUSR;
 if (statMode & S_IRGRP) mode |= S_IXGRP;
 if (statMode & S_IROTH) mode |= S_IXOTH;
 return mode;
-}
+}*/
 //-----------------------------------------------------------------------------
 uid_t  FILES_STORE_SETTINGS::GetConfUID() const
 {

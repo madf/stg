@@ -59,7 +59,7 @@ public:
     gid_t   GetStatGID() const;
 
     mode_t  GetConfMode() const;
-    mode_t  GetConfModeDir() const;
+    //mode_t  GetConfModeDir() const;
     uid_t   GetConfUID() const;
     gid_t   GetConfGID() const;
 
