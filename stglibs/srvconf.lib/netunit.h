@@ -111,16 +111,11 @@ private:
     void EnDecryptInit(const char * passwd, int passwdLen, BLOWFISH_CTX *ctx);
     void Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx);
 
-    //unsigned ip;
     char    server[SERVER_NAME_LEN];
     short unsigned  port;
     char    login[ADM_LOGIN_LEN];
     char    password[ADM_PASSWD_LEN];
     int     outerSocket;
-    int     localSocket;
-    struct  sockaddr_in outerAddr;
-    struct  sockaddr_in localAddr;
-    int     error;
     std::list<std::string>   answerList;
     RxCallback_t RxCallBack;
     void *  dataRxCallBack;

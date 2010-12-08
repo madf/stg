@@ -51,13 +51,20 @@
 
 //---------------------------------------------------------------------------
 NETTRANSACT::NETTRANSACT()
+    : port(0),
+      outerSocket(-1),
+      RxCallBack(NULL),
+      dataRxCallBack(NULL)
 {
-RxCallBack = NULL;
+    memset(server, 0, SERVER_NAME_LEN);
+    memset(login, 0, ADM_LOGIN_LEN);
+    memset(password, 0, ADM_PASSWD_LEN);
+    memset(errorMsg, 0, MAX_ERR_STR_LEN);
 }
 //-----------------------------------------------------------------------------
 void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
 {
-unsigned char * keyL = NULL;//[PASSWD_LEN];  // ��� ������
+unsigned char * keyL = NULL; // ��� ������
 
 keyL = new unsigned char[PASSWD_LEN];
 
@@ -72,28 +79,12 @@ delete[] keyL;
 //-----------------------------------------------------------------------------
 void NETTRANSACT::Encrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
 {
-/*unsigned char ss[8];
-
-memcpy(ss, s, 8);
-
-Blowfish_Encrypt(ctx, (uint32_t *)ss, (uint32_t *)(ss + 4));
-
-memcpy(d, ss, 8);*/
 EncodeString(d, s, ctx);
-
 }
 //---------------------------------------------------------------------------
 void NETTRANSACT::Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
 {
-/*unsigned char ss[8];
-
-memcpy(ss, s, 8);
-
-Blowfish_Decrypt(ctx, (uint32_t *)ss, (uint32_t *)(ss + 4));
-
-memcpy(d, ss, 8);*/
 DecodeString(d, s, ctx);
-
 }
 //---------------------------------------------------------------------------
 int NETTRANSACT::Connect()
@@ -107,8 +98,8 @@ if (outerSocket < 0)
     return st_conn_fail;
     }
 
+struct sockaddr_in outerAddr;
 memset(&outerAddr, 0, sizeof(outerAddr));
-memset(&localAddr, 0, sizeof(localAddr));
 
 struct hostent he;
 struct hostent * phe;
@@ -219,12 +210,11 @@ return st_ok;
 int NETTRANSACT::RxHeaderAnswer()
 {
 char buffer[sizeof(STG_HEADER)+1];
-int ret;//, we;
+int ret;
 
 ret = recv(outerSocket, buffer, strlen(OK_HEADER), 0);
 if (ret <= 0)
     {
-    //we = WSAGetLastError();
     strcpy(errorMsg, RECV_HEADER_ANSWER_ERROR);
     return st_recv_fail;
     }
@@ -504,4 +494,3 @@ void NETTRANSACT::Reset()
 answerList.clear();
 }
 //---------------------------------------------------------------------------
-
