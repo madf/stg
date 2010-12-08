@@ -181,9 +181,9 @@ double ParseCash(const char * c, string * message)
 double cash;
 char * msg;
 char * str;
-str = new char[strlen(c)];
+str = new char[strlen(c) + 1];
 
-strcpy(str, c);
+strncpy(str, c, strlen(c));
 msg = strchr(str, ':');
 
 if (msg)
