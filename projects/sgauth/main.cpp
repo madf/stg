@@ -303,12 +303,6 @@ void Usage()
 printf("sgauth <server> <port> <login> <password>\n"); //TODO change to correct
 }
 //-----------------------------------------------------------------------------
-void EventsFn(int)
-{
-LOADSTAT ls;
-clnp->GetStat(&ls);
-}
-//-----------------------------------------------------------------------------
 void SetDirName(const vector<string> & dn, void *)
 {
 for (int j = 0; j < DIR_NUM; j++)
