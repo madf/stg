@@ -402,6 +402,7 @@ char buff[ENC_MSG_LEN];
 char buffS[ENC_MSG_LEN];
 char passwd[ADM_PASSWD_LEN];
 
+memset(passwd, 0, ADM_PASSWD_LEN);
 strncpy(passwd, password, ADM_PASSWD_LEN);
 memset(buff, 0, ENC_MSG_LEN);
 
