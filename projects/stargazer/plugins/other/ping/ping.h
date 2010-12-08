@@ -77,7 +77,7 @@ public:
     virtual ~PING_SETTINGS() {}
     const string& GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
-    int GetPingDelay() { return pingDelay; }
+    int GetPingDelay() const { return pingDelay; }
 private:
     int ParseIntInRange(const string & str, int min, int max, int * val);
 
