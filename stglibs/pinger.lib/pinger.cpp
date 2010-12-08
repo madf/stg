@@ -24,10 +24,15 @@ extern volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 STG_PINGER::STG_PINGER(time_t d)
+    : delay(d),
+      nonstop(false),
+      isRunningRecver(false),
+      isRunningSender(false),
+      sendSocket(-1),
+      recvSocket(-1),
+      pid(0)
 {
-    delay = d;
     pthread_mutex_init(&mutex, NULL);
-    pid = 0;
 }
 //-----------------------------------------------------------------------------
 STG_PINGER::~STG_PINGER()
@@ -172,15 +177,15 @@ void STG_PINGER::RealDelIP()
     ipToDel.erase(ipToDel.begin(), ipToDel.end());
 }
 //-----------------------------------------------------------------------------
-int STG_PINGER::GetPingIPNum()
+int STG_PINGER::GetPingIPNum() const
 {
     return pingIP.size();
 }
 //-----------------------------------------------------------------------------
-void STG_PINGER::GetAllIP(vector<PING_IP_TIME> *)
+/*void STG_PINGER::GetAllIP(vector<PING_IP_TIME> *) const
 {
     //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-}
+}*/
 //-----------------------------------------------------------------------------
 void STG_PINGER::PrintAllIP()
 {
@@ -199,10 +204,10 @@ void STG_PINGER::PrintAllIP()
 
 }
 //-----------------------------------------------------------------------------
-int STG_PINGER::GetIPTime(uint32_t ip, time_t * t)
+int STG_PINGER::GetIPTime(uint32_t ip, time_t * t) const
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    multimap<uint32_t, time_t>::iterator treeIter;
+    multimap<uint32_t, time_t>::const_iterator treeIter;
 
     treeIter = pingIP.find(ip);
     if (treeIter == pingIP.end())
@@ -217,12 +222,12 @@ void STG_PINGER::SetDelayTime(time_t d)
     delay = d;
 }
 //-----------------------------------------------------------------------------
-time_t STG_PINGER::GetDelayTime()
+time_t STG_PINGER::GetDelayTime() const
 {
     return delay;
 }
 //-----------------------------------------------------------------------------
-string STG_PINGER::GetStrError()
+string STG_PINGER::GetStrError() const
 {
     return errorStr;
 }
@@ -385,4 +390,3 @@ void * STG_PINGER::RunRecvPing(void * d)
     return NULL;
 }
 //-----------------------------------------------------------------------------
-

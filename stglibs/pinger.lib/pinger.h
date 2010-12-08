@@ -7,7 +7,7 @@
 #ifndef PINGER_H
 #define PINGER_H
 
-#include <time.h>
+#include <ctime>
 #include <string>
 #include <vector>
 #include <list>
@@ -94,15 +94,23 @@ public:
     int     Stop();
     void    AddIP(uint32_t ip);
     void    DelIP(uint32_t ip);
-    int     GetPingIPNum();
-    void    GetAllIP(vector<PING_IP_TIME> * ipTime);
+    int     GetPingIPNum() const;
+    //void    GetAllIP(vector<PING_IP_TIME> * ipTime) const;
     void    PrintAllIP();
-    int     GetIPTime(uint32_t ip, time_t * t);
+    int     GetIPTime(uint32_t ip, time_t * t) const;
     void    SetDelayTime(time_t delay);
-    time_t  GetDelayTime();
-    string  GetStrError();
+    time_t  GetDelayTime() const;
+    string  GetStrError() const;
 
 private:
+    uint16_t    PingCheckSum(void * data, int len);
+    int         SendPing(uint32_t ip);
+    uint32_t    RecvPing();
+    void        RealAddIP();
+    void        RealDelIP();
+
+    static void * RunSendPing(void * d);
+    static void * RunRecvPing(void * d);
 
     int         delay;
     bool        nonstop;
@@ -116,24 +124,13 @@ private:
     PING_MESSAGE pmSend;
     uint32_t    pid;
 
-    uint16_t    PingCheckSum(void * data, int len);
-    int         SendPing(uint32_t ip);
-    uint32_t    RecvPing();
-    void        RealAddIP();
-    void        RealDelIP();
-
-    static void * RunSendPing(void * d);
-    static void * RunRecvPing(void * d);
-
     string      errorStr;
 
     multimap<uint32_t, time_t>   pingIP;
     list<uint32_t>          ipToAdd;
     list<uint32_t>          ipToDel;
 
-    pthread_mutex_t mutex;
+    mutable pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
 #endif
-
-
