@@ -128,12 +128,6 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void CatchPROF(int)
-{
-/*STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog("CatchPROF");*/
-}
-//-----------------------------------------------------------------------------
 void CatchUSR1(int)
 {
 
@@ -203,10 +197,10 @@ if (childPid == stgChildPid)
     childExited = true;
     }
 }
-//-----------------------------------------------------------------------------
+/*//-----------------------------------------------------------------------------
 void CatchSEGV(int, siginfo_t *, void *)
 {
-/*char fileName[50];
+char fileName[50];
 sprintf(fileName, "/tmp/stg_segv.%d", getpid());
 FILE * f = fopen(fileName, "wt");
 if (f)
@@ -254,8 +248,8 @@ segv_action.sa_sigaction = NULL;
 segv_action.sa_flags = SA_SIGINFO;
 segv_action.sa_restorer = NULL;
 
-sigaction(SIGSEGV, &segv_action, &segv_action_old);*/
-}
+sigaction(SIGSEGV, &segv_action, &segv_action_old);
+}*/
 //-----------------------------------------------------------------------------
 static void SetSignalHandlers()
 {
@@ -282,13 +276,6 @@ newsa.sa_handler = CatchTERM;
 newsa.sa_mask = sigmask;
 newsa.sa_flags = 0;
 sigaction(SIGINT, &newsa, &oldsa);
-/*///////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGPROF);
-newsa.sa_handler = CatchPROF;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGPROF, &newsa, &oldsa);*/
 //////
 sigemptyset(&sigmask);
 sigaddset(&sigmask, SIGPIPE);
