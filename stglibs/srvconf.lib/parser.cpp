@@ -41,22 +41,14 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-PARSER::PARSER()
-{
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_GET_USERS::PARSER_GET_USERS()
+    : RecvUserDataCb(NULL),
+      userDataCb(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvUserDataCb = NULL;
-}
-//-----------------------------------------------------------------------------
-void PARSER_GET_USERS::Reset()
-{
-
 }
 //-----------------------------------------------------------------------------
 int PARSER_GET_USERS::ParseStart(const char *el, const char **attr)
@@ -385,15 +377,11 @@ userDataCb = data;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_GET_USER::PARSER_GET_USER()
+    : RecvUserDataCb(NULL),
+      userDataCb(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvUserDataCb = NULL;
-}
-//-----------------------------------------------------------------------------
-void PARSER_GET_USER::Reset()
-{
-
 }
 //-----------------------------------------------------------------------------
 int PARSER_GET_USER::ParseStart(const char *el, const char **attr)
@@ -658,15 +646,11 @@ userDataCb = data;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_GET_SERVER_INFO::PARSER_GET_SERVER_INFO()
+    : RecvServerInfoDataCb(NULL),
+      serverInfoDataCb(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvServerInfoDataCb = NULL;
-}
-//-----------------------------------------------------------------------------
-void PARSER_GET_SERVER_INFO::Reset()
-{
-
 }
 //-----------------------------------------------------------------------------
 int PARSER_GET_SERVER_INFO::ParseStart(const char *el, const char **attr)
@@ -821,10 +805,11 @@ if (strcmp(attr[0], "value") == 0)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_CHG_USER::PARSER_CHG_USER()
+    : RecvChgUserCb(NULL),
+      chgUserCbData(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvChgUserCb = NULL;
 }
 //-----------------------------------------------------------------------------
 int PARSER_CHG_USER::ParseStart(const char *el, const char **attr)
@@ -853,11 +838,6 @@ void PARSER_CHG_USER::ParseEnd(const char *)
 depth--;
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHG_USER::Reset()
-{
-
-}
-//-----------------------------------------------------------------------------
 void PARSER_CHG_USER::ParseAnswer(const char *, const char **attr)
 {
 if (RecvChgUserCb)
@@ -875,10 +855,11 @@ chgUserCbData = data;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_CHECK_USER::PARSER_CHECK_USER()
+    : RecvCheckUserCb(NULL),
+      checkUserCbData(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvCheckUserCb = NULL;
 }
 //-----------------------------------------------------------------------------
 int PARSER_CHECK_USER::ParseStart(const char *el, const char **attr)
@@ -917,10 +898,11 @@ checkUserCbData = data;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PARSER_SEND_MESSAGE::PARSER_SEND_MESSAGE()
+    : RecvSendMessageCb(NULL),
+      sendMessageCbData(NULL),
+      depth(0),
+      error(false)
 {
-depth = 0;
-error = false;
-RecvSendMessageCb = NULL;
 }
 //-----------------------------------------------------------------------------
 int  PARSER_SEND_MESSAGE::ParseStart(const char *el, const char **attr)
@@ -941,11 +923,6 @@ void PARSER_SEND_MESSAGE::ParseEnd(const char *)
 depth--;
 }
 //-----------------------------------------------------------------------------
-void PARSER_SEND_MESSAGE::Reset()
-{
-
-}
-//-----------------------------------------------------------------------------
 void PARSER_SEND_MESSAGE::ParseAnswer(const char *, const char **attr)
 {
 if (RecvSendMessageCb)
@@ -958,4 +935,3 @@ RecvSendMessageCb = f;
 sendMessageCbData = data;
 }
 //-----------------------------------------------------------------------------
-

@@ -27,11 +27,12 @@
 #ifndef SERVCONF_H
 #define SERVCONF_H
 
-#include "os_int.h"
-
 #include <expat.h>
+
 #include <list>
 #include <string>
+
+#include "os_int.h"
 #include "netunit.h"
 #include "stg_const.h"
 
@@ -108,16 +109,10 @@ struct ADMINDATA
 class PARSER
 {
 public:
-    PARSER();
-    virtual ~PARSER(){};
+    PARSER() {}
+    virtual ~PARSER() {}
     virtual int ParseStart(const char *el, const char **attr) = 0;
     virtual void ParseEnd(const char *el) = 0;
-    void    Reset();
-    //virtual bool    GetError() = 0;
-    //virtual void    SetUserDataRecvCb(RecvUserDataCb_t) = 0;
-protected:
-    //RecvUserDataCb_t RecvUserDataCb;
-private:
 };
 //-----------------------------------------------------------------------------
 class PARSER_CHG_USER: public PARSER
@@ -126,7 +121,6 @@ public:
     PARSER_CHG_USER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseAnswer(const char *el, const char **attr);
     void SetChgUserRecvCb(RecvChgUserCb_t, void * data);
 private:
@@ -142,7 +136,6 @@ public:
     PARSER_CHECK_USER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseAnswer(const char *el, const char **attr);
     void SetCheckUserRecvCb(RecvCheckUserCb_t, void * data);
 private:
@@ -158,12 +151,10 @@ public:
     PARSER_GET_USERS();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseUsers(const char *el, const char **attr);
     void ParseUser(const char *el, const char **attr);
     void ParseUserParams(const char *el, const char **attr);
     void ParseUserLoadStat(const char * el, const char ** attr);
-    //bool GetError();
     void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
 private:
     RecvUserDataCb_t RecvUserDataCb;
@@ -179,7 +170,6 @@ public:
     PARSER_GET_USER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseUsers(const char *el, const char **attr);
     void ParseUser(const char *el, const char **attr);
     void ParseUserParams(const char *el, const char **attr);
@@ -199,7 +189,6 @@ public:
     PARSER_GET_SERVER_INFO();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseServerInfo(const char *el, const char **attr);
     bool GetError();
     void SetServerInfoRecvCb(RecvServerInfoDataCb_t, void * data);
@@ -226,7 +215,6 @@ public:
     PARSER_SEND_MESSAGE();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
-    void Reset();
     void ParseAnswer(const char *el, const char **attr);
     void SetSendMessageRecvCb(RecvSendMessageCb_t, void * data);
 private:
@@ -304,6 +292,3 @@ private:
 //-----------------------------------------------------------------------------
 
 #endif  /* _SERVCONF_H_ */
-
-/* EOF */
-
