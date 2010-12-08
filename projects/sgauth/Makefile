@@ -15,11 +15,9 @@ STGLIBS =  -lconffiles \
            -lia_auth_c \
            -lcommon_settings
 
-LIBS += $(LIB_THREAD) \
-	-lexpat
+LIBS += $(LIB_THREAD)
 
 ifeq ($(OS),linux)
-LIBS += -ldl
 else
 LIBS += -lintl \
         -lc
@@ -93,5 +91,3 @@ deps:	$(SRCS) ../../Makefile.conf sgauth.css
 	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
 	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
 	done
-
-
