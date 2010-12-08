@@ -1774,7 +1774,6 @@ strprintf(&res,"INSERT INTO detailstat_%02d_%4d SET login='%s',"\
     endTime.c_str()
     );
 
-int retRes;
 map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
 stIter = statTree.begin();
 
@@ -1788,7 +1787,7 @@ while (stIter != statTree.end())
                 stIter->second.cash
             );
     
-        if( (retRes = MysqlQuery((res+tempStr).c_str(),sock)) )
+        if( MysqlQuery((res+tempStr).c_str(),sock) )
         {
             errorStr = "Couldn't insert data in WriteDetailedStat:\n";
             errorStr += mysql_error(sock);
