@@ -88,11 +88,6 @@ void TARIFF::PrintTariff() const
 //printfd(__FILE__, "Free: %8.3f\n", tariffConf.free);
 }
 //-----------------------------------------------------------------------------
-void TARIFF::GetDirPrice(int dir, DIRPRICE_DATA * dd) const
-{
-*dd = tariffData.dirPrice[dir];
-}
-//-----------------------------------------------------------------------------
 void TARIFF::GetTariffData(TARIFF_DATA * td) const
 {
 *td = tariffData;

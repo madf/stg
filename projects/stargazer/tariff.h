@@ -62,7 +62,6 @@ public:
                                   int dir,
                                   time_t t) const;
     double  GetFreeMb() const { return tariffData.tariffConf.free; };
-    void    GetDirPrice(int dir, DIRPRICE_DATA * dd) const;
     double  GetPassiveCost() const { return tariffData.tariffConf.passiveCost; };
     double  GetFee() const { return tariffData.tariffConf.fee; };
     double  GetFree() const { return tariffData.tariffConf.free; };
