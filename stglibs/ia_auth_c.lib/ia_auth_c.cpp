@@ -28,10 +28,10 @@
 
 //---------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
 #ifdef WIN32
     #include <winsock2.h>
@@ -719,15 +719,9 @@ connSyn8 = (CONN_SYN_8*)buffer;
 SwapBytes(connSyn8->len);
 #endif
 
-connSyn8->len = sizeof(CONN_SYN_8);
-#ifdef IA_DEBUGPROTO
-if (sizeof(CONN_SYN_8) != Min8(sizeof(CONN_SYN_8)))
-    {
-    int * a = NULL;
-    *a = 0;
-    }
-#endif
+assert(sizeof(CONN_SYN_8) == Min8(sizeof(CONN_SYN_8)) && "CONN_SYN_8 is not aligned to 8 bytes");
 
+connSyn8->len = sizeof(CONN_SYN_8);
 strncpy((char*)connSyn8->type, "CONN_SYN", IA_MAX_TYPE_LEN);
 strncpy((char*)connSyn8->login, login.c_str(), IA_LOGIN_LEN);
 connSyn8->dirs = 0;
@@ -747,13 +741,7 @@ SwapBytes(connAck8->len);
 SwapBytes(connAck8->rnd);
 #endif
 
-#ifdef IA_DEBUGPROTO
-if (sizeof(CONN_ACK_8) != Min8(sizeof(CONN_ACK_8)))
-    {
-    int * a = NULL;
-    *a = 0;
-    }
-#endif
+assert(sizeof(CONN_ACK_8) == Min8(sizeof(CONN_ACK_8)) && "CONN_ACK_8 is not aligned to 8 bytes");
 
 connAck8->len = sizeof(CONN_ACK_8);
 strncpy((char*)connAck8->loginS, login.c_str(), IA_LOGIN_LEN);
@@ -773,13 +761,7 @@ SwapBytes(aliveAck8->len);
 SwapBytes(aliveAck8->rnd);
 #endif
 
-#ifdef IA_DEBUGPROTO
-if (Min8(sizeof(ALIVE_ACK_8)) != sizeof(ALIVE_ACK_8))
-    {
-    int * a = NULL;
-    *a = 0;
-    }
-#endif
+assert(Min8(sizeof(ALIVE_ACK_8)) == sizeof(ALIVE_ACK_8) && "ALIVE_ACK_8 is not aligned to 8 bytes");
 
 aliveAck8 = (ALIVE_ACK_8*)buffer;
 aliveAck8->len = sizeof(ALIVE_ACK_8);
@@ -797,13 +779,7 @@ disconnSyn8 = (DISCONN_SYN_8*)buffer;
 SwapBytes(disconnSyn8->len);
 #endif
 
-#ifdef IA_DEBUGPROTO
-if (Min8(sizeof(DISCONN_SYN_8)) != sizeof(DISCONN_SYN_8))
-    {
-    int * a = NULL;
-    *a = 0;
-    }
-#endif
+assert(Min8(sizeof(DISCONN_SYN_8)) == sizeof(DISCONN_SYN_8) && "DISCONN_SYN_8 is not aligned to 8 bytes");
 
 disconnSyn8->len = sizeof(DISCONN_SYN_8);
 strncpy((char*)disconnSyn8->loginS, login.c_str(), IA_LOGIN_LEN);
@@ -821,13 +797,7 @@ SwapBytes(disconnAck8->len);
 SwapBytes(disconnAck8->rnd);
 #endif
 
-#ifdef IA_DEBUGPROTO
-if (Min8(sizeof(DISCONN_ACK_8)) != sizeof(DISCONN_ACK_8))
-    {
-    int * a = NULL;
-    *a = 0;
-    }
-#endif
+assert(Min8(sizeof(DISCONN_ACK_8)) == sizeof(DISCONN_ACK_8) && "DISCONN_ACK_8 is not aligned to 8 bytes");
 
 disconnAck8->len = Min8(sizeof(DISCONN_ACK_8));
 disconnAck8->rnd = rnd + 1;
