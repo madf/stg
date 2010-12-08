@@ -105,6 +105,14 @@ private:
 };
 //-----------------------------------------------------------------------------
 SETTINGS::SETTINGS()
+    : port(0),
+      localPort(0),
+      listenWebIP(0),
+      refreshPeriod(0),
+      daemon(false),
+      noWeb(false),
+      reconnect(false),
+      showPid(false)
 {
 confFile = "/etc/sgauth.conf";
 }
