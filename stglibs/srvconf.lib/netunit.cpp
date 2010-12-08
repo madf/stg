@@ -55,7 +55,7 @@ NETTRANSACT::NETTRANSACT()
 RxCallBack = NULL;
 }
 //-----------------------------------------------------------------------------
-void NETTRANSACT::EnDecryptInit(const char * passwd, int passwdLen, BLOWFISH_CTX *ctx)
+void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
 {
 unsigned char * keyL = NULL;//[PASSWD_LEN];  // ��� ������
 
