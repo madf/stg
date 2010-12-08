@@ -1895,6 +1895,7 @@ if (fprintf(statFile, "-> %02d.%02d.%02d - %02d.%02d.%02d\n",
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = string("fprint failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
+    fclose(statFile);
     return -1;
     }
 
@@ -2214,4 +2215,3 @@ fclose(msgFile);
 return 0;
 }
 //-----------------------------------------------------------------------------
-
