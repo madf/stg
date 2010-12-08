@@ -94,9 +94,8 @@ listenAddr.sin_family = AF_INET;
 listenAddr.sin_port = htons(LISTEN_PORT);
 listenAddr.sin_addr.s_addr = listenWebAddr;
 
-int lng = 1;
-
 #ifndef WIN32
+int lng = 1;
 if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
     {
     printf("Setsockopt Fail\n");
