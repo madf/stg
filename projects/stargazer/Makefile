@@ -55,7 +55,7 @@ plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS) libs
-	$(CC) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
+	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
