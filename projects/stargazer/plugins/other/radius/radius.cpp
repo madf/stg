@@ -76,11 +76,6 @@ uint16_t RAD_SETTINGS::GetPort() const
 return port;
 }
 //-----------------------------------------------------------------------------
-uint32_t RAD_SETTINGS::GetServerIP() const
-{
-return serverIP;
-}
-//-----------------------------------------------------------------------------
 int RAD_SETTINGS::GetPassword(string * password) const
 {
 *password = RAD_SETTINGS::password;
@@ -154,20 +149,6 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     }
 port = p;
 ///////////////////////////
-pv.param = "ServerIP";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
-    {
-    serverIP = 0;
-    }
-else
-    {
-    if (ParseIP(pvi->value[0], &serverIP))
-        {
-        serverIP = 0;
-        }
-    }
-///////////////////////////
 pv.param = "Password";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
@@ -198,8 +179,13 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 RADIUS::RADIUS()
+    : nonstop(false),
+      isRunning(false),
+      users(NULL),
+      stgSettings(NULL),
+      store(NULL),
+      sock(-1)
 {
-isRunning = false;
 }
 //-----------------------------------------------------------------------------
 void RADIUS::SetUsers(USERS * u)
@@ -270,8 +256,9 @@ if (sock < 0)
     return -1;
     }
 
+struct sockaddr_in inAddr;
 inAddr.sin_family = AF_INET;
-inAddr.sin_port = htons(port);
+inAddr.sin_port = htons(radSettings.GetPort());
 inAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
 if (bind(sock, (struct sockaddr*)&inAddr, sizeof(inAddr)) < 0)
@@ -295,8 +282,6 @@ int RADIUS::Start()
 string password;
 
 radSettings.GetPassword(&password);
-port = radSettings.GetPort();
-serverIP = radSettings.GetServerIP();
 radSettings.GetAuthServices(&authServices);
 radSettings.GetAcctServices(&acctServices);
 
@@ -380,7 +365,8 @@ while (rad->nonstop)
         {
         continue;
         }
-    if (rad->RecvData(&packet))
+    struct sockaddr_in outerAddr;
+    if (rad->RecvData(&packet, &outerAddr))
         {
         printfd(__FILE__, "RADIUS::Run Error on RecvData\n");
         }
@@ -390,7 +376,7 @@ while (rad->nonstop)
             {
             packet.packetType = RAD_REJECT_PACKET;
             }
-        rad->Send(packet);
+        rad->Send(packet, &outerAddr);
         }
     }
 
@@ -399,11 +385,11 @@ rad->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-int RADIUS::RecvData(RAD_PACKET * packet)
+int RADIUS::RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr)
 {
     int8_t buf[RAD_MAX_PACKET_LEN];
-    outerAddrLen = sizeof(struct sockaddr_in);
-    int dataLen = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, (struct sockaddr *)&outerAddr, &outerAddrLen);
+    socklen_t outerAddrLen = sizeof(struct sockaddr_in);
+    int dataLen = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(outerAddr), &outerAddrLen);
     if (dataLen > 0) {
         Decrypt(&ctx, (char *)packet, (const char *)buf, dataLen / 8);
     }
@@ -415,20 +401,17 @@ int RADIUS::RecvData(RAD_PACKET * packet)
     return 0;
 }
 //-----------------------------------------------------------------------------
-int RADIUS::Send(const RAD_PACKET & packet)
+int RADIUS::Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr)
 {
-int res, len = sizeof(RAD_PACKET);
+size_t len = sizeof(RAD_PACKET);
 char buf[1032];
 
 Encrypt(&ctx, buf, (char *)&packet, len / 8);
-res = sendto(sock, buf, len, 0, (struct sockaddr *)&outerAddr, outerAddrLen);
-
-return 0;
+return sendto(sock, buf, len, 0, reinterpret_cast<struct sockaddr *>(outerAddr), sizeof(struct sockaddr_in));
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessData(RAD_PACKET * packet)
 {
-//struct in_addr addr = {packet->ip};
 if (strncmp((const char *)packet->protoVer, "01", 2))
     {
     printfd(__FILE__, "RADIUS::ProcessData packet.protoVer incorrect\n");
@@ -630,14 +613,14 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAcctUpdatePacket(RAD_PACKET * packet)
 {
-// Fake. May be used later
+// Fake. May be use it later
 packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAcctOtherPacket(RAD_PACKET * packet)
 {
-// Fake. May be used later
+// Fake. May be use it later
 packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
 }

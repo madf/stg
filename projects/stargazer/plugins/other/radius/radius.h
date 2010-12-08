@@ -59,7 +59,6 @@ public:
     const string&   GetStrError() const { return errorStr; };
     int             ParseSettings(const MODULE_SETTINGS & s);
     uint16_t        GetPort() const;
-    uint32_t        GetServerIP() const;
     int             GetPassword(string * password) const;
     int             GetAuthServices(list<string> * svcs) const;
     int             GetAcctServices(list<string> * svcs) const;
@@ -72,7 +71,6 @@ private:
     uint16_t            port;
     string              errorStr;
     string              password;
-    uint32_t            serverIP;
     list<string>        authServices;
     list<string>        acctServices;
 };
@@ -118,8 +116,8 @@ private:
     void                Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
     void                Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
-    int                 Send(const RAD_PACKET & packet);
-    int                 RecvData(RAD_PACKET * packet);
+    int                 Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr);
+    int                 RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr);
     int                 ProcessData(RAD_PACKET * packet);
 
     int                 ProcessAutzPacket(RAD_PACKET * packet);
@@ -167,7 +165,6 @@ private:
     map<string, RAD_SESSION> sessions;
 
     bool                nonstop;
-
     bool                isRunning;
 
     USERS *             users;
@@ -178,12 +175,6 @@ private:
     pthread_mutex_t     mutex;
 
     int                 sock;
-    struct sockaddr_in  inAddr;
-    socklen_t           inAddrLen;
-    uint16_t            port;
-    uint32_t            serverIP;
-    struct sockaddr_in  outerAddr;
-    socklen_t           outerAddrLen;
 
     RAD_PACKET          packet;
 
@@ -191,4 +182,3 @@ private:
 //-----------------------------------------------------------------------------
 
 #endif
-
