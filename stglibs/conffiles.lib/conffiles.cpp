@@ -28,11 +28,13 @@
  */
 
 //---------------------------------------------------------------------------
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstring>
+#include <cstdlib>
+
 #include <fstream>
 #include <algorithm>
+
 #include "conffiles.h"
 #include "common.h"
 
@@ -131,16 +133,6 @@ int CONFIGFILE::Error()
 int e = error;
 error = 0;
 return e;
-}
-//---------------------------------------------------------------------------
-int CONFIGFILE::FindParameter(const string &parameter, string * value) const
-{
-it = param_val.find(parameter);
-if (it == param_val.end())
-    return -1;
-
-*value = param_val[parameter];
-return 0;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::Flush()
@@ -451,5 +443,3 @@ Flush();
 return 0;
 }
 //---------------------------------------------------------------------------
-
-

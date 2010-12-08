@@ -31,8 +31,7 @@
 
 #ifndef ConfFilesH
 #define ConfFilesH
-#include <sys/types.h>
-#include <stdio.h>
+
 #include <map>
 #include <string>
 
@@ -40,8 +39,6 @@
 
 using namespace std;
 //---------------------------------------------------------------------------
-//#define CONF_STR_LEN    300
-//typedef char STRING[CONF_STR_LEN];
 
 typedef bool (*StringCaseCmp_t)(const string & str1, const string & str2);
 
@@ -66,8 +63,6 @@ public:
     // и EINVAL при отсутсвии параметра и выставляют defaulValue
     int ReadString(const string & param, char * val, int * maxLen, const char * defaultVal) const;
     int ReadString(const string & param, string * val, const string & defaultVal) const;
-
-    int FindParameter(const string &parameter, string * value) const;
 
     int ReadTime       (const string & param, time_t *,        time_t) const;
 
