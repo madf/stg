@@ -209,7 +209,9 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
       nonstop(false),
       isRunning(false),
       users(NULL),
-      sock(0)
+      sock(0),
+      onAddUserNotifier(*this),
+      onDelUserNotifier(*this)
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -253,8 +255,8 @@ netRouters = rsSettings.GetSubnetsMap();
 
 InitEncrypt(&ctx, rsSettings.GetPassword());
 
-onAddUserNotifier.SetRemoteScript(this);
-onDelUserNotifier.SetRemoteScript(this);
+//onAddUserNotifier.SetRemoteScript(this);
+//onDelUserNotifier.SetRemoteScript(this);
 
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
@@ -640,13 +642,11 @@ return value;
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::SetUserNotifier(user_iter u)
 {
-RS_CHG_AFTER_NOTIFIER<uint32_t>  AfterChgIPNotifier;
+RS_CHG_AFTER_NOTIFIER<uint32_t> afterChgIPNotifier(*this, u);
 
-AfterChgIPNotifier.SetRemoteScript(this);
-AfterChgIPNotifier.SetUser(u);
-AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
+afterChgIPNotifierList.push_front(afterChgIPNotifier);
 
-u->AddCurrIPAfterNotifier(&(*AfterChgIPNotifierList.begin()));
+u->AddCurrIPAfterNotifier(&(*afterChgIPNotifierList.begin()));
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::UnSetUserNotifier(user_iter u)
@@ -654,7 +654,7 @@ void REMOTE_SCRIPT::UnSetUserNotifier(user_iter u)
 list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator  ipAIter;
 std::list<list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator> toErase;
 
-for (ipAIter = AfterChgIPNotifierList.begin(); ipAIter != AfterChgIPNotifierList.end(); ++ipAIter)
+for (ipAIter = afterChgIPNotifierList.begin(); ipAIter != afterChgIPNotifierList.end(); ++ipAIter)
     {
     if (ipAIter->GetUser() == u)
         {
@@ -667,14 +667,14 @@ std::list<list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator>::iterator eIter;
 
 for (eIter = toErase.begin(); eIter != toErase.end(); ++eIter)
     {
-    AfterChgIPNotifierList.erase(*eIter);
+    afterChgIPNotifierList.erase(*eIter);
     }
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>
 void RS_CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType & oldValue, const varParamType & newValue)
 {
-rs->ChangedIP(user, oldValue, newValue);
+rs.ChangedIP(user, oldValue, newValue);
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const

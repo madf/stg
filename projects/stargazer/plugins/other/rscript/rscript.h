@@ -57,51 +57,47 @@ class REMOTE_SCRIPT;
 class RS_ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
 {
 public:
-    RS_ADD_USER_NONIFIER() {};
-    virtual ~RS_ADD_USER_NONIFIER() {};
-
-    void SetRemoteScript(REMOTE_SCRIPT * a) { rs = a; }
+    RS_ADD_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    virtual ~RS_ADD_USER_NONIFIER() {}
     void Notify(const user_iter & user);
 
 private:
-    REMOTE_SCRIPT * rs;
+    REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 class RS_DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
 {
 public:
-    RS_DEL_USER_NONIFIER() {};
-    virtual ~RS_DEL_USER_NONIFIER() {};
-
-    void SetRemoteScript(REMOTE_SCRIPT * a) { rs = a; }
+    RS_DEL_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    virtual ~RS_DEL_USER_NONIFIER() {}
     void Notify(const user_iter & user);
 
 private:
-    REMOTE_SCRIPT * rs;
+    REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 template <typename varParamType>
 class RS_CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
 {
 public:
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    void        SetUser(user_iter u) { user = u; }
-    user_iter   GetUser() {return user; }
-    void        SetRemoteScript(REMOTE_SCRIPT * a) { rs = a; }
+    RS_CHG_AFTER_NOTIFIER(REMOTE_SCRIPT & r, user_iter u) : user(u), rs(r) {}
+    void Notify(const varParamType & oldValue, const varParamType & newValue);
+    user_iter GetUser() {return user; }
 
 private:
     user_iter   user;
-    REMOTE_SCRIPT * rs;
+    REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 struct RS_USER
 {
-                      RS_USER();
-                      RS_USER(const std::vector<uint32_t> & r, user_iter it);
-time_t                lastSentTime;
-user_iter             user;
+RS_USER();
+RS_USER(const std::vector<uint32_t> & r, user_iter it);
+
+time_t lastSentTime;
+user_iter user;
 std::vector<uint32_t> routers;
-int                   shortPacketsCount;
+int shortPacketsCount;
 };
 //-----------------------------------------------------------------------------
 class RS_SETTINGS
@@ -181,7 +177,7 @@ private:
 
     mutable BLOWFISH_CTX ctx;
 
-    std::list<RS_CHG_AFTER_NOTIFIER<uint32_t> > AfterChgIPNotifierList;
+    std::list<RS_CHG_AFTER_NOTIFIER<uint32_t> > afterChgIPNotifierList;
     std::map<uint32_t, RS_USER> authorizedUsers;
 
     mutable std::string errorStr;
@@ -224,13 +220,13 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, RS_U
 inline void RS_ADD_USER_NONIFIER::Notify(const user_iter & user)
 {
 printfd(__FILE__, "ADD_USER_NONIFIER\n");
-rs->AddUser(user);
+rs.AddUser(user);
 }
 //-----------------------------------------------------------------------------
 inline void RS_DEL_USER_NONIFIER::Notify(const user_iter & user)
 {
 printfd(__FILE__, "DEL_USER_NONIFIER\n");
-rs->DelUser(user);
+rs.DelUser(user);
 }
 //-----------------------------------------------------------------------------
 
