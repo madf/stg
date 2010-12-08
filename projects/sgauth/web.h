@@ -65,8 +65,10 @@ public:
     void UpdateStat(const LOADSTAT & ls);
     void Start();
 private:
-
     void PrepareNet();
+    int SendReply();
+    int SendCSS();
+    int Redirect(const char * url);
 
     #ifdef WIN32
     WSADATA wsaData;
@@ -74,28 +76,15 @@ private:
     pthread_t thread;
     #endif
 
-    int         SendReply();
-    int         SendCSS();
-    int         Redirect(const char * url);
+    string dirName[DIR_NUM];
+    int res;
+    int listenSocket;
+    int outerSocket;
+    int refreshPeriod;
 
-    string      dirName[DIR_NUM];
-    int         res;
-    int         listenSocket;
-    int         outerSocket;
-    struct sockaddr_in listenAddr;
-    struct sockaddr_in outerAddr;
-    int         refreshPeriod;
-
-    uint32_t    listenWebAddr;
-    LOADSTAT    ls;
+    uint32_t listenWebAddr;
+    LOADSTAT ls;
 
     list<STG_MESSAGE> messages;
-
-    #ifndef WIN32
-    socklen_t   outerAddrLen;
-    #else
-    int         outerAddrLen;
-    #endif
 };
 //-----------------------------------------------------------------------------
-

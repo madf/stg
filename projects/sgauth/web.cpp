@@ -56,8 +56,7 @@ WEB::WEB()
       listenSocket(0),
       outerSocket(0),
       refreshPeriod(0),
-      listenWebAddr(0),
-      outerAddrLen(0)
+      listenWebAddr(0)
 {
 #ifdef WIN32
 res = WSAStartup(MAKEWORD(2,0), &wsaData);
@@ -89,6 +88,8 @@ pthread_create(&thread, NULL, RunWeb, NULL);
 void WEB::PrepareNet()
 {
 listenSocket = socket(PF_INET, SOCK_STREAM, 0);
+
+struct sockaddr_in listenAddr;
 listenAddr.sin_family = AF_INET;
 listenAddr.sin_port = htons(LISTEN_PORT);
 listenAddr.sin_addr.s_addr = listenWebAddr;
@@ -120,8 +121,6 @@ if (res == -1)
     printf("Listen failed.\n");
     exit(0);
     }
-
-outerAddrLen = sizeof(outerAddr);
 }
 //---------------------------------------------------------------------------
 void WEB::SetRefreshPagePeriod(int p)
@@ -142,6 +141,14 @@ PrepareNet();
 char recvBuffer[4096];
 while (1)
     {
+    struct sockaddr_in outerAddr;
+
+    #ifndef WIN32
+    socklen_t outerAddrLen = sizeof(outerAddr);
+    #else
+    int outerAddrLen = sizeof(outerAddr);
+    #endif
+
     outerSocket = accept(listenSocket, (struct sockaddr*)&outerAddr, &outerAddrLen);
     if (outerSocket == -1)
         {
