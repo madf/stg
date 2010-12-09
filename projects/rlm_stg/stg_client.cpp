@@ -29,7 +29,11 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <unistd.h> // close
+
+#include <cerrno>
 #include <cstring>
+
+#include <stdexcept>
 
 #include "stg_client.h"
 
@@ -38,35 +42,36 @@ using namespace std;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STG_CLIENT::STG_CLIENT()
-    : port(0),
-      localPort(0),
-      sock(0)
+STG_CLIENT::STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass)
+    : localPort(lp),
+      password(pass),
+      framedIP(0)
 {
+sock = socket(AF_INET, SOCK_DGRAM, 0);
+if (sock == -1)
+    {
+    std::string message = strerror(errno);
+    message = "Socket create error: '" + message + "'";
+    throw std::runtime_error(message);
+    }
+
+struct hostent * he = NULL;
+he = gethostbyname(host.c_str());
+if (he == NULL)
+    {
+    throw std::runtime_error("gethostbyname error");
+    }
+
+outerAddr.sin_family = AF_INET;
+outerAddr.sin_port = htons(port);
+outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
+
+InitEncrypt();
 }
 //-----------------------------------------------------------------------------
 STG_CLIENT::~STG_CLIENT()
 {
-}
-//-----------------------------------------------------------------------------
-void STG_CLIENT::SetServer(const string & host)
-{
-STG_CLIENT::host = host;
-}
-//-----------------------------------------------------------------------------
-void STG_CLIENT::SetPort(uint16_t port)
-{
-STG_CLIENT::port = port;
-}
-//-----------------------------------------------------------------------------
-void STG_CLIENT::SetLocalPort(uint16_t port)
-{
-STG_CLIENT::localPort = port;
-}
-//-----------------------------------------------------------------------------
-void STG_CLIENT::SetPassword(const string & password)
-{
-STG_CLIENT::password = password;
+close(sock);
 }
 //-----------------------------------------------------------------------------
 uint32_t STG_CLIENT::GetFramedIP() const
@@ -74,6 +79,7 @@ uint32_t STG_CLIENT::GetFramedIP() const
 return framedIP;
 }
 //-----------------------------------------------------------------------------
+inline
 void STG_CLIENT::InitEncrypt()
 {
 unsigned char keyL[RAD_PASSWORD_LEN];
@@ -84,21 +90,6 @@ Blowfish_Init(&ctx, keyL, RAD_PASSWORD_LEN);
 //-----------------------------------------------------------------------------
 int STG_CLIENT::PrepareNet()
 {
-sock = socket(AF_INET, SOCK_DGRAM, 0);
-if (sock == -1)
-    {
-    errorStr = "Socket create error";
-    return -1;
-    }
-
-struct hostent * he = NULL;
-he = gethostbyname(host.c_str());
-if (he == NULL)
-    {
-    errorStr = "gethostbyname error";
-    return -1;
-    }
-
 if (localPort != 0)
     {
     struct sockaddr_in localAddr;
@@ -112,32 +103,16 @@ if (localPort != 0)
         return -1;
         }
     }
-
-outerAddr.sin_family = AF_INET;
-outerAddr.sin_port = htons(port);
-outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
-
-outerAddrLen = sizeof(struct sockaddr_in);
-
 return 0;
-}
-//-----------------------------------------------------------------------------
-void STG_CLIENT::FinalizeNet()
-{
-close(sock);
 }
 //-----------------------------------------------------------------------------
 int STG_CLIENT::Start()
 {
-InitEncrypt();
-
 return PrepareNet();
 }
 //-----------------------------------------------------------------------------
 int STG_CLIENT::Stop()
 {
-FinalizeNet();
-
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -152,7 +127,7 @@ char buf[RAD_MAX_PACKET_LEN];
     
 Encrypt(buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
 
-int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, outerAddrLen);
+int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, sizeof(outerAddr));
 
 if (res == -1)
     errorStr = "Error sending data";
@@ -165,9 +140,10 @@ int STG_CLIENT::RecvData(RAD_PACKET * packet)
 char buf[RAD_MAX_PACKET_LEN];
 int res;
 
-outerAddrLen = sizeof(struct sockaddr_in);
+struct sockaddr_in addr;
+socklen_t len = sizeof(struct sockaddr_in);
 
-res = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, (struct sockaddr *)&outerAddr, &outerAddrLen);
+res = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(&addr), &len);
 if (res == -1)
     {
     errorStr = "Error receiving data";
@@ -307,7 +283,7 @@ if (dst != src)
 for (int i = 0; i < len8; i++)
     Blowfish_Encrypt(&ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
 }
-//-----------------------------------------------------------------------------          
+//-----------------------------------------------------------------------------
 void STG_CLIENT::Decrypt(char * dst, const char * src, int len8)
 {
 // len8 - длина в 8-ми байтовых блоках

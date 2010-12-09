@@ -41,13 +41,8 @@
 class STG_CLIENT
 {
 public:
-    STG_CLIENT();
+    STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass);
     ~STG_CLIENT();
-
-    void SetServer(const std::string & host);
-    void SetPort(uint16_t port);
-    void SetLocalPort(uint16_t port);
-    void SetPassword(const std::string & password);
 
     int Start();
     int Stop();
@@ -61,19 +56,15 @@ public:
 
     uint32_t GetFramedIP() const;
 
-
     const std::string & GetError() const { return errorStr; };
 
 private:
-    std::string host;
-    uint16_t port;
     uint16_t localPort;
     std::string password;
     int sock;
     std::string errorStr;
 
     struct sockaddr_in outerAddr;
-    socklen_t outerAddrLen;
 
     std::string userPassword;
 
@@ -82,7 +73,6 @@ private:
     BLOWFISH_CTX ctx;
 
     int PrepareNet();
-    void FinalizeNet();
 
     void InitEncrypt();
     void Encrypt(char * dst, const char * src, int len8);
@@ -92,7 +82,6 @@ private:
 
     int RecvData(RAD_PACKET * packet);
     int Send(const RAD_PACKET & packet);
-
 };
 
 #endif
