@@ -1921,6 +1921,7 @@ while (stIter != statTree.end())
         errorStr += strerror(errno);
         errorStr += "'";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
+        fclose(statFile);
         return -1;
         }
     #else
@@ -1936,6 +1937,7 @@ while (stIter != statTree.end())
         errorStr += strerror(errno);
         errorStr += "'";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
+        fclose(statFile);
         return -1;
         }
     #endif

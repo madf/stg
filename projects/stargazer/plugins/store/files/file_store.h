@@ -28,8 +28,9 @@
 #ifndef FILE_STORE_H
 #define FILE_STORE_H
 
-#include <string>
 #include <sys/types.h>
+
+#include <string>
 
 #include "base_settings.h"
 #include "base_store.h"
@@ -80,6 +81,7 @@ private:
     int     ParseGroup(const vector<PARAM_VALUE> & moduleParams, const string & group, uid_t * uid);
     int     ParseMode(const vector<PARAM_VALUE> & moduleParams, const string & modeStr, mode_t * mode);
     int     ParseYesNo(const string & value, bool * val);
+
     string  errorStr;
 
     string  workDir;
@@ -181,8 +183,8 @@ public:
     virtual int DelService(const string &) const {return 0;};
 
     //virtual BASE_SETTINGS * GetStoreSettings();
-    virtual void            SetSettings(const MODULE_SETTINGS & s);
-    virtual int             ParseSettings();
+    virtual void SetSettings(const MODULE_SETTINGS & s);
+    virtual int ParseSettings();
     virtual const string &  GetVersion() const;
 
 private:
@@ -191,12 +193,13 @@ private:
 
     virtual int WriteLogString(const string & str, const string & login) const;
     virtual int WriteLog2String(const string & str, const string & login) const;
-    int     RemoveDir(const char * path) const;
-    int     GetFilesList(vector<string> * filesList, const string & directory, mode_t mode, const string & ext) const;
-    mutable string          errorStr;
-    string                  version;
-    FILES_STORE_SETTINGS    storeSettings;
-    MODULE_SETTINGS         settings;
+    int RemoveDir(const char * path) const;
+    int GetFilesList(vector<string> * filesList, const string & directory, mode_t mode, const string & ext) const;
+
+    mutable string errorStr;
+    string version;
+    FILES_STORE_SETTINGS storeSettings;
+    MODULE_SETTINGS settings;
     mutable pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
