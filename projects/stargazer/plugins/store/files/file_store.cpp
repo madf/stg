@@ -74,29 +74,6 @@ public:
         bakSuccessed = false;
         BAK_FILE::removeBak = removeBak;
         fileNameBak = fileName + ".bak";
-        /*struct stat fileStat;
-        if (stat(fileName.c_str(), &fileStat) == 0)
-            {
-            char * buff = new char[fileStat.st_size];
-            f = fopen(fileName.c_str(), "rb");
-            if(f)
-                {
-                fread(buff, 1, fileStat.st_size, f);
-                fclose(f);
-
-                fileNameBak = fileName + ".bak";
-                f = fopen(fileNameBak.c_str(), "wb");
-                if(f)
-                    {
-                    fwrite(buff, 1, fileStat.st_size, f);
-                    fclose(f);
-                    }
-                }
-
-            delete[] buff;
-
-            bakSuccessed = true;
-            }*/
         if (rename(fileName.c_str(), fileNameBak.c_str()))
             {
             printfd(__FILE__, "BAK_FILE::BAK_FILE - rename failed. Message: '%s'\n", strerror(errno));
@@ -485,13 +462,6 @@ return readBak;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-/*BASE_SETTINGS * FILES_STORE::GetStoreSettings()
-{
-return &storeSettings;
-}*/
-//-----------------------------------------------------------------------------
 FILES_STORE::FILES_STORE()
 {
 version = "file_store v.1.04";
@@ -641,7 +611,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::AddUser(const string & login) const
 {
-FILE * f;
 string fileName;
 
 strprintf(&fileName, "%s%s", storeSettings.GetUsersDir().c_str(), login.c_str());
@@ -655,7 +624,14 @@ if (mkdir(fileName.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 
     }
 
 strprintf(&fileName, "%s%s/conf", storeSettings.GetUsersDir().c_str(), login.c_str());
-f = fopen(fileName.c_str(), "wt");
+if (Touch(fileName))
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Cannot create file \"" + fileName + "\'";
+    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
+    return -1;
+    }
+/*f = fopen(fileName.c_str(), "wt");
 if (f)
     {
     if (fprintf(f, "\n") < 0)
@@ -675,10 +651,17 @@ else
     errorStr = "Cannot create file \"" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
-    }
+    }*/
 
 strprintf(&fileName, "%s%s/stat", storeSettings.GetUsersDir().c_str(), login.c_str());
-f = fopen(fileName.c_str(), "wt");
+if (Touch(fileName))
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Cannot create file \"" + fileName + "\'";
+    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
+    return -1;
+    }
+/*f = fopen(fileName.c_str(), "wt");
 if (f)
     {
     if (fprintf(f, "\n") < 0)
@@ -698,7 +681,7 @@ else
     errorStr = "Cannot create file \"" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
-    }
+    }*/
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -981,63 +964,67 @@ int FILES_STORE::SaveUserConf(const USER_CONF & conf, const string & login) cons
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 
-BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
+//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
-if (access(fileName.c_str(), W_OK) != 0)
+Touch(fileName + ".new");
+
     {
-    FILE * f;
-    f = fopen(fileName.c_str(), "wb");
-    if (f)
-        fclose(f);
+    CONFIGFILE cfstat(fileName + ".new");
+
+    int e = cfstat.Error();
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        errorStr = string("User \'") + login + "\' conf not written\n";
+        printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
+        return -1;
+        }
+
+    e = chmod(fileName.c_str(), storeSettings.GetConfMode());
+    e += chown(fileName.c_str(), storeSettings.GetConfUID(), storeSettings.GetConfGID());
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        printfd(__FILE__, "FILES_STORE::SaveUserConf - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
+        }
+
+    cfstat.WriteString("Password",     conf.password);
+    cfstat.WriteInt   ("Passive",      conf.passive);
+    cfstat.WriteInt   ("Down",         conf.disabled);
+    cfstat.WriteInt("DisabledDetailStat", conf.disabledDetailStat);
+    cfstat.WriteInt   ("AlwaysOnline", conf.alwaysOnline);
+    cfstat.WriteString("Tariff",       conf.tariffName);
+    cfstat.WriteString("Address",      conf.address);
+    cfstat.WriteString("Phone",        conf.phone);
+    cfstat.WriteString("Email",        conf.email);
+    cfstat.WriteString("Note",         conf.note);
+    cfstat.WriteString("RealName",     conf.realName);
+    cfstat.WriteString("Group",        conf.group);
+    cfstat.WriteDouble("Credit",       conf.credit);
+    cfstat.WriteString("TariffChange", conf.nextTariff);
+
+    char userdataName[12];
+    for (int i = 0; i < USERDATA_NUM; i++)
+        {
+        snprintf(userdataName, 12, "Userdata%d", i);
+        cfstat.WriteString(userdataName, conf.userdata[i]);
+        }
+    cfstat.WriteInt("CreditExpire",    conf.creditExpire);
+
+    stringstream ipStr;
+    ipStr << conf.ips;
+    cfstat.WriteString("IP", ipStr.str());
     }
 
-CONFIGFILE cfstat(fileName);
-
-int e = cfstat.Error();
-
-if (e)
+if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("User \'") + login + "\' conf not written\n";
-    printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
+    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
+    printfd(__FILE__, "FILES_STORE::SaveUserConf - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-
-e = chmod(fileName.c_str(), storeSettings.GetConfMode());
-e += chown(fileName.c_str(), storeSettings.GetConfUID(), storeSettings.GetConfGID());
-
-if (e)
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    printfd(__FILE__, "FILES_STORE::SaveUserConf - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
-    }
-
-cfstat.WriteString("Password",     conf.password);
-cfstat.WriteInt   ("Passive",      conf.passive);
-cfstat.WriteInt   ("Down",         conf.disabled);
-cfstat.WriteInt("DisabledDetailStat", conf.disabledDetailStat);
-cfstat.WriteInt   ("AlwaysOnline", conf.alwaysOnline);
-cfstat.WriteString("Tariff",       conf.tariffName);
-cfstat.WriteString("Address",      conf.address);
-cfstat.WriteString("Phone",        conf.phone);
-cfstat.WriteString("Email",        conf.email);
-cfstat.WriteString("Note",         conf.note);
-cfstat.WriteString("RealName",     conf.realName);
-cfstat.WriteString("Group",        conf.group);
-cfstat.WriteDouble("Credit",       conf.credit);
-cfstat.WriteString("TariffChange", conf.nextTariff);
-
-char userdataName[12];
-for (int i = 0; i < USERDATA_NUM; i++)
-    {
-    snprintf(userdataName, 12, "Userdata%d", i);
-    cfstat.WriteString(userdataName, conf.userdata[i]);
-    }
-cfstat.WriteInt("CreditExpire",    conf.creditExpire);
-
-stringstream ipStr;
-ipStr << conf.ips;
-cfstat.WriteString("IP", ipStr.str());
 
 return 0;
 }
@@ -1048,49 +1035,53 @@ char s[22];
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
-BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
+//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
-if (access(fileName.c_str(), W_OK) != 0)
+Touch(fileName + ".new");
+
     {
-    FILE * f;
-    f = fopen(fileName.c_str(), "wb");
-    if (f)
-        fclose(f);
+    CONFIGFILE cfstat(fileName + ".new");
+    int e = cfstat.Error();
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        errorStr = string("User \'") + login + "\' stat not written\n";
+        printfd(__FILE__, "FILES_STORE::SaveUserStat - stat write failed for user '%s'\n", login.c_str());
+        return -1;
+        }
+
+    for (int i = 0; i < DIR_NUM; i++)
+        {
+        snprintf(s, 22, "D%d", i);
+        cfstat.WriteInt(s, stat.down[i]);
+        snprintf(s, 22, "U%d", i);
+        cfstat.WriteInt(s, stat.up[i]);
+        }
+
+    cfstat.WriteDouble("Cash", stat.cash);
+    cfstat.WriteDouble("FreeMb", stat.freeMb);
+    cfstat.WriteDouble("LastCashAdd", stat.lastCashAdd);
+    cfstat.WriteInt("LastCashAddTime", stat.lastCashAddTime);
+    cfstat.WriteInt("PassiveTime", stat.passiveTime);
+    cfstat.WriteInt("LastActivityTime", stat.lastActivityTime);
+
+    e = chmod(fileName.c_str(), storeSettings.GetStatMode());
+    e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGID());
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        printfd(__FILE__, "FILES_STORE::SaveUserStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
+        }
     }
 
-CONFIGFILE cfstat(fileName);
-int e = cfstat.Error();
-
-if (e)
+if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("User \'") + login + "\' stat not written\n";
-    printfd(__FILE__, "FILES_STORE::SaveUserStat - stat write failed for user '%s'\n", login.c_str());
+    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
+    printfd(__FILE__, "FILES_STORE::SaveUserStat - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
-    }
-
-for (int i = 0; i < DIR_NUM; i++)
-    {
-    snprintf(s, 22, "D%d", i);
-    cfstat.WriteInt(s, stat.down[i]);
-    snprintf(s, 22, "U%d", i);
-    cfstat.WriteInt(s, stat.up[i]);
-    }
-
-cfstat.WriteDouble("Cash", stat.cash);
-cfstat.WriteDouble("FreeMb", stat.freeMb);
-cfstat.WriteDouble("LastCashAdd", stat.lastCashAdd);
-cfstat.WriteInt("LastCashAddTime", stat.lastCashAddTime);
-cfstat.WriteInt("PassiveTime", stat.passiveTime);
-cfstat.WriteInt("LastActivityTime", stat.lastActivityTime);
-
-e = chmod(fileName.c_str(), storeSettings.GetStatMode());
-e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGID());
-
-if (e)
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    printfd(__FILE__, "FILES_STORE::SaveUserStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
 return 0;
@@ -1201,22 +1192,8 @@ int FILES_STORE::WriteUserDisconnect(const string & login,
                                      const std::string & reason) const
 {
 stringstream logStr;
-logStr << "Disconnect, ";
-/*stringstream sssu;
-stringstream sssd;
-stringstream ssmu;
-stringstream ssmd;
-stringstream sscash;
-
-ssmu << up;
-ssmd << down;
-
-sssu << sessionUp;
-sssd << sessionDown;
-
-sscash << cash;*/
-
-logStr << " session upload: \'"
+logStr << "Disconnect, "
+       << " session upload: \'"
        << sessionUp
        << "\' session download: \'"
        << sessionDown
@@ -1244,21 +1221,15 @@ return WriteLog2String(logStr.str(), login);
 int FILES_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const string & login) const
 {
 string str;
-CONFIGFILE * s;
 int e;
-FILE *f;
 
 strprintf(&str,"%s/%s/stat.%d.%02d",
         storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
-if ((f = fopen(str.c_str(), "w")))
-    {
-    fprintf(f, "\n");
-    fclose(f);
-    }
+Touch(str);
 
-s = new CONFIGFILE(str);
-e = s->Error();
+CONFIGFILE s(str);
+e = s.Error();
 
 if (e)
     {
@@ -1273,14 +1244,12 @@ char dirName[3];
 for (int i = 0; i < DIR_NUM; i++)
     {
     snprintf(dirName, 3, "U%d", i);
-    s->WriteInt(dirName, stat.up[i]);
+    s.WriteInt(dirName, stat.up[i]);
     snprintf(dirName, 3, "D%d", i);
-    s->WriteInt(dirName, stat.down[i]);
+    s.WriteInt(dirName, stat.down[i]);
     }
 
-s->WriteDouble("cash", stat.cash);
-
-delete s;
+s.WriteDouble("cash", stat.cash);
 
 return 0;
 }
@@ -1289,19 +1258,16 @@ int FILES_STORE::AddAdmin(const string & login) const
 {
 string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
-FILE * f;
-f = fopen(fileName.c_str(), "wt");
-if (f)
+
+if (Touch(fileName))
     {
-    fprintf(f, "\n");
-    fclose(f);
-    return 0;
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Cannot create file " + fileName;
+    printfd(__FILE__, "FILES_STORE::AddAdmin - failed to add admin '%s'\n", login.c_str());
+    return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-errorStr = "Cannot create file " + fileName;
-printfd(__FILE__, "FILES_STORE::AddAdmin - failed to add admin '%s'\n", login.c_str());
-return -1;
+return 0;
 }
 //-----------------------------------------------------------------------------*/
 int FILES_STORE::DelAdmin(const string & login) const
@@ -1329,44 +1295,56 @@ string fileName;
 
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login.c_str());
 
-CONFIGFILE cf(fileName);
+Touch(fileName + ".new");
 
-int e = cf.Error();
+    {
+    CONFIGFILE cf(fileName);
 
-if (e)
+    int e = cf.Error();
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        errorStr = "Cannot write admin " + ac.login + ". " + fileName;
+        printfd(__FILE__, "FILES_STORE::SaveAdmin - failed to save admin '%s'\n", ac.login.c_str());
+        return -1;
+        }
+
+    memset(pass, 0, sizeof(pass));
+    memset(adminPass, 0, sizeof(adminPass));
+
+    BLOWFISH_CTX ctx;
+    EnDecodeInit(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
+
+    strncpy(adminPass, ac.password.c_str(), ADM_PASSWD_LEN);
+    adminPass[ADM_PASSWD_LEN - 1] = 0;
+
+    for (int i = 0; i < ADM_PASSWD_LEN/8; i++)
+        {
+        EncodeString(pass + 8*i, adminPass + 8*i, &ctx);
+        }
+
+    pass[ADM_PASSWD_LEN - 1] = 0;
+    Encode12(passwordE, pass, ADM_PASSWD_LEN);
+    //printfd(__FILE__, "passwordE %s\n", passwordE);
+
+    cf.WriteString("password", passwordE);
+    cf.WriteInt("ChgConf",     ac.priv.userConf);
+    cf.WriteInt("ChgPassword", ac.priv.userPasswd);
+    cf.WriteInt("ChgStat",     ac.priv.userStat);
+    cf.WriteInt("ChgCash",     ac.priv.userCash);
+    cf.WriteInt("UsrAddDel",   ac.priv.userAddDel);
+    cf.WriteInt("ChgTariff",   ac.priv.tariffChg);
+    cf.WriteInt("ChgAdmin",    ac.priv.adminChg);
+    }
+
+if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot write admin " + ac.login + ". " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveAdmin - failed to save admin '%s'\n", ac.login.c_str());
+    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
+    printfd(__FILE__, "FILES_STORE::SaveAdmin - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-
-memset(pass, 0, sizeof(pass));
-memset(adminPass, 0, sizeof(adminPass));
-
-BLOWFISH_CTX ctx;
-EnDecodeInit(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
-
-strncpy(adminPass, ac.password.c_str(), ADM_PASSWD_LEN);
-adminPass[ADM_PASSWD_LEN - 1] = 0;
-
-for (int i = 0; i < ADM_PASSWD_LEN/8; i++)
-    {
-    EncodeString(pass + 8*i, adminPass + 8*i, &ctx);
-    }
-
-pass[ADM_PASSWD_LEN - 1] = 0;
-Encode12(passwordE, pass, ADM_PASSWD_LEN);
-//printfd(__FILE__, "passwordE %s\n", passwordE);
-
-cf.WriteString("password", passwordE);
-cf.WriteInt("ChgConf",     ac.priv.userConf);
-cf.WriteInt("ChgPassword", ac.priv.userPasswd);
-cf.WriteInt("ChgStat",     ac.priv.userStat);
-cf.WriteInt("ChgCash",     ac.priv.userCash);
-cf.WriteInt("UsrAddDel",   ac.priv.userAddDel);
-cf.WriteInt("ChgTariff",   ac.priv.tariffChg);
-cf.WriteInt("ChgAdmin",    ac.priv.adminChg);
 
 return 0;
 }
@@ -1378,7 +1356,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_
 CONFIGFILE cf(fileName);
 char pass[ADM_PASSWD_LEN + 1];
 char password[ADM_PASSWD_LEN + 1];
-char passwordE[2*ADM_PASSWD_LEN + 2];
+char passwordE[2 * ADM_PASSWD_LEN + 2];
 BLOWFISH_CTX ctx;
 
 string p;
@@ -1502,19 +1480,14 @@ int FILES_STORE::AddTariff(const string & name) const
 {
 string fileName;
 strprintf(&fileName, "%s/%s.tf", storeSettings.GetTariffsDir().c_str(), name.c_str());
-FILE * f;
-f = fopen(fileName.c_str(), "wt");
-if (f)
+if (Touch(fileName))
     {
-    fprintf(f, "\n");
-    fclose(f);
-    return 0;
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Cannot create file " + fileName;
+    printfd(__FILE__, "FILES_STORE::AddTariff - failed to add tariff '%s'\n", name.c_str());
+    return -1;
     }
-
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-errorStr = "Cannot create file " + fileName;
-printfd(__FILE__, "FILES_STORE::AddTariff - failed to add tariff '%s'\n", name.c_str());
-return -1;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::DelTariff(const string & name) const
@@ -1688,81 +1661,88 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::SaveTariff(const TARIFF_DATA & td, const string & tariffName) const
 {
-string tariffFileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
-if (access(tariffFileName.c_str(), W_OK) != 0)
+string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
+
+Touch(fileName + ".new");
+
     {
-    int fd = open(tariffFileName.c_str(), O_CREAT, 0600);
-    if (fd)
-        close(fd);
+    CONFIGFILE cf(fileName);
+
+    int e = cf.Error();
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        errorStr = "Error writing tariff " + tariffName;
+        printfd(__FILE__, "FILES_STORE::RestoreTariff - failed to save tariff '%s'\n", tariffName.c_str());
+        return e;
+        }
+
+    string param;
+    for (int i = 0; i < DIR_NUM; i++)
+        {
+        strprintf(&param, "PriceDayA%d", i);
+        cf.WriteDouble(param, td.dirPrice[i].priceDayA * pt_mega);
+
+        strprintf(&param, "PriceDayB%d", i);
+        cf.WriteDouble(param, td.dirPrice[i].priceDayB * pt_mega);
+
+        strprintf(&param, "PriceNightA%d", i);
+        cf.WriteDouble(param, td.dirPrice[i].priceNightA * pt_mega);
+
+        strprintf(&param, "PriceNightB%d", i);
+        cf.WriteDouble(param, td.dirPrice[i].priceNightB * pt_mega);
+
+        strprintf(&param, "Threshold%d", i);
+        cf.WriteInt(param, td.dirPrice[i].threshold);
+
+        string s;
+        strprintf(&param, "Time%d", i);
+
+        strprintf(&s, "%0d:%0d-%0d:%0d",
+                td.dirPrice[i].hDay,
+                td.dirPrice[i].mDay,
+                td.dirPrice[i].hNight,
+                td.dirPrice[i].mNight);
+
+        cf.WriteString(param, s);
+
+        strprintf(&param, "NoDiscount%d", i);
+        cf.WriteInt(param, td.dirPrice[i].noDiscount);
+
+        strprintf(&param, "SinglePrice%d", i);
+        cf.WriteInt(param, td.dirPrice[i].singlePrice);
+        }
+
+    cf.WriteDouble("PassiveCost", td.tariffConf.passiveCost);
+    cf.WriteDouble("Fee", td.tariffConf.fee);
+    cf.WriteDouble("Free", td.tariffConf.free);
+
+    switch (td.tariffConf.traffType)
+        {
+        case TRAFF_UP:
+            cf.WriteString("TraffType", "up");
+            break;
+        case TRAFF_DOWN:
+            cf.WriteString("TraffType", "down");
+            break;
+        case TRAFF_UP_DOWN:
+            cf.WriteString("TraffType", "up+down");
+            break;
+        case TRAFF_MAX:
+            cf.WriteString("TraffType", "max");
+            break;
+        }
     }
 
-CONFIGFILE cf(tariffFileName);
-
-int e = cf.Error();
-
-if (e)
+if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Error writing tariff " + tariffName;
-    printfd(__FILE__, "FILES_STORE::RestoreTariff - failed to save tariff '%s'\n", tariffName.c_str());
-    return e;
+    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
+    printfd(__FILE__, "FILES_STORE::SaveTariff - rename failed. Message: '%s'\n", strerror(errno));
+    return -1;
     }
 
-string param;
-for (int i = 0; i < DIR_NUM; i++)
-    {
-    strprintf(&param, "PriceDayA%d", i);
-    cf.WriteDouble(param, td.dirPrice[i].priceDayA * pt_mega);
-
-    strprintf(&param, "PriceDayB%d", i);
-    cf.WriteDouble(param, td.dirPrice[i].priceDayB * pt_mega);
-
-    strprintf(&param, "PriceNightA%d", i);
-    cf.WriteDouble(param, td.dirPrice[i].priceNightA * pt_mega);
-
-    strprintf(&param, "PriceNightB%d", i);
-    cf.WriteDouble(param, td.dirPrice[i].priceNightB * pt_mega);
-
-    strprintf(&param, "Threshold%d", i);
-    cf.WriteInt(param, td.dirPrice[i].threshold);
-
-    string s;
-    strprintf(&param, "Time%d", i);
-
-    strprintf(&s, "%0d:%0d-%0d:%0d",
-            td.dirPrice[i].hDay,
-            td.dirPrice[i].mDay,
-            td.dirPrice[i].hNight,
-            td.dirPrice[i].mNight);
-
-    cf.WriteString(param, s);
-
-    strprintf(&param, "NoDiscount%d", i);
-    cf.WriteInt(param, td.dirPrice[i].noDiscount);
-
-    strprintf(&param, "SinglePrice%d", i);
-    cf.WriteInt(param, td.dirPrice[i].singlePrice);
-    }
-
-cf.WriteDouble("PassiveCost", td.tariffConf.passiveCost);
-cf.WriteDouble("Fee", td.tariffConf.fee);
-cf.WriteDouble("Free", td.tariffConf.free);
-
-switch (td.tariffConf.traffType)
-    {
-    case TRAFF_UP:
-        cf.WriteString("TraffType", "up");
-        break;
-    case TRAFF_DOWN:
-        cf.WriteString("TraffType", "down");
-        break;
-    case TRAFF_UP_DOWN:
-        cf.WriteString("TraffType", "up+down");
-        break;
-    case TRAFF_MAX:
-        cf.WriteString("TraffType", "max");
-        break;
-    }
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1773,8 +1753,7 @@ int FILES_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
 char fn[FN_STR_LEN];
 char dn[FN_STR_LEN];
 FILE * statFile;
-//char timestr[30];
-time_t t;//, lastTimeReal;
+time_t t;
 tm * lt;
 
 t = time(NULL);
@@ -1961,14 +1940,13 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::AddMessage(STG_MSG * msg, const string & login) const
 {
-//Проверить еслть ли директория для сообщений. Если нет - создать.
+//Проверить есть ли директория для сообщений. Если нет - создать.
 //Затем положить сообщение с именем файла - временнOй меткой. Записать туда
 //текст и приоритет.
 
 string fn;
 string dn;
 struct timeval tv;
-FILE * msgFile;
 
 strprintf(&dn, "%s/%s/messages", storeSettings.GetUsersDir().c_str(), login.c_str());
 if (access(dn.c_str(), F_OK) != 0)
@@ -1991,9 +1969,7 @@ gettimeofday(&tv, NULL);
 msg->header.id = ((long long)tv.tv_sec) * 1000000 + ((long long)tv.tv_usec);
 strprintf(&fn, "%s/%lld", dn.c_str(), msg->header.id);
 
-msgFile = fopen (fn.c_str(), "wt");
-
-if (!msgFile)
+if (Touch(fn))
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "File \'";
@@ -2002,7 +1978,7 @@ if (!msgFile)
     printfd(__FILE__, "FILES_STORE::AddMessage - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-fclose(msgFile);
+
 return EditMessage(*msg, login);
 }
 //-----------------------------------------------------------------------------
@@ -2012,12 +1988,12 @@ int FILES_STORE::EditMessage(const STG_MSG & msg, const string & login) const
 //Затем положить сообщение с именем файла - временнOй меткой. Записать туда
 //текст и приоритет.
 
-string fn;
+string fileName;
 
 FILE * msgFile;
-strprintf(&fn, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), msg.header.id);
+strprintf(&fileName, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), msg.header.id);
 
-if (access(fn.c_str(), F_OK) != 0)
+if (access(fileName.c_str(), F_OK) != 0)
     {
     string idstr;
     x2str(msg.header.id, idstr);
@@ -2029,11 +2005,13 @@ if (access(fn.c_str(), F_OK) != 0)
     return -1;
     }
 
-msgFile = fopen(fn.c_str(), "wt");
+Touch(fileName + ".new");
+
+msgFile = fopen((fileName + ".new").c_str(), "wt");
 if (!msgFile)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "File \'" + fn + "\' cannot be writen.";
+    errorStr = "File \'" + fileName + "\' cannot be writen.";
     printfd(__FILE__, "FILES_STORE::EditMessage - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
@@ -2057,7 +2035,16 @@ if (!res)
 
 fclose(msgFile);
 
-chmod(fn.c_str(), storeSettings.GetConfMode());
+chmod((fileName + ".new").c_str(), storeSettings.GetConfMode());
+
+if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
+    printfd(__FILE__, "FILES_STORE::SaveTariff - rename failed. Message: '%s'\n", strerror(errno));
+    return -1;
+    }
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -2212,8 +2199,18 @@ if (text)
         (*text) += txt;
         }
     }
-//fprintf(msgFile, "%s\n", msg.text.c_str());
 fclose(msgFile);
 return 0;
+}
+//-----------------------------------------------------------------------------
+int FILES_STORE::Touch(const std::string & path) const
+{
+FILE * f = fopen(path.c_str(), "wb");
+if (f)
+    {
+    fclose(f);
+    return 0;
+    }
+return -1;
 }
 //-----------------------------------------------------------------------------

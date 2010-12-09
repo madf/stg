@@ -195,6 +195,7 @@ private:
     virtual int WriteLog2String(const string & str, const string & login) const;
     int RemoveDir(const char * path) const;
     int GetFilesList(vector<string> * filesList, const string & directory, mode_t mode, const string & ext) const;
+    int Touch(const std::string & path) const;
 
     mutable string errorStr;
     string version;
