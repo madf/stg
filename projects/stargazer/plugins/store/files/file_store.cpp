@@ -438,15 +438,15 @@ mode_t FILES_STORE_SETTINGS::GetConfMode() const
 {
 return confMode;
 }
-/*//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetConfModeDir() const
 {
 mode_t mode = confMode;
-if (statMode & S_IRUSR) mode |= S_IXUSR;
-if (statMode & S_IRGRP) mode |= S_IXGRP;
-if (statMode & S_IROTH) mode |= S_IXOTH;
+if (confMode & S_IRUSR) mode |= S_IXUSR;
+if (confMode & S_IRGRP) mode |= S_IXGRP;
+if (confMode & S_IROTH) mode |= S_IXOTH;
 return mode;
-}*/
+}
 //-----------------------------------------------------------------------------
 uid_t  FILES_STORE_SETTINGS::GetConfUID() const
 {
@@ -1984,7 +1984,7 @@ if (access(dn.c_str(), F_OK) != 0)
         }
     }
 
-chmod(dn.c_str(), storeSettings.GetConfMode() | S_IXUSR);
+chmod(dn.c_str(), storeSettings.GetConfModeDir());
 
 gettimeofday(&tv, NULL);
 
