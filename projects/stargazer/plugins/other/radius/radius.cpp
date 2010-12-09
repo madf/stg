@@ -26,8 +26,8 @@
  *
  */
 
+#include <csignal>
 #include <algorithm>
-#include <signal.h>
 
 #include "radius.h"
 #include "common.h"
@@ -70,35 +70,6 @@ return radc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-uint16_t RAD_SETTINGS::GetPort() const
-{
-return port;
-}
-//-----------------------------------------------------------------------------
-int RAD_SETTINGS::GetPassword(string * password) const
-{
-*password = RAD_SETTINGS::password;
-return 0;
-}
-//-----------------------------------------------------------------------------
-int RAD_SETTINGS::GetAuthServices(list<string> * svcs) const
-{
-*svcs = authServices;
-return 0;
-}
-//-----------------------------------------------------------------------------
-int RAD_SETTINGS::GetAcctServices(list<string> * svcs) const
-{
-*svcs = acctServices;
-return 0;
-}
-//-----------------------------------------------------------------------------
-int RAD_SETTINGS::ParseIP(const string & str, uint32_t * IP)
-{
-*IP = inet_addr(str.c_str());
-return *IP == INADDR_NONE ? -1 : 0;
-}
 //-----------------------------------------------------------------------------
 int RAD_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
 {
@@ -279,11 +250,10 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::Start()
 {
-string password;
+string password(radSettings.GetPassword());
 
-radSettings.GetPassword(&password);
-radSettings.GetAuthServices(&authServices);
-radSettings.GetAcctServices(&acctServices);
+authServices = radSettings.GetAuthServices();
+acctServices = radSettings.GetAcctServices();
 
 InitEncrypt(&ctx, password);
 

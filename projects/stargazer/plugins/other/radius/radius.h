@@ -29,11 +29,12 @@
 #ifndef RADIUS_H
 #define RADIUS_H
 
+#include <pthread.h>
+
+#include <cstring>
+#include <cstdlib>
 #include <string>
 #include <list>
-#include <pthread.h>
-#include <string.h>
-#include <stdlib.h>
 
 #include "os_int.h"
 #include "base_auth.h"
@@ -55,24 +56,24 @@ class RADIUS;
 class RAD_SETTINGS
 {
 public:
-    virtual         ~RAD_SETTINGS(){};
-    const string&   GetStrError() const { return errorStr; };
-    int             ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t        GetPort() const;
-    int             GetPassword(string * password) const;
-    int             GetAuthServices(list<string> * svcs) const;
-    int             GetAcctServices(list<string> * svcs) const;
+    RAD_SETTINGS() : port(0) {}
+    virtual ~RAD_SETTINGS() {}
+    const string & GetStrError() const { return errorStr; }
+    int ParseSettings(const MODULE_SETTINGS & s);
+    uint16_t GetPort() const { return port; }
+    const std::string & GetPassword() const { return password; }
+    const list<string> & GetAuthServices() const { return authServices; }
+    const list<string> & GetAcctServices() const { return acctServices; }
 
 private:
-    int             ParseIntInRange(const string & str, int min, int max, int * val);
-    int             ParseIP(const string & str, uint32_t * routerIP);
-    int             ParseServices(const vector<string> & str, list<string> * lst);
+    int ParseIntInRange(const string & str, int min, int max, int * val);
+    int ParseServices(const vector<string> & str, list<string> * lst);
 
-    uint16_t            port;
-    string              errorStr;
-    string              password;
-    list<string>        authServices;
-    list<string>        acctServices;
+    uint16_t port;
+    string errorStr;
+    string password;
+    list<string> authServices;
+    list<string> acctServices;
 };
 //-----------------------------------------------------------------------------
 struct RAD_SESSION {
