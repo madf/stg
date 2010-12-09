@@ -57,8 +57,6 @@ NETTRANSACT::NETTRANSACT()
       RxCallBack(NULL),
       dataRxCallBack(NULL)
 {
-    memset(login, 0, ADM_LOGIN_LEN);
-    memset(password, 0, ADM_PASSWD_LEN);
 }
 //-----------------------------------------------------------------------------
 void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
@@ -243,7 +241,7 @@ char loginZ[ADM_LOGIN_LEN];
 int ret;
 
 memset(loginZ, 0, ADM_LOGIN_LEN);
-strncpy(loginZ, login, ADM_LOGIN_LEN);
+strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
 ret = send(outerSocket, loginZ, ADM_LOGIN_LEN, 0);
 
 if (ret <= 0)
@@ -293,10 +291,10 @@ char ct[ENC_MSG_LEN];
 int ret;
 
 memset(loginZ, 0, ADM_LOGIN_LEN);
-strncpy(loginZ, login, ADM_LOGIN_LEN);
+strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password, PASSWD_LEN, &ctx);
+EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
 
 for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
     {
@@ -354,7 +352,7 @@ int n = strlen(text) / ENC_MSG_LEN;
 int r = strlen(text) % ENC_MSG_LEN;
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password, PASSWD_LEN, &ctx);
+EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
 
 for (j = 0; j < n; j++)
     {
@@ -372,7 +370,7 @@ memset(textZ, 0, ENC_MSG_LEN);
 if (r)
     strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
 
-EnDecryptInit(password, PASSWD_LEN, &ctx);
+EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
 
 Encrypt(ct, textZ, &ctx);
 ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
@@ -392,7 +390,7 @@ char buffS[ENC_MSG_LEN];
 char passwd[ADM_PASSWD_LEN];
 
 memset(passwd, 0, ADM_PASSWD_LEN);
-strncpy(passwd, password, ADM_PASSWD_LEN);
+strncpy(passwd, password.c_str(), ADM_PASSWD_LEN);
 memset(buff, 0, ENC_MSG_LEN);
 
 int l = strlen(data)/ENC_MSG_LEN;
@@ -420,7 +418,7 @@ char bufferS[ENC_MSG_LEN];
 char buffer[ENC_MSG_LEN + 1];
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password, PASSWD_LEN, &ctx);
+EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
 
 while (1)
     {
@@ -434,7 +432,6 @@ while (1)
 
     if (n == ENC_MSG_LEN)
         {
-
         n = 0;
         Decrypt(buffer, bufferS, &ctx);
         buffer[ENC_MSG_LEN] = 0;
@@ -459,12 +456,12 @@ while (1)
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetLogin(const char * l)
 {
-strncpy(login, l, ADM_LOGIN_LEN);
+login = l;
 }
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetPassword(const char * p)
 {
-strncpy(password, p, ADM_PASSWD_LEN);
+password = p;
 }
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetServer(const char * serverName)

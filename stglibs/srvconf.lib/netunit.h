@@ -114,8 +114,8 @@ private:
 
     std::string server;
     short unsigned  port;
-    char    login[ADM_LOGIN_LEN];
-    char    password[ADM_PASSWD_LEN];
+    std::string login;
+    std::string password;
     int     outerSocket;
     std::list<std::string>   answerList;
     RxCallback_t RxCallBack;
