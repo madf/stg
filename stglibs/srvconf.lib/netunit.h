@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
 #include <list>
 #include <string>
 
@@ -80,7 +81,7 @@ class NETTRANSACT
 public:
     NETTRANSACT();
     int     Transact(const char * data);
-    char   *GetError();
+    const std::string & GetError() const;
 
     void    SetRxCallback(void * data, RxCallback_t);
 
@@ -111,7 +112,7 @@ private:
     void EnDecryptInit(const char * passwd, int passwdLen, BLOWFISH_CTX *ctx);
     void Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx);
 
-    char    server[SERVER_NAME_LEN];
+    std::string server;
     short unsigned  port;
     char    login[ADM_LOGIN_LEN];
     char    password[ADM_PASSWD_LEN];
@@ -119,7 +120,7 @@ private:
     std::list<std::string>   answerList;
     RxCallback_t RxCallBack;
     void *  dataRxCallBack;
-    char    errorMsg[MAX_ERR_STR_LEN];
+    std::string errorMsg;
 };
 //---------------------------------------------------------------------------
 #endif

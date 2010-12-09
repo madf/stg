@@ -24,8 +24,8 @@
  $Author: faust $
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #include "servconf.h"
 
@@ -63,12 +63,9 @@ while (node != list1->end())
 
     if (XML_Parse(sc->parser, ans, len, done) == XML_STATUS_ERROR)
         {
-        snprintf(sc->errorMsg, MAX_ERR_STR_LEN, "XML parse error at line %d: %s",
-                 static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
-                 XML_ErrorString(XML_GetErrorCode(sc->parser)));
-        printf(sc->errorMsg, "XML parse error at line %d: %s",
-               XML_GetCurrentLineNumber(sc->parser),
-               XML_ErrorString(XML_GetErrorCode(sc->parser)));
+        strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
+                  static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
+                  XML_ErrorString(XML_GetErrorCode(sc->parser)));
         return st_xml_parse_error;
         }
     ++node;
@@ -132,17 +129,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -162,17 +159,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -195,17 +192,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -225,17 +222,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -254,20 +251,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printfd(__FILE__, "Error on connect: '%s'\n", errorMsg);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printfd(__FILE__, "Error on transact: '%s'\n", errorMsg);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printfd(__FILE__, "Error on disconnect: '%s'\n", errorMsg);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -288,17 +282,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -319,17 +313,17 @@ nt.SetRxCallback(this, AnsRecv);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Transact(request)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
+    errorMsg = nt.GetError();
     return ret;
     }
 
@@ -383,7 +377,7 @@ RecvSendMessageCb = f;
 sendMessageDataCb = data;
 }
 //-----------------------------------------------------------------------------
-char * SERVCONF::GetStrError()
+const std::string & SERVCONF::GetStrError() const
 {
 return errorMsg;
 }

@@ -25,11 +25,12 @@
  */
 
 //---------------------------------------------------------------------------
-#include <stdio.h>
-#include <string.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
+#include <cstdio>
+#include <cstring>
 
 #include "netunit.h"
 #include "common.h"
@@ -56,15 +57,13 @@ NETTRANSACT::NETTRANSACT()
       RxCallBack(NULL),
       dataRxCallBack(NULL)
 {
-    memset(server, 0, SERVER_NAME_LEN);
     memset(login, 0, ADM_LOGIN_LEN);
     memset(password, 0, ADM_PASSWD_LEN);
-    memset(errorMsg, 0, MAX_ERR_STR_LEN);
 }
 //-----------------------------------------------------------------------------
 void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
 {
-unsigned char * keyL = NULL; // ��� ������
+unsigned char * keyL = NULL;
 
 keyL = new unsigned char[PASSWD_LEN];
 
@@ -94,7 +93,7 @@ int ret;
 outerSocket = socket(PF_INET, SOCK_STREAM, 0);
 if (outerSocket < 0)
     {
-    strcpy(errorMsg, CREATE_SOCKET_ERROR);
+    errorMsg = CREATE_SOCKET_ERROR;
     return st_conn_fail;
     }
 
@@ -105,14 +104,14 @@ struct hostent he;
 struct hostent * phe;
 
 unsigned long ip;
-ip = inet_addr(server);
+ip = inet_addr(server.c_str());
 
 if (ip == INADDR_NONE)
     {
-    phe = gethostbyname(server);
+    phe = gethostbyname(server.c_str());
     if (phe == NULL)
         {
-        sprintf(errorMsg, "DNS error.\nCan not reslove %s", server);
+        errorMsg = "DNS error.\nCan not reslove " + server;
         return st_dns_err;
         }
 
@@ -127,7 +126,7 @@ ret = connect(outerSocket, (struct sockaddr*)&outerAddr, sizeof(outerAddr));
 
 if (ret < 0)
     {
-    strcpy(errorMsg, CONNECT_FAILED);
+    errorMsg = CONNECT_FAILED;
     close(outerSocket);
     return st_conn_fail;
     }
@@ -200,7 +199,7 @@ int ret;
 ret = send(outerSocket, STG_HEADER, strlen(STG_HEADER), 0);
 if (ret <= 0)
     {
-    strcpy(errorMsg, SEND_HEADER_ERROR);
+    errorMsg = SEND_HEADER_ERROR;
     return st_send_fail;
     }
 
@@ -215,7 +214,7 @@ int ret;
 ret = recv(outerSocket, buffer, strlen(OK_HEADER), 0);
 if (ret <= 0)
     {
-    strcpy(errorMsg, RECV_HEADER_ANSWER_ERROR);
+    errorMsg = RECV_HEADER_ANSWER_ERROR;
     return st_recv_fail;
     }
 
@@ -227,12 +226,12 @@ else
     {
     if (strncmp(ERR_HEADER, buffer, strlen(ERR_HEADER)) == 0)
         {
-        strcpy(errorMsg, INCORRECT_HEADER);
+        errorMsg = INCORRECT_HEADER;
         return st_header_err;
         }
     else
         {
-        strcpy(errorMsg, UNKNOWN_ERROR);
+        errorMsg = UNKNOWN_ERROR;
         return st_unknown_err;
         }
     }
@@ -249,7 +248,7 @@ ret = send(outerSocket, loginZ, ADM_LOGIN_LEN, 0);
 
 if (ret <= 0)
     {
-    strcpy(errorMsg, SEND_LOGIN_ERROR);
+    errorMsg = SEND_LOGIN_ERROR;
     return st_send_fail;
     }
 
@@ -259,12 +258,12 @@ return st_ok;
 int NETTRANSACT::RxLoginAnswer()
 {
 char buffer[sizeof(OK_LOGIN)+1];
-int ret;//, we;
+int ret;
 
 ret = recv(outerSocket, buffer, strlen(OK_LOGIN), 0);
 if (ret <= 0)
     {
-    strcpy(errorMsg, RECV_LOGIN_ANSWER_ERROR);
+    errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
 
@@ -276,12 +275,12 @@ else
     {
     if (strncmp(ERR_LOGIN, buffer, strlen(ERR_LOGIN)) == 0)
         {
-        strcpy(errorMsg, INCORRECT_LOGIN);
+        errorMsg = INCORRECT_LOGIN;
         return st_login_err;
         }
     else
         {
-        strcpy(errorMsg, UNKNOWN_ERROR);
+        errorMsg = UNKNOWN_ERROR;
         return st_unknown_err;
         }
     }
@@ -305,7 +304,7 @@ for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
     ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
     if (ret <= 0)
         {
-        strcpy(errorMsg, SEND_LOGIN_ERROR);
+        errorMsg = SEND_LOGIN_ERROR;
         return st_send_fail;
         }
     }
@@ -321,7 +320,7 @@ int ret;
 ret = recv(outerSocket, buffer, strlen(OK_LOGINS), 0);
 if (ret <= 0)
     {
-    strcpy(errorMsg, RECV_LOGIN_ANSWER_ERROR);
+    errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
 
@@ -333,12 +332,12 @@ else
     {
     if (strncmp(ERR_LOGINS, buffer, strlen(ERR_LOGINS)) == 0)
         {
-        strcpy(errorMsg, INCORRECT_LOGIN);
+        errorMsg = INCORRECT_LOGIN;
         return st_logins_err;
         }
     else
         {
-        strcpy(errorMsg, UNKNOWN_ERROR);
+        errorMsg = UNKNOWN_ERROR;
         return st_unknown_err;
         }
     }
@@ -364,7 +363,7 @@ for (j = 0; j < n; j++)
     ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
     if (ret <= 0)
         {
-        strcpy(errorMsg, SEND_DATA_ERROR);
+        errorMsg = SEND_DATA_ERROR;
         return st_send_fail;
         }
     }
@@ -379,7 +378,7 @@ Encrypt(ct, textZ, &ctx);
 ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
 if (ret <= 0)
     {
-    strcpy(errorMsg, SEND_DATA_ERROR);
+    errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
     }
 
@@ -429,7 +428,7 @@ while (1)
     if (ret <= 0)
         {
         close(outerSocket);
-        strcpy(errorMsg, RECV_DATA_ANSWER_ERROR);
+        errorMsg = RECV_DATA_ANSWER_ERROR;
         return st_recv_fail;
         }
 
@@ -470,7 +469,7 @@ strncpy(password, p, ADM_PASSWD_LEN);
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetServer(const char * serverName)
 {
-strncpy(server, serverName, SERVER_NAME_LEN);
+server = serverName;
 }
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetServerPort(short unsigned p)
@@ -484,7 +483,7 @@ RxCallBack = cb;
 dataRxCallBack = data;
 }
 //---------------------------------------------------------------------------
-char * NETTRANSACT::GetError()
+const std::string & NETTRANSACT::GetError() const
 {
 return errorMsg;
 }

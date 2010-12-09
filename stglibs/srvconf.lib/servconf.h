@@ -250,8 +250,8 @@ public:
     int GetServerInfo();
     int CheckUser(const char * login, const char * password);
 
-    char * GetStrError();
-    int  GetError();
+    const std::string & GetStrError() const;
+    int GetError();
     int Start(const char *el, const char **attr);
     void End(const char *el);
 
@@ -269,9 +269,9 @@ private:
     int parseDepth;
     USERDATA ud;
 
-    char    errorMsg[MAX_ERR_STR_LEN];
-    int     error;
-    XML_Parser      parser;
+    std::string errorMsg;
+    int error;
+    XML_Parser parser;
 
     RecvUserDataCb_t RecvUserDataCb;
     RecvUserDataCb_t RecvGetUserDataCb;
