@@ -1507,8 +1507,8 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::RestoreTariff(TARIFF_DATA * td, const string & tariffName) const
 {
-string tariffFileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
-CONFIGFILE conf(tariffFileName);
+string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
+CONFIGFILE conf(fileName);
 string str;
 td->tariffConf.name = tariffName;
 
