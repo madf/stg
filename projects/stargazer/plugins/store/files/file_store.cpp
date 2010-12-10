@@ -966,65 +966,53 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 
 //BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
-Touch(fileName + ".new");
+CONFIGFILE cfstat(fileName, true);
 
-    {
-    CONFIGFILE cfstat(fileName + ".new");
+int e = cfstat.Error();
 
-    int e = cfstat.Error();
-
-    if (e)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = string("User \'") + login + "\' conf not written\n";
-        printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
-        return -1;
-        }
-
-    e = chmod(fileName.c_str(), storeSettings.GetConfMode());
-    e += chown(fileName.c_str(), storeSettings.GetConfUID(), storeSettings.GetConfGID());
-
-    if (e)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        printfd(__FILE__, "FILES_STORE::SaveUserConf - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
-        }
-
-    cfstat.WriteString("Password",     conf.password);
-    cfstat.WriteInt   ("Passive",      conf.passive);
-    cfstat.WriteInt   ("Down",         conf.disabled);
-    cfstat.WriteInt("DisabledDetailStat", conf.disabledDetailStat);
-    cfstat.WriteInt   ("AlwaysOnline", conf.alwaysOnline);
-    cfstat.WriteString("Tariff",       conf.tariffName);
-    cfstat.WriteString("Address",      conf.address);
-    cfstat.WriteString("Phone",        conf.phone);
-    cfstat.WriteString("Email",        conf.email);
-    cfstat.WriteString("Note",         conf.note);
-    cfstat.WriteString("RealName",     conf.realName);
-    cfstat.WriteString("Group",        conf.group);
-    cfstat.WriteDouble("Credit",       conf.credit);
-    cfstat.WriteString("TariffChange", conf.nextTariff);
-
-    char userdataName[12];
-    for (int i = 0; i < USERDATA_NUM; i++)
-        {
-        snprintf(userdataName, 12, "Userdata%d", i);
-        cfstat.WriteString(userdataName, conf.userdata[i]);
-        }
-    cfstat.WriteInt("CreditExpire",    conf.creditExpire);
-
-    stringstream ipStr;
-    ipStr << conf.ips;
-    cfstat.WriteString("IP", ipStr.str());
-    }
-
-if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
+if (e)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveUserConf - rename failed. Message: '%s'\n", strerror(errno));
+    errorStr = string("User \'") + login + "\' conf not written\n";
+    printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
     return -1;
     }
+
+e = chmod(fileName.c_str(), storeSettings.GetConfMode());
+e += chown(fileName.c_str(), storeSettings.GetConfUID(), storeSettings.GetConfGID());
+
+if (e)
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    printfd(__FILE__, "FILES_STORE::SaveUserConf - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
+    }
+
+cfstat.WriteString("Password",     conf.password);
+cfstat.WriteInt   ("Passive",      conf.passive);
+cfstat.WriteInt   ("Down",         conf.disabled);
+cfstat.WriteInt("DisabledDetailStat", conf.disabledDetailStat);
+cfstat.WriteInt   ("AlwaysOnline", conf.alwaysOnline);
+cfstat.WriteString("Tariff",       conf.tariffName);
+cfstat.WriteString("Address",      conf.address);
+cfstat.WriteString("Phone",        conf.phone);
+cfstat.WriteString("Email",        conf.email);
+cfstat.WriteString("Note",         conf.note);
+cfstat.WriteString("RealName",     conf.realName);
+cfstat.WriteString("Group",        conf.group);
+cfstat.WriteDouble("Credit",       conf.credit);
+cfstat.WriteString("TariffChange", conf.nextTariff);
+
+char userdataName[12];
+for (int i = 0; i < USERDATA_NUM; i++)
+    {
+    snprintf(userdataName, 12, "Userdata%d", i);
+    cfstat.WriteString(userdataName, conf.userdata[i]);
+    }
+cfstat.WriteInt("CreditExpire",    conf.creditExpire);
+
+stringstream ipStr;
+ipStr << conf.ips;
+cfstat.WriteString("IP", ipStr.str());
 
 return 0;
 }
@@ -1037,10 +1025,8 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
 //BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
-Touch(fileName + ".new");
-
     {
-    CONFIGFILE cfstat(fileName + ".new");
+    CONFIGFILE cfstat(fileName, true);
     int e = cfstat.Error();
 
     if (e)
@@ -1065,23 +1051,15 @@ Touch(fileName + ".new");
     cfstat.WriteInt("LastCashAddTime", stat.lastCashAddTime);
     cfstat.WriteInt("PassiveTime", stat.passiveTime);
     cfstat.WriteInt("LastActivityTime", stat.lastActivityTime);
-
-    e = chmod(fileName.c_str(), storeSettings.GetStatMode());
-    e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGID());
-
-    if (e)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        printfd(__FILE__, "FILES_STORE::SaveUserStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
-        }
     }
 
-if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
+e = chmod(fileName.c_str(), storeSettings.GetStatMode());
+e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGID());
+
+if (e)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveUserStat - rename failed. Message: '%s'\n", strerror(errno));
-    return -1;
+    printfd(__FILE__, "FILES_STORE::SaveUserStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
 return 0;
@@ -1226,9 +1204,7 @@ int e;
 strprintf(&str,"%s/%s/stat.%d.%02d",
         storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
-Touch(str);
-
-CONFIGFILE s(str);
+CONFIGFILE s(str, true);
 e = s.Error();
 
 if (e)
@@ -1295,10 +1271,8 @@ string fileName;
 
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login.c_str());
 
-Touch(fileName + ".new");
-
     {
-    CONFIGFILE cf(fileName + ".new");
+    CONFIGFILE cf(fileName, true);
 
     int e = cf.Error();
 
@@ -1326,7 +1300,6 @@ Touch(fileName + ".new");
 
     pass[ADM_PASSWD_LEN - 1] = 0;
     Encode12(passwordE, pass, ADM_PASSWD_LEN);
-    //printfd(__FILE__, "passwordE %s\n", passwordE);
 
     cf.WriteString("password", passwordE);
     cf.WriteInt("ChgConf",     ac.priv.userConf);
@@ -1336,14 +1309,6 @@ Touch(fileName + ".new");
     cf.WriteInt("UsrAddDel",   ac.priv.userAddDel);
     cf.WriteInt("ChgTariff",   ac.priv.tariffChg);
     cf.WriteInt("ChgAdmin",    ac.priv.adminChg);
-    }
-
-if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveAdmin - rename failed. Message: '%s'\n", strerror(errno));
-    return -1;
     }
 
 return 0;
@@ -1663,10 +1628,8 @@ int FILES_STORE::SaveTariff(const TARIFF_DATA & td, const string & tariffName) c
 {
 string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 
-Touch(fileName + ".new");
-
     {
-    CONFIGFILE cf(fileName + ".new");
+    CONFIGFILE cf(fileName, true);
 
     int e = cf.Error();
 
@@ -1733,14 +1696,6 @@ Touch(fileName + ".new");
             cf.WriteString("TraffType", "max");
             break;
         }
-    }
-
-if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveTariff - rename failed. Message: '%s'\n", strerror(errno));
-    return -1;
     }
 
 return 0;
