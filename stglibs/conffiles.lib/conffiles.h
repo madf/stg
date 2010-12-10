@@ -49,7 +49,7 @@ public:
     ~CONFIGFILE();
     const string & GetFileName() const;
 
-    // 5 функции Read* возвращают 0 при успешном считывании
+    // Функции Read* возвращают 0 при успешном считывании
     // и EINVAL при отсутсвии параметра и выставляют defaulValue
     //int ReadString(const string & param, char * val, int * maxLen, const char * defaultVal) const;
     int ReadString(const string & param, string * val, const string & defaultVal) const;
