@@ -45,7 +45,7 @@ typedef bool (*StringCaseCmp_t)(const string & str1, const string & str2);
 class CONFIGFILE
 {
 public:
-    CONFIGFILE(const string & fn);
+    CONFIGFILE(const string & fn, bool nook = false);
     ~CONFIGFILE();
     const string & GetFileName() const;
 
@@ -64,7 +64,7 @@ public:
     int ReadULongLongInt(const string & param, uint64_t *, uint64_t) const;
     int ReadDouble(const string & param, double * val, double defaultVal) const;
 
-    //int WriteString(const string & param, const char * val);
+    int WriteString(const string & param, const char * val) { return WriteString(param, std::string(val)); }
     int WriteString(const string & param, const string & val);
     int WriteInt(const string & param, int64_t val);
     int WriteDouble(const string & param, double val);

@@ -45,52 +45,29 @@ bool StringCaseCmp(const string & str1, const string & str2)
 return (strcasecmp(str1.c_str(), str2.c_str()) < 0);
 }
 //---------------------------------------------------------------------------
-CONFIGFILE::CONFIGFILE(const string & fn)
+CONFIGFILE::CONFIGFILE(const string & fn, bool nook)
     : param_val(StringCaseCmp),
       fileName(fn),
       error(0)
 {
 ifstream f(fileName.c_str());
-//FILE * f = fopen(fileName.c_str(), "rt");
 
 if (!f)
     {
-    error = -1;
+    if (!nook)
+        error = -1;
     return;
     }
 
 string line;
 while (getline(f, line))
     {
-    /*unsigned char c = fgetc(f);
-    while (!feof(f))
-        {
-        if (c == '\n')
-            break;
-        line.push_back(c);
-        c = fgetc(f);
-        }*/
-
     size_t pos = line.find('#');
     if (pos != string::npos)
         line.resize(pos);
 
     if (line.find_first_not_of(" \t\r") == string::npos)
         continue;
-
-    /*bool emptyLine = true;
-    for (unsigned int i = 0; i < line.size(); i++)
-        {
-        if (line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != '\r')
-            {
-            emptyLine = false;
-            break;
-            }
-        }
-    if (emptyLine)
-        {
-        continue;
-        }*/
 
     pos = line.find_first_of('=');
     if (pos == string::npos)
@@ -133,7 +110,7 @@ if (!f.is_open())
 map<string, string>::const_iterator it = param_val.begin();
 while (it != param_val.end())
     {
-    f << it->first << "=" << it->second << endl;
+    f << it->first << "=" << it->second << "\n";
     it++;
     }
 
