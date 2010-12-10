@@ -1298,7 +1298,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
 Touch(fileName + ".new");
 
     {
-    CONFIGFILE cf(fileName);
+    CONFIGFILE cf(fileName + ".new");
 
     int e = cf.Error();
 
@@ -1666,7 +1666,7 @@ string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 Touch(fileName + ".new");
 
     {
-    CONFIGFILE cf(fileName);
+    CONFIGFILE cf(fileName + ".new");
 
     int e = cf.Error();
 
