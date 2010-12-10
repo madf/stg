@@ -64,19 +64,18 @@ public:
     int ReadULongLongInt(const string & param, uint64_t *, uint64_t) const;
     int ReadDouble(const string & param, double * val, double defaultVal) const;
 
-    int WriteString(const string & param, const char * val) { return WriteString(param, std::string(val)); }
-    int WriteString(const string & param, const string & val);
-    int WriteInt(const string & param, int64_t val);
-    int WriteDouble(const string & param, double val);
+    void WriteString(const string & param, const char * val) { return WriteString(param, std::string(val)); }
+    void WriteString(const string & param, const string & val);
+    void WriteInt(const string & param, int64_t val);
+    void WriteDouble(const string & param, double val);
 
-    int Error();
+    int Error() const;
+    int Flush() const;
 
 private:
-    int Flush();
-
     map<string, string, StringCaseCmp_t> param_val;
     string fileName;
-    int error;
+    mutable int error;
 };
 //---------------------------------------------------------------------------
 #endif

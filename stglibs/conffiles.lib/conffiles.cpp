@@ -84,6 +84,7 @@ while (getline(f, line))
 //---------------------------------------------------------------------------
 CONFIGFILE::~CONFIGFILE()
 {
+Flush();
 }
 //---------------------------------------------------------------------------
 const string & CONFIGFILE::GetFileName() const
@@ -91,14 +92,14 @@ const string & CONFIGFILE::GetFileName() const
 return fileName;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::Error()
+int CONFIGFILE::Error() const
 {
 int e = error;
 error = 0;
 return e;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::Flush()
+int CONFIGFILE::Flush() const
 {
 ofstream f(fileName.c_str());
 if (!f.is_open())
@@ -111,7 +112,7 @@ map<string, string>::const_iterator it = param_val.begin();
 while (it != param_val.end())
     {
     f << it->first << "=" << it->second << "\n";
-    it++;
+    ++it;
     }
 
 f.close();
@@ -152,18 +153,10 @@ if (it != param_val.end())
 *val = defaultVal;
 return -1;
 }
-/*//---------------------------------------------------------------------------
-int CONFIGFILE::WriteString(const string & param, const char * val)
-{
-WriteString(param, string(val));
-return 0;
-}*/
 //---------------------------------------------------------------------------
-int CONFIGFILE::WriteString(const string & param, const string &val)
+void CONFIGFILE::WriteString(const string & param, const string &val)
 {
 param_val[param] = val;
-Flush();
-return 0;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadTime(const string & param, time_t * val, time_t defaultVal) const
@@ -362,14 +355,11 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::WriteInt(const string & param, int64_t val)
+void CONFIGFILE::WriteInt(const string & param, int64_t val)
 {
 string s;
-//sprintf(s, "%lld", val);
 x2str(val, s);
 param_val[param] = s;
-Flush();
-return 0;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadDouble(const string & param, double * val, double defaultVal) const
@@ -394,12 +384,10 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::WriteDouble(const string & param, double val)
+void CONFIGFILE::WriteDouble(const string & param, double val)
 {
 char s[30];
-sprintf(s, "%f", val);
+snprintf(s, 30, "%f", val);
 param_val[param] = s;
-Flush();
-return 0;
 }
 //---------------------------------------------------------------------------
