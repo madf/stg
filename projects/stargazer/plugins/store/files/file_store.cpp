@@ -1515,7 +1515,7 @@ td->tariffConf.name = tariffName;
 if (conf.Error() != 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot read file " + tariffFileName;
+    errorStr = "Cannot read file " + fileName;
     printfd(__FILE__, "FILES_STORE::RestoreTariff - failed to read tariff '%s'\n", tariffName.c_str());
     return -1;
     }
