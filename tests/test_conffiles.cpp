@@ -28,9 +28,11 @@ namespace tut
 
             ensure_equals("Correct construction", cf.Error(), 0);
 
-            ensure_equals("Correct writing 'a' string", cf.WriteString("a", "a-string"), 0);
-            ensure_equals("Correct writing 'b' integer (0)", cf.WriteInt("b", 0), 0);
-            ensure_equals("Correct writing 'e' double (2.718281828)", cf.WriteDouble("e", 2.718281828), 0);
+            cf.WriteString("a", "a-string");
+            cf.WriteInt("b", 0);
+            cf.WriteDouble("e", 2.718281828);
+
+            ensure_equals("Correct data flushing", cf.Flush(), 0);
         }
 
         {
