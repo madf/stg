@@ -76,6 +76,7 @@ private:
     map<string, string, StringCaseCmp_t> param_val;
     string fileName;
     mutable int error;
+    mutable bool changed;
 
     int Flush(const std::string & path) const;
 };

@@ -53,7 +53,8 @@ return (strcasecmp(str1.c_str(), str2.c_str()) < 0);
 CONFIGFILE::CONFIGFILE(const string & fn, bool nook)
     : param_val(StringCaseCmp),
       fileName(fn),
-      error(0)
+      error(0),
+      changed(false)
 {
 ifstream f(fileName.c_str());
 
@@ -141,6 +142,7 @@ return -1;
 void CONFIGFILE::WriteString(const string & param, const string &val)
 {
 param_val[param] = val;
+changed = true;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadTime(const string & param, time_t * val, time_t defaultVal) const
@@ -344,6 +346,7 @@ void CONFIGFILE::WriteInt(const string & param, int64_t val)
 string s;
 x2str(val, s);
 param_val[param] = s;
+changed = true;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadDouble(const string & param, double * val, double defaultVal) const
@@ -373,6 +376,7 @@ void CONFIGFILE::WriteDouble(const string & param, double val)
 char s[30];
 snprintf(s, 30, "%f", val);
 param_val[param] = s;
+changed = true;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::Flush(const std::string & path) const
@@ -397,6 +401,9 @@ return 0;
 //---------------------------------------------------------------------------
 int CONFIGFILE::Flush() const
 {
+if (!changed)
+    return 0;
+
 std::string pid;
 x2str(getpid(), pid);
 
@@ -405,6 +412,8 @@ if (Flush(fileName + "." + pid))
 
 if (rename((fileName + "." + pid).c_str(), fileName.c_str()))
     return -1;
+
+changed = false;
 
 return 0;
 }
