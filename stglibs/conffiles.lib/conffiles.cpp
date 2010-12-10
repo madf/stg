@@ -28,7 +28,12 @@
  */
 
 //---------------------------------------------------------------------------
-#include <cerrno>
+
+// getpid
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <cerrno> // E*
 #include <cstring>
 #include <cstdlib>
 
@@ -97,27 +102,6 @@ int CONFIGFILE::Error() const
 int e = error;
 error = 0;
 return e;
-}
-//---------------------------------------------------------------------------
-int CONFIGFILE::Flush() const
-{
-ofstream f(fileName.c_str());
-if (!f.is_open())
-    {
-    error = EIO;
-    return EIO;
-    }
-
-map<string, string>::const_iterator it = param_val.begin();
-while (it != param_val.end())
-    {
-    f << it->first << "=" << it->second << "\n";
-    ++it;
-    }
-
-f.close();
-
-return 0;
 }
 /*//---------------------------------------------------------------------------
 int CONFIGFILE::ReadString(const string & param, char * str, int * maxLen, const char * defaultVal) const
@@ -389,5 +373,39 @@ void CONFIGFILE::WriteDouble(const string & param, double val)
 char s[30];
 snprintf(s, 30, "%f", val);
 param_val[param] = s;
+}
+//---------------------------------------------------------------------------
+int CONFIGFILE::Flush(const std::string & path) const
+{
+ofstream f(path.c_str());
+if (!f.is_open())
+    {
+    error = EIO;
+    return EIO;
+    }
+
+map<string, string>::const_iterator it = param_val.begin();
+while (it != param_val.end())
+    {
+    f << it->first << "=" << it->second << "\n";
+    ++it;
+    }
+
+f.close();
+return 0;
+}
+//---------------------------------------------------------------------------
+int CONFIGFILE::Flush() const
+{
+std::string pid;
+x2str(getpid(), pid);
+
+if (Flush(fileName + "." + pid))
+    return -1;
+
+if (rename((fileName + "." + pid).c_str(), fileName.c_str()))
+    return -1;
+
+return 0;
 }
 //---------------------------------------------------------------------------
