@@ -1,4 +1,4 @@
-CXXFLAGS+=-g3 -Wall -W -pedantic -DLINUX -I../include -I../projects/stargazer
+CXXFLAGS+=-g3 -Wall -W -pedantic -DLINUX -I../include -I../projects/stargazer -I../stglibs/conffiles.lib
 LIBS=-lpthread
 PROG=tests
 
@@ -6,7 +6,9 @@ SOURCES=main.cpp \
 	test_raw_ip.cpp \
 	test_admin_conf.cpp \
 	test_tariff.cpp \
-	../projects/stargazer/tariff.cpp
+	test_conffiles.cpp \
+	../projects/stargazer/tariff.cpp \
+	../stglibs/conffiles.lib/conffiles.cpp
 
 all: $(PROG) 
 
