@@ -1,6 +1,8 @@
 *.[ao]
+*.d
 *.so
 *.swp
+*.log
 *.diff
 *.patch
 CVS*
