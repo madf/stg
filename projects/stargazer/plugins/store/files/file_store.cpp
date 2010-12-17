@@ -1053,7 +1053,7 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
     cfstat.WriteInt("LastActivityTime", stat.lastActivityTime);
     }
 
-e = chmod(fileName.c_str(), storeSettings.GetStatMode());
+int e = chmod(fileName.c_str(), storeSettings.GetStatMode());
 e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGID());
 
 if (e)
