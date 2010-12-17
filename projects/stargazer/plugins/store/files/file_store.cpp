@@ -60,6 +60,8 @@
 
 using namespace std;
 
+int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext);
+
 const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
 class BAK_FILE
@@ -504,79 +506,69 @@ const string & FILES_STORE::GetVersion() const
 return version;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetFilesList(vector<string> * filesList, const string & directory, mode_t mode, const string & ext) const
+int FILES_STORE::GetUsersList(vector<string> * userList) const
 {
-// Функция просматривает содержимое директории
-DIR * d;
-string str;
-struct stat st;
-dirent * dir;
+vector<string> files;
 
-filesList->clear();
-
-d = opendir(directory.c_str());
-
-if (!d)
+if (GetFileList(&files, storeSettings.GetUsersDir(), S_IFDIR, ""))
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Directory \'" + directory + "\' cannot be opened.";
-    //printfd(__FILE__, "%s\n", errorStr.c_str());
+    errorStr = "Failed to open '" + storeSettings.GetUsersDir() + "': " + string(strerror(errno));
     return -1;
     }
 
-int d_nameLen;
-int extLen = ext.size() ;
-while ((dir = readdir(d)))
-    {
-    if (strcmp(dir->d_name, ".") && strcmp(dir->d_name, ".."))
-        {
-        str = directory + "/" + string(dir->d_name);
-        if (!stat(str.c_str(), &st))
-            {
-            if (st.st_mode & mode) // Отсев файлов or directories
-                {
-                d_nameLen = strlen(dir->d_name);
-                if (d_nameLen > extLen)
-                    {
-                    if (strcmp(dir->d_name + (d_nameLen - extLen), ext.c_str()) == 0)
-                        {
-                        dir->d_name[d_nameLen - extLen] = 0;
-                        filesList->push_back(dir->d_name);
-                        }
-                    }
-                }
-            }
-        }
-    }
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-closedir(d);
+userList->swap(files);
+
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetUsersList(vector<string> * usersList) const
+int FILES_STORE::GetAdminsList(vector<string> * adminList) const
 {
-return GetFilesList(usersList, storeSettings.GetUsersDir(), S_IFDIR, "");
+vector<string> files;
+
+if (GetFileList(&files, storeSettings.GetAdminsDir(), S_IFREG, ".adm"))
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Failed to open '" + storeSettings.GetAdminsDir() + "': " + string(strerror(errno));
+    return -1;
+    }
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+adminList->swap(files);
+
+return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetAdminsList(vector<string> * adminsList) const
+int FILES_STORE::GetTariffsList(vector<string> * tariffList) const
 {
-return GetFilesList(adminsList, storeSettings.GetAdminsDir(), S_IFREG, ".adm");
-}
-//-----------------------------------------------------------------------------
-int FILES_STORE::GetTariffsList(vector<string> * tariffsList) const
-{
-return GetFilesList(tariffsList, storeSettings.GetTariffsDir(), S_IFREG, ".tf");
+vector<string> files;
+
+if (GetFileList(&files, storeSettings.GetTariffsDir(), S_IFREG, ".tf"))
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Failed to open '" + storeSettings.GetTariffsDir() + "': " + string(strerror(errno));
+    return -1;
+    }
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+tariffList->swap(files);
+
+return 0;
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::RemoveDir(const char * path) const
 {
-vector<string> filesList;
+vector<string> fileList;
 
-GetFilesList(&filesList, path, S_IFREG, "");
+GetFileList(&fileList, path, S_IFREG, "");
 
-for (unsigned i = 0; i < filesList.size(); i++)
+for (unsigned i = 0; i < fileList.size(); i++)
     {
-    string file = path + string("/") + filesList[i];
+    string file = path + string("/") + fileList[i];
     if (unlink(file.c_str()))
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -588,11 +580,12 @@ for (unsigned i = 0; i < filesList.size(); i++)
         }
     }
 
-GetFilesList(&filesList, path, S_IFDIR, "");
+fileList.clear();
+GetFileList(&fileList, path, S_IFDIR, "");
 
-for (unsigned i = 0; i < filesList.size(); i++)
+for (unsigned i = 0; i < fileList.size(); i++)
     {
-    string dir = string(path) + "/" + filesList[i];
+    string dir = string(path) + "/" + fileList[i];
     RemoveDir(dir.c_str());
     }
 
@@ -2021,12 +2014,17 @@ return unlink(fn.c_str());
 //-----------------------------------------------------------------------------
 int FILES_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const string & login) const
 {
-vector<string> messages;
-string dn;
-dn = storeSettings.GetUsersDir() + "/" + login + "/messages/";
-GetFilesList(&messages, dn, S_IFREG, "");
+string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
 
 //hdrsList->resize(messages.size());
+
+if (access(dn.c_str(), F_OK) != 0)
+    {
+    return 0;
+    }
+
+vector<string> messages;
+GetFileList(&messages, dn, S_IFREG, "");
 
 for (unsigned i = 0; i < messages.size(); i++)
     {
@@ -2167,5 +2165,56 @@ if (f)
     return 0;
     }
 return -1;
+}
+//-----------------------------------------------------------------------------
+int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext)
+{
+// Функция просматривает содержимое директории
+
+DIR * d = opendir(directory.c_str());
+
+if (!d)
+    {
+    printfd(__FILE__, "GetFileList - Failed to open dir '%s': '%s'\n", directory.c_str(), strerror(errno));
+    return -1;
+    }
+
+dirent * entry;
+while ((entry = readdir(d)))
+    {
+    if (!(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")))
+        continue;
+
+    string str = directory + "/" + string(entry->d_name);
+
+    struct stat st;
+    if (stat(str.c_str(), &st))
+        continue;
+
+    if (!(st.st_mode & mode)) // Filter by mode
+        continue;
+
+    if (!ext.empty())
+        {
+        // Check extension
+        size_t d_nameLen = strlen(entry->d_name);
+        if (d_nameLen <= ext.size())
+            continue;
+
+        if (ext == entry->d_name + (d_nameLen - ext.size()))
+            {
+            entry->d_name[d_nameLen - ext.size()] = 0;
+            fileList->push_back(entry->d_name);
+            }
+        }
+    else
+        {
+        fileList->push_back(entry->d_name);
+        }
+    }
+
+closedir(d);
+
+return 0;
 }
 //-----------------------------------------------------------------------------
