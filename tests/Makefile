@@ -1,4 +1,4 @@
-CXXFLAGS+=-g3 -Wall -W -pedantic -DLINUX -I../include -I../projects/stargazer -I../stglibs/conffiles.lib -I.
+CXXFLAGS+=-g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/conffiles.lib -I.
 LIBS=-lpthread
 PROG=tests
 
@@ -16,7 +16,7 @@ $(PROG): $(subst .cpp,.o,$(SOURCES))
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 clean:
-	rm -f *.o *.d
+	rm -f *.o *.d $(PROG)
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)
