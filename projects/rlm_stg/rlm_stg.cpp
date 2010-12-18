@@ -92,7 +92,7 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
     /*
      *    Set up a storage area for instance data
      */
-        DEBUG("rlm_stg: stg_instantiate()");
+    DEBUG("rlm_stg: stg_instantiate()");
     data = (rlm_stg_t *)rad_malloc(sizeof(rlm_stg_t));
     if (!data) {
         return -1;
@@ -116,11 +116,6 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
         return -1;
     }
 
-    if (cli->Start()) {
-        DEBUG("rlm_stg: stg_instantiate() error: '%s'", cli->GetError().c_str());
-        return -1;
-    }
-
     *instance = data;
 
     return 0;
@@ -132,16 +127,12 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
  *    from the database. The authentication code only needs to check
  *    the password, the rest is done here.
  */
-static int stg_authorize(void *instance, REQUEST *request)
+static int stg_authorize(void *, REQUEST *request)
 {
     VALUE_PAIR *uname;
     VALUE_PAIR *pwd;
     VALUE_PAIR *svc;
     DEBUG("rlm_stg: stg_authorize()");
-
-    /* quiet the compiler */
-    instance = instance;
-    request = request;
 
     uname = pairfind(request->packet->vps, PW_USER_NAME);
     if (uname) {
@@ -181,13 +172,13 @@ static int stg_authorize(void *instance, REQUEST *request)
 /*
  *    Authenticate the user with the given password.
  */
-static int stg_authenticate(void *instance, REQUEST *request)
+static int stg_authenticate(void *, REQUEST *request)
 {
     /* quiet the compiler */
     VALUE_PAIR *svc;
-    instance = instance;
-    request = request;
+
     DEBUG("rlm_stg: stg_authenticate()");
+
     svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     if (svc) {
         DEBUG("rlm_stg: stg_authenticate() Service-Type defined as '%s'", svc->vp_strvalue);
@@ -209,11 +200,8 @@ static int stg_authenticate(void *instance, REQUEST *request)
 /*
  *    Massage the request before recording it or proxying it
  */
-static int stg_preacct(void *instance, REQUEST *request)
+static int stg_preacct(void *, REQUEST *)
 {
-    /* quiet the compiler */
-    instance = instance;
-    request = request;
     DEBUG("rlm_stg: stg_preacct()");
 
     return RLM_MODULE_OK;
@@ -222,15 +210,14 @@ static int stg_preacct(void *instance, REQUEST *request)
 /*
  *    Write accounting information to this modules database.
  */
-static int stg_accounting(void *instance, REQUEST *request)
+static int stg_accounting(void *, REQUEST * request)
 {
     /* quiet the compiler */
     VALUE_PAIR * sttype;
     VALUE_PAIR * svc;
     VALUE_PAIR * sessid;
     svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
-    instance = instance;
-    request = request;
+
     DEBUG("rlm_stg: stg_accounting()");
 
     sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
@@ -271,9 +258,8 @@ static int stg_accounting(void *instance, REQUEST *request)
  *    max. number of logins, do a second pass and validate all
  *    logins by querying the terminal server (using eg. SNMP).
  */
-static int stg_checksimul(void *instance, REQUEST *request)
+static int stg_checksimul(void *, REQUEST *request)
 {
-    instance = instance;
     DEBUG("rlm_stg: stg_checksimul()");
 
     request->simul_count=0;
@@ -281,9 +267,8 @@ static int stg_checksimul(void *instance, REQUEST *request)
     return RLM_MODULE_OK;
 }
 
-static int stg_postauth(void *instance, REQUEST *request)
+static int stg_postauth(void *, REQUEST *request)
 {
-    instance = instance;
     VALUE_PAIR *fia;
     VALUE_PAIR *svc;
     struct in_addr fip;
@@ -315,7 +300,6 @@ static int stg_postauth(void *instance, REQUEST *request)
 static int stg_detach(void *instance)
 {
     DEBUG("rlm_stg: stg_detach()");
-    cli->Stop();
     delete cli;
     free(((struct rlm_stg_t *)instance)->server);
     free(((struct rlm_stg_t *)instance)->password);
