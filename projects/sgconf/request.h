@@ -46,6 +46,9 @@ struct REQUEST
 {
 
 REQUEST()
+    : chgTariff(false),
+      createUser(false),
+      deleteUser(false)
 {
     for (int i = 0; i < DIR_NUM; i++)
         {
@@ -55,9 +58,6 @@ REQUEST()
 
     for (int i = 0; i < USERDATA_NUM; i++)
         ud[i].reset();
-
-    createUser = false;
-    deleteUser = false;
 }
 
 RESETABLE<string>   server;
