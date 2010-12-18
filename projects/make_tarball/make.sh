@@ -15,8 +15,11 @@ rm -rf $SRC_DIR/.git
 rm -rf $SRC_DIR/.gitignore
 rm -r $SRC_DIR/projects/make_tarball
 rm -r $SRC_DIR/projects/traffcounter
-rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/authorization/stress
+rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig2
+rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig-ng
+rm -r $SRC_DIR/projects/stargazer/plugins/configuration/xrconfig
+rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/store/db
 
 tar -zcf $ARC_NAME $SRC_DIR
