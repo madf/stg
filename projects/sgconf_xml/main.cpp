@@ -135,7 +135,6 @@ if (!req->strReq.res_empty())
 //-----------------------------------------------------------------------------
 int Process(REQUEST * r)
 {
-char errorMsg[MAX_ERR_STR_LEN];
 int ret;
 char str[2048];
 
@@ -150,20 +149,17 @@ CreateRequest(r, str);
 
 if ((ret = nt.Connect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printf("%s", errorMsg);
+    printf("%s\n", nt.GetError().c_str());
     return ret;
     }
 if ((ret = nt.Transact(str)) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printf("%s", errorMsg);
+    printf("%s\n", nt.GetError().c_str());
     return ret;
     }
 if ((ret = nt.Disconnect()) != st_ok)
     {
-    strncpy(errorMsg, nt.GetError(), MAX_ERR_STR_LEN);
-    printf("%s", errorMsg);
+    printf("%s\n", nt.GetError().c_str());
     return ret;
     }
 
