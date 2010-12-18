@@ -93,7 +93,7 @@ class STG_STOPPER
 {
 public:
     STG_STOPPER() { nonstop = true; }
-    bool    GetStatus() { return nonstop; };
+    bool    GetStatus() const { return nonstop; };
     #ifdef NO_DAEMON
     void    Stop(const char * __file__, int __line__)
     #else
