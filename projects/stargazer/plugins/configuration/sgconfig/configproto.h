@@ -58,13 +58,11 @@ public:
     ~CONFIGPROTO();
 
     void            SetPort(uint16_t port);
-    //void            SetHostAllow(HOSTALLOW * ha);
     void            SetAdmins(ADMINS * a);
     void            SetUsers(USERS * u);
     void            SetTariffs(TARIFFS * t);
     void            SetStore(BASE_STORE * s);
     void            SetStgSettings(const SETTINGS * s);
-    //const string &  GetAdminLogin();
     uint32_t        GetAdminIP() const;
     int             Prepare();
     int             Stop();
@@ -93,14 +91,10 @@ private:
     pthread_t       thrReciveSendConf;
     bool            nonstop;
     int             state;
-    //HOSTALLOW *     hostAllow;
     ADMIN           currAdmin;
     STG_LOGGER &    WriteServLog;
 
-    int                 outerSocket;
     int                 listenSocket;
-    struct sockaddr_in  outerAddr;
-    socklen_t           outerAddrLen;
 
     PARSER_GET_SERVER_INFO      parserGetServInfo;
 
@@ -123,10 +117,6 @@ private:
     PARSER_CHG_TARIFF           parserChgTariff;
 
     ADMINS *                    admins;
-    //USERS *                     users;
-    //TARIFFS *                   tariffs;
-    //BASE_STORE *                store;
-    //const SETTINGS *            settings;
 
     BASE_PARSER *               currParser;
     vector<BASE_PARSER*>        dataParser;

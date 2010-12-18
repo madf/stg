@@ -26,20 +26,6 @@
 *
 *******************************************************************/
 
-/*#include <unistd.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdlib.h>
-#include <pthread.h>*/
-
 #include <cerrno>
 #include <csignal>
 
@@ -109,13 +95,6 @@ if (res == -1)
     errorStr = "Listen admin socket failed";
     return -1;
     }
-outerAddrLen = sizeof(outerAddr);
-
-/*if (0 != fcntl(listenSocket, F_SETFL, O_NONBLOCK))
-    {
-    errorStr = "fcntl error!";
-    return -1;
-    }*/
 
 errorStr = "";
 nonstop = true;
@@ -134,7 +113,7 @@ addr.sin_family = PF_INET;
 addr.sin_port = htons(port);
 addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-addrLen = sizeof(outerAddr);
+addrLen = sizeof(addr);
 sock = socket(PF_INET, SOCK_STREAM, 0);
 connect(sock, (sockaddr*)&addr, addrLen);
 close(sock);
@@ -160,86 +139,81 @@ cp->state = confHdr;
 while (cp->nonstop)
     {
     cp->state = confHdr;
-    cp->outerSocket = accept(cp->listenSocket,
-                             (struct sockaddr*)(&cp->outerAddr),
-                             &cp->outerAddrLen);
+    struct sockaddr_in outerAddr;
+    socklen_t outerAddrLen(sizeof(outerAddr));
+    int outerSocket = accept(cp->listenSocket,
+                             (struct sockaddr*)(&outerAddr),
+                             &outerAddrLen);
 
     if (!cp->nonstop)
         {
         continue;
         }
 
-    if (cp->outerSocket == -1)
+    if (outerSocket == -1)
         {
         printfd(__FILE__, "accept failed\n");
         usleep(100000);
         continue;
         }
 
-    cp->adminIP = *(unsigned int*)&(cp->outerAddr.sin_addr);
+    cp->adminIP = *(unsigned int*)&(outerAddr.sin_addr);
 
-    /* TODO
-    if (!cp->hostAllow->HostAllowed(cp->adminIP))
-        {
-        close(outerSocket);
-        continue;
-        }*/
-
-    printfd(__FILE__, "Connection accepted from %s\n", inet_ntostring(cp->outerAddr.sin_addr.s_addr).c_str());
+    printfd(__FILE__, "Connection accepted from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
 
     if (cp->state == confHdr)
         {
-        if (cp->RecvHdr(cp->outerSocket) < 0)
+        if (cp->RecvHdr(outerSocket) < 0)
             {
-            close(cp->outerSocket);
+            close(outerSocket);
             continue;
             }
         if (cp->state == confLogin)
             {
-            if (cp->SendHdrAnswer(cp->outerSocket, ans_ok) < 0)
+            if (cp->SendHdrAnswer(outerSocket, ans_ok) < 0)
                 {
-                close(cp->outerSocket);
+                close(outerSocket);
                 continue;
                 }
 
-            if (cp->RecvLogin(cp->outerSocket) < 0)
+            if (cp->RecvLogin(outerSocket) < 0)
                 {
-                close(cp->outerSocket);
+                close(outerSocket);
                 continue;
                 }
 
             if (cp->state == confLoginCipher)
                 {
-                if (cp->SendLoginAnswer(cp->outerSocket, ans_ok) < 0)
+                if (cp->SendLoginAnswer(outerSocket, ans_ok) < 0)
                     {
-                    close(cp->outerSocket);
+                    close(outerSocket);
                     continue;
                     }
-                if (cp->RecvLoginS(cp->outerSocket) < 0)
+                if (cp->RecvLoginS(outerSocket) < 0)
                     {
-                    close(cp->outerSocket);
+                    close(outerSocket);
                     continue;
                     }
 
                 if (cp->state == confData)
                     {
-                    if (cp->SendLoginSAnswer(cp->outerSocket, ans_ok) < 0)
+                    if (cp->SendLoginSAnswer(outerSocket, ans_ok) < 0)
                         {
-                        close(cp->outerSocket);
+                        close(outerSocket);
                         continue;
                         }
-                    if (cp->RecvData(cp->outerSocket) < 0)
+                    if (cp->RecvData(outerSocket) < 0)
                         {
-                        close(cp->outerSocket);
+                        close(outerSocket);
                         continue;
                         }
                     cp->state = confHdr;
                     }
                 else
                     {
-                    if (cp->SendLoginSAnswer(cp->outerSocket, ans_err) < 0)
+                    if (cp->SendLoginSAnswer(outerSocket, ans_err) < 0)
                         {
-                        close(cp->outerSocket);
+                        close(outerSocket);
                         continue;
                         }
                     cp->WriteLogAccessFailed(cp->adminIP);
@@ -253,9 +227,9 @@ while (cp->nonstop)
         else
             {
             cp->WriteLogAccessFailed(cp->adminIP);
-            if (cp->SendHdrAnswer(cp->outerSocket, ans_err) < 0)
+            if (cp->SendHdrAnswer(outerSocket, ans_err) < 0)
                 {
-                close(cp->outerSocket);
+                close(outerSocket);
                 continue;
                 }
             }
@@ -264,7 +238,7 @@ while (cp->nonstop)
         {
         cp->WriteLogAccessFailed(cp->adminIP);
         }
-    close(cp->outerSocket);
+    close(outerSocket);
     }
 
 return NULL;
@@ -333,20 +307,6 @@ int ret;
 
 memset(login, 0, ADM_LOGIN_LEN + 1);
 
-//printfd(__FILE__, "RecvLogin\n");
-
-/*for (int i = 0; i < ADM_LOGIN_LEN; i++)
-    {
-    ret = recv(sock, &login[i], 1, 0);
-
-    if (ret <= 0)
-        {
-        close(sock);
-        state = confHdr;
-        return ENODATA;
-        }
-    }*/
-
 ret = recv(sock, login, ADM_LOGIN_LEN, 0);
 
 if (ret < 0)
@@ -399,21 +359,6 @@ int ret;
 BLOWFISH_CTX ctx;
 memset(loginS, 0, ADM_LOGIN_LEN + 1);
 
-//printfd(__FILE__, "RecvLoginS\n");
-
-/*for (int i = 0; i < ADM_LOGIN_LEN; i++)
-    {
-    ret = recv(sock, &loginS[i], 1, 0);
-
-    if (ret <= 0)
-        {
-        //printfd(__FILE__, "RecvLoginS close\n");
-        close(sock);
-        state = confHdr;
-        return ENODATA;
-        }
-    }*/
-
 int total = 0;
 
 while (total < ADM_LOGIN_LEN)
@@ -431,16 +376,6 @@ while (total < ADM_LOGIN_LEN)
 
     total += ret;
     }
-
-// TODO: implement select on socket
-/*if (total < ADM_LOGIN_LEN)
-    {
-    // Protocol error
-    printfd(__FILE__, "Protocol error. Need %d bytes of cryptologin. Got %d bytes.\n", ADM_LOGIN_LEN, ret);
-    close(sock);
-    state = confHdr;
-    return ENODATA;
-    }*/
 
 if (currAdmin.GetLogin() == "")
     {
@@ -499,8 +434,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvData(int sock)
 {
-//printfd(__FILE__, "RecvData\n");
-//int n = 0;
 int ret;
 char bufferS[8];
 char buffer[9];
@@ -514,13 +447,6 @@ EnDecodeInit(currAdmin.GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (1)
     {
-    /*ret = recv(sock, &bufferS[n++], 1, 0);
-    if (ret <= 0)
-        {
-        //printfd(__FILE__, "RecvData close\n");
-        close(sock);
-        return 0;
-        }*/
     int total = 0;
     bool done = false;
     while (total < 8)
@@ -557,25 +483,6 @@ while (1)
             }
         return SendDataAnswer(sock);
         }
-
-    /*if (n == 8)
-        {
-        n = 0;
-        DecodeString(buffer, bufferS, &ctx);
-        requestList.push_back(std::string(buffer, 8));
-        for (int j = 0; j < 8; j++)
-            {
-            if (buffer[j] == 0)
-                {
-                // Конец посылки
-                if (ParseCommand())
-                    {
-                    SendError("Bad command");
-                    }
-                return SendDataAnswer(sock);
-                }
-            }
-        }*/
     }
 return 0;
 }
@@ -642,6 +549,3 @@ void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
 WriteServLog("Admin's connect failed. IP %s", inet_ntostring(ip).c_str());
 }
 //-----------------------------------------------------------------------------
-
-
-

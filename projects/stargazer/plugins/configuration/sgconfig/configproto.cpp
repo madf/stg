@@ -49,7 +49,6 @@ else
     for (unsigned int i = 0; i < cp->dataParser.size(); i++)
         {
         cp->dataParser[i]->SetAnswerList(&cp->answerList);
-        //cp->currAdmin->SetAdminIP(cp->GetAdminIP());
         cp->dataParser[i]->SetCurrAdmin(cp->currAdmin);
         cp->dataParser[i]->Reset();
         if (cp->dataParser[i]->ParseStart(data, el, attr) == 0)
@@ -94,13 +93,8 @@ CONFIGPROTO::CONFIGPROTO()
       state(0),
       currAdmin(),
       WriteServLog(GetStgLogger()),
-      outerSocket(0),
       listenSocket(0),
       admins(NULL),
-      //users(NULL),
-      //tariffs(NULL),
-      //store(NULL),
-      //settings(NULL),
       currParser(NULL)
 {
 dataParser.push_back(&parserGetServInfo);
@@ -131,7 +125,6 @@ if (!xmlParser)
     exit(1);
     }
 
-//XML_SetElementHandler(parser, ParseXMLStart, ParseXMLEnd);
 }
 //-----------------------------------------------------------------------------
 CONFIGPROTO::~CONFIGPROTO()
@@ -199,11 +192,6 @@ void CONFIGPROTO::SetPort(uint16_t p)
 port = p;
 }
 //-----------------------------------------------------------------------------
-/*void CONFIGPROTO::SetHostAllow(HOSTALLOW *)
-{
-//hostAllow = ha;
-}*/
-//-----------------------------------------------------------------------------
 void CONFIGPROTO::SetAdmins(ADMINS * a)
 {
 admins = a;
@@ -216,7 +204,6 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetUsers(USERS * u)
 {
-//users = u;
 for (unsigned int i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetUsers(u);
@@ -226,7 +213,6 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetTariffs(TARIFFS * t)
 {
-//tariffs = t;
 for (unsigned int i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetTariffs(t);
@@ -235,7 +221,6 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStore(BASE_STORE * s)
 {
-//store = s;
 for (unsigned int i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetStore(s);
@@ -244,49 +229,12 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStgSettings(const SETTINGS * s)
 {
-//settings = s;
 for (unsigned int i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetStgSettings(s);
     }
 }
 //-----------------------------------------------------------------------------
-/*void CONFIGPROTO::Start()
-{
-finished = false;
-threadExited = false;
-status = starting;
-
-xmlParser = XML_ParserCreate(NULL);
-
-if (!xmlParser)
-    {
-    WriteServLog("Couldn't allocate memory for parser.");
-    }
-
-pthread_create(&thrReciveSendConf, NULL, ReciveSendConf, this);
-status = started;
-}*/
-//-----------------------------------------------------------------------------
-/*int CONFIGPROTO::Stop()
-{
-nonstop = true;
-close(outerSocket);
-return 0;
-}*/
-//-----------------------------------------------------------------------------
-/*void CONFIGPROTO::Restart()
-{
-//Stop();
-//Start();
-}*/
-//-----------------------------------------------------------------------------
-/*CONF_STATUS CONFIGPROTO::Status()
-{
-//return status;
-}
-//-----------------------------------------------------------------------------
-*/
 const string & CONFIGPROTO::GetStrError() const
 {
 return errorStr;
