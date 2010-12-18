@@ -1978,6 +1978,7 @@ if (!res)
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = string("fprintf failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::EditMessage - fprintf failed. Message: '%s'\n", strerror(errno));
+    fclose(msgFile);
     return -1;
     }
 
