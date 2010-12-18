@@ -90,9 +90,23 @@ sc->End(el);
 }
 //-----------------------------------------------------------------------------
 SERVCONF::SERVCONF()
+    : currParser(NULL),
+      parseDepth(0),
+      error(0),
+      RecvUserDataCb(NULL),
+      RecvGetUserDataCb(NULL),
+      RecvServerInfoDataCb(NULL),
+      RecvChgUserCb(NULL),
+      RecvCheckUserCb(NULL),
+      RecvSendMessageCb(NULL),
+      getUserDataDataCb(NULL),
+      getUsersDataDataCb(NULL),
+      getServerInfoDataCb(NULL),
+      chgUserDataCb(NULL),
+      checkUserDataCb(NULL),
+      sendMessageDataCb(NULL)
 {
 parser = XML_ParserCreate(NULL);
-parseDepth = 0;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetServer(const char * server)
