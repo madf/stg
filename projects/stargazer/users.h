@@ -56,7 +56,7 @@ class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t>
 public:
     PROPERTY_NOTIFER_IP_BEFORE(USERS & us, user_iter u) : users(us), user(u) {};
     void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() { return user; };
+    user_iter   GetUser() const { return user; };
 private:
     USERS &     users;
     user_iter   user;
@@ -67,7 +67,7 @@ class PROPERTY_NOTIFER_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t>
 public:
     PROPERTY_NOTIFER_IP_AFTER(USERS & us, user_iter u) : users(us), user(u) {};
     void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() { return user; };
+    user_iter   GetUser() const { return user; };
 private:
     USERS &     users;
     user_iter   user;
