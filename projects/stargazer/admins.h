@@ -60,7 +60,7 @@ public:
     bool            AdminCorrect(const std::string & login,
                                  const std::string & password,
                                  ADMIN * admin) const;
-    const string &  GetStrError() { return strError; };
+    const string &  GetStrError() const { return strError; };
 
     int OpenSearch() const;
     int SearchNext(int, ADMIN_CONF * ac) const;
