@@ -5,6 +5,7 @@
 *.log
 *.diff
 *.patch
+*.vp*
 CVS*
 make_tarball.sh
 deps
