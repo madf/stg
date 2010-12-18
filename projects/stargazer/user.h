@@ -203,7 +203,6 @@ private:
     int             SaveMonthStat(int month, int year);
 
     int             SendMessage(const STG_MSG & msg);
-    int             RemoveMessage(uint64_t) { return 0; }
     int             ScanMessage();
     time_t          lastScanMessages;
 
