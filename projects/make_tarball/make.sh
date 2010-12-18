@@ -22,4 +22,6 @@ rm -r $SRC_DIR/projects/stargazer/plugins/configuration/xrconfig
 rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/store/db
 
+make -C $SRC_DIR/doc/xmlrpc-doc
+
 tar -zcf $ARC_NAME $SRC_DIR
