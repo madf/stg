@@ -39,6 +39,10 @@
 
 extern volatile const time_t stgTime;
 
+void InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+
 //-----------------------------------------------------------------------------
 class IA_CREATOR
 {
@@ -323,6 +327,9 @@ AUTH_IA::AUTH_IA()
     : nonstop(false),
       isRunningRun(false),
       isRunningRunTimeouter(false),
+      users(NULL),
+      stgSettings(NULL),
+      listenSocket(-1),
       WriteServLog(GetStgLogger()),
       enabledDirs(0xFFffFFff),
       onDelUserNotifier(*this)
@@ -1128,30 +1135,6 @@ gettimeofday(&tv, NULL);
 return res;
 }
 //-----------------------------------------------------------------------------
-void AUTH_IA::InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
-{
-unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
-memset(keyL, 0, PASSWD_LEN);
-strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
-}
-//-----------------------------------------------------------------------------
-void AUTH_IA::Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-// len8 - длина в 8-ми байтовых блоках
-
-for (int i = 0; i < len8; i++)
-    DecodeString(dst + i * 8, src + i * 8, ctx);
-}
-//-----------------------------------------------------------------------------
-void AUTH_IA::Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-// len8 - длина в 8-ми байтовых блоках
-
-for (int i = 0; i < len8; i++)
-    EncodeString(dst + i * 8, src + i * 8, ctx);
-}
-//-----------------------------------------------------------------------------
 int AUTH_IA::SendMessage(const STG_MSG & msg, uint32_t ip) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -1834,4 +1817,31 @@ if (res == 0) // Timeout
     }
 
 return true;
+}
+//-----------------------------------------------------------------------------
+inline
+void InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
+{
+unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
+memset(keyL, 0, PASSWD_LEN);
+strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+Blowfish_Init(ctx, keyL, PASSWD_LEN);
+}
+//-----------------------------------------------------------------------------
+inline
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+{
+// len8 - длина в 8-ми байтовых блоках
+
+for (int i = 0; i < len8; i++)
+    DecodeString(dst + i * 8, src + i * 8, ctx);
+}
+//-----------------------------------------------------------------------------
+inline
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+{
+// len8 - длина в 8-ми байтовых блоках
+
+for (int i = 0; i < len8; i++)
+    EncodeString(dst + i * 8, src + i * 8, ctx);
 }
