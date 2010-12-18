@@ -207,7 +207,6 @@ public:
     void Reset();
 private:
     string EncChar2String(const char *);
-    int CheckUserData();
     int AplayChanges();
 
     USER_STAT_RES * usr;
