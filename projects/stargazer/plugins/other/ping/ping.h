@@ -29,7 +29,7 @@ class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t>
 public:
     CHG_CURRIP_NOTIFIER_PING(const PING & p, user_iter u) : user(u), ping(p) {}
     void Notify(const uint32_t & oldIP, const uint32_t & newIP);
-    user_iter GetUser() { return user; }
+    user_iter GetUser() const { return user; }
 
 private:
     user_iter user;
@@ -41,7 +41,7 @@ class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS>
 public:
     CHG_IPS_NOTIFIER_PING(const PING & p, user_iter u) : user(u), ping(p) {}
     void Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS);
-    user_iter GetUser() { return user; }
+    user_iter GetUser() const { return user; }
 
 private:
     user_iter user;
