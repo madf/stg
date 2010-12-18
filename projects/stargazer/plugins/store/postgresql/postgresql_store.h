@@ -121,19 +121,6 @@ public:
     inline const string & GetStrError() const { return strError; };
     inline const string & GetVersion() const { return versionString; };
 private:
-    std::string versionString;
-    mutable std::string strError;
-    std::string server;
-    std::string database;
-    std::string user;
-    std::string password;
-    std::string clientEncoding;
-    MODULE_SETTINGS settings;
-    mutable pthread_mutex_t mutex;
-    mutable int version;
-
-    PGconn * connection;
-
     int StartTransaction() const;
     int CommitTransaction() const;
     int RollbackTransaction() const;
@@ -154,9 +141,21 @@ private:
     int Connect();
     int Reset() const;
     int CheckVersion() const;
+
+    std::string versionString;
+    mutable std::string strError;
+    std::string server;
+    std::string database;
+    std::string user;
+    std::string password;
+    std::string clientEncoding;
+    MODULE_SETTINGS settings;
+    mutable pthread_mutex_t mutex;
+    mutable int version;
+
+    PGconn * connection;
 };
 
 extern const volatile time_t stgTime;
 
 #endif //POSTGRESQL_STORE_H
-
