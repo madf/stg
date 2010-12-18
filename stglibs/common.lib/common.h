@@ -27,7 +27,11 @@
 #ifndef common_h
 #define common_h
 
+#ifdef __BORLANDC__
+#include <time.h>
+#else
 #include <ctime>
+#endif
 #include <string>
 
 #include "os_int.h"

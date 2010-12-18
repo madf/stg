@@ -54,6 +54,10 @@
 #include <sys/socket.h>
 #endif*/
 
+#ifdef FREE_BSD
+#include <sys/types.h>
+#endif
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

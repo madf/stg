@@ -36,6 +36,7 @@
 #include <cerrno> // E*
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
 
 #include <fstream>
 

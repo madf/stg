@@ -29,6 +29,7 @@
 #define FILE_STORE_H
 
 #include <sys/types.h>
+#include <pthread.h>
 
 #include <string>
 

@@ -27,16 +27,19 @@
 #ifndef USER_IPS_H
 #define USER_IPS_H
 
-#include <vector>
-//#include <algorithm>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <cstring>
-/////////////////////////
+#ifdef FREE_BSD
+#include <sys/types.h>
+#endif
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include <cstring>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <sstream>
 
 #include "common.h"
 #include "os_int.h"

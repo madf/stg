@@ -397,6 +397,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                             case GLOB_NOSPACE:
                                 error(tagNode->lineNum, tagNode->fileName, "glob call failed for '%s': no free space", nodeFilePath.c_str());
                                 return -1;
+#ifndef FREE_BSD
                             case GLOB_ABORTED:
                                 // printf("Read error\n");
                                 // Ignore that error
@@ -405,6 +406,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                                 // printf("No match\n");
                                 // Ignore that error
                                 break;
+#endif
                             default:
                                 error(tagNode->lineNum, tagNode->fileName, "glob call failed for '%s': unknown error", nodeFilePath.c_str());
                                 return -1;
