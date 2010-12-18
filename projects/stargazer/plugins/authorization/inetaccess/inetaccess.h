@@ -121,13 +121,12 @@ private:
 struct IA_USER
 {
     IA_USER()
+        : lastSendAlive(0),
+          rnd(random()),
+          port(0),
+          protoVer(0),
+          password("NO PASSWORD")
     {
-        //phase     = 1;
-        //phaseTime = 0;
-        lastSendAlive = 0;
-        rnd       = random();
-        port      = 0;
-        password = "NO PASSWORD";
         // +++ Preparing CTX +++
         unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
         memset(keyL, 0, PASSWD_LEN);
@@ -140,15 +139,15 @@ struct IA_USER
     };
 
     IA_USER(const IA_USER & u)
+        : user(u.user),
+          phase(u.phase),
+          lastSendAlive(u.lastSendAlive),
+          rnd(u.rnd),
+          port(u.port),
+          messagesToSend(u.messagesToSend),
+          protoVer(u.protoVer),
+          password(u.password)
     {
-        user          = u.user;
-        phase         = u.phase;
-        //phaseTime     = u.phaseTime;
-        lastSendAlive = u.lastSendAlive;
-        rnd           = u.rnd;
-        password      = u.password;
-        protoVer      = u.protoVer;
-        port          = u.port;
         #ifdef IA_DEBUG
         aliveSent  = u.aliveSent;
         #endif
@@ -279,10 +278,6 @@ private:
     int                 Send_FIN_8(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it);
 
     int                 Timeouter();
-
-    void                InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
-    void                Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-    void                Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
     int                 SendError(uint32_t ip, uint16_t port, int protoVer, const string & text);
     int                 Send(uint32_t ip, uint16_t port, const char * buffer, int len);
