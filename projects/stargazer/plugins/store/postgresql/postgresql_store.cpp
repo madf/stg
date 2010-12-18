@@ -22,7 +22,7 @@
  *  This file contains a realization of a base postgresql-storage plugin class
  *
  *  v. 1.3
- *  FreeMb logging on dosconnects added
+ *  FreeMb logging on disconnects added
  *
  *  v. 1.2
  *  Reconnection on faults added
@@ -72,13 +72,14 @@ return pqStoreeCreator.GetStore();
 
 //-----------------------------------------------------------------------------
 POSTGRESQL_STORE::POSTGRESQL_STORE()
-    : connection(NULL)
+    : versionString("postgresql_store v.1.3"),
+      server("localhost"),
+      database("stargazer"),
+      user("stg"),
+      password("123456"),
+      version(0),
+      connection(NULL)
 {
-server = "localhost";
-database = "stargazer";
-user = "stg";
-password = "123456";
-versionString = "postgresql_store v.1.3";
 pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
