@@ -698,6 +698,7 @@ while (fgets(str, 1023, f))
     if (r != 3)
         {
         WriteServLog("Error in file %s. There must be 3 parameters. Line %d.", rulesFileName.c_str(), lineNumber);
+        fclose(f);
         return true;
         }
 
@@ -720,6 +721,7 @@ while (fgets(str, 1023, f))
         {
         WriteServLog("Error in file %s. Line %d.",
                      rulesFileName.c_str(), lineNumber);
+        fclose(f);
         return true;
         }
 
@@ -727,6 +729,7 @@ while (fgets(str, 1023, f))
         {
         WriteServLog("Error in file %s. Error in adress. Line %d.",
                      rulesFileName.c_str(), lineNumber);
+        fclose(f);
         return true;
         }
     if (!test)
