@@ -104,9 +104,6 @@ private:
     void                ProcessTimeouts();
     bool                Disconnect(const UserData & data) const;
     bool                Connect(const UserData & data) const;
-    // Decryption stuff
-    void                InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
-    void                Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
     BLOWFISH_CTX        ctxS;
     STG_LOGGER &        WriteServLog;

@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include <csignal>
+#include <cerrno>
 #include <ctime>
 #include <cstring>
 #include <sstream>
@@ -36,6 +37,9 @@
 #include "script_executer.h"
 #include "stg_locker.h"
 #include "common.h"
+
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
 //-----------------------------------------------------------------------------
 LISTENER::LISTENER()
@@ -52,7 +56,7 @@ version = "rscriptd listener v.1.2";
 pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
-void LISTENER::SetPassword(const string & p)
+void LISTENER::SetPassword(const std::string & p)
 {
 password = p;
 printfd(__FILE__, "Encryption initiated with password \'%s\'\n", password.c_str());
@@ -439,23 +443,6 @@ else
 return false;
 }
 //-----------------------------------------------------------------------------
-void LISTENER::InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
-{
-unsigned char keyL[PASSWD_LEN];
-memset(keyL, 0, PASSWD_LEN);
-strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
-}
-//-----------------------------------------------------------------------------
-void LISTENER::Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-if (dst != src)
-    memcpy(dst, src, len8 * 8);
-
-for (int i = 0; i < len8; i++)
-    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i * 8), (uint32_t *)(dst + i * 8 + 4));
-}
-//-----------------------------------------------------------------------------
 bool LISTENER::CheckHeader(const RS_PACKET_HEADER & header) const
 {
 if (strncmp((char *)header.magic, RS_ID, RS_MAGIC_LEN))
@@ -495,5 +482,24 @@ if (res == 0) // Timeout
     }
 
 return true;
+}
+//-----------------------------------------------------------------------------
+inline
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
+{
+unsigned char keyL[PASSWD_LEN];
+memset(keyL, 0, PASSWD_LEN);
+strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+Blowfish_Init(ctx, keyL, PASSWD_LEN);
+}
+//-----------------------------------------------------------------------------
+inline
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+{
+if (dst != src)
+    memcpy(dst, src, len8 * 8);
+
+for (int i = 0; i < len8; i++)
+    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i * 8), (uint32_t *)(dst + i * 8 + 4));
 }
 //-----------------------------------------------------------------------------
