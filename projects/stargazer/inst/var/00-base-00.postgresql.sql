@@ -631,6 +631,15 @@ VALUES
     ('admin',
      'geahonjehjfofnhammefahbbbfbmpkmkmmefahbbbfbmpkmkmmefahbbbfbmpkmk',
      1, 1, 1, 1, 1, 1, 1, 1, 1);
+INSERT INTO tb_admins
+    (login, passwd,
+     chg_conf, chg_password, chg_stat,
+     chg_cash, usr_add_del, chg_tariff,
+     chg_admin, chg_service, chg_corporation)
+VALUES
+    ('@stargazer',
+     '',
+     0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 INSERT INTO tb_info
     (version)
