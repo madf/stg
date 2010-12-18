@@ -113,10 +113,6 @@ private:
     int                 PrepareNet();
     int                 FinalizeNet();
 
-    void                InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
-    void                Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-    void                Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-
     int                 Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr);
     int                 RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr);
     int                 ProcessData(RAD_PACKET * packet);
@@ -133,9 +129,6 @@ private:
     bool                CanAuthService(const std::string & svc) const;
     bool                CanAcctService(const std::string & svc) const;
     bool                IsAllowedService(const std::string & svc) const;
-
-    void                SetUserNotifier(user_iter u);
-    void                UnSetUserNotifier(user_iter u);
 
     bool                WaitPackets(int sd) const;
 

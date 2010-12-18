@@ -34,6 +34,10 @@
 
 extern volatile const time_t stgTime;
 
+void InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -206,14 +210,6 @@ return 20;
 uint16_t RADIUS::GetStopPosition() const
 {
 return 20;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetUserNotifier(user_iter)
-{
-}
-//-----------------------------------------------------------------------------
-void RADIUS::UnSetUserNotifier(user_iter)
-{
 }
 //-----------------------------------------------------------------------------
 int RADIUS::PrepareNet()
@@ -595,34 +591,6 @@ packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
 }
 //-----------------------------------------------------------------------------
-void RADIUS::InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
-{
-unsigned char keyL[RAD_PASSWORD_LEN];  // Пароль для шифровки
-memset(keyL, 0, RAD_PASSWORD_LEN);
-strncpy((char *)keyL, password.c_str(), RAD_PASSWORD_LEN);
-Blowfish_Init(ctx, keyL, RAD_PASSWORD_LEN);
-}
-//-----------------------------------------------------------------------------
-void RADIUS::Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-// len8 - длина в 8-ми байтовых блоках
-if (dst != src)
-    memcpy(dst, src, len8 * 8);
-
-for (int i = 0; i < len8; i++)
-    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
-}
-//-----------------------------------------------------------------------------
-void RADIUS::Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-// len8 - длина в 8-ми байтовых блоках
-if (dst != src)
-    memcpy(dst, src, len8 * 8);
-
-for (int i = 0; i < len8; i++)
-    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
-}
-//-----------------------------------------------------------------------------
 void RADIUS::PrintServices(const list<string> & svcs)
 {
     for_each(svcs.begin(), svcs.end(), Printer());
@@ -678,4 +646,35 @@ if (res == 0) // Timeout
     }
 
 return true;
+}
+//-----------------------------------------------------------------------------
+inline
+void InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
+{
+unsigned char keyL[RAD_PASSWORD_LEN];  // Пароль для шифровки
+memset(keyL, 0, RAD_PASSWORD_LEN);
+strncpy((char *)keyL, password.c_str(), RAD_PASSWORD_LEN);
+Blowfish_Init(ctx, keyL, RAD_PASSWORD_LEN);
+}
+//-----------------------------------------------------------------------------
+inline
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+{
+// len8 - длина в 8-ми байтовых блоках
+if (dst != src)
+    memcpy(dst, src, len8 * 8);
+
+for (int i = 0; i < len8; i++)
+    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+}
+//-----------------------------------------------------------------------------
+inline
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+{
+// len8 - длина в 8-ми байтовых блоках
+if (dst != src)
+    memcpy(dst, src, len8 * 8);
+
+for (int i = 0; i < len8; i++)
+    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
 }
