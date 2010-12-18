@@ -12,6 +12,7 @@ then
 fi
 
 rm -rf $SRC_DIR/.git
+rm -rf $SRC_DIR/.gitignore
 rm -r $SRC_DIR/projects/make_tarball
 rm -r $SRC_DIR/projects/traffcounter
 rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
