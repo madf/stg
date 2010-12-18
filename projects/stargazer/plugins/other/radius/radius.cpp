@@ -161,6 +161,7 @@ RADIUS::RADIUS()
       store(NULL),
       sock(-1)
 {
+InitEncrypt(&ctx, "");
 }
 //-----------------------------------------------------------------------------
 void RADIUS::SetUsers(USERS * u)
