@@ -39,6 +39,10 @@
 
 using namespace std;
 
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -66,7 +70,9 @@ outerAddr.sin_family = AF_INET;
 outerAddr.sin_port = htons(port);
 outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
 
-InitEncrypt();
+InitEncrypt(&ctx, password);
+
+PrepareNet();
 }
 //-----------------------------------------------------------------------------
 STG_CLIENT::~STG_CLIENT()
@@ -77,15 +83,6 @@ close(sock);
 uint32_t STG_CLIENT::GetFramedIP() const
 {
 return framedIP;
-}
-//-----------------------------------------------------------------------------
-inline
-void STG_CLIENT::InitEncrypt()
-{
-unsigned char keyL[RAD_PASSWORD_LEN];
-memset(keyL, 0, RAD_PASSWORD_LEN);
-strncpy((char *)keyL, password.c_str(), RAD_PASSWORD_LEN);
-Blowfish_Init(&ctx, keyL, RAD_PASSWORD_LEN);
 }
 //-----------------------------------------------------------------------------
 int STG_CLIENT::PrepareNet()
@@ -106,16 +103,6 @@ if (localPort != 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int STG_CLIENT::Start()
-{
-return PrepareNet();
-}
-//-----------------------------------------------------------------------------
-int STG_CLIENT::Stop()
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
 string STG_CLIENT::GetUserPassword() const
 {
 return userPassword;
@@ -125,7 +112,7 @@ int STG_CLIENT::Send(const RAD_PACKET & packet)
 {
 char buf[RAD_MAX_PACKET_LEN];
     
-Encrypt(buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
+Encrypt(&ctx, buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
 
 int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, sizeof(outerAddr));
 
@@ -150,7 +137,7 @@ if (res == -1)
     return -1;
     }
 
-Decrypt((char *)packet, buf, res / 8);
+Decrypt(&ctx, (char *)packet, buf, res / 8);
 
 return 0;
 }
@@ -274,23 +261,34 @@ if (packet.packetType != RAD_ACCEPT_PACKET)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void STG_CLIENT::Encrypt(char * dst, const char * src, int len8)         
+inline
+void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)         
 {
 // len8 - длина в 8-ми байтовых блоках                                                   
 if (dst != src) 
     memcpy(dst, src, len8 * 8);                                                          
     
 for (int i = 0; i < len8; i++)
-    Blowfish_Encrypt(&ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
 }
 //-----------------------------------------------------------------------------
-void STG_CLIENT::Decrypt(char * dst, const char * src, int len8)
+inline
+void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
 {
 // len8 - длина в 8-ми байтовых блоках
 if (dst != src)
     memcpy(dst, src, len8 * 8);
 
 for (int i = 0; i < len8; i++)
-    Blowfish_Decrypt(&ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+}
+//-----------------------------------------------------------------------------
+inline
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
+{
+unsigned char keyL[RAD_PASSWORD_LEN];
+memset(keyL, 0, RAD_PASSWORD_LEN);
+strncpy((char *)keyL, password.c_str(), RAD_PASSWORD_LEN);
+Blowfish_Init(ctx, keyL, RAD_PASSWORD_LEN);
 }
 //-----------------------------------------------------------------------------

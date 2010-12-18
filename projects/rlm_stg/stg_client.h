@@ -44,9 +44,6 @@ public:
     STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass);
     ~STG_CLIENT();
 
-    int Start();
-    int Stop();
-
     std::string GetUserPassword() const;
 
     int Authorize(const std::string & login, const std::string & svc);
@@ -73,10 +70,6 @@ private:
     BLOWFISH_CTX ctx;
 
     int PrepareNet();
-
-    void InitEncrypt();
-    void Encrypt(char * dst, const char * src, int len8);
-    void Decrypt(char * dst, const char * src, int len8);
 
     int Request(RAD_PACKET * packet, const std::string & login, const std::string & svc, uint8_t packetType);
 
