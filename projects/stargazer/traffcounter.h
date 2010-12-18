@@ -107,7 +107,7 @@ public:
                     {};
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
     void            SetUser(user_iter u) { user = u; }
-    user_iter       GetUser() { return user; }
+    user_iter       GetUser() const { return user; }
 
 private:
     TRAFFCOUNTER &  traffCnt;
@@ -124,7 +124,7 @@ public:
                     {};
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
     void            SetUser(user_iter u) { user = u; }
-    user_iter       GetUser() { return user; }
+    user_iter       GetUser() const { return user; }
 private:
     TRAFFCOUNTER &  traffCnt;
     user_iter       user;
