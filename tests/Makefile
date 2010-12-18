@@ -1,4 +1,4 @@
-CXXFLAGS+=-g3 -Wall -W -pedantic -DLINUX -I../include -I../projects/stargazer -I../stglibs/conffiles.lib
+CXXFLAGS+=-g3 -Wall -W -pedantic -DLINUX -I../include -I../projects/stargazer -I../stglibs/conffiles.lib -I.
 LIBS=-lpthread
 PROG=tests
 

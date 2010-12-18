@@ -3,7 +3,7 @@
 #include <string>
 #include <fstream>
 
-#include <tut/tut.hpp>
+#include "tut/tut.hpp"
 
 #include "conffiles.h"
 
