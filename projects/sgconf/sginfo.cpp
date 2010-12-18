@@ -185,6 +185,8 @@ char * str;
 str = new char[strlen(c) + 1];
 
 strncpy(str, c, strlen(c));
+str[strlen(c)] = 0;
+
 msg = strchr(str, ':');
 
 if (msg)
