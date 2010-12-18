@@ -159,8 +159,6 @@ private:
     uint32_t        ip;                             // Proxy IP
     uint32_t        localPort;
 
-    struct sockaddr_in  localAddrS;      // Наш адрес
-    struct sockaddr_in  localAddrR;      // Наш адрес
     struct sockaddr_in  servAddr;        // адрес сервера
 
     bool            firstConnect;

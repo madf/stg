@@ -108,19 +108,13 @@ return 0;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 IA_CLIENT_PROT::IA_CLIENT_PROT(const string & sn, unsigned short p, uint16_t localPort)
-    : stat(),
-      action(IA_NONE),
+    : action(IA_NONE),
       phase(1),
       phaseTime(0),
-      messageText(),
-      infoText(),
-      strError(),
       codeError(0),
-      nonstop(true),
+      nonstop(false),
       isNetPrepared(false),
       proxyMode(false),
-      password(),
-      login(),
       serverName(sn),
       port(p),
       ip(0),
@@ -142,7 +136,6 @@ IA_CLIENT_PROT::IA_CLIENT_PROT(const string & sn, unsigned short p, uint16_t loc
       infoCbData(NULL),
       errorCbData(NULL),
       dirNameCbData(NULL),
-      packetTypes(),
       connSyn8(NULL),
       connSynAck8(NULL),
       connAck8(NULL),
@@ -151,7 +144,6 @@ IA_CLIENT_PROT::IA_CLIENT_PROT(const string & sn, unsigned short p, uint16_t loc
       disconnSyn8(NULL),
       disconnSynAck8(NULL),
       disconnAck8(NULL),
-      err(),
       info(NULL)
 {
 memset(&stat, 0, sizeof(stat));
@@ -175,9 +167,21 @@ packetTypes["INFO_7"] = INFO_7_N;
 packetTypes["INFO_8"] = INFO_8_N;
 
 unsigned char key[IA_PASSWD_LEN];
-memset(key, 0, IA_LOGIN_LEN);
+memset(key, 0, IA_PASSWD_LEN);
 strncpy((char *)key, "pr7Hhen", 8);
 Blowfish_Init(&ctxHdr, key, IA_PASSWD_LEN);
+
+memset(key, 0, IA_PASSWD_LEN);
+Blowfish_Init(&ctxPass, key, IA_PASSWD_LEN);
+
+for (size_t i = 0; i < DIR_NUM; ++i)
+    {
+    selectedDirs[i] = false;
+    }
+
+servAddr.sin_family = AF_INET;
+servAddr.sin_port = htons(port);
+servAddr.sin_addr.s_addr = ip;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::PrepareNet()
@@ -198,7 +202,7 @@ if (ip == INADDR_NONE)
         strError = string("Unknown host ") + "\'" + serverName + "\'";
         codeError = IA_GETHOSTBYNAME_ERROR;
         if (pErrorCb != NULL)
-            pErrorCb(messageText, IA_GETHOSTBYNAME_ERROR, errorCbData);
+            pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
         }
     }
 
@@ -210,10 +214,7 @@ closesocket(sockr);
 
 sockr = socket(AF_INET, SOCK_DGRAM, 0);  // Cокет через который шлем и принимаем
 
-localAddrS.sin_family = AF_INET;
-localAddrS.sin_port = htons(port);
-localAddrS.sin_addr.s_addr = inet_addr("0.0.0.0");
-
+struct sockaddr_in  localAddrR;      // Наш адрес
 localAddrR.sin_family = AF_INET;
 
 if (localPort)
@@ -232,7 +233,7 @@ if (res == -1)
     strError = "bind error";
     codeError = IA_BIND_ERROR;
     if (pErrorCb != NULL)
-        pErrorCb(messageText, IA_BIND_ERROR, errorCbData);
+        pErrorCb(strError, IA_BIND_ERROR, errorCbData);
     return;
     }
 
@@ -245,7 +246,7 @@ if (0 != fcntl(sockr, F_SETFL, O_NONBLOCK))
     strError = "fcntl error";
     codeError = IA_FCNTL_ERROR;
     if (pErrorCb != NULL)
-        pErrorCb(messageText, IA_FCNTL_ERROR, errorCbData);
+        pErrorCb(strError, IA_FCNTL_ERROR, errorCbData);
     }
 #endif
 
