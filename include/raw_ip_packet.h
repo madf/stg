@@ -1,6 +1,10 @@
 #ifndef RAW_IP_PACKET_H
 #define RAW_IP_PACKET_H
 
+#ifdef FREE_BSD
+#include <netinet/in_systm.h> // n_long in netinet/ip.h
+#endif
+
 #include <netinet/in.h> // for htons
 #include <netinet/ip.h> // for struct ip
 
@@ -49,77 +53,77 @@ union
         // Only for packets without options field
         uint16_t    sPort;
         uint16_t    dPort;
-        } __attribute__ ((packed));
+        } header __attribute__ ((packed));
     };
 int32_t     dataLen;                // Длина IP пакета. Если -1, то использовать длину из заголовка самого пакета.
 };
 //-----------------------------------------------------------------------------
 inline uint16_t RAW_PACKET::GetIPVersion() const
 {
-return ipHeader.ip_v;
+return header.ipHeader.ip_v;
 }
 //-----------------------------------------------------------------------------
 inline uint8_t RAW_PACKET::GetHeaderLen() const
 {
-return ipHeader.ip_hl * 4;
+return header.ipHeader.ip_hl * 4;
 }
 //-----------------------------------------------------------------------------
 inline uint8_t RAW_PACKET::GetProto() const
 {
-return ipHeader.ip_p;
+return header.ipHeader.ip_p;
 }
 //-----------------------------------------------------------------------------
 inline uint32_t RAW_PACKET::GetLen() const
 {
 if (dataLen != -1)
     return dataLen;
-return ntohs(ipHeader.ip_len);
+return ntohs(header.ipHeader.ip_len);
 }
 //-----------------------------------------------------------------------------
 inline uint32_t RAW_PACKET::GetSrcIP() const
 {
-return ipHeader.ip_src.s_addr;
+return header.ipHeader.ip_src.s_addr;
 }
 //-----------------------------------------------------------------------------
 inline uint32_t RAW_PACKET::GetDstIP() const
 {
-return ipHeader.ip_dst.s_addr;
+return header.ipHeader.ip_dst.s_addr;
 }
 //-----------------------------------------------------------------------------
 inline uint16_t RAW_PACKET::GetSrcPort() const
 {
-if (ipHeader.ip_p == 1) // for icmp proto return port 0
+if (header.ipHeader.ip_p == 1) // for icmp proto return port 0
     return 0;
-return ntohs(*((uint16_t*)(pckt + ipHeader.ip_hl * 4)));
+return ntohs(*((uint16_t*)(pckt + header.ipHeader.ip_hl * 4)));
 }
 //-----------------------------------------------------------------------------
 inline uint16_t RAW_PACKET::GetDstPort() const
 {
-if (ipHeader.ip_p == 1) // for icmp proto return port 0
+if (header.ipHeader.ip_p == 1) // for icmp proto return port 0
     return 0;
-return ntohs(*((uint16_t*)(pckt + ipHeader.ip_hl * 4 + 2)));
+return ntohs(*((uint16_t*)(pckt + header.ipHeader.ip_hl * 4 + 2)));
 }
 //-----------------------------------------------------------------------------
 inline bool RAW_PACKET::operator==(const RAW_PACKET & rvalue) const
 {
-if (ipHeader.ip_src.s_addr != rvalue.ipHeader.ip_src.s_addr)
+if (header.ipHeader.ip_src.s_addr != rvalue.header.ipHeader.ip_src.s_addr)
     return false;
 
-if (ipHeader.ip_dst.s_addr != rvalue.ipHeader.ip_dst.s_addr)
+if (header.ipHeader.ip_dst.s_addr != rvalue.header.ipHeader.ip_dst.s_addr)
     return false;
 
-if (ipHeader.ip_p != 1 && rvalue.ipHeader.ip_p != 1)
+if (header.ipHeader.ip_p != 1 && rvalue.header.ipHeader.ip_p != 1)
     {
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4)) !=
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4)))
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4)) !=
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4)))
         return false;
 
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4 + 2)) !=
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4 + 2)))
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4 + 2)) !=
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4 + 2)))
         return false;
     }
 
-if (ipHeader.ip_p != rvalue.ipHeader.ip_p)
+if (header.ipHeader.ip_p != rvalue.header.ipHeader.ip_p)
     return false;
 
 return true;
@@ -147,34 +151,34 @@ return true;
 //-----------------------------------------------------------------------------
 inline bool RAW_PACKET::operator<(const RAW_PACKET & rvalue) const
 {
-if (ipHeader.ip_src.s_addr < rvalue.ipHeader.ip_src.s_addr) 
+if (header.ipHeader.ip_src.s_addr < rvalue.header.ipHeader.ip_src.s_addr) 
     return true;
-if (ipHeader.ip_src.s_addr > rvalue.ipHeader.ip_src.s_addr) 
+if (header.ipHeader.ip_src.s_addr > rvalue.header.ipHeader.ip_src.s_addr) 
     return false;
 
-if (ipHeader.ip_dst.s_addr < rvalue.ipHeader.ip_dst.s_addr) 
+if (header.ipHeader.ip_dst.s_addr < rvalue.header.ipHeader.ip_dst.s_addr) 
     return true;
-if (ipHeader.ip_dst.s_addr > rvalue.ipHeader.ip_dst.s_addr) 
+if (header.ipHeader.ip_dst.s_addr > rvalue.header.ipHeader.ip_dst.s_addr) 
     return false;
 
-if (ipHeader.ip_p != 1 && rvalue.ipHeader.ip_p != 1)
+if (header.ipHeader.ip_p != 1 && rvalue.header.ipHeader.ip_p != 1)
     {
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4)) <
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4))) 
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4)) <
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4))) 
         return true;
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4)) >
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4))) 
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4)) >
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4))) 
         return false;
 
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4 + 2)) <
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4 + 2))) 
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4 + 2)) <
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4 + 2))) 
         return true;
-    if (*((uint16_t *)(pckt + ipHeader.ip_hl * 4 + 2)) >
-        *((uint16_t *)(rvalue.pckt + rvalue.ipHeader.ip_hl * 4 + 2))) 
+    if (*((uint16_t *)(pckt + header.ipHeader.ip_hl * 4 + 2)) >
+        *((uint16_t *)(rvalue.pckt + rvalue.header.ipHeader.ip_hl * 4 + 2))) 
         return false;
     }
 
-if (ipHeader.ip_p < rvalue.ipHeader.ip_p) 
+if (header.ipHeader.ip_p < rvalue.header.ipHeader.ip_p) 
     return true;
 
 return false;
@@ -210,5 +214,3 @@ return false;
 //-----------------------------------------------------------------------------
 
 #endif
-
-
