@@ -8,6 +8,8 @@ PIDFILE=/var/run/stargazer.pid
 
 depend() {
 	need net
+	use postgresql firebird mysql
+	provide stargazer
 }
 
 start() {
@@ -18,7 +20,7 @@ start() {
 
 stop() {
 	ebegin "Stopping stargazer"
-	start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --retry=INT/60/KILL/5
+	start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --retry=INT/120/KILL/5
 	rm -f ${PIDFILE}
 	eend $?
 }
