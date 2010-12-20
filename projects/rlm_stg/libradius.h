@@ -28,6 +28,7 @@
 //RCSIDH(libradius_h, "$Id: libradius.h,v 1.1 2010/08/14 04:13:52 faust Exp $")
 
 #include <errno.h>
+#include <time.h>
 
 #include <stdio.h>
 #include <stdlib.h>

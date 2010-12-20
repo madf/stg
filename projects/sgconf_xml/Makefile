@@ -49,8 +49,8 @@ all: libs $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-$(PROG): $(OBJS) $(LIBS)
-	$(CC) $^ $(LDFLAGS) -o $(PROG)
+$(PROG): $(OBJS) $(STGLIBS)
+	$(CC) $^ $(LIBS) $(LDFLAGS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
@@ -95,8 +95,8 @@ deps:	$(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC) includes
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
 	done
 
 

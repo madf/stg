@@ -115,7 +115,7 @@ rm -f fake
 
 echo -n "Checking for -lexpat... "
 echo "int main() { return 0; }" > build_check.c
-gcc build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+gcc $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_EXPAT=no

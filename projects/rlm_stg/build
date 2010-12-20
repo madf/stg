@@ -84,6 +84,7 @@ else
         fi
     fi
     SHELL="/usr/local/bin/bash"
+    CXXFLAGS="$CXXFLAGS -DHAVE_CLOSEFROM"
 fi
 
 echo -n "Checking endianess... "
