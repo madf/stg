@@ -18,24 +18,25 @@ OWNER=root
 if [ -z $1 ]
 then
     MAKEOPTS="-j1"
-    CFLAGS="-O2"
 else
     if [ "$1" = "debug" ]
     then
         DEFS="-DDEBUG"
         MAKEOPTS="-j1"
-        CFLAGS="-g3"
+        CXXFLAGS="$CXXFLAGS -g3 -W -Wall"
     else
         MAKEOPTS="-j1"
-        CFLAGS="-O2"
     fi
 fi
+
+CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 if [ "$sys" = "Linux" ]
 then
     OS=linux
     release=""
-    ETC_DIR="./inst/linux/etc/stargazer"
+    MAKE="make"
 fi
 
 if [ "$sys" = "FreeBSD" ]
@@ -44,9 +45,11 @@ then
         4) OS=bsd;;
         5) OS=bsd5;;
         6) OS=bsd5;;	
+        7) OS=bsd7;;
+        8) OS=bsd7;;
         *) OS=unknown;;
     esac
-    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
 fi
 
 if [ "$OS" = "unknown" ]
@@ -77,10 +80,38 @@ else
         DEFS="$DEFS -DFREE_BSD"
     else
         DEFS="$DEFS -DFREE_BSD5"
+        if [ "$OS" = "bsd7" ]
+        then
+            LIB_THREAD=-lpthread
+        else
+            LIB_THREAD=-lc_r
+        fi
     fi
     SHELL="/usr/local/bin/bash"
-    LIB_THREAD=-lc_r
 fi
+
+echo -n "Checking endianess... "
+echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
+gcc $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    echo "FAIL!"
+    echo "Endianess checking failed"
+    exit;
+else
+    ./fake
+    if [ $? = 1 ]
+    then
+        ARCH=le
+        CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        echo "Little Endian"
+    else
+        ARCH=be
+        CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        echo "Big Endian"
+    fi
+fi
+rm -f fake
 
 echo -n "Checking for -lexpat... "
 echo "int main() { return 0; }" > build_check.c
@@ -103,11 +134,12 @@ then
 fi
 
 echo "OS=$OS" > $CONFFILE
-echo "STG_TIME=no" >> $CONFFILE
+echo "STG_TIME=yes" >> $CONFFILE
 echo "DIR_BUILD=$BUILD_DIR" >> $CONFFILE
 echo "DIR_LIB=\$(DIR_BUILD)/../../lib" >> $CONFFILE
 echo "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs" >> $CONFFILE
 echo "DIR_INCLUDE=\$(DIR_BUILD)/../../include" >> $CONFFILE
+echo "ARCH=$ARCH" >> $CONFFILE
 echo "CHECK_EXPAT=$CHECK_EXPAT" >> $CONFFILE
 echo "DEFS=$DEFS" >> $CONFFILE
 echo -n "STG_LIBS=" >> $CONFFILE
@@ -116,13 +148,14 @@ do
     echo -n "$lib " >> $CONFFILE
 done
 echo "" >> $CONFFILE
+echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
 echo "SHELL=$SHELL" >> $CONFFILE
-echo "CFLAGS=$CFLAGS" >> $CONFFILE
+echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
+echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
 echo "PREFIX=$PREFIX" >> $CONFFILE
 echo "BIN_MODE=$BIN_MODE" >> $CONFFILE
 echo "DATA_MODE=$DATA_MODE" >> $CONFFILE
 echo "OWNER=$OWNER" >> $CONFFILE
-echo "ETC_DIR=$ETC_DIR" >> $CONFFILE
 
-gmake $MAKEOPTS
+$MAKE $MAKEOPTS
 

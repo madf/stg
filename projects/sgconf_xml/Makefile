@@ -4,7 +4,7 @@
 
 include ../../Makefile.conf
 
-PROG = sgconf
+PROG = sgconf_xml
 
 SRCS = ./main.cpp \
        ./parser.cpp
@@ -14,32 +14,32 @@ LIBS =  -lconffiles \
         -lstg_common \
         -lsrvconf
 
+LIBS += -lexpat \
+	$(LIB_THREAD)
+
 ifeq ($(OS),linux)
-LIBS += -lexpat \
-        -lpthread \
-        -ldl
-endif
-
-ifeq ($(OS),bsd)
-LIBS += -lexpat \
-        -lc_r \
-        -lc
-endif
-
-ifeq ($(OS),bsd5)
-LIBS += -lexpat \
-        -lc_r \
-        -lc
+LIBS += -ldl
+else
+LIBS += -lc \
+	-liconv
 endif
 
 SEARCH_DIRS = -I $(DIR_INCLUDE)
 
+ifeq ($(OS),bsd)
+SEARCH_DIRS += -I/usr/local/include
+CXXFLAGS += -DHAVE_DECL_GETOPT=1
+endif
+
+ifeq ($(OS),bsd5)
+SEARCH_DIRS += -I/usr/local/include
+CXXFLAGS += -DHAVE_DECL_GETOPT=1
+endif
+
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CC = g++
-
-CFLAGS += -Wall
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
+CXXFLAGS += -Wall
+LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
 
 vpath %.so $(DIR_LIB)
 
@@ -86,7 +86,7 @@ uninstall-data:
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),uninstall)
-include deps
+-include deps
 endif
 endif
 endif
