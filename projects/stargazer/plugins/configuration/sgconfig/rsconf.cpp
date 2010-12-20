@@ -32,6 +32,11 @@
 #include "configproto.h"
 #include "blowfish.h"
 
+#ifndef ENODATA
+// FreeBSD 4.* - suxx
+#define ENODATA -1
+#endif
+
 enum CONF_STATE
     {
     confHdr,

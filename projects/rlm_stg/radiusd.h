@@ -169,6 +169,9 @@ typedef enum RAD_LISTEN_TYPE {
 	RAD_LISTEN_MAX
 } RAD_LISTEN_TYPE;
 
+#ifdef FREE_BSD
+#include <sys/time.h>
+#endif
 
 /*
  *	For listening on multiple IP's and ports.

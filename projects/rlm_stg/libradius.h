@@ -34,6 +34,9 @@
 #include <stdarg.h>
 #include "os_int.h"
 
+#ifdef FREE_BSD
+#include <sys/types.h>
+#endif
 #include <netinet/in.h>
 #include <sys/socket.h>
 
