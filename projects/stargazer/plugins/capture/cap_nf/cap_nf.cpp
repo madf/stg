@@ -398,14 +398,14 @@ for (int i = 0; i < packets; ++i)
     *(uint32_t *)(ip.pckt + 16) = data->dstAddr;
     *(uint16_t *)(ip.pckt + 20) = data->srcPort;
     *(uint16_t *)(ip.pckt + 22) = data->dstPort;*/
-    ip.ipHeader.ip_v = 4;
-    ip.ipHeader.ip_hl = 5;
-    ip.ipHeader.ip_p = data->proto;
+    ip.header.ipHeader.ip_v = 4;
+    ip.header.ipHeader.ip_hl = 5;
+    ip.header.ipHeader.ip_p = data->proto;
     ip.dataLen = ntohl(data->octets);
-    ip.ipHeader.ip_src.s_addr = data->srcAddr;
-    ip.ipHeader.ip_dst.s_addr = data->dstAddr;
-    ip.sPort = data->srcPort;
-    ip.dPort = data->dstPort;
+    ip.header.ipHeader.ip_src.s_addr = data->srcAddr;
+    ip.header.ipHeader.ip_dst.s_addr = data->dstAddr;
+    ip.header.sPort = data->srcPort;
+    ip.header.dPort = data->dstPort;
 
     traffCnt->Process(ip);
     }
