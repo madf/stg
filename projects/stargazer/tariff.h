@@ -31,6 +31,8 @@
 #ifndef TARIFF_H
 #define TARIFF_H
 
+#include <ctime>
+
 #include <string>
 #include <list>
 

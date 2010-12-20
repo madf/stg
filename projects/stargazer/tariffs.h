@@ -36,6 +36,8 @@
 #ifndef TARIFFS_H
 #define TARIFFS_H
 
+#include <pthread.h>
+
 #include <string>
 #include <list>
 
