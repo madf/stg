@@ -36,17 +36,17 @@ namespace tut
         set_test_name("Check structure consistency");
 
         RAW_PACKET rp;
-        rp.ipHeader.ip_v = 4;
-        rp.ipHeader.ip_hl = 5;
-        rp.ipHeader.ip_tos = 0;
-        rp.ipHeader.ip_len = htons(40); // 20 of header + 20 of data
-        rp.ipHeader.ip_p = 6;
-        rp.ipHeader.ip_src.s_addr = inet_addr("192.168.0.1");
-        rp.ipHeader.ip_dst.s_addr = inet_addr("192.168.0.101");
-        rp.sPort = htons(80);
-        rp.dPort = htons(38546);
+        rp.header.ipHeader.ip_v = 4;
+        rp.header.ipHeader.ip_hl = 5;
+        rp.header.ipHeader.ip_tos = 0;
+        rp.header.ipHeader.ip_len = htons(40); // 20 of header + 20 of data
+        rp.header.ipHeader.ip_p = 6;
+        rp.header.ipHeader.ip_src.s_addr = inet_addr("192.168.0.1");
+        rp.header.ipHeader.ip_dst.s_addr = inet_addr("192.168.0.101");
+        rp.header.sPort = htons(80);
+        rp.header.dPort = htons(38546);
 
-        ensure_equals("IP header size (explicitly)", sizeof(rp.ipHeader), 20);
+        ensure_equals("IP header size (explicitly)", sizeof(rp.header.ipHeader), 20);
         ensure_equals("IP version", rp.GetIPVersion(), 4);
         ensure_equals("IP header size (with options)", rp.GetHeaderLen(), 20);
         ensure_equals("Underlying protocol version", rp.GetProto(), 6);
