@@ -489,7 +489,13 @@ if (isRunning)
 
 printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
-for_each(users.begin(), users.end(), bind2nd(mem_fun_ref(&USER::WriteDetailStat), true));
+
+// 'cause bind2st accepts only constant first param
+for (list<USER>::iterator it = users.begin();
+     it != users.end();
+     ++it)
+    it->WriteDetailStat(true);
+
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteStat));
 for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteConf));
 
