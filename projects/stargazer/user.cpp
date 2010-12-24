@@ -940,22 +940,18 @@ Run();
 //-----------------------------------------------------------------------------
 int USER::WriteDetailStat(bool hard)
 {
-printfd(__FILE__, "USER::WriteDetailedStat() - queue size = %d\n", traffStatQueue.size());
+printfd(__FILE__, "USER::WriteDetailedStat() - saved size = %d\n", traffStatSaved.second.size());
 
-if (!traffStatQueue.empty())
+if (!traffStatSaved.second.empty())
     {
-    std::list<std::pair<time_t, TRAFF_STAT> >::iterator it;
-    for (it = traffStatQueue.begin(); it != traffStatQueue.end(); ++it)
+    if (store->WriteDetailedStat(traffStatSaved.second, traffStatSaved.first, login))
         {
-        if (store->WriteDetailedStat(it->second, it->first, login))
-            {
-            printfd(__FILE__, "USER::WriteDetailStat() - failed to write detail stat from queue\n");
-            WriteServLog("Cannot write detail stat from queue (of size %d recs) for user %s.", traffStatQueue.size(), login.c_str());
-            WriteServLog("%s", store->GetStrError().c_str());
-            return -1;
-            }
-        traffStatQueue.erase(it++);
+        printfd(__FILE__, "USER::WriteDetailStat() - failed to write detail stat from queue\n");
+        WriteServLog("Cannot write detail stat from queue (of size %d recs) for user %s.", traffStatSaved.second.size(), login.c_str());
+        WriteServLog("%s", store->GetStrError().c_str());
+        return -1;
         }
+    traffStatSaved.second.erase(traffStatSaved.second.begin(), traffStatSaved.second.end());
     }
 
 TRAFF_STAT ts;
@@ -977,8 +973,11 @@ if (ts.size() && !disabledDetailStat)
         if (!hard)
             {
             printfd(__FILE__, "USER::WriteDetailStat() - pushing detail stat to queue\n");
-            traffStatQueue.push_back(std::make_pair(lastWriteDeatiledStat, ts));
+            STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+            traffStatSaved.second.swap(ts);
+            traffStatSaved.first = lastWriteDeatiledStat;
             }
+        return -1;
         }
     }
 lastWriteDeatiledStat = stgTime;

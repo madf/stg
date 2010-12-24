@@ -233,7 +233,7 @@ private:
     const TARIFF *  tariff;
 
     TRAFF_STAT      traffStat;
-    std::list<std::pair<time_t, TRAFF_STAT> > traffStatQueue;
+    std::pair<time_t, TRAFF_STAT> traffStatSaved;
 
     const SETTINGS * settings;
 
