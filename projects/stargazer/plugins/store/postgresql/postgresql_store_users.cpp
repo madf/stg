@@ -906,7 +906,11 @@ for (int i = 0; i < tuples; ++i)
         }
     else
         {
-        conf->userdata[i] = PQgetvalue(result, i, 1);
+        if (num < USERDATA_NUM &&
+            num >= 0)
+            {
+            conf->userdata[num] = PQgetvalue(result, i, 1);
+            }
         }
     }
 
