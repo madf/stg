@@ -7,7 +7,7 @@
 
 # Installation path prefix
 
-PREFIX=""
+#PREFIX=""
 
 # Binaries access bits
 
