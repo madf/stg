@@ -1,7 +1,7 @@
 #ifndef RAW_IP_PACKET_H
 #define RAW_IP_PACKET_H
 
-#ifdef FREE_BSD
+#if defined(FREE_BSD) || defined(FREE_BSD5)
 #include <netinet/in_systm.h> // n_long in netinet/ip.h
 #endif
 
