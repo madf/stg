@@ -10,10 +10,11 @@
  $Date: 2010/03/04 11:49:52 $
  */
 
-#include <time.h>
+#include <ctime>
 #include <string>
 
-using namespace std;
+#include "os_int.h"
+
 //-----------------------------------------------------------------------------
 struct STG_MSG_HDR
 {
@@ -40,15 +41,11 @@ unsigned    repeatPeriod;
 //-----------------------------------------------------------------------------
 struct STG_MSG
 {
-STG_MSG()
-    : header(),
-      text()
-{};
+STG_MSG() {};
 
 STG_MSG_HDR header;
-string      text;
+std::string text;
 };
 //-----------------------------------------------------------------------------
 
 #endif
-
