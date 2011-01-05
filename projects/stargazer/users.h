@@ -119,8 +119,6 @@ public:
     int             Start();
     int             Stop();
 
-    int             SendMessage(const string & login, time_t sndTtime, time_t showTime, char type, const string & text) const;
-
 private:
     void            AddToIPIdx(user_iter);
     void            DelFromIPIdx(uint32_t ip);
