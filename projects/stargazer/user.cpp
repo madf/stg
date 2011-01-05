@@ -1274,7 +1274,7 @@ while (it != messages.end())
     if (it->header.repeat < 0)
         {
         printfd(__FILE__, "DelMessage\n");
-        store->DelMessage(it->id, login);
+        store->DelMessage(it->header.id, login);
         messages.erase(it++);
         }
     else
