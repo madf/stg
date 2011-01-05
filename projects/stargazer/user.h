@@ -241,6 +241,8 @@ private:
 
     const map<uint32_t, user_iter> * ipIndex;
 
+    list<STG_MSG> messages;
+
     bool            deleted;
 
     time_t          lastWriteStat;           // Время последней записи статистики

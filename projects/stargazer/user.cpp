@@ -255,6 +255,24 @@ if (tariff == NULL)
     return -1;
     }
 
+std::vector<STG_MSG_HDR> hdrsList;
+
+if (store->GetMessageHdrs(&hdrsList, login))
+    {
+    printfd(__FILE__, "Error GetMessageHdrs %s\n", store->GetStrError().c_str());
+    return -1;
+    }
+
+std::vector<STG_MSG_HDR>::const_iterator it;
+for (it = hdrsList.begin(); it != hdrsList.end(); ++it)
+    {
+    STG_MSG msg;
+    if (store->GetMessage(it->id, &msg, login) == 0)
+        {
+        messages.push_back(msg);
+        }
+    }
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1154,6 +1172,7 @@ if (SendMessage(*msg) == 0)
             WriteServLog("%s", store->GetStrError().c_str());
             return -1;
             }
+        messages.push_back(*msg);
         }
     }
 else
@@ -1166,6 +1185,7 @@ else
         WriteServLog("%s", store->GetStrError().c_str());
         return -1;
         }
+    messages.push_back(*msg);
     }
 return 0;
 }
@@ -1196,7 +1216,7 @@ int USER::ScanMessage()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-vector<STG_MSG_HDR> hdrsList;
+/*vector<STG_MSG_HDR> hdrsList;
 
 if (store->GetMessageHdrs(&hdrsList, login))
     {
@@ -1241,7 +1261,38 @@ for (unsigned i = 0; i < hdrsList.size(); i++)
             WriteServLog("%s", store->GetStrError().c_str());
             }
         }
+    }*/
+
+std::list<STG_MSG>::iterator it(messages.begin());
+while (it != messages.end())
+    {
+    if (SendMessage(*it))
+        {
+        break;
+        }
+    it->header.repeat--;
+    if (it->header.repeat < 0)
+        {
+        printfd(__FILE__, "DelMessage\n");
+        store->DelMessage(it->id, login);
+        messages.erase(it++);
+        }
+    else
+        {
+        #ifndef DEBUG
+        //TODO: gcc v. 4.x generate ICE on x86_64
+        it->header.lastSendTime = time(NULL);
+        #else
+        it->header.lastSendTime = stgTime;
+        #endif
+        if (store->EditMessage(*it, login))
+            {
+            printfd(__FILE__, "EditMessage Error %s\n", store->GetStrError().c_str());
+            }
+        ++it;
+        }
     }
+
 return 0;
 }
 //-----------------------------------------------------------------------------
