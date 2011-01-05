@@ -115,7 +115,6 @@ ips = StrToIPS("*");
 deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDeatiledStat = stgTime;
-lastSwapDeatiledStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
@@ -197,7 +196,6 @@ deleted = u.deleted;
 
 lastWriteStat = u.lastWriteStat;
 lastWriteDeatiledStat = u.lastWriteDeatiledStat;
-lastSwapDeatiledStat = u.lastSwapDeatiledStat;
 
 settings = u.settings;
 

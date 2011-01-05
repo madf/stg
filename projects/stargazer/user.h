@@ -245,7 +245,6 @@ private:
 
     time_t          lastWriteStat;           // Время последней записи статистики
     time_t          lastWriteDeatiledStat;   // Время последней записи детальной статистики
-    time_t          lastSwapDeatiledStat;    // Время последней записи детальной статистики
 
     bool            writeFreeMbTraffCost;
 
