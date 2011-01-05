@@ -1153,7 +1153,19 @@ int USER::AddMessage(STG_MSG * msg)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (SendMessage(*msg) == 0)
+if (SendMessage(*msg))
+    {
+    if (store->AddMessage(msg, login))
+        {
+        errorStr = store->GetStrError();
+        STG_LOGGER & WriteServLog = GetStgLogger();
+        WriteServLog("Error adding message %s", errorStr.c_str());
+        WriteServLog("%s", store->GetStrError().c_str());
+        return -1;
+        }
+    messages.push_back(*msg);
+    }
+else
     {
     if (msg->header.repeat > 0)
         {
@@ -1175,46 +1187,26 @@ if (SendMessage(*msg) == 0)
         messages.push_back(*msg);
         }
     }
-else
-    {
-    if (store->AddMessage(msg, login))
-        {
-        errorStr = store->GetStrError();
-        STG_LOGGER & WriteServLog = GetStgLogger();
-        WriteServLog("Error adding message %s", errorStr.c_str());
-        WriteServLog("%s", store->GetStrError().c_str());
-        return -1;
-        }
-    messages.push_back(*msg);
-    }
 return 0;
 }
 //-----------------------------------------------------------------------------
 int USER::SendMessage(const STG_MSG & msg)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-if (authorizedBy.empty())
-    {
-    return -1;
-    }
-
+// No lock `cause we are already locked from caller
 int ret = -1;
-set<const BASE_AUTH*>::iterator it;
-
-it = authorizedBy.begin();
+set<const BASE_AUTH*>::iterator it(authorizedBy.begin());
 while (it != authorizedBy.end())
     {
-    if ((*it)->SendMessage(msg, currIP) == 0)
+    if (!(*it++)->SendMessage(msg, currIP))
         ret = 0;
-    ++it;
     }
 return ret;
 }
 //-----------------------------------------------------------------------------
 int USER::ScanMessage()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+// No lock `cause we are already locked from caller
+// We need not check for the authorizedBy `cause it has already checked by caller
 
 /*vector<STG_MSG_HDR> hdrsList;
 
@@ -1268,7 +1260,7 @@ while (it != messages.end())
     {
     if (SendMessage(*it))
         {
-        break;
+        return -1;
         }
     it->header.repeat--;
     if (it->header.repeat < 0)
