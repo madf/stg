@@ -1158,8 +1158,8 @@ if (SendMessage(*msg))
     if (store->AddMessage(msg, login))
         {
         errorStr = store->GetStrError();
-        WriteServLog("Error adding message %s", errorStr.c_str());
-        WriteServLog("%s", store->GetStrError().c_str());
+        WriteServLog("Error adding message: '%s'", errorStr.c_str());
+        printfd(__FILE__, "Error adding message: '%s'\n", errorStr.c_str());
         return -1;
         }
     messages.push_back(*msg);
@@ -1178,8 +1178,8 @@ else
         if (store->AddMessage(msg, login))
             {
             errorStr = store->GetStrError();
-            WriteServLog("Error adding message %s", errorStr.c_str());
-            WriteServLog("%s", store->GetStrError().c_str());
+            WriteServLog("Error adding repeatable message: '%s'", errorStr.c_str());
+            printfd(__FILE__, "Error adding repeatable message: '%s'\n", errorStr.c_str());
             return -1;
             }
         messages.push_back(*msg);
@@ -1256,34 +1256,40 @@ for (unsigned i = 0; i < hdrsList.size(); i++)
 std::list<STG_MSG>::iterator it(messages.begin());
 while (it != messages.end())
     {
-    if (SendMessage(*it))
+    if (static_cast<time_t>(it->header.lastSendTime + it->header.repeatPeriod * 60) < stgTime)
         {
-        return -1;
-        }
-    it->header.repeat--;
-    if (it->header.repeat < 0)
-        {
-        printfd(__FILE__, "DelMessage\n");
-        if (store->DelMessage(it->header.id, login))
+        if (SendMessage(*it))
             {
-            WriteServLog("Error deleting message: '%s'", store->GetStrError().c_str());
-            printfd(__FILE__, "Error deleting message: '%s'\n", store->GetStrError().c_str());
+            return -1;
             }
-        messages.erase(it++);
+        it->header.repeat--;
+        if (it->header.repeat < 0)
+            {
+            if (store->DelMessage(it->header.id, login))
+                {
+                WriteServLog("Error deleting message: '%s'", store->GetStrError().c_str());
+                printfd(__FILE__, "Error deleting message: '%s'\n", store->GetStrError().c_str());
+                }
+            messages.erase(it++);
+            }
+        else
+            {
+            #ifndef DEBUG
+            //TODO: gcc v. 4.x generate ICE on x86_64
+            it->header.lastSendTime = time(NULL);
+            #else
+            it->header.lastSendTime = stgTime;
+            #endif
+            if (store->EditMessage(*it, login))
+                {
+                WriteServLog("Error modifying message: '%s'", store->GetStrError().c_str());
+                printfd(__FILE__, "Error modifying message: '%s'\n", store->GetStrError().c_str());
+                }
+            ++it;
+            }
         }
     else
         {
-        #ifndef DEBUG
-        //TODO: gcc v. 4.x generate ICE on x86_64
-        it->header.lastSendTime = time(NULL);
-        #else
-        it->header.lastSendTime = stgTime;
-        #endif
-        if (store->EditMessage(*it, login))
-            {
-            WriteServLog("Error modifying message: '%s'", store->GetStrError().c_str());
-            printfd(__FILE__, "Error modifying message: '%s'\n", store->GetStrError().c_str());
-            }
         ++it;
         }
     }
