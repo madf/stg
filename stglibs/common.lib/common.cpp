@@ -83,6 +83,44 @@
 
 using namespace std;
 
+#ifdef WIN32
+//-----------------------------------------------------------------------------
+const char * inet_ntop(int af, const void * src, char * dst, unsigned long length)
+{
+struct sockaddr_in addr;
+addr.sin_family = af;
+addr.sin_port = 0;
+memcpy(&addr.sin_addr.s_addr, src, sizeof(addr.sin_addr.s_addr));
+if (WSAAddressToStringA(reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr), 0, dst, &length))
+    {
+    return NULL;
+    }
+return dst;
+}
+//-----------------------------------------------------------------------------
+int inet_pton(int af, const char * src, void * dst)
+{
+// Fuck you Microsoft!
+// Why the hell not to use const char *?
+size_t slen = strlen(src);
+char * buf = new char[slen + 1];
+strncpy(buf, src, slen + 1);
+buf[slen] = 0;
+struct sockaddr_in addr;
+addr.sin_family = af;
+addr.sin_port = 0;
+addr.sin_addr.s_addr = 0;
+int length = sizeof(addr);
+if (WSAStringToAddressA(buf, af, 0, reinterpret_cast<struct sockaddr *>(&addr), &length))
+    {
+    delete[] buf;
+    return -1;
+    }
+memcpy(dst, &addr, sizeof(addr));
+delete[] buf;
+return 1;
+}
+#endif
 //-----------------------------------------------------------------------------
 int strtodouble2(const char * s, double &a)
 {
@@ -762,6 +800,7 @@ if (errno == ERANGE)
 
 return 0;
 }
+#ifndef WIN32
 //---------------------------------------------------------------------------
 int str2x(const std::string & str, long long & x)
 {
@@ -782,6 +821,7 @@ if (errno == ERANGE)
 
 return 0;
 }
+#endif
 //---------------------------------------------------------------------------
 const std::string & x2str(unsigned x, std::string & s)
 {
@@ -827,8 +867,35 @@ std::string & Trim(std::string & val)
 return TrimR(TrimL(val));
 }
 //---------------------------------------------------------------------------
+#ifdef WIN32
+static int is_leap(unsigned y)
+{
+    y += 1900;
+    return (y % 4) == 0 && ((y % 100) != 0 || (y % 400) == 0);
+}
+#endif
+//---------------------------------------------------------------------------
+
 time_t stg_timegm(struct tm * brokenTime)
 {
+#ifdef WIN32
+static const unsigned ndays[2][12] ={
+    {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
+    {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
+time_t res = 0;
+for (int i = 70; i < brokenTime->tm_year; ++i)
+    res += is_leap(i) ? 366 : 365;
+for (int i = 0; i < brokenTime->tm_mon; ++i)
+    res += ndays[is_leap(brokenTime->tm_year)][i];
+res += brokenTime->tm_mday - 1;
+res *= 24;
+res += brokenTime->tm_hour;
+res *= 60;
+res += brokenTime->tm_min;
+res *= 60;
+res += brokenTime->tm_sec;
+return res;
+#else
 #ifdef HAVE_TIMEGM
 return timegm(brokenTime);
 #else
@@ -844,7 +911,8 @@ else
     unsetenv("TZ");
 tzset();
 return ret;
-#endif
+#endif // HAVE_TIMEGM
+#endif // WIN32
 }
 //---------------------------------------------------------------------------
 std::string IconvString(const std::string & source,
@@ -864,7 +932,7 @@ strncpy(inBuf, source.c_str(), source.length());
 
 inBuf[source.length()] = 0;
 
-#if defined(FREE_BSD) || defined(FREE_BSD5)
+#if defined(FREE_BSD) || defined(FREE_BSD5) || defined(WIN32)
 const char * srcPos = inBuf;
 #else
 char * srcPos = inBuf;

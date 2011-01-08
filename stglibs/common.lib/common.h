@@ -221,8 +221,10 @@ int str2x(const std::string & str, int & x);
 int str2x(const std::string & str, unsigned & x);
 int str2x(const std::string & str, long & x);
 int str2x(const std::string & str, unsigned long & x);
+#ifndef WIN32
 int str2x(const std::string & str, long long & x);
 int str2x(const std::string & str, unsigned long long & x);
+#endif
 //-----------------------------------------------------------------------------
 const std::string & x2str(unsigned x, std::string & s);
 const std::string & x2str(unsigned long x, std::string & s);
