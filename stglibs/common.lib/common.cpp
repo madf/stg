@@ -415,7 +415,7 @@ for (int i = 0; i < maxIP; i++)
         }
 
     struct in_addr in;
-    if (!inet_aton(p1, &in))
+    if (inet_pton(AF_INET, p1, &in) != 1)
         {
         //printf("INADDR_NONE\n");
         return EINVAL;
