@@ -711,6 +711,13 @@ if (!(res=mysql_store_result(sock)))
     return -1;
 }
 
+if (mysql_num_rows(res) != 1)
+{
+    errorStr = "User not found";
+    mysql_close(sock);
+    return -1;
+}
+
 row = mysql_fetch_row(res);
 
 string param;
