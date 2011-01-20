@@ -323,7 +323,7 @@ if (strncmp((char *)packetTail.magic, RS_ID, RS_MAGIC_LEN))
 std::stringstream params;
 params << data.login << " "
        << inet_ntostring(data.ip) << " "
-       << ntohl(data.id) << " "
+       << data.id << " "
        << (char *)packetTail.params;
 
 data.params = params.str();
