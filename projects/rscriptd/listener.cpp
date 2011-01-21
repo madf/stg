@@ -333,9 +333,16 @@ return false;
 //-----------------------------------------------------------------------------
 void LISTENER::ProcessPending()
 {
-printfd(__FILE__, "Pending data size: %d\n", pending.size());
-std::list<PendingData>::iterator it(pending.begin());
-while (it != pending.end())
+std::list<PendingData> localPending;
+
+    {
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    printfd(__FILE__, "Pending data size: %d\n", pending.size());
+    localPending.swap(pending);
+    }
+
+std::list<PendingData>::iterator it(localPending.begin());
+while (it != localPending.end())
     {
     std::vector<AliveData>::iterator uit(
             std::lower_bound(
@@ -375,9 +382,7 @@ while (it != pending.end())
             users.erase(uit);
             }
         }
-
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    pending.erase(it++);
+    ++it;
     }
 }
 //-----------------------------------------------------------------------------
