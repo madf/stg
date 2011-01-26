@@ -605,7 +605,7 @@ void USER::Run()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (stgTime - lastWriteStat > settings->GetStatWritePeriod())
+if (stgTime > static_cast<time_t>(lastWriteStat + settings->GetStatWritePeriod()))
     {
     printfd(__FILE__, "USER::WriteStat user=%s\n", GetLogin().c_str());
     WriteStat();
@@ -1256,11 +1256,26 @@ for (unsigned i = 0; i < hdrsList.size(); i++)
 std::list<STG_MSG>::iterator it(messages.begin());
 while (it != messages.end())
     {
+    printfd(__FILE__, "Message timeout: %d, delta: %f\n", settings->GetMessageTimeout(), difftime(stgTime, it->header.creationTime));
+    if (settings->GetMessageTimeout() > 0 &&
+        difftime(stgTime, it->header.creationTime) > settings->GetMessageTimeout())
+        {
+        // Timeout exceeded
+        if (store->DelMessage(it->header.id, login))
+            {
+            WriteServLog("Error deleting message: '%s'", store->GetStrError().c_str());
+            printfd(__FILE__, "Error deleting message: '%s'\n", store->GetStrError().c_str());
+            }
+        messages.erase(it++);
+        continue;
+        }
     if (static_cast<time_t>(it->header.lastSendTime + it->header.repeatPeriod * 60) < stgTime)
         {
         if (SendMessage(*it))
             {
-            return -1;
+            // We need to check all messages in queue for timeout
+            ++it;
+            continue;
             }
         it->header.repeat--;
         if (it->header.repeat < 0)

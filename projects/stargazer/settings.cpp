@@ -28,16 +28,15 @@ $Date: 2010/08/19 13:42:30 $
 $Author: faust $
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <cstring>
+#include <cerrno>
 #include <string>
 
-using namespace std;
-
 #include "settings.h"
-#include "common.h"
+#include "stg_logger.h"
+#include "dotconfpp.h"
+
+using namespace std;
 
 //-----------------------------------------------------------------------------
 SETTINGS::SETTINGS()
@@ -57,6 +56,7 @@ SETTINGS::SETTINGS()
       dayFeeIsLastDay(false),
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
+      messageTimeout(0),
       logger(GetStgLogger())
 {
 }
@@ -64,7 +64,6 @@ SETTINGS::SETTINGS()
 SETTINGS::SETTINGS(const std::string & cd)
     : confDir(cd),
       scriptDir(cd),
-      pidFile(),
       monitoring(false),
       detailStatWritePeriod(dsPeriod_1_6),
       statWritePeriod(10),
@@ -78,6 +77,7 @@ SETTINGS::SETTINGS(const std::string & cd)
       dayFeeIsLastDay(false),
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
+      messageTimeout(0),
       logger(GetStgLogger())
 {
 }
@@ -85,22 +85,23 @@ SETTINGS::SETTINGS(const std::string & cd)
 SETTINGS::SETTINGS(const SETTINGS & rval)
     : confDir(rval.confDir),
       scriptDir(rval.scriptDir),
+      pidFile(rval.pidFile),
+      monitoring(rval.monitoring),
       detailStatWritePeriod(dsPeriod_1_6),
       statWritePeriod(10),
+      stgExecMsgKey(rval.stgExecMsgKey),
+      executersNum(rval.executersNum),
+      fullFee(rval.fullFee),
       dayFee(0),
       dayResetTraff(0),
+      spreadFee(rval.spreadFee),
       freeMbAllowInet(false),
       dayFeeIsLastDay(false),
       writeFreeMbTraffCost(false),
+      showFeeInCash(rval.showFeeInCash),
+      messageTimeout(rval.messageTimeout),
       logger(GetStgLogger())
 {
-spreadFee = rval.spreadFee;
-pidFile = rval.pidFile;
-stgExecMsgKey = rval.stgExecMsgKey;
-executersNum = rval.executersNum;
-showFeeInCash = rval.showFeeInCash;
-fullFee = rval.fullFee;
-monitoring = rval.monitoring;
 }
 //-----------------------------------------------------------------------------
 SETTINGS::~SETTINGS()
@@ -126,11 +127,19 @@ return -1;
 //-----------------------------------------------------------------------------
 int SETTINGS::ParseInt(const string & value, int * val)
 {
-/*char *res;
-*val = strtol(value.c_str(), &res, 10);*/
 if (str2x<int>(value, *val))
     {
     strError = "Cannot convert \'" + value + "\' to integer.";
+    return -1;
+    }
+return 0;
+}
+//-----------------------------------------------------------------------------
+int SETTINGS::ParseUnsigned(const string & value, unsigned * val)
+{
+if (str2x<unsigned>(value, *val))
+    {
+    strError = "Cannot convert \'" + value + "\' to unsigned integer.";
     return -1;
     }
 return 0;
@@ -150,10 +159,22 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
+int SETTINGS::ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val)
+{
+if (ParseUnsigned(value, val) != 0)
+    return -1;
+
+if (*val < min || *val > max)
+    {
+    strError = "Value \'" + value + "\' out of range.";
+    return -1;
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
 int SETTINGS::ParseModuleSettings(const DOTCONFDocumentNode * node, vector<PARAM_VALUE> * params)
 {
-/*if (!node)
-    return 0;*/
 const DOTCONFDocumentNode * childNode;
 PARAM_VALUE pv;
 const char * value;
@@ -179,32 +200,16 @@ while (childNode)
     {
     pv.param = childNode->getName();
     int i = 0;
-    while ((value = childNode->getValue(i)) != NULL)
+    while ((value = childNode->getValue(i++)) != NULL)
         {
-        //printfd(__FILE__, "--> param=\'%s\' value=\'%s\'\n", childNode->getName(), value);
         pv.value.push_back(value);
-        i++;
         }
     params->push_back(pv);
     pv.value.clear();
     childNode = childNode->getNextNode();
     }
 
-/*for (unsigned i = 0; i < params->size(); i++)
-    {
-    printfd(__FILE__, "param \'%s\'\n", (*params)[i].param.c_str());
-    for (unsigned j = 0; j < (*params)[i].value.size(); j++)
-        {
-        printfd(__FILE__, "value \'%s\'\n", (*params)[i].value[j].c_str());
-        }
-    }*/
-
 return 0;
-}
-//-----------------------------------------------------------------------------
-string SETTINGS::GetStrError() const
-{
-return strError;
 }
 //-----------------------------------------------------------------------------
 void SETTINGS::ErrorCallback(void * data, const char * buf)
@@ -293,7 +298,7 @@ while (node)
 
     if (strcasecmp(node->getName(), "StatWritePeriod") == 0)
         {
-        if (ParseIntInRange(node->getValue(0), 1, 1440, &statWritePeriod) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 1, 1440, &statWritePeriod) != 0)
             {
             strError = "Incorrect StatWritePeriod value: \'" + string(node->getValue(0)) + "\'";
             return -1;
@@ -312,7 +317,7 @@ while (node)
 
     if (strcasecmp(node->getName(), "ExecutersNum") == 0)
         {
-        if (ParseIntInRange(node->getValue(0), 1, 1024, &executersNum) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 1, 1024, &executersNum) != 0)
             {
             strError = "Incorrect ExecutersNum value: \'" + string(node->getValue(0)) + "\'";
             return -1;
@@ -320,19 +325,9 @@ while (node)
         //printfd(__FILE__, "DayResetTraff: %d\n", dayResetTraff);
         }
 
-    /*if (strcasecmp(node->getName(), "ExecutersWaitTimeout") == 0)
-        {
-        if (ParseIntInRange(node->getValue(0), 1, 600, &executersWaitTimeout) != 0)
-            {
-            strError = "Incorrect ExecutersWaitTimeout value: \'" + string(node->getValue(0)) + "\'";
-            return -1;
-            }
-        //printfd(__FILE__, "DayResetTraff: %d\n", dayResetTraff);
-        }*/
-
     if (strcasecmp(node->getName(), "DayFee") == 0)
         {
-        if (ParseIntInRange(node->getValue(0), 0, 31, &dayFee) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 0, 31, &dayFee) != 0)
             {
             strError = "Incorrect DayFee value: \'" + string(node->getValue(0)) + "\'";
             return -1;
@@ -352,7 +347,7 @@ while (node)
 
     if (strcasecmp(node->getName(), "DayResetTraff") == 0)
         {
-        if (ParseIntInRange(node->getValue(0), 0, 31, &dayResetTraff) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 0, 31, &dayResetTraff) != 0)
             {
             strError = "Incorrect DayResetTraff value: \'" + string(node->getValue(0)) + "\'";
             return -1;
@@ -422,6 +417,16 @@ while (node)
             }
         }
 
+    if (strcasecmp(node->getName(), "MessageTimeout") == 0)
+        {
+        if (ParseUnsigned(node->getValue(0), &messageTimeout) != 0)
+            {
+            strError = "Incorrect MessageTimeout value: \'" + string(node->getValue(0)) + "\'";
+            return -1;
+            }
+        //printfd(__FILE__, "MessageTimeout: %d\n", messageTimeout);
+        }
+
     if (strcasecmp(node->getName(), "DirNames") == 0)
         {
         // Мы внутри секции DirNames
@@ -437,7 +442,6 @@ while (node)
                 if (dirNameNode && dirNameNode->getValue(0))
                     {
                     dirName[i] = dirNameNode->getValue(0);
-                    //printfd(__FILE__, "dirName[%d]: %s\n", i, dirName[i].c_str());
                     }
                 }
             }
@@ -463,8 +467,6 @@ while (node)
             }
         storeModulesCount++;
 
-        //storeModuleSettings.clear(); //TODO To make constructor
-        //printfd(__FILE__, "StoreModule %s\n", node->getValue());
         storeModuleSettings.moduleName = node->getValue(0);
         ParseModuleSettings(node, &storeModuleSettings.moduleParams);
         }
@@ -483,7 +485,6 @@ while (node)
         while (child)
             {
             // Мы внутри секции
-            //printfd(__FILE__, "Module \'%s\'\n", child->getValue(0));
             if (strcasecmp(child->getName(), "Module") != 0)
                 {
                 child = child->getNextNode();
@@ -503,9 +504,6 @@ while (node)
 
     node = node->getNextNode();
     }
-
-//sort(modulesSettings.begin(), modulesSettings.end());
-//modulesSettings.erase(unique(modulesSettings.begin(), modulesSettings.end()), modulesSettings.end());
 
 return 0;
 }
@@ -535,24 +533,4 @@ else if (detailStatPeriodStr == "1/6")
 
 return -1;
 }
-//-----------------------------------------------------------------------------
-int SETTINGS::Reload ()
-{
-return ReadSettings();
-}
-//-----------------------------------------------------------------------------
-const MODULE_SETTINGS & SETTINGS::GetStoreModuleSettings() const
-{
-return storeModuleSettings;
-}
-//-----------------------------------------------------------------------------
-const vector<MODULE_SETTINGS> & SETTINGS::GetModulesSettings() const
-{
-return modulesSettings;
-}
-//-----------------------------------------------------------------------------
-/*int SETTINGS::GetExecutersWaitTimeout() const
-{
-return executersWaitTimeout;
-}*/
 //-----------------------------------------------------------------------------

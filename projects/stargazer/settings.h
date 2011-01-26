@@ -34,16 +34,13 @@
  */
 
 
-#ifndef settingsh_h
-#define settingsh_h 1
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
-#include <sys/types.h>
 #include <vector>
-#include <dotconfpp.h>
 
 #include "common.h"
 #include "base_settings.h"
-#include "stg_logger.h"
 
 using namespace std;
 
@@ -56,6 +53,9 @@ dsPeriod_1_4,
 dsPeriod_1_6,
 };
 //-----------------------------------------------------------------------------
+class STG_LOGGER;
+class DOTCONFDocumentNode;
+//-----------------------------------------------------------------------------
 class SETTINGS
 {
 public:
@@ -63,26 +63,25 @@ public:
     SETTINGS(const std::string &);
     SETTINGS(const SETTINGS &);
     virtual ~SETTINGS();
-    int Reload();
+    int Reload() { return ReadSettings(); };
     int ReadSettings();
 
-    string GetStrError() const;
+    string GetStrError() const { return strError; };
 
     int             GetExecMsgKey() const { return stgExecMsgKey; };
-    int             GetExecutersNum() const { return executersNum; };
-    //int             GetExecutersWaitTimeout() const;
+    size_t          GetExecutersNum() const { return executersNum; };
     const string &  GetDirName(int num) const { return dirName[num]; };
     const string &  GetConfDir() const { return confDir; };
     const string &  GetScriptDir() const { return scriptDir; };
     const string &  GetRulesFileName() const { return rules; };
     const string &  GetLogFileName() const { return logFile; };
     const string &  GetPIDFileName() const { return pidFile; };
-    int             GetDetailStatWritePeriod() const 
+    unsigned        GetDetailStatWritePeriod() const 
         { return detailStatWritePeriod; };
-    int             GetStatWritePeriod() const { return statWritePeriod * 60; };
-    int             GetDayFee() const { return dayFee; };
+    unsigned        GetStatWritePeriod() const { return statWritePeriod * 60; };
+    unsigned        GetDayFee() const { return dayFee; };
     bool            GetFullFee() const { return fullFee; };
-    int             GetDayResetTraff() const { return dayResetTraff; };
+    unsigned        GetDayResetTraff() const { return dayResetTraff; };
     bool            GetSpreadFee() const { return spreadFee; };
     bool            GetFreeMbAllowInet() const { return freeMbAllowInet; };
     bool            GetDayFeeIsLastDay() const { return dayFeeIsLastDay; };
@@ -91,15 +90,20 @@ public:
     bool            GetShowFeeInCash() const { return showFeeInCash; };
     const string  & GetMonitorDir() const { return monitorDir; };
     bool            GetMonitoring() const { return monitoring; };
+    unsigned        GetMessageTimeout() const { return messageTimeout * 3600 * 24; };
 
     const string &  GetModulesPath() const { return modulesPath; };
-    const MODULE_SETTINGS         & GetStoreModuleSettings() const;
-    const vector<MODULE_SETTINGS> & GetModulesSettings() const;
+    const MODULE_SETTINGS         & GetStoreModuleSettings() const
+        { return storeModuleSettings; };
+    const vector<MODULE_SETTINGS> & GetModulesSettings() const
+        { return modulesSettings; };
 
 private:
 
     int ParseInt(const string & value, int * val);
+    int ParseUnsigned(const string & value, unsigned * val);
     int ParseIntInRange(const string & value, int min, int max, int * val);
+    int ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val);
     int ParseYesNo(const string & value, bool * val);
     int ParseDetailStatWritePeriod(const string & detailStatPeriodStr);
 
@@ -118,19 +122,19 @@ private:
     string      pidFile;
     string      monitorDir;
     bool        monitoring;
-    int         detailStatWritePeriod;
-    int         statWritePeriod;
+    unsigned    detailStatWritePeriod;
+    unsigned    statWritePeriod;
     int         stgExecMsgKey;
-    int         executersNum;
-    //int         executersWaitTimeout;
+    size_t      executersNum;
     bool        fullFee;
-    int         dayFee;        // день снятия абонплаты
-    int         dayResetTraff; // Начало учетного периода: день обнуления трафика и смены тарифа
+    unsigned    dayFee;        // день снятия абонплаты
+    unsigned    dayResetTraff; // Начало учетного периода: день обнуления трафика и смены тарифа
     bool        spreadFee;
     bool        freeMbAllowInet;
     bool        dayFeeIsLastDay; // АП снимается в конце месяца (true) или в начале (false)
     bool        writeFreeMbTraffCost; // Писать в детальную статистику стоимость трафика, если еще есть предоплаченный трафик
     bool        showFeeInCash; // Показывать пользователю АП не счету и позволять ее использовать
+    unsigned    messageTimeout; // Время жизни неотправленного сообщения в секундах
 
     vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS         storeModuleSettings;
@@ -139,4 +143,3 @@ private:
 };
 //-----------------------------------------------------------------------------
 #endif
-
