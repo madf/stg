@@ -1,3 +1,5 @@
+#include <cerrno>
+
 #include "users_methods.h"
 
 #include "../../../users.h"

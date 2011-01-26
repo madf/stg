@@ -30,8 +30,11 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <csignal>
 #include <cstdlib>
+#include <cstdio> // snprintf
+#include <cerrno>
 #include <algorithm>
 
 #include "inetaccess.h"

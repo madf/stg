@@ -28,6 +28,7 @@
 
 #include <cerrno>
 #include <csignal>
+#include <cstdio> // snprintf
 
 #include "configproto.h"
 #include "blowfish.h"
@@ -545,7 +546,7 @@ void CONFIGPROTO::SendError(const char * text)
 {
 char s[255];
 answerList.clear();
-sprintf(s, "<Error value=\"%s\"/>", text);
+snprintf(s, 255, "<Error value=\"%s\"/>", text);
 answerList.push_back(s);
 }
 //-----------------------------------------------------------------------------

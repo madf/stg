@@ -24,7 +24,7 @@
  $Author: faust $
  */
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -35,9 +35,10 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
-#include <signal.h>
 #include <fcntl.h>
 
+#include <csignal>
+#include <cerrno>
 #include <fstream>
 #include <vector>
 #include <set>
@@ -493,7 +494,6 @@ if (settings->ReadSettings())
 string startFile(settings->GetConfDir() + START_FILE);
 #endif
 
-//SetSignalHandlers();
 if (ForkAndWait(settings->GetConfDir()) < 0)
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
@@ -505,14 +505,13 @@ STG_LOGGER & WriteServLog = GetStgLogger();
 WriteServLog.SetLogFileName(settings->GetLogFileName());
 WriteServLog("Stg v. %s", SERVER_VERSION);
 
-for (int i = 0; i < settings->GetExecutersNum(); i++)
+for (size_t i = 0; i < settings->GetExecutersNum(); i++)
     {
     int ret = StartScriptExecuter(argv[0], settings->GetExecMsgKey(), &msgID, settings);
     if (ret < 0)
         {
         STG_LOGGER & WriteServLog = GetStgLogger();
         WriteServLog("Start Script Executer error!");
-        //goto exitLbl;
         return 1;
         }
     if (ret == 1)
@@ -555,7 +554,6 @@ admins = new ADMINS(dataStore);
 users = new USERS(settings, dataStore, tariffs, admins->GetSysAdmin());
 traffCnt = new TRAFFCOUNTER(users, tariffs, settings->GetRulesFileName());
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
-//tariffs->SetUsers(users);
 
 modSettings = settings->GetModulesSettings();
 
@@ -647,8 +645,6 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 creat(startFile.c_str(), S_IRUSR);
 #endif
 
-//*a_kill_it = 0;
-
 while (nonstop.GetStatus())
     {
     if (needRulesReloading)
@@ -702,7 +698,7 @@ if (loop.Stop())
 
 exitLblNotStarted:
 
-/*modIter = modules.begin();
+modIter = modules.begin();
 while (modIter != modules.end())
     {
     std::string name = modIter->GetFileName();
@@ -715,7 +711,7 @@ while (modIter != modules.end())
         printfd(__FILE__, "Failed to unload module '%s'\n", name.c_str());
         }
     ++modIter;
-    }*/
+    }
 
 if (traffCnt)
     {

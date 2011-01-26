@@ -30,6 +30,7 @@
 
 #include <csignal>
 #include <cassert>
+#include <cstdio> // Functions fopen and similar
 
 #include "traffcounter.h"
 #include "common.h"

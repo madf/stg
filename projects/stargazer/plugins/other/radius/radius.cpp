@@ -27,6 +27,7 @@
  */
 
 #include <csignal>
+#include <cerrno>
 #include <algorithm>
 
 #include "radius.h"
