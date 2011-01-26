@@ -144,7 +144,7 @@ if (store->AddUser(login))
 
 USER u(settings, store, tariffs, sysAdmin, &ipIndex);
 
-struct tm * tms;
+/*struct tm * tms;
 time_t t = stgTime;
 
 tms = localtime(&t);
@@ -156,7 +156,7 @@ tms->tm_sec = 0;
 if (settings->GetDayResetTraff() > tms->tm_mday)
     tms->tm_mon -= 1;
 
-tms->tm_mday = settings->GetDayResetTraff();
+tms->tm_mday = settings->GetDayResetTraff();*/
 
 u.SetLogin(login);
 
