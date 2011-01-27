@@ -317,7 +317,7 @@ while (node)
 
     if (strcasecmp(node->getName(), "ExecutersNum") == 0)
         {
-        if (ParseUnsignedInRange(node->getValue(0), 1, 1024, &executersNum) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 1, 1024, static_cast<unsigned *>(&executersNum)) != 0)
             {
             strError = "Incorrect ExecutersNum value: \'" + string(node->getValue(0)) + "\'";
             return -1;
