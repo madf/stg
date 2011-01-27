@@ -1246,7 +1246,7 @@ while (it != messages.end())
                 WriteServLog("Error deleting message: '%s'", store->GetStrError().c_str());
                 printfd(__FILE__, "Error deleting message: '%s'\n", store->GetStrError().c_str());
                 }
-            messages.erase(it);
+            messages.erase(it++);
             }
         else
             {
@@ -1255,9 +1255,9 @@ while (it != messages.end())
                 WriteServLog("Error modifying message: '%s'", store->GetStrError().c_str());
                 printfd(__FILE__, "Error modifying message: '%s'\n", store->GetStrError().c_str());
                 }
+            ++it;
             }
         }
-    ++it;
     }
 }
 //-----------------------------------------------------------------------------
