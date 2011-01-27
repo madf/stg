@@ -69,7 +69,7 @@ public:
     string GetStrError() const { return strError; };
 
     int             GetExecMsgKey() const { return stgExecMsgKey; };
-    size_t          GetExecutersNum() const { return executersNum; };
+    unsigned        GetExecutersNum() const { return executersNum; };
     const string &  GetDirName(int num) const { return dirName[num]; };
     const string &  GetConfDir() const { return confDir; };
     const string &  GetScriptDir() const { return scriptDir; };
@@ -125,7 +125,7 @@ private:
     unsigned    detailStatWritePeriod;
     unsigned    statWritePeriod;
     int         stgExecMsgKey;
-    size_t      executersNum;
+    unsigned    executersNum;
     bool        fullFee;
     unsigned    dayFee;        // день снятия абонплаты
     unsigned    dayResetTraff; // Начало учетного периода: день обнуления трафика и смены тарифа
