@@ -162,9 +162,9 @@ return false;
 //-----------------------------------------------------------------------------
 void * LISTENER::Run(void * d)
 {
-LISTENER * ia = static_cast<LISTENER *>(d);
+LISTENER * listener = static_cast<LISTENER *>(d);
 
-ia->Runner();
+listener->Runner();
 
 return NULL;
 }
@@ -183,9 +183,9 @@ receiverStopped = true;
 //-----------------------------------------------------------------------------
 void * LISTENER::RunProcessor(void * d)
 {
-LISTENER * ia = static_cast<LISTENER *>(d);
+LISTENER * listener = static_cast<LISTENER *>(d);
 
-ia->ProcessorRunner();
+listener->ProcessorRunner();
 
 return NULL;
 }
@@ -214,8 +214,6 @@ if (listenSocket < 0)
     errorStr = "Cannot create socket.";
     return true;
     }
-
-printfd(__FILE__, "Port: %d\n", port);
 
 struct sockaddr_in listenAddr;
 listenAddr.sin_family = AF_INET;
@@ -250,7 +248,7 @@ RS_PACKET_HEADER packetHead;
 iov[0].iov_base = reinterpret_cast<char *>(&packetHead);
 iov[0].iov_len = sizeof(packetHead);
 iov[1].iov_base = buffer;
-iov[1].iov_len = sizeof(buffer);
+iov[1].iov_len = sizeof(buffer) - sizeof(packetHead);
 
 size_t dataLen = 0;
 while (dataLen < sizeof(buffer))
@@ -321,7 +319,7 @@ if (strncmp((char *)packetTail.magic, RS_ID, RS_MAGIC_LEN))
     }
 
 std::stringstream params;
-params << data.login << " "
+params << "\"" << data.login << "\" "
        << inet_ntostring(data.ip) << " "
        << data.id << " "
        << (char *)packetTail.params;
