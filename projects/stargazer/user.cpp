@@ -1188,7 +1188,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::SendMessage(const STG_MSG & msg)
+int USER::SendMessage(STG_MSG & msg) const
 {
 // No lock `cause we are already locked from caller
 int ret = -1;
@@ -1198,65 +1198,27 @@ while (it != authorizedBy.end())
     if (!(*it++)->SendMessage(msg, currIP))
         ret = 0;
     }
+if (!ret)
+    {
+#ifndef DEBUG
+    //TODO: gcc v. 4.x generate ICE on x86_64
+    msg.header.lastSendTime = time(NULL);
+#else
+    msg.header.lastSendTime = stgTime;
+#endif
+    msg.header.repeat--;
+    }
 return ret;
 }
 //-----------------------------------------------------------------------------
-int USER::ScanMessage()
+void USER::ScanMessage()
 {
 // No lock `cause we are already locked from caller
 // We need not check for the authorizedBy `cause it has already checked by caller
 
-/*vector<STG_MSG_HDR> hdrsList;
-
-if (store->GetMessageHdrs(&hdrsList, login))
-    {
-    printfd(__FILE__, "Error GetMessageHdrs %s\n", store->GetStrError().c_str());
-    return -1;
-    }
-
-for (unsigned i = 0; i < hdrsList.size(); i++)
-    {
-
-    if (hdrsList[i].lastSendTime + hdrsList[i].repeatPeriod * 60 < (unsigned)stgTime)
-        {
-        STG_MSG msg;
-        if (store->GetMessage(hdrsList[i].id, &msg, login) == 0)
-            {
-            if (SendMessage(msg) == 0)
-                {
-                msg.header.repeat--;
-                if (msg.header.repeat < 0)
-                    {
-                    printfd(__FILE__, "DelMessage\n");
-                    store->DelMessage(hdrsList[i].id, login);
-                    }
-                else
-                    {
-                    #ifndef DEBUG
-                    //TODO: gcc v. 4.x generate ICE on x86_64
-                    msg.header.lastSendTime = time(NULL);
-                    #else
-                    msg.header.lastSendTime = stgTime;
-                    #endif
-                    if (store->EditMessage(msg, login))
-                        {
-                        printfd(__FILE__, "EditMessage Error %s\n", store->GetStrError().c_str());
-                        }
-                    }
-                }
-            }
-        else
-            {
-            WriteServLog("Cannot get message for user %s.", login.c_str());
-            WriteServLog("%s", store->GetStrError().c_str());
-            }
-        }
-    }*/
-
 std::list<STG_MSG>::iterator it(messages.begin());
 while (it != messages.end())
     {
-    printfd(__FILE__, "Message timeout: %d, delta: %f\n", settings->GetMessageTimeout(), difftime(stgTime, it->header.creationTime));
     if (settings->GetMessageTimeout() > 0 &&
         difftime(stgTime, it->header.creationTime) > settings->GetMessageTimeout())
         {
@@ -1269,7 +1231,7 @@ while (it != messages.end())
         messages.erase(it++);
         continue;
         }
-    if (static_cast<time_t>(it->header.lastSendTime + it->header.repeatPeriod * 60) < stgTime)
+    if (it->GetNextSendTime() <= stgTime)
         {
         if (SendMessage(*it))
             {
@@ -1277,7 +1239,6 @@ while (it != messages.end())
             ++it;
             continue;
             }
-        it->header.repeat--;
         if (it->header.repeat < 0)
             {
             if (store->DelMessage(it->header.id, login))
@@ -1285,31 +1246,19 @@ while (it != messages.end())
                 WriteServLog("Error deleting message: '%s'", store->GetStrError().c_str());
                 printfd(__FILE__, "Error deleting message: '%s'\n", store->GetStrError().c_str());
                 }
-            messages.erase(it++);
+            messages.erase(it);
             }
         else
             {
-            #ifndef DEBUG
-            //TODO: gcc v. 4.x generate ICE on x86_64
-            it->header.lastSendTime = time(NULL);
-            #else
-            it->header.lastSendTime = stgTime;
-            #endif
             if (store->EditMessage(*it, login))
                 {
                 WriteServLog("Error modifying message: '%s'", store->GetStrError().c_str());
                 printfd(__FILE__, "Error modifying message: '%s'\n", store->GetStrError().c_str());
                 }
-            ++it;
             }
         }
-    else
-        {
-        ++it;
-        }
+    ++it;
     }
-
-return 0;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

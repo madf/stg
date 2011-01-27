@@ -43,6 +43,11 @@ struct STG_MSG
 {
 STG_MSG() {};
 
+time_t GetNextSendTime() const
+{
+return header.lastSendTime + header.repeat * 60;
+};
+
 STG_MSG_HDR header;
 std::string text;
 };

@@ -202,8 +202,8 @@ private:
     void            Disconnect(bool fakeDisconnect, const std::string & reason);
     int             SaveMonthStat(int month, int year);
 
-    int             SendMessage(const STG_MSG & msg);
-    int             ScanMessage();
+    int             SendMessage(STG_MSG & msg) const;
+    void            ScanMessage();
     time_t          lastScanMessages;
 
     string          login;
