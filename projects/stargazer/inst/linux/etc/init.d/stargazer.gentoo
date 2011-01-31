@@ -14,7 +14,7 @@ depend() {
 
 start() {
 	ebegin "Starting stargazer"
-	start-stop-daemon --start --quiet --exec ${DAEMON} -- ${STARGAZER_OPTS}
+	start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} -- ${STARGAZER_OPTS}
 	eend $?
 }
 
