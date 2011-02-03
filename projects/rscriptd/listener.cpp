@@ -331,16 +331,10 @@ return false;
 //-----------------------------------------------------------------------------
 void LISTENER::ProcessPending()
 {
-std::list<PendingData> localPending;
-
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    printfd(__FILE__, "Pending data size: %d\n", pending.size());
-    localPending.swap(pending);
-    }
-
-std::list<PendingData>::iterator it(localPending.begin());
-while (it != localPending.end())
+std::list<PendingData>::iterator it(pending.begin());
+size_t count = 0;
+printfd(__FILE__, "Pending: %d\n", pending.size());
+while (it != pending.end() && count < 256)
     {
     std::vector<AliveData>::iterator uit(
             std::lower_bound(
@@ -381,7 +375,10 @@ while (it != localPending.end())
             }
         }
     ++it;
+    ++count;
     }
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+pending.erase(pending.begin(), it);
 }
 //-----------------------------------------------------------------------------
 void LISTENER::ProcessTimeouts()
