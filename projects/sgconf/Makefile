@@ -69,7 +69,7 @@ install-bin:
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 
-uninstall: uninstall-bin uninstall-data
+uninstall: uninstall-bin
 
 uninstall-bin:
 	rm -f $(PREFIX)/usr/sbin/$(PROG)
