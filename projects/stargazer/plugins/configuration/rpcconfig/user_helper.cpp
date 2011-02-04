@@ -45,32 +45,32 @@ else
     structVal["tariff"] = xmlrpc_c::value_string(iter->property.tariffName.Get());
     }
 
-structVal["note"] = xmlrpc_c::value_string(IconvString(iter->property.note, "KOI8-R", "UTF-8"));
+structVal["note"] = xmlrpc_c::value_string(IconvString(iter->property.note, "KOI8-RU", "UTF-8"));
 
-structVal["phone"] = xmlrpc_c::value_string(IconvString(iter->property.phone, "KOI8-R", "UTF-8"));
+structVal["phone"] = xmlrpc_c::value_string(IconvString(iter->property.phone, "KOI8-RU", "UTF-8"));
 
-structVal["address"] = xmlrpc_c::value_string(IconvString(iter->property.address, "KOI8-R", "UTF-8"));
+structVal["address"] = xmlrpc_c::value_string(IconvString(iter->property.address, "KOI8-RU", "UTF-8"));
 
-structVal["email"] = xmlrpc_c::value_string(IconvString(iter->property.email, "KOI8-R", "UTF-8"));
+structVal["email"] = xmlrpc_c::value_string(IconvString(iter->property.email, "KOI8-RU", "UTF-8"));
 
 std::vector<xmlrpc_c::value> userdata;
 
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata0.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata1.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata2.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata3.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata4.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata5.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata6.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata7.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata8.Get(), "KOI8-R", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata9.Get(), "KOI8-R", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata0.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata1.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata2.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata3.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata4.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata5.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata6.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata7.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata8.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata9.Get(), "KOI8-RU", "UTF-8")));
 
 structVal["userdata"] = xmlrpc_c::value_array(userdata);
 
-structVal["name"] = xmlrpc_c::value_string(IconvString(iter->property.realName, "KOI8-R", "UTF-8"));
+structVal["name"] = xmlrpc_c::value_string(IconvString(iter->property.realName, "KOI8-RU", "UTF-8"));
 
-structVal["group"] = xmlrpc_c::value_string(IconvString(iter->property.group, "KOI8-R", "UTF-8"));
+structVal["group"] = xmlrpc_c::value_string(IconvString(iter->property.group, "KOI8-RU", "UTF-8"));
 
 structVal["status"] = xmlrpc_c::value_boolean(iter->GetConnected());
 structVal["aonline"] = xmlrpc_c::value_boolean(iter->property.alwaysOnline.Get());
@@ -162,7 +162,7 @@ if ((it = structVal.find("ips")) != structVal.end())
 
 if ((it = structVal.find("address")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.address.Get() != value)
         if (!iter->property.address.Set(value,
                                         admin,
@@ -173,7 +173,7 @@ if ((it = structVal.find("address")) != structVal.end())
 
 if ((it = structVal.find("phone")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.phone.Get() != value)
         if (!iter->property.phone.Set(value,
                                       admin,
@@ -184,7 +184,7 @@ if ((it = structVal.find("phone")) != structVal.end())
 
 if ((it = structVal.find("email")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.email.Get() != value)
         if (!iter->property.email.Set(value,
                                       admin,
@@ -283,7 +283,7 @@ if ((it = structVal.find("disableddetailstat")) != structVal.end())
 
 if ((it = structVal.find("name")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.realName.Get() != value)
         if (!iter->property.realName.Set(value,
                                          admin,
@@ -294,7 +294,7 @@ if ((it = structVal.find("name")) != structVal.end())
 
 if ((it = structVal.find("group")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.group.Get() != value)
         if (!iter->property.group.Set(value,
                                       admin,
@@ -305,7 +305,7 @@ if ((it = structVal.find("group")) != structVal.end())
 
 if ((it = structVal.find("note")) != structVal.end())
     {
-    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-R"));
+    std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
     if (iter->property.note.Get() != value)
         if (!iter->property.note.Set(value,
                                      admin,
@@ -334,7 +334,7 @@ if ((it = structVal.find("userdata")) != structVal.end())
 
     for (unsigned i = 0; i < userdata.size(); ++i)
         {
-        std::string value(IconvString(xmlrpc_c::value_string(udata[i]), "UTF-8", "KOI8-R"));
+        std::string value(IconvString(xmlrpc_c::value_string(udata[i]), "UTF-8", "KOI8-RU"));
         if (userdata[i]->Get() != value)
             if (!userdata[i]->Set(value,
                                   admin,

@@ -329,7 +329,7 @@ setlocale(LC_ALL, "");
 char charsetF[255];
 strncpy(charsetF, nl_langinfo(CODESET), 255);
 
-char * charsetT = "koi8-r";
+char * charsetT = "koi8-ru";
 
 size_t nconv = 1;
 

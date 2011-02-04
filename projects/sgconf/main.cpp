@@ -948,7 +948,7 @@ while (1)
             break;
 
         case 'A': //nAme
-            ParseAnyString(optarg, &str, "koi8-r");
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.name = str;
             break;
 

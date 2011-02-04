@@ -218,12 +218,12 @@ char charsetT[100];
 if (encType == TO_KOI8)
     {
     strcpy(charsetF, nl_langinfo(CODESET));
-    strcpy(charsetT, "koi8-r");
+    strcpy(charsetT, "koi8-ru");
     }
 else
     {
     strcpy(charsetT, nl_langinfo(CODESET));
-    strcpy(charsetF, "koi8-r");
+    strcpy(charsetF, "koi8-ru");
     }
 
 size_t nconv = 1;
