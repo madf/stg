@@ -421,6 +421,7 @@ return ret;
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Start()
 {
+nonstop = true;
 #ifdef WIN32
 unsigned long pt;
 CreateThread(NULL, 16384, RunW, this, 0, &pt);
