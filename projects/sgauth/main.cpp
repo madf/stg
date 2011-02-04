@@ -360,7 +360,7 @@ if (clnp->GetAuthorized())
     {
     cout << "Connect" << endl;
     clnp->Connect();
-	}
+    }
 }
 //-----------------------------------------------------------------------------
 void CatchUSR2(int)
@@ -416,9 +416,6 @@ return;
 //-----------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-//int port;
-//char *endptr;
-
 SETTINGS settings;
 
 #ifndef WIN32
@@ -428,13 +425,6 @@ if(0)
 #endif
     {
     settings.SetConfFile(argv[1]);
-    if (settings.ReadSettings())
-        {
-        printf("ReadSettingsError\n");
-        printf("%s\n", settings.GetStrError().c_str());
-        exit(-1);
-        }
-    settings.Print();
     }
 else
     {
@@ -457,7 +447,13 @@ else
         }*/
     }
 
-//settings.Print();
+if (settings.ReadSettings())
+    {
+    printf("ReadSettingsError\n");
+    printf("%s\n", settings.GetStrError().c_str());
+    exit(-1);
+    }
+settings.Print();
 
 #ifndef WIN32
 if (settings.GetDaemon())
@@ -468,22 +464,19 @@ if (settings.GetDaemon())
 
     switch (fork())
         {
-        case -1:    // Лажа
+        case -1:
             exit(1);
             break;
 
-        case 0:    // Потомок
+        case 0:
             setsid();
             break;
 
-        default:    // Основной процесс
+        default:
             exit(0);
             break;
         }
     }
-
-
-
 #endif
 
 clnp = new IA_CLIENT_PROT(settings.GetServerName(), settings.GetServerPort(), settings.GetLocalPort());
@@ -505,7 +498,6 @@ clnp->SetErrorCb(ShowError, NULL);
 clnp->SetDirNameCb(SetDirName, NULL);
 clnp->SetStatChangedCb(StatUpdate, NULL);
 clnp->SetReconnect(settings.GetReconnect());
-
 
 clnp->Start();
 
@@ -568,5 +560,3 @@ while (1)
 return 0;
 }
 //-----------------------------------------------------------------------------
-
-
