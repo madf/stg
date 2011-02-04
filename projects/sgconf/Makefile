@@ -63,21 +63,16 @@ clean:
 distclean: clean
 	rm -f ../../Makefile.conf
 
-install: install-bin install-data
+install: install-bin
 
 install-bin:
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/sbin
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
-
-install-data:
 
 uninstall: uninstall-bin uninstall-data
 
 uninstall-bin:
 	rm -f $(PREFIX)/usr/sbin/$(PROG)
-
-uninstall-data:
 
 
 ifneq ($(MAKECMDGOALS),distclean)

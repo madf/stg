@@ -53,14 +53,13 @@ distclean: clean
 install: install-bin
 
 install-bin:
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/lib
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 uninstall: uninstall-bin
 
 uninstall-bin:
-	rm -f $(PREFIX)/usr/sbin/$(PROG)
+	rm -f $(PREFIX)/usr/lib/$(PROG)
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)

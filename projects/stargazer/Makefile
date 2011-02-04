@@ -73,16 +73,15 @@ distclean: clean
 install: install-bin install-data
 
 install-bin:
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/sbin
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 	$(MAKE) -C $(DIR_PLUGINS) install
 
 install-data:
 	# Install etc
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/etc/stargazer
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/etc/stargazer/conf-available.d
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/etc/stargazer/conf-enabled.d
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer/conf-available.d
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer/conf-enabled.d
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/stargazer.conf $(PREFIX)/etc/stargazer/stargazer.conf
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/conf-available.d/*.conf $(PREFIX)/etc/stargazer/conf-available.d
 	ln -s $(PREFIX)/etc/stargazer/conf-available.d/mod_ao.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ao.conf
@@ -100,9 +99,9 @@ endif
 	install -m $(BIN_MODE) -o $(OWNER) $(ETC_DIR)/On* $(PREFIX)/etc/stargazer/
 	
 	# Install file db
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/var/stargazer/admins
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/var/stargazer/tariffs
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/var/stargazer/users/test
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/var/stargazer/admins
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/var/stargazer/tariffs
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/var/stargazer/users/test
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/admins/admin.adm $(PREFIX)/var/stargazer/admins/admin.adm
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/tariffs/tariff.tf $(PREFIX)/var/stargazer/tariffs/tariff.tf
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/users/test/conf $(PREFIX)/var/stargazer/users/test/conf

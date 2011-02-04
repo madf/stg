@@ -69,18 +69,10 @@ install-bin:
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 
-install-data:
-	# Install etc
-	install -m $(DATA_MODE) -o $(OWNER) -D $(ETC_DIR)/sgconf.conf $(PREFIX)/etc/stargazer/sgconf.conf
-
 uninstall: uninstall-bin uninstall-data
 
 uninstall-bin:
 	rm -f $(PREFIX)/usr/sbin/$(PROG)
-
-uninstall-data:
-	# Uninstall etc
-	rm -f $(PREFIX)/etc/stargazer/sgconf.conf
 
 
 ifneq ($(MAKECMDGOALS),distclean)

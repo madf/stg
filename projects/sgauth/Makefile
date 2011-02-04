@@ -56,13 +56,12 @@ distclean: clean
 install: install-bin install-data
 
 install-bin:
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/sbin
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 install-data:
 	# Install etc
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/etc
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc
 	install -m $(DATA_MODE) -o $(OWNER) ./sgauth.conf $(PREFIX)/etc/sgauth.conf
 
 uninstall: uninstall-bin uninstall-data
@@ -72,7 +71,7 @@ uninstall-bin:
 
 uninstall-data:
 	# Uninstall etc
-	rm -f $(PREFIX)/etc/stargazer/sgauth.conf
+	rm -f $(PREFIX)/etc/sgauth.conf
 
 
 ifneq ($(MAKECMDGOALS),distclean)

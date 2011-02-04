@@ -67,7 +67,7 @@ clean:
 	done
 
 install: $(PROG)
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/lib/stg
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/stg
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 
 uninstall:

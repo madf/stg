@@ -56,13 +56,12 @@ distclean: clean
 install: install-bin install-data
 
 install-bin:
-	mkdir -m $(BIN_MODE) -p $(PREFIX)/usr/sbin
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 install-data:
 	# Install etc
-	mkdir -m $(DATA_MODE) -p $(PREFIX)/etc/stargazer
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer
 	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/stargazer/rscriptd.conf
 
 uninstall: uninstall-bin uninstall-data
