@@ -87,7 +87,7 @@ public:
 
     int         Connect();
     int         Disconnect();
-    int         GetAuthorized() const { return phase == 3 || phase == 4; };   // Мы подключены или нет?
+    int         GetAuthorized() const { return phase == 3 || phase == 4; };
     int         GetPhase() const { return phase; };
     int         GetStatus() const;
     int         GetReconnect() const { return reconnect; };
@@ -131,8 +131,8 @@ private:
     LOADSTAT        stat;
     int             action;
     int             phase;
-    int             phaseTime;                  // Время входа в фазу
-    string          messageText;                // Сообщение об ошибке
+    int             phaseTime;
+    string          messageText;
     string          infoText;
     mutable string  strError;
     mutable int     codeError;
@@ -154,17 +154,17 @@ private:
     pthread_t thread;
     #endif
 
-    string          serverName;                     // Имя сервера
-    uint16_t        port;                           // Порт сервера
-    uint32_t        ip;                             // Proxy IP
+    string          serverName;
+    uint16_t        port;
+    uint32_t        ip;
     uint32_t        localPort;
 
-    struct sockaddr_in  servAddr;        // адрес сервера
+    struct sockaddr_in  servAddr;
 
     bool            firstConnect;
     int             reconnect;
     int             sockr;
-    int             protNum;                    // Число, которое участвует в обмене сообщениямиa
+    int             protNum;
     int             userTimeout;
     int             aliveTimeout;
     unsigned int    rnd;
@@ -203,5 +203,3 @@ void * RunW(void *);
 
 //---------------------------------------------------------------------------
 #endif //IA_AUTH_C_H
-
-

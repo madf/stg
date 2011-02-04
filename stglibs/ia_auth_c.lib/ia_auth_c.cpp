@@ -23,7 +23,8 @@
 /*
 * Author :
 * Boris Mikhailenko <stg34@stargazer.dp.ua>
-* Andrey Rakhmanov <andrey_rakhmanov@yahoo.com> - исправление двух багов.
+* Maxim Mamontov <faust@stargazer.dp.ua>
+* Andrey Rakhmanov <andrey_rakhmanov@yahoo.com> - bugfixes.
 */
 
 //---------------------------------------------------------------------------
@@ -212,9 +213,9 @@ close(sockr);
 closesocket(sockr);
 #endif
 
-sockr = socket(AF_INET, SOCK_DGRAM, 0);  // Cокет через который шлем и принимаем
+sockr = socket(AF_INET, SOCK_DGRAM, 0);
 
-struct sockaddr_in  localAddrR;      // Наш адрес
+struct sockaddr_in  localAddrR;
 localAddrR.sin_family = AF_INET;
 
 if (localPort)
@@ -292,14 +293,12 @@ if (!isNetPrepared)
     isNetPrepared = true;
     }
 
-// Шифруем LoginS
 int db = sizeof(HDR_8);
 for (int i = 0; i < IA_LOGIN_LEN/8; i++)
     {
     Blowfish_Encrypt(&ctxHdr, (uint32_t*)(buffer + db + i*8), (uint32_t*)(buffer + db + i*8 + 4));
     }
 
-// Шифруем всё остальное
 db += IA_LOGIN_LEN;
 int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN)/8;
 for (int i = 0; i < encLen; i++)
