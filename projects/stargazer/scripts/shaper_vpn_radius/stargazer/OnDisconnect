@@ -59,6 +59,7 @@ done
 
 
 if [ -f /var/stargazer/ifaces/$IP ]
+then
     ppp_iface=$(cat /var/stargazer/ifaces/$IP)
 else
     exit 0
