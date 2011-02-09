@@ -108,8 +108,6 @@ struct UTIME: public timeval
 
     bool operator==(const UTIME & rhs) const
     {
-    //cout << tv_sec << "." << tv_usec << "  " << rhs.tv_sec << "." <<  rhs.tv_usec << endl;
-    //cout << (tv_sec == rhs.tv_sec) << " " << (tv_usec == rhs.tv_usec) << endl;
     return (tv_sec == rhs.tv_sec) && (tv_usec == rhs.tv_usec);
     }
 
@@ -117,9 +115,6 @@ struct UTIME: public timeval
     {
     // TODO optimize
     long long a, b;
-    /*a = tv_sec * 1000000 + tv_usec;
-    b = rhs.tv_sec * 1000000 + rhs.tv_usec;
-    return UTIME((a + b) / 1000000, (a + b) % 1000000);*/
     a = tv_sec + rhs.tv_sec;
     b = tv_usec + rhs.tv_usec;
     if (b > 1000000)
@@ -134,9 +129,6 @@ struct UTIME: public timeval
     {
     // TODO optimize
     long long a, b;
-    /*a = tv_sec * 1000000 + tv_usec;
-    b = rhs.tv_sec * 1000000 + rhs.tv_usec;
-    return UTIME((a - b) / 1000000, (a - b) % 1000000);*/
     a = tv_sec - rhs.tv_sec;
     b = tv_usec - rhs.tv_usec;
     if (a >= 0)
@@ -176,4 +168,3 @@ struct UTIME: public timeval
 
 
 #endif //UTIME_H
-
