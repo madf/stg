@@ -29,6 +29,7 @@
 
 #include <sys/time.h>
 #include <pthread.h>
+
 #include <cstring>
 #include <ctime>
 #include <string>
@@ -128,7 +129,7 @@ struct IA_USER
           password("NO PASSWORD")
     {
         // +++ Preparing CTX +++
-        unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
+        unsigned char keyL[PASSWD_LEN];
         memset(keyL, 0, PASSWD_LEN);
         strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
         Blowfish_Init(&ctx, keyL, PASSWD_LEN);
@@ -198,10 +199,10 @@ public:
     virtual             ~AUTH_IA();
 
     void                SetUsers(USERS * u) { users = u; };
-    void                SetTariffs(TARIFFS *){};
-    void                SetAdmins(ADMINS *){};
-    void                SetTraffcounter(TRAFFCOUNTER *){};
-    void                SetStore(BASE_STORE *){};
+    void                SetTariffs(TARIFFS *) {};
+    void                SetAdmins(ADMINS *) {};
+    void                SetTraffcounter(TRAFFCOUNTER *) {};
+    void                SetStore(BASE_STORE *) {};
     void                SetStgSettings(const SETTINGS * s) { stgSettings = s; };
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; };
     int                 ParseSettings();
@@ -216,8 +217,6 @@ public:
     uint16_t            GetStartPosition() const { return 50; };
     uint16_t            GetStopPosition() const { return 50; };
 
-    void                DelUser(user_iter u);
-
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
@@ -225,6 +224,7 @@ private:
     static void *       RunTimeouter(void * d);
     int                 PrepareNet();
     int                 FinalizeNet();
+    void                DelUser(user_iter u);
     int                 RecvData(char * buffer, int bufferSize);
     int                 CheckHeader(const char * buffer, int * protoVer);
     int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, user_iter * user);
