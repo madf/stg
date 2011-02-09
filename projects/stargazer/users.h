@@ -29,6 +29,7 @@ $Author: faust $
 #define USERS_H
 
 #include <pthread.h>
+
 #include <ctime>
 #include <string>
 #include <map>
@@ -136,11 +137,11 @@ private:
     void            DelUserFromIndexes(user_iter user);
 
     static void *   Run(void *);
-    void            NewMinute(const struct tm * t);
-    void            NewDay(const struct tm * t);
-    void            DayResetTraff(const struct tm * t);
+    void            NewMinute(const struct tm & t);
+    void            NewDay(const struct tm & t);
+    void            DayResetTraff(const struct tm & t);
 
-    bool            TimeToWriteDetailStat(const struct tm * t);
+    bool            TimeToWriteDetailStat(const struct tm & t);
 
     list<USER>          users;
     list<USER_TO_DEL>   usersToDelete;

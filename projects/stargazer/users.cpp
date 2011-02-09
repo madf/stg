@@ -276,12 +276,12 @@ void * USERS::Run(void * d)
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 USERS * us = (USERS*) d;
 
-struct tm * t;
+struct tm t;
 time_t tt = stgTime;
-t = localtime(&tt);
+localtime_r(&tt, &t);
 
-int min = t->tm_min;
-int day = t->tm_mday;
+int min = t.tm_min;
+int day = t.tm_mday;
 
 printfd(__FILE__,"Day = %d Min = %d\n", day, min);
 
@@ -298,23 +298,22 @@ while (us->nonstop)
     for_each(us->users.begin(), us->users.end(), mem_fun_ref(&USER::Run));
 
     tt = stgTime;
-    t = localtime(&tt);
+    localtime_r(&tt, &t);
 
-    if (min != t->tm_min)
+    if (min != t.tm_min)
         {
         printfd(__FILE__,"Sec = %d\n", stgTime);
-        printfd(__FILE__,"New Minute. old = %d current = %d\n", min, t->tm_min);
-        min = t->tm_min;
+        printfd(__FILE__,"New Minute. old = %d current = %d\n", min, t.tm_min);
+        min = t.tm_min;
 
         us->NewMinute(t);
         }
 
-    t = localtime(&tt);
-    if (day != t->tm_mday)
+    if (day != t.tm_mday)
         {
         printfd(__FILE__,"Sec = %d\n", stgTime);
-        printfd(__FILE__,"New Day. old = %d current = %d\n", day, t->tm_mday);
-        day = t->tm_mday;
+        printfd(__FILE__,"New Day. old = %d current = %d\n", day, t.tm_mday);
+        day = t.tm_mday;
         us->NewDay(t);
         }
 
@@ -350,10 +349,10 @@ us->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void USERS::NewMinute(const struct tm * t)
+void USERS::NewMinute(const struct tm & t)
 {
 //Write traff, reset session traff. Fake disconnect-connect
-if (t->tm_hour == 23 && t->tm_min == 59)
+if (t.tm_hour == 23 && t.tm_min == 59)
     {
     printfd(__FILE__,"MidnightResetSessionStat\n");
     for_each(users.begin(), users.end(), mem_fun_ref(&USER::MidnightResetSessionStat));
@@ -379,18 +378,18 @@ if (TimeToWriteDetailStat(t))
 RealDelUser();
 }
 //-----------------------------------------------------------------------------
-void USERS::NewDay(const struct tm * t)
+void USERS::NewDay(const struct tm & t)
 {
-struct tm * t1;
+struct tm t1;
 time_t tt = stgTime;
-t1 = localtime(&tt);
+localtime_r(&tt, &t1);
 int dayFee = settings->GetDayFee();
 
 if (dayFee == 0)
     dayFee = DaysInCurrentMonth();
 
 printfd(__FILE__, "DayFee = %d\n", dayFee);
-printfd(__FILE__, "Today = %d DayResetTraff = %d\n", t1->tm_mday, settings->GetDayResetTraff());
+printfd(__FILE__, "Today = %d DayResetTraff = %d\n", t1.tm_mday, settings->GetDayResetTraff());
 printfd(__FILE__, "DayFeeIsLastDay = %d\n", settings->GetDayFeeIsLastDay());
 
 if (!settings->GetDayFeeIsLastDay())
@@ -407,7 +406,7 @@ if (settings->GetSpreadFee())
     }
 else
     {
-    if (t->tm_mday == dayFee)
+    if (t.tm_mday == dayFee)
         {
         printfd(__FILE__, "DayFee\n");
         for_each(users.begin(), users.end(), mem_fun_ref(&USER::ProcessDayFee));
@@ -421,12 +420,12 @@ if (settings->GetDayFeeIsLastDay())
     }
 }
 //-----------------------------------------------------------------------------
-void USERS::DayResetTraff(const struct tm * t1)
+void USERS::DayResetTraff(const struct tm & t1)
 {
 int dayResetTraff = settings->GetDayResetTraff();
 if (dayResetTraff == 0)
     dayResetTraff = DaysInCurrentMonth();
-if (t1->tm_mday == dayResetTraff)
+if (t1.tm_mday == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
     for_each(users.begin(), users.end(), mem_fun_ref(&USER::ProcessNewMonth));
@@ -727,26 +726,26 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 loginIndex.erase(user->GetLogin());
 }
 //-----------------------------------------------------------------------------
-bool USERS::TimeToWriteDetailStat(const struct tm * t)
+bool USERS::TimeToWriteDetailStat(const struct tm & t)
 {
 int statTime = settings->GetDetailStatWritePeriod();
 
 switch (statTime)
     {
     case dsPeriod_1:
-        if (t->tm_min == 0)
+        if (t.tm_min == 0)
             return true;
         break;
     case dsPeriod_1_2:
-        if (t->tm_min % 30 == 0)
+        if (t.tm_min % 30 == 0)
             return true;
         break;
     case dsPeriod_1_4:
-        if (t->tm_min % 15 == 0)
+        if (t.tm_min % 15 == 0)
             return true;
         break;
     case dsPeriod_1_6:
-        if (t->tm_min % 10 == 0)
+        if (t.tm_min % 10 == 0)
             return true;
         break;
     }

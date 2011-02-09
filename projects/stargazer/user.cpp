@@ -335,10 +335,11 @@ int USER::WriteMonthStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 time_t tt = stgTime - 3600;
-struct tm * t1 = localtime(&tt);
+struct tm t1;
+localtime_r(&tt, &t1);
 
 USER_STAT stat(property.GetStat());
-if (store->SaveMonthStat(stat, t1->tm_mon, t1->tm_year, login))
+if (store->SaveMonthStat(stat, t1.tm_mon, t1.tm_year, login))
     {
     WriteServLog("Cannot write month stat for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -1005,13 +1006,13 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 static int daysInMonth[12] =
 {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-struct tm * tms;
+struct tm tms;
 time_t t = stgTime;
-tms = localtime(&t);
+localtime_r(&t, &tms);
 
-time_t secMonth = daysInMonth[(tms->tm_mon + 11) % 12] * 24 * 3600; // Previous month
+time_t secMonth = daysInMonth[(tms.tm_mon + 11) % 12] * 24 * 3600; // Previous month
 
-if (tms->tm_year % 4 == 0 && tms->tm_mon == 1)
+if (tms.tm_year % 4 == 0 && tms.tm_mon == 1)
     {
     // Leap year
     secMonth += 24 * 3600;
@@ -1029,12 +1030,11 @@ void USER::SetPassiveTimeAsNewUser()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-time_t t;
-struct tm * tm;
-t = stgTime;
-tm = localtime(&t);
+time_t t = stgTime;
+struct tm tm;
+localtime_r(&t, &tm);
 int daysCurrMon = DaysInCurrentMonth();
-double pt = (tm->tm_mday - 1) / (double)daysCurrMon;
+double pt = (tm.tm_mday - 1) / (double)daysCurrMon;
 
 passiveTime = (time_t)(pt * 24 * 3600 * daysCurrMon);
 }
