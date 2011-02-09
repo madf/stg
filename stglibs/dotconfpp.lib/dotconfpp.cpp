@@ -20,6 +20,7 @@
 #include <string>
 
 #include "dotconfpp.h"
+#include "mempool.h"
 
 DOTCONFDocumentNode::DOTCONFDocumentNode():previousNode(NULL), nextNode(NULL), parentNode(NULL), childNode(NULL),
     values(NULL), valuesCount(0), 

@@ -34,11 +34,11 @@
 #include <limits.h>
 
 #include "os_int.h"
-#include "mempool.h"
 
 typedef void (* DOTCONFCallback) (void * data, const char * buf);
 
 class DOTCONFDocument;
+class AsyncDNSMemPool;
 
 class DOTCONFDocumentNode
 {

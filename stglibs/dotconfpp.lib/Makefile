@@ -8,7 +8,6 @@ PROG = lib$(LIB_NAME)
 SRCS = dotconfpp.cpp \
        mempool.cpp
 
-INCS = dotconfpp.h \
-       mempool.h
+INCS = dotconfpp.h
 
 include ../Makefile.in
