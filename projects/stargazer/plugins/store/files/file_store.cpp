@@ -1190,34 +1190,57 @@ return WriteLog2String(logStr.str(), login);
 //-----------------------------------------------------------------------------
 int FILES_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const string & login) const
 {
-string str;
-int e;
-
-strprintf(&str,"%s/%s/stat.%d.%02d",
+// Classic stats
+string stat1;
+strprintf(&stat1,"%s/%s/stat.%d.%02d",
         storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
-CONFIGFILE s(str, true);
-e = s.Error();
+CONFIGFILE s(stat1, true);
 
-if (e)
+if (s.Error())
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot create file " + str;
+    errorStr = "Cannot create file '" + stat1 + "'";
     printfd(__FILE__, "FILES_STORE::SaveMonthStat - month stat write failed for user '%s'\n", login.c_str());
     return -1;
     }
 
-char dirName[3];
+// New stats
+string stat2;
+strprintf(&stat2,"%s/%s/stat2.%d.%02d",
+        storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
-for (int i = 0; i < DIR_NUM; i++)
+CONFIGFILE s2(stat2, true);
+
+if (s2.Error())
     {
-    snprintf(dirName, 3, "U%d", i);
-    s.WriteInt(dirName, stat.up[i]);
-    snprintf(dirName, 3, "D%d", i);
-    s.WriteInt(dirName, stat.down[i]);
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    errorStr = "Cannot create file '" + stat2 + "'";
+    printfd(__FILE__, "FILES_STORE::SaveMonthStat - month stat write failed for user '%s'\n", login.c_str());
+    return -1;
     }
 
+for (size_t i = 0; i < DIR_NUM; i++)
+    {
+    char dirName[3];
+    snprintf(dirName, 3, "U%d", i);
+    s.WriteInt(dirName, stat.up[i]); // Classic
+    s2.WriteInt(dirName, stat.up[i]); // New
+    snprintf(dirName, 3, "D%d", i);
+    s.WriteInt(dirName, stat.down[i]); // Classic
+    s2.WriteInt(dirName, stat.down[i]); // New
+    }
+
+// Classic
 s.WriteDouble("cash", stat.cash);
+
+// New
+s2.WriteDouble("Cash", stat.cash);
+s2.WriteDouble("FreeMb", stat.freeMb);
+s2.WriteDouble("LastCashAdd", stat.lastCashAdd);
+s2.WriteInt("LastCashAddTime", stat.lastCashAddTime);
+s2.WriteInt("PassiveTime", stat.passiveTime);
+s2.WriteInt("LastActivityTime", stat.lastActivityTime);
 
 return 0;
 }
