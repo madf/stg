@@ -20,3 +20,6 @@ projects/stargazer/var
 stglibs/smtp.lib
 stglibs/crypto.lib/blowfish.c
 Makefile.conf
+projects/convertor/convertor
+projects/rscriptd/rscriptd
+projects/sgconf/sgconf
