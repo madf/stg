@@ -33,7 +33,7 @@ struct tm lt;
 memset(&lt, 0, sizeof(lt));
 
 lt.tm_year = 2007 - 1900; // 2005
-lt.tm_mon  = 10 - 1;      // Nov
+lt.tm_mon  = 11 - 1;      // Nov
 lt.tm_hour = 23;          // 23 h
 lt.tm_min = 57;           // 50 min
 lt.tm_sec = 0;            // 00 sec
