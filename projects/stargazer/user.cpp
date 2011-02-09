@@ -123,8 +123,6 @@ currIP.AddAfterNotifier(&ipNotifier);
 
 lastScanMessages = 0;
 
-writeFreeMbTraffCost = settings->GetWriteFreeMbTraffCost();
-
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
@@ -205,8 +203,6 @@ property.cash.AddBeforeNotifier(&cashNotifier);
 currIP.AddAfterNotifier(&ipNotifier);
 
 lastScanMessages = 0;
-
-writeFreeMbTraffCost = settings->GetWriteFreeMbTraffCost();
 
 property.SetProperties(u.property);
 
@@ -770,7 +766,8 @@ sessionUpload[dir] += len;
 
 //Add detailed stat
 
-if (!writeFreeMbTraffCost && freeMb.ConstData() >= 0)
+if (!settings->GetWriteFreeMbTraffCost() &&
+     freeMb.ConstData() >= 0)
     cost = 0;
 
 #ifdef TRAFF_STAT_WITH_PORTS
@@ -860,7 +857,8 @@ sessionDownload[dir] += len;
 
 //Add detailed stat
 
-if (!writeFreeMbTraffCost && freeMb.ConstData() >= 0)
+if (!settings->GetWriteFreeMbTraffCost() &&
+     freeMb.ConstData() >= 0)
     cost = 0;
 
 #ifdef TRAFF_STAT_WITH_PORTS

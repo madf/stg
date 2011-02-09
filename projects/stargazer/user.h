@@ -248,8 +248,6 @@ private:
     time_t          lastWriteStat;           // Время последней записи статистики
     time_t          lastWriteDeatiledStat;   // Время последней записи детальной статистики
 
-    bool            writeFreeMbTraffCost;
-
     // Properties
     USER_PROPERTY<double>         & cash;
     USER_PROPERTY<DIR_TRAFF>      & up;
