@@ -1,3 +1,5 @@
+#! /bin/sh
+
 login=$1
 param=$2
 oldValue=$3
