@@ -77,6 +77,7 @@ bool                deleteUser;
 
 RESETABLE<string>   usrMsg;
 RESETABLE<double>   credit;
+RESETABLE<time_t>   creditExpire;
 RESETABLE<string>   usrPasswd;
 RESETABLE<bool>     down;
 RESETABLE<bool>     passive;

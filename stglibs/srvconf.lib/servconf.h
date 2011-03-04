@@ -72,6 +72,7 @@ struct USERDATA
     std::string     password;
     double          cash;
     double          credit;
+    time_t          creditExpire;
     double          lastCash;
     double          prepaidTraff;
     int             down;

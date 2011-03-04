@@ -81,6 +81,7 @@ HelpParams hp[] =
 {
     {"set tariff",              "get tariff",           "-t",   "<tariff:now|delayed>"},
     {"set credit",              "get credit",           "-r",   "<credit>"},
+    {"set credit expire",       "get credit expire",    "-E",   "<credit_expire_date>"},
     {"set password",            "get password",         "-o",   "<new_password>"},
     {"set prepaid traffic",     "get prepaid traffic",  "-e",   "<prepaid>"},
     {"set IP-addresses",	"get IP-addresses",	"-I",	"<*|ip_addr[,ip_addr...]>"},
@@ -330,6 +331,26 @@ if (!req->cash.res_empty())
 if (!req->credit.res_empty())
     cout << "credit=" << ud->credit << endl;
 
+if (!req->creditExpire.res_empty())
+    {
+    char buf[32];
+    struct tm brokenTime;
+    time_t tt = ud->creditExpire;
+
+    brokenTime.tm_wday = 0;
+    brokenTime.tm_yday = 0;
+    brokenTime.tm_isdst = 0;
+    brokenTime.tm_hour = 0;
+    brokenTime.tm_min = 0;
+    brokenTime.tm_sec = 0;
+
+    gmtime_r(&tt, &brokenTime);
+
+    strftime(buf, 32, "%Y-%m-%d", &brokenTime);
+
+    cout << "creditExpire=" << buf << endl;
+    }
+
 if (!req->down.res_empty())
     cout << "down=" << ud->down << endl;
 
@@ -475,5 +496,3 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-
-
