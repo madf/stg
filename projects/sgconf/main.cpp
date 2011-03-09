@@ -312,6 +312,22 @@ delete[] s;
 return ss;
 }
 //-----------------------------------------------------------------------------
+time_t ParseCreditExpire(const char * str)
+{
+struct tm brokenTime;
+
+brokenTime.tm_wday = 0;
+brokenTime.tm_yday = 0;
+brokenTime.tm_isdst = 0;
+brokenTime.tm_hour = 0;
+brokenTime.tm_min = 0;
+brokenTime.tm_sec = 0;
+
+stg_strptime(str, "%Y-%m-%d", &brokenTime);
+
+return stg_timegm(&brokenTime);
+}
+//-----------------------------------------------------------------------------
 void ParseAnyString(const char * c, string * msg, const char * enc)
 {
 iconv_t cd;
@@ -416,6 +432,12 @@ strcat(r, str);
 if (!req->credit.res_empty())
     {
     sprintf(str, "<credit value=\"%f\"/>\n", req->credit.const_data());
+    strcat(r, str);
+    }
+
+if (!req->creditExpire.res_empty())
+    {
+    sprintf(str, "<creditExpire value=\"%ld\"/>\n", req->creditExpire.const_data());
     strcat(r, str);
     }
 
@@ -681,7 +703,7 @@ REQUEST req;
 RESETABLE<string>   t1;
 int missedOptionArg = false;
 
-const char * short_options_get = "s:p:a:w:u:crtmodieNADLPGISO";
+const char * short_options_get = "s:p:a:w:u:crtmodieNADLPGISOE";
 int option_index = -1;
 
 while (1)
@@ -724,6 +746,10 @@ while (1)
 
         case 'r': //credit
             req.credit = 1;
+            break;
+
+        case 'E': //credit expire
+            req.creditExpire = 1;
             break;
 
         case 'd': //down
@@ -860,7 +886,7 @@ REQUEST req;
 
 RESETABLE<string>   t1;
 
-const char * short_options_set = "s:p:a:w:u:c:r:t:m:o:d:i:e:v:nlN:A:D:L:P:G:I:S:O:";
+const char * short_options_set = "s:p:a:w:u:c:r:t:m:o:d:i:e:v:nlN:A:D:L:P:G:I:S:O:E:";
 
 int missedOptionArg = false;
 
@@ -910,6 +936,10 @@ while (1)
 
         case 'r': //credit
             req.credit = ParseCredit(optarg);
+            break;
+
+        case 'E': //credit expire
+            req.creditExpire = ParseCreditExpire(optarg);
             break;
 
         case 'd': //down

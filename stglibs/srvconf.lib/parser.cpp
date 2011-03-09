@@ -165,6 +165,14 @@ if (strcasecmp(el, "credit") == 0)
         }
     }
 
+if (strcasecmp(el, "creditExpire") == 0)
+    {
+    if (str2x(attr[1], user.creditExpire) < 0)
+        {
+        return;
+        }
+    }
+
 /*if (strcasecmp(el, "freemb") == 0)
     {
     if (strtodouble2(attr[1], user.freeMb) < 0)
@@ -516,6 +524,14 @@ if (strcasecmp(el, "aonline") == 0)
 if (strcasecmp(el, "currip") == 0)
     {
     user.ip = inet_addr(attr[1]);
+    }
+
+if (strcasecmp(el, "creditExpire") == 0)
+    {
+    if (str2x(attr[1], user.creditExpire) < 0)
+        {
+        return;
+        }
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
