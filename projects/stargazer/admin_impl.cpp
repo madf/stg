@@ -28,73 +28,75 @@
  $Author: faust $
  */
 
-#include "admin.h"
+#include "admin_impl.h"
 #include "common.h"
 
 //-----------------------------------------------------------------------------
-ADMIN::ADMIN()
+ADMIN_IMPL::ADMIN_IMPL()
     : conf(),
       ip(0),
       WriteServLog(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
-ADMIN::ADMIN(const ADMIN_CONF & ac)
+ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
     : conf(ac),
       ip(0),
       WriteServLog(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
-ADMIN::ADMIN(const PRIV & priv, const std::string & login, const std::string & password)
+ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
+                       const std::string & login,
+                       const std::string & password)
     : conf(priv, login, password),
       ip(0),
       WriteServLog(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
-ADMIN & ADMIN::operator=(const ADMIN & adm)
+ADMIN & ADMIN_IMPL::operator=(const ADMIN & adm)
 {
 if (&adm == this)
     return *this;
 
-conf = adm.conf;
-ip = adm.ip;
+conf = adm.GetConf();
+ip = adm.GetIP();
 return *this;
 }
 //-----------------------------------------------------------------------------
-ADMIN & ADMIN::operator=(const ADMIN_CONF & ac)
+ADMIN & ADMIN_IMPL::operator=(const ADMIN_CONF & ac)
 {
 conf = ac;
 return *this;
 }
 //-----------------------------------------------------------------------------
-bool ADMIN::operator==(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator==(const ADMIN & rhs) const
 {
 return conf.login == rhs.GetLogin();
 }
 //-----------------------------------------------------------------------------
-bool ADMIN::operator!=(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator!=(const ADMIN & rhs) const
 {
 return conf.login != rhs.GetLogin();
 }
 //-----------------------------------------------------------------------------
-bool ADMIN::operator<(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator<(const ADMIN & rhs) const
 {
 return conf.login < rhs.GetLogin();
 }
 //-----------------------------------------------------------------------------
-bool ADMIN::operator<=(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator<=(const ADMIN & rhs) const
 {
 return conf.login <= rhs.GetLogin();
 }
 //-----------------------------------------------------------------------------
-string ADMIN::GetAdminIPStr() const
+std::string ADMIN_IMPL::GetIPStr() const
 {
 return inet_ntostring(ip);
 }
 //-----------------------------------------------------------------------------
-void ADMIN::PrintAdmin() const
+void ADMIN_IMPL::Print() const
 {
 printfd(__FILE__, "=======================================\n");
 printfd(__FILE__, "login %s\n",     conf.login.c_str());
@@ -108,8 +110,8 @@ printfd(__FILE__, "ChgTariff %d\n", conf.priv.tariffChg);
 printfd(__FILE__, "=======================================\n");
 }
 //-----------------------------------------------------------------------------
-const string ADMIN::GetLogStr() const
+const std::string ADMIN_IMPL::GetLogStr() const
 {
-return "Admin \'" + conf.login + "\', " + GetAdminIPStr() + ":";
+return "Admin \'" + conf.login + "\', " + GetIPStr() + ":";
 }
 //-----------------------------------------------------------------------------

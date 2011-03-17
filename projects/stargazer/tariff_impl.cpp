@@ -31,23 +31,24 @@
 #include <ctime>
 #include <algorithm> // std::max
 
-#include "tariff.h"
+#include "tariff_impl.h"
 #include "stg_timer.h"
+#include "common.h"
 
 //-----------------------------------------------------------------------------
-TARIFF & TARIFF::operator=(const TARIFF_DATA & td)
+TARIFF & TARIFF_IMPL::operator=(const TARIFF_DATA & td)
 {
 tariffData = td;
 return *this;
 }
 //-----------------------------------------------------------------------------
-TARIFF & TARIFF::operator=(const TARIFF & t)
+TARIFF & TARIFF_IMPL::operator=(const TARIFF & t)
 {
-tariffData = t.tariffData;
+tariffData = t.GetTariffData();
 return *this;
 }
 //-----------------------------------------------------------------------------
-double TARIFF::GetPriceWithTraffType(uint64_t up,
+double TARIFF_IMPL::GetPriceWithTraffType(uint64_t up,
                                      uint64_t down,
                                      int dir,
                                      time_t t) const
@@ -55,7 +56,7 @@ double TARIFF::GetPriceWithTraffType(uint64_t up,
 return GetPriceWithoutFreeMb(dir, GetTraffByType(up, down) / (1024 * 1024), t);
 }
 //-----------------------------------------------------------------------------
-int64_t TARIFF::GetTraffByType(uint64_t up, uint64_t down) const
+int64_t TARIFF_IMPL::GetTraffByType(uint64_t up, uint64_t down) const
 {
 switch (tariffData.tariffConf.traffType)
     {
@@ -73,27 +74,17 @@ switch (tariffData.tariffConf.traffType)
     }
 }
 //-----------------------------------------------------------------------------
-int TARIFF::GetThreshold(int dir) const
+int TARIFF_IMPL::GetThreshold(int dir) const
 {
     return tariffData.dirPrice[dir].threshold;
 }
 //-----------------------------------------------------------------------------
-void TARIFF::PrintTariff() const
+void TARIFF_IMPL::Print() const
 {
-//printfd(__FILE__, "Traiff name: %s\n", tariffConf.name.c_str());
-//printfd(__FILE__, "Price: %8.3f   %8.3f   \n", dirPrice[0].GetPrice(0, 0), dirPrice[0].GetPrice(1, 0));
-//printfd(__FILE__, "Price: %8.3f   %8.3f   Thr:%d\n", dirPrice[1].GetPrice(0), dirPrice[1].GetPrice(1), dirPrice[1].GetThreshold());
-//printfd(__FILE__, "Price: %8.3f   %8.3f   Thr:%d\n", dirPrice[2].GetPrice(0), dirPrice[2].GetPrice(1), dirPrice[2].GetThreshold());
-//printfd(__FILE__, "Price: %8.3f   %8.3f   Thr:%d\n", dirPrice[3].GetPrice(0), dirPrice[3].GetPrice(1), dirPrice[3].GetThreshold());
-//printfd(__FILE__, "Free: %8.3f\n", tariffConf.free);
+printfd(__FILE__, "Traiff name: %s\n", tariffData.tariffConf.name.c_str());
 }
 //-----------------------------------------------------------------------------
-void TARIFF::GetTariffData(TARIFF_DATA * td) const
-{
-*td = tariffData;
-}
-//-----------------------------------------------------------------------------
-int TARIFF::Interval(int dir, time_t t) const
+int TARIFF_IMPL::Interval(int dir, time_t t) const
 {
 // Start of the day (and end of the night) in sec from 00:00:00
 int s1 = tariffData.dirPrice[dir].hDay * 3600 +
@@ -128,7 +119,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-double TARIFF::GetPriceWithoutFreeMb(int dir, int mb, time_t t) const
+double TARIFF_IMPL::GetPriceWithoutFreeMb(int dir, int mb, time_t t) const
 {
 int interval = Interval(dir, t);
 

@@ -32,14 +32,16 @@
 #include <cassert>
 #include <algorithm>
 
+#include "admins_impl.h"
 #include "admins.h"
 #include "admin.h"
+#include "admin_impl.h"
 #include "common.h"
 
 using namespace std;
 
 //-----------------------------------------------------------------------------
-ADMINS::ADMINS(BASE_STORE * st)
+ADMINS_IMPL::ADMINS_IMPL(BASE_STORE * st)
     : stg(0xFFFF, "@stargazer", ""),
       noAdmin(0xFFFF, "NO-ADMIN", ""),
       data(),
@@ -52,7 +54,7 @@ pthread_mutex_init(&mutex, NULL);
 ReadAdmins();
 }
 //-----------------------------------------------------------------------------
-int ADMINS::Add(const string & login, const ADMIN & admin)
+int ADMINS_IMPL::Add(const string & login, const ADMIN & admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin.GetPriv();
@@ -65,7 +67,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-ADMIN adm(0, login, "");
+ADMIN_IMPL adm(0, login, "");
 admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
@@ -77,9 +79,8 @@ if (ai != data.end())
     }
 
 data.push_back(adm);
-/*ADMIN_CONF ac;
-ac.login = login;*/
-if (store->AddAdmin(login) == 0 /*&& store->SaveAdmin(ac) == 0*/)
+
+if (store->AddAdmin(login) == 0)
     {
     WriteServLog("%s Administrator \'%s\' added.",
                  admin.GetLogStr().c_str(), login.c_str());
@@ -92,10 +93,10 @@ WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::Del(const string & login, const ADMIN & admin)
+int ADMINS_IMPL::Del(const string & login, const ADMIN & admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-ADMIN adm(0, login, "");
+ADMIN_IMPL adm(0, login, "");
 const PRIV * priv = admin.GetPriv();
 
 if (!priv->adminChg)
@@ -137,7 +138,7 @@ WriteServLog("%s Administrator \'%s\' deleted.", admin.GetLogStr().c_str(), logi
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::Change(const ADMIN_CONF & ac, const ADMIN & admin)
+int ADMINS_IMPL::Change(const ADMIN_CONF & ac, const ADMIN & admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin.GetPriv();
@@ -150,7 +151,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-ADMIN adm(0, ac.login, "");
+ADMIN_IMPL adm(0, ac.login, "");
 admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai == data.end())
@@ -174,7 +175,7 @@ WriteServLog("%s Administrator \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::ReadAdmins()
+int ADMINS_IMPL::ReadAdmins()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 vector<string> adminsList;
@@ -194,23 +195,23 @@ for (unsigned int i = 0; i < adminsList.size(); i++)
         return -1;
         }
 
-    data.push_back(ADMIN(ac));
+    data.push_back(ADMIN_IMPL(ac));
     }
 return 0;
 }
 //-----------------------------------------------------------------------------
-void ADMINS::PrintAdmins() const
+void ADMINS_IMPL::PrintAdmins() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const_admin_iter ai(data.begin());
 while (ai != data.end())
     {
-    ai->PrintAdmin();
+    ai->Print();
     ai++;
     }
 }
 //-----------------------------------------------------------------------------
-bool ADMINS::FindAdmin(const string & l, ADMIN * admin) const
+bool ADMINS_IMPL::FindAdmin(const string & l, ADMIN ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");
 
@@ -218,23 +219,23 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
-    *admin = noAdmin;
+    *admin = &noAdmin;
     return false;
     }
 
-ADMIN adm(0, l, "");
-const_admin_iter ai(find(data.begin(), data.end(), adm));
+ADMIN_IMPL adm(0, l, "");
+admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
     {
-    *admin = *ai;
+    *admin = &(*ai);
     return false;
     }
 
 return true;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS::AdminExists(const string & login) const
+bool ADMINS_IMPL::AdminExists(const string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
@@ -243,7 +244,7 @@ if (data.empty())
     return true;
     }
 
-ADMIN adm(0, login, "");
+ADMIN_IMPL adm(0, login, "");
 const_admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
@@ -252,7 +253,7 @@ if (ai != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS::AdminCorrect(const string & login, const std::string & password, ADMIN * admin) const
+bool ADMINS_IMPL::AdminCorrect(const string & login, const std::string & password, ADMIN * admin) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
@@ -261,7 +262,7 @@ if (data.empty())
     return true;
     }
 
-ADMIN adm(0, login, "");
+ADMIN_IMPL adm(0, login, "");
 const_admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai == data.end())
@@ -279,7 +280,7 @@ if (ai->GetPassword() != password)
 return true;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::OpenSearch() const
+int ADMINS_IMPL::OpenSearch() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 handle++;
@@ -287,7 +288,7 @@ searchDescriptors[handle] = data.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::SearchNext(int h, ADMIN_CONF * ac) const
+int ADMINS_IMPL::SearchNext(int h, ADMIN_CONF * ac) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (searchDescriptors.find(h) == searchDescriptors.end())
@@ -299,14 +300,14 @@ if (searchDescriptors.find(h) == searchDescriptors.end())
 if (searchDescriptors[h] == data.end())
     return -1;
 
-ADMIN a = *searchDescriptors[h]++;
+ADMIN_IMPL a = *searchDescriptors[h]++;
 
 *ac = a.GetConf();
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS::CloseSearch(int h) const
+int ADMINS_IMPL::CloseSearch(int h) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (searchDescriptors.find(h) != searchDescriptors.end())

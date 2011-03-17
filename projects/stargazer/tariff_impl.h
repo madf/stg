@@ -28,60 +28,60 @@
  $Author: faust $
  */
 
-#ifndef TARIFF_H
-#define TARIFF_H
+#ifndef TARIFF_IMPL_H
+#define TARIFF_IMPL_H
 
 #include <ctime>
 
 #include <string>
 #include <list>
 
+#include "tariff.h"
 #include "os_int.h"
 #include "tariff_conf.h"
 
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1
 
-class TARIFF
-{
+class TARIFF_IMPL : public TARIFF {
 public:
-    TARIFF()
+    TARIFF_IMPL()
         : tariffData()
     {};
-    TARIFF(const std::string & name)
+    TARIFF_IMPL(const std::string & name)
         : tariffData(name)
     {};
-    TARIFF(const TARIFF_DATA & td)
+    TARIFF_IMPL(const TARIFF_DATA & td)
         : tariffData(td)
     {};
-    TARIFF(const TARIFF & t)
+    TARIFF_IMPL(const TARIFF_IMPL & t)
         : tariffData(t.tariffData)
     {};
-    ~TARIFF() {};
+    virtual ~TARIFF_IMPL() {};
 
     double  GetPriceWithTraffType(uint64_t up,
                                   uint64_t down,
                                   int dir,
                                   time_t t) const;
-    double  GetFreeMb() const { return tariffData.tariffConf.free; };
-    double  GetPassiveCost() const { return tariffData.tariffConf.passiveCost; };
-    double  GetFee() const { return tariffData.tariffConf.fee; };
-    double  GetFree() const { return tariffData.tariffConf.free; };
+    double  GetFreeMb() const { return tariffData.tariffConf.free; }
+    double  GetPassiveCost() const { return tariffData.tariffConf.passiveCost; }
+    double  GetFee() const { return tariffData.tariffConf.fee; }
+    double  GetFree() const { return tariffData.tariffConf.free; }
 
-    void    PrintTariff() const;
+    void    Print() const;
 
-    const   std::string & GetName() const { return tariffData.tariffConf.name; };
-    void    SetName(const std::string & name) { tariffData.tariffConf.name = name; };
+    const   std::string & GetName() const { return tariffData.tariffConf.name; }
+    void    SetName(const std::string & name) { tariffData.tariffConf.name = name; }
 
-    int     GetTraffType() const { return tariffData.tariffConf.traffType; };
+    int     GetTraffType() const { return tariffData.tariffConf.traffType; }
     int64_t GetTraffByType(uint64_t up, uint64_t down) const;
     int     GetThreshold(int dir) const;
-    void    GetTariffData(TARIFF_DATA * td) const;
+    const TARIFF_DATA & GetTariffData() const { return tariffData; }
 
     TARIFF & operator=(const TARIFF_DATA & td);
     TARIFF & operator=(const TARIFF & t);
-    bool     operator==(const TARIFF & rhs) const { return GetName() == rhs.GetName(); };
-    bool     operator!=(const TARIFF & rhs) const { return GetName() != rhs.GetName(); };
+    bool     operator==(const TARIFF & rhs) const { return GetName() == rhs.GetName(); }
+    bool     operator!=(const TARIFF & rhs) const { return GetName() != rhs.GetName(); }
 
 private:
     TARIFF_DATA     tariffData;
@@ -89,6 +89,5 @@ private:
     double  GetPriceWithoutFreeMb(int dir, int mb, time_t t) const;
     int     Interval(int dir, time_t t) const;
 };
-//-----------------------------------------------------------------------------
 
 #endif

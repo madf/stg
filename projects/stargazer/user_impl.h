@@ -24,8 +24,8 @@
  $Author: faust $
  */
 
-#ifndef USER_H
-#define USER_H
+#ifndef USER_IMPL_H
+#define USER_IMPL_H
 
 #include <ctime>
 #include <list>
@@ -33,6 +33,7 @@
 #include <map>
 #include <set>
 
+#include "user.h"
 #include "os_int.h"
 #include "stg_const.h"
 #include "user_stat.h"
@@ -46,79 +47,71 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-class USER;
 class TARIFF;
 class TARIFFS;
 class ADMIN;
-typedef list<USER>::iterator user_iter;
-typedef list<USER>::const_iterator const_user_iter;
+class USER_IMPL;
 //-----------------------------------------------------------------------------
-class USER_ID_GENERATOR
-{
-friend class USER;
+class USER_ID_GENERATOR {
+friend class USER_IMPL;
 private:
     USER_ID_GENERATOR() {}
     int GetNextID() { static int id = 0; return id++; }
 };
 //-----------------------------------------------------------------------------
 class CHG_PASSIVE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<int>,
-                             private NONCOPYABLE
-{
+                             private NONCOPYABLE {
 public:
-    CHG_PASSIVE_NOTIFIER(USER * u) : user(u) {}
+    CHG_PASSIVE_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const int & oldPassive, const int & newPassive);
 
 private:
-    USER * user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class CHG_TARIFF_NOTIFIER : public PROPERTY_NOTIFIER_BASE<string>,
-                            private NONCOPYABLE
-{
+                            private NONCOPYABLE {
 public:
-    CHG_TARIFF_NOTIFIER(USER * u) : user(u) {}
+    CHG_TARIFF_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const string & oldTariff, const string & newTariff);
 
 private:
-    USER * user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class CHG_CASH_NOTIFIER : public PROPERTY_NOTIFIER_BASE<double>,
-                          private NONCOPYABLE
-{
+                          private NONCOPYABLE {
 public:
-    CHG_CASH_NOTIFIER(USER * u) : user(u) {}
+    CHG_CASH_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const double & oldCash, const double & newCash);
 
 private:
-    USER * user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class CHG_IP_NOTIFIER : public PROPERTY_NOTIFIER_BASE<uint32_t>,
-                        private NONCOPYABLE
-{
+                        private NONCOPYABLE {
 public:
-    CHG_IP_NOTIFIER(USER * u) : user(u) {}
+    CHG_IP_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const uint32_t & oldCash, const uint32_t & newCash);
 
 private:
-    USER * user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
-class USER
-{
+class USER_IMPL : public USER {
 friend class CHG_PASSIVE_NOTIFIER;
 friend class CHG_TARIFF_NOTIFIER;
 friend class CHG_CASH_NOTIFIER;
 friend class CHG_IP_NOTIFIER;
 public:
-    USER(const SETTINGS * settings,
-         const BASE_STORE * store,
-         const TARIFFS * tariffs,
-         const ADMIN & sysAdmin,
-         const map<uint32_t, user_iter> * ipIndex);
-    USER(const USER & u);
-    ~USER();
+    USER_IMPL(const SETTINGS * settings,
+              const BASE_STORE * store,
+              const TARIFFS * tariffs,
+              const ADMIN & sysAdmin,
+              const USERS * u);
+    USER_IMPL(const USER_IMPL & u);
+    virtual ~USER_IMPL();
 
     int             ReadConf();
     int             ReadStat();
@@ -166,8 +159,6 @@ public:
     int             Authorize(uint32_t ip, const string & iface, uint32_t enabledDirs, const BASE_AUTH * auth);
     void            Unauthorize(const BASE_AUTH * auth);
     bool            IsAuthorizedBy(const BASE_AUTH * auth) const;
-    void            OnAdd();
-    void            OnDelete();
 
     int             AddMessage(STG_MSG * msg);
 
@@ -179,7 +170,8 @@ public:
 
     const string &  GetStrError() const { return errorStr; }
 
-    USER_PROPERTIES property;
+    USER_PROPERTIES & GetProperty() { return property; };
+    const USER_PROPERTIES & GetProperty() const { return property; };
 
     void            SetDeleted() { deleted = true; }
     bool            GetDeleted() const { return deleted; }
@@ -195,7 +187,12 @@ public:
     bool            IsInetable();
     string          GetEnabledDirs();
 
+    void            OnAdd();
+    void            OnDelete();
+
 private:
+    const USERS *   users;
+    USER_PROPERTIES property;
     STG_LOGGER &    WriteServLog;
 
     void            Connect(bool fakeConnect = false);
@@ -204,6 +201,7 @@ private:
 
     int             SendMessage(STG_MSG & msg) const;
     void            ScanMessage();
+
     time_t          lastScanMessages;
 
     string          login;
@@ -226,7 +224,7 @@ private:
 
     time_t          pingTime;
 
-    const ADMIN     sysAdmin;
+    const ADMIN &   sysAdmin;
     const BASE_STORE * store;
 
     const TARIFFS * tariffs;
@@ -238,8 +236,6 @@ private:
     const SETTINGS * settings;
 
     set<const BASE_AUTH *> authorizedBy;
-
-    const map<uint32_t, user_iter> * ipIndex;
 
     list<STG_MSG> messages;
 

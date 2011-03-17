@@ -28,51 +28,47 @@
  $Author: faust $
  */
 
-#ifndef ADMIN_H
-#define ADMIN_H
+#ifndef ADMIN_IMPL_H
+#define ADMIN_IMPL_H
 
 #include <string>
 
+#include "admin.h"
 #include "os_int.h"
 #include "admin_conf.h"
 #include "stg_logger.h"
 
-using namespace std;
-
-//-----------------------------------------------------------------------------
-class ADMIN
-{
+class ADMIN_IMPL : public ADMIN {
 public:
-      ADMIN();
-      ADMIN(const ADMIN_CONF & ac);
-      ADMIN(const PRIV & priv,
+      ADMIN_IMPL();
+      ADMIN_IMPL(const ADMIN_CONF & ac);
+      ADMIN_IMPL(const PRIV & priv,
             const std::string & login,
             const std::string & password);
-      ~ADMIN() {};
+      virtual ~ADMIN_IMPL() {};
 
-      ADMIN &           operator=(const ADMIN &);
-      ADMIN &           operator=(const ADMIN_CONF &);
-      bool              operator==(const ADMIN & rhs) const;
-      bool              operator!=(const ADMIN & rhs) const;
-      bool              operator<(const ADMIN & rhs) const;
-      bool              operator<=(const ADMIN & rhs) const;
+      ADMIN & operator=(const ADMIN &);
+      ADMIN & operator=(const ADMIN_CONF &);
+      bool         operator==(const ADMIN & rhs) const;
+      bool         operator!=(const ADMIN & rhs) const;
+      bool         operator<(const ADMIN & rhs) const;
+      bool         operator<=(const ADMIN & rhs) const;
 
-      const string &    GetPassword() const { return conf.password; };
-      const string &    GetLogin() const { return conf.login; };
-      PRIV const *      GetPriv() const { return &conf.priv; };
-      uint16_t          GetPrivAsInt() const { return conf.priv.ToInt(); };
-      const ADMIN_CONF & GetConf() const { return conf; };
-      void              PrintAdmin() const;
-      uint32_t          GetAdminIP() const { return ip; };
-      string            GetAdminIPStr() const;
-      void              SetAdminIP(uint32_t ip) { ADMIN::ip = ip; };
-      const string      GetLogStr() const;
+      const std::string & GetPassword() const { return conf.password; };
+      const std::string & GetLogin() const { return conf.login; };
+      PRIV const *        GetPriv() const { return &conf.priv; };
+      uint16_t            GetPrivAsInt() const { return conf.priv.ToInt(); };
+      const ADMIN_CONF &  GetConf() const { return conf; };
+      void                Print() const;
+      uint32_t            GetIP() const { return ip; };
+      std::string         GetIPStr() const;
+      void                SetIP(uint32_t ip) { ADMIN_IMPL::ip = ip; };
+      const std::string   GetLogStr() const;
 
 private:
       ADMIN_CONF        conf;
       uint32_t          ip;
       STG_LOGGER &      WriteServLog;
 };
-//-----------------------------------------------------------------------------
 
 #endif

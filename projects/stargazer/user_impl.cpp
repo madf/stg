@@ -37,7 +37,8 @@
 
 #include <cassert>
 
-#include "user.h"
+#include "user_impl.h"
+#include "users.h"
 #include "common.h"
 #include "settings.h"
 #include "script_executer.h"
@@ -45,12 +46,13 @@
 #include "tariffs.h"
 #include "admin.h"
 
-USER::USER(const SETTINGS * s,
+USER_IMPL::USER_IMPL(const SETTINGS * s,
            const BASE_STORE * st,
            const TARIFFS * t,
            const ADMIN & a,
-           const map<uint32_t, user_iter> * ipIdx)
-    : property(s),
+           const USERS * u)
+    : users(u),
+      property(s),
       WriteServLog(GetStgLogger()),
       login(),
       id(0),
@@ -105,7 +107,6 @@ USER::USER(const SETTINGS * s,
       ipNotifier(this)
 {
 settings = s;
-ipIndex = ipIdx;
 
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
@@ -129,8 +130,9 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USER::USER(const USER & u)
-    : property(u.settings),
+USER_IMPL::USER_IMPL(const USER_IMPL & u)
+    : users(u.users),
+      property(u.settings),
       WriteServLog(GetStgLogger()),
       login(u.login),
       id(u.id),
@@ -188,8 +190,6 @@ if (&u == this)
 
 connected = 0;
 
-ipIndex = u.ipIndex;
-
 deleted = u.deleted;
 
 lastWriteStat = u.lastWriteStat;
@@ -212,14 +212,14 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USER::~USER()
+USER_IMPL::~USER_IMPL()
 {
 property.passive.DelBeforeNotifier(&passiveNotifier);
 property.tariffName.DelBeforeNotifier(&tariffNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-void USER::SetLogin(string const & l)
+void USER_IMPL::SetLogin(string const & l)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 assert(login.empty() && "Login is already set");
@@ -227,7 +227,7 @@ login = l;
 id = userIDGenerator.GetNextID();
 }
 //-----------------------------------------------------------------------------
-int USER::ReadConf()
+int USER_IMPL::ReadConf()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 USER_CONF conf;
@@ -272,7 +272,7 @@ for (it = hdrsList.begin(); it != hdrsList.end(); ++it)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::ReadStat()
+int USER_IMPL::ReadStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 USER_STAT stat;
@@ -291,7 +291,7 @@ property.SetStat(stat);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::WriteConf()
+int USER_IMPL::WriteConf()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 USER_CONF conf(property.GetConf());
@@ -310,7 +310,7 @@ if (store->SaveUserConf(conf, login))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::WriteStat()
+int USER_IMPL::WriteStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 USER_STAT stat(property.GetStat());
@@ -331,7 +331,7 @@ lastWriteStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::WriteMonthStat()
+int USER_IMPL::WriteMonthStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 time_t tt = stgTime - 3600;
@@ -351,7 +351,7 @@ if (store->SaveMonthStat(stat, t1.tm_mon, t1.tm_year, login))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::Authorize(uint32_t ip, const string &, uint32_t dirs, const BASE_AUTH * auth)
+int USER_IMPL::Authorize(uint32_t ip, const string &, uint32_t dirs, const BASE_AUTH * auth)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -383,12 +383,12 @@ if (authorizedBy.size())
         return -1;
         }
 
-    map<uint32_t, user_iter>::const_iterator ci = ipIndex->find(ip);
-    if (ci != ipIndex->end())
+    USER * u = NULL;
+    if (!users->FindByIPIdx(ip, &u))
         {
         //  Address is already present in IP-index
         //  If it's not our IP - throw an error
-        if (&(*ci->second) != this)
+        if (u != this)
             {
             errorStr = "IP address " + inet_ntostring(ip) + " alredy in use";
             return -1;
@@ -397,7 +397,7 @@ if (authorizedBy.size())
     }
 else
     {
-    if (ipIndex->find(ip) != ipIndex->end())
+    if (users->IsIPInIndex(ip))
         {
         //  Address is already present in IP-index
         errorStr = "IP address " + inet_ntostring(ip) + " alredy in use";
@@ -424,7 +424,7 @@ ScanMessage();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USER::Unauthorize(const BASE_AUTH * auth)
+void USER_IMPL::Unauthorize(const BASE_AUTH * auth)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -441,14 +441,14 @@ if (authorizedBy.empty())
     }
 }
 //-----------------------------------------------------------------------------
-bool USER::IsAuthorizedBy(const BASE_AUTH * auth) const
+bool USER_IMPL::IsAuthorizedBy(const BASE_AUTH * auth) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //  Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
 }
 //-----------------------------------------------------------------------------
-void USER::Connect(bool fakeConnect)
+void USER_IMPL::Connect(bool fakeConnect)
 {
 /*
  *  Connect user to Internet. This function is differ from Authorize() !!!
@@ -499,7 +499,7 @@ if (!fakeConnect)
     lastIPForDisconnect = currIP;
 }
 //-----------------------------------------------------------------------------
-void USER::Disconnect(bool fakeDisconnect, const std::string & reason)
+void USER_IMPL::Disconnect(bool fakeDisconnect, const std::string & reason)
 {
 /*
  *  Disconnect user from Internet. This function is differ from UnAuthorize() !!!
@@ -561,7 +561,7 @@ sessionUpload = zeroSesssion;
 sessionDownload = zeroSesssion;
 }
 //-----------------------------------------------------------------------------
-void USER::PrintUser() const
+void USER_IMPL::PrintUser() const
 {
 //return;
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -598,7 +598,7 @@ cout << "lastActivityTime=" << lastActivityTime << endl;
 cout << "============================================================" << endl;
 }
 //-----------------------------------------------------------------------------
-void USER::Run()
+void USER_IMPL::Run()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -659,7 +659,7 @@ else
 
 }
 //-----------------------------------------------------------------------------
-void USER::UpdatePingTime(time_t t)
+void USER_IMPL::UpdatePingTime(time_t t)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //printfd(__FILE__, "UpdatePingTime(%d) %s\n", t, login.c_str());
@@ -669,7 +669,7 @@ else
     pingTime = stgTime;
 }
 //-----------------------------------------------------------------------------
-bool USER::IsInetable()
+bool USER_IMPL::IsInetable()
 {
 //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -690,7 +690,7 @@ if (settings->GetShowFeeInCash())
 return (cash - tariff->GetFee() >= -credit);
 }
 //-----------------------------------------------------------------------------
-string USER::GetEnabledDirs()
+string USER_IMPL::GetEnabledDirs()
 {
 //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -701,9 +701,9 @@ return dirs;
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
-void USER::AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len)
+void USER_IMPL::AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len)
 #else
-void USER::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
+void USER_IMPL::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
 #endif
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -756,8 +756,8 @@ if (tt == TRAFF_UP ||
         cost = dc - freeMb.ConstData();
 
     // Direct access to internal data structures via friend-specifier
-    property.stat.freeMb -= dc;
-    property.stat.cash -= cost;
+    property.Stat().freeMb -= dc;
+    property.Stat().cash -= cost;
     cash.ModifyTime();
     freeMb.ModifyTime();
     }
@@ -793,9 +793,9 @@ else
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
-void USER::AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len)
+void USER_IMPL::AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len)
 #else
-void USER::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
+void USER_IMPL::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
 #endif
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -847,8 +847,8 @@ if (tt == TRAFF_DOWN ||
     else if (freeMb.ConstData() < dc) // FreeMb is partially exhausted
         cost = dc - freeMb.ConstData();
 
-    property.stat.freeMb -= dc;
-    property.stat.cash -= cost;
+    property.Stat().freeMb -= dc;
+    property.Stat().cash -= cost;
     cash.ModifyTime();
     freeMb.ModifyTime();
     }
@@ -883,31 +883,31 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void USER::AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 currIP.AddBeforeNotifier(n);
 }
 //-----------------------------------------------------------------------------
-void USER::DelCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::DelCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 currIP.DelBeforeNotifier(n);
 }
 //-----------------------------------------------------------------------------
-void USER::AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 currIP.AddAfterNotifier(n);
 }
 //-----------------------------------------------------------------------------
-void USER::DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 currIP.DelAfterNotifier(n);
 }
 //-----------------------------------------------------------------------------
-void USER::OnAdd()
+void USER_IMPL::OnAdd()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -929,7 +929,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void USER::OnDelete()
+void USER_IMPL::OnDelete()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -953,7 +953,7 @@ else
 Run();
 }
 //-----------------------------------------------------------------------------
-int USER::WriteDetailStat(bool hard)
+int USER_IMPL::WriteDetailStat(bool hard)
 {
 printfd(__FILE__, "USER::WriteDetailedStat() - saved size = %d\n", traffStatSaved.second.size());
 
@@ -999,7 +999,7 @@ lastWriteDeatiledStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
-double USER::GetPassiveTimePart() const
+double USER_IMPL::GetPassiveTimePart() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1026,7 +1026,7 @@ if (dt < 0)
 return double(dt) / (secMonth);
 }
 //-----------------------------------------------------------------------------
-void USER::SetPassiveTimeAsNewUser()
+void USER_IMPL::SetPassiveTimeAsNewUser()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1039,7 +1039,7 @@ double pt = (tm.tm_mday - 1) / (double)daysCurrMon;
 passiveTime = (time_t)(pt * 24 * 3600 * daysCurrMon);
 }
 //-----------------------------------------------------------------------------
-void USER::MidnightResetSessionStat()
+void USER_IMPL::MidnightResetSessionStat()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1050,7 +1050,7 @@ if (connected)
     }
 }
 //-----------------------------------------------------------------------------
-void USER::ProcessNewMonth()
+void USER_IMPL::ProcessNewMonth()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //  Reset traff
@@ -1090,7 +1090,7 @@ if (nextTariff.ConstData() != "")
     }
 }
 //-----------------------------------------------------------------------------
-void USER::ProcessDayFeeSpread()
+void USER_IMPL::ProcessDayFeeSpread()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1107,7 +1107,7 @@ property.cash.Set(c - f, sysAdmin, login, store, "Subscriber fee charge");
 ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
-void USER::ProcessDayFee()
+void USER_IMPL::ProcessDayFee()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1140,14 +1140,14 @@ printfd(__FILE__, "login: %8s   Fee=%f PassiveTimePart=%f fee=%f\n",
 property.cash.Set(c - f, sysAdmin, login, store, "Subscriber fee charge");
 }
 //-----------------------------------------------------------------------------
-void USER::SetPrepaidTraff()
+void USER_IMPL::SetPrepaidTraff()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 property.freeMb.Set(tariff->GetFree(), sysAdmin, login, store, "Prepaid traffic");
 }
 //-----------------------------------------------------------------------------
-int USER::AddMessage(STG_MSG * msg)
+int USER_IMPL::AddMessage(STG_MSG * msg)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1186,7 +1186,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER::SendMessage(STG_MSG & msg) const
+int USER_IMPL::SendMessage(STG_MSG & msg) const
 {
 // No lock `cause we are already locked from caller
 int ret = -1;
@@ -1209,7 +1209,7 @@ if (!ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-void USER::ScanMessage()
+void USER_IMPL::ScanMessage()
 {
 // No lock `cause we are already locked from caller
 // We need not check for the authorizedBy `cause it has already checked by caller

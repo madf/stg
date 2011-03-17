@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "tariffs.h"
+#include "tariffs_impl.h"
 #include "stg_locker.h"
 #include "stg_logger.h"
 #include "base_store.h"
@@ -41,7 +41,7 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-TARIFFS::TARIFFS(BASE_STORE * st)
+TARIFFS_IMPL::TARIFFS_IMPL(BASE_STORE * st)
     : tariffs(),
       store(st),
       WriteServLog(GetStgLogger()),
@@ -52,12 +52,12 @@ pthread_mutex_init(&mutex, NULL);
 ReadTariffs();
 }
 //-----------------------------------------------------------------------------
-TARIFFS::~TARIFFS()
+TARIFFS_IMPL::~TARIFFS_IMPL()
 {
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-int TARIFFS::ReadTariffs()
+int TARIFFS_IMPL::ReadTariffs()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -79,26 +79,26 @@ for (int i = 0; i < tariffsNum; i++)
         WriteServLog("%s", store->GetStrError().c_str());
         return -1;
         }
-    tariffs.push_back(TARIFF(td));
+    tariffs.push_back(TARIFF_IMPL(td));
     }
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS::GetTariffsNum() const
+int TARIFFS_IMPL::GetTariffsNum() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return tariffs.size();
 }
 //-----------------------------------------------------------------------------
-const TARIFF * TARIFFS::FindByName(const string & name) const
+const TARIFF * TARIFFS_IMPL::FindByName(const string & name) const
 {
 if (name == NO_TARIFF_NAME)
     return &noTariff;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-list<TARIFF>::const_iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF(name));
+list<TARIFF_IMPL>::const_iterator ti;
+ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti != tariffs.end())
     return &(*ti);
@@ -106,7 +106,7 @@ if (ti != tariffs.end())
 return NULL;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS::Chg(const TARIFF_DATA & td, const ADMIN & admin)
+int TARIFFS_IMPL::Chg(const TARIFF_DATA & td, const ADMIN & admin)
 {
 const PRIV * priv = admin.GetPriv();
 
@@ -121,8 +121,8 @@ if (!priv->tariffChg)
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-list<TARIFF>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF(td.tariffConf.name));
+list<TARIFF_IMPL>::iterator ti;
+ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
 
 if (ti == tariffs.end())
     {
@@ -146,7 +146,7 @@ WriteServLog("%s Tariff \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS::Del(const string & name, const ADMIN & admin)
+int TARIFFS_IMPL::Del(const string & name, const ADMIN & admin)
 {
 const PRIV * priv = admin.GetPriv();
 
@@ -161,8 +161,8 @@ if (!priv->tariffChg)
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-list<TARIFF>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF(name));
+list<TARIFF_IMPL>::iterator ti;
+ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti == tariffs.end())
     {
@@ -186,7 +186,7 @@ WriteServLog("%s Tariff \'%s\' deleted.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS::Add(const string & name, const ADMIN & admin)
+int TARIFFS_IMPL::Add(const string & name, const ADMIN & admin)
 {
 const PRIV * priv = admin.GetPriv();
 
@@ -201,8 +201,8 @@ if (!priv->tariffChg)
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-list<TARIFF>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF(name));
+list<TARIFF_IMPL>::iterator ti;
+ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti != tariffs.end())
     {
@@ -211,7 +211,7 @@ if (ti != tariffs.end())
     return -1;
     }
 
-tariffs.push_back(TARIFF(name));
+tariffs.push_back(TARIFF_IMPL(name));
 
 if (store->AddTariff(name) < 0)
     {
@@ -226,17 +226,15 @@ WriteServLog("%s Tariff \'%s\' added.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-void TARIFFS::GetTariffsData(std::list<TARIFF_DATA> * tdl)
+void TARIFFS_IMPL::GetTariffsData(std::list<TARIFF_DATA> * tdl)
 {
 assert(tdl != NULL && "Tariffs data list is not null");
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-std::list<TARIFF>::const_iterator it = tariffs.begin();
-TARIFF_DATA td;
+std::list<TARIFF_IMPL>::const_iterator it = tariffs.begin();
 for (; it != tariffs.end(); ++it)
     {
-    it->GetTariffData(&td);
-    tdl->push_back(td);
+    tdl->push_back(it->GetTariffData());
     }
 }
 //-----------------------------------------------------------------------------

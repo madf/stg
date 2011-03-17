@@ -28,61 +28,56 @@
  $Author: faust $
  */
 
-#ifndef ADMINS_H
-#define ADMINS_H
+#ifndef ADMINS_IMPL_H
+#define ADMINS_IMPL_H
 
 #include <pthread.h>
 #include <list>
 #include <map>
 
+#include "admins.h"
 #include "admin.h"
+#include "admin_impl.h"
 #include "stg_locker.h"
 #include "base_store.h"
 #include "noncopyable.h"
 
-using namespace std;
-
-//-----------------------------------------------------------------------------
-class ADMINS : private NONCOPYABLE
-{
+class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
 public:
-    ADMINS(BASE_STORE * st);
-    ~ADMINS() {};
+    ADMINS_IMPL(BASE_STORE * st);
+    virtual ~ADMINS_IMPL() {};
 
-    int             Add(const string & login, const ADMIN & admin);
-    int             Del(const string & login, const ADMIN & admin);
-    int             Change(const ADMIN_CONF & ac, const ADMIN & admin);
-    void            PrintAdmins() const;
-    const ADMIN     GetSysAdmin() const { return stg; };
-    const ADMIN     GetNoAdmin() const { return noAdmin; };
-    bool            FindAdmin(const string & l, ADMIN * admin) const;
-    bool            AdminExists(const std::string & login) const;
-    bool            AdminCorrect(const std::string & login,
-                                 const std::string & password,
-                                 ADMIN * admin) const;
-    const string &  GetStrError() const { return strError; };
+    int           Add(const string & login, const ADMIN & admin);
+    int           Del(const string & login, const ADMIN & admin);
+    int           Change(const ADMIN_CONF & ac, const ADMIN & admin);
+    void          PrintAdmins() const;
+    const ADMIN * GetSysAdmin() const { return &stg; };
+    const ADMIN * GetNoAdmin() const { return &noAdmin; };
+    bool          FindAdmin(const std::string & l, ADMIN ** admin);
+    bool          AdminExists(const std::string & login) const;
+    bool          AdminCorrect(const std::string & login,
+                               const std::string & password,
+                               ADMIN * admin) const;
+    const std::string & GetStrError() const { return strError; };
 
     int OpenSearch() const;
     int SearchNext(int, ADMIN_CONF * ac) const;
     int CloseSearch(int) const;
 
 private:
-    typedef list<ADMIN>::iterator admin_iter;
-    typedef list<ADMIN>::const_iterator const_admin_iter;
+    typedef list<ADMIN_IMPL>::iterator admin_iter;
+    typedef list<ADMIN_IMPL>::const_iterator const_admin_iter;
 
     int             ReadAdmins();
 
-    ADMIN           stg;
-    ADMIN           noAdmin;
-    list<ADMIN>     data;
+    ADMIN_IMPL           stg;
+    ADMIN_IMPL           noAdmin;
+    list<ADMIN_IMPL>     data;
     BASE_STORE *    store;
     STG_LOGGER &    WriteServLog;
     mutable map<int, const_admin_iter> searchDescriptors;
     mutable unsigned int handle;
     mutable pthread_mutex_t mutex;
-    string          strError;
+    std::string     strError;
 };
-//-----------------------------------------------------------------------------
 #endif
-
-

@@ -33,8 +33,8 @@
  $Author: faust $
  */
 
-#ifndef TARIFFS_H
-#define TARIFFS_H
+#ifndef TARIFFS_IMPL_H
+#define TARIFFS_IMPL_H
 
 #include <pthread.h>
 
@@ -42,6 +42,8 @@
 #include <list>
 
 #include "tariff.h"
+#include "tariff_impl.h"
+#include "tariffs.h"
 #include "tariff_conf.h"
 
 #define TARIFF_DAY     0
@@ -51,12 +53,10 @@ class BASE_STORE;
 class STG_LOGGER;
 class ADMIN;
 
-//-----------------------------------------------------------------------------
-class TARIFFS
-{
+class TARIFFS_IMPL : public TARIFFS {
 public:
-    TARIFFS(BASE_STORE * store);
-    ~TARIFFS();
+    TARIFFS_IMPL(BASE_STORE * store);
+    virtual ~TARIFFS_IMPL();
     int     ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;
     const TARIFF * GetNoTariff() const { return &noTariff; };
@@ -69,13 +69,12 @@ public:
 
     const std::string & GetStrError() const { return strError; };
 private:
-    std::list<TARIFF>   tariffs;
+    std::list<TARIFF_IMPL>   tariffs;
     BASE_STORE *        store;
     STG_LOGGER &        WriteServLog;
     mutable pthread_mutex_t mutex;
     std::string         strError;
-    TARIFF              noTariff;
+    TARIFF_IMPL         noTariff;
 };
-//-----------------------------------------------------------------------------
 
 #endif

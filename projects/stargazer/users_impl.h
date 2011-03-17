@@ -25,8 +25,8 @@ $Author: faust $
 */
 
 
-#ifndef USERS_H
-#define USERS_H
+#ifndef USERS_IMPL_H
+#define USERS_IMPL_H
 
 #include <pthread.h>
 
@@ -38,8 +38,11 @@ $Author: faust $
 
 #include "os_int.h"
 
+#include "base_store.h"
 #include "settings.h"
+#include "users.h"
 #include "user.h"
+#include "user_impl.h"
 #include "tariffs.h"
 #include "stg_logger.h"
 #include "notifer.h"
@@ -49,83 +52,80 @@ $Author: faust $
 
 const int userDeleteDelayTime = 120;
 
-using namespace std;
-class USERS;
+typedef std::list<USER_IMPL>::iterator user_iter;
+typedef std::list<USER_IMPL>::const_iterator const_user_iter;
+
+class USERS_IMPL;
 //-----------------------------------------------------------------------------
-class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t>
-{
+class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-    PROPERTY_NOTIFER_IP_BEFORE(USERS & us, user_iter u) : users(us), user(u) {};
+    PROPERTY_NOTIFER_IP_BEFORE(USERS_IMPL & us, user_iter u) : users(us), user(u) {}
     void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() const { return user; };
+    user_iter   GetUser() const { return user; }
 private:
-    USERS &     users;
-    user_iter   user;
+    USERS_IMPL & users;
+    user_iter    user;
 };
 //-----------------------------------------------------------------------------
-class PROPERTY_NOTIFER_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t>
-{
+class PROPERTY_NOTIFER_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-    PROPERTY_NOTIFER_IP_AFTER(USERS & us, user_iter u) : users(us), user(u) {};
+    PROPERTY_NOTIFER_IP_AFTER(USERS_IMPL & us, user_iter u) : users(us), user(u) {}
     void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() const { return user; };
+    user_iter   GetUser() const { return user; }
 private:
-    USERS &     users;
-    user_iter   user;
+    USERS_IMPL & users;
+    user_iter    user;
 };
 //-----------------------------------------------------------------------------
-struct USER_TO_DEL
-{
+struct USER_TO_DEL {
 USER_TO_DEL()
     : iter(),
       delTime(0)
-{};
+{}
 
-list<USER>::iterator iter;
+std::list<USER_IMPL>::iterator iter;
 time_t  delTime;
 };
 //-----------------------------------------------------------------------------
-class USERS : private NONCOPYABLE
-    {
+class USERS_IMPL : private NONCOPYABLE, public USERS {
     friend class PROPERTY_NOTIFER_IP_BEFORE;
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
 public:
-    USERS(SETTINGS * s, BASE_STORE * store, TARIFFS * tariffs, const ADMIN & sysAdmin);
-    ~USERS();
+    USERS_IMPL(SETTINGS * s, BASE_STORE * store, TARIFFS * tariffs, const ADMIN & sysAdmin);
+    virtual ~USERS_IMPL();
 
-    int             FindByName(const string & login, user_iter * user) const;
-    int             FindByID(int id, user_iter * user);
+    int             FindByName(const std::string & login, USER_PTR * user);
 
-    bool            TariffInUse(const string & tariffName);
+    bool            TariffInUse(const std::string & tariffName) const;
 
-    void            AddNotifierUserAdd(NOTIFIER_BASE<user_iter> *);
-    void            DelNotifierUserAdd(NOTIFIER_BASE<user_iter> *);
+    void            AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> *);
+    void            DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> *);
 
-    void            AddNotifierUserDel(NOTIFIER_BASE<user_iter> *);
-    void            DelNotifierUserDel(NOTIFIER_BASE<user_iter> *);
+    void            AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
+    void            DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
 
-    int             Add(const string & login, const ADMIN & admin);
-    void            Del(const string & login, const ADMIN & admin);
+    int             Add(const std::string & login, const ADMIN & admin);
+    void            Del(const std::string & login, const ADMIN & admin);
 
     int             ReadUsers();
-    int             GetUserNum();
+    int             GetUserNum() const;
 
-    int             FindByIPIdx(uint32_t ip, user_iter * user);
+    int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
+    bool            IsIPInIndex(uint32_t ip) const;
 
     int             OpenSearch();
-    int             SearchNext(int handler, user_iter * u);
+    int             SearchNext(int handler, USER_PTR * user);
     int             CloseSearch(int handler);
 
     int             Start();
     int             Stop();
 
 private:
-    void            AddToIPIdx(user_iter);
+    void            AddToIPIdx(user_iter user);
     void            DelFromIPIdx(uint32_t ip);
 
-    int             FindByNameNonLock(const string & login, user_iter * user) const;
-    int             FindByIDNonLock(int id, user_iter * user);
+    int             FindByNameNonLock(const std::string & login, user_iter * user);
 
     void            RealDelUser();
     void            ProcessActions();
@@ -143,18 +143,18 @@ private:
 
     bool            TimeToWriteDetailStat(const struct tm & t);
 
-    list<USER>          users;
-    list<USER_TO_DEL>   usersToDelete;
-    list<PROPERTY_NOTIFER_IP_BEFORE> userIPNotifiersBefore;
-    list<PROPERTY_NOTIFER_IP_AFTER>  userIPNotifiersAfter;
+    std::list<USER_IMPL>                  users;
+    std::list<USER_TO_DEL>                usersToDelete;
+    std::list<PROPERTY_NOTIFER_IP_BEFORE> userIPNotifiersBefore;
+    std::list<PROPERTY_NOTIFER_IP_AFTER>  userIPNotifiersAfter;
 
-    map<uint32_t, user_iter> ipIndex;
-    map<string,   user_iter> loginIndex;
+    std::map<uint32_t, user_iter>         ipIndex;
+    std::map<std::string, user_iter>      loginIndex;
 
     SETTINGS *          settings;
     TARIFFS *           tariffs;
     BASE_STORE *        store;
-    const ADMIN         sysAdmin;
+    const ADMIN &       sysAdmin;
     STG_LOGGER &        WriteServLog;
 
     bool                nonstop;
@@ -164,11 +164,11 @@ private:
     pthread_t               thread;
     mutable unsigned int    handle;
 
-    mutable map<int, user_iter> searchDescriptors;
+    mutable std::map<int, user_iter>  searchDescriptors;
 
-    set <NOTIFIER_BASE<user_iter>*> onAddNotifiers;
-    set <NOTIFIER_BASE<user_iter>*> onDelNotifiers;
-    };
+    std::set<NOTIFIER_BASE<USER_PTR>*> onAddNotifiers;
+    std::set<NOTIFIER_BASE<USER_PTR>*> onDelNotifiers;
+};
 //-----------------------------------------------------------------------------
 inline
 void PROPERTY_NOTIFER_IP_BEFORE::Notify(const uint32_t & oldValue,
@@ -195,4 +195,3 @@ users.AddToIPIdx(user);
 }
 //-----------------------------------------------------------------------------
 #endif
-

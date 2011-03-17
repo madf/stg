@@ -41,8 +41,7 @@
 #include <vector>
 
 #include "settings.h"
-#include "users.h"
-#include "user.h"
+#include "users_impl.h"
 #include "common.h"
 #include "stg_timer.h"
 
@@ -53,7 +52,7 @@ extern const volatile time_t stgTime;
 //#define USERS_DEBUG 1
 
 //-----------------------------------------------------------------------------
-USERS::USERS(SETTINGS * s, BASE_STORE * st, TARIFFS * t, const ADMIN & sa)
+USERS_IMPL::USERS_IMPL(SETTINGS * s, BASE_STORE * st, TARIFFS * t, const ADMIN & sa)
     : users(),
       usersToDelete(),
       userIPNotifiersBefore(),
@@ -80,14 +79,14 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USERS::~USERS()
+USERS_IMPL::~USERS_IMPL()
 {
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-int USERS::FindByNameNonLock(const string & login, user_iter * user) const
+int USERS_IMPL::FindByNameNonLock(const string & login, user_iter * user)
 {
-map<string, user_iter>::const_iterator iter;
+map<string, user_iter>::iterator iter;
 iter = loginIndex.find(login);
 if (iter != loginIndex.end())
     {
@@ -98,27 +97,32 @@ if (iter != loginIndex.end())
 return -1;
 }
 //-----------------------------------------------------------------------------
-int USERS::FindByName(const string & login, user_iter * user) const
+int USERS_IMPL::FindByName(const string & login, USER_PTR * user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-return FindByNameNonLock(login, user);
+user_iter u;
+int res = FindByNameNonLock(login, &u);
+if (res)
+    return -1;
+*user = &(*u);
+return 0;
 }
 //-----------------------------------------------------------------------------
-bool USERS::TariffInUse(const string & tariffName)
+bool USERS_IMPL::TariffInUse(const string & tariffName) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-list<USER>::iterator iter;
+list<USER_IMPL>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
     {
-    if (iter->property.tariffName.Get() == tariffName)
+    if (iter->GetProperty().tariffName.Get() == tariffName)
         return true;
     ++iter;
     }
 return false;
 }
 //-----------------------------------------------------------------------------
-int USERS::Add(const string & login, const ADMIN & admin)
+int USERS_IMPL::Add(const string & login, const ADMIN & admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin.GetPriv();
@@ -142,7 +146,7 @@ if (store->AddUser(login))
     }
 //////
 
-USER u(settings, store, tariffs, sysAdmin, &ipIndex);
+USER_IMPL u(settings, store, tariffs, sysAdmin, this);
 
 /*struct tm * tms;
 time_t t = stgTime;
@@ -176,17 +180,17 @@ AddUserIntoIndexes(users.begin());
 SetUserNotifiers(users.begin());
 
 // Уведомляем всех желающих, что добавлен новый пользователь
-set<NOTIFIER_BASE<user_iter> *>::iterator ni = onAddNotifiers.begin();
+set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onAddNotifiers.begin();
 while (ni != onAddNotifiers.end())
     {
-    (*ni)->Notify(users.begin());
+    (*ni)->Notify(&users.front());
     ++ni;
     }
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS::Del(const string & login, const ADMIN & admin)
+void USERS_IMPL::Del(const string & login, const ADMIN & admin)
 {
 const PRIV * priv = admin.GetPriv();
 user_iter u;
@@ -211,10 +215,10 @@ if (!priv->userAddDel)
         }
     }
 
-set<NOTIFIER_BASE<user_iter> *>::iterator ni = onDelNotifiers.begin();
+set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onDelNotifiers.begin();
 while (ni != onDelNotifiers.end())
     {
-    (*ni)->Notify(u);
+    (*ni)->Notify(&(*u));
     ++ni;
     }
 
@@ -238,7 +242,7 @@ while (ni != onDelNotifiers.end())
     }
 }
 //-----------------------------------------------------------------------------
-int USERS::ReadUsers()
+int USERS_IMPL::ReadUsers()
 {
 vector<string> usersList;
 usersList.clear();
@@ -252,7 +256,7 @@ user_iter ui;
 
 for (unsigned int i = 0; i < usersList.size(); i++)
     {
-    USER u(settings, store, tariffs, sysAdmin, &ipIndex);
+    USER_IMPL u(settings, store, tariffs, sysAdmin, this);
 
     u.SetLogin(usersList[i]);
     users.push_front(u);
@@ -271,10 +275,10 @@ for (unsigned int i = 0; i < usersList.size(); i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * USERS::Run(void * d)
+void * USERS_IMPL::Run(void * d)
 {
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
-USERS * us = (USERS*) d;
+USERS_IMPL * us = (USERS_IMPL*) d;
 
 struct tm t;
 time_t tt = stgTime;
@@ -295,7 +299,7 @@ while (us->nonstop)
     //printfd(__FILE__,"New Minute. old = %02d current = %02d\n", min, t->tm_min);
     //printfd(__FILE__,"New Day.    old = %2d current = %2d\n", day, t->tm_mday);
 
-    for_each(us->users.begin(), us->users.end(), mem_fun_ref(&USER::Run));
+    for_each(us->users.begin(), us->users.end(), mem_fun_ref(&USER_IMPL::Run));
 
     tt = stgTime;
     localtime_r(&tt, &t);
@@ -349,13 +353,13 @@ us->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void USERS::NewMinute(const struct tm & t)
+void USERS_IMPL::NewMinute(const struct tm & t)
 {
 //Write traff, reset session traff. Fake disconnect-connect
 if (t.tm_hour == 23 && t.tm_min == 59)
     {
     printfd(__FILE__,"MidnightResetSessionStat\n");
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::MidnightResetSessionStat));
+    for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::MidnightResetSessionStat));
     }
 
 if (TimeToWriteDetailStat(t))
@@ -364,21 +368,21 @@ if (TimeToWriteDetailStat(t))
     int usersCnt = 0;
 
     // Пишем юзеров частями. В перерывах вызываем USER::Run
-    list<USER>::iterator usr = users.begin();
+    list<USER_IMPL>::iterator usr = users.begin();
     while (usr != users.end())
         {
         usersCnt++;
         usr->WriteDetailStat();
         usr++;
         if (usersCnt % 10 == 0)
-            for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
+            for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::Run));
         }
     }
 
 RealDelUser();
 }
 //-----------------------------------------------------------------------------
-void USERS::NewDay(const struct tm & t)
+void USERS_IMPL::NewDay(const struct tm & t)
 {
 struct tm t1;
 time_t tt = stgTime;
@@ -402,14 +406,14 @@ if (!settings->GetDayFeeIsLastDay())
 if (settings->GetSpreadFee())
     {
     printfd(__FILE__, "Spread DayFee\n");
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::ProcessDayFeeSpread));
+    for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::ProcessDayFeeSpread));
     }
 else
     {
     if (t.tm_mday == dayFee)
         {
         printfd(__FILE__, "DayFee\n");
-        for_each(users.begin(), users.end(), mem_fun_ref(&USER::ProcessDayFee));
+        for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::ProcessDayFee));
         }
     }
 
@@ -420,7 +424,7 @@ if (settings->GetDayFeeIsLastDay())
     }
 }
 //-----------------------------------------------------------------------------
-void USERS::DayResetTraff(const struct tm & t1)
+void USERS_IMPL::DayResetTraff(const struct tm & t1)
 {
 int dayResetTraff = settings->GetDayResetTraff();
 if (dayResetTraff == 0)
@@ -428,12 +432,12 @@ if (dayResetTraff == 0)
 if (t1.tm_mday == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::ProcessNewMonth));
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER::SetPrepaidTraff));
+    for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::ProcessNewMonth));
+    for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::SetPrepaidTraff));
     }
 }
 //-----------------------------------------------------------------------------
-int USERS::Start()
+int USERS_IMPL::Start()
 {
 if (ReadUsers())
     {
@@ -450,7 +454,7 @@ if (pthread_create(&thread, NULL, Run, this))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS::Stop()
+int USERS_IMPL::Stop()
 {
 printfd(__FILE__, "USERS::Stop()\n");
 
@@ -487,22 +491,22 @@ if (isRunning)
     }
 
 printfd(__FILE__, "Before USERS::Run()\n");
-for_each(users.begin(), users.end(), mem_fun_ref(&USER::Run));
+for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::Run));
 
 // 'cause bind2st accepts only constant first param
-for (list<USER>::iterator it = users.begin();
+for (list<USER_IMPL>::iterator it = users.begin();
      it != users.end();
      ++it)
     it->WriteDetailStat(true);
 
-for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteStat));
-for_each(users.begin(), users.end(), mem_fun_ref(&USER::WriteConf));
+for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteStat));
+for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteConf));
 
 printfd(__FILE__, "USERS::Stop()\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS::RealDelUser()
+void USERS_IMPL::RealDelUser()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -531,13 +535,12 @@ while (iter != usersToDelete.end())
 return;
 }
 //-----------------------------------------------------------------------------
-int USERS::GetUserNum()
+int USERS_IMPL::GetUserNum() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return users.size();
 }
 //-----------------------------------------------------------------------------
-void USERS::AddToIPIdx(user_iter user)
+void USERS_IMPL::AddToIPIdx(user_iter user)
 {
 printfd(__FILE__, "USERS: Add IP Idx\n");
 uint32_t ip = user->GetCurrIP();
@@ -556,7 +559,7 @@ assert((it == ipIndex.end() || it->first != ip) && "User is not in index");
 ipIndex.insert(it, std::make_pair(ip, user));
 }
 //-----------------------------------------------------------------------------
-void USERS::DelFromIPIdx(uint32_t ip)
+void USERS_IMPL::DelFromIPIdx(uint32_t ip)
 {
 printfd(__FILE__, "USERS: Del IP Idx\n");
 assert(ip && "User has non-null ip");
@@ -574,11 +577,11 @@ if (it == ipIndex.end())
 ipIndex.erase(it);
 }
 //-----------------------------------------------------------------------------
-int USERS::FindByIPIdx(uint32_t ip, user_iter * usr)
+int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_PTR * usr) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, user_iter>::iterator it;
+map<uint32_t, user_iter>::const_iterator it;
 it = ipIndex.find(ip);
 
 if (it == ipIndex.end())
@@ -586,37 +589,47 @@ if (it == ipIndex.end())
     //printfd(__FILE__, "User NOT found in IP_Index!!!\n");
     return -1;
     }
-*usr = it->second;
+*usr = &(*it->second);
 //printfd(__FILE__, "User found in IP_Index\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS::AddNotifierUserAdd(NOTIFIER_BASE<user_iter> * n)
+bool USERS_IMPL::IsIPInIndex(uint32_t ip) const
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+map<uint32_t, user_iter>::const_iterator it;
+it = ipIndex.find(ip);
+
+return it != ipIndex.end();
+}
+//-----------------------------------------------------------------------------
+void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 onAddNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS::DelNotifierUserAdd(NOTIFIER_BASE<user_iter> * n)
+void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //printfd(__FILE__, "DelNotifierUserAdd\n");
 onAddNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-void USERS::AddNotifierUserDel(NOTIFIER_BASE<user_iter> * n)
+void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 onDelNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS::DelNotifierUserDel(NOTIFIER_BASE<user_iter> * n)
+void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-int USERS::OpenSearch()
+int USERS_IMPL::OpenSearch()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 handle++;
@@ -624,7 +637,7 @@ searchDescriptors[handle] = users.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int USERS::SearchNext(int h, user_iter * u)
+int USERS_IMPL::SearchNext(int h, USER_PTR * user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -646,14 +659,14 @@ while (searchDescriptors[h]->GetDeleted())
         }
     }
 
-*u = searchDescriptors[h];
+*user = &(*searchDescriptors[h]);
 
 ++searchDescriptors[h];
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS::CloseSearch(int h)
+int USERS_IMPL::CloseSearch(int h)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (searchDescriptors.find(h) != searchDescriptors.end())
@@ -666,7 +679,7 @@ WriteServLog("USERS. Incorrect search handle.");
 return -1;
 }
 //-----------------------------------------------------------------------------
-void USERS::SetUserNotifiers(user_iter user)
+void USERS_IMPL::SetUserNotifiers(user_iter user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -680,7 +693,7 @@ user->AddCurrIPBeforeNotifier(&(*userIPNotifiersBefore.begin()));
 user->AddCurrIPAfterNotifier(&(*userIPNotifiersAfter.begin()));
 }
 //-----------------------------------------------------------------------------
-void USERS::UnSetUserNotifiers(user_iter user)
+void USERS_IMPL::UnSetUserNotifiers(user_iter user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -714,19 +727,19 @@ while (ai != userIPNotifiersAfter.end())
     }
 }
 //-----------------------------------------------------------------------------
-void USERS::AddUserIntoIndexes(user_iter user)
+void USERS_IMPL::AddUserIntoIndexes(user_iter user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-loginIndex.insert(pair<string, user_iter>(user->GetLogin(), user));
+loginIndex.insert(make_pair(user->GetLogin(), user));
 }
 //-----------------------------------------------------------------------------
-void USERS::DelUserFromIndexes(user_iter user)
+void USERS_IMPL::DelUserFromIndexes(user_iter user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 loginIndex.erase(user->GetLogin());
 }
 //-----------------------------------------------------------------------------
-bool USERS::TimeToWriteDetailStat(const struct tm & t)
+bool USERS_IMPL::TimeToWriteDetailStat(const struct tm & t)
 {
 int statTime = settings->GetDetailStatWritePeriod();
 
