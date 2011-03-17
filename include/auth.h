@@ -23,25 +23,16 @@
  $Date: 2009/03/18 17:24:57 $
  */
 
-#ifndef BASE_AUTH_H
-#define BASE_AUTH_H
+#ifndef AUTH_H
+#define AUTH_H
 
-#include <time.h>
-#include <string>
-
-#include "base_plugin.h"
+#include "plugin.h"
 #include "stg_message.h"
+#include "noncopyable.h"
 
-using namespace std;
-
-//-----------------------------------------------------------------------------
-class BASE_AUTH : public BASE_PLUGIN
-{
+class AUTH : public PLUGIN, private NONCOPYABLE {
 public:
-    virtual ~BASE_AUTH() {};
     virtual int SendMessage(const STG_MSG & msg, uint32_t ip) const = 0;
 };
-//-----------------------------------------------------------------------------
+
 #endif
-
-
