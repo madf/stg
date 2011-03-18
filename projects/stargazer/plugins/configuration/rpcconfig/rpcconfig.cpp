@@ -41,7 +41,7 @@ RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
 {
 }
 
-int RPC_CONFIG_SETTINGS::ParseIntInRange(const string & str,
+int RPC_CONFIG_SETTINGS::ParseIntInRange(const std::string & str,
                                          int min,
                                          int max,
                                          int * val)
