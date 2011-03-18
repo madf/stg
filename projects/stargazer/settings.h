@@ -37,16 +37,15 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <string>
 #include <vector>
 
 #include "common.h"
-#include "base_settings.h"
-
-using namespace std;
+#include "stg_logger.h"
+#include "module_settings.h"
 
 //-----------------------------------------------------------------------------
-enum DETAIL_STAT_PERIOD
-{
+enum DETAIL_STAT_PERIOD {
 dsPeriod_1,
 dsPeriod_1_2,
 dsPeriod_1_4,
@@ -56,71 +55,70 @@ dsPeriod_1_6,
 class STG_LOGGER;
 class DOTCONFDocumentNode;
 //-----------------------------------------------------------------------------
-class SETTINGS
-{
+class SETTINGS {
 public:
     SETTINGS();
     SETTINGS(const std::string &);
     SETTINGS(const SETTINGS &);
     virtual ~SETTINGS();
-    int Reload() { return ReadSettings(); };
+    int Reload() { return ReadSettings(); }
     int ReadSettings();
 
-    string GetStrError() const { return strError; };
+    std::string GetStrError() const { return strError; }
 
-    int             GetExecMsgKey() const { return stgExecMsgKey; };
-    unsigned        GetExecutersNum() const { return executersNum; };
-    const string &  GetDirName(int num) const { return dirName[num]; };
-    const string &  GetConfDir() const { return confDir; };
-    const string &  GetScriptDir() const { return scriptDir; };
-    const string &  GetRulesFileName() const { return rules; };
-    const string &  GetLogFileName() const { return logFile; };
-    const string &  GetPIDFileName() const { return pidFile; };
-    unsigned        GetDetailStatWritePeriod() const 
+    int                 GetExecMsgKey() const { return stgExecMsgKey; }
+    unsigned            GetExecutersNum() const { return executersNum; }
+    const std::string & GetDirName(int num) const { return dirName[num]; };
+    const std::string & GetConfDir() const { return confDir; }
+    const std::string & GetScriptDir() const { return scriptDir; }
+    const std::string & GetRulesFileName() const { return rules; }
+    const std::string & GetLogFileName() const { return logFile; }
+    const std::string & GetPIDFileName() const { return pidFile; }
+    unsigned            GetDetailStatWritePeriod() const 
         { return detailStatWritePeriod; };
-    unsigned        GetStatWritePeriod() const { return statWritePeriod * 60; };
-    unsigned        GetDayFee() const { return dayFee; };
-    bool            GetFullFee() const { return fullFee; };
-    unsigned        GetDayResetTraff() const { return dayResetTraff; };
-    bool            GetSpreadFee() const { return spreadFee; };
-    bool            GetFreeMbAllowInet() const { return freeMbAllowInet; };
-    bool            GetDayFeeIsLastDay() const { return dayFeeIsLastDay; };
-    bool            GetWriteFreeMbTraffCost() const
+    unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
+    unsigned            GetDayFee() const { return dayFee; }
+    bool                GetFullFee() const { return fullFee; }
+    unsigned            GetDayResetTraff() const { return dayResetTraff; }
+    bool                GetSpreadFee() const { return spreadFee; }
+    bool                GetFreeMbAllowInet() const { return freeMbAllowInet; }
+    bool                GetDayFeeIsLastDay() const { return dayFeeIsLastDay; }
+    bool                GetWriteFreeMbTraffCost() const
         { return writeFreeMbTraffCost; };
-    bool            GetShowFeeInCash() const { return showFeeInCash; };
-    const string  & GetMonitorDir() const { return monitorDir; };
-    bool            GetMonitoring() const { return monitoring; };
-    unsigned        GetMessageTimeout() const { return messageTimeout * 3600 * 24; };
+    bool                GetShowFeeInCash() const { return showFeeInCash; }
+    const std::string & GetMonitorDir() const { return monitorDir; }
+    bool                GetMonitoring() const { return monitoring; }
+    unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
 
-    const string &  GetModulesPath() const { return modulesPath; };
+    const std::string & GetModulesPath() const { return modulesPath; }
     const MODULE_SETTINGS         & GetStoreModuleSettings() const
-        { return storeModuleSettings; };
-    const vector<MODULE_SETTINGS> & GetModulesSettings() const
-        { return modulesSettings; };
+        { return storeModuleSettings; }
+    const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
+        { return modulesSettings; }
 
 private:
 
-    int ParseInt(const string & value, int * val);
-    int ParseUnsigned(const string & value, unsigned * val);
-    int ParseIntInRange(const string & value, int min, int max, int * val);
-    int ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val);
-    int ParseYesNo(const string & value, bool * val);
-    int ParseDetailStatWritePeriod(const string & detailStatPeriodStr);
+    int ParseInt(const std::string & value, int * val);
+    int ParseUnsigned(const std::string & value, unsigned * val);
+    int ParseIntInRange(const std::string & value, int min, int max, int * val);
+    int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val);
+    int ParseYesNo(const std::string & value, bool * val);
+    int ParseDetailStatWritePeriod(const std::string & detailStatPeriodStr);
 
-    int ParseModuleSettings(const DOTCONFDocumentNode * dirNameNode, vector<PARAM_VALUE> * params);
+    int ParseModuleSettings(const DOTCONFDocumentNode * dirNameNode, std::vector<PARAM_VALUE> * params);
 
     static void ErrorCallback(void * data, const char * buf);
 
-    string      strError;
+    std::string strError;
     //////////settings
-    string      modulesPath;
-    string      dirName[DIR_NUM];
-    string      confDir;
-    string	scriptDir;
-    string      rules;
-    string      logFile;
-    string      pidFile;
-    string      monitorDir;
+    std::string modulesPath;
+    std::string dirName[DIR_NUM];
+    std::string confDir;
+    std::string	scriptDir;
+    std::string rules;
+    std::string logFile;
+    std::string pidFile;
+    std::string monitorDir;
     bool        monitoring;
     unsigned    detailStatWritePeriod;
     unsigned    statWritePeriod;
@@ -136,8 +134,8 @@ private:
     bool        showFeeInCash; // Показывать пользователю АП не счету и позволять ее использовать
     unsigned    messageTimeout; // Время жизни неотправленного сообщения в секундах
 
-    vector<MODULE_SETTINGS> modulesSettings;
-    MODULE_SETTINGS         storeModuleSettings;
+    std::vector<MODULE_SETTINGS> modulesSettings;
+    MODULE_SETTINGS storeModuleSettings;
 
     STG_LOGGER & logger;
 };

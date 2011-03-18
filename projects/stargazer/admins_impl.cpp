@@ -41,7 +41,7 @@
 using namespace std;
 
 //-----------------------------------------------------------------------------
-ADMINS_IMPL::ADMINS_IMPL(BASE_STORE * st)
+ADMINS_IMPL::ADMINS_IMPL(STORE * st)
     : stg(0xFFFF, "@stargazer", ""),
       noAdmin(0xFFFF, "NO-ADMIN", ""),
       data(),

@@ -26,12 +26,12 @@
 
 #include "os_int.h"
 #include "notifer.h"
-#include "auth.h"
 #include "stg_message.h"
 #include "tariff.h"
 #include "user_traff.h"
 
 class USER_PROPERTIES;
+class AUTH;
 
 class USER {
 public:

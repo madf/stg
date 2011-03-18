@@ -219,7 +219,7 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
     }
 }
 //-----------------------------------------------------------------------------
-void CONFIGPROTO::SetStore(BASE_STORE * s)
+void CONFIGPROTO::SetStore(STORE * s)
 {
 for (unsigned int i = 0; i < dataParser.size(); i++)
     {

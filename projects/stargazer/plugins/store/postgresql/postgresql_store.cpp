@@ -46,7 +46,7 @@
 
 #include "postgresql_store.h"
 #include "postgresql_store_utils.h"
-#include "base_settings.h"
+#include "module_settings.h"
 
 class POSTGRESQL_STORE_CREATOR
 {
@@ -65,7 +65,7 @@ private:
 } pqStoreeCreator;
 
 //-----------------------------------------------------------------------------
-BASE_STORE * GetStore()
+STORE * GetStore()
 {
 return pqStoreeCreator.GetStore();
 }

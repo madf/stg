@@ -51,7 +51,7 @@
 #include "tariffs_impl.h"
 #include "common.h"
 #include "traffcounter.h"
-#include "base_plugin.h"
+#include "plugin.h"
 #include "stg_logger.h"
 #include "stg_timer.h"
 #include "plugin_runner.h"
@@ -451,7 +451,7 @@ int main(int argc, char * argv[])
  * */
 
 SETTINGS * settings = NULL;
-BASE_STORE * dataStore = NULL;
+STORE * dataStore = NULL;
 TARIFFS * tariffs = NULL;
 ADMINS * admins = NULL;
 USERS * users = NULL;

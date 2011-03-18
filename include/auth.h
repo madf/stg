@@ -30,7 +30,7 @@
 #include "stg_message.h"
 #include "noncopyable.h"
 
-class AUTH : public PLUGIN, private NONCOPYABLE {
+class AUTH : public PLUGIN {
 public:
     virtual int SendMessage(const STG_MSG & msg, uint32_t ip) const = 0;
 };

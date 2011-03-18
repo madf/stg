@@ -114,14 +114,14 @@ if (!dst_lh)
 
 STORE * (*GetSourceStore)();
 STORE * (*GetDestStore)();
-GetSourceStore = (BASE_STORE * (*)())dlsym(src_lh, "GetStore");
+GetSourceStore = (STORE * (*)())dlsym(src_lh, "GetStore");
 if (!GetSourceStore)
     {
     printfd(__FILE__, "Source storage plugin loading failed. GetStore not found: %s\n", dlerror());
     delete settings;
     return -1;
     }
-GetDestStore = (BASE_STORE * (*)())dlsym(dst_lh, "GetStore");
+GetDestStore = (STORE * (*)())dlsym(dst_lh, "GetStore");
 if (!GetDestStore)
     {
     printfd(__FILE__, "Storage plugin (firebird) loading failed. GetStore not found: %s\n", dlerror());

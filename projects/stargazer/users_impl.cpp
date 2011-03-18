@@ -52,7 +52,7 @@ extern const volatile time_t stgTime;
 //#define USERS_DEBUG 1
 
 //-----------------------------------------------------------------------------
-USERS_IMPL::USERS_IMPL(SETTINGS * s, BASE_STORE * st, TARIFFS * t, const ADMIN & sa)
+USERS_IMPL::USERS_IMPL(SETTINGS * s, STORE * st, TARIFFS * t, const ADMIN & sa)
     : users(),
       usersToDelete(),
       userIPNotifiersBefore(),

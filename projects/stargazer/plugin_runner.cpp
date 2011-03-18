@@ -39,7 +39,7 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
                              TARIFFS * t,
                              USERS * u,
                              TRAFFCOUNTER * tc,
-                             BASE_STORE * st,
+                             STORE * st,
                              const SETTINGS * s)
     : pluginFileName(pFileName),
       pluginSettingFileName(),

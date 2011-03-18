@@ -1293,7 +1293,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     iaUser->phase.UpdateTime();
 
     iaUser->lastSendAlive = iaUser->phase.GetTime();
-    if (iaUser->user->Authorize(sip, "", enabledDirs, this) == 0)
+    if (iaUser->user->Authorize(sip, enabledDirs, this) == 0)
         {
         iaUser->phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 2 to 3. Reason: CONN_ACK_6\n");
@@ -1328,7 +1328,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     {
     iaUser->phase.UpdateTime();
     iaUser->lastSendAlive = iaUser->phase.GetTime();
-    if (iaUser->user->Authorize(sip, "", enabledDirs, this) == 0)
+    if (iaUser->user->Authorize(sip, enabledDirs, this) == 0)
         {
         iaUser->phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 2 to 3. Reason: CONN_ACK_8\n");

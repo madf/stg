@@ -131,7 +131,7 @@ void STG_CONFIG::SetAdmins(ADMINS * a)
 admins = a;
 }
 //-----------------------------------------------------------------------------
-void STG_CONFIG::SetStore(BASE_STORE * s)
+void STG_CONFIG::SetStore(STORE * s)
 {
 store = s;
 }

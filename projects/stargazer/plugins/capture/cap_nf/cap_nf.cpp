@@ -37,6 +37,8 @@ $Author: faust $
 #include <cerrno>
 #include <cstring>
 
+#include <vector>
+
 #include "common.h" 
 #include "cap_nf.h"
 #include "raw_ip_packet.h"
@@ -87,7 +89,7 @@ NF_CAP::~NF_CAP()
 
 int NF_CAP::ParseSettings()
 {
-vector<PARAM_VALUE>::iterator it;
+std::vector<PARAM_VALUE>::iterator it;
 for (it = settings.moduleParams.begin(); it != settings.moduleParams.end(); ++it)
     {
     if (it->param == "TCPPort")

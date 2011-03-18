@@ -105,7 +105,7 @@ public:
                         RS_SETTINGS();
     virtual             ~RS_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
-    int                 ParseSettings(const MODULE_SETTINGS & s)
+    int                 ParseSettings(const MODULE_SETTINGS & s);
     int                 GetSendPeriod() const { return sendPeriod; }
     int                 GetPort() const { return port; }
     const std::vector<NET_ROUTER> & GetSubnetsMap() const { return netRouters; }

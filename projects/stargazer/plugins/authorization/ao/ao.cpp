@@ -299,7 +299,7 @@ if (u->GetProperty().alwaysOnline)
     USER_IPS ips = u->GetProperty().ips;
     if (ips.OnlyOneIP())
         {
-        if (u->Authorize(ips[0].ip, "", 0xFFffFFff, this) == 0)
+        if (u->Authorize(ips[0].ip, 0xFFffFFff, this) == 0)
             {
             }
         }

@@ -38,8 +38,8 @@ public:
 
     void  SetSettings(const MODULE_SETTINGS &) {}
     int  ParseSettings() { return 0; }
-    const string & GetStrError() const;
-    const string GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string GetVersion() const;
     uint16_t GetStartPosition() const;
     uint16_t GetStopPosition() const;
 
@@ -50,7 +50,7 @@ private:
     int IPQCapRead(void * buffer, int blen);
 
     struct ipq_handle * ipq_h;
-    mutable string errorStr;
+    mutable std::string errorStr;
 
     pthread_t thread;
     bool nonstop;

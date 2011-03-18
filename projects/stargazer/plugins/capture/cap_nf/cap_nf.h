@@ -105,8 +105,8 @@ public:
     int             Stop();
     int             Reload() { return 0; }
     bool            IsRunning() { return runningTCP || runningUDP; }
-    const string  & GetStrError() const { return errorStr; }
-    const string    GetVersion() const { return VERSION; }
+    const std::string & GetStrError() const { return errorStr; }
+    const std::string GetVersion() const { return VERSION; }
     uint16_t        GetStartPosition() const { return START_POS; }
     uint16_t        GetStopPosition() const { return STOP_POS; }
 

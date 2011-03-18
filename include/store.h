@@ -37,7 +37,7 @@
 #include "service_conf.h"
 #include "admin_conf.h"
 #include "tariff_conf.h"
-#include "settings.h"
+#include "module_settings.h"
 #include "stg_message.h"
 
 //-----------------------------------------------------------------------------

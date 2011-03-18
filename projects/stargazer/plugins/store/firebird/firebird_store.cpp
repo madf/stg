@@ -52,7 +52,7 @@ private:
 } frsc;
 
 //-----------------------------------------------------------------------------
-BASE_STORE * GetStore()
+STORE * GetStore()
 {
 return frsc.GetStore();
 }

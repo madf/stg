@@ -77,8 +77,8 @@ if (!handle)
 
 isLoaded = true;
 
-BASE_STORE * (*GetStore)();
-GetStore = (BASE_STORE * (*)())dlsym(handle, "GetStore");
+STORE * (*GetStore)();
+GetStore = (STORE * (*)())dlsym(handle, "GetStore");
 if (!GetStore)
     {
     errorStr = "GetStore not found.";

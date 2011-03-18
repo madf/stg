@@ -534,7 +534,7 @@ if (CanAcctService((char *)packet->service))
         return -1;
         }
     USER_IPS ips = ui->GetProperty().ips;
-    if (ui->Authorize(ips[0].ip, "", 0xffFFffFF, this))
+    if (ui->Authorize(ips[0].ip, 0xffFFffFF, this))
         {
         printfd(__FILE__, "RADIUS::ProcessAcctStartPacket cannot authorize user '%s'\n", packet->login);
         packet->packetType = RAD_REJECT_PACKET;
