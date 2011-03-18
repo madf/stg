@@ -185,7 +185,7 @@ private:
     FREEMB          freeMbShowType;
 };
 //-----------------------------------------------------------------------------
-class AUTH_IA :public BASE_AUTH {
+class AUTH_IA :public AUTH {
 public:
                         AUTH_IA();
     virtual             ~AUTH_IA();
