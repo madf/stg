@@ -4,12 +4,12 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "../../../users.h"
-#include "../../../tariffs.h"
-#include "../../../settings.h"
+#include "users.h"
+#include "tariffs.h"
 
 // Forward declaration
 class RPC_CONFIG;
+class SETTINGS;
 
 class METHOD_INFO : public xmlrpc_c::method
 {

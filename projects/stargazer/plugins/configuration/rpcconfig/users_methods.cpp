@@ -2,9 +2,9 @@
 
 #include "users_methods.h"
 
-#include "../../../users.h"
-#include "../../../admins.h"
-#include "../../../tariffs.h"
+#include "users.h"
+#include "admins.h"
+#include "tariffs.h"
 
 #include "rpcconfig.h"
 #include "user_helper.h"

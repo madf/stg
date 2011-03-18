@@ -70,8 +70,8 @@ public:
     int                 Reload() { return 0; }
     bool                IsRunning() { return running && !stopped; }
 
-    const string      & GetStrError() const { return errorStr; }
-    const string        GetVersion() const { return RPC_CONFIG_VERSION; }
+    const std::string & GetStrError() const { return errorStr; }
+    const std::string   GetVersion() const { return RPC_CONFIG_VERSION; }
     uint16_t            GetStartPosition() const { return 220; }
     uint16_t            GetStopPosition() const { return 220; }
 
@@ -87,7 +87,7 @@ private:
     std::string             GetCookie() const;
     void                    InitiateRegistry();
 
-    mutable string          errorStr;
+    mutable std::string     errorStr;
     RPC_CONFIG_SETTINGS     rpcConfigSettings;
     USERS *                 users;
     ADMINS *                admins;

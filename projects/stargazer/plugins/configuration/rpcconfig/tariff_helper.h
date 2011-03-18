@@ -2,7 +2,6 @@
 #define __TARIFF_HELPER_H__
 
 #include <xmlrpc-c/base.hpp>
-#include "../../../tariff.h"
 #include "tariff_conf.h"
 
 class TARIFF_HELPER
