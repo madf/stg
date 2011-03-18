@@ -338,7 +338,7 @@ if (admins->FindAdmin(login, &currAdmin))
     state = confHdr;
     return ENODATA;
     }
-currAdmin.SetAdminIP(adminIP);
+currAdmin->SetIP(adminIP);
 adminLogin = login;
 state = confLoginCipher;
 return 0;
@@ -383,13 +383,13 @@ while (total < ADM_LOGIN_LEN)
     total += ret;
     }
 
-if (currAdmin.GetLogin() == "")
+if (currAdmin->GetLogin() == "")
     {
     state = confHdr;
     return ENODATA;
     }
 
-EnDecodeInit(currAdmin.GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 for (int i = 0; i < ADM_LOGIN_LEN/8; i++)
     {
@@ -403,7 +403,7 @@ if (currAdmin == admins->GetNoAdmin())
     return 0;
     }
 
-if (strncmp(currAdmin.GetLogin().c_str(), login, ADM_LOGIN_LEN) != 0)
+if (strncmp(currAdmin->GetLogin().c_str(), login, ADM_LOGIN_LEN) != 0)
     {
     state = confHdr;
     return ENODATA;
@@ -449,7 +449,7 @@ buffer[8] = 0;
 requestList.clear();
 BLOWFISH_CTX ctx;
 
-EnDecodeInit(currAdmin.GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (1)
     {
@@ -506,7 +506,7 @@ int n = 0;
 int k = 0;
 int ret = 0;
 
-EnDecodeInit(currAdmin.GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (li != answerList.end())
     {

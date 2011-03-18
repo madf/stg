@@ -31,19 +31,21 @@
 #include <algorithm>
 
 #include "radius.h"
+#include "store.h"
 #include "common.h"
+#include "user_conf.h"
+#include "../../../user_property.h"
 
 extern volatile const time_t stgTime;
 
-void InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
 void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class RAD_CREATOR
-{
+class RAD_CREATOR {
 private:
     RADIUS * rad;
 
@@ -51,16 +53,16 @@ public:
     RAD_CREATOR()
         : rad(new RADIUS())
         {
-        };
+        }
     ~RAD_CREATOR()
         {
         delete rad;
-        };
+        }
 
     RADIUS * GetPlugin()
         {
         return rad;
-        };
+        }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -69,14 +71,14 @@ RAD_CREATOR radc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return radc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int RAD_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
+int RAD_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
 {
 if (str2x(str.c_str(), *val))
     {
@@ -91,26 +93,26 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int RAD_SETTINGS::ParseServices(const vector<string> & str, list<string> * lst)
+int RAD_SETTINGS::ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst)
 {
-    copy(str.begin(), str.end(), back_inserter(*lst));
-    list<string>::iterator it(find(lst->begin(),
-                                   lst->end(),
-                                   "empty"));
-    if (it != lst->end())
-        *it = "";
+std::copy(str.begin(), str.end(), std::back_inserter(*lst));
+std::list<std::string>::iterator it(std::find(lst->begin(),
+                               lst->end(),
+                               "empty"));
+if (it != lst->end())
+    *it = "";
 
-    return 0;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int RAD_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
     errorStr = "Parameter \'Port\' not found.";
@@ -126,7 +128,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
 port = p;
 ///////////////////////////
 pv.param = "Password";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
     errorStr = "Parameter \'Password\' not found.";
@@ -136,14 +138,14 @@ if (pvi == s.moduleParams.end())
 password = pvi->value[0];
 ///////////////////////////
 pv.param = "AuthServices";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi != s.moduleParams.end())
     {
     ParseServices(pvi->value, &authServices);
     }
 ///////////////////////////
 pv.param = "AcctServices";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi != s.moduleParams.end())
     {
     ParseServices(pvi->value, &acctServices);
@@ -180,7 +182,7 @@ void RADIUS::SetSettings(const MODULE_SETTINGS & s)
 settings = s;
 }
 //-----------------------------------------------------------------------------
-void RADIUS::SetStore(BASE_STORE * s)
+void RADIUS::SetStore(STORE * s)
 {
 store = s;
 }
@@ -198,7 +200,7 @@ bool RADIUS::IsRunning()
 return isRunning;
 }
 //-----------------------------------------------------------------------------
-const string RADIUS::GetVersion() const
+const std::string RADIUS::GetVersion() const
 {
 return "RADIUS data access plugin v 0.6";
 }
@@ -248,7 +250,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::Start()
 {
-string password(radSettings.GetPassword());
+std::string password(radSettings.GetPassword());
 
 authServices = radSettings.GetAuthServices();
 acctServices = radSettings.GetAcctServices();
@@ -283,10 +285,10 @@ if (!IsRunning())
 
 nonstop = false;
 
-map<string, RAD_SESSION>::iterator it;
+std::map<std::string, RAD_SESSION>::iterator it;
 for (it = sessions.begin(); it != sessions.end(); ++it)
     {
-    user_iter ui;
+    USER_PTR ui;
     if (users->FindByName(it->second.userName, &ui))
         {
         ui->Unauthorize(this);
@@ -437,7 +439,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAuthPacket(RAD_PACKET * packet)
 {
-user_iter ui;
+USER_PTR ui;
 
 if (!CanAcctService((char *)packet->service))
     {
@@ -475,7 +477,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessPostAuthPacket(RAD_PACKET * packet)
 {
-user_iter ui;
+USER_PTR ui;
 
 if (!CanAcctService((char *)packet->service))
     {
@@ -497,7 +499,7 @@ if (!FindUser(&ui, (char *)packet->login))
 // I think that only Framed-User services has sense to be accountable
 // So we have to supply a Framed-IP
 
-USER_IPS ips = ui->property.ips;
+USER_IPS ips = ui->GetProperty().ips;
 packet->packetType = RAD_ACCEPT_PACKET;
 
 // Additional checking for Framed-User service
@@ -512,7 +514,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAcctStartPacket(RAD_PACKET * packet)
 {
-user_iter ui;
+USER_PTR ui;
 
 if (!FindUser(&ui, (char *)packet->login))
     {
@@ -531,7 +533,7 @@ if (CanAcctService((char *)packet->service))
         packet->packetType = RAD_REJECT_PACKET;
         return -1;
         }
-    USER_IPS ips = ui->property.ips;
+    USER_IPS ips = ui->GetProperty().ips;
     if (ui->Authorize(ips[0].ip, "", 0xffFFffFF, this))
         {
         printfd(__FILE__, "RADIUS::ProcessAcctStartPacket cannot authorize user '%s'\n", packet->login);
@@ -553,7 +555,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAcctStopPacket(RAD_PACKET * packet)
 {
-map<string, RAD_SESSION>::iterator sid;
+std::map<std::string, RAD_SESSION>::iterator sid;
 
 if ((sid = sessions.find((const char *)packet->sessid)) == sessions.end())
     {
@@ -562,7 +564,7 @@ if ((sid = sessions.find((const char *)packet->sessid)) == sessions.end())
     return -1;
     }
 
-user_iter ui;
+USER_PTR ui;
 
 if (!FindUser(&ui, sid->second.userName))
     {
@@ -593,12 +595,12 @@ packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
 }
 //-----------------------------------------------------------------------------
-void RADIUS::PrintServices(const list<string> & svcs)
+void RADIUS::PrintServices(const std::list<std::string> & svcs)
 {
-    for_each(svcs.begin(), svcs.end(), Printer());
+for_each(svcs.begin(), svcs.end(), Printer());
 }
 //-----------------------------------------------------------------------------
-bool RADIUS::FindUser(user_iter * ui, const std::string & login) const
+bool RADIUS::FindUser(USER_PTR * ui, const std::string & login) const
 {
 if (users->FindByName(login, ui))
     {
@@ -609,17 +611,17 @@ return true;
 //-----------------------------------------------------------------------------
 bool RADIUS::CanAuthService(const std::string & svc) const
 {
-    return find(authServices.begin(), authServices.end(), svc) != authServices.end();
+return find(authServices.begin(), authServices.end(), svc) != authServices.end();
 }
 //-----------------------------------------------------------------------------
 bool RADIUS::CanAcctService(const std::string & svc) const
 {
-    return find(acctServices.begin(), acctServices.end(), svc) != acctServices.end();
+return find(acctServices.begin(), acctServices.end(), svc) != acctServices.end();
 }
 //-----------------------------------------------------------------------------
 bool RADIUS::IsAllowedService(const std::string & svc) const
 {
-    return CanAuthService(svc) || CanAcctService(svc);
+return CanAuthService(svc) || CanAcctService(svc);
 }
 //-----------------------------------------------------------------------------
 bool RADIUS::WaitPackets(int sd) const
@@ -651,7 +653,7 @@ return true;
 }
 //-----------------------------------------------------------------------------
 inline
-void InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
 {
 unsigned char keyL[RAD_PASSWORD_LEN];  // Пароль для шифровки
 memset(keyL, 0, RAD_PASSWORD_LEN);

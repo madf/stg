@@ -27,9 +27,10 @@
 #ifndef ETHER_CAP_H
 #define ETHER_CAP_H
 
+#include <pthread.h>
+
 #include <string>
 #include <vector>
-#include <pthread.h>
 
 #ifdef FREE_BSD5
 #include <inttypes.h>
@@ -39,19 +40,16 @@
 #include <sys/inttypes.h>
 #endif
 
-#include "base_plugin.h"
-#include "base_settings.h"
+#include "plugin.h"
+#include "module_settings.h"
 #include "../../../traffcounter.h"
 
-using namespace std;
+extern "C" PLUGIN * GetPlugin();
 
-extern "C" BASE_PLUGIN * GetPlugin();
-
-#define BUFF_LEN    (128)
+#define BUFF_LEN (128)
 
 //-----------------------------------------------------------------------------
-struct BPF_DATA
-{
+struct BPF_DATA {
     BPF_DATA()
         {
         fd = 0;
@@ -62,7 +60,6 @@ struct BPF_DATA
         bh = NULL;
         canRead = 1;
         iface = "";
-        //memset(&polld, 0, sizeof(pollfd));
         };
 
     BPF_DATA(const BPF_DATA & bd)
@@ -75,7 +72,6 @@ struct BPF_DATA
         bh = bd.bh;
         canRead = bd.canRead;
         iface = bd.iface;
-        //memcpy(&polld, &bd.polld, sizeof(pollfd));
         };
 
 int             fd;
@@ -85,74 +81,69 @@ int             sum;
 uint8_t         buffer[BUFF_LEN];
 struct bpf_hdr * bh;
 int             canRead;
-string          iface;
-//pollfd          polld;
+std::string     iface;
 };
 //-----------------------------------------------------------------------------
-class BPF_CAP_SETTINGS
-{
+class BPF_CAP_SETTINGS {
 public:
-    virtual         ~BPF_CAP_SETTINGS(){};
-    const string&   GetStrError() const { return errorStr; }
+    virtual         ~BPF_CAP_SETTINGS() {}
+    const std::string & GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
-    string          GetIface(unsigned int num);
+    std::string     GetIface(unsigned int num);
 
 private:
-    vector<string>  iface;
-    mutable string  errorStr;
+    std::vector<std::string> iface;
+    mutable std::string errorStr;
 };
 //-----------------------------------------------------------------------------
-class BPF_CAP :public BASE_PLUGIN
-{
+class BPF_CAP : public PLUGIN {
 public:
                         BPF_CAP();
-    virtual             ~BPF_CAP(){};
+    virtual             ~BPF_CAP() {}
 
-    void                SetUsers(USERS *){};
-    void                SetTariffs(TARIFFS *){};
-    void                SetAdmins(ADMINS *){};
+    void                SetUsers(USERS *) {}
+    void                SetTariffs(TARIFFS *) {}
+    void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc);
-    void                SetStore(BASE_STORE *){};
-    void                SetStgSettings(const SETTINGS *){};
+    void                SetStore(STORE *) {}
+    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
+    int                 Reload() { return 0; }
     bool                IsRunning();
 
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
 
-    const string      & GetStrError() const;
-    const string        GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 
 private:
     static void *       Run(void *);
     int                 BPFCapOpen();
-    //int                 BPFCapOpen(int n);
     int                 BPFCapOpen(BPF_DATA * bd);
     int                 BPFCapClose();
     int                 BPFCapRead(char * buffer, int blen, char ** iface);
     int                 BPFCapRead(char * buffer, int blen, char ** iface, BPF_DATA * bd);
 
-    BPF_CAP_SETTINGS    capSettings;
+    BPF_CAP_SETTINGS      capSettings;
 
-    mutable string      errorStr;
+    mutable std::string   errorStr;
 
-    vector<BPF_DATA>    bpfData;
-    vector<pollfd>      polld;
+    std::vector<BPF_DATA> bpfData;
+    std::vector<pollfd>   polld;
 
-    pthread_t           thread;
-    bool                nonstop;
-    bool                isRunning;
-    int                 capSock;
-    MODULE_SETTINGS     settings;
+    pthread_t             thread;
+    bool                  nonstop;
+    bool                  isRunning;
+    int                   capSock;
+    MODULE_SETTINGS       settings;
 
-    TRAFFCOUNTER *      traffCnt;
+    TRAFFCOUNTER *        traffCnt;
 };
 //-----------------------------------------------------------------------------
 
-#endif //ETHER_CAP_H
-
+#endif

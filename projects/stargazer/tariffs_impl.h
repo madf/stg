@@ -49,13 +49,13 @@
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1
 
-class BASE_STORE;
+class STORE;
 class STG_LOGGER;
 class ADMIN;
 
 class TARIFFS_IMPL : public TARIFFS {
 public:
-    TARIFFS_IMPL(BASE_STORE * store);
+    TARIFFS_IMPL(STORE * store);
     virtual ~TARIFFS_IMPL();
     int     ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;
@@ -67,14 +67,14 @@ public:
 
     void    GetTariffsData(std::list<TARIFF_DATA> * tdl);
 
-    const std::string & GetStrError() const { return strError; };
+    const std::string & GetStrError() const { return strError; }
 private:
-    std::list<TARIFF_IMPL>   tariffs;
-    BASE_STORE *        store;
-    STG_LOGGER &        WriteServLog;
+    std::list<TARIFF_IMPL>  tariffs;
+    STORE *                 store;
+    STG_LOGGER &            WriteServLog;
     mutable pthread_mutex_t mutex;
-    std::string         strError;
-    TARIFF_IMPL         noTariff;
+    std::string             strError;
+    TARIFF_IMPL             noTariff;
 };
 
 #endif

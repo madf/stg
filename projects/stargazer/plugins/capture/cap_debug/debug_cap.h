@@ -28,19 +28,19 @@ $Date: 2009/06/23 11:32:27 $
 $Author: faust $
 */
 
-#include <string>
 #include <pthread.h>
 
+#include <string>
+
 #include "os_int.h"
-#include "base_plugin.h"
-#include "base_settings.h"
+#include "plugin.h"
+#include "module_settings.h"
 
 using namespace std;
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 //-----------------------------------------------------------------------------
-struct iphdr_eth
-{
+struct iphdr_eth {
     uint8_t     ihl:4,
                 version:4;
     uint8_t     tos;
@@ -56,31 +56,30 @@ struct iphdr_eth
     char        iface[10];
 };
 //-----------------------------------------------------------------------------
-class CAP_SETTINGS//: public BASE_SETTINGS
-{
+class CAP_SETTINGS {
 public:
-    const string& GetStrError() const { static string s; return s; }
-    int             ParseSettings(const MODULE_SETTINGS & s) { return 0; };
+    const string &  GetStrError() const { static string s; return s; }
+    int             ParseSettings(const MODULE_SETTINGS & s) { return 0; }
 };
 //-----------------------------------------------------------------------------
-class DEBUG_CAP :public BASE_PLUGIN
+class DEBUG_CAP :public PLUGIN
 {
 public:
     DEBUG_CAP();
-    virtual ~DEBUG_CAP(){};
+    virtual ~DEBUG_CAP() {}
 
-    void                SetUsers(USERS * u){};
-    void                SetTariffs(TARIFFS * t){};
-    void                SetAdmins(ADMINS * a){};
+    void                SetUsers(USERS * u) {}
+    void                SetTariffs(TARIFFS * t) {}
+    void                SetAdmins(ADMINS * a) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc);
-    void                SetStore(BASE_STORE *){};
-    void                SetStgSettings(const SETTINGS *){};
+    void                SetStore(STORE *) {}
+    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
-    int                 ParseSettings() { return 0; };
-    void                SetSettings(const MODULE_SETTINGS & s){};
+    int                 Reload() { return 0; }
+    int                 ParseSettings() { return 0; }
+    void                SetSettings(const MODULE_SETTINGS & s) {}
     bool                IsRunning();
     const string &      GetStrError() const;
     const string        GetVersion() const;
@@ -99,4 +98,3 @@ private:
     TRAFFCOUNTER *      traffCnt;
 };
 //-----------------------------------------------------------------------------
-

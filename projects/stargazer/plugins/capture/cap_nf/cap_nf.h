@@ -30,18 +30,27 @@ $Author: faust $
 #ifndef __CAP_NF_H__
 #define __CAP_NF_H__
 
-#include <string>
 #include <pthread.h>
 
+#include <string>
+
 #include "os_int.h"
-#include "base_plugin.h"
+#include "plugin.h"
+#include "module_settings.h"
 
 #define VERSION "CAP_NF v. 0.4"
 #define START_POS 0
 #define STOP_POS 0
 
-struct NF_HEADER
-{
+class USERS;
+class USER;
+class TARIFFS;
+class ADMINS;
+class TRAFFCOUNTER;
+class STORE;
+class SETTINGS;
+
+struct NF_HEADER {
     uint16_t version;   // Protocol version
     uint16_t count;     // Flows count
     uint32_t uptime;    // System uptime
@@ -53,8 +62,7 @@ struct NF_HEADER
     uint16_t sInterval; // Sampling mode and interval
 } __attribute__ ((packed));
 
-struct NF_DATA
-{
+struct NF_DATA {
     uint32_t srcAddr;   // Flow source address
     uint32_t dstAddr;   // Flow destination address
     uint32_t nextHop;   // IP addres on next hop router
@@ -79,29 +87,28 @@ struct NF_DATA
 
 #define BUF_SIZE (sizeof(NF_HEADER) + 30 * sizeof(NF_DATA))
 
-class NF_CAP : public BASE_PLUGIN 
-{
+class NF_CAP : public PLUGIN {
 public:
     NF_CAP();
     ~NF_CAP();
 
-    void            SetUsers(USERS *) {};
-    void            SetTariffs(TARIFFS *) {};
-    void            SetAdmins(ADMINS *) {};
-    void            SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; };
-    void            SetStore(BASE_STORE *) {};
-    void            SetStgSettings(const SETTINGS *) {};
-    void            SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    void            SetUsers(USERS *) {}
+    void            SetTariffs(TARIFFS *) {}
+    void            SetAdmins(ADMINS *) {}
+    void            SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
+    void            SetStore(STORE *) {}
+    void            SetStgSettings(const SETTINGS *) {}
+    void            SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int             ParseSettings();
 
     int             Start();
     int             Stop();
-    int             Reload() { return 0; };
-    bool            IsRunning() { return runningTCP || runningUDP; };
-    const string  & GetStrError() const { return errorStr; };
-    const string    GetVersion() const { return VERSION; };
-    uint16_t        GetStartPosition() const { return START_POS; };
-    uint16_t        GetStopPosition() const { return STOP_POS; };
+    int             Reload() { return 0; }
+    bool            IsRunning() { return runningTCP || runningUDP; }
+    const string  & GetStrError() const { return errorStr; }
+    const string    GetVersion() const { return VERSION; }
+    uint16_t        GetStartPosition() const { return START_POS; }
+    uint16_t        GetStopPosition() const { return STOP_POS; }
 
 private:
     TRAFFCOUNTER * traffCnt;
@@ -124,12 +131,12 @@ private:
 
     bool OpenTCP();
     bool OpenUDP();
-    void CloseTCP() { close(sockTCP); };
-    void CloseUDP() { close(sockUDP); };
+    void CloseTCP() { close(sockTCP); }
+    void CloseUDP() { close(sockUDP); }
 
     bool WaitPackets(int sd) const;
 };
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 #endif

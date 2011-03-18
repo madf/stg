@@ -14,14 +14,13 @@ using namespace std;
 
 #include "resetable.h"
 #include "stg_const.h"
-#include "base_store.h"
-#include "../../../admins.h"
-#include "../../../users.h"
+#include "store.h"
+#include "admins.h"
+#include "users.h"
 #include "stg_message.h"
 
 //-----------------------------------------------------------------------------
-class BASE_PARSER
-{
+class BASE_PARSER {
 public:
     BASE_PARSER()
         : admins(NULL),
@@ -31,44 +30,42 @@ public:
           settings(NULL),
           currAdmin(NULL),
           depth(0)
-    { };
-    virtual ~BASE_PARSER(){};
+    { }
+    virtual ~BASE_PARSER() {}
     virtual int ParseStart(void *data, const char *el, const char **attr) = 0;
     virtual int ParseEnd(void *data, const char *el) = 0;
     virtual void CreateAnswer() = 0;
-    virtual void SetAnswerList(list<string> * ansList){answerList = ansList;};
+    virtual void SetAnswerList(list<string> * ansList) { answerList = ansList; }
 
-    virtual void SetUsers(USERS * u){users = u;};
-    virtual void SetAdmins(ADMINS * a){admins = a;};
-    virtual void SetTariffs(TARIFFS * t){tariffs = t;};
-    virtual void SetStore(BASE_STORE * s){store = s;};
-    virtual void SetStgSettings(const SETTINGS * s){settings = s;};
+    virtual void SetUsers(USERS * u) { users = u; }
+    virtual void SetAdmins(ADMINS * a) { admins = a; }
+    virtual void SetTariffs(TARIFFS * t) { tariffs = t; }
+    virtual void SetStore(STORE * s) { store = s; }
+    virtual void SetStgSettings(const SETTINGS * s) { settings = s; }
 
-    virtual void SetCurrAdmin(const ADMIN * cua){currAdmin = cua;};
-    virtual string & GetStrError(){return strError;};
-    virtual void Reset(){ answerList->clear(); depth = 0; };
+    virtual void SetCurrAdmin(const ADMIN * cua) { currAdmin = cua; }
+    virtual string & GetStrError() { return strError; }
+    virtual void Reset(){ answerList->clear(); depth = 0; }
 protected:
     string              strError;
     ADMINS *            admins;
     USERS *             users;
     TARIFFS *           tariffs;
-    BASE_STORE *        store;
+    STORE *             store;
     const SETTINGS *    settings;
     const ADMIN *       currAdmin;
     int                 depth;
     list<string> *      answerList;
 };
 //-----------------------------------------------------------------------------
-class PARSER_GET_ADMINS: public BASE_PARSER
-{
+class PARSER_GET_ADMINS: public BASE_PARSER {
 public:
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
 };
 //-----------------------------------------------------------------------------
-class PARSER_ADD_ADMIN: public BASE_PARSER
-{
+class PARSER_ADD_ADMIN: public BASE_PARSER {
 public:
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
@@ -77,8 +74,7 @@ private:
     string adminToAdd;
 };
 //-----------------------------------------------------------------------------
-class PARSER_DEL_ADMIN: public BASE_PARSER
-{
+class PARSER_DEL_ADMIN: public BASE_PARSER {
 public:
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
@@ -88,8 +84,7 @@ private:
     string adminToDel;
 };
 //-----------------------------------------------------------------------------
-class PARSER_CHG_ADMIN: public BASE_PARSER
-{
+class PARSER_CHG_ADMIN: public BASE_PARSER {
 public:
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
@@ -100,8 +95,7 @@ private:
     RESETABLE<string>   privAsString;
 };
 //-----------------------------------------------------------------------------
-class PARSER_GET_SERVER_INFO: public BASE_PARSER
-{
+class PARSER_GET_SERVER_INFO: public BASE_PARSER {
 public:
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
@@ -109,11 +103,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class PARSER_GET_USER: public BASE_PARSER
-{
+class PARSER_GET_USER: public BASE_PARSER {
 public:
             PARSER_GET_USER();
-            ~PARSER_GET_USER(){};
+            ~PARSER_GET_USER() {}
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
     void    CreateAnswer();
@@ -121,8 +114,7 @@ private:
     string  login;
 };
 //-----------------------------------------------------------------------------
-class PARSER_GET_USERS: public BASE_PARSER
-{
+class PARSER_GET_USERS: public BASE_PARSER {
 public:
             PARSER_GET_USERS();
     int     ParseStart(void *data, const char *el, const char **attr);
@@ -133,16 +125,14 @@ private:
     bool    lastUpdateFound;
 };
 //-----------------------------------------------------------------------------
-class PARSER_GET_TARIFFS: public BASE_PARSER
-{
+class PARSER_GET_TARIFFS: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
     void    CreateAnswer();
 };
 //-----------------------------------------------------------------------------
-class PARSER_ADD_TARIFF: public BASE_PARSER
-{
+class PARSER_ADD_TARIFF: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -151,8 +141,7 @@ private:
     string  tariffToAdd;
 };
 //-----------------------------------------------------------------------------
-class PARSER_DEL_TARIFF: public BASE_PARSER
-{
+class PARSER_DEL_TARIFF: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -161,8 +150,7 @@ private:
     string  tariffToDel;
 };
 //-----------------------------------------------------------------------------
-class PARSER_CHG_TARIFF: public BASE_PARSER
-{
+class PARSER_CHG_TARIFF: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -176,11 +164,10 @@ private:
     TARIFF_DATA_RES td;
 };
 //-----------------------------------------------------------------------------/
-class PARSER_ADD_USER: public BASE_PARSER
-{
+class PARSER_ADD_USER: public BASE_PARSER {
 public:
             PARSER_ADD_USER();
-    virtual ~PARSER_ADD_USER(){};
+    virtual ~PARSER_ADD_USER() {}
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
     void    CreateAnswer();
@@ -190,8 +177,7 @@ private:
     string  login;
 };
 //-----------------------------------------------------------------------------
-class PARSER_CHG_USER: public BASE_PARSER
-{
+class PARSER_CHG_USER: public BASE_PARSER {
 public:
                     PARSER_CHG_USER();
                     ~PARSER_CHG_USER();
@@ -215,8 +201,7 @@ private:
     int             res;
 };
 //-----------------------------------------------------------------------------
-class PARSER_DEL_USER: public BASE_PARSER
-{
+class PARSER_DEL_USER: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -227,8 +212,7 @@ private:
     user_iter   u;
 };
 //-----------------------------------------------------------------------------
-class PARSER_CHECK_USER: public BASE_PARSER
-{
+class PARSER_CHECK_USER: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -237,8 +221,7 @@ private:
     bool    result;
 };
 //-----------------------------------------------------------------------------
-class PARSER_SEND_MESSAGE: public BASE_PARSER
-{
+class PARSER_SEND_MESSAGE: public BASE_PARSER {
 public:
     int     ParseStart(void *data, const char *el, const char **attr);
     int     ParseEnd(void *data, const char *el);
@@ -252,6 +235,4 @@ private:
     user_iter u;
 };
 //-----------------------------------------------------------------------------
-#endif //PARSER_H
-
-
+#endif

@@ -46,8 +46,9 @@
 
 #include "settings.h"
 #include "user.h"
-#include "users.h"
-#include "admins.h"
+#include "users_impl.h"
+#include "admins_impl.h"
+#include "tariffs_impl.h"
 #include "common.h"
 #include "traffcounter.h"
 #include "base_plugin.h"
@@ -549,9 +550,9 @@ if (loop.Start())
 dataStore = storeLoader.GetStore();
 WriteServLog("Storage plugin: %s. Loading successfull.", dataStore->GetVersion().c_str());
 
-tariffs = new TARIFFS(dataStore);
-admins = new ADMINS(dataStore);
-users = new USERS(settings, dataStore, tariffs, admins->GetSysAdmin());
+tariffs = new TARIFFS_IMPL(dataStore);
+admins = new ADMINS_IMPL(dataStore);
+users = new USERS_IMPL(settings, dataStore, tariffs, *admins->GetSysAdmin());
 traffCnt = new TRAFFCOUNTER(users, tariffs, settings->GetRulesFileName());
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
 

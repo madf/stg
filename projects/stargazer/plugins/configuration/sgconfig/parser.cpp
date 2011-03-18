@@ -1,15 +1,19 @@
-#include <string.h>
-#include <errno.h>
 #include <stdio.h>
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include <cstring>
+#include <cerrno>
 #include <sstream>
 
 #include "parser.h"
 #include "version.h"
+#include "tariffs.h"
+#include "../../../settings.h"
+#include "../../../user_property.h"
 
 #define  UNAME_LEN      (256)
 //-----------------------------------------------------------------------------
@@ -127,7 +131,7 @@ void PARSER_GET_USER::CreateAnswer()
 string s;
 string enc;
 
-user_iter u;
+USER_PTR u;
 
 answerList->erase(answerList->begin(), answerList->end());
 
@@ -144,63 +148,63 @@ answerList->push_back(s);
 s = "<login value=\"" + u->GetLogin() + "\"/>";
 answerList->push_back(s);
 
-if (currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd)
-    s = "<password value=\"" + u->property.password.Get() + "\" />";
+if (currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd)
+    s = "<password value=\"" + u->GetProperty().password.Get() + "\" />";
 else
     s = "<password value=\"++++++\"/>";
 answerList->push_back(s);
 
-strprintf(&s, "<cash value=\"%f\" />", u->property.cash.Get());
+strprintf(&s, "<cash value=\"%f\" />", u->GetProperty().cash.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<freemb value=\"%f\" />", u->property.freeMb.Get());
+strprintf(&s, "<freemb value=\"%f\" />", u->GetProperty().freeMb.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<credit value=\"%f\" />", u->property.credit.Get());
+strprintf(&s, "<credit value=\"%f\" />", u->GetProperty().credit.Get());
 answerList->push_back(s);
 
-if (u->property.nextTariff.Get() != "")
+if (u->GetProperty().nextTariff.Get() != "")
     {
     strprintf(&s, "<tariff value=\"%s/%s\" />",
-              u->property.tariffName.Get().c_str(),
-              u->property.nextTariff.Get().c_str());
+              u->GetProperty().tariffName.Get().c_str(),
+              u->GetProperty().nextTariff.Get().c_str());
     }
 else
     {
     strprintf(&s, "<tariff value=\"%s\" />",
-              u->property.tariffName.Get().c_str());
+              u->GetProperty().tariffName.Get().c_str());
     }
 
 answerList->push_back(s);
 
-Encode12str(enc, u->property.note);
+Encode12str(enc, u->GetProperty().note);
 s = "<note value=\"" + enc + "\" />";
 answerList->push_back(s);
 
-Encode12str(enc, u->property.phone);
+Encode12str(enc, u->GetProperty().phone);
 s = "<phone value=\"" + enc + "\" />";
 answerList->push_back(s);
 
-Encode12str(enc, u->property.address);
+Encode12str(enc, u->GetProperty().address);
 s = "<address value=\"" + enc + "\" />";
 answerList->push_back(s);
 
-Encode12str(enc, u->property.email);
+Encode12str(enc, u->GetProperty().email);
 s = "<email value=\"" + enc + "\" />";
 answerList->push_back(s);
 
 
 vector<USER_PROPERTY_LOGGED<string> *> userdata;
-userdata.push_back(u->property.userdata0.GetPointer());
-userdata.push_back(u->property.userdata1.GetPointer());
-userdata.push_back(u->property.userdata2.GetPointer());
-userdata.push_back(u->property.userdata3.GetPointer());
-userdata.push_back(u->property.userdata4.GetPointer());
-userdata.push_back(u->property.userdata5.GetPointer());
-userdata.push_back(u->property.userdata6.GetPointer());
-userdata.push_back(u->property.userdata7.GetPointer());
-userdata.push_back(u->property.userdata8.GetPointer());
-userdata.push_back(u->property.userdata9.GetPointer());
+userdata.push_back(u->GetProperty().userdata0.GetPointer());
+userdata.push_back(u->GetProperty().userdata1.GetPointer());
+userdata.push_back(u->GetProperty().userdata2.GetPointer());
+userdata.push_back(u->GetProperty().userdata3.GetPointer());
+userdata.push_back(u->GetProperty().userdata4.GetPointer());
+userdata.push_back(u->GetProperty().userdata5.GetPointer());
+userdata.push_back(u->GetProperty().userdata6.GetPointer());
+userdata.push_back(u->GetProperty().userdata7.GetPointer());
+userdata.push_back(u->GetProperty().userdata8.GetPointer());
+userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
 string tmpI;
 for (unsigned i = 0; i < userdata.size(); i++)
@@ -210,18 +214,18 @@ for (unsigned i = 0; i < userdata.size(); i++)
     answerList->push_back(s);
     }
 
-Encode12str(enc, u->property.realName);
+Encode12str(enc, u->GetProperty().realName);
 s = "<name value=\"" + enc + "\" />";
 answerList->push_back(s);
 
-Encode12str(enc, u->property.group);
+Encode12str(enc, u->GetProperty().group);
 s = "<GROUP value=\"" + enc + "\" />";
 answerList->push_back(s);
 
 strprintf(&s, "<status value=\"%d\" />", u->GetConnected());
 answerList->push_back(s);
 
-strprintf(&s, "<aonline value=\"%d\" />", u->property.alwaysOnline.Get());
+strprintf(&s, "<aonline value=\"%d\" />", u->GetProperty().alwaysOnline.Get());
 answerList->push_back(s);
 
 strprintf(&s, "<currip value=\"%s\" />", inet_ntostring(u->GetCurrIP()).c_str());
@@ -231,7 +235,7 @@ strprintf(&s, "<PingTime value=\"%lu\" />", u->GetPingTime());
 answerList->push_back(s);
 
 stringstream sstr;
-sstr << u->property.ips.Get();
+sstr << u->GetProperty().ips.Get();
 strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
 answerList->push_back(s);
 
@@ -241,8 +245,8 @@ char st[50];
 sprintf(ss, "<traff");
 DIR_TRAFF upload;
 DIR_TRAFF download;
-download = u->property.down.Get();
-upload = u->property.up.Get();
+download = u->GetProperty().down.Get();
+upload = u->GetProperty().up.Get();
 
 for (int j = 0; j < DIR_NUM; j++)
     {
@@ -265,25 +269,25 @@ strcat(ss, " />");
 answerList->push_back(ss);
 delete[] ss;
 
-strprintf(&s, "<down value=\"%d\" />", u->property.disabled.Get());
+strprintf(&s, "<down value=\"%d\" />", u->GetProperty().disabled.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->property.disabledDetailStat.Get());
+strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->GetProperty().disabledDetailStat.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<passive value=\"%d\" />", u->property.passive.Get());
+strprintf(&s, "<passive value=\"%d\" />", u->GetProperty().passive.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<LastCash value=\"%f\" />", u->property.lastCashAdd.Get());
+strprintf(&s, "<LastCash value=\"%f\" />", u->GetProperty().lastCashAdd.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->property.lastCashAddTime.Get());
+strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->GetProperty().lastCashAddTime.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->property.lastActivityTime.Get());
+strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->GetProperty().lastActivityTime.Get());
 answerList->push_back(s);
 
-strprintf(&s, "<CreditExpire value=\"%ld\" />", u->property.creditExpire.Get());
+strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
 answerList->push_back(s);
 
 strprintf(&s, "</user>");
@@ -359,7 +363,7 @@ string userFinish;
 
 string enc;
 
-user_iter u;
+USER_PTR u;
 
 int h = users->OpenSearch();
 if (!h)
@@ -385,96 +389,96 @@ while (1)
     userStart = "<user login=\"" + u->GetLogin() + "\">";
     middle = "";
 
-    if (u->property.password.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().password.ModificationTime() > lastUserUpdateTime)
         {
-        if (currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd)
-            s = "<password value=\"" + u->property.password.Get() + "\" />";
+        if (currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd)
+            s = "<password value=\"" + u->GetProperty().password.Get() + "\" />";
         else
             s = "<password value=\"++++++\"/>";
         middle += s;
         }
 
 
-    if (u->property.cash.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().cash.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<cash value=\"%f\" />", u->property.cash.Get());
+        strprintf(&s, "<cash value=\"%f\" />", u->GetProperty().cash.Get());
         middle += s;
-        //printfd(__FILE__, "cash value=\"%f\"\n", u->property.cash.Get());
+        //printfd(__FILE__, "cash value=\"%f\"\n", u->GetProperty().cash.Get());
         }
 
 
-    if (u->property.freeMb.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().freeMb.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<freemb value=\"%f\" />", u->property.freeMb.Get());
+        strprintf(&s, "<freemb value=\"%f\" />", u->GetProperty().freeMb.Get());
         middle += s;
         }
 
-    if (u->property.credit.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().credit.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<credit value=\"%f\" />", u->property.credit.Get());
+        strprintf(&s, "<credit value=\"%f\" />", u->GetProperty().credit.Get());
         middle += s;
         }
 
-    if (u->property.nextTariff.Get() != "")
+    if (u->GetProperty().nextTariff.Get() != "")
         {
-        if (u->property.tariffName.ModificationTime() > lastUserUpdateTime
-            || u->property.nextTariff.ModificationTime() > lastUserUpdateTime)
+        if (u->GetProperty().tariffName.ModificationTime() > lastUserUpdateTime
+            || u->GetProperty().nextTariff.ModificationTime() > lastUserUpdateTime)
             {
             strprintf(&s, "<tariff value=\"%s/%s\" />",
-                      u->property.tariffName.Get().c_str(),
-                      u->property.nextTariff.Get().c_str());
+                      u->GetProperty().tariffName.Get().c_str(),
+                      u->GetProperty().nextTariff.Get().c_str());
             middle += s;
             }
         }
     else
         {
-        if (u->property.tariffName.ModificationTime() > lastUserUpdateTime)
+        if (u->GetProperty().tariffName.ModificationTime() > lastUserUpdateTime)
             {
             strprintf(&s, "<tariff value=\"%s\" />",
-                      u->property.tariffName.Get().c_str());
+                      u->GetProperty().tariffName.Get().c_str());
             middle += s;
             }
         }
 
-    if (u->property.note.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().note.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.note);
+        Encode12str(enc, u->GetProperty().note);
         strprintf(&s, "<note value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
-    if (u->property.phone.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().phone.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.phone);
+        Encode12str(enc, u->GetProperty().phone);
         strprintf(&s, "<phone value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
-    if (u->property.address.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().address.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.address);
+        Encode12str(enc, u->GetProperty().address);
         strprintf(&s, "<address value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
-    if (u->property.email.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().email.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.email);
+        Encode12str(enc, u->GetProperty().email);
         strprintf(&s, "<email value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
     vector<USER_PROPERTY_LOGGED<string> *> userdata;
-    userdata.push_back(u->property.userdata0.GetPointer());
-    userdata.push_back(u->property.userdata1.GetPointer());
-    userdata.push_back(u->property.userdata2.GetPointer());
-    userdata.push_back(u->property.userdata3.GetPointer());
-    userdata.push_back(u->property.userdata4.GetPointer());
-    userdata.push_back(u->property.userdata5.GetPointer());
-    userdata.push_back(u->property.userdata6.GetPointer());
-    userdata.push_back(u->property.userdata7.GetPointer());
-    userdata.push_back(u->property.userdata8.GetPointer());
-    userdata.push_back(u->property.userdata9.GetPointer());
+    userdata.push_back(u->GetProperty().userdata0.GetPointer());
+    userdata.push_back(u->GetProperty().userdata1.GetPointer());
+    userdata.push_back(u->GetProperty().userdata2.GetPointer());
+    userdata.push_back(u->GetProperty().userdata3.GetPointer());
+    userdata.push_back(u->GetProperty().userdata4.GetPointer());
+    userdata.push_back(u->GetProperty().userdata5.GetPointer());
+    userdata.push_back(u->GetProperty().userdata6.GetPointer());
+    userdata.push_back(u->GetProperty().userdata7.GetPointer());
+    userdata.push_back(u->GetProperty().userdata8.GetPointer());
+    userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
     string tmpI;
     for (unsigned i = 0; i < userdata.size(); i++)
@@ -487,23 +491,23 @@ while (1)
             }
         }
 
-    if (u->property.realName.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().realName.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.realName);
+        Encode12str(enc, u->GetProperty().realName);
         strprintf(&s, "<name value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
-    if (u->property.group.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().group.ModificationTime() > lastUserUpdateTime)
         {
-        Encode12str(enc, u->property.group);
+        Encode12str(enc, u->GetProperty().group);
         strprintf(&s, "<GROUP value=\"%s\" />", enc.c_str());
         middle += s;
         }
 
-    if (u->property.alwaysOnline.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().alwaysOnline.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<aonline value=\"%d\" />", u->property.alwaysOnline.Get());
+        strprintf(&s, "<aonline value=\"%d\" />", u->GetProperty().alwaysOnline.Get());
         middle += s;
         }
 
@@ -526,10 +530,10 @@ while (1)
         middle += s;
         }
 
-    if (u->property.ips.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().ips.ModificationTime() > lastUserUpdateTime)
         {
         stringstream sstr;
-        sstr << u->property.ips.Get();
+        sstr << u->GetProperty().ips.Get();
         strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
         middle += s;
         }
@@ -538,11 +542,11 @@ while (1)
     traffStart = "<traff";
     DIR_TRAFF upload;
     DIR_TRAFF download;
-    download = u->property.down.Get();
-    upload = u->property.up.Get();
+    download = u->GetProperty().down.Get();
+    upload = u->GetProperty().up.Get();
     traffMiddle = "";
 
-    if (u->property.up.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().up.ModificationTime() > lastUserUpdateTime)
         {
         for (int j = 0; j < DIR_NUM; j++)
             {
@@ -553,7 +557,7 @@ while (1)
             }
         }
 
-    if (u->property.down.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().down.ModificationTime() > lastUserUpdateTime)
         {
         for (int j = 0; j < DIR_NUM; j++)
             {
@@ -571,48 +575,48 @@ while (1)
         middle += traffFinish;
         }
 
-    if (u->property.disabled.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().disabled.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<down value=\"%d\" />", u->property.disabled.Get());
+        strprintf(&s, "<down value=\"%d\" />", u->GetProperty().disabled.Get());
         middle += s;
         }
 
-    if (u->property.disabledDetailStat.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().disabledDetailStat.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->property.disabledDetailStat.Get());
+        strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->GetProperty().disabledDetailStat.Get());
         middle += s;
         }
 
     //printfd(__FILE__, ">>>>> %s\n", s.c_str());
 
-    if (u->property.passive.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().passive.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<passive value=\"%d\" />", u->property.passive.Get());
+        strprintf(&s, "<passive value=\"%d\" />", u->GetProperty().passive.Get());
         middle += s;
         }
 
-    if (u->property.lastCashAdd.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().lastCashAdd.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<LastCash value=\"%f\" />", u->property.lastCashAdd.Get());
+        strprintf(&s, "<LastCash value=\"%f\" />", u->GetProperty().lastCashAdd.Get());
         middle += s;
         }
 
-    if (u->property.lastCashAddTime.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().lastCashAddTime.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->property.lastCashAddTime.Get());
+        strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->GetProperty().lastCashAddTime.Get());
         middle += s;
         }
 
 
-    if (u->property.lastActivityTime.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().lastActivityTime.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->property.lastActivityTime.Get());
+        strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->GetProperty().lastActivityTime.Get());
         middle += s;
         }
 
-    if (u->property.creditExpire.ModificationTime() > lastUserUpdateTime)
+    if (u->GetProperty().creditExpire.ModificationTime() > lastUserUpdateTime)
         {
-        strprintf(&s, "<CreditExpire value=\"%ld\" />", u->property.creditExpire.Get());
+        strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
         middle += s;
         }
 
@@ -705,10 +709,10 @@ else
 //-----------------------------------------------------------------------------
 int PARSER_ADD_USER::CheckUserData()
 {
-user_iter u;
+USER_PTR u;
 if (users->FindByName(login, &u))
     {
-    return users->Add(login, currAdmin);
+    return users->Add(login, *currAdmin);
     }
 return -1;
 }
@@ -1005,7 +1009,7 @@ switch (res)
 //-----------------------------------------------------------------------------
 int PARSER_CHG_USER::AplayChanges()
 {
-user_iter u;
+USER_PTR u;
 
 res = 0;
 if (users->FindByName(login, &u))
@@ -1015,97 +1019,97 @@ if (users->FindByName(login, &u))
     }
 
 if (!ucr->ips.res_empty())
-    if (!u->property.ips.Set(ucr->ips.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().ips.Set(ucr->ips.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->address.res_empty())
-    if (!u->property.address.Set(ucr->address.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().address.Set(ucr->address.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->alwaysOnline.res_empty())
-    if (!u->property.alwaysOnline.Set(ucr->alwaysOnline.const_data(),
-                                      currAdmin, login, store))
+    if (!u->GetProperty().alwaysOnline.Set(ucr->alwaysOnline.const_data(),
+                                      *currAdmin, login, store))
         res = -1;
 
 if (!ucr->creditExpire.res_empty())
-    if (!u->property.creditExpire.Set(ucr->creditExpire.const_data(),
-                                      currAdmin, login, store))
+    if (!u->GetProperty().creditExpire.Set(ucr->creditExpire.const_data(),
+                                      *currAdmin, login, store))
         res = -1;
 
 if (!ucr->credit.res_empty())
-    if (!u->property.credit.Set(ucr->credit.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().credit.Set(ucr->credit.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!usr->freeMb.res_empty())
-    if (!u->property.freeMb.Set(usr->freeMb.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().freeMb.Set(usr->freeMb.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->disabled.res_empty())
-    if (!u->property.disabled.Set(ucr->disabled.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().disabled.Set(ucr->disabled.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->disabledDetailStat.res_empty())
-    if (!u->property.disabledDetailStat.Set(ucr->disabledDetailStat.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().disabledDetailStat.Set(ucr->disabledDetailStat.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->email.res_empty())
-    if (!u->property.email.Set(ucr->email.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().email.Set(ucr->email.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->group.res_empty())
-    if (!u->property.group.Set(ucr->group.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().group.Set(ucr->group.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->note.res_empty())
-    if (!u->property.note.Set(ucr->note.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().note.Set(ucr->note.const_data(), *currAdmin, login, store))
         res = -1;
 
 vector<USER_PROPERTY_LOGGED<string> *> userdata;
-userdata.push_back(u->property.userdata0.GetPointer());
-userdata.push_back(u->property.userdata1.GetPointer());
-userdata.push_back(u->property.userdata2.GetPointer());
-userdata.push_back(u->property.userdata3.GetPointer());
-userdata.push_back(u->property.userdata4.GetPointer());
-userdata.push_back(u->property.userdata5.GetPointer());
-userdata.push_back(u->property.userdata6.GetPointer());
-userdata.push_back(u->property.userdata7.GetPointer());
-userdata.push_back(u->property.userdata8.GetPointer());
-userdata.push_back(u->property.userdata9.GetPointer());
+userdata.push_back(u->GetProperty().userdata0.GetPointer());
+userdata.push_back(u->GetProperty().userdata1.GetPointer());
+userdata.push_back(u->GetProperty().userdata2.GetPointer());
+userdata.push_back(u->GetProperty().userdata3.GetPointer());
+userdata.push_back(u->GetProperty().userdata4.GetPointer());
+userdata.push_back(u->GetProperty().userdata5.GetPointer());
+userdata.push_back(u->GetProperty().userdata6.GetPointer());
+userdata.push_back(u->GetProperty().userdata7.GetPointer());
+userdata.push_back(u->GetProperty().userdata8.GetPointer());
+userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
 for (int i = 0; i < (int)userdata.size(); i++)
     {
     if (!ucr->userdata[i].res_empty())
         {
-        if(!userdata[i]->Set(ucr->userdata[i].const_data(), currAdmin, login, store))
+        if(!userdata[i]->Set(ucr->userdata[i].const_data(), *currAdmin, login, store))
             res = -1;
         }
     }
 
 if (!ucr->passive.res_empty())
-    if (!u->property.passive.Set(ucr->passive.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().passive.Set(ucr->passive.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->password.res_empty())
-    if (!u->property.password.Set(ucr->password.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().password.Set(ucr->password.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->phone.res_empty())
-    if (!u->property.phone.Set(ucr->phone.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().phone.Set(ucr->phone.const_data(), *currAdmin, login, store))
         res = -1;
 
 if (!ucr->realName.res_empty())
-    if (!u->property.realName.Set(ucr->realName.const_data(), currAdmin, login, store))
+    if (!u->GetProperty().realName.Set(ucr->realName.const_data(), *currAdmin, login, store))
         res = -1;
 
 
 if (!usr->cash.res_empty())
     {
-    //if (currAdmin->GetPriv()->userCash)
+    //if (*currAdmin->GetPriv()->userCash)
         {
         if (cashMustBeAdded)
             {
-            if (!u->property.cash.Set(usr->cash.const_data() + u->property.cash,
-                                      currAdmin,
+            if (!u->GetProperty().cash.Set(usr->cash.const_data() + u->GetProperty().cash,
+                                      *currAdmin,
                                       login,
                                       store,
                                       cashMsg))
@@ -1113,7 +1117,7 @@ if (!usr->cash.res_empty())
             }
         else
             {
-            if (!u->property.cash.Set(usr->cash.const_data(), currAdmin, login, store, cashMsg))
+            if (!u->GetProperty().cash.Set(usr->cash.const_data(), *currAdmin, login, store, cashMsg))
                 res = -1;
             }
         }
@@ -1124,7 +1128,7 @@ if (!ucr->tariffName.res_empty())
     {
     if (tariffs->FindByName(ucr->tariffName.const_data()))
         {
-        if (!u->property.tariffName.Set(ucr->tariffName.const_data(), currAdmin, login, store))
+        if (!u->GetProperty().tariffName.Set(ucr->tariffName.const_data(), *currAdmin, login, store))
             res = -1;
         u->ResetNextTariff();
         }
@@ -1139,7 +1143,7 @@ if (!ucr->nextTariff.res_empty())
     {
     if (tariffs->FindByName(ucr->nextTariff.const_data()))
         {
-        if (!u->property.nextTariff.Set(ucr->nextTariff.const_data(), currAdmin, login, store))
+        if (!u->GetProperty().nextTariff.Set(ucr->nextTariff.const_data(), *currAdmin, login, store))
             res = -1;
         }
     else
@@ -1149,8 +1153,8 @@ if (!ucr->nextTariff.res_empty())
         }
     }
 
-DIR_TRAFF up = u->property.up;
-DIR_TRAFF down = u->property.down;
+DIR_TRAFF up = u->GetProperty().up;
+DIR_TRAFF down = u->GetProperty().down;
 int upCount = 0;
 int downCount = 0;
 for (int i = 0; i < DIR_NUM; i++)
@@ -1168,20 +1172,20 @@ for (int i = 0; i < DIR_NUM; i++)
     }
 
 if (upCount)
-    if (!u->property.up.Set(up, currAdmin, login, store))
+    if (!u->GetProperty().up.Set(up, *currAdmin, login, store))
         res = -1;
 
 if (downCount)
-    if (!u->property.down.Set(down, currAdmin, login, store))
+    if (!u->GetProperty().down.Set(down, *currAdmin, login, store))
         res = -1;
 
 /*if (!usr->down.res_empty())
     {
-    u->property.down.Set(usr->down.const_data(), currAdmin, login, store);
+    u->GetProperty().down.Set(usr->down.const_data(), *currAdmin, login, store);
     }
 if (!usr->up.res_empty())
     {
-    u->property.up.Set(usr->up.const_data(), currAdmin, login, store);
+    u->GetProperty().up.Set(usr->up.const_data(), *currAdmin, login, store);
     }*/
 
 u->WriteConf();
@@ -1371,7 +1375,7 @@ int PARSER_DEL_USER::ParseEnd(void *, const char *el)
 if (strcasecmp(el, "DelUser") == 0)
     {
     if (!res)
-        users->Del(u->GetLogin(), currAdmin);
+        users->Del(u->GetLogin(), *currAdmin);
 
     return 0;
     }
@@ -1414,7 +1418,7 @@ if (strcasecmp(el, "CheckUser") == 0)
         return 0;
         }
 
-    user_iter user;
+    USER_PTR user;
     if (users->FindByName(attr[1], &user))
         {
         result = false;
@@ -1423,7 +1427,7 @@ if (strcasecmp(el, "CheckUser") == 0)
         return 0;
         }
 
-    if (strcmp(user->property.password.Get().c_str(), attr[3]))
+    if (strcmp(user->GetProperty().password.Get().c_str(), attr[3]))
         {
         result = false;
         CreateAnswer();

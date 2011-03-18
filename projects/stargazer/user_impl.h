@@ -30,7 +30,6 @@
 #include <ctime>
 #include <list>
 #include <string>
-#include <map>
 #include <set>
 
 #include "user.h"
@@ -40,11 +39,9 @@
 #include "user_conf.h"
 #include "user_ips.h"
 #include "user_property.h"
-#include "base_auth.h"
+#include "auth.h"
 #include "stg_message.h"
 #include "noncopyable.h"
-
-using namespace std;
 
 //-----------------------------------------------------------------------------
 class TARIFF;
@@ -69,11 +66,11 @@ private:
     USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
-class CHG_TARIFF_NOTIFIER : public PROPERTY_NOTIFIER_BASE<string>,
+class CHG_TARIFF_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string>,
                             private NONCOPYABLE {
 public:
     CHG_TARIFF_NOTIFIER(USER_IMPL * u) : user(u) {}
-    void Notify(const string & oldTariff, const string & newTariff);
+    void Notify(const std::string & oldTariff, const std::string & newTariff);
 
 private:
     USER_IMPL * user;
@@ -106,7 +103,7 @@ friend class CHG_CASH_NOTIFIER;
 friend class CHG_IP_NOTIFIER;
 public:
     USER_IMPL(const SETTINGS * settings,
-              const BASE_STORE * store,
+              const STORE * store,
               const TARIFFS * tariffs,
               const ADMIN & sysAdmin,
               const USERS * u);
@@ -119,8 +116,8 @@ public:
     int             WriteStat();
     int             WriteMonthStat();
 
-    string const &  GetLogin() const { return login; }
-    void            SetLogin(string const & l);
+    std::string const & GetLogin() const { return login; }
+    void            SetLogin(std::string const & l);
 
     uint32_t        GetCurrIP() const { return currIP; }
     time_t          GetCurrIPModificationTime() const { return currIP.ModificationTime(); }
@@ -156,9 +153,9 @@ public:
     bool            GetConnected() const { return connected; }
     time_t          GetConnectedModificationTime() const { return connected.ModificationTime(); }
     int             GetAuthorized() const { return authorizedBy.size(); }
-    int             Authorize(uint32_t ip, const string & iface, uint32_t enabledDirs, const BASE_AUTH * auth);
-    void            Unauthorize(const BASE_AUTH * auth);
-    bool            IsAuthorizedBy(const BASE_AUTH * auth) const;
+    int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
+    void            Unauthorize(const AUTH * auth);
+    bool            IsAuthorizedBy(const AUTH * auth) const;
 
     int             AddMessage(STG_MSG * msg);
 
@@ -168,7 +165,7 @@ public:
     void            PrintUser() const;
     void            Run();
 
-    const string &  GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const { return errorStr; }
 
     USER_PROPERTIES & GetProperty() { return property; };
     const USER_PROPERTIES & GetProperty() const { return property; };
@@ -185,7 +182,7 @@ public:
     void            ProcessNewMonth();
 
     bool            IsInetable();
-    string          GetEnabledDirs();
+    std::string          GetEnabledDirs();
 
     void            OnAdd();
     void            OnDelete();
@@ -204,7 +201,7 @@ private:
 
     time_t          lastScanMessages;
 
-    string          login;
+    std::string     login;
     int             id;
     bool            __connected;
     USER_PROPERTY<bool> connected;
@@ -225,7 +222,7 @@ private:
     time_t          pingTime;
 
     const ADMIN &   sysAdmin;
-    const BASE_STORE * store;
+    const STORE *   store;
 
     const TARIFFS * tariffs;
     const TARIFF *  tariff;
@@ -235,9 +232,9 @@ private:
 
     const SETTINGS * settings;
 
-    set<const BASE_AUTH *> authorizedBy;
+    std::set<const AUTH *> authorizedBy;
 
-    list<STG_MSG> messages;
+    std::list<STG_MSG> messages;
 
     bool            deleted;
 
@@ -253,32 +250,32 @@ private:
     USER_PROPERTY<time_t>         & lastCashAddTime;
     USER_PROPERTY<double>         & freeMb;
     USER_PROPERTY<time_t>         & lastActivityTime;
-    USER_PROPERTY<string>         & password;
+    USER_PROPERTY<std::string>    & password;
     USER_PROPERTY<int>            & passive;
     USER_PROPERTY<int>            & disabled;
     USER_PROPERTY<int>            & disabledDetailStat;
     USER_PROPERTY<int>            & alwaysOnline;
-    USER_PROPERTY<string>         & tariffName;
-    USER_PROPERTY<string>         & nextTariff;
-    USER_PROPERTY<string>         & address;
-    USER_PROPERTY<string>         & note;
-    USER_PROPERTY<string>         & group;
-    USER_PROPERTY<string>         & email;
-    USER_PROPERTY<string>         & phone;
-    USER_PROPERTY<string>         & realName;
+    USER_PROPERTY<std::string>    & tariffName;
+    USER_PROPERTY<std::string>    & nextTariff;
+    USER_PROPERTY<std::string>    & address;
+    USER_PROPERTY<std::string>    & note;
+    USER_PROPERTY<std::string>    & group;
+    USER_PROPERTY<std::string>    & email;
+    USER_PROPERTY<std::string>    & phone;
+    USER_PROPERTY<std::string>    & realName;
     USER_PROPERTY<double>         & credit;
     USER_PROPERTY<time_t>         & creditExpire;
     USER_PROPERTY<USER_IPS>       & ips;
-    USER_PROPERTY<string>         & userdata0;
-    USER_PROPERTY<string>         & userdata1;
-    USER_PROPERTY<string>         & userdata2;
-    USER_PROPERTY<string>         & userdata3;
-    USER_PROPERTY<string>         & userdata4;
-    USER_PROPERTY<string>         & userdata5;
-    USER_PROPERTY<string>         & userdata6;
-    USER_PROPERTY<string>         & userdata7;
-    USER_PROPERTY<string>         & userdata8;
-    USER_PROPERTY<string>         & userdata9;
+    USER_PROPERTY<std::string>    & userdata0;
+    USER_PROPERTY<std::string>    & userdata1;
+    USER_PROPERTY<std::string>    & userdata2;
+    USER_PROPERTY<std::string>    & userdata3;
+    USER_PROPERTY<std::string>    & userdata4;
+    USER_PROPERTY<std::string>    & userdata5;
+    USER_PROPERTY<std::string>    & userdata6;
+    USER_PROPERTY<std::string>    & userdata7;
+    USER_PROPERTY<std::string>    & userdata8;
+    USER_PROPERTY<std::string>    & userdata9;
 
     // End properties
 
@@ -292,7 +289,7 @@ private:
 
     mutable pthread_mutex_t  mutex;
 
-    string                   errorStr;
+    std::string              errorStr;
 };
 //-----------------------------------------------------------------------------
 

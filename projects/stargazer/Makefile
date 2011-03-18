@@ -6,17 +6,17 @@ include ../../Makefile.conf
 
 PROG = stargazer
 
-SRCS = ./admin.cpp \
-       ./admins.cpp \
+SRCS = ./admin_impl.cpp \
+       ./admins_impl.cpp \
        ./main.cpp \
        ./settings.cpp \
        ./stg_timer.cpp \
-       ./tariff.cpp \
-       ./tariffs.cpp \
+       ./tariff_impl.cpp \
+       ./tariffs_impl.cpp \
        ./traffcounter.cpp \
-       ./user.cpp \
+       ./user_impl.cpp \
        ./user_property.cpp \
-       ./users.cpp \
+       ./users_impl.cpp \
        ./plugin_runner.cpp \
        ./store_loader.cpp \
        ./pidfile.cpp \
@@ -142,7 +142,7 @@ endif
 endif
 endif
 
-deps:	$(SRCS) ../../Makefile.conf
+deps: $(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC) includes
 	@>deps ;\
 	for file in $(SRCS); do\

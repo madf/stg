@@ -3,22 +3,21 @@
 #include <string>
 #include <list>
 
-#include "base_plugin.h"
-#include "base_store.h"
+#include "plugin.h"
+#include "store.h"
 #include "configproto.h"
 
 using namespace std;
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 class STG_CONFIG;
 
 //-----------------------------------------------------------------------------
-class STG_CONFIG_SETTINGS
-{
+class STG_CONFIG_SETTINGS {
 public:
                     STG_CONFIG_SETTINGS();
-    virtual         ~STG_CONFIG_SETTINGS(){};
+    virtual         ~STG_CONFIG_SETTINGS() {}
     const string &  GetStrError() const;
     int             ParseSettings(const MODULE_SETTINGS & s);
     uint16_t        GetPort();
@@ -28,27 +27,26 @@ private:
     int     port;
 };
 //-----------------------------------------------------------------------------
-class STG_CONFIG: public BASE_PLUGIN
-{
+class STG_CONFIG: public PLUGIN {
 public:
     STG_CONFIG();
-    virtual ~STG_CONFIG(){};
+    virtual ~STG_CONFIG() {}
 
-    void                SetUsers(USERS * u) { users = u; };
-    void                SetTariffs(TARIFFS * t) { tariffs = t; };
-    void                SetAdmins(ADMINS * a) { admins = a; };
-    void                SetStore(BASE_STORE * s) { store = s; };
-    void                SetTraffcounter(TRAFFCOUNTER *) {};
-    void                SetStgSettings(const SETTINGS * s) { stgConfigSettings = s; };
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetTariffs(TARIFFS * t) { tariffs = t; }
+    void                SetAdmins(ADMINS * a) { admins = a; }
+    void                SetStore(STORE * s) { store = s; }
+    void                SetTraffcounter(TRAFFCOUNTER *) {}
+    void                SetStgSettings(const SETTINGS * s) { stgConfigSettings = s; }
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
-    bool                IsRunning() { return running; };
+    int                 Reload() { return 0; }
+    bool                IsRunning() { return running; }
 
-    const string      & GetStrError() const { return errorStr; };
+    const string      & GetStrError() const { return errorStr; }
     string              GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
@@ -69,7 +67,7 @@ private:
     USERS *             users;
     ADMINS *            admins;
     TARIFFS *           tariffs;
-    BASE_STORE *        store;
+    STORE *             store;
     MODULE_SETTINGS     settings;
     const SETTINGS *    stgSettings;
 

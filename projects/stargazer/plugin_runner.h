@@ -26,28 +26,28 @@
 
 #ifndef PLUGIN_RUNNER_H
 #define PLUGIN_RUNNER_H
+
 #include <pthread.h>
+
 #include <string>
 
-#include "base_plugin.h"
-#include "base_settings.h"
+#include "plugin.h"
+#include "module_settings.h"
 #include "traffcounter.h"
 #include "tariffs.h"
 #include "admins.h"
 #include "users.h"
 
-using namespace std;
 //-----------------------------------------------------------------------------
-class PLUGIN_RUNNER
-{
+class PLUGIN_RUNNER {
 public:
-    PLUGIN_RUNNER(const string & pluginFileName,
+    PLUGIN_RUNNER(const std::string & pluginFileName,
                   const MODULE_SETTINGS & ms,
                   ADMINS * admins,
                   TARIFFS * tariffs,
                   USERS * users,
                   TRAFFCOUNTER * tc,
-                  BASE_STORE * store,
+                  STORE * store,
                   const SETTINGS * s);
     PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue);
     ~PLUGIN_RUNNER();
@@ -60,9 +60,9 @@ public:
     int             Restart();
     bool            IsRunning();
 
-    const string &  GetStrError() const;
-    BASE_PLUGIN *   GetPlugin();
-    const string & GetFileName() const { return pluginFileName; };
+    const std::string & GetStrError() const;
+    PLUGIN *        GetPlugin();
+    const std::string & GetFileName() const { return pluginFileName; }
 
     int             Load();
     int             Unload();
@@ -71,12 +71,12 @@ public:
     uint16_t        GetStopPosition() const;
 
 private:
-    string          pluginFileName;
-    string          pluginSettingFileName;
+    std::string     pluginFileName;
+    std::string     pluginSettingFileName;
 
-    BASE_PLUGIN *   plugin;
+    PLUGIN *        plugin;
     int             isPluginLoaded;
-    string          errorStr;
+    std::string     errorStr;
 
     void *          libHandle;
     bool            isRunning;
@@ -84,12 +84,10 @@ private:
     ADMINS *        admins;
     TARIFFS *       tariffs;
     USERS *         users;
-    BASE_STORE *    store;
+    STORE *         store;
     TRAFFCOUNTER *  traffCnt;
     const SETTINGS * stgSettings;
     MODULE_SETTINGS modSettings;
 };
 //-----------------------------------------------------------------------------
 #endif //PLUGIN_RUNNER_H
-
-

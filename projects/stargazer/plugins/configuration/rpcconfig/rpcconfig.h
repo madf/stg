@@ -12,17 +12,17 @@
 #include <xmlrpc-c/server_abyss.hpp>
 
 #include "os_int.h"
-#include "base_plugin.h"
+#include "plugin.h"
 #include "admin_conf.h"
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 class ADMINS;
 class TARIFFS;
 class USERS;
-class BASE_STORE;
+class STORE;
 
 class RPC_CONFIG_SETTINGS
 {
@@ -50,7 +50,7 @@ struct ADMIN_INFO
     PRIV        priviledges;
 };
 
-class RPC_CONFIG :public BASE_PLUGIN
+class RPC_CONFIG :public PLUGIN
 {
 public:
     RPC_CONFIG();
@@ -59,7 +59,7 @@ public:
     void                SetUsers(USERS * u) { users = u; }
     void                SetTariffs(TARIFFS * t) { tariffs = t; }
     void                SetAdmins(ADMINS * a) { admins = a; }
-    void                SetStore(BASE_STORE * s) { store = s; }
+    void                SetStore(STORE * s) { store = s; }
     void                SetTraffcounter(TRAFFCOUNTER *) {}
     void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
@@ -92,7 +92,7 @@ private:
     USERS *                 users;
     ADMINS *                admins;
     TARIFFS *               tariffs;
-    BASE_STORE *            store;
+    STORE *                 store;
     MODULE_SETTINGS         settings;
     const SETTINGS *        stgSettings;
     xmlrpc_c::registry      rpcRegistry;

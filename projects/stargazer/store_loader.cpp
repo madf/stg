@@ -32,6 +32,8 @@
 
 #include "store_loader.h"
 #include "common.h"
+#include "store.h"
+#include "settings.h"
 
 STORE_LOADER::STORE_LOADER(const SETTINGS & settings)
     : isLoaded(false),

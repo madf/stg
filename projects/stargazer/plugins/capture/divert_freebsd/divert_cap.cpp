@@ -45,8 +45,7 @@ $Date: 2010/09/10 06:43:03 $
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
 
 //-----------------------------------------------------------------------------
-struct DIVERT_DATA
-{
+struct DIVERT_DATA {
 int sock;
 short int port;
 unsigned char buffer[BUFF_LEN];
@@ -56,8 +55,7 @@ char iface[10];
 pollfd pollddiv;
 DIVERT_DATA cddiv;  //capture data
 //-----------------------------------------------------------------------------
-class DIVERT_CAP_CREATOR
-{
+class DIVERT_CAP_CREATOR {
 private:
     DIVERT_CAP * divc;
 
@@ -83,14 +81,14 @@ DIVERT_CAP_CREATOR dcc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return dcc.GetCapturer();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const string DIVERT_CAP::GetVersion() const
+const std::string DIVERT_CAP::GetVersion() const
 {
 return "Divert_cap v.1.0";
 }
@@ -108,7 +106,7 @@ void DIVERT_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
 traffCnt = tc;
 }
 //-----------------------------------------------------------------------------
-const string & DIVERT_CAP::GetStrError() const
+const std::string & DIVERT_CAP::GetStrError() const
 {
 return errorStr;
 }
@@ -352,7 +350,7 @@ port = p;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int DIVERT_CAP::ParseIntInRange(const string & str, int min, int max, int * val)
+int DIVERT_CAP::ParseIntInRange(const std::string & str, int min, int max, int * val)
 {
 if (str2x(str.c_str(), *val))
     {

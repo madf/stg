@@ -27,40 +27,44 @@ $Date: 2009/06/23 11:32:27 $
 #ifndef DIVERT_CAP_H
 #define DIVERT_CAP_H
 
-#include <string>
 #include <pthread.h>
 
-#include "base_plugin.h"
-#include "base_settings.h"
+#include <string>
+
+#include "plugin.h"
+#include "module_settings.h"
 #include "../../../traffcounter.h"
 
-using namespace std;
+class USERS;
+class TARIFFS;
+class ADMINS;
+class TRAFFCOUNTER;
+class SETTINGS;
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 //-----------------------------------------------------------------------------
-class DIVERT_CAP :public BASE_PLUGIN
-{
+class DIVERT_CAP : public PLUGIN {
 public:
     DIVERT_CAP();
-    virtual ~DIVERT_CAP(){};
+    virtual ~DIVERT_CAP() {}
 
-    void                SetUsers(USERS *){};
-    void                SetTariffs(TARIFFS *){};
-    void                SetAdmins(ADMINS *){};
+    void                SetUsers(USERS *) {}
+    void                SetTariffs(TARIFFS *) {}
+    void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc);
-    void                SetStore(BASE_STORE *){};
-    void                SetStgSettings(const SETTINGS *){};
+    void                SetStore(STORE *) {}
+    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
+    int                 Reload() { return 0; }
     bool                IsRunning();
 
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
-    const string      & GetStrError() const;
-    const string        GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 
@@ -73,24 +77,21 @@ private:
     int                 DivertCapRead(char * buffer, int blen, char ** iface, int n);
     int                 DivertCapClose();
 
-    int                 ParseIntInRange(const string & str, int min, int max, int * val);
+    int                 ParseIntInRange(const std::string & str, int min, int max, int * val);
 
     MODULE_SETTINGS     settings;
 
     int                 port;
 
-    mutable string      errorStr;
+    mutable std::string errorStr;
 
     pthread_t           thread;
 
     bool                nonstop;
     bool                isRunning;
 
-    //int                 capSock;
-
     TRAFFCOUNTER *      traffCnt;
 };
 //-----------------------------------------------------------------------------
-
 
 #endif

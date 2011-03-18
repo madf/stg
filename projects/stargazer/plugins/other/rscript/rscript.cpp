@@ -35,6 +35,8 @@
 #include "common.h"
 #include "ur_functor.h"
 #include "send_functor.h"
+#include "stg_locker.h"
+#include "../../../user_property.h"
 
 extern volatile const time_t stgTime;
 
@@ -70,7 +72,7 @@ RS_CREATOR rsc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return rsc.GetPlugin();
 }
@@ -83,7 +85,7 @@ RS_USER::RS_USER()
 {
 }
 //-----------------------------------------------------------------------------
-RS_USER::RS_USER(const std::vector<uint32_t> & r, user_iter it)
+RS_USER::RS_USER(const std::vector<uint32_t> & r, USER_PTR it)
     : lastSentTime(0),
       user(it),
       routers(r),
@@ -499,7 +501,7 @@ return (res != sizeof(buffer));
 //-----------------------------------------------------------------------------
 bool REMOTE_SCRIPT::GetUsers()
 {
-user_iter u;
+USER_PTR u;
 
 int h = users->OpenSearch();
 if (!h)
@@ -518,7 +520,7 @@ users->CloseSearch(h);
 return false;
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::ChangedIP(user_iter u, uint32_t oldIP, uint32_t newIP)
+void REMOTE_SCRIPT::ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP)
 {
 /*
  * When ip changes process looks like:
@@ -560,78 +562,78 @@ for (size_t i = 0; i < netRouters.size(); ++i)
 return std::vector<uint32_t>();
 }
 //-----------------------------------------------------------------------------
-string REMOTE_SCRIPT::GetUserParam(user_iter u, const string & paramName) const
+string REMOTE_SCRIPT::GetUserParam(USER_PTR u, const string & paramName) const
 {
 string value = "";
 if (strcasecmp(paramName.c_str(), "cash") == 0)
-    strprintf(&value, "%f", u->property.cash.Get());
+    strprintf(&value, "%f", u->GetProperty().cash.Get());
 else
 if (strcasecmp(paramName.c_str(), "freeMb") == 0)
-    strprintf(&value, "%f", u->property.freeMb.Get());
+    strprintf(&value, "%f", u->GetProperty().freeMb.Get());
 else
 if (strcasecmp(paramName.c_str(), "passive") == 0)
-    strprintf(&value, "%d", u->property.passive.Get());
+    strprintf(&value, "%d", u->GetProperty().passive.Get());
 else
 if (strcasecmp(paramName.c_str(), "disabled") == 0)
-    strprintf(&value, "%d", u->property.disabled.Get());
+    strprintf(&value, "%d", u->GetProperty().disabled.Get());
 else
 if (strcasecmp(paramName.c_str(), "alwaysOnline") == 0)
-    strprintf(&value, "%d", u->property.alwaysOnline.Get());
+    strprintf(&value, "%d", u->GetProperty().alwaysOnline.Get());
 else
 if (strcasecmp(paramName.c_str(), "tariffName") == 0 ||
     strcasecmp(paramName.c_str(), "tariff") == 0)
-    value = "\"" + u->property.tariffName.Get() + "\"";
+    value = "\"" + u->GetProperty().tariffName.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "nextTariff") == 0)
-    value = "\"" + u->property.nextTariff.Get() + "\"";
+    value = "\"" + u->GetProperty().nextTariff.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "address") == 0)
-    value = "\"" + u->property.address.Get() + "\"";
+    value = "\"" + u->GetProperty().address.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "note") == 0)
-    value = "\"" + u->property.note.Get() + "\"";
+    value = "\"" + u->GetProperty().note.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "group") == 0)
-    value = "\"" + u->property.group.Get() + "\"";
+    value = "\"" + u->GetProperty().group.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "email") == 0)
-    value = "\"" + u->property.email.Get() + "\"";
+    value = "\"" + u->GetProperty().email.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "realName") == 0)
-    value = "\"" + u->property.realName.Get() + "\"";
+    value = "\"" + u->GetProperty().realName.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "credit") == 0)
-    strprintf(&value, "%f", u->property.credit.Get());
+    strprintf(&value, "%f", u->GetProperty().credit.Get());
 else
 if (strcasecmp(paramName.c_str(), "userdata0") == 0)
-    value = "\"" + u->property.userdata0.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata0.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata1") == 0)
-    value = "\"" + u->property.userdata1.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata1.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata2") == 0)
-    value = "\"" + u->property.userdata2.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata2.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata3") == 0)
-    value = "\"" + u->property.userdata3.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata3.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata4") == 0)
-    value = "\"" + u->property.userdata4.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata4.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata5") == 0)
-    value = "\"" + u->property.userdata5.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata5.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata6") == 0)
-    value = "\"" + u->property.userdata6.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata6.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata7") == 0)
-    value = "\"" + u->property.userdata7.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata7.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata8") == 0)
-    value = "\"" + u->property.userdata8.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata8.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "userdata9") == 0)
-    value = "\"" + u->property.userdata9.Get() + "\"";
+    value = "\"" + u->GetProperty().userdata9.Get() + "\"";
 else
 if (strcasecmp(paramName.c_str(), "enabledDirs") == 0)
     value = u->GetEnabledDirs();
@@ -640,7 +642,7 @@ else
 return value;
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::SetUserNotifier(user_iter u)
+void REMOTE_SCRIPT::SetUserNotifier(USER_PTR u)
 {
 RS_CHG_AFTER_NOTIFIER<uint32_t> afterChgIPNotifier(*this, u);
 
@@ -649,7 +651,7 @@ afterChgIPNotifierList.push_front(afterChgIPNotifier);
 u->AddCurrIPAfterNotifier(&(*afterChgIPNotifierList.begin()));
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::UnSetUserNotifier(user_iter u)
+void REMOTE_SCRIPT::UnSetUserNotifier(USER_PTR u)
 {
 list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator  ipAIter;
 std::list<list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator> toErase;

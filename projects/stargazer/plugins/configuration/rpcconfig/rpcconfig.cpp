@@ -3,14 +3,8 @@
 
 #include "rpcconfig.h"
 
-#include "../../../admin.h"
-#include "../../../admins.h"
-#include "../../../users.h"
-#include "../../../tariffs.h"
-#include "../../../traffcounter.h"
-#include "../../../settings.h"
-#include "base_store.h"
-#include "base_settings.h"
+#include "admin.h"
+#include "module_settings.h"
 
 #include "info_methods.h"
 #include "users_methods.h"
@@ -18,8 +12,7 @@
 #include "admins_methods.h"
 #include "messages_methods.h"
 
-class RPC_CONFIG_CREATOR
-{
+class RPC_CONFIG_CREATOR {
 private:
     RPC_CONFIG * rpcconfig;
 
@@ -27,16 +20,16 @@ public:
     RPC_CONFIG_CREATOR()
         : rpcconfig(new RPC_CONFIG())
         {
-        };
+        }
     ~RPC_CONFIG_CREATOR()
         {
         delete rpcconfig;
-        };
+        }
 
     RPC_CONFIG * GetPlugin()
         {
         return rpcconfig;
-        };
+        }
 };
 
 RPC_CONFIG_CREATOR rpcc;

@@ -28,22 +28,22 @@
 #ifndef STRESS_H
 #define STRESS_H
 
-#include <string>
 #include <pthread.h>
-#include "base_auth.h"
+
+#include <string>
+#include <list>
+
+#include "auth.h"
 #include "notifer.h"
 #include "user_ips.h"
-#include "../../../users.h"
+#include "users.h"
 
-using namespace std;
-
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 class AUTH_STRESS;
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
-{
+class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
     void Notify(const varParamType & oldValue, const varParamType & newValue);
     void        SetUser(user_iter u) { user = u; }
@@ -56,8 +56,7 @@ private:
 };
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
-{
+class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
     void        SetUser(user_iter u) { user = u; }
@@ -69,39 +68,37 @@ private:
     const AUTH_STRESS * auth;
 };
 //-----------------------------------------------------------------------------
-class AUTH_STRESS_SETTINGS
-{
+class AUTH_STRESS_SETTINGS {
 public:
                     AUTH_STRESS_SETTINGS();
-    const string&   GetStrError() const { return errorStr; }
+    const std::string &   GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
     int             GetAverageOnlineTime() const;
 private:
-    int             ParseIntInRange(const string & str, int min, int max, int * val);
+    int             ParseIntInRange(const std::string & str, int min, int max, int * val);
     int             averageOnlineTime;
-    string          errorStr;
+    std::string     errorStr;
 };
 //-----------------------------------------------------------------------------
-class AUTH_STRESS :public BASE_AUTH
-{
+class AUTH_STRESS :public AUTH {
 public:
     AUTH_STRESS();
-    virtual ~AUTH_STRESS(){};
+    virtual ~AUTH_STRESS() {}
 
     void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS * t){};
-    void                SetAdmins(ADMINS * a){};
-    void                SetTraffcounter(TRAFFCOUNTER * tc){};
-    void                SetStore(BASE_STORE * ){};
-    void                SetStgSettings(const SETTINGS *){};
+    void                SetTariffs(TARIFFS * t) {}
+    void                SetAdmins(ADMINS * a) {}
+    void                SetTraffcounter(TRAFFCOUNTER * tc) {}
+    void                SetStore(STORE * ) {}
+    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
     bool                IsRunning();
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
-    const string      & GetStrError() const;
-    const string        GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 
@@ -122,24 +119,23 @@ private:
 
     static void *       Run(void *);
 
-    mutable string      errorStr;
+    mutable std::string errorStr;
     AUTH_STRESS_SETTINGS    stressSettings;
     USERS             * users;
-    list<user_iter>     usersList;
+    std::list<user_iter> usersList;
     bool                isRunning;
     MODULE_SETTINGS     settings;
 
     pthread_t           thread;
     pthread_mutex_t     mutex;
 
-    list<CHG_BEFORE_NOTIFIER<USER_IPS> >    BeforeChgIPNotifierList;
-    list<CHG_AFTER_NOTIFIER<USER_IPS> >     AfterChgIPNotifierList;
+    std::list<CHG_BEFORE_NOTIFIER<USER_IPS> > BeforeChgIPNotifierList;
+    std::list<CHG_AFTER_NOTIFIER<USER_IPS> > AfterChgIPNotifierList;
 
-    class ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
-    {
+    class ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter> {
     public:
-        ADD_USER_NONIFIER(){};
-        virtual ~ADD_USER_NONIFIER(){};
+        ADD_USER_NONIFIER() {}
+        virtual ~ADD_USER_NONIFIER() {}
 
         void SetAuthorizator(AUTH_STRESS * a) { auth = a; }
         void Notify(const user_iter & user)
@@ -151,11 +147,10 @@ private:
         AUTH_STRESS * auth;
     } onAddUserNotifier;
 
-    class DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
-    {
+    class DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter> {
     public:
-        DEL_USER_NONIFIER(){};
-        virtual ~DEL_USER_NONIFIER(){};
+        DEL_USER_NONIFIER() {}
+        virtual ~DEL_USER_NONIFIER() {}
 
         void SetAuthorizator(AUTH_STRESS * a) { auth = a; }
         void Notify(const user_iter & user)
@@ -171,5 +166,3 @@ private:
 //-----------------------------------------------------------------------------
 
 #endif
-
-

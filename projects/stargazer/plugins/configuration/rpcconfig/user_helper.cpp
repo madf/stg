@@ -1,8 +1,8 @@
 #include "user_helper.h"
 
-#include "../../../tariffs.h"
-#include "../../../admin.h"
-#include "base_store.h"
+#include "tariffs.h"
+#include "admin.h"
+#include "store.h"
 #include "user_ips.h"
 #include "utils.h"
 #include "common.h"
@@ -129,7 +129,7 @@ structVal["creditexpire"] = xmlrpc_c::value_int(iter->property.creditExpire.Get(
 bool USER_HELPER::SetUserInfo(const xmlrpc_c::value & info,
                               const ADMIN & admin,
                               const std::string & login,
-                              const BASE_STORE & store,
+                              const STORE & store,
                               TARIFFS * tariffs)
 {
 std::map<std::string, xmlrpc_c::value> structVal(

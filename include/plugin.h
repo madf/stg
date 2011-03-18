@@ -38,18 +38,17 @@
 
 class TRAFFCOUNTER;
 class SETTINGS;
-class BASE_STORE;
+class STORE;
 class MODULE_SETTINGS;
 
-class PLUGIN : private NONCOPYABLE
-{
+class PLUGIN : private NONCOPYABLE {
 public:
     virtual                     ~PLUGIN() = 0;
     virtual void                SetUsers(USERS * u) = 0;
     virtual void                SetTariffs(TARIFFS * t) = 0;
     virtual void                SetAdmins(ADMINS * a) = 0;
     virtual void                SetTraffcounter(TRAFFCOUNTER * tc) = 0;
-    virtual void                SetStore(BASE_STORE * st) = 0;
+    virtual void                SetStore(STORE * st) = 0;
     virtual void                SetStgSettings(const SETTINGS * s) = 0;
     virtual void                SetSettings(const MODULE_SETTINGS & s) = 0;
     virtual int                 ParseSettings() = 0;

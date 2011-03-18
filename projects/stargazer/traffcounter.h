@@ -44,6 +44,8 @@
 
 #define PROTOMAX    (5)
 
+class TARIFFS;
+
 //-----------------------------------------------------------------------------
 struct RULE
 {
@@ -85,9 +87,9 @@ PACKET_EXTRA_DATA(const PACKET_EXTRA_DATA & pp)
 
 time_t      flushTime;          // Last flush time
 time_t      updateTime;         // Last update time
-user_iter   userU;              // Uploader
+USER_PTR    userU;              // Uploader
 bool        userUPresent;       // Uploader is registered user
-user_iter   userD;              // Downloader
+USER_PTR    userD;              // Downloader
 bool        userDPresent;       // Downloader is registered user
 int         dirU;               // Upload direction
 int         dirD;               // Download direction
@@ -100,56 +102,56 @@ class TRAFFCOUNTER;
 class TRF_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t>
 {
 public:
-                    TRF_IP_BEFORE(TRAFFCOUNTER & t, user_iter u)
+                    TRF_IP_BEFORE(TRAFFCOUNTER & t, USER_PTR u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
                     {};
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(user_iter u) { user = u; }
-    user_iter       GetUser() const { return user; }
+    void            SetUser(USER_PTR u) { user = u; }
+    USER_PTR        GetUser() const { return user; }
 
 private:
     TRAFFCOUNTER &  traffCnt;
-    user_iter       user;
+    USER_PTR        user;
 };
 //-----------------------------------------------------------------------------
 class TRF_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t>
 {
 public:
-                    TRF_IP_AFTER(TRAFFCOUNTER & t, user_iter u)
+                    TRF_IP_AFTER(TRAFFCOUNTER & t, USER_PTR u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
                     {};
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(user_iter u) { user = u; }
-    user_iter       GetUser() const { return user; }
+    void            SetUser(USER_PTR u) { user = u; }
+    USER_PTR        GetUser() const { return user; }
 private:
     TRAFFCOUNTER &  traffCnt;
-    user_iter       user;
+    USER_PTR        user;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
+class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR>
 {
 public:
             ADD_USER_NONIFIER(TRAFFCOUNTER & t) :
-                NOTIFIER_BASE<user_iter>(),
+                NOTIFIER_BASE<USER_PTR>(),
                 traffCnt(t) {};
     virtual ~ADD_USER_NONIFIER(){};
-    void    Notify(const user_iter & user);
+    void    Notify(const USER_PTR & user);
 private:
     TRAFFCOUNTER & traffCnt;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
+class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR>
 {
 public:
             DEL_USER_NONIFIER(TRAFFCOUNTER & t) :
-                NOTIFIER_BASE<user_iter>(),
+                NOTIFIER_BASE<USER_PTR>(),
                 traffCnt(t) {};
     virtual ~DEL_USER_NONIFIER(){};
-    void    Notify(const user_iter & user);
+    void    Notify(const USER_PTR & user);
 private:
     TRAFFCOUNTER & traffCnt;
 };
@@ -188,10 +190,10 @@ private:
 
     void        FlushAndRemove();
 
-    void        AddUser(user_iter user);
+    void        AddUser(USER_PTR user);
     void        DelUser(uint32_t uip);
-    void        SetUserNotifiers(user_iter user);
-    void        UnSetUserNotifiers(user_iter user);
+    void        SetUserNotifiers(USER_PTR user);
+    void        UnSetUserNotifiers(USER_PTR user);
 
     std::list<RULE>  rules;
     typedef std::list<RULE>::iterator rule_iter;
@@ -247,13 +249,13 @@ EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::AddUser, us
 }
 //-----------------------------------------------------------------------------
 inline
-void ADD_USER_NONIFIER::Notify(const user_iter & user)
+void ADD_USER_NONIFIER::Notify(const USER_PTR & user)
 {
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::SetUserNotifiers, user);
 }
 //-----------------------------------------------------------------------------
 inline
-void DEL_USER_NONIFIER::Notify(const user_iter & user)
+void DEL_USER_NONIFIER::Notify(const USER_PTR & user)
 {
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::UnSetUserNotifiers, user);
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::DelUser, user->GetCurrIP());

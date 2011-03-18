@@ -33,14 +33,13 @@
 #include <sys/socket.h>
 
 #include <string>
+#include <list>
 
 #include "parser.h"
-#include "../../../users.h"
-#include "../../../admins.h"
-#include "../../../tariffs.h"
+#include "users.h"
+#include "admins.h"
+#include "tariffs.h"
 #include "stg_logger.h"
-
-using namespace std;
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
@@ -51,8 +50,7 @@ using namespace std;
 #define  ERR_LOGINS     "ERLS"
 
 //-----------------------------------------------------------------------------
-class CONFIGPROTO
-{
+class CONFIGPROTO {
 public:
     CONFIGPROTO();
     ~CONFIGPROTO();
@@ -61,12 +59,12 @@ public:
     void            SetAdmins(ADMINS * a);
     void            SetUsers(USERS * u);
     void            SetTariffs(TARIFFS * t);
-    void            SetStore(BASE_STORE * s);
+    void            SetStore(STORE * s);
     void            SetStgSettings(const SETTINGS * s);
     uint32_t        GetAdminIP() const;
     int             Prepare();
     int             Stop();
-    const string &  GetStrError() const;
+    const std::string & GetStrError() const;
     static void *   Run(void * a);
 
 private:
@@ -83,18 +81,18 @@ private:
 
     int             ParseCommand();
 
-    list<string>    answerList;
-    list<string>    requestList;
-    uint32_t        adminIP;
-    string          adminLogin;
-    uint16_t        port;
-    pthread_t       thrReciveSendConf;
-    bool            nonstop;
-    int             state;
-    ADMIN           currAdmin;
-    STG_LOGGER &    WriteServLog;
+    std::list<std::string>      answerList;
+    std::list<std::string>      requestList;
+    uint32_t                    adminIP;
+    std::string                 adminLogin;
+    uint16_t                    port;
+    pthread_t                   thrReciveSendConf;
+    bool                        nonstop;
+    int                         state;
+    ADMIN *                     currAdmin;
+    STG_LOGGER &                WriteServLog;
 
-    int                 listenSocket;
+    int                         listenSocket;
 
     PARSER_GET_SERVER_INFO      parserGetServInfo;
 
@@ -119,15 +117,14 @@ private:
     ADMINS *                    admins;
 
     BASE_PARSER *               currParser;
-    vector<BASE_PARSER*>        dataParser;
+    vector<BASE_PARSER *>       dataParser;
 
     XML_Parser                  xmlParser;
 
-    string                      errorStr;
+    std::string                 errorStr;
 
     friend void ParseXMLStart(void *data, const char *el, const char **attr);
     friend void ParseXMLEnd(void *data, const char *el);
 };
 //-----------------------------------------------------------------------------
 #endif //CONFIGPROTO_H
-

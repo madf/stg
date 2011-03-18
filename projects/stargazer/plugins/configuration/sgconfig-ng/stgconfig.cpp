@@ -1,13 +1,13 @@
 #include <boost/thread.hpp>
 
-#include "base_store.h"
-#include "base_settings.h"
+#include "store.h"
+#include "module_settings.h"
 #include "common.h"
+#include "users.h"
+#include "tariffs.h"
+#include "admins.h"
 
 // TODO: Fix this shit!!!
-#include "../../../users.h"
-#include "../../../tariffs.h"
-#include "../../../admins.h"
 #include "../../../settings.h"
 
 #include "stgconfig.h"

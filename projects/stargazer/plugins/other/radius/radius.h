@@ -35,26 +35,26 @@
 #include <cstdlib>
 #include <string>
 #include <list>
+#include <map>
+#include <vector>
 
 #include "os_int.h"
-#include "base_auth.h"
+#include "auth.h"
+#include "module_settings.h"
 #include "notifer.h"
 #include "user_ips.h"
-#include "../../../user.h"
-#include "../../../users.h"
+#include "user.h"
+#include "users.h"
 #include "blowfish.h"
 #include "rad_packets.h"
 
-using namespace std;
-
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 #define RAD_DEBUG (1)
 
 class RADIUS;
 //-----------------------------------------------------------------------------
-class RAD_SETTINGS
-{
+class RAD_SETTINGS {
 public:
     RAD_SETTINGS() : port(0) {}
     virtual ~RAD_SETTINGS() {}
@@ -62,18 +62,18 @@ public:
     int ParseSettings(const MODULE_SETTINGS & s);
     uint16_t GetPort() const { return port; }
     const std::string & GetPassword() const { return password; }
-    const list<string> & GetAuthServices() const { return authServices; }
-    const list<string> & GetAcctServices() const { return acctServices; }
+    const std::list<string> & GetAuthServices() const { return authServices; }
+    const std::list<string> & GetAcctServices() const { return acctServices; }
 
 private:
-    int ParseIntInRange(const string & str, int min, int max, int * val);
-    int ParseServices(const vector<string> & str, list<string> * lst);
+    int ParseIntInRange(const std::string & str, int min, int max, int * val);
+    int ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst);
 
     uint16_t port;
-    string errorStr;
-    string password;
-    list<string> authServices;
-    list<string> acctServices;
+    std::string errorStr;
+    std::string password;
+    std::list<std::string> authServices;
+    std::list<std::string> acctServices;
 };
 //-----------------------------------------------------------------------------
 struct RAD_SESSION {
@@ -81,32 +81,31 @@ struct RAD_SESSION {
     std::string serviceType;
 };
 //-----------------------------------------------------------------------------
-class RADIUS :public BASE_AUTH
-{
+class RADIUS :public AUTH {
 public:
                         RADIUS();
-    virtual             ~RADIUS(){};
+    virtual             ~RADIUS() {};
 
     void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS *){};
-    void                SetAdmins(ADMINS *){};
-    void                SetTraffcounter(TRAFFCOUNTER *){};
-    void                SetStore(BASE_STORE * );
+    void                SetTariffs(TARIFFS *) {}
+    void                SetAdmins(ADMINS *) {}
+    void                SetTraffcounter(TRAFFCOUNTER *) {}
+    void                SetStore(STORE * );
     void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
+    int                 Reload() { return 0; }
     bool                IsRunning();
 
-    const string      & GetStrError() const { return errorStr; };
-    const string        GetVersion() const;
+    const std::string & GetStrError() const { return errorStr; }
+    const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 
-    int SendMessage(const STG_MSG &, uint32_t) const { return 0; };
+    int SendMessage(const STG_MSG &, uint32_t) const { return 0; }
 
 private:
     static void *       Run(void *);
@@ -125,7 +124,7 @@ private:
     int                 ProcessAcctUpdatePacket(RAD_PACKET * packet);
     int                 ProcessAcctOtherPacket(RAD_PACKET * packet);
 
-    bool                FindUser(user_iter * ui, const std::string & login) const;
+    bool                FindUser(USER_PTR * ui, const std::string & login) const;
     bool                CanAuthService(const std::string & svc) const;
     bool                CanAcctService(const std::string & svc) const;
     bool                IsAllowedService(const std::string & svc) const;
@@ -151,19 +150,19 @@ private:
 
     BLOWFISH_CTX        ctx;
 
-    mutable string      errorStr;
+    mutable std::string errorStr;
     RAD_SETTINGS        radSettings;
     MODULE_SETTINGS     settings;
-    list<string>        authServices;
-    list<string>        acctServices;
-    map<string, RAD_SESSION> sessions;
+    std::list<std::string> authServices;
+    std::list<std::string> acctServices;
+    std::map<std::string, RAD_SESSION> sessions;
 
     bool                nonstop;
     bool                isRunning;
 
     USERS *             users;
     const SETTINGS *    stgSettings;
-    const BASE_STORE *  store;
+    const STORE *       store;
 
     pthread_t           thread;
     pthread_mutex_t     mutex;

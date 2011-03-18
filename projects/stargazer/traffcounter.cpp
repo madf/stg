@@ -28,6 +28,11 @@
  $Author: faust $
  */
 
+/* inet_aton */
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <csignal>
 #include <cassert>
 #include <cstdio> // Functions fopen and similar
@@ -35,6 +40,7 @@
 #include "traffcounter.h"
 #include "common.h"
 #include "stg_locker.h"
+#include "stg_timer.h"
 
 #define FLUSH_TIME  (10)
 #define REMOVE_TIME  (31)
@@ -48,7 +54,7 @@ enum protoNum
     };
 
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER::TRAFFCOUNTER(USERS * u, const TARIFFS *, const string & fn)
+TRAFFCOUNTER::TRAFFCOUNTER(USERS * u, const TARIFFS *, const std::string & fn)
     : WriteServLog(GetStgLogger()),
       rulesFileName(fn),
       monitoring(false),
@@ -89,7 +95,7 @@ if (ReadRules())
 
 printfd(__FILE__, "TRAFFCOUNTER::Start()\n");
 int h = users->OpenSearch();
-user_iter u;
+USER_PTR u;
 if (!h)
     {
     WriteServLog("TRAFFCOUNTER: Cannot get users.");
@@ -125,7 +131,7 @@ if (!h)
     return -1;
     }
 
-user_iter u;
+USER_PTR u;
 while (users->SearchNext(h, &u) == 0)
     {
     UnSetUserNotifiers(u);
@@ -172,7 +178,7 @@ while (tc->running)
 
     if (tc->monitoring && (touchTime + MONITOR_TIME_DELAY_SEC <= stgTime))
         {
-        string monFile(tc->monitorDir + "/traffcounter_r");
+        std::string monFile(tc->monitorDir + "/traffcounter_r");
         printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", tc->monitoring, monFile.c_str());
         touchTime = stgTime;
         TouchFile(monFile.c_str());
@@ -195,7 +201,7 @@ static time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
 
 if (monitoring && (touchTime + MONITOR_TIME_DELAY_SEC <= stgTime))
     {
-    static string monFile = monitorDir + "/traffcounter_p";
+    static std::string monFile = monitorDir + "/traffcounter_p";
     printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", monitoring, monFile.c_str());
     touchTime = stgTime;
     TouchFile(monFile.c_str());
@@ -268,13 +274,12 @@ if (ed.userUPresent ||
     //TODO use result of lower_bound to inserting new record
 
     // Adding packet to a tree.
-    pair<pp_iter, bool> insertResult = packets.insert(pair<RAW_PACKET,
-                                                      PACKET_EXTRA_DATA>(rawPacket, ed));
+    std::pair<pp_iter, bool> insertResult = packets.insert(std::make_pair(rawPacket, ed));
     pp_iter newPacket = insertResult.first;
 
     // Adding packet reference to an IP index.
-    ip2packets.insert(pair<uint32_t, pp_iter>(ipU, newPacket));
-    ip2packets.insert(pair<uint32_t, pp_iter>(ipD, newPacket));
+    ip2packets.insert(std::make_pair(ipU, newPacket));
+    ip2packets.insert(std::make_pair(ipD, newPacket));
     }
 }
 //-----------------------------------------------------------------------------
@@ -386,11 +391,11 @@ while (pi != packets.end())
         }*/
     if (stgTime - pi->second.updateTime < REMOVE_TIME)
         {
-        pair<pp_iter, bool> res = newPackets.insert(*pi);
+        std::pair<pp_iter, bool> res = newPackets.insert(*pi);
         if (res.second)
             {
-            ip2packets.insert(make_pair(pi->first.GetSrcIP(), res.first));
-            ip2packets.insert(make_pair(pi->first.GetDstIP(), res.first));
+            ip2packets.insert(std::make_pair(pi->first.GetSrcIP(), res.first));
+            ip2packets.insert(std::make_pair(pi->first.GetDstIP(), res.first));
             }
         }
     ++pi;
@@ -404,11 +409,11 @@ printfd(__FILE__, "FlushAndRemove() packets: %d(rem %d) ip2packets: %d(rem %d)\n
 
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::AddUser(user_iter user)
+void TRAFFCOUNTER::AddUser(USER_PTR user)
 {
 printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
-pair<ip2p_iter, ip2p_iter> pi;
+std::pair<ip2p_iter, ip2p_iter> pi;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 // Find all packets with IP belongs to this user
@@ -445,7 +450,7 @@ while (pi.first != pi.second)
 void TRAFFCOUNTER::DelUser(uint32_t uip)
 {
 printfd(__FILE__, "DelUser: %s \n", inet_ntostring(uip).c_str());
-pair<ip2p_iter, ip2p_iter> pi;
+std::pair<ip2p_iter, ip2p_iter> pi;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 pi = ip2packets.equal_range(uip);
@@ -495,7 +500,7 @@ while (pi.first != pi.second)
 ip2packets.erase(pi.first, pi.second);
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetUserNotifiers(user_iter user)
+void TRAFFCOUNTER::SetUserNotifiers(USER_PTR user)
 {
 // Adding user. Adding notifiers to user.
 TRF_IP_BEFORE ipBNotifier(*this, user);
@@ -507,11 +512,11 @@ ipAfterNotifiers.push_front(ipANotifier);
 user->AddCurrIPAfterNotifier(&(*ipAfterNotifiers.begin()));
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::UnSetUserNotifiers(user_iter user)
+void TRAFFCOUNTER::UnSetUserNotifiers(USER_PTR user)
 {
 // Removing user. Removing notifiers from user.
-list<TRF_IP_BEFORE>::iterator bi;
-list<TRF_IP_AFTER>::iterator ai;
+std::list<TRF_IP_BEFORE>::iterator bi;
+std::list<TRF_IP_AFTER>::iterator ai;
 
 bi = ipBeforeNotifiers.begin();
 while (bi != ipBeforeNotifiers.end())
@@ -552,7 +557,7 @@ bool foundD = false; // Was rule for D found ?
 
 enum { ICMP_RPOTO = 1, TCP_PROTO = 6, UDP_PROTO = 17 };
 
-list<RULE>::const_iterator ln;
+std::list<RULE>::const_iterator ln;
 ln = rules.begin();
 
 while (ln != rules.end())
@@ -662,7 +667,7 @@ if (!foundD)
 return;
 };
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetRulesFile(const string & fn)
+void TRAFFCOUNTER::SetRulesFile(const std::string & fn)
 {
 rulesFileName = fn;
 }
@@ -930,7 +935,7 @@ printf("dir=%d \n", rule.dir);
 return;
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetMonitorDir(const string & monitorDir)
+void TRAFFCOUNTER::SetMonitorDir(const std::string & monitorDir)
 {
 TRAFFCOUNTER::monitorDir = monitorDir;
 monitoring = (monitorDir != "");

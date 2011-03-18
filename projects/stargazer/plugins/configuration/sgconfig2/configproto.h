@@ -36,9 +36,9 @@
 #include <string>
 
 #include "parser.h"
-#include "../../../users.h"
-#include "../../../admins.h"
-#include "../../../tariffs.h"
+#include "users.h"
+#include "admins.h"
+#include "tariffs.h"
 #include "stg_logger.h"
 
 using namespace std;
@@ -63,7 +63,7 @@ public:
     void            SetAdmins(ADMINS * a);
     void            SetUsers(USERS * u);
     void            SetTariffs(TARIFFS * t);
-    void            SetStore(BASE_STORE * s);
+    void            SetStore(STORE * s);
     void            SetStgSettings(const SETTINGS * s);
     const string &  GetAdminLogin();
     uint32_t        GetAdminIP();
@@ -126,7 +126,7 @@ private:
     ADMINS *                    admins;
     USERS *                     users;
     TARIFFS *                   tariffs;
-    BASE_STORE *                store;
+    STORE *                     store;
     const SETTINGS *            settings;
 
     BASE_PARSER *               currParser;
@@ -141,4 +141,3 @@ private:
 };
 //-----------------------------------------------------------------------------
 #endif //CONFIGPROTO_H
-

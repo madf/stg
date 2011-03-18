@@ -4,12 +4,11 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-
 class RPC_CONFIG;
 class ADMINS;
 class TARIFFS;
 class USERS;
-class BASE_STORE;
+class STORE;
 class IP_MASK;
 
 class METHOD_USER_GET : public xmlrpc_c::method {
@@ -87,7 +86,7 @@ public:
     METHOD_USER_CHG(RPC_CONFIG * c,
                     ADMINS * a,
                     TARIFFS * t,
-                    BASE_STORE * s,
+                    STORE * s,
                     USERS * u)
         : config(c),
           admins(a),
@@ -103,7 +102,7 @@ private:
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
-    BASE_STORE * store;
+    STORE * store;
     USERS * users;
 };
 
@@ -111,7 +110,7 @@ class METHOD_USER_CASH_ADD : public xmlrpc_c::method {
 public:
     METHOD_USER_CASH_ADD(RPC_CONFIG * c,
                          ADMINS * a,
-                         BASE_STORE * s,
+                         STORE * s,
                          USERS * u)
         : config(c),
           admins(a),
@@ -125,7 +124,7 @@ public:
 private:
     RPC_CONFIG * config;
     ADMINS * admins;
-    BASE_STORE * store;
+    STORE * store;
     USERS * users;
 };
 
@@ -133,7 +132,7 @@ class METHOD_USER_CASH_SET : public xmlrpc_c::method {
 public:
     METHOD_USER_CASH_SET(RPC_CONFIG * c,
                          ADMINS * a,
-                         BASE_STORE * s,
+                         STORE * s,
                          USERS * u)
         : config(c),
           admins(a),
@@ -147,7 +146,7 @@ public:
 private:
     RPC_CONFIG * config;
     ADMINS * admins;
-    BASE_STORE * store;
+    STORE * store;
     USERS * users;
 };
 
@@ -156,7 +155,7 @@ public:
     METHOD_USER_TARIFF_CHANGE(RPC_CONFIG * c,
                               ADMINS * a,
                               TARIFFS * t,
-                              BASE_STORE * s,
+                              STORE * s,
                               USERS * u)
         : config(c),
           admins(a),
@@ -172,7 +171,7 @@ private:
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
-    BASE_STORE * store;
+    STORE * store;
     USERS * users;
 };
 

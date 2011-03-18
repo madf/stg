@@ -33,13 +33,13 @@
 
 #include <string>
 
-#include "base_store.h"
-#include "base_settings.h"
-#include "settings.h"
+#include "module_settings.h"
 #include "noncopyable.h"
 
-class STORE_LOADER : private NONCOPYABLE
-{
+class STORE;
+class SETTINGS;
+
+class STORE_LOADER : private NONCOPYABLE {
 public:
     STORE_LOADER(const SETTINGS & settings);
     ~STORE_LOADER();
@@ -47,13 +47,13 @@ public:
     bool Load();
     bool Unload();
 
-    BASE_STORE * GetStore() { return plugin; };
+    STORE * GetStore() { return plugin; }
 
-    const std::string & GetStrError() const { return errorStr; };
+    const std::string & GetStrError() const { return errorStr; }
 private:
     bool isLoaded;
     void * handle;
-    BASE_STORE * plugin;
+    STORE * plugin;
     std::string errorStr;
     MODULE_SETTINGS storeSettings;
     std::string pluginFileName;

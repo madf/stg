@@ -33,7 +33,7 @@
 #include <algorithm>
 
 #include "common.h"
-#include "base_store.h"
+#include "store.h"
 #include "settings.h"
 #include "conffiles.h"
 
@@ -43,7 +43,7 @@
 #include "service_conf.h"
 #include "admin_conf.h"
 #include "tariff_conf.h"
-#include "base_settings.h"
+#include "module_settings.h"
 #include "stg_message.h"
 
 using namespace std;
@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 {
 printfd(__FILE__, "Start\n");
 
-BASE_STORE * fromStore = NULL;
-BASE_STORE * toStore = NULL;
+STORE * fromStore = NULL;
+STORE * toStore = NULL;
 
 SETTINGS * settings = NULL;
 
@@ -112,8 +112,8 @@ if (!dst_lh)
     return -1;
     }
 
-BASE_STORE * (*GetSourceStore)();
-BASE_STORE * (*GetDestStore)();
+STORE * (*GetSourceStore)();
+STORE * (*GetDestStore)();
 GetSourceStore = (BASE_STORE * (*)())dlsym(src_lh, "GetStore");
 if (!GetSourceStore)
     {

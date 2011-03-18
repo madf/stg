@@ -50,7 +50,6 @@ $Date: 2009/12/13 13:45:13 $
 
 //#define CAP_DEBUG 1
 
-
 //-----------------------------------------------------------------------------
 class ETHER_CAP_CREATOR
 {
@@ -79,14 +78,14 @@ ETHER_CAP_CREATOR ecc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return ecc.GetCapturer();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------        
-const string ETHER_CAP::GetVersion() const
+const std::string ETHER_CAP::GetVersion() const
 {
 return "Ether_cap v.1.2";
 }
@@ -104,7 +103,7 @@ void ETHER_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
 traffCnt = tc;
 }
 //-----------------------------------------------------------------------------
-const string & ETHER_CAP::GetStrError() const
+const std::string & ETHER_CAP::GetStrError() const
 {
 return errorStr;
 }

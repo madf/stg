@@ -1,37 +1,43 @@
+#ifndef IPQ_CAP_H
+#define IPQ_CAP_H
+
 #include <string>
 
-#include "base_plugin.h"
-#include "base_settings.h"
+#include "plugin.h"
+#include "module_settings.h"
 #include "../../../traffcounter.h"
 
 #define BUFSIZE     (256)
 #define PAYLOAD_LEN (96)
 
-using namespace std;
+class USERS;
+class TARIFFS;
+class ADMINS;
+class TRAFFCOUNTER;
+class SETTINGS;
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 //-----------------------------------------------------------------------------
-class IPQ_CAP :public BASE_PLUGIN
-{
+class IPQ_CAP :public PLUGIN {
 public:
     IPQ_CAP();
-    virtual ~IPQ_CAP(){};
+    virtual ~IPQ_CAP() {}
 
-    void SetUsers(USERS *){};
-    void SetTariffs(TARIFFS *){};
-    void SetAdmins(ADMINS *){};
+    void SetUsers(USERS *) {}
+    void SetTariffs(TARIFFS *) {}
+    void SetAdmins(ADMINS *) {}
     void SetTraffcounter(TRAFFCOUNTER * tc);
-    void SetStore(BASE_STORE *){};
-    void SetStgSettings(const SETTINGS *){};
+    void SetStore(STORE *) {}
+    void SetStgSettings(const SETTINGS *) {}
 
     int Start();
     int Stop();
-    int Reload() { return 0; };
+    int Reload() { return 0; }
     bool IsRunning();
 
-    void  SetSettings(const MODULE_SETTINGS &){};
-    int  ParseSettings(){ return 0; };
+    void  SetSettings(const MODULE_SETTINGS &) {}
+    int  ParseSettings() { return 0; }
     const string & GetStrError() const;
     const string GetVersion() const;
     uint16_t GetStartPosition() const;
@@ -43,7 +49,7 @@ private:
     int IPQCapClose();
     int IPQCapRead(void * buffer, int blen);
 
-    struct ipq_handle *ipq_h;
+    struct ipq_handle * ipq_h;
     mutable string errorStr;
 
     pthread_t thread;
@@ -54,3 +60,5 @@ private:
     TRAFFCOUNTER * traffCnt;
     unsigned char buf[BUFSIZE];
 };
+
+#endif

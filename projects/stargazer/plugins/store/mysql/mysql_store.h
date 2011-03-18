@@ -11,15 +11,15 @@
 
 #include <string>
 
-#include "base_settings.h"
-#include "base_store.h"
+#include "module_settings.h"
+#include "store.h"
 #include "user_traff.h"
 
 using namespace std;
 //-----------------------------------------------------------------------------
-extern "C" BASE_STORE * GetStore();
+extern "C" STORE * GetStore();
 //-----------------------------------------------------------------------------
-class MYSQL_STORE_SETTINGS//: public BASE_SETTINGS
+class MYSQL_STORE_SETTINGS
 {
 public:
     MYSQL_STORE_SETTINGS();
@@ -36,17 +36,17 @@ private:
     const MODULE_SETTINGS * settings;
 
     int     ParseParam(const vector<PARAM_VALUE> & moduleParams, 
-			const string & name, string & result);
+                       const string & name, string & result);
 
-	string  errorStr;
+    string  errorStr;
 
     string  dbUser;
     string  dbPass;
-	string  dbName;
+    string  dbName;
     string  dbHost;
 };
 //-----------------------------------------------------------------------------
-class MYSQL_STORE: public BASE_STORE
+class MYSQL_STORE: public STORE
 {
 public:
     MYSQL_STORE();
@@ -125,21 +125,21 @@ public:
 
 private:
     virtual int WriteLogString(const string & str, const string & login) const;
-	int GetAllParams(vector<string> * ParamList, const string & table, const string & name) const;
-	int CheckAllTables(MYSQL * sock);
-	bool IsTablePresent(const string & str,MYSQL * sock);
+    int GetAllParams(vector<string> * ParamList, const string & table, const string & name) const;
+    int CheckAllTables(MYSQL * sock);
+    bool IsTablePresent(const string & str,MYSQL * sock);
     mutable string          errorStr;
-//    int						Reconnect();
-    int						MysqlQuery(const char* sQuery,MYSQL * sock) const;
+//    int                        Reconnect();
+    int                        MysqlQuery(const char* sQuery,MYSQL * sock) const;
     int                     MysqlGetQuery(const char * Query,MYSQL * & sock) const;
     int                     MysqlSetQuery(const char * Query) const;
     MYSQL  *                MysqlConnect() const ;
     string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
     MODULE_SETTINGS         settings;
-	//mutable MYSQL					mysql;
-	//mutable MYSQL*					sock;
+    //mutable MYSQL                    mysql;
+    //mutable MYSQL*                    sock;
 };
 //-----------------------------------------------------------------------------
 
-#endif //FILE_STORE_H
+#endif

@@ -35,15 +35,15 @@
 #include <vector>
 #include <map>
 
-#include "base_store.h"
+#include "store.h"
 
 // Minimal DB version is 5
 // Recommended DB version is 6 (support FreeMb logging on disconnects)
 #define DB_MIN_VERSION 5
 
-extern "C" BASE_STORE * GetStore();
+extern "C" STORE * GetStore();
 
-class POSTGRESQL_STORE : public BASE_STORE {
+class POSTGRESQL_STORE : public STORE {
 public:
     POSTGRESQL_STORE();
     virtual ~POSTGRESQL_STORE();

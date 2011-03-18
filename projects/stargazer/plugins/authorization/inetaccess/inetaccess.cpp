@@ -39,6 +39,10 @@
 
 #include "inetaccess.h"
 #include "common.h"
+#include "stg_locker.h"
+#include "tariff.h"
+#include "../../../settings.h"
+#include "../../../user_property.h"
 
 extern volatile const time_t stgTime;
 
@@ -74,7 +78,7 @@ IA_CREATOR iac;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return iac.GetPlugin();
 }
@@ -642,7 +646,7 @@ Decrypt(&ctxS, login, buffer + 8, PASSWD_LEN / 8);
 uint32_t sip = *((uint32_t*)&outerAddr.sin_addr);
 uint16_t sport = htons(outerAddr.sin_port);
 
-user_iter user;
+USER_PTR user;
 if (users->FindByName(login, &user) == 0)
     {
     printfd(__FILE__, "User %s FOUND!\n", user->GetLogin().c_str());
@@ -769,7 +773,7 @@ while (it != ip2user.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, user_iter * user)
+int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR * user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 // Тут собраны обработчики разных пакетов
@@ -816,10 +820,10 @@ iaUser = &(it->second);
 if (iaUser->port != sport)
     iaUser->port = sport;
 
-if (iaUser->password != (*user)->property.password.Get())
+if (iaUser->password != (*user)->GetProperty().password.Get())
     {
-    InitEncrypt(&iaUser->ctx, (*user)->property.password.Get());
-    iaUser->password = (*user)->property.password.Get();
+    InitEncrypt(&iaUser->ctx, (*user)->GetProperty().password.Get());
+    iaUser->password = (*user)->GetProperty().password.Get();
     }
 
 buff += offset;
@@ -843,13 +847,13 @@ else
     pn = pi->second;
     }
 
-if ((*user)->property.disabled.Get())
+if ((*user)->GetProperty().disabled.Get())
     {
     SendError(sip, sport, protoVer, "Учетная запись заблокирована");
     return 0;
     }
 
-if ((*user)->property.passive.Get())
+if ((*user)->GetProperty().passive.Get())
     {
     SendError(sip, sport, protoVer, "Учетная запись заморожена");
     return 0;
@@ -863,7 +867,7 @@ if ((*user)->GetAuthorized() && (*user)->GetCurrIP() != sip)
     return 0;
     }
 
-user_iter u;
+USER_PTR u;
 if (users->FindByIPIdx(sip, &u) == 0 && u->GetLogin() != (*user)->GetLogin())
     {
     printfd(__FILE__, "IP address alredy in use. IP \'%s\'", inet_ntostring(sip).c_str());
@@ -873,7 +877,7 @@ if (users->FindByIPIdx(sip, &u) == 0 && u->GetLogin() != (*user)->GetLogin())
     }
 
 // Теперь мы должны проверить, может ли пользователь подключится с этого адреса.
-int ipFound = (*user)->property.ips.Get().IsIPInIPS(sip);
+int ipFound = (*user)->GetProperty().ips.Get().IsIPInIPS(sip);
 if (!ipFound)
     {
     printfd(__FILE__, "User %s. IP address is incorrect. IP \'%s\'\n", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
@@ -891,15 +895,15 @@ switch (pn)
             {
             case 6:
                 connSyn6 = (CONN_SYN_6*)(buff - offset);
-                ret = Process_CONN_SYN_6(connSyn6, &(it->second), user, sip);
+                ret = Process_CONN_SYN_6(connSyn6, &(it->second), sip);
                 break;
             case 7:
                 connSyn7 = (CONN_SYN_7*)(buff - offset);
-                ret = Process_CONN_SYN_7(connSyn7, &(it->second), user, sip);
+                ret = Process_CONN_SYN_7(connSyn7, &(it->second), sip);
                 break;
             case 8:
                 connSyn8 = (CONN_SYN_8*)(buff - offset);
-                ret = Process_CONN_SYN_8(connSyn8, &(it->second), user, sip);
+                ret = Process_CONN_SYN_8(connSyn8, &(it->second), sip);
                 break;
             }
 
@@ -910,13 +914,13 @@ switch (pn)
         switch (protoVer)
             {
             case 6:
-                Send_CONN_SYN_ACK_6(iaUser, user, sip);
+                Send_CONN_SYN_ACK_6(iaUser, sip);
                 break;
             case 7:
-                Send_CONN_SYN_ACK_7(iaUser, user, sip);
+                Send_CONN_SYN_ACK_7(iaUser, sip);
                 break;
             case 8:
-                Send_CONN_SYN_ACK_8(iaUser, user, sip);
+                Send_CONN_SYN_ACK_8(iaUser, sip);
                 break;
             }
         break;
@@ -926,13 +930,13 @@ switch (pn)
         switch (protoVer)
             {
             case 6:
-                ret = Process_CONN_ACK_6(connAck, iaUser, user, sip);
+                ret = Process_CONN_ACK_6(connAck, iaUser, sip);
                 break;
             case 7:
-                ret = Process_CONN_ACK_7(connAck, iaUser, user, sip);
+                ret = Process_CONN_ACK_7(connAck, iaUser, sip);
                 break;
             case 8:
-                ret = Process_CONN_ACK_8((CONN_ACK_8*)(buff - offset), iaUser, user, sip);
+                ret = Process_CONN_ACK_8((CONN_ACK_8*)(buff - offset), iaUser, sip);
                 break;
             }
 
@@ -963,13 +967,13 @@ switch (pn)
         switch (protoVer)
             {
             case 6:
-                ret = Process_ALIVE_ACK_6(aliveAck, iaUser, user, sip);
+                ret = Process_ALIVE_ACK_6(aliveAck, iaUser, sip);
                 break;
             case 7:
-                ret = Process_ALIVE_ACK_7(aliveAck, iaUser, user, sip);
+                ret = Process_ALIVE_ACK_7(aliveAck, iaUser, sip);
                 break;
             case 8:
-                ret = Process_ALIVE_ACK_8((ALIVE_ACK_8*)(buff - offset), iaUser, user, sip);
+                ret = Process_ALIVE_ACK_8((ALIVE_ACK_8*)(buff - offset), iaUser, sip);
                 break;
             }
         break;
@@ -981,13 +985,13 @@ switch (pn)
         switch (protoVer)
             {
             case 6:
-                ret = Process_DISCONN_SYN_6(disconnSyn, iaUser, user, sip);
+                ret = Process_DISCONN_SYN_6(disconnSyn, iaUser, sip);
                 break;
             case 7:
-                ret = Process_DISCONN_SYN_7(disconnSyn, iaUser, user, sip);
+                ret = Process_DISCONN_SYN_7(disconnSyn, iaUser, sip);
                 break;
             case 8:
-                ret = Process_DISCONN_SYN_8((DISCONN_SYN_8*)(buff - offset), iaUser, user, sip);
+                ret = Process_DISCONN_SYN_8((DISCONN_SYN_8*)(buff - offset), iaUser, sip);
                 break;
             }
 
@@ -1014,13 +1018,13 @@ switch (pn)
         switch (protoVer)
             {
             case 6:
-                ret = Process_DISCONN_ACK_6(disconnAck, iaUser, user, sip, it);
+                ret = Process_DISCONN_ACK_6(disconnAck, iaUser, sip, it);
                 break;
             case 7:
-                ret = Process_DISCONN_ACK_7(disconnAck, iaUser, user, sip, it);
+                ret = Process_DISCONN_ACK_7(disconnAck, iaUser, sip, it);
                 break;
             case 8:
-                ret = Process_DISCONN_ACK_8((DISCONN_ACK_8*)(buff - offset), iaUser, user, sip, it);
+                ret = Process_DISCONN_ACK_8((DISCONN_ACK_8*)(buff - offset), iaUser, sip, it);
                 break;
             }
 
@@ -1042,7 +1046,7 @@ switch (pn)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void AUTH_IA::DelUser(user_iter u)
+void AUTH_IA::DelUser(USER_PTR u)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1249,7 +1253,7 @@ Send(ip, user.port, buffer, len);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_SYN_6(CONN_SYN_6 *, IA_USER * iaUser, user_iter *, uint32_t)
+int AUTH_IA::Process_CONN_SYN_6(CONN_SYN_6 *, IA_USER * iaUser, uint32_t)
 {
 if (!(iaUser->phase.GetPhase() == 1 || iaUser->phase.GetPhase() == 3))
     return -1;
@@ -1261,22 +1265,22 @@ printfd(__FILE__, "Phase changed from %d to 2. Reason: CONN_SYN_6\n", iaUser->ph
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, uint32_t sip)
 {
-return Process_CONN_SYN_6(connSyn, iaUser, user, sip);
+return Process_CONN_SYN_6(connSyn, iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_SYN_8(CONN_SYN_8 * connSyn, IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Process_CONN_SYN_8(CONN_SYN_8 * connSyn, IA_USER * iaUser, uint32_t sip)
 {
 #ifdef ARCH_BE
 SwapBytes(connSyn->dirs);
 #endif
-int ret = Process_CONN_SYN_6((CONN_SYN_6*)connSyn, iaUser, user, sip);
+int ret = Process_CONN_SYN_6((CONN_SYN_6*)connSyn, iaUser, sip);
 enabledDirs = connSyn->dirs;
 return ret;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_ACK_6(CONN_ACK_6 * connAck, IA_USER * iaUser, user_iter *, uint32_t sip)
+int AUTH_IA::Process_CONN_ACK_6(CONN_ACK_6 * connAck, IA_USER * iaUser, uint32_t sip)
 {
 #ifdef ARCH_BE
 SwapBytes(connAck->len);
@@ -1307,12 +1311,12 @@ printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %
 return -1;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_ACK_7(CONN_ACK_7 * connAck, IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Process_CONN_ACK_7(CONN_ACK_7 * connAck, IA_USER * iaUser, uint32_t sip)
 {
-return Process_CONN_ACK_6(connAck, iaUser, user, sip);
+return Process_CONN_ACK_6(connAck, iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_CONN_ACK_8(CONN_ACK_8 * connAck, IA_USER * iaUser, user_iter *, uint32_t sip)
+int AUTH_IA::Process_CONN_ACK_8(CONN_ACK_8 * connAck, IA_USER * iaUser, uint32_t sip)
 {
 #ifdef ARCH_BE
 SwapBytes(connAck->len);
@@ -1342,7 +1346,7 @@ printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %
 return -1;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_ALIVE_ACK_6(ALIVE_ACK_6 * aliveAck, IA_USER * iaUser, user_iter *, uint32_t)
+int AUTH_IA::Process_ALIVE_ACK_6(ALIVE_ACK_6 * aliveAck, IA_USER * iaUser, uint32_t)
 {
 #ifdef ARCH_BE
 SwapBytes(aliveAck->len);
@@ -1359,12 +1363,12 @@ if ((iaUser->phase.GetPhase() == 3) && (aliveAck->rnd == iaUser->rnd + 1))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_ALIVE_ACK_7(ALIVE_ACK_7 * aliveAck, IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Process_ALIVE_ACK_7(ALIVE_ACK_7 * aliveAck, IA_USER * iaUser, uint32_t sip)
 {
-return Process_ALIVE_ACK_6(aliveAck, iaUser, user, sip);
+return Process_ALIVE_ACK_6(aliveAck, iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_ALIVE_ACK_8(ALIVE_ACK_8 * aliveAck, IA_USER * iaUser, user_iter *, uint32_t)
+int AUTH_IA::Process_ALIVE_ACK_8(ALIVE_ACK_8 * aliveAck, IA_USER * iaUser, uint32_t)
 {
 #ifdef ARCH_BE
 SwapBytes(aliveAck->len);
@@ -1381,7 +1385,7 @@ if ((iaUser->phase.GetPhase() == 3) && (aliveAck->rnd == iaUser->rnd + 1))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_SYN_6(DISCONN_SYN_6 *, IA_USER * iaUser, user_iter *, uint32_t)
+int AUTH_IA::Process_DISCONN_SYN_6(DISCONN_SYN_6 *, IA_USER * iaUser, uint32_t)
 {
 printfd(__FILE__, "DISCONN_SYN_6\n");
 if (iaUser->phase.GetPhase() != 3)
@@ -1397,12 +1401,12 @@ printfd(__FILE__, "Phase changed from 3 to 4. Reason: DISCONN_SYN_6\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_SYN_7(DISCONN_SYN_7 * disconnSyn, IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Process_DISCONN_SYN_7(DISCONN_SYN_7 * disconnSyn, IA_USER * iaUser, uint32_t sip)
 {
-return Process_DISCONN_SYN_6(disconnSyn, iaUser, user, sip);
+return Process_DISCONN_SYN_6(disconnSyn, iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_SYN_8(DISCONN_SYN_8 *, IA_USER * iaUser, user_iter *, uint32_t)
+int AUTH_IA::Process_DISCONN_SYN_8(DISCONN_SYN_8 *, IA_USER * iaUser, uint32_t)
 {
 if (iaUser->phase.GetPhase() != 3)
     {
@@ -1419,7 +1423,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::Process_DISCONN_ACK_6(DISCONN_ACK_6 * disconnAck,
                                    IA_USER * iaUser,
-                                   user_iter *,
                                    uint32_t,
                                    map<uint32_t, IA_USER>::iterator)
 {
@@ -1437,12 +1440,12 @@ if (!((iaUser->phase.GetPhase() == 4) && (disconnAck->rnd == iaUser->rnd + 1)))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnAck, IA_USER * iaUser, user_iter * user, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
+int AUTH_IA::Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnAck, IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
 {
-return Process_DISCONN_ACK_6(disconnAck, iaUser, user, sip, it);
+return Process_DISCONN_ACK_6(disconnAck, iaUser, sip, it);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, user_iter *, uint32_t, map<uint32_t, IA_USER>::iterator)
+int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, uint32_t, map<uint32_t, IA_USER>::iterator)
 {
 #ifdef ARCH_BE
 SwapBytes(disconnAck->len);
@@ -1458,7 +1461,7 @@ if (!((iaUser->phase.GetPhase() == 4) && (disconnAck->rnd == iaUser->rnd + 1)))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_CONN_SYN_ACK_6(IA_USER * iaUser, user_iter *, uint32_t sip)
+int AUTH_IA::Send_CONN_SYN_ACK_6(IA_USER * iaUser, uint32_t sip)
 {
 //+++ Fill static data in connSynAck +++
 // TODO Move this code. It must be executed only once
@@ -1491,12 +1494,12 @@ Encrypt(&iaUser->ctx, (char*)&connSynAck6, (char*)&connSynAck6, Min8(sizeof(CONN
 return Send(sip, iaSettings.GetUserPort(), (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)));;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_CONN_SYN_ACK_7(IA_USER * iaUser, user_iter * user, uint32_t sip)
+int AUTH_IA::Send_CONN_SYN_ACK_7(IA_USER * iaUser, uint32_t sip)
 {
-return Send_CONN_SYN_ACK_6(iaUser, user, sip);
+return Send_CONN_SYN_ACK_6(iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_CONN_SYN_ACK_8(IA_USER * iaUser, user_iter *, uint32_t sip)
+int AUTH_IA::Send_CONN_SYN_ACK_8(IA_USER * iaUser, uint32_t sip)
 {
 strcpy((char*)connSynAck8.hdr.magic, IA_ID);
 connSynAck8.hdr.protoVer[0] = 0;
@@ -1543,8 +1546,8 @@ strcpy((char*)aliveSyn6.type, "ALIVE_SYN");
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    aliveSyn6.md[i] = iaUser->user->property.down.Get()[i];
-    aliveSyn6.mu[i] = iaUser->user->property.up.Get()[i];
+    aliveSyn6.md[i] = iaUser->user->GetProperty().down.Get()[i];
+    aliveSyn6.mu[i] = iaUser->user->GetProperty().up.Get()[i];
 
     aliveSyn6.sd[i] = iaUser->user->GetSessionDownload()[i];
     aliveSyn6.su[i] = iaUser->user->GetSessionUpload()[i];
@@ -1567,7 +1570,7 @@ if (dn < DIR_NUM)
         }
     else
         {
-        double fmb = iaUser->user->property.freeMb;
+        double fmb = iaUser->user->GetProperty().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
         }
@@ -1580,7 +1583,7 @@ else
         }
     else
         {
-        double fmb = iaUser->user->property.freeMb;
+        double fmb = iaUser->user->GetProperty().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
         }
@@ -1594,7 +1597,7 @@ if (iaUser->aliveSent)
 iaUser->aliveSent = true;
 #endif
 
-aliveSyn6.cash =(int64_t) (iaUser->user->property.cash.Get() * 1000.0);
+aliveSyn6.cash =(int64_t) (iaUser->user->GetProperty().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
     aliveSyn6.cash -= (int64_t)(tf->GetFee() * 1000.0);
 
@@ -1633,8 +1636,8 @@ strcpy((char*)aliveSyn8.type, "ALIVE_SYN");
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    aliveSyn8.md[i] = iaUser->user->property.down.Get()[i];
-    aliveSyn8.mu[i] = iaUser->user->property.up.Get()[i];
+    aliveSyn8.md[i] = iaUser->user->GetProperty().down.Get()[i];
+    aliveSyn8.mu[i] = iaUser->user->GetProperty().up.Get()[i];
 
     aliveSyn8.sd[i] = iaUser->user->GetSessionDownload()[i];
     aliveSyn8.su[i] = iaUser->user->GetSessionUpload()[i];
@@ -1657,7 +1660,7 @@ if (dn < DIR_NUM)
         }
     else
         {
-        double fmb = iaUser->user->property.freeMb;
+        double fmb = iaUser->user->GetProperty().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
         }
@@ -1670,7 +1673,7 @@ else
         }
     else
         {
-        double fmb = iaUser->user->property.freeMb;
+        double fmb = iaUser->user->GetProperty().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
         }
@@ -1686,7 +1689,7 @@ iaUser->aliveSent = true;
 
 const TARIFF * tf = iaUser->user->GetTariff();
 
-aliveSyn8.cash =(int64_t) (iaUser->user->property.cash.Get() * 1000.0);
+aliveSyn8.cash =(int64_t) (iaUser->user->GetProperty().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
     aliveSyn8.cash -= (int64_t)(tf->GetFee() * 1000.0);
 

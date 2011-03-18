@@ -2,10 +2,12 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <algorithm>
+
 #include "stgconfig.h"
-#include "../../../tariffs.h"
-#include "../../../admins.h"
-#include "../../../users.h"
+#include "tariffs.h"
+#include "admins.h"
+#include "users.h"
 
 class STGCONFIG_CREATOR
 {
@@ -39,12 +41,12 @@ STG_CONFIG_SETTINGS::STG_CONFIG_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-const string& STG_CONFIG_SETTINGS::GetStrError() const
+const std::string & STG_CONFIG_SETTINGS::GetStrError() const
 {
 return errorStr;
 }
 //-----------------------------------------------------------------------------
-int STG_CONFIG_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
+int STG_CONFIG_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
 {
 if (str2x(str.c_str(), *val))
     {
@@ -66,7 +68,7 @@ PARAM_VALUE pv;
 vector<PARAM_VALUE>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
     errorStr = "Parameter \'Port\' not found.";
@@ -91,14 +93,14 @@ return port;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return stgc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const string STG_CONFIG::GetVersion() const
+const std::string STG_CONFIG::GetVersion() const
 {
 return "Stg configurator v.0.08";
 }
@@ -152,7 +154,7 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-const string & STG_CONFIG::GetStrError() const
+const std::string & STG_CONFIG::GetStrError() const
 {
 return errorStr;
 }

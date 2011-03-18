@@ -38,7 +38,7 @@ $Author: faust $
 
 #include "os_int.h"
 
-#include "base_store.h"
+#include "store.h"
 #include "settings.h"
 #include "users.h"
 #include "user.h"
@@ -92,7 +92,7 @@ class USERS_IMPL : private NONCOPYABLE, public USERS {
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
 public:
-    USERS_IMPL(SETTINGS * s, BASE_STORE * store, TARIFFS * tariffs, const ADMIN & sysAdmin);
+    USERS_IMPL(SETTINGS * s, STORE * store, TARIFFS * tariffs, const ADMIN & sysAdmin);
     virtual ~USERS_IMPL();
 
     int             FindByName(const std::string & login, USER_PTR * user);
@@ -153,7 +153,7 @@ private:
 
     SETTINGS *          settings;
     TARIFFS *           tariffs;
-    BASE_STORE *        store;
+    STORE *             store;
     const ADMIN &       sysAdmin;
     STG_LOGGER &        WriteServLog;
 

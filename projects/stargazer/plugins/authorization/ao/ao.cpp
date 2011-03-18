@@ -29,7 +29,9 @@ $Author: faust $
 #include <signal.h>
 
 #include "ao.h"
-#include "../../../user.h"
+#include "user.h"
+#include "users.h"
+#include "../../../user_property.h"
 #include "../../../eventloop.h"
 
 class AO_CREATOR
@@ -61,10 +63,10 @@ AO_CREATOR aoc;
 //-----------------------------------------------------------------------------
 // Класс для поиска юзера в списке нотификаторов
 template <typename varType>
-class IS_CONTAINS_USER: public binary_function<varType, user_iter, bool>
+class IS_CONTAINS_USER: public binary_function<varType, USER_PTR, bool>
 {
 public:
-    bool operator()(varType notifier, user_iter user) const
+    bool operator()(varType notifier, USER_PTR user) const
         {
         return notifier.GetUser() == user;
         };
@@ -72,7 +74,7 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return aoc.GetPlugin();
 }
@@ -116,7 +118,7 @@ int AUTH_AO::Start()
 {
 GetUsers();
 
-list<user_iter>::iterator users_iter;
+list<USER_PTR>::iterator users_iter;
 
 /*onAddUserNotifier.SetAuthorizator(this);
 onDelUserNotifier.SetAuthorizator(this);*/
@@ -141,7 +143,7 @@ if (!isRunning)
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
-list<user_iter>::iterator users_iter;
+list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
@@ -168,7 +170,7 @@ uint16_t AUTH_AO::GetStopPosition() const
 return 70;
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::SetUserNotifiers(user_iter u)
+void AUTH_AO::SetUserNotifiers(USER_PTR u)
 {
 // ---------- AlwaysOnline -------------------
 CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier(*this, u);
@@ -182,8 +184,8 @@ BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
 AfterChgAONotifier.SetUser(u);*/
 AfterChgAONotifierList.push_front(AfterChgAONotifier);
 
-u->property.alwaysOnline.AddBeforeNotifier(&(*BeforeChgAONotifierList.begin()));
-u->property.alwaysOnline.AddAfterNotifier(&(*AfterChgAONotifierList.begin()));
+u->GetProperty().alwaysOnline.AddBeforeNotifier(&(*BeforeChgAONotifierList.begin()));
+u->GetProperty().alwaysOnline.AddAfterNotifier(&(*AfterChgAONotifierList.begin()));
 // ---------- AlwaysOnline end ---------------
 
 // ---------- IP -------------------
@@ -198,12 +200,12 @@ BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
 AfterChgIPNotifier.SetUser(u);*/
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
-u->property.ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
-u->property.ips.AddAfterNotifier(&(*AfterChgIPNotifierList.begin()));
+u->GetProperty().ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
+u->GetProperty().ips.AddAfterNotifier(&(*AfterChgIPNotifierList.begin()));
 // ---------- IP end ---------------
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::UnSetUserNotifiers(user_iter u)
+void AUTH_AO::UnSetUserNotifiers(USER_PTR u)
 {
 // ---      AlwaysOnline        ---
 IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<int> > IsContainsUserAOB;
@@ -218,7 +220,7 @@ aoBIter = find_if(BeforeChgAONotifierList.begin(),
 
 if (aoBIter != BeforeChgAONotifierList.end())
     {
-    aoBIter->GetUser()->property.alwaysOnline.DelBeforeNotifier(&(*aoBIter));
+    aoBIter->GetUser()->GetProperty().alwaysOnline.DelBeforeNotifier(&(*aoBIter));
     BeforeChgAONotifierList.erase(aoBIter);
     }
 
@@ -228,7 +230,7 @@ aoAIter = find_if(AfterChgAONotifierList.begin(),
 
 if (aoAIter != AfterChgAONotifierList.end())
     {
-    aoAIter->GetUser()->property.alwaysOnline.DelAfterNotifier(&(*aoAIter));
+    aoAIter->GetUser()->GetProperty().alwaysOnline.DelAfterNotifier(&(*aoAIter));
     AfterChgAONotifierList.erase(aoAIter);
     }
 // ---      AlwaysOnline end    ---
@@ -246,7 +248,7 @@ ipBIter = find_if(BeforeChgIPNotifierList.begin(),
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
-    ipBIter->GetUser()->property.ips.DelBeforeNotifier(&(*ipBIter));
+    ipBIter->GetUser()->GetProperty().ips.DelBeforeNotifier(&(*ipBIter));
     BeforeChgIPNotifierList.erase(ipBIter);
     }
 
@@ -256,7 +258,7 @@ ipAIter = find_if(AfterChgIPNotifierList.begin(),
 
 if (ipAIter != AfterChgIPNotifierList.end())
     {
-    ipAIter->GetUser()->property.ips.DelAfterNotifier(&(*ipAIter));
+    ipAIter->GetUser()->GetProperty().ips.DelAfterNotifier(&(*ipAIter));
     AfterChgIPNotifierList.erase(ipAIter);
     }
 // ---          IP end          ---
@@ -264,7 +266,7 @@ if (ipAIter != AfterChgIPNotifierList.end())
 //-----------------------------------------------------------------------------
 void AUTH_AO::GetUsers()
 {
-user_iter u;
+USER_PTR u;
 int h = users->OpenSearch();
 if (!h)
     {
@@ -285,16 +287,16 @@ while (1)
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::Unauthorize(user_iter u) const
+void AUTH_AO::Unauthorize(USER_PTR u) const
 {
 u->Unauthorize(this);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::UpdateUserAuthorization(user_iter u) const
+void AUTH_AO::UpdateUserAuthorization(USER_PTR u) const
 {
-if (u->property.alwaysOnline)
+if (u->GetProperty().alwaysOnline)
     {
-    USER_IPS ips = u->property.ips;
+    USER_IPS ips = u->GetProperty().ips;
     if (ips.OnlyOneIP())
         {
         if (u->Authorize(ips[0].ip, "", 0xFFffFFff, this) == 0)
@@ -304,19 +306,19 @@ if (u->property.alwaysOnline)
     }
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::AddUser(user_iter u)
+void AUTH_AO::AddUser(USER_PTR u)
 {
 SetUserNotifiers(u);
 usersList.push_back(u);
 UpdateUserAuthorization(u);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::DelUser(user_iter u)
+void AUTH_AO::DelUser(USER_PTR u)
 {
 Unauthorize(u);
 UnSetUserNotifiers(u);
 
-list<user_iter>::iterator users_iter;
+list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 
 while (users_iter != usersList.end())
@@ -348,4 +350,3 @@ void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType &, const varPar
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
 }
 //-----------------------------------------------------------------------------
-

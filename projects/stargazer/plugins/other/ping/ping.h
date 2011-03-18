@@ -10,83 +10,79 @@
 #include <pthread.h>
 
 #include <string>
+#include <list>
 
 #include "os_int.h"
-#include "base_plugin.h"
+#include "plugin.h"
+#include "module_settings.h"
 #include "notifer.h"
 #include "user_ips.h"
 #include "pinger.h"
-#include "../../../users.h"
+#include "users.h"
 
-using namespace std;
-
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 class PING;
+class USER;
+class SETTINGS;
 //-----------------------------------------------------------------------------*/
-class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t>
-{
+class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-    CHG_CURRIP_NOTIFIER_PING(const PING & p, user_iter u) : user(u), ping(p) {}
+    CHG_CURRIP_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
     void Notify(const uint32_t & oldIP, const uint32_t & newIP);
-    user_iter GetUser() const { return user; }
+    USER_PTR GetUser() const { return user; }
 
 private:
-    user_iter user;
+    USER_PTR user;
     const PING & ping;
 };
 //-----------------------------------------------------------------------------
-class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS>
-{
+class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS> {
 public:
-    CHG_IPS_NOTIFIER_PING(const PING & p, user_iter u) : user(u), ping(p) {}
+    CHG_IPS_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
     void Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS);
-    user_iter GetUser() const { return user; }
+    USER_PTR GetUser() const { return user; }
 
 private:
-    user_iter user;
+    USER_PTR user;
     const PING & ping;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER_PING: public NOTIFIER_BASE<user_iter>
-{
+class ADD_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
     ADD_USER_NONIFIER_PING(PING & p) : ping(p) {}
     virtual ~ADD_USER_NONIFIER_PING() {}
-    void Notify(const user_iter & user);
+    void Notify(const USER_PTR & user);
 
 private:
     PING & ping;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER_PING: public NOTIFIER_BASE<user_iter>
-{
+class DEL_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
     DEL_USER_NONIFIER_PING(PING & p) : ping(p) {}
     virtual ~DEL_USER_NONIFIER_PING() {}
-    void Notify(const user_iter & user);
+    void Notify(const USER_PTR & user);
 
 private:
     PING & ping;
 };
 //-----------------------------------------------------------------------------
-class PING_SETTINGS
-{
+class PING_SETTINGS {
 public:
     PING_SETTINGS();
     virtual ~PING_SETTINGS() {}
-    const string& GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
     int GetPingDelay() const { return pingDelay; }
 private:
-    int ParseIntInRange(const string & str, int min, int max, int * val);
+    int ParseIntInRange(const std::string & str, int min, int max, int * val);
 
     int pingDelay;
-    mutable string errorStr;
+    mutable std::string errorStr;
 };
 //-----------------------------------------------------------------------------
-class PING: public BASE_PLUGIN
-{
+class PING : public PLUGIN {
 friend class CHG_CURRIP_NOTIFIER_PING;
 friend class CHG_IPS_NOTIFIER_PING;
 public:
@@ -97,7 +93,7 @@ public:
     void SetTariffs(TARIFFS *) {}
     void SetAdmins(ADMINS *) {}
     void SetTraffcounter(TRAFFCOUNTER *) {}
-    void SetStore(BASE_STORE *) {}
+    void SetStore(STORE *) {}
     void SetStgSettings(const SETTINGS *) {}
     void SetSettings(const MODULE_SETTINGS & s);
     int ParseSettings();
@@ -107,25 +103,25 @@ public:
     int Reload() { return 0; }
     bool IsRunning();
 
-    const string & GetStrError() const;
-    const string GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string GetVersion() const;
     uint16_t GetStartPosition() const;
     uint16_t GetStopPosition() const;
 
-    void AddUser(user_iter u);
-    void DelUser(user_iter u);
+    void AddUser(USER_PTR u);
+    void DelUser(USER_PTR u);
 
 private:
     void GetUsers();
-    void SetUserNotifiers(user_iter u);
-    void UnSetUserNotifiers(user_iter u);
+    void SetUserNotifiers(USER_PTR u);
+    void UnSetUserNotifiers(USER_PTR u);
     static void * Run(void * d);
 
-    mutable string errorStr;
+    mutable std::string errorStr;
     PING_SETTINGS pingSettings;
     MODULE_SETTINGS settings;
     USERS * users;
-    list<user_iter> usersList;
+    std::list<USER_PTR> usersList;
 
     /*
     мы должны перепроверить возможность пингования юзера при изменении
@@ -139,8 +135,8 @@ private:
     bool isRunning;
     mutable STG_PINGER pinger;
 
-    list<CHG_CURRIP_NOTIFIER_PING> ChgCurrIPNotifierList;
-    list<CHG_IPS_NOTIFIER_PING> ChgIPNotifierList;
+    std::list<CHG_CURRIP_NOTIFIER_PING> ChgCurrIPNotifierList;
+    std::list<CHG_IPS_NOTIFIER_PING> ChgIPNotifierList;
 
     ADD_USER_NONIFIER_PING onAddUserNotifier;
     DEL_USER_NONIFIER_PING onDelUserNotifier;

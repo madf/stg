@@ -7,12 +7,11 @@
 #include "raw_ip_packet.h"
 
 extern "C"
-    {
-    #include "libipq.h"
-    }
-
-class IPQ_CAP_CREATOR
 {
+#include "libipq.h"
+}
+
+class IPQ_CAP_CREATOR {
 private:
     IPQ_CAP * ic;
 
@@ -38,14 +37,14 @@ IPQ_CAP_CREATOR icc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return icc.GetCapturer();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const string IPQ_CAP::GetVersion() const
+const std::string IPQ_CAP::GetVersion() const
 {
 return "ipq_cap v.1.2";
 }
@@ -65,7 +64,7 @@ void IPQ_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
 traffCnt = tc;
 }
 //-----------------------------------------------------------------------------
-const string & IPQ_CAP::GetStrError() const
+const std::string & IPQ_CAP::GetStrError() const
 {
 return errorStr;
 }

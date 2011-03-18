@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "base_plugin.h"
+#include "plugin.h"
 #include "os_int.h"
 #include "main_thread.h"
 
@@ -16,40 +16,39 @@ namespace boost {
 class USERS;
 class TARIFFS;
 class ADMINS;
-class BASE_STORE;
+class STORE;
 class TRAFFCOUNTER;
 class SETTINGS;
 
-class STGCONFIG2 : public BASE_PLUGIN
-{
+class STGCONFIG2 : public PLUGIN {
 public:
     STGCONFIG2();
     virtual ~STGCONFIG2();
 
-    void                SetUsers(USERS * u) { users = u; };
-    void                SetTariffs(TARIFFS * t) { tariffs = t; };
-    void                SetAdmins(ADMINS * a) { admins = a; };
-    void                SetStore(BASE_STORE * s) { store = s; };
-    void                SetTraffcounter(TRAFFCOUNTER *) {};
-    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; };
-    void                SetSettings(const MODULE_SETTINGS & s) { modSettings = s; };
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetTariffs(TARIFFS * t) { tariffs = t; }
+    void                SetAdmins(ADMINS * a) { admins = a; }
+    void                SetStore(STORE * s) { store = s; }
+    void                SetTraffcounter(TRAFFCOUNTER *) {}
+    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
+    void                SetSettings(const MODULE_SETTINGS & s) { modSettings = s; }
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
+    int                 Reload() { return 0; }
     bool                IsRunning();
 
-    const std::string & GetStrError() const { return errorStr; };
-    const std::string   GetVersion() const { return PLUGIN_VERSION; };
-    uint16_t            GetStartPosition() const { return 220; };
-    uint16_t            GetStopPosition() const { return 220; };
+    const std::string & GetStrError() const { return errorStr; }
+    const std::string   GetVersion() const { return PLUGIN_VERSION; }
+    uint16_t            GetStartPosition() const { return 220; }
+    uint16_t            GetStopPosition() const { return 220; }
 
 private:
     USERS * users;
     TARIFFS * tariffs;
     ADMINS * admins;
-    BASE_STORE * store;
+    STORE * store;
     const SETTINGS * stgSettings;
     MODULE_SETTINGS modSettings;
 
@@ -61,6 +60,6 @@ private:
 
 };
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 #endif

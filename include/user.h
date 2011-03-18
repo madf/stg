@@ -71,11 +71,10 @@ public:
     virtual time_t              GetConnectedModificationTime() const = 0;
     virtual int                 GetAuthorized() const = 0;
     virtual int                 Authorize(uint32_t ip,
-                                          const std::string & iface,
                                           uint32_t enabledDirs,
-                                          const BASE_AUTH * auth) = 0;
-    virtual void                Unauthorize(const BASE_AUTH * auth) = 0;
-    virtual bool                IsAuthorizedBy(const BASE_AUTH * auth) const = 0;
+                                          const AUTH * auth) = 0;
+    virtual void                Unauthorize(const AUTH * auth) = 0;
+    virtual bool                IsAuthorizedBy(const AUTH * auth) const = 0;
 
     virtual int                 AddMessage(STG_MSG * msg) = 0;
 

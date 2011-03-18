@@ -27,98 +27,92 @@
 #ifndef AO_H
 #define AO_H
 
-#include <string>
 #include <pthread.h>
-#include "base_auth.h"
-#include "base_store.h"
+
+#include <string>
+#include <list>
+
+#include "auth.h"
+#include "store.h"
 #include "notifer.h"
 #include "user_ips.h"
-#include "../../../users.h"
+#include "user.h"
 
-using namespace std;
-
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 class AUTH_AO;
+class USERS;
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
-{
+class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
-                CHG_BEFORE_NOTIFIER(AUTH_AO & a, user_iter u) : user(u), auth(a) {}
+                CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    //void        SetUser(user_iter u) { user = u; }
-    user_iter   GetUser() {return user; }
-    //void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
+    USER_PTR      GetUser() const { return user; }
 
 private:
-    user_iter   user;
+    USER_PTR      user;
     const       AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType>
-{
+class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
-                CHG_AFTER_NOTIFIER(AUTH_AO & a, user_iter u) : user(u), auth(a) {}
+                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    //void        SetUser(user_iter u) { user = u; }
-    user_iter   GetUser() {return user; }
-    //void        SetAuthorizator(const AUTH_AO * a) { auth = a; }
+    USER_PTR      GetUser() const { return user; }
 
 private:
-    user_iter   user;
+    USER_PTR          user;
     const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
-class AUTH_AO_SETTINGS
-{
+class AUTH_AO_SETTINGS {
 public:
-    const string& GetStrError() const { static string s; return s; }
+    const std::string & GetStrError() const { static std::string s; return s; }
     int ParseSettings(const MODULE_SETTINGS &) { return 0; }
 };
 //-----------------------------------------------------------------------------
-class AUTH_AO :public BASE_AUTH
-{
+class AUTH_AO :public AUTH {
 public:
     AUTH_AO();
     virtual ~AUTH_AO(){};
 
     void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS *){};
-    void                SetAdmins(ADMINS *){};
-    void                SetTraffcounter(TRAFFCOUNTER *){};
-    void                SetStore(BASE_STORE *){};
-    void                SetStgSettings(const SETTINGS *){};
+    void                SetTariffs(TARIFFS *) {}
+    void                SetAdmins(ADMINS *) {}
+    void                SetTraffcounter(TRAFFCOUNTER *) {}
+    void                SetStore(STORE *) {}
+    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; };
+    int                 Reload() { return 0; }
     bool                IsRunning();
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
-    const string      & GetStrError() const;
-    const string        GetVersion() const;
+    const std::string & GetStrError() const;
+    const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 
-    void                AddUser(user_iter u);
-    void                DelUser(user_iter u);
+    void                AddUser(USER_PTR u);
+    void                DelUser(USER_PTR u);
 
-    void                UpdateUserAuthorization(user_iter u) const;
-    void                Unauthorize(user_iter u) const;
+    void                UpdateUserAuthorization(USER_PTR u) const;
+    void                Unauthorize(USER_PTR u) const;
 
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
     void                GetUsers();
-    void                SetUserNotifiers(user_iter u);
-    void                UnSetUserNotifiers(user_iter u);
+    void                SetUserNotifiers(USER_PTR u);
+    void                UnSetUserNotifiers(USER_PTR u);
 
-    mutable string      errorStr;
+    mutable std::string errorStr;
     AUTH_AO_SETTINGS    aoSettings;
-    USERS             * users;
-    list<user_iter>     usersList;
+    USERS *             users;
+    std::list<USER_PTR> usersList;
     bool                isRunning;
     MODULE_SETTINGS     settings;
 
@@ -135,14 +129,12 @@ private:
     list<CHG_BEFORE_NOTIFIER<USER_IPS> >    BeforeChgIPNotifierList;
     list<CHG_AFTER_NOTIFIER<USER_IPS> >     AfterChgIPNotifierList;
 
-    class ADD_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
-    {
+    class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {};
-        virtual ~ADD_USER_NONIFIER(){};
+        ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
+        virtual ~ADD_USER_NONIFIER() {}
 
-        //void SetAuthorizator(AUTH_AO * a) { auth = a; }
-        void Notify(const user_iter & user)
+        void Notify(const USER_PTR & user)
             {
             auth.AddUser(user);
             }
@@ -151,14 +143,12 @@ private:
         AUTH_AO & auth;
     } onAddUserNotifier;
 
-    class DEL_USER_NONIFIER: public NOTIFIER_BASE<user_iter>
-    {
+    class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {};
-        virtual ~DEL_USER_NONIFIER(){};
+        DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
+        virtual ~DEL_USER_NONIFIER() {}
 
-        //void SetAuthorizator(AUTH_AO * a) { auth = a; }
-        void Notify(const user_iter & user)
+        void Notify(const USER_PTR & user)
             {
             auth.DelUser(user);
             }
@@ -171,5 +161,3 @@ private:
 //-----------------------------------------------------------------------------
 
 #endif
-
-

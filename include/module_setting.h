@@ -4,14 +4,12 @@
  $Author: faust $
  */
 
-#ifndef BASE_SETTINGS_H
-#define BASE_SETTINGS_H
+#ifndef MODULE_SETTINGS_H
+#define MODULE_SETTINGS_H
 
-#include <string.h>
+#include <cstring> // strcasecmp
 #include <string>
 #include <vector>
-
-using namespace std;
 
 //-----------------------------------------------------------------------------
 struct PARAM_VALUE
@@ -19,15 +17,15 @@ struct PARAM_VALUE
     PARAM_VALUE()
         : param(),
           value()
-    {};
+    {}
     bool operator==(const PARAM_VALUE & rhs) const
-        { return !strcasecmp(param.c_str(), rhs.param.c_str()); };
+        { return !strcasecmp(param.c_str(), rhs.param.c_str()); }
 
     bool operator<(const PARAM_VALUE & rhs) const
-        { return strcasecmp(param.c_str(), rhs.param.c_str()) < 0; };
+        { return strcasecmp(param.c_str(), rhs.param.c_str()) < 0; }
 
-    string param;
-    vector<string> value;
+    std::string param;
+    std::vector<std::string> value;
 };
 //-----------------------------------------------------------------------------
 struct MODULE_SETTINGS
@@ -35,21 +33,19 @@ struct MODULE_SETTINGS
     MODULE_SETTINGS()
         : moduleName(),
           moduleParams()
-    {};
+    {}
     MODULE_SETTINGS(const MODULE_SETTINGS & rvalue)
         : moduleName(rvalue.moduleName),
           moduleParams(rvalue.moduleParams)
-    {};
+    {}
     bool operator==(const MODULE_SETTINGS & rhs) const
-        { return !strcasecmp(moduleName.c_str(), rhs.moduleName.c_str()); };
+        { return !strcasecmp(moduleName.c_str(), rhs.moduleName.c_str()); }
 
     bool operator<(const MODULE_SETTINGS & rhs) const
-        { return strcasecmp(moduleName.c_str(), rhs.moduleName.c_str()) < 0; };
+        { return strcasecmp(moduleName.c_str(), rhs.moduleName.c_str()) < 0; }
 
-string              moduleName;
-vector<PARAM_VALUE> moduleParams;
+    std::string              moduleName;
+    std::vector<PARAM_VALUE> moduleParams;
 };
 //-----------------------------------------------------------------------------
-#endif //BASE_SETTINGS_H
-
-
+#endif

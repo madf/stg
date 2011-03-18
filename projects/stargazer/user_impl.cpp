@@ -47,7 +47,7 @@
 #include "admin.h"
 
 USER_IMPL::USER_IMPL(const SETTINGS * s,
-           const BASE_STORE * st,
+           const STORE * st,
            const TARIFFS * t,
            const ADMIN & a,
            const USERS * u)
@@ -351,7 +351,7 @@ if (store->SaveMonthStat(stat, t1.tm_mon, t1.tm_year, login))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::Authorize(uint32_t ip, const string &, uint32_t dirs, const BASE_AUTH * auth)
+int USER_IMPL::Authorize(uint32_t ip, uint32_t dirs, const AUTH * auth)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -424,7 +424,7 @@ ScanMessage();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Unauthorize(const BASE_AUTH * auth)
+void USER_IMPL::Unauthorize(const AUTH * auth)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -441,7 +441,7 @@ if (authorizedBy.empty())
     }
 }
 //-----------------------------------------------------------------------------
-bool USER_IMPL::IsAuthorizedBy(const BASE_AUTH * auth) const
+bool USER_IMPL::IsAuthorizedBy(const AUTH * auth) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //  Is this user authorized by specified authorizer?
@@ -1190,7 +1190,7 @@ int USER_IMPL::SendMessage(STG_MSG & msg) const
 {
 // No lock `cause we are already locked from caller
 int ret = -1;
-set<const BASE_AUTH*>::iterator it(authorizedBy.begin());
+set<const AUTH*>::iterator it(authorizedBy.begin());
 while (it != authorizedBy.end())
     {
     if (!(*it++)->SendMessage(msg, currIP))

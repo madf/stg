@@ -33,7 +33,7 @@
 #include "conffiles.h"
 
 //-----------------------------------------------------------------------------
-PLUGIN_RUNNER::PLUGIN_RUNNER(const string & pFileName,
+PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
                              const MODULE_SETTINGS & ms,
                              ADMINS * a,
                              TARIFFS * t,
@@ -106,7 +106,7 @@ if (isPluginLoaded)
 isPluginLoaded = 0;
 }
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * PLUGIN_RUNNER::GetPlugin()
+PLUGIN * PLUGIN_RUNNER::GetPlugin()
 {
 return plugin;
 }
@@ -168,16 +168,16 @@ libHandle = dlopen(pluginFileName.c_str(), RTLD_NOW);
 
 if (!libHandle)
     {
-    errorStr = string("Plugin loading failed. ") + dlerror();
+    errorStr = std::string("Plugin loading failed. ") + dlerror();
     printfd(__FILE__, "%s\n", errorStr.c_str());
     return -1;
     }
 
-BASE_PLUGIN * (*GetPlugin)();
-GetPlugin = (BASE_PLUGIN * (*)())dlsym(libHandle, "GetPlugin");
+PLUGIN * (*GetPlugin)();
+GetPlugin = (PLUGIN * (*)())dlsym(libHandle, "GetPlugin");
 if (!GetPlugin)
     {
-    errorStr = string("GetPlugin() not found. ") + dlerror();
+    errorStr = std::string("GetPlugin() not found. ") + dlerror();
     return -1;
     }
 plugin = GetPlugin();
@@ -216,7 +216,7 @@ if (isPluginLoaded)
 return 0;
 }
 //-----------------------------------------------------------------------------
-const string & PLUGIN_RUNNER::GetStrError() const
+const std::string & PLUGIN_RUNNER::GetStrError() const
 {
 return errorStr;
 }
@@ -231,4 +231,3 @@ uint16_t PLUGIN_RUNNER::GetStopPosition() const
 return plugin->GetStopPosition();
 }
 //-----------------------------------------------------------------------------
-

@@ -35,13 +35,13 @@
 #include "tariffs_impl.h"
 #include "stg_locker.h"
 #include "stg_logger.h"
-#include "base_store.h"
+#include "store.h"
 #include "admin.h"
 
 using namespace std;
 
 //-----------------------------------------------------------------------------
-TARIFFS_IMPL::TARIFFS_IMPL(BASE_STORE * st)
+TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
     : tariffs(),
       store(st),
       WriteServLog(GetStgLogger()),

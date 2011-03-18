@@ -48,21 +48,15 @@ $Author: faust $
 #include <signal.h>
 #include <unistd.h>
 
-#include <string>
-#include <vector>
-
 #include "ether_cap.h"
 #include "common.h"
 #include "raw_ip_packet.h"
-
-using namespace std;
 
 //#define CAP_DEBUG 1
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-class BPF_CAP_CREATOR
-{
+class BPF_CAP_CREATOR {
 private:
     BPF_CAP * bpfc;
 
@@ -88,7 +82,7 @@ BPF_CAP_CREATOR bcc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return bcc.GetCapturer();
 }
@@ -99,7 +93,7 @@ int BPF_CAP_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 //char sep[]= ", \t\n\r";
 //char *s;
-string ifaces;
+std::string ifaces;
 //char * str;
 //char *p;
 
@@ -159,7 +153,7 @@ if (!ifaces.size())
 return 0;
 }
 //-----------------------------------------------------------------------------
-string BPF_CAP_SETTINGS::GetIface(unsigned int num)
+std::string BPF_CAP_SETTINGS::GetIface(unsigned int num)
 {
 if (num >= iface.size())
     {
@@ -170,7 +164,7 @@ return iface[num];
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const string BPF_CAP::GetVersion() const
+const std::string BPF_CAP::GetVersion() const
 {
 return "bpf_cap v.1.0";
 }
@@ -204,7 +198,7 @@ void BPF_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
 traffCnt = tc;
 }
 //-----------------------------------------------------------------------------
-const string & BPF_CAP::GetStrError() const
+const std::string & BPF_CAP::GetStrError() const
 {
 return errorStr;
 }
@@ -365,7 +359,7 @@ strncpy(ifr.ifr_name, bd->iface.c_str(), sizeof(ifr.ifr_name));
 //if (ioctl(cd[n].fd, BIOCSBLEN, (caddr_t)&l) < 0)
 if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
     {
-    errorStr = bd->iface + " BIOCSBLEN " + string(strerror(errno));
+    errorStr = bd->iface + " BIOCSBLEN " + std::string(strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }
@@ -373,7 +367,7 @@ if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
 //if (ioctl(cd[n].fd, BIOCSETIF, (caddr_t)&ifr) < 0 )
 if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
     {
-    errorStr = bd->iface + " BIOCSETIF " + string(strerror(errno));
+    errorStr = bd->iface + " BIOCSETIF " + std::string(strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }
@@ -381,7 +375,7 @@ if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
 //if (ioctl(cd[n].fd, BIOCIMMEDIATE, &im) < 0 )
 if (ioctl(bd->fd, BIOCIMMEDIATE, &im) < 0)
     {
-    errorStr = bd->iface + " BIOCIMMEDIATE " + string(strerror(errno));
+    errorStr = bd->iface + " BIOCIMMEDIATE " + std::string(strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }

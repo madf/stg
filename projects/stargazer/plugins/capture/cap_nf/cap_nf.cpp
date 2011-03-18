@@ -61,7 +61,7 @@ private:
     NF_CAP * nf;
 } cnc;
 
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return cnc.GetCapturer();
 }

@@ -29,23 +29,22 @@
 #ifndef FIREBIRD_STORE_H
 #define FIREBIRD_STORE_H
 
+#include <ctime>
 #include <string>
 #include <vector>
 #include <map>
 
-#include "base_store.h"
+#include "store.h"
 #include "stg_locker.h"
 #include "ibpp.h"
-//#include "firebird_database.h"
 
-struct ToLower
-{
-char operator() (char c) const  { return std::tolower(c); }
+struct ToLower {
+    char operator() (char c) const  { return std::tolower(c); }
 };
 
-extern "C" BASE_STORE * GetStore();
+extern "C" STORE * GetStore();
 
-class FIREBIRD_STORE : public BASE_STORE {
+class FIREBIRD_STORE : public STORE {
 public:
     FIREBIRD_STORE();
     virtual ~FIREBIRD_STORE();
@@ -73,7 +72,7 @@ public:
                             double cash,
                             double freeMb,
                             const std::string & reason) const;
-    int WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
+    int WriteDetailedStat(const TRAFF_STAT & statTree,
                           time_t lastStat,
                           const std::string & login) const;
 
@@ -126,11 +125,10 @@ private:
     mutable IBPP::TLR tlr;
 
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
-
-    time_t ts2time_t(const IBPP::Timestamp & ts) const;
-    void time_t2ts(time_t t, IBPP::Timestamp * ts) const;
-    void ym2date(int year, int month, IBPP::Date * date) const;
 };
 
-#endif //FIREBIRD_STORE_H
+time_t ts2time_t(const IBPP::Timestamp & ts) const;
+void time_t2ts(time_t t, IBPP::Timestamp * ts) const;
+void ym2date(int year, int month, IBPP::Date * date) const;
 
+#endif //FIREBIRD_STORE_H
