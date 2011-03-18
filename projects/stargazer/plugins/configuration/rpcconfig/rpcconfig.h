@@ -14,6 +14,7 @@
 #include "os_int.h"
 #include "plugin.h"
 #include "admin_conf.h"
+#include "module_settings.h"
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
