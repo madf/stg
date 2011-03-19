@@ -1,10 +1,14 @@
 #include <cstdlib>
 #include <csignal>
 
+#include <vector>
+#include <algorithm>
+
 #include "rpcconfig.h"
 
 #include "admin.h"
 #include "module_settings.h"
+#include "../../../settings.h"
 #include "common.h"
 
 #include "info_methods.h"
@@ -64,10 +68,10 @@ int RPC_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
     errorStr = "Parameter \'Port\' not found.";
@@ -83,7 +87,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
 port = p;
 
 pv.param = "CookieTimeout";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
     cookieTimeout = 1800; // 30 * 60
@@ -101,7 +105,7 @@ else
 return 0;
 }
 
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return rpcc.GetPlugin();
 }
@@ -111,10 +115,10 @@ RPC_CONFIG::RPC_CONFIG()
       admins(NULL),
       tariffs(NULL),
       store(NULL),
-      stgSettings(NULL),
       rpcServer(NULL),
       running(false),
-      stopped(true)
+      stopped(true),
+      dayFee(0)
 {
 }
 
@@ -132,6 +136,15 @@ if (ret)
     errorStr = rpcConfigSettings.GetStrError();
 
 return ret;
+}
+
+void RPC_CONFIG::SetStgSettings(const SETTINGS * settings)
+{
+    dayFee = settings->GetDayFee();
+    dirNames.erase(dirNames.begin(), dirNames.end());
+    for (size_t i = 0; i < DIR_NUM; ++i) {
+        dirNames.push_back(settings->GetDirName(i));
+    }
 }
 
 int RPC_CONFIG::Start()
@@ -225,7 +238,7 @@ bool RPC_CONFIG::CheckAdmin(const std::string & login,
                             const std::string & password,
                             std::string * cookie)
 {
-ADMIN admin;
+ADMIN * admin = NULL;
 
 if (!admins->AdminCorrect(login, password, &admin))
     {
@@ -235,7 +248,7 @@ if (!admins->AdminCorrect(login, password, &admin))
 ADMIN_INFO info;
 time(&info.accessTime);
 info.admin = login;
-info.priviledges = *admin.GetPriv();
+info.priviledges = *admin->GetPriv();
 *cookie = GetCookie();
 cookies[*cookie] = info;
 
@@ -278,7 +291,8 @@ void RPC_CONFIG::InitiateRegistry()
 xmlrpc_c::methodPtr const methodInfoPtr(new METHOD_INFO(
             tariffs,
             users,
-            stgSettings
+            dayFee,
+            dirNames
             ));
 rpcRegistry.addMethod("stargazer.info", methodInfoPtr);
 

@@ -1,8 +1,9 @@
-#include "info_methods.h"
-
 #include <sys/utsname.h>
+
+#include "info_methods.h"
 #include "version.h"
 #include "rpcconfig.h"
+#include "common.h"
 
 void METHOD_INFO::execute(xmlrpc_c::paramList const & paramList,
                           xmlrpc_c::value *   const   retvalPtr)
@@ -30,14 +31,14 @@ structVal["tariff"] = xmlrpc_c::value_int(2);
 structVal["users_num"] = xmlrpc_c::value_int(users->GetUserNum());
 structVal["uname"] = xmlrpc_c::value_string(un);
 structVal["dir_num"] = xmlrpc_c::value_int(DIR_NUM);
-structVal["day_fee"] = xmlrpc_c::value_int(settings->GetDayFee());
+structVal["day_fee"] = xmlrpc_c::value_int(dayFee);
 
 std::vector<xmlrpc_c::value> dirnameVal;
 
 for (int i = 0; i< DIR_NUM; i++)
     {
-    string dn2e;
-    Encode12str(dn2e, settings->GetDirName(i));
+    std::string dn2e;
+    Encode12str(dn2e, dirNames[i]);
     dirnameVal.push_back(xmlrpc_c::value_string(dn2e));
     }
 

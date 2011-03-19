@@ -6,6 +6,7 @@
 #include <ctime>
 #include <string>
 #include <map>
+#include <vector>
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
@@ -62,7 +63,7 @@ public:
     void                SetAdmins(ADMINS * a) { admins = a; }
     void                SetStore(STORE * s) { store = s; }
     void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
+    void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
@@ -95,7 +96,6 @@ private:
     TARIFFS *               tariffs;
     STORE *                 store;
     MODULE_SETTINGS         settings;
-    const SETTINGS *        stgSettings;
     xmlrpc_c::registry      rpcRegistry;
     xmlrpc_c::serverAbyss * rpcServer;
     bool                    running;
@@ -103,6 +103,8 @@ private:
     pthread_t               tid;
     std::map<std::string,
              ADMIN_INFO>    cookies;
+    size_t                  dayFee;
+    std::vector<std::string> dirNames;
 };
 
 #endif

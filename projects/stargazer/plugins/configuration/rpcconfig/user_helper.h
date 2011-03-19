@@ -14,20 +14,20 @@ class TARIFFS;
 class USER_HELPER
 {
 public:
-    USER_HELPER(user_iter & it)
-        : iter(it)
+    USER_HELPER(USER_PTR & p)
+        : ptr(p)
     {
     }
 
     void GetUserInfo(xmlrpc_c::value * info,
                      bool hidePassword = false);
     bool SetUserInfo(const xmlrpc_c::value & info,
-                     const ADMIN & admin,
+                     const ADMIN * admin,
                      const std::string & login,
                      const STORE & store,
                      TARIFFS * tariffs);
 private:
-    user_iter & iter;
+    USER_PTR & ptr;
 };
 
 #endif

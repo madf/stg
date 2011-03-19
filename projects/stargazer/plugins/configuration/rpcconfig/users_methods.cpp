@@ -5,6 +5,7 @@
 #include "users.h"
 #include "admins.h"
 #include "tariffs.h"
+#include "../../../user_property.h"
 
 #include "rpcconfig.h"
 #include "user_helper.h"
@@ -32,7 +33,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -70,7 +71,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin = NULL;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -78,7 +79,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -114,7 +115,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -122,7 +123,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -158,7 +159,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 bool hidePassword = !adminInfo.priviledges.userConf ||
                     !adminInfo.priviledges.userPasswd;
 
-user_iter u;
+USER_PTR u;
 
 int h = users->OpenSearch();
 if (!h)
@@ -206,7 +207,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -214,7 +215,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -259,7 +260,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -267,7 +268,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -275,10 +276,10 @@ if (users->FindByName(login, &u))
     return;
     }
 
-double cash = u->property.cash.Get();
+double cash = u->GetProperty().cash.Get();
 cash += amount;
 
-if (!u->property.cash.Set(cash, admin, login, store, comment))
+if (!u->GetProperty().cash.Set(cash, admin, login, store, comment))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -309,7 +310,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -317,7 +318,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -325,7 +326,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-if (!u->property.cash.Set(cash, admin, login, store, comment))
+if (!u->GetProperty().cash.Set(cash, admin, login, store, comment))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -357,7 +358,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -365,7 +366,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
     return;
     }
 
-user_iter u;
+USER_PTR u;
 
 if (users->FindByName(login, &u))
     {
@@ -377,10 +378,10 @@ if (tariffs->FindByName(tariff))
     {
     if (delayed)
         {
-        if (u->property.nextTariff.Set(tariff,
-                                       admin,
-                                       login,
-                                       store))
+        if (u->GetProperty().nextTariff.Set(tariff,
+                                            admin,
+                                            login,
+                                            store))
             {
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
@@ -389,10 +390,10 @@ if (tariffs->FindByName(tariff))
         }
     else
         {
-        if (u->property.tariffName.Set(tariff,
-                                       admin,
-                                       login,
-                                       store))
+        if (u->GetProperty().tariffName.Set(tariff,
+                                            admin,
+                                            login,
+                                            store))
             {
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
@@ -442,7 +443,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 std::vector<xmlrpc_c::value> ips;
 
-user_iter u;
+USER_PTR u;
 
 int handle = users->OpenSearch();
 if (!handle)

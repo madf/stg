@@ -1,6 +1,7 @@
 #include "admins_methods.h"
 
 #include "rpcconfig.h"
+#include "common.h"
 
 //------------------------------------------------------------------------------
 
@@ -21,7 +22,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(login, &admin))
     {
@@ -31,10 +32,10 @@ if (admins->FindAdmin(login, &admin))
     }
 
 structVal["result"] = xmlrpc_c::value_boolean(true);
-structVal["login"] = xmlrpc_c::value_string(admin.GetLogin());
-structVal["password"] = xmlrpc_c::value_string(admin.GetPassword());
+structVal["login"] = xmlrpc_c::value_string(admin->GetLogin());
+structVal["password"] = xmlrpc_c::value_string(admin->GetPassword());
 
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 structVal["user_stat"] = xmlrpc_c::value_boolean(priv->userStat);
 structVal["user_conf"] = xmlrpc_c::value_boolean(priv->userConf);
@@ -65,7 +66,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -102,7 +103,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -137,7 +138,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN loggedAdmin;
+ADMIN * loggedAdmin;
 
 if (admins->FindAdmin(adminInfo.admin, &loggedAdmin))
     {
@@ -145,7 +146,7 @@ if (admins->FindAdmin(adminInfo.admin, &loggedAdmin))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(login, &admin))
     {
@@ -155,8 +156,8 @@ if (admins->FindAdmin(login, &admin))
 
 ADMIN_CONF conf;
 
-conf.priv = *admin.GetPriv();
-conf.password = admin.GetPassword();
+conf.priv = *admin->GetPriv();
+conf.password = admin->GetPassword();
 conf.login = login;
 
 std::map<std::string, xmlrpc_c::value> structVal(

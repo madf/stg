@@ -3,6 +3,9 @@
 #include "rpcconfig.h"
 #include "stg_message.h"
 #include "utils.h"
+#include "common.h"
+
+extern const volatile time_t stgTime;
 
 //------------------------------------------------------------------------------
 
@@ -78,7 +81,7 @@ message.header.lastSendTime = 0;
 std::vector<xmlrpc_c::value>::iterator lit;
 for (lit = logins.begin(); lit != logins.end(); ++lit)
     {
-    user_iter ui;
+    USER_PTR ui;
     if (users->FindByName(xmlrpc_c::value_string(*lit), &ui))
         {
         printfd(__FILE__, "METHOD_MESSAGE_SEND::execute(): 'User '%s' not found'\n", std::string(xmlrpc_c::value_string(*lit)).c_str());

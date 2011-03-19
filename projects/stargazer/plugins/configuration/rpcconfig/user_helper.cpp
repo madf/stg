@@ -7,6 +7,8 @@
 #include "utils.h"
 #include "common.h"
 
+#include "../../../user_property.h"
+
 //------------------------------------------------------------------------------
 
 void USER_HELPER::GetUserInfo(xmlrpc_c::value * info,
@@ -17,66 +19,66 @@ std::string enc;
 std::map<std::string, xmlrpc_c::value> structVal;
 
 structVal["result"] = xmlrpc_c::value_boolean(true);
-structVal["login"] = xmlrpc_c::value_string(iter->GetLogin());
+structVal["login"] = xmlrpc_c::value_string(ptr->GetLogin());
 
 if (!hidePassword)
     {
-    structVal["password"] = xmlrpc_c::value_string(iter->property.password.Get());
+    structVal["password"] = xmlrpc_c::value_string(ptr->GetProperty().password.Get());
     }
 else
     {
     structVal["password"] = xmlrpc_c::value_string("++++++++");
     }
 
-structVal["cash"] = xmlrpc_c::value_double(iter->property.cash.Get());
-structVal["freemb"] = xmlrpc_c::value_double(iter->property.freeMb.Get());
-structVal["credit"] = xmlrpc_c::value_double(iter->property.credit.Get());
+structVal["cash"] = xmlrpc_c::value_double(ptr->GetProperty().cash.Get());
+structVal["freemb"] = xmlrpc_c::value_double(ptr->GetProperty().freeMb.Get());
+structVal["credit"] = xmlrpc_c::value_double(ptr->GetProperty().credit.Get());
 
-if (iter->property.nextTariff.Get() != "")
+if (ptr->GetProperty().nextTariff.Get() != "")
     {
     structVal["tariff"] = xmlrpc_c::value_string(
-            iter->property.tariffName.Get() +
+            ptr->GetProperty().tariffName.Get() +
             "/" +
-            iter->property.nextTariff.Get()
+            ptr->GetProperty().nextTariff.Get()
             );
     }
 else
     {
-    structVal["tariff"] = xmlrpc_c::value_string(iter->property.tariffName.Get());
+    structVal["tariff"] = xmlrpc_c::value_string(ptr->GetProperty().tariffName.Get());
     }
 
-structVal["note"] = xmlrpc_c::value_string(IconvString(iter->property.note, "KOI8-RU", "UTF-8"));
+structVal["note"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().note, "KOI8-RU", "UTF-8"));
 
-structVal["phone"] = xmlrpc_c::value_string(IconvString(iter->property.phone, "KOI8-RU", "UTF-8"));
+structVal["phone"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().phone, "KOI8-RU", "UTF-8"));
 
-structVal["address"] = xmlrpc_c::value_string(IconvString(iter->property.address, "KOI8-RU", "UTF-8"));
+structVal["address"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().address, "KOI8-RU", "UTF-8"));
 
-structVal["email"] = xmlrpc_c::value_string(IconvString(iter->property.email, "KOI8-RU", "UTF-8"));
+structVal["email"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().email, "KOI8-RU", "UTF-8"));
 
 std::vector<xmlrpc_c::value> userdata;
 
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata0.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata1.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata2.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata3.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata4.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata5.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata6.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata7.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata8.Get(), "KOI8-RU", "UTF-8")));
-userdata.push_back(xmlrpc_c::value_string(IconvString(iter->property.userdata9.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata0.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata1.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata2.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata3.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata4.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata5.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata6.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata7.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata8.Get(), "KOI8-RU", "UTF-8")));
+userdata.push_back(xmlrpc_c::value_string(IconvString(ptr->GetProperty().userdata9.Get(), "KOI8-RU", "UTF-8")));
 
 structVal["userdata"] = xmlrpc_c::value_array(userdata);
 
-structVal["name"] = xmlrpc_c::value_string(IconvString(iter->property.realName, "KOI8-RU", "UTF-8"));
+structVal["name"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().realName, "KOI8-RU", "UTF-8"));
 
-structVal["group"] = xmlrpc_c::value_string(IconvString(iter->property.group, "KOI8-RU", "UTF-8"));
+structVal["group"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().group, "KOI8-RU", "UTF-8"));
 
-structVal["status"] = xmlrpc_c::value_boolean(iter->GetConnected());
-structVal["aonline"] = xmlrpc_c::value_boolean(iter->property.alwaysOnline.Get());
-structVal["currip"] = xmlrpc_c::value_string(inet_ntostring(iter->GetCurrIP()));
-structVal["pingtime"] = xmlrpc_c::value_int(iter->GetPingTime());
-structVal["ips"] = xmlrpc_c::value_string(iter->property.ips.Get().GetIpStr());
+structVal["status"] = xmlrpc_c::value_boolean(ptr->GetConnected());
+structVal["aonline"] = xmlrpc_c::value_boolean(ptr->GetProperty().alwaysOnline.Get());
+structVal["currip"] = xmlrpc_c::value_string(inet_ntostring(ptr->GetCurrIP()));
+structVal["pingtime"] = xmlrpc_c::value_int(ptr->GetPingTime());
+structVal["ips"] = xmlrpc_c::value_string(ptr->GetProperty().ips.Get().GetIpStr());
 
 std::map<std::string, xmlrpc_c::value> traffInfo;
 std::vector<xmlrpc_c::value> mu(DIR_NUM);
@@ -88,10 +90,10 @@ DIR_TRAFF upload;
 DIR_TRAFF download;
 DIR_TRAFF supload;
 DIR_TRAFF sdownload;
-download = iter->property.down.Get();
-upload = iter->property.up.Get();
-sdownload = iter->GetSessionUpload();
-supload = iter->GetSessionDownload();
+download = ptr->GetProperty().down.Get();
+upload = ptr->GetProperty().up.Get();
+sdownload = ptr->GetSessionUpload();
+supload = ptr->GetSessionDownload();
 
 for (int j = 0; j < DIR_NUM; j++)
     {
@@ -113,13 +115,13 @@ traffInfo["sd"] = xmlrpc_c::value_array(sd);
 
 structVal["traff"] = xmlrpc_c::value_struct(traffInfo);
 
-structVal["down"] = xmlrpc_c::value_boolean(iter->property.disabled.Get());
-structVal["disableddetailstat"] = xmlrpc_c::value_boolean(iter->property.disabledDetailStat.Get());
-structVal["passive"] = xmlrpc_c::value_boolean(iter->property.passive.Get());
-structVal["lastcash"] = xmlrpc_c::value_double(iter->property.lastCashAdd.Get());
-structVal["lasttimecash"] = xmlrpc_c::value_int(iter->property.lastCashAddTime.Get());
-structVal["lastactivitytime"] = xmlrpc_c::value_int(iter->property.lastActivityTime.Get());
-structVal["creditexpire"] = xmlrpc_c::value_int(iter->property.creditExpire.Get());
+structVal["down"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabled.Get());
+structVal["disableddetailstat"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabledDetailStat.Get());
+structVal["passive"] = xmlrpc_c::value_boolean(ptr->GetProperty().passive.Get());
+structVal["lastcash"] = xmlrpc_c::value_double(ptr->GetProperty().lastCashAdd.Get());
+structVal["lasttimecash"] = xmlrpc_c::value_int(ptr->GetProperty().lastCashAddTime.Get());
+structVal["lastactivitytime"] = xmlrpc_c::value_int(ptr->GetProperty().lastActivityTime.Get());
+structVal["creditexpire"] = xmlrpc_c::value_int(ptr->GetProperty().creditExpire.Get());
 
 *info = xmlrpc_c::value_struct(structVal);
 }
@@ -127,7 +129,7 @@ structVal["creditexpire"] = xmlrpc_c::value_int(iter->property.creditExpire.Get(
 //------------------------------------------------------------------------------
 
 bool USER_HELPER::SetUserInfo(const xmlrpc_c::value & info,
-                              const ADMIN & admin,
+                              const ADMIN * admin,
                               const std::string & login,
                               const STORE & store,
                               TARIFFS * tariffs)
@@ -141,8 +143,8 @@ std::map<std::string, xmlrpc_c::value>::iterator it;
 if ((it = structVal.find("password")) != structVal.end())
     {
     std::string value(xmlrpc_c::value_string(it->second));
-    if (iter->property.password.Get() != value)
-        if (!iter->property.password.Set(value,
+    if (ptr->GetProperty().password.Get() != value)
+        if (!ptr->GetProperty().password.Set(value,
                                          admin,
                                          login,
                                          &store))
@@ -153,7 +155,7 @@ if ((it = structVal.find("ips")) != structVal.end())
     {
     USER_IPS ips;
     ips = StrToIPS(xmlrpc_c::value_string(it->second));
-    if (!iter->property.ips.Set(ips,
+    if (!ptr->GetProperty().ips.Set(ips,
                                 admin,
                                 login,
                                 &store))
@@ -163,8 +165,8 @@ if ((it = structVal.find("ips")) != structVal.end())
 if ((it = structVal.find("address")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.address.Get() != value)
-        if (!iter->property.address.Set(value,
+    if (ptr->GetProperty().address.Get() != value)
+        if (!ptr->GetProperty().address.Set(value,
                                         admin,
                                         login,
                                         &store))
@@ -174,8 +176,8 @@ if ((it = structVal.find("address")) != structVal.end())
 if ((it = structVal.find("phone")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.phone.Get() != value)
-        if (!iter->property.phone.Set(value,
+    if (ptr->GetProperty().phone.Get() != value)
+        if (!ptr->GetProperty().phone.Set(value,
                                       admin,
                                       login,
                                       &store))
@@ -185,8 +187,8 @@ if ((it = structVal.find("phone")) != structVal.end())
 if ((it = structVal.find("email")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.email.Get() != value)
-        if (!iter->property.email.Set(value,
+    if (ptr->GetProperty().email.Get() != value)
+        if (!ptr->GetProperty().email.Set(value,
                                       admin,
                                       login,
                                       &store))
@@ -196,8 +198,8 @@ if ((it = structVal.find("email")) != structVal.end())
 if ((it = structVal.find("cash")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (iter->property.cash.Get() != value)
-        if (!iter->property.cash.Set(value,
+    if (ptr->GetProperty().cash.Get() != value)
+        if (!ptr->GetProperty().cash.Set(value,
                                      admin,
                                      login,
                                      &store))
@@ -207,8 +209,8 @@ if ((it = structVal.find("cash")) != structVal.end())
 if ((it = structVal.find("creditexpire")) != structVal.end())
     {
     time_t value(xmlrpc_c::value_int(it->second));
-    if (iter->property.creditExpire.Get() != value)
-        if (!iter->property.creditExpire.Set(value,
+    if (ptr->GetProperty().creditExpire.Get() != value)
+        if (!ptr->GetProperty().creditExpire.Set(value,
                                              admin,
                                              login,
                                              &store))
@@ -218,8 +220,8 @@ if ((it = structVal.find("creditexpire")) != structVal.end())
 if ((it = structVal.find("credit")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (iter->property.credit.Get() != value)
-        if (!iter->property.credit.Set(value,
+    if (ptr->GetProperty().credit.Get() != value)
+        if (!ptr->GetProperty().credit.Set(value,
                                        admin,
                                        login,
                                        &store))
@@ -229,8 +231,8 @@ if ((it = structVal.find("credit")) != structVal.end())
 if ((it = structVal.find("freemb")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (iter->property.freeMb.Get() != value)
-        if (!iter->property.freeMb.Set(value,
+    if (ptr->GetProperty().freeMb.Get() != value)
+        if (!ptr->GetProperty().freeMb.Set(value,
                                        admin,
                                        login,
                                        &store))
@@ -240,8 +242,8 @@ if ((it = structVal.find("freemb")) != structVal.end())
 if ((it = structVal.find("down")) != structVal.end())
     {
     bool value(xmlrpc_c::value_boolean(it->second));
-    if (iter->property.disabled.Get() != value)
-        if (!iter->property.disabled.Set(value,
+    if (ptr->GetProperty().disabled.Get() != value)
+        if (!ptr->GetProperty().disabled.Set(value,
                                          admin,
                                          login,
                                          &store))
@@ -251,8 +253,8 @@ if ((it = structVal.find("down")) != structVal.end())
 if ((it = structVal.find("passive")) != structVal.end())
     {
     bool value(xmlrpc_c::value_boolean(it->second));
-    if (iter->property.passive.Get() != value)
-        if (!iter->property.passive.Set(value,
+    if (ptr->GetProperty().passive.Get() != value)
+        if (!ptr->GetProperty().passive.Set(value,
                                         admin,
                                         login,
                                         &store))
@@ -262,8 +264,8 @@ if ((it = structVal.find("passive")) != structVal.end())
 if ((it = structVal.find("aonline")) != structVal.end())
     {
     bool value(xmlrpc_c::value_boolean(it->second));
-    if (iter->property.alwaysOnline.Get() != value)
-        if (!iter->property.alwaysOnline.Set(value,
+    if (ptr->GetProperty().alwaysOnline.Get() != value)
+        if (!ptr->GetProperty().alwaysOnline.Set(value,
                                              admin,
                                              login,
                                              &store))
@@ -273,8 +275,8 @@ if ((it = structVal.find("aonline")) != structVal.end())
 if ((it = structVal.find("disableddetailstat")) != structVal.end())
     {
     bool value(xmlrpc_c::value_boolean(it->second));
-    if (iter->property.disabledDetailStat.Get() != value)
-        if (!iter->property.disabledDetailStat.Set(value,
+    if (ptr->GetProperty().disabledDetailStat.Get() != value)
+        if (!ptr->GetProperty().disabledDetailStat.Set(value,
                                                    admin,
                                                    login,
                                                    &store))
@@ -284,8 +286,8 @@ if ((it = structVal.find("disableddetailstat")) != structVal.end())
 if ((it = structVal.find("name")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.realName.Get() != value)
-        if (!iter->property.realName.Set(value,
+    if (ptr->GetProperty().realName.Get() != value)
+        if (!ptr->GetProperty().realName.Set(value,
                                          admin,
                                          login,
                                          &store))
@@ -295,8 +297,8 @@ if ((it = structVal.find("name")) != structVal.end())
 if ((it = structVal.find("group")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.group.Get() != value)
-        if (!iter->property.group.Set(value,
+    if (ptr->GetProperty().group.Get() != value)
+        if (!ptr->GetProperty().group.Set(value,
                                       admin,
                                       login,
                                       &store))
@@ -306,8 +308,8 @@ if ((it = structVal.find("group")) != structVal.end())
 if ((it = structVal.find("note")) != structVal.end())
     {
     std::string value(IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "KOI8-RU"));
-    if (iter->property.note.Get() != value)
-        if (!iter->property.note.Set(value,
+    if (ptr->GetProperty().note.Get() != value)
+        if (!ptr->GetProperty().note.Set(value,
                                      admin,
                                      login,
                                      &store))
@@ -317,16 +319,16 @@ if ((it = structVal.find("note")) != structVal.end())
 if ((it = structVal.find("userdata")) != structVal.end())
     {
     std::vector<USER_PROPERTY_LOGGED<string> *> userdata;
-    userdata.push_back(iter->property.userdata0.GetPointer());
-    userdata.push_back(iter->property.userdata1.GetPointer());
-    userdata.push_back(iter->property.userdata2.GetPointer());
-    userdata.push_back(iter->property.userdata3.GetPointer());
-    userdata.push_back(iter->property.userdata4.GetPointer());
-    userdata.push_back(iter->property.userdata5.GetPointer());
-    userdata.push_back(iter->property.userdata6.GetPointer());
-    userdata.push_back(iter->property.userdata7.GetPointer());
-    userdata.push_back(iter->property.userdata8.GetPointer());
-    userdata.push_back(iter->property.userdata9.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata0.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata1.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata2.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata3.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata4.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata5.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata6.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata7.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata8.GetPointer());
+    userdata.push_back(ptr->GetProperty().userdata9.GetPointer());
 
     std::vector<xmlrpc_c::value> udata(
         xmlrpc_c::value_array(it->second).vectorValueValue()
@@ -351,7 +353,7 @@ if ((it = structVal.find("traff")) != structVal.end())
         );
 
     DIR_TRAFF dtData;
-    dtData = iter->property.up.Get();
+    dtData = ptr->GetProperty().up.Get();
     if ((it = traff.find("mu")) != traff.end())
         {
         std::vector<xmlrpc_c::value> data(xmlrpc_c::value_array(it->second).vectorValueValue());
@@ -364,13 +366,13 @@ if ((it = structVal.find("traff")) != structVal.end())
             else
                 dtData[i] = value;
             }
-        if (!iter->property.up.Set(dtData,
+        if (!ptr->GetProperty().up.Set(dtData,
                                    admin,
                                    login,
                                    &store))
             return true;
         }
-    dtData = iter->property.down.Get();
+    dtData = ptr->GetProperty().down.Get();
     if ((it = traff.find("md")) != traff.end())
         {
         std::vector<xmlrpc_c::value> data(xmlrpc_c::value_array(it->second).vectorValueValue());
@@ -383,7 +385,7 @@ if ((it = structVal.find("traff")) != structVal.end())
             else
                 dtData[i] = value;
             }
-        if (!iter->property.down.Set(dtData,
+        if (!ptr->GetProperty().down.Set(dtData,
                                      admin,
                                      login,
                                      &store))
@@ -403,8 +405,8 @@ if ((it = structVal.find("tariff")) != structVal.end())
         }
 
     if (tariffs->FindByName(tariff))
-        if (iter->property.tariffName.Get() != tariff)
-            if (!iter->property.tariffName.Set(tariff,
+        if (ptr->GetProperty().tariffName.Get() != tariff)
+            if (!ptr->GetProperty().tariffName.Set(tariff,
                                                admin,
                                                login,
                                                &store))
@@ -412,8 +414,8 @@ if ((it = structVal.find("tariff")) != structVal.end())
 
     if (nextTariff != "" &&
         tariffs->FindByName(nextTariff))
-        if (iter->property.nextTariff.Get() != nextTariff)
-            if (!iter->property.nextTariff.Set(tariff,
+        if (ptr->GetProperty().nextTariff.Get() != nextTariff)
+            if (!ptr->GetProperty().nextTariff.Set(tariff,
                                                admin,
                                                login,
                                                &store))

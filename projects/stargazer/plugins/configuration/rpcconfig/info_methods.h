@@ -1,6 +1,9 @@
 #ifndef __INFO_METHODS_H__
 #define __INFO_METHODS_H__
 
+#include <string>
+#include <vector>
+
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
@@ -16,10 +19,12 @@ class METHOD_INFO : public xmlrpc_c::method
 public:
     METHOD_INFO(TARIFFS * t,
                 USERS * u,
-                const SETTINGS * s)
+                size_t df,
+                const std::vector<std::string> & dn)
         : tariffs(t),
           users(u),
-          settings(s)
+          dayFee(df),
+          dirNames(dn)
     {
     }
 
@@ -28,7 +33,8 @@ public:
 private:
     TARIFFS * tariffs;
     USERS * users;
-    const SETTINGS * settings;
+    size_t dayFee;
+    const std::vector<std::string> & dirNames;
 };
 
 class METHOD_LOGIN : public xmlrpc_c::method

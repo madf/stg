@@ -32,9 +32,7 @@ if (!tariff)
     return;
     }
 
-TARIFF_DATA td;
-
-tariff->GetTariffData(&td);
+TARIFF_DATA td(tariff->GetTariffData());
 
 TARIFF_HELPER helper(td);
 
@@ -57,7 +55,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -73,9 +71,7 @@ if (!tariff)
     return;
     }
 
-TARIFF_DATA td;
-
-tariff->GetTariffData(&td);
+TARIFF_DATA td(tariff->GetTariffData());
 
 TARIFF_HELPER helper(td);
 
@@ -140,7 +136,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
@@ -172,7 +168,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN admin;
+ADMIN * admin;
 
 if (admins->FindAdmin(adminInfo.admin, &admin))
     {
