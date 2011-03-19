@@ -28,16 +28,16 @@
 
 class ADMINS {
 public:
-    virtual int Add(const std::string & login, const ADMIN & admin) = 0;
-    virtual int Del(const std::string & login, const ADMIN & admin) = 0;
-    virtual int Change(const ADMIN_CONF & ac, const ADMIN & admin) = 0;
+    virtual int Add(const std::string & login, const ADMIN * admin) = 0;
+    virtual int Del(const std::string & login, const ADMIN * admin) = 0;
+    virtual int Change(const ADMIN_CONF & ac, const ADMIN * admin) = 0;
     virtual const ADMIN * GetSysAdmin() const = 0;
     virtual const ADMIN * GetNoAdmin() const = 0;
     virtual bool FindAdmin(const std::string & l, ADMIN ** admin) = 0;
     virtual bool AdminExists(const std::string & login) const = 0;
     virtual bool AdminCorrect(const std::string & login,
                               const std::string & password,
-                              ADMIN * admin) const = 0;
+                              ADMIN ** admin) = 0;
     virtual const std::string & GetStrError() const = 0;
 
     virtual int OpenSearch() const = 0;

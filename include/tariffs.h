@@ -34,9 +34,9 @@ public:
     virtual const TARIFF * FindByName(const std::string & name) const = 0;
     virtual const TARIFF * GetNoTariff() const = 0;
     virtual int            GetTariffsNum() const = 0;
-    virtual int            Del(const std::string & name, const ADMIN & admin) = 0;
-    virtual int            Add(const std::string & name, const ADMIN & admin) = 0;
-    virtual int            Chg(const TARIFF_DATA & td, const ADMIN & admin) = 0;
+    virtual int            Del(const std::string & name, const ADMIN * admin) = 0;
+    virtual int            Add(const std::string & name, const ADMIN * admin) = 0;
+    virtual int            Chg(const TARIFF_DATA & td, const ADMIN * admin) = 0;
 
     virtual void           GetTariffsData(std::list<TARIFF_DATA> * tdl) = 0;
 

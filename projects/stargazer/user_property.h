@@ -77,17 +77,17 @@ public:
     const varT & Get() const;
     const string & GetName() const;
     bool Set(const varT & val,
-             const ADMIN & admin,
+             const ADMIN * admin,
              const string & login,
              const STORE * store,
              const string & msg = "");
 private:
     void WriteAccessDenied(const string & login,
-                           const ADMIN & admin,
+                           const ADMIN * admin,
                            const string & parameter);
 
     void WriteSuccessChange(const string & login,
-                            const ADMIN & admin,
+                            const ADMIN * admin,
                             const string & parameter,
                             const string & oldValue,
                             const string & newValue,
@@ -98,7 +98,7 @@ private:
                   const string & paramName,
                   const string & oldValue,
                   const string & newValue,
-                  const ADMIN  & admin);
+                  const ADMIN  * admin);
 
     string          name;       // parameter name. needed for logging
     bool            isPassword; // is parameter password. when true, it will be logged as *******
@@ -321,20 +321,16 @@ return name;
 //-------------------------------------------------------------------------
 template <typename varT>
 bool USER_PROPERTY_LOGGED<varT>::Set(const varT & val,
-                                     const ADMIN & admin,
+                                     const ADMIN * admin,
                                      const string & login,
                                      const STORE * store,
                                      const string & msg)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
 
-//cout << "USER_PROPERTY_LOGGED " << val << endl;
-//value = val;
-//modificationTime = stgTime;
-
-const PRIV * priv = admin.GetPriv();
-string adm_login = admin.GetLogin();
-string adm_ip = admin.GetIPStr();
+const PRIV * priv = admin->GetPriv();
+string adm_login = admin->GetLogin();
+string adm_ip = admin->GetIPStr();
 
 if ((priv->userConf && !isStat) || (priv->userStat && isStat) || (priv->userPasswd && isPassword) || (priv->userCash && name == "cash"))
     {
@@ -370,16 +366,16 @@ return true;
 //-------------------------------------------------------------------------
 template <typename varT>
 void USER_PROPERTY_LOGGED<varT>::WriteAccessDenied(const string & login,
-                                                   const ADMIN  & admin,
+                                                   const ADMIN  * admin,
                                                    const string & parameter)
 {
 stgLogger("%s Change user \'%s.\' Parameter \'%s\'. Access denied.",
-          admin.GetLogStr().c_str(), login.c_str(), parameter.c_str());
+          admin->GetLogStr().c_str(), login.c_str(), parameter.c_str());
 }
 //-------------------------------------------------------------------------
 template <typename varT>
 void USER_PROPERTY_LOGGED<varT>::WriteSuccessChange(const string & login,
-                                                    const ADMIN & admin,
+                                                    const ADMIN * admin,
                                                     const string & parameter,
                                                     const string & oldValue,
                                                     const string & newValue,
@@ -387,14 +383,14 @@ void USER_PROPERTY_LOGGED<varT>::WriteSuccessChange(const string & login,
                                                     const STORE * store)
 {
 stgLogger("%s User \'%s\': \'%s\' parameter changed from \'%s\' to \'%s\'. %s",
-          admin.GetLogStr().c_str(),
+          admin->GetLogStr().c_str(),
           login.c_str(),
           parameter.c_str(),
           oldValue.c_str(),
           newValue.c_str(),
           msg.c_str());
 
-store->WriteUserChgLog(login, admin.GetLogin(), admin.GetIP(), parameter, oldValue, newValue, msg);
+store->WriteUserChgLog(login, admin->GetLogin(), admin->GetIP(), parameter, oldValue, newValue, msg);
 }
 //-------------------------------------------------------------------------
 template <typename varT>
@@ -402,7 +398,7 @@ void USER_PROPERTY_LOGGED<varT>::OnChange(const string & login,
                                           const string & paramName,
                                           const string & oldValue,
                                           const string & newValue,
-                                          const ADMIN  & admin)
+                                          const ADMIN * admin)
 {
 string str1;
 
@@ -410,7 +406,7 @@ str1 = settings->GetConfDir() + "/OnChange";
 
 if (access(str1.c_str(), X_OK) == 0)
     {
-    string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin.GetLogin() + "\" \"" + admin.GetIPStr() + "\"");
+    string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
     ScriptExec(str2);
     }
 else

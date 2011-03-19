@@ -180,7 +180,7 @@ void PARSER_ADD_TARIFF::CreateAnswer()
 //answerList->clear();
 answerList->erase(answerList->begin(), answerList->end());
 
-if (tariffs->Add(tariffToAdd, *currAdmin) == 0)
+if (tariffs->Add(tariffToAdd, currAdmin) == 0)
     {
     answerList->push_back("<AddTariff Result=\"Ok\"/>");
     }
@@ -228,7 +228,7 @@ if (users->TariffInUse(tariffToDel))
     return;
     }
 
-if (tariffs->Del(tariffToDel, *currAdmin) == 0)
+if (tariffs->Del(tariffToDel, currAdmin) == 0)
     {
     answerList->push_back("<DelTariff Result=\"Ok\"/>");
     }
@@ -475,7 +475,7 @@ answerList->erase(answerList->begin(), answerList->end());
 if (!td.tariffConf.name.data().empty())
     {
     TARIFF_DATA tariffData = td.GetData();
-    if (tariffs->Chg(tariffData, *currAdmin) == 0)
+    if (tariffs->Chg(tariffData, currAdmin) == 0)
         {
         answerList->push_back("<SetTariff Result=\"ok\"/>");
         return;

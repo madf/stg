@@ -93,7 +93,7 @@ void PARSER_DEL_ADMIN::CreateAnswer()
 //answerList->clear();
 answerList->erase(answerList->begin(), answerList->end());
 
-if (admins->Del(adminToDel, *currAdmin) == 0)
+if (admins->Del(adminToDel, currAdmin) == 0)
     {
     answerList->push_back("<DelAdmin Result=\"Ok\"/>");
     }
@@ -149,7 +149,7 @@ void PARSER_ADD_ADMIN::CreateAnswer()
 //answerList->clear();
 answerList->erase(answerList->begin(), answerList->end());
 
-if (admins->Add(adminToAdd, *currAdmin) == 0)
+if (admins->Add(adminToAdd, currAdmin) == 0)
     {
     answerList->push_back("<AddAdmin Result=\"Ok\"/>");
     }
@@ -241,7 +241,7 @@ if (!login.res_empty())
             conf.priv.tariffChg     = (p & 0x3000) >> 0x0C; // 1000+2000
             }
 
-        if (admins->Change(conf, *currAdmin) != 0)
+        if (admins->Change(conf, currAdmin) != 0)
             {
             strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
             answerList->push_back(s);

@@ -54,14 +54,14 @@ pthread_mutex_init(&mutex, NULL);
 ReadAdmins();
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Add(const string & login, const ADMIN & admin)
+int ADMINS_IMPL::Add(const string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin.GetLogStr() + " Add administrator \'" + login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Add administrator \'" + login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -73,7 +73,7 @@ admin_iter ai(find(data.begin(), data.end(), adm));
 if (ai != data.end())
     {
     strError = "Administrator \'" + login + "\' cannot not be added. Administrator alredy exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
     return -1;
     }
@@ -83,25 +83,25 @@ data.push_back(adm);
 if (store->AddAdmin(login) == 0)
     {
     WriteServLog("%s Administrator \'%s\' added.",
-                 admin.GetLogStr().c_str(), login.c_str());
+                 admin->GetLogStr().c_str(), login.c_str());
     return 0;
     }
 
 strError = "Administrator \'" + login + "\' was not added. Error: " + store->GetStrError();
-WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
 return -1;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Del(const string & login, const ADMIN & admin)
+int ADMINS_IMPL::Del(const string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 ADMIN_IMPL adm(0, login, "");
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin.GetLogStr() + " Delete administrator \'" + login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Delete administrator \'" + login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -112,7 +112,7 @@ admin_iter ai(find(data.begin(), data.end(), adm));
 if (ai == data.end())
     {
     strError = "Administrator \'" + login + "\' cannot be deleted. Administrator does not exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -129,23 +129,23 @@ data.remove(*ai);
 if (store->DelAdmin(login) < 0)
     {
     strError = "Administrator \'" + login + "\' was not deleted. Error: " + store->GetStrError();
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
     return -1;
     }
 
-WriteServLog("%s Administrator \'%s\' deleted.", admin.GetLogStr().c_str(), login.c_str());
+WriteServLog("%s Administrator \'%s\' deleted.", admin->GetLogStr().c_str(), login.c_str());
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Change(const ADMIN_CONF & ac, const ADMIN & admin)
+int ADMINS_IMPL::Change(const ADMIN_CONF & ac, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin.GetLogStr() + " Change administrator \'" + ac.login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Change administrator \'" + ac.login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -157,7 +157,7 @@ admin_iter ai(find(data.begin(), data.end(), adm));
 if (ai == data.end())
     {
     strError = "Administrator \'" + ac.login + "\' cannot be changed " + ". Administrator does not exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -170,7 +170,7 @@ if (store->SaveAdmin(ac))
     }
 
 WriteServLog("%s Administrator \'%s\' changed.",
-             admin.GetLogStr().c_str(), ac.login.c_str());
+             admin->GetLogStr().c_str(), ac.login.c_str());
 
 return 0;
 }
@@ -253,7 +253,7 @@ if (ai != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::AdminCorrect(const string & login, const std::string & password, ADMIN * admin) const
+bool ADMINS_IMPL::AdminCorrect(const string & login, const std::string & password, ADMIN ** admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
@@ -263,7 +263,7 @@ if (data.empty())
     }
 
 ADMIN_IMPL adm(0, login, "");
-const_admin_iter ai(find(data.begin(), data.end(), adm));
+admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai == data.end())
     {
@@ -275,7 +275,7 @@ if (ai->GetPassword() != password)
     return false;
     }
 
-*admin = *ai;
+*admin = &(*ai);
 
 return true;
 }

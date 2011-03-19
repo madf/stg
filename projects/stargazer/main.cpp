@@ -552,7 +552,7 @@ WriteServLog("Storage plugin: %s. Loading successfull.", dataStore->GetVersion()
 
 tariffs = new TARIFFS_IMPL(dataStore);
 admins = new ADMINS_IMPL(dataStore);
-users = new USERS_IMPL(settings, dataStore, tariffs, *admins->GetSysAdmin());
+users = new USERS_IMPL(settings, dataStore, tariffs, admins->GetSysAdmin());
 traffCnt = new TRAFFCOUNTER(users, tariffs, settings->GetRulesFileName());
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
 

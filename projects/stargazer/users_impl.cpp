@@ -52,7 +52,7 @@ extern const volatile time_t stgTime;
 //#define USERS_DEBUG 1
 
 //-----------------------------------------------------------------------------
-USERS_IMPL::USERS_IMPL(SETTINGS * s, STORE * st, TARIFFS * t, const ADMIN & sa)
+USERS_IMPL::USERS_IMPL(SETTINGS * s, STORE * st, TARIFFS * t, const ADMIN * sa)
     : users(),
       usersToDelete(),
       userIPNotifiersBefore(),
@@ -122,16 +122,16 @@ while (iter != users.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::Add(const string & login, const ADMIN & admin)
+int USERS_IMPL::Add(const string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->userAddDel)
     {
     WriteServLog("%s tried to add user \'%s\'. Access denied.",
-         admin.GetLogStr().c_str(), login.c_str());
-    /*errorStr = "Admin \'" + admin.GetLogin() +
+         admin->GetLogStr().c_str(), login.c_str());
+    /*errorStr = "Admin \'" + admin->GetLogin() +
                "\': tried to add user \'" + ud->login + "\'. Access denied.";*/
     return -1;
     }
@@ -141,7 +141,7 @@ if (store->AddUser(login))
     {
     //TODO
     //WriteServLog("Admin \'%s\': tried to add user \'%s\'. Access denied.",
-    //     admin.GetLogin().c_str(), ud->login.c_str());
+    //     admin->GetLogin().c_str(), ud->login.c_str());
     return -1;
     }
 //////
@@ -170,7 +170,7 @@ u.WriteConf();
 u.WriteStat();
 
 WriteServLog("%s User \'%s\' added.",
-         admin.GetLogStr().c_str(), login.c_str());
+         admin->GetLogStr().c_str(), login.c_str());
 
 u.OnAdd();
 
@@ -190,15 +190,15 @@ while (ni != onAddNotifiers.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::Del(const string & login, const ADMIN & admin)
+void USERS_IMPL::Del(const string & login, const ADMIN * admin)
 {
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 user_iter u;
 
 if (!priv->userAddDel)
     {
     WriteServLog("%s tried to remove user \'%s\'. Access denied.",
-         admin.GetLogStr().c_str(), login.c_str());
+         admin->GetLogStr().c_str(), login.c_str());
     return;
     }
 
@@ -209,7 +209,7 @@ if (!priv->userAddDel)
     if (FindByNameNonLock(login, &u))
         {
         WriteServLog("%s tried to delete user \'%s\': not found.",
-                     admin.GetLogStr().c_str(),
+                     admin->GetLogStr().c_str(),
                      login.c_str());
         return;
         }
@@ -237,7 +237,7 @@ while (ni != onDelNotifiers.end())
     DelUserFromIndexes(u);
 
     WriteServLog("%s User \'%s\' deleted.",
-             admin.GetLogStr().c_str(), login.c_str());
+             admin->GetLogStr().c_str(), login.c_str());
 
     }
 }

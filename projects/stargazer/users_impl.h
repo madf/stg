@@ -92,7 +92,7 @@ class USERS_IMPL : private NONCOPYABLE, public USERS {
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
 public:
-    USERS_IMPL(SETTINGS * s, STORE * store, TARIFFS * tariffs, const ADMIN & sysAdmin);
+    USERS_IMPL(SETTINGS * s, STORE * store, TARIFFS * tariffs, const ADMIN * sysAdmin);
     virtual ~USERS_IMPL();
 
     int             FindByName(const std::string & login, USER_PTR * user);
@@ -105,8 +105,8 @@ public:
     void            AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
     void            DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
 
-    int             Add(const std::string & login, const ADMIN & admin);
-    void            Del(const std::string & login, const ADMIN & admin);
+    int             Add(const std::string & login, const ADMIN * admin);
+    void            Del(const std::string & login, const ADMIN * admin);
 
     int             ReadUsers();
     int             GetUserNum() const;
@@ -154,7 +154,7 @@ private:
     SETTINGS *          settings;
     TARIFFS *           tariffs;
     STORE *             store;
-    const ADMIN &       sysAdmin;
+    const ADMIN *       sysAdmin;
     STG_LOGGER &        WriteServLog;
 
     bool                nonstop;

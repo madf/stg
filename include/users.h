@@ -40,8 +40,8 @@ public:
     virtual void AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> * notifier) = 0;
     virtual void DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> * notifier) = 0;
 
-    virtual int  Add(const std::string & login, const ADMIN & admin) = 0;
-    virtual void Del(const std::string & login, const ADMIN & admin) = 0;
+    virtual int  Add(const std::string & login, const ADMIN * admin) = 0;
+    virtual void Del(const std::string & login, const ADMIN * admin) = 0;
 
     virtual int  ReadUsers() = 0;
     virtual int  GetUserNum() const = 0;

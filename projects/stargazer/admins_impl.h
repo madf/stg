@@ -48,9 +48,9 @@ public:
     ADMINS_IMPL(STORE * st);
     virtual ~ADMINS_IMPL() {}
 
-    int           Add(const string & login, const ADMIN & admin);
-    int           Del(const string & login, const ADMIN & admin);
-    int           Change(const ADMIN_CONF & ac, const ADMIN & admin);
+    int           Add(const string & login, const ADMIN * admin);
+    int           Del(const string & login, const ADMIN * admin);
+    int           Change(const ADMIN_CONF & ac, const ADMIN * admin);
     void          PrintAdmins() const;
     const ADMIN * GetSysAdmin() const { return &stg; }
     const ADMIN * GetNoAdmin() const { return &noAdmin; }
@@ -58,7 +58,7 @@ public:
     bool          AdminExists(const std::string & login) const;
     bool          AdminCorrect(const std::string & login,
                                const std::string & password,
-                               ADMIN * admin) const;
+                               ADMIN ** admin);
     const std::string & GetStrError() const { return strError; }
 
     int OpenSearch() const;

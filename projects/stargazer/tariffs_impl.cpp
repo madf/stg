@@ -106,13 +106,13 @@ if (ti != tariffs.end())
 return NULL;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Chg(const TARIFF_DATA & td, const ADMIN & admin)
+int TARIFFS_IMPL::Chg(const TARIFF_DATA & td, const ADMIN * admin)
 {
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin.GetLogStr() + " Change tariff \'"
+    string s = admin->GetLogStr() + " Change tariff \'"
                + td.tariffConf.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -127,7 +127,7 @@ ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
 if (ti == tariffs.end())
     {
     strError = "Tariff \'" + td.tariffConf.name + "\' cannot be changed. Tariff does not exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -141,18 +141,18 @@ if (store->SaveTariff(td, td.tariffConf.name))
     }
 
 WriteServLog("%s Tariff \'%s\' changed.",
-             admin.GetLogStr().c_str(), td.tariffConf.name.c_str());
+             admin->GetLogStr().c_str(), td.tariffConf.name.c_str());
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Del(const string & name, const ADMIN & admin)
+int TARIFFS_IMPL::Del(const string & name, const ADMIN * admin)
 {
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin.GetLogStr() + " Delete tariff \'"
+    string s = admin->GetLogStr() + " Delete tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -167,7 +167,7 @@ ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 if (ti == tariffs.end())
     {
     strError = "Tariff \'" + name + "\' cannot be deleted. Tariff does not exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -181,18 +181,18 @@ if (store->DelTariff(name))
 tariffs.erase(ti);
 
 WriteServLog("%s Tariff \'%s\' deleted.",
-             admin.GetLogStr().c_str(),
+             admin->GetLogStr().c_str(),
              name.c_str());
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Add(const string & name, const ADMIN & admin)
+int TARIFFS_IMPL::Add(const string & name, const ADMIN * admin)
 {
-const PRIV * priv = admin.GetPriv();
+const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin.GetLogStr() + " Add tariff \'"
+    string s = admin->GetLogStr() + " Add tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -207,7 +207,7 @@ ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 if (ti != tariffs.end())
     {
     strError = "Tariff \'" + name + "\' cannot be added. Tariff alredy exist.";
-    WriteServLog("%s %s", admin.GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -221,7 +221,7 @@ if (store->AddTariff(name) < 0)
     }
 
 WriteServLog("%s Tariff \'%s\' added.",
-                 admin.GetLogStr().c_str(), name.c_str());
+                 admin->GetLogStr().c_str(), name.c_str());
 
 return 0;
 }

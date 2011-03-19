@@ -105,7 +105,7 @@ public:
     USER_IMPL(const SETTINGS * settings,
               const STORE * store,
               const TARIFFS * tariffs,
-              const ADMIN & sysAdmin,
+              const ADMIN * sysAdmin,
               const USERS * u);
     USER_IMPL(const USER_IMPL & u);
     virtual ~USER_IMPL();
@@ -221,7 +221,7 @@ private:
 
     time_t          pingTime;
 
-    const ADMIN &   sysAdmin;
+    const ADMIN *   sysAdmin;
     const STORE *   store;
 
     const TARIFFS * tariffs;

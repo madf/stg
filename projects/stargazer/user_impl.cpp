@@ -49,7 +49,7 @@
 USER_IMPL::USER_IMPL(const SETTINGS * s,
            const STORE * st,
            const TARIFFS * t,
-           const ADMIN & a,
+           const ADMIN * a,
            const USERS * u)
     : users(u),
       property(s),
