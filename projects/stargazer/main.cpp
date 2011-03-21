@@ -452,9 +452,9 @@ int main(int argc, char * argv[])
 
 SETTINGS * settings = NULL;
 STORE * dataStore = NULL;
-TARIFFS * tariffs = NULL;
-ADMINS * admins = NULL;
-USERS * users = NULL;
+TARIFFS_IMPL * tariffs = NULL;
+ADMINS_IMPL * admins = NULL;
+USERS_IMPL * users = NULL;
 TRAFFCOUNTER * traffCnt = NULL;
 int msgID = -11;
 
