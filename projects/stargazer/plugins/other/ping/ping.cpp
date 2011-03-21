@@ -207,7 +207,7 @@ users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
     UnSetUserNotifiers(*users_iter);
-    users_iter++;
+    ++users_iter;
     }
 
 return 0;
@@ -254,7 +254,7 @@ while (ping->nonstop)
                         }
                     }
                 }
-            iter++;
+            ++iter;
             }
         }
     for (int i = 0; i < 100; i++)
@@ -381,7 +381,7 @@ while (users_iter != usersList.end())
         usersList.erase(users_iter);
         break;
         }
-    users_iter++;
+    ++users_iter;
     }
 }
 //-----------------------------------------------------------------------------
