@@ -157,10 +157,10 @@ while(nonstop)
     str[8] = 0;
     len = strlen(str);
 
-    n++;
+    ++n;
     if (n == requestList.end())
         done = 1;
-    n--;
+    --n;
 
     if (XML_Parse(xmlParser, (*n).c_str(), len, done) == XML_STATUS_ERROR)
         {
@@ -181,7 +181,7 @@ while(nonstop)
     if (done)
         return 0;
 
-    n++;
+    ++n;
     }
 
 return 0;
