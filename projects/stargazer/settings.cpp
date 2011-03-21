@@ -41,7 +41,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 SETTINGS::SETTINGS()
     : confDir("/etc/stargazer"),
-      scriptDir("/etc/stargazer"),
+      scriptsDir("/etc/stargazer"),
       pidFile("/var/run/stargazer.pid"),
       monitoring(false),
       detailStatWritePeriod(dsPeriod_1_6),
@@ -63,7 +63,7 @@ SETTINGS::SETTINGS()
 //-----------------------------------------------------------------------------
 SETTINGS::SETTINGS(const std::string & cd)
     : confDir(cd),
-      scriptDir(cd),
+      scriptsDir(cd),
       monitoring(false),
       detailStatWritePeriod(dsPeriod_1_6),
       statWritePeriod(10),
@@ -84,7 +84,7 @@ SETTINGS::SETTINGS(const std::string & cd)
 //-----------------------------------------------------------------------------
 SETTINGS::SETTINGS(const SETTINGS & rval)
     : confDir(rval.confDir),
-      scriptDir(rval.scriptDir),
+      scriptsDir(rval.scriptsDir),
       pidFile(rval.pidFile),
       monitoring(rval.monitoring),
       detailStatWritePeriod(dsPeriod_1_6),
@@ -258,7 +258,7 @@ while (node)
     {
     if (strcasecmp(node->getName(), "ScriptDir") == 0)
         {
-        scriptDir = node->getValue(0);
+        scriptsDir = node->getValue(0);
         //printfd(__FILE__, "LogFile: %s\n", logFile.c_str());
         }
 

@@ -70,7 +70,7 @@ public:
     unsigned            GetExecutersNum() const { return executersNum; }
     const std::string & GetDirName(int num) const { return dirName[num]; };
     const std::string & GetConfDir() const { return confDir; }
-    const std::string & GetScriptDir() const { return scriptDir; }
+    const std::string & GetScriptsDir() const { return scriptsDir; }
     const std::string & GetRulesFileName() const { return rules; }
     const std::string & GetLogFileName() const { return logFile; }
     const std::string & GetPIDFileName() const { return pidFile; }
@@ -114,7 +114,7 @@ private:
     std::string modulesPath;
     std::string dirName[DIR_NUM];
     std::string confDir;
-    std::string	scriptDir;
+    std::string	scriptsDir;
     std::string rules;
     std::string logFile;
     std::string pidFile;
