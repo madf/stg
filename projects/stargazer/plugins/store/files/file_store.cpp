@@ -783,7 +783,7 @@ try
     {
     i = StrToIPS(ipStr);
     }
-catch (string s)
+catch (const string & s)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "User \'" + login + "\' data not read. Parameter IP address. " + s;
