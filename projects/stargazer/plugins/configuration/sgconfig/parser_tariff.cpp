@@ -388,7 +388,10 @@ else
         snprintf(st, 50, "Time%d", j);
         if (strcasecmp(el, st) == 0)
             {
-            int h1, m1, h2, m2;
+            int h1 = 0;
+            int m1 = 0;
+            int h2 = 0;
+            int m2 = 0;
             if (ParseTariffTimeStr(attr[1], h1, m1, h2, m2) == 0)
                 {
                 td.dirPrice[j].hDay = h1;
