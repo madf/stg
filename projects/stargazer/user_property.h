@@ -26,16 +26,16 @@ extern const volatile time_t stgTime;
 template<typename varT>
 class USER_PROPERTY {
 public:
-    USER_PROPERTY(varT& val);
+    USER_PROPERTY(varT & val);
     virtual ~USER_PROPERTY();
 
     void Set(const varT & rvalue);
 
-    USER_PROPERTY<varT>& operator= (const varT & rvalue);
-    USER_PROPERTY<varT>& operator-= (const varT & rvalue);
+    USER_PROPERTY<varT> & operator= (const varT & rvalue);
+    USER_PROPERTY<varT> & operator-= (const varT & rvalue);
 
     const varT * operator&() const throw();
-    const varT& ConstData() const throw();
+    const varT & ConstData() const throw();
 
     operator const varT&() const throw()
     {
@@ -171,7 +171,7 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varT>
-USER_PROPERTY<varT>::USER_PROPERTY(varT& val)
+USER_PROPERTY<varT>::USER_PROPERTY(varT & val)
     : value(val)
 {
 pthread_mutex_init(&mutex, NULL);
@@ -211,7 +211,7 @@ while (ni != afterNotifiers.end())
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
-USER_PROPERTY<varT>& USER_PROPERTY<varT>::operator= (const varT & newValue)
+USER_PROPERTY<varT> & USER_PROPERTY<varT>::operator= (const varT & newValue)
 {
 Set(newValue);
 return *this;
@@ -232,7 +232,7 @@ return &value;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
-const varT& USER_PROPERTY<varT>::ConstData() const throw()
+const varT & USER_PROPERTY<varT>::ConstData() const throw()
 {
 return value;
 }
@@ -274,7 +274,7 @@ return modificationTime;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varT>
-USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT& val,
+USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  std::string n,
                                                  bool isPass,
                                                  bool isSt,
