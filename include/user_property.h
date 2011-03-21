@@ -19,6 +19,7 @@ $Author: faust $
 #include "stg_logger.h"
 #include "stg_locker.h"
 #include "script_executer.h"
+#include "noncopyable.h"
 
 extern const volatile time_t stgTime;
 
@@ -32,15 +33,11 @@ public:
     void Set(const varT & rvalue);
 
     USER_PROPERTY<varT> & operator= (const varT & rvalue);
-    USER_PROPERTY<varT> & operator-= (const varT & rvalue);
 
-    const varT * operator&() const throw();
-    const varT & ConstData() const throw();
+    const varT * operator&() const throw() { return &value; }
+    const varT & ConstData() const throw() { return value; }
 
-    operator const varT&() const throw()
-    {
-        return value;
-    }
+    operator const varT&() const throw() { return value; }
 
     void    AddBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
     void    DelBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
@@ -48,7 +45,7 @@ public:
     void    AddAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
     void    DelAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
 
-    time_t  ModificationTime() const throw();
+    time_t  ModificationTime() const throw() { return modificationTime; }
     void    ModifyTime() throw();
 
 private:
@@ -68,11 +65,11 @@ public:
                          bool isStat,
                          STG_LOGGER & logger,
                          const std::string & sd);
-    virtual ~USER_PROPERTY_LOGGED();
+    virtual ~USER_PROPERTY_LOGGED() {}
 
-    USER_PROPERTY_LOGGED<varT> * GetPointer() throw();
-    const varT & Get() const;
-    const std::string & GetName() const;
+    USER_PROPERTY_LOGGED<varT> * GetPointer() throw() { return this; }
+    const varT & Get() const { return USER_PROPERTY<varT>::ConstData(); }
+    const std::string & GetName() const { return name; }
     bool Set(const varT & val,
              const ADMIN * admin,
              const std::string & login,
@@ -104,7 +101,7 @@ private:
     const std::string scriptsDir;
 };
 //-----------------------------------------------------------------------------
-class USER_PROPERTIES {
+class USER_PROPERTIES : private NONCOPYABLE {
 /*
  В этом месте важен порядок следования приватной и открытой частей.
  Это связано с тем, что часть которая находится в публичной секции
@@ -171,25 +168,30 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 USER_PROPERTY<varT>::USER_PROPERTY(varT & val)
-    : value(val)
+    : value(val),
+      modificationTime(stgTime)
 {
 pthread_mutex_init(&mutex, NULL);
-modificationTime = stgTime;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 USER_PROPERTY<varT>::~USER_PROPERTY()
 {
+pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY<varT>::ModifyTime() throw()
 {
 modificationTime = stgTime;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY<varT>::Set(const varT & rvalue)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
@@ -211,6 +213,7 @@ while (ni != afterNotifiers.end())
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 USER_PROPERTY<varT> & USER_PROPERTY<varT>::operator= (const varT & newValue)
 {
 Set(newValue);
@@ -218,26 +221,7 @@ return *this;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
-USER_PROPERTY<varT>& USER_PROPERTY<varT>::operator-= (const varT & delta)
-{
-varT newValue = ConstData() - delta;
-Set(newValue);
-return *this;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-const varT * USER_PROPERTY<varT>::operator&() const throw()
-{
-return &value;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-const varT & USER_PROPERTY<varT>::ConstData() const throw()
-{
-return value;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
+inline
 void USER_PROPERTY<varT>::AddBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
@@ -245,6 +229,7 @@ beforeNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY<varT>::DelBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
@@ -252,6 +237,7 @@ beforeNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY<varT>::AddAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
@@ -259,21 +245,17 @@ afterNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY<varT>::DelAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
 afterNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-template <typename varT>
-time_t USER_PROPERTY<varT>::ModificationTime() const throw()
-{
-return modificationTime;
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  std::string n,
                                                  bool isPass,
@@ -289,29 +271,6 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
       scriptsDir(sd)
 {
 }
-//-----------------------------------------------------------------------------
-template <typename varT>
-USER_PROPERTY_LOGGED<varT>::~USER_PROPERTY_LOGGED()
-{
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-USER_PROPERTY_LOGGED<varT> * USER_PROPERTY_LOGGED<varT>::GetPointer() throw()
-{
-return this;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-const varT & USER_PROPERTY_LOGGED<varT>::Get() const
-{
-return USER_PROPERTY<varT>::ConstData();
-};
-//-------------------------------------------------------------------------
-template <typename varT>
-const std::string & USER_PROPERTY_LOGGED<varT>::GetName() const
-{
-return name;
-};
 //-------------------------------------------------------------------------
 template <typename varT>
 bool USER_PROPERTY_LOGGED<varT>::Set(const varT & val,
@@ -329,8 +288,8 @@ if ((priv->userConf && !isStat) ||
     (priv->userPasswd && isPassword) ||
     (priv->userCash && name == "cash"))
     {
-    stringstream oldVal;
-    stringstream newVal;
+    std::stringstream oldVal;
+    std::stringstream newVal;
 
     oldVal.flags(oldVal.flags() | ios::fixed);
     newVal.flags(newVal.flags() | ios::fixed);
@@ -360,6 +319,7 @@ return true;
 }
 //-------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY_LOGGED<varT>::WriteAccessDenied(const std::string & login,
                                                    const ADMIN * admin,
                                                    const std::string & parameter)
@@ -369,6 +329,7 @@ stgLogger("%s Change user \'%s.\' Parameter \'%s\'. Access denied.",
 }
 //-------------------------------------------------------------------------
 template <typename varT>
+inline
 void USER_PROPERTY_LOGGED<varT>::WriteSuccessChange(const std::string & login,
                                                     const ADMIN * admin,
                                                     const std::string & parameter,
@@ -411,6 +372,7 @@ else
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 template<typename varT>
+inline
 ostream & operator<< (ostream & stream, const USER_PROPERTY<varT> & value)
 {
 return stream << value.ConstData();
