@@ -118,7 +118,6 @@ STG_LIBS="stg_logger.lib
 	  common.lib 
 	  script_executer.lib 
 	  conffiles.lib
-          hostallow.lib 
 	  pinger.lib 
 	  dotconfpp.lib"
 
