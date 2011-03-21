@@ -36,6 +36,7 @@
 #include <unistd.h> // access
 
 #include <cassert>
+#include <cstdlib>
 
 #include "user_impl.h"
 #include "users.h"
