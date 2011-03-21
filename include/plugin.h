@@ -43,7 +43,6 @@ class MODULE_SETTINGS;
 
 class PLUGIN : private NONCOPYABLE {
 public:
-    virtual                     ~PLUGIN() = 0;
     virtual void                SetUsers(USERS * u) = 0;
     virtual void                SetTariffs(TARIFFS * t) = 0;
     virtual void                SetAdmins(ADMINS * a) = 0;
