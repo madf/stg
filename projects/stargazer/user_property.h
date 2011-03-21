@@ -52,11 +52,11 @@ public:
     void    ModifyTime() throw();
 
 private:
-    varT  & value;
-    time_t  modificationTime;
+    varT & value;
+    time_t modificationTime;
     std::set<PROPERTY_NOTIFIER_BASE<varT> *> beforeNotifiers;
     std::set<PROPERTY_NOTIFIER_BASE<varT> *> afterNotifiers;
-    mutable pthread_mutex_t mutex;
+    pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
 template<typename varT>
@@ -324,7 +324,10 @@ const PRIV * priv = admin->GetPriv();
 std::string adm_login = admin->GetLogin();
 std::string adm_ip = admin->GetIPStr();
 
-if ((priv->userConf && !isStat) || (priv->userStat && isStat) || (priv->userPasswd && isPassword) || (priv->userCash && name == "cash"))
+if ((priv->userConf && !isStat) ||
+    (priv->userStat && isStat) ||
+    (priv->userPasswd && isPassword) ||
+    (priv->userCash && name == "cash"))
     {
     stringstream oldVal;
     stringstream newVal;
@@ -358,7 +361,7 @@ return true;
 //-------------------------------------------------------------------------
 template <typename varT>
 void USER_PROPERTY_LOGGED<varT>::WriteAccessDenied(const std::string & login,
-                                                   const ADMIN  * admin,
+                                                   const ADMIN * admin,
                                                    const std::string & parameter)
 {
 stgLogger("%s Change user \'%s.\' Parameter \'%s\'. Access denied.",
@@ -392,18 +395,16 @@ void USER_PROPERTY_LOGGED<varT>::OnChange(const std::string & login,
                                           const std::string & newValue,
                                           const ADMIN * admin)
 {
-std::string str1;
+std::string filePath = scriptsDir + "/OnChange";
 
-str1 = scriptsDir + "/OnChange";
-
-if (access(str1.c_str(), X_OK) == 0)
+if (access(filePath.c_str(), X_OK) == 0)
     {
-    std::string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
-    ScriptExec(str2);
+    std::string execString("\"" + filePath + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
+    ScriptExec(execString);
     }
 else
     {
-    stgLogger("Script OnChange cannot be executed. File %s not found.", str1.c_str());
+    stgLogger("Script OnChange cannot be executed. File %s not found.", filePath.c_str());
     }
 }
 //-------------------------------------------------------------------------
