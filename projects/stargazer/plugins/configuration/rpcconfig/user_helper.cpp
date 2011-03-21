@@ -6,8 +6,7 @@
 #include "user_ips.h"
 #include "utils.h"
 #include "common.h"
-
-#include "../../../user_property.h"
+#include "user_property.h"
 
 //------------------------------------------------------------------------------
 

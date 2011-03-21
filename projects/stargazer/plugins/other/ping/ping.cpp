@@ -7,8 +7,8 @@
 #include "ping.h"
 #include "user.h"
 #include "stg_locker.h"
+#include "user_property.h"
 #include "../../../settings.h"
-#include "../../../user_property.h"
 
 class PING_CREATOR
 {

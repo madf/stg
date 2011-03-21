@@ -36,7 +36,7 @@
 #include "ur_functor.h"
 #include "send_functor.h"
 #include "stg_locker.h"
-#include "../../../user_property.h"
+#include "user_property.h"
 
 extern volatile const time_t stgTime;
 

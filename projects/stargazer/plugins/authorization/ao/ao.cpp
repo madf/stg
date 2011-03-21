@@ -31,7 +31,7 @@ $Author: faust $
 #include "ao.h"
 #include "user.h"
 #include "users.h"
-#include "../../../user_property.h"
+#include "user_property.h"
 #include "../../../eventloop.h"
 
 class AO_CREATOR

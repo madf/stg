@@ -41,8 +41,8 @@
 #include "common.h"
 #include "stg_locker.h"
 #include "tariff.h"
+#include "user_property.h"
 #include "../../../settings.h"
-#include "../../../user_property.h"
 
 extern volatile const time_t stgTime;
 

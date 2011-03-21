@@ -34,7 +34,7 @@
 #include "store.h"
 #include "common.h"
 #include "user_conf.h"
-#include "../../../user_property.h"
+#include "user_property.h"
 
 extern volatile const time_t stgTime;
 

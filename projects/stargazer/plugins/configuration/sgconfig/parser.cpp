@@ -12,8 +12,8 @@
 #include "parser.h"
 #include "version.h"
 #include "tariffs.h"
+#include "user_property.h"
 #include "../../../settings.h"
-#include "../../../user_property.h"
 
 #define  UNAME_LEN      (256)
 //-----------------------------------------------------------------------------
