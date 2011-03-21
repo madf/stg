@@ -12,12 +12,10 @@ $Author: faust $
 #include <set>
 #include <sstream>
 #include <iostream>
-#include <algorithm>
 
 #include "store.h"
 #include "stg_logger.h"
 #include "admin.h"
-#include "settings.h"
 #include "notifer.h"
 #include "stg_logger.h"
 #include "stg_locker.h"
@@ -57,8 +55,8 @@ public:
 private:
     varT  & value;
     time_t  modificationTime;
-    set<PROPERTY_NOTIFIER_BASE<varT> *> beforeNotifiers;
-    set<PROPERTY_NOTIFIER_BASE<varT> *> afterNotifiers;
+    std::set<PROPERTY_NOTIFIER_BASE<varT> *> beforeNotifiers;
+    std::set<PROPERTY_NOTIFIER_BASE<varT> *> afterNotifiers;
     mutable pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
@@ -66,7 +64,7 @@ template<typename varT>
 class USER_PROPERTY_LOGGED: public USER_PROPERTY<varT> {
 public:
     USER_PROPERTY_LOGGED(varT & val,
-                         const string n,
+                         const std::string n,
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
@@ -75,35 +73,35 @@ public:
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw();
     const varT & Get() const;
-    const string & GetName() const;
+    const std::string & GetName() const;
     bool Set(const varT & val,
              const ADMIN * admin,
-             const string & login,
+             const std::string & login,
              const STORE * store,
-             const string & msg = "");
+             const std::string & msg = "");
 private:
-    void WriteAccessDenied(const string & login,
+    void WriteAccessDenied(const std::string & login,
                            const ADMIN * admin,
-                           const string & parameter);
+                           const std::string & parameter);
 
-    void WriteSuccessChange(const string & login,
+    void WriteSuccessChange(const std::string & login,
                             const ADMIN * admin,
-                            const string & parameter,
-                            const string & oldValue,
-                            const string & newValue,
-                            const string & msg,
+                            const std::string & parameter,
+                            const std::string & oldValue,
+                            const std::string & newValue,
+                            const std::string & msg,
                             const STORE * store);
 
-    void OnChange(const string & login,
-                  const string & paramName,
-                  const string & oldValue,
-                  const string & newValue,
+    void OnChange(const std::string & login,
+                  const std::string & paramName,
+                  const std::string & oldValue,
+                  const std::string & newValue,
                   const ADMIN  * admin);
 
-    STG_LOGGER &    stgLogger;  // server's logger
-    bool            isPassword; // is parameter password. when true, it will be logged as *******
-    bool            isStat;     // is parameter a stat data or conf data?
-    string          name;       // parameter name. needed for logging
+    STG_LOGGER &      stgLogger;
+    bool              isPassword;
+    bool              isStat;
+    std::string       name;
     const std::string scriptsDir;
 };
 //-----------------------------------------------------------------------------
@@ -141,32 +139,32 @@ public:
     USER_PROPERTY_LOGGED<double>            freeMb;
     USER_PROPERTY_LOGGED<time_t>            lastActivityTime;
 
-    USER_PROPERTY_LOGGED<string>            password;
+    USER_PROPERTY_LOGGED<std::string>       password;
     USER_PROPERTY_LOGGED<int>               passive;
     USER_PROPERTY_LOGGED<int>               disabled;
     USER_PROPERTY_LOGGED<int>               disabledDetailStat;
     USER_PROPERTY_LOGGED<int>               alwaysOnline;
-    USER_PROPERTY_LOGGED<string>            tariffName;
-    USER_PROPERTY_LOGGED<string>            nextTariff;
-    USER_PROPERTY_LOGGED<string>            address;
-    USER_PROPERTY_LOGGED<string>            note;
-    USER_PROPERTY_LOGGED<string>            group;
-    USER_PROPERTY_LOGGED<string>            email;
-    USER_PROPERTY_LOGGED<string>            phone;
-    USER_PROPERTY_LOGGED<string>            realName;
+    USER_PROPERTY_LOGGED<std::string>       tariffName;
+    USER_PROPERTY_LOGGED<std::string>       nextTariff;
+    USER_PROPERTY_LOGGED<std::string>       address;
+    USER_PROPERTY_LOGGED<std::string>       note;
+    USER_PROPERTY_LOGGED<std::string>       group;
+    USER_PROPERTY_LOGGED<std::string>       email;
+    USER_PROPERTY_LOGGED<std::string>       phone;
+    USER_PROPERTY_LOGGED<std::string>       realName;
     USER_PROPERTY_LOGGED<double>            credit;
     USER_PROPERTY_LOGGED<time_t>            creditExpire;
     USER_PROPERTY_LOGGED<USER_IPS>          ips;
-    USER_PROPERTY_LOGGED<string>            userdata0;
-    USER_PROPERTY_LOGGED<string>            userdata1;
-    USER_PROPERTY_LOGGED<string>            userdata2;
-    USER_PROPERTY_LOGGED<string>            userdata3;
-    USER_PROPERTY_LOGGED<string>            userdata4;
-    USER_PROPERTY_LOGGED<string>            userdata5;
-    USER_PROPERTY_LOGGED<string>            userdata6;
-    USER_PROPERTY_LOGGED<string>            userdata7;
-    USER_PROPERTY_LOGGED<string>            userdata8;
-    USER_PROPERTY_LOGGED<string>            userdata9;
+    USER_PROPERTY_LOGGED<std::string>       userdata0;
+    USER_PROPERTY_LOGGED<std::string>       userdata1;
+    USER_PROPERTY_LOGGED<std::string>       userdata2;
+    USER_PROPERTY_LOGGED<std::string>       userdata3;
+    USER_PROPERTY_LOGGED<std::string>       userdata4;
+    USER_PROPERTY_LOGGED<std::string>       userdata5;
+    USER_PROPERTY_LOGGED<std::string>       userdata6;
+    USER_PROPERTY_LOGGED<std::string>       userdata7;
+    USER_PROPERTY_LOGGED<std::string>       userdata8;
+    USER_PROPERTY_LOGGED<std::string>       userdata9;
 };
 //=============================================================================
 
@@ -189,7 +187,7 @@ USER_PROPERTY<varT>::~USER_PROPERTY()
 template <typename varT>
 void USER_PROPERTY<varT>::ModifyTime() throw()
 {
-    modificationTime = stgTime;
+modificationTime = stgTime;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
@@ -197,7 +195,7 @@ void USER_PROPERTY<varT>::Set(const varT & rvalue)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
 
-typename set<PROPERTY_NOTIFIER_BASE<varT> *>::iterator ni;
+typename std::set<PROPERTY_NOTIFIER_BASE<varT> *>::iterator ni;
 
 varT oldVal = value;
 
@@ -278,7 +276,7 @@ return modificationTime;
 //-----------------------------------------------------------------------------
 template <typename varT>
 USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT& val,
-                                                 string n,
+                                                 std::string n,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
@@ -311,7 +309,7 @@ return USER_PROPERTY<varT>::ConstData();
 };
 //-------------------------------------------------------------------------
 template <typename varT>
-const string & USER_PROPERTY_LOGGED<varT>::GetName() const
+const std::string & USER_PROPERTY_LOGGED<varT>::GetName() const
 {
 return name;
 };
@@ -319,13 +317,13 @@ return name;
 template <typename varT>
 bool USER_PROPERTY_LOGGED<varT>::Set(const varT & val,
                                      const ADMIN * admin,
-                                     const string & login,
+                                     const std::string & login,
                                      const STORE * store,
-                                     const string & msg)
+                                     const std::string & msg)
 {
 const PRIV * priv = admin->GetPriv();
-string adm_login = admin->GetLogin();
-string adm_ip = admin->GetIPStr();
+std::string adm_login = admin->GetLogin();
+std::string adm_ip = admin->GetIPStr();
 
 if ((priv->userConf && !isStat) || (priv->userStat && isStat) || (priv->userPasswd && isPassword) || (priv->userCash && name == "cash"))
     {
@@ -360,21 +358,21 @@ return true;
 }
 //-------------------------------------------------------------------------
 template <typename varT>
-void USER_PROPERTY_LOGGED<varT>::WriteAccessDenied(const string & login,
+void USER_PROPERTY_LOGGED<varT>::WriteAccessDenied(const std::string & login,
                                                    const ADMIN  * admin,
-                                                   const string & parameter)
+                                                   const std::string & parameter)
 {
 stgLogger("%s Change user \'%s.\' Parameter \'%s\'. Access denied.",
           admin->GetLogStr().c_str(), login.c_str(), parameter.c_str());
 }
 //-------------------------------------------------------------------------
 template <typename varT>
-void USER_PROPERTY_LOGGED<varT>::WriteSuccessChange(const string & login,
+void USER_PROPERTY_LOGGED<varT>::WriteSuccessChange(const std::string & login,
                                                     const ADMIN * admin,
-                                                    const string & parameter,
-                                                    const string & oldValue,
-                                                    const string & newValue,
-                                                    const string & msg,
+                                                    const std::string & parameter,
+                                                    const std::string & oldValue,
+                                                    const std::string & newValue,
+                                                    const std::string & msg,
                                                     const STORE * store)
 {
 stgLogger("%s User \'%s\': \'%s\' parameter changed from \'%s\' to \'%s\'. %s",
@@ -389,19 +387,19 @@ store->WriteUserChgLog(login, admin->GetLogin(), admin->GetIP(), parameter, oldV
 }
 //-------------------------------------------------------------------------
 template <typename varT>
-void USER_PROPERTY_LOGGED<varT>::OnChange(const string & login,
-                                          const string & paramName,
-                                          const string & oldValue,
-                                          const string & newValue,
+void USER_PROPERTY_LOGGED<varT>::OnChange(const std::string & login,
+                                          const std::string & paramName,
+                                          const std::string & oldValue,
+                                          const std::string & newValue,
                                           const ADMIN * admin)
 {
-string str1;
+std::string str1;
 
 str1 = scriptsDir + "/OnChange";
 
 if (access(str1.c_str(), X_OK) == 0)
     {
-    string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
+    std::string str2("\"" + str1 + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
     ScriptExec(str2);
     }
 else
