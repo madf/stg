@@ -31,8 +31,9 @@ public:
           tariffs(NULL),
           store(NULL),
           settings(NULL),
-          currAdmin(),
-          depth(0)
+          currAdmin(NULL),
+          depth(0),
+          answerList(NULL)
     { }
     virtual ~BASE_PARSER() {}
     virtual int ParseStart(void *data, const char *el, const char **attr) = 0;
@@ -209,7 +210,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_DEL_USER: public BASE_PARSER {
 public:
-        PARSER_DEL_USER() : BASE_PARSER(), res(0) {}
+        PARSER_DEL_USER() : BASE_PARSER(), res(0), u(NULL) {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -231,7 +232,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_SEND_MESSAGE: public BASE_PARSER {
 public:
-        PARSER_SEND_MESSAGE() : BASE_PARSER(), result(0) {}
+        PARSER_SEND_MESSAGE() : BASE_PARSER(), result(0), u(NULL) {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
