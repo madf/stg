@@ -527,7 +527,7 @@ while (li != answerList.end())
             }
         }
     k = 0;// new node
-    li++;
+    ++li;
     }
 
 if (answerList.empty()) {
