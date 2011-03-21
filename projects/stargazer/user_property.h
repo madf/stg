@@ -14,7 +14,6 @@ $Author: faust $
 #include <iostream>
 
 #include "store.h"
-#include "stg_logger.h"
 #include "admin.h"
 #include "notifer.h"
 #include "stg_logger.h"
