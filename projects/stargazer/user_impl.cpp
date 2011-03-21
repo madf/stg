@@ -52,7 +52,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
            const ADMIN * a,
            const USERS * u)
     : users(u),
-      property(s),
+      property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       login(),
       id(0),
@@ -132,7 +132,7 @@ pthread_mutex_init(&mutex, &attr);
 //-----------------------------------------------------------------------------
 USER_IMPL::USER_IMPL(const USER_IMPL & u)
     : users(u.users),
-      property(u.settings),
+      property(u.settings->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       login(u.login),
       id(u.id),
@@ -458,7 +458,7 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 if (!fakeConnect)
     {
-    string scriptOnConnect = settings->GetScriptDir() + "/OnConnect";
+    string scriptOnConnect = settings->GetScriptsDir() + "/OnConnect";
 
     if (access(scriptOnConnect.c_str(), X_OK) == 0)
         {
@@ -515,7 +515,7 @@ if (!lastIPForDisconnect)
 
 if (!fakeDisconnect)
     {
-    string scriptOnDisonnect = settings->GetScriptDir() + "/OnDisconnect";
+    string scriptOnDisonnect = settings->GetScriptsDir() + "/OnDisconnect";
 
     if (access(scriptOnDisonnect.c_str(), X_OK) == 0)
         {
@@ -911,7 +911,7 @@ void USER_IMPL::OnAdd()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-string scriptOnAdd = settings->GetScriptDir() + "/OnUserAdd";
+string scriptOnAdd = settings->GetScriptsDir() + "/OnUserAdd";
 
 if (access(scriptOnAdd.c_str(), X_OK) == 0)
     {
@@ -933,7 +933,7 @@ void USER_IMPL::OnDelete()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-string scriptOnDel = settings->GetScriptDir() + "/OnUserDel";
+string scriptOnDel = settings->GetScriptsDir() + "/OnUserDel";
 
 if (access(scriptOnDel.c_str(), X_OK) == 0)
     {

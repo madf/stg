@@ -70,7 +70,7 @@ public:
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
-                         const SETTINGS * s);
+                         const std::string & sd);
     virtual ~USER_PROPERTY_LOGGED();
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw();
@@ -100,12 +100,11 @@ private:
                   const string & newValue,
                   const ADMIN  * admin);
 
-    string          name;       // parameter name. needed for logging
+    STG_LOGGER &    stgLogger;  // server's logger
     bool            isPassword; // is parameter password. when true, it will be logged as *******
     bool            isStat;     // is parameter a stat data or conf data?
-    mutable pthread_mutex_t mutex;
-    STG_LOGGER &    stgLogger;  // server's logger
-    const SETTINGS * settings;
+    string          name;       // parameter name. needed for logging
+    const std::string scriptsDir;
 };
 //-----------------------------------------------------------------------------
 class USER_PROPERTIES {
@@ -122,7 +121,7 @@ private:
     USER_CONF conf;
 
 public:
-    USER_PROPERTIES(const SETTINGS * settings);
+    USER_PROPERTIES(const std::string & sd);
 
     USER_STAT & Stat() { return stat; }
     USER_CONF & Conf() { return conf; }
@@ -283,17 +282,15 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT& val,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
-                                                 const SETTINGS * s)
+                                                 const std::string & sd)
 
     : USER_PROPERTY<varT>(val),
-      stgLogger(logger)
+      stgLogger(logger),
+      isPassword(isPass),
+      isStat(isSt),
+      name(n),
+      scriptsDir(sd)
 {
-pthread_mutex_init(&mutex, NULL);
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
-isPassword = isPass;
-isStat = isSt;
-name = n;
-settings = s;
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
@@ -326,8 +323,6 @@ bool USER_PROPERTY_LOGGED<varT>::Set(const varT & val,
                                      const STORE * store,
                                      const string & msg)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
-
 const PRIV * priv = admin->GetPriv();
 string adm_login = admin->GetLogin();
 string adm_ip = admin->GetIPStr();
@@ -402,7 +397,7 @@ void USER_PROPERTY_LOGGED<varT>::OnChange(const string & login,
 {
 string str1;
 
-str1 = settings->GetConfDir() + "/OnChange";
+str1 = scriptsDir + "/OnChange";
 
 if (access(str1.c_str(), X_OK) == 0)
     {
@@ -417,13 +412,6 @@ else
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
-/*template<typename varT>
-stringstream & operator<< (stringstream & s, const USER_PROPERTY<varT> & v)
-{
-s << v.ConstData();
-return s;
-}*/
-//-----------------------------------------------------------------------------
 template<typename varT>
 ostream & operator<< (ostream & stream, const USER_PROPERTY<varT> & value)
 {
