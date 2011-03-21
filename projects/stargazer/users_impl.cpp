@@ -336,7 +336,7 @@ while (ui != us->users.end())
     {
     us->UnSetUserNotifiers(ui);
     us->DelUserFromIndexes(ui);
-    ui++;
+    ++ui;
     }
 
 list<USER_TO_DEL>::iterator iter;
@@ -373,7 +373,7 @@ if (TimeToWriteDetailStat(t))
         {
         usersCnt++;
         usr->WriteDetailStat();
-        usr++;
+        ++usr;
         if (usersCnt % 10 == 0)
             for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::Run));
         }
@@ -710,7 +710,7 @@ while (bi != userIPNotifiersBefore.end())
         //printfd(__FILE__, "Notifier Before removed. User %s\n", bi->GetUser()->GetLogin().c_str());
         break;
         }
-    bi++;
+    ++bi;
     }
 
 ai = userIPNotifiersAfter.begin();
@@ -723,7 +723,7 @@ while (ai != userIPNotifiersAfter.end())
         //printfd(__FILE__, "Notifier After removed. User %s\n", ai->GetUser()->GetLogin().c_str());
         break;
         }
-    ai++;
+    ++ai;
     }
 }
 //-----------------------------------------------------------------------------
