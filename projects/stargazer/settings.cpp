@@ -244,8 +244,6 @@ conf.setErrorCallback(SETTINGS::ErrorCallback, this);
 conf.setRequiredOptionNames(requiredOptions);
 string confFile = confDir + "/stargazer.conf";
 
-//printfd(__FILE__, "Conffile: %s\n", confFile.c_str());
-
 if(conf.setContent(confFile.c_str()) != 0)
     {
     strError = "Cannot read file " + confFile;
@@ -259,31 +257,26 @@ while (node)
     if (strcasecmp(node->getName(), "ScriptDir") == 0)
         {
         scriptsDir = node->getValue(0);
-        //printfd(__FILE__, "LogFile: %s\n", logFile.c_str());
         }
 
     if (strcasecmp(node->getName(), "LogFile") == 0)
         {
         logFile = node->getValue(0);
-        //printfd(__FILE__, "LogFile: %s\n", logFile.c_str());
         }
 
     if (strcasecmp(node->getName(), "PIDFile") == 0)
         {
         pidFile = node->getValue(0);
-        //printfd(__FILE__, "PIDFile: %s\n", pidFile.c_str());
         }
 
     if (strcasecmp(node->getName(), "ModulesPath") == 0)
         {
         modulesPath = node->getValue(0);
-        //printfd(__FILE__, "ModulesPath: %s\n", logFile.c_str());
         }
 
     if (strcasecmp(node->getName(), "Rules") == 0)
         {
         rules = node->getValue(0);
-        //printfd(__FILE__, "Rules: %s\n", rules.c_str());
         }
 
     if (strcasecmp(node->getName(), "DetailStatWritePeriod") == 0)
@@ -293,7 +286,6 @@ while (node)
             strError = "Incorrect DetailStatWritePeriod value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DetailStatWritePeriod: %d\n", detailStatWritePeriod);
         }
 
     if (strcasecmp(node->getName(), "StatWritePeriod") == 0)
@@ -303,7 +295,6 @@ while (node)
             strError = "Incorrect StatWritePeriod value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "StatWritePeriod: %d\n", statWritePeriod);
         }
 
     if (strcasecmp(node->getName(), "ExecMsgKey") == 0)
@@ -322,7 +313,6 @@ while (node)
             strError = "Incorrect ExecutersNum value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DayResetTraff: %d\n", dayResetTraff);
         }
 
     if (strcasecmp(node->getName(), "DayFee") == 0)
@@ -332,7 +322,6 @@ while (node)
             strError = "Incorrect DayFee value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DayFee: %d\n", dayFee);
         }
 
     if (strcasecmp(node->getName(), "FullFee") == 0)
@@ -342,7 +331,6 @@ while (node)
             strError = "Incorrect FullFee value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DayFee: %d\n", dayFee);
         }
 
     if (strcasecmp(node->getName(), "DayResetTraff") == 0)
@@ -352,7 +340,6 @@ while (node)
             strError = "Incorrect DayResetTraff value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DayResetTraff: %d\n", dayResetTraff);
         }
 
     if (strcasecmp(node->getName(), "SpreadFee") == 0)
@@ -362,7 +349,6 @@ while (node)
             strError = "Incorrect SpreadFee value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "SpreadFee: %d\n", spreadFee);
         }
 
     if (strcasecmp(node->getName(), "FreeMbAllowInet") == 0)
@@ -372,7 +358,6 @@ while (node)
             strError = "Incorrect FreeMbAllowInet value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "FreeMbAllowInet: %d\n", freeMbAllowInet);
         }
 
     if (strcasecmp(node->getName(), "DayFeeIsLastDay") == 0)
@@ -382,7 +367,6 @@ while (node)
             strError = "Incorrect DayFeeIsLastDay value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "DayFeeIsLastDay: %d\n", dayFeeIsLastDay);
         }
 
     if (strcasecmp(node->getName(), "WriteFreeMbTraffCost") == 0)
@@ -392,7 +376,6 @@ while (node)
             strError = "Incorrect WriteFreeMbTraffCost value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "WriteFreeMbTraffCost: %d\n", writeFreeMbTraffCost);
         }
 
     if (strcasecmp(node->getName(), "ShowFeeInCash") == 0)
@@ -402,7 +385,6 @@ while (node)
             strError = "Incorrect ShowFeeInCash value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "ShowFeeInCash: %d\n", showFeeInCash);
         }
 
     if (strcasecmp(node->getName(), "MonitorDir") == 0)
@@ -424,12 +406,10 @@ while (node)
             strError = "Incorrect MessageTimeout value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
-        //printfd(__FILE__, "MessageTimeout: %d\n", messageTimeout);
         }
 
     if (strcasecmp(node->getName(), "DirNames") == 0)
         {
-        // Мы внутри секции DirNames
         const DOTCONFDocumentNode * child = node->getChildNode();
         if (child)
             {
@@ -449,19 +429,14 @@ while (node)
 
     if (strcasecmp(node->getName(), "StoreModule") == 0)
         {
-        // Мы внутри секции StoreModule
-        //printfd(__FILE__, "StoreModule\n");
-
         if (node->getValue(1))
             {
-            // StoreModule должен иметь 1 атрибут
             strError = "Unexpected \'" + string(node->getValue(1)) + "\'.";
             return -1;
             }
 
         if (storeModulesCount)
             {
-            // Должен быть только один модуль StoreModule!
             strError = "Should be only one StoreModule.";
             return -1;
             }
@@ -471,20 +446,16 @@ while (node)
         ParseModuleSettings(node, &storeModuleSettings.moduleParams);
         }
 
-    // Читаем настройки всех оставшихся модулей.
     if (strcasecmp(node->getName(), "Modules") == 0)
         {
-        // Мы внутри секции Modules
         if (node->getValue(0))
             {
-            // Modules не должен иметь атрибуов
             strError = "Unexpected \'" + string(node->getValue(0)) + "\'.";
             return -1;
             }
         const DOTCONFDocumentNode * child = node->getChildNode();
         while (child)
             {
-            // Мы внутри секции
             if (strcasecmp(child->getName(), "Module") != 0)
                 {
                 child = child->getNextNode();

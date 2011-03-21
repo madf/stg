@@ -91,7 +91,7 @@ public:
     unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
 
     const std::string & GetModulesPath() const { return modulesPath; }
-    const MODULE_SETTINGS         & GetStoreModuleSettings() const
+    const MODULE_SETTINGS & GetStoreModuleSettings() const
         { return storeModuleSettings; }
     const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
         { return modulesSettings; }
@@ -110,6 +110,7 @@ private:
     static void ErrorCallback(void * data, const char * buf);
 
     std::string strError;
+
     //////////settings
     std::string modulesPath;
     std::string dirName[DIR_NUM];
@@ -125,14 +126,14 @@ private:
     int         stgExecMsgKey;
     unsigned    executersNum;
     bool        fullFee;
-    unsigned    dayFee;        // день снятия абонплаты
-    unsigned    dayResetTraff; // Начало учетного периода: день обнуления трафика и смены тарифа
+    unsigned    dayFee;
+    unsigned    dayResetTraff;
     bool        spreadFee;
     bool        freeMbAllowInet;
-    bool        dayFeeIsLastDay; // АП снимается в конце месяца (true) или в начале (false)
-    bool        writeFreeMbTraffCost; // Писать в детальную статистику стоимость трафика, если еще есть предоплаченный трафик
-    bool        showFeeInCash; // Показывать пользователю АП не счету и позволять ее использовать
-    unsigned    messageTimeout; // Время жизни неотправленного сообщения в секундах
+    bool        dayFeeIsLastDay;
+    bool        writeFreeMbTraffCost;
+    bool        showFeeInCash;
+    unsigned    messageTimeout;
 
     std::vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS storeModuleSettings;
@@ -140,4 +141,5 @@ private:
     STG_LOGGER & logger;
 };
 //-----------------------------------------------------------------------------
+
 #endif
