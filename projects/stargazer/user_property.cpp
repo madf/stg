@@ -16,7 +16,7 @@ lastActivityTime(stat.lastActivityTime, "lastActivityTime", false, true, GetStgL
 password    (conf.password,     "password",     true,  false, GetStgLogger(), sd),
 passive     (conf.passive,      "passive",      false, false, GetStgLogger(), sd),
 disabled    (conf.disabled,     "disabled",     false, false, GetStgLogger(), sd),
-disabledDetailStat(conf.disabledDetailStat,"DisabledDetailStat",false,false,GetStgLogger(), sd),
+disabledDetailStat(conf.disabledDetailStat, "DisabledDetailStat", false, false, GetStgLogger(), sd),
 alwaysOnline(conf.alwaysOnline, "alwaysOnline", false, false, GetStgLogger(), sd),
 tariffName  (conf.tariffName,   "tariff",       false, false, GetStgLogger(), sd),
 nextTariff  (conf.nextTariff,   "new tariff",   false, false, GetStgLogger(), sd),
