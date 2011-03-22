@@ -24,18 +24,18 @@
  $Author: faust $
  */
 
-//#include <stdio.h>
-#include <sys/types.h>
+/*#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#include <arpa/inet.h>*/
 #include <unistd.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+/*#include <sys/stat.h>
 #include <dlfcn.h>
-#include <fcntl.h>
+#include <fcntl.h>*/
 
 #include <csignal>
 #include <cerrno>
@@ -44,7 +44,7 @@
 #include <set>
 #include <list>
 
-#include "settings.h"
+#include "settings_impl.h"
 #include "user.h"
 #include "users_impl.h"
 #include "admins_impl.h"
@@ -309,7 +309,7 @@ sigaction(SIGSEGV, &newsa, &oldsa);*/
 return;
 }
 //-----------------------------------------------------------------------------
-int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS * settings)
+int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
 
@@ -317,7 +317,6 @@ if (*msgID == -11)   // If msgID == -11 - first call. Create queue
     {
     for (int i = 0; i < 2; i++)
         {
-        //WriteServLog("Creating queue with key=%d ...", msgKey);
         *msgID = msgget(msgKey, IPC_CREAT | IPC_EXCL | 0600);
 
         if (*msgID == -1)
@@ -331,7 +330,6 @@ if (*msgID == -11)   // If msgID == -11 - first call. Create queue
             else
                 {
                 msgctl(*msgID, IPC_RMID, NULL);
-                //printfd(__FILE__, "Queue removed!");
                 }
             }
         else
@@ -346,20 +344,16 @@ pid_t executerPid = fork();
 
 switch (executerPid)
     {
-    case -1:    // Лажа
+    case -1:
         WriteServLog("Fork error!");
         return -1;
 
-    case 0:     // Потомок
-        //close(0);
-        //close(1);
-        //close(2);
-        //setsid();
+    case 0:
         delete settings;
         Executer(msgKey, *msgID, executerPid, procName);
         return 1;
 
-    default:    // Основной процесс
+    default:
         if (executersPid.empty()) {
             Executer(msgKey, *msgID, executerPid, NULL);
         }
@@ -381,23 +375,21 @@ unlink(startFile.c_str());
 
 switch (stgChildPid)
     {
-    case -1:    // Лажа
+    case -1:
         return -1;
         break;
 
-    case 0:     // Потомок
-        //close(0);
+    case 0:
         close(1);
         close(2);
         setsid();
         break;
 
-    default:    // Основной процесс
+    default:
         for (int i = 0; i < 120 * 5; i++)
             {
             if (access(startFile.c_str(), F_OK) == 0)
                 {
-                //printf("Fork successfull. Exit.\n");
                 unlink(startFile.c_str());
                 exit(0);
                 }
@@ -450,7 +442,7 @@ int main(int argc, char * argv[])
   - Fork and exit
  * */
 
-SETTINGS * settings = NULL;
+SETTINGS_IMPL * settings = NULL;
 STORE * dataStore = NULL;
 TARIFFS_IMPL * tariffs = NULL;
 ADMINS_IMPL * admins = NULL;
@@ -475,13 +467,12 @@ if (getuid())
     }
 
 if (argc == 2)
-    settings = new SETTINGS(argv[1]);
+    settings = new SETTINGS_IMPL(argv[1]);
 else
-    settings = new SETTINGS();
+    settings = new SETTINGS_IMPL();
 
 if (settings->ReadSettings())
     {
-    //printfd(__FILE__, "ReadSettings error.\n");
     STG_LOGGER & WriteServLog = GetStgLogger();
 
     if (settings->GetLogFileName() != "")
@@ -558,7 +549,7 @@ traffCnt->SetMonitorDir(settings->GetMonitorDir());
 
 modSettings = settings->GetModulesSettings();
 
-for (unsigned i = 0; i < modSettings.size(); i++)
+for (size_t i = 0; i < modSettings.size(); i++)
     {
     string modulePath = settings->GetModulesPath();
     modulePath += "/mod_";
@@ -617,8 +608,7 @@ while (modIter != modules.end())
         //printfd(__FILE__, "Error: %s\n", capRunner.GetStrError().c_str());
         goto exitLbl;
         }
-    WriteServLog("Module: \'%s\'. Start successfull. %d", modIter->GetPlugin()->GetVersion().c_str(),
-        modIter->GetPlugin()->GetStartPosition());
+    WriteServLog("Module: '%s'. Start successfull.", modIter->GetPlugin()->GetVersion().c_str());
     ++modIter;
     }
 SetSignalHandlers();
@@ -733,29 +723,19 @@ if (res)
 else
     WriteServLog("Queue removed successfully.");
 
-/*struct sigaction newsa, oldsa;
-sigset_t sigmask;
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGCHLD);
-newsa.sa_handler = SIG_IGN;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGCHLD, &newsa, &oldsa);*/
-
 KillExecuters();
 
 StopStgTimer();
 WriteServLog("StgTimer: Stop successfull.");
-
-WriteServLog("Stg stopped successfully.");
-sleep(1);
-WriteServLog("---------------------------------------------");
 
 delete traffCnt;
 delete users;
 delete admins;
 delete tariffs;
 delete settings;
+
+WriteServLog("Stg stopped successfully.");
+WriteServLog("---------------------------------------------");
 
 return 0;
 }

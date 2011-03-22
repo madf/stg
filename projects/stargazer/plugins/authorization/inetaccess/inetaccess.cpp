@@ -42,7 +42,7 @@
 #include "stg_locker.h"
 #include "tariff.h"
 #include "user_property.h"
-#include "../../../settings.h"
+#include "settings.h"
 
 extern volatile const time_t stgTime;
 

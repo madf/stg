@@ -32,14 +32,14 @@ $Author: faust $
 #include <cerrno>
 #include <string>
 
-#include "settings.h"
+#include "settings_impl.h"
 #include "stg_logger.h"
 #include "dotconfpp.h"
 
 using namespace std;
 
 //-----------------------------------------------------------------------------
-SETTINGS::SETTINGS()
+SETTINGS_IMPL::SETTINGS_IMPL()
     : confDir("/etc/stargazer"),
       scriptsDir("/etc/stargazer"),
       pidFile("/var/run/stargazer.pid"),
@@ -61,7 +61,7 @@ SETTINGS::SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-SETTINGS::SETTINGS(const std::string & cd)
+SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
     : confDir(cd),
       scriptsDir(cd),
       monitoring(false),
@@ -82,7 +82,7 @@ SETTINGS::SETTINGS(const std::string & cd)
 {
 }
 //-----------------------------------------------------------------------------
-SETTINGS::SETTINGS(const SETTINGS & rval)
+SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
     : confDir(rval.confDir),
       scriptsDir(rval.scriptsDir),
       pidFile(rval.pidFile),
@@ -104,11 +104,7 @@ SETTINGS::SETTINGS(const SETTINGS & rval)
 {
 }
 //-----------------------------------------------------------------------------
-SETTINGS::~SETTINGS()
-{
-}
-//-----------------------------------------------------------------------------
-int SETTINGS::ParseYesNo(const string & value, bool * val)
+int SETTINGS_IMPL::ParseYesNo(const string & value, bool * val)
 {
 if (0 == strcasecmp(value.c_str(), "yes"))
     {
@@ -125,7 +121,7 @@ strError = "Incorrect value \'" + value + "\'.";
 return -1;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseInt(const string & value, int * val)
+int SETTINGS_IMPL::ParseInt(const string & value, int * val)
 {
 if (str2x<int>(value, *val))
     {
@@ -135,7 +131,7 @@ if (str2x<int>(value, *val))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseUnsigned(const string & value, unsigned * val)
+int SETTINGS_IMPL::ParseUnsigned(const string & value, unsigned * val)
 {
 if (str2x<unsigned>(value, *val))
     {
@@ -145,7 +141,7 @@ if (str2x<unsigned>(value, *val))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseIntInRange(const string & value, int min, int max, int * val)
+int SETTINGS_IMPL::ParseIntInRange(const string & value, int min, int max, int * val)
 {
 if (ParseInt(value, val) != 0)
     return -1;
@@ -159,7 +155,7 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val)
+int SETTINGS_IMPL::ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val)
 {
 if (ParseUnsigned(value, val) != 0)
     return -1;
@@ -173,7 +169,7 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseModuleSettings(const DOTCONFDocumentNode * node, vector<PARAM_VALUE> * params)
+int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, vector<PARAM_VALUE> * params)
 {
 const DOTCONFDocumentNode * childNode;
 PARAM_VALUE pv;
@@ -212,14 +208,14 @@ while (childNode)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void SETTINGS::ErrorCallback(void * data, const char * buf)
+void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
 {
     printfd(__FILE__, buf);
-    SETTINGS * settings = static_cast<SETTINGS *>(data);
+    SETTINGS_IMPL * settings = static_cast<SETTINGS_IMPL *>(data);
     settings->logger(buf);
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ReadSettings()
+int SETTINGS_IMPL::ReadSettings()
 {
 const char * requiredOptions[] = {
     "ModulesPath",
@@ -240,7 +236,7 @@ int storeModulesCount = 0;
 modulesSettings.clear();
 
 DOTCONFDocument conf(DOTCONFDocument::CASEINSENSITIVE);
-conf.setErrorCallback(SETTINGS::ErrorCallback, this);
+conf.setErrorCallback(SETTINGS_IMPL::ErrorCallback, this);
 conf.setRequiredOptionNames(requiredOptions);
 string confFile = confDir + "/stargazer.conf";
 
@@ -479,7 +475,7 @@ while (node)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS::ParseDetailStatWritePeriod(const string & detailStatPeriodStr)
+int SETTINGS_IMPL::ParseDetailStatWritePeriod(const string & detailStatPeriodStr)
 {
 if (detailStatPeriodStr == "1")
     {

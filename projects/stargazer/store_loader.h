@@ -37,11 +37,11 @@
 #include "noncopyable.h"
 
 class STORE;
-class SETTINGS;
+class SETTINGS_IMPL;
 
 class STORE_LOADER : private NONCOPYABLE {
 public:
-    STORE_LOADER(const SETTINGS & settings);
+    STORE_LOADER(const SETTINGS_IMPL & settings);
     ~STORE_LOADER();
 
     bool Load();

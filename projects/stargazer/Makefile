@@ -8,19 +8,19 @@ PROG = stargazer
 
 SRCS = ./admin_impl.cpp \
        ./admins_impl.cpp \
+       ./eventloop.cpp \
        ./main.cpp \
-       ./settings.cpp \
+       ./pidfile.cpp \
+       ./plugin_runner.cpp \
+       ./settings_impl.cpp \
        ./stg_timer.cpp \
+       ./store_loader.cpp \
        ./tariff_impl.cpp \
        ./tariffs_impl.cpp \
        ./traffcounter.cpp \
        ./user_impl.cpp \
        ./user_property.cpp \
-       ./users_impl.cpp \
-       ./plugin_runner.cpp \
-       ./store_loader.cpp \
-       ./pidfile.cpp \
-       ./eventloop.cpp
+       ./users_impl.cpp
 
 STGLIBS =  -lstg_logger \
     	   -lstg_locker \

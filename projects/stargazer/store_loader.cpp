@@ -33,9 +33,9 @@
 #include "store_loader.h"
 #include "common.h"
 #include "store.h"
-#include "settings.h"
+#include "settings_impl.h"
 
-STORE_LOADER::STORE_LOADER(const SETTINGS & settings)
+STORE_LOADER::STORE_LOADER(const SETTINGS_IMPL & settings)
     : isLoaded(false),
       handle(NULL),
       plugin(NULL),
@@ -52,16 +52,17 @@ Unload();
 
 bool STORE_LOADER::Load()
 {
-printfd(__FILE__, "STORE_LOADER::Load()\n");
 if (isLoaded)
     {
+    errorStr = "Store plugin '" + pluginFileName + "' was alredy loaded!";
+    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
     return false;
     }
 
 if (pluginFileName.empty())
     {
     errorStr = "Empty store plugin filename";
-    printfd(__FILE__, "STORE_LOADER::Load - %s\n", errorStr.c_str());
+    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
     return true;
     }
 
@@ -71,7 +72,7 @@ if (!handle)
     {
     errorStr = "Error loading plugin '"
         + pluginFileName + "': '" + dlerror() + "'";
-    printfd(__FILE__, "STORE_LOADER::Load - %s\n", errorStr.c_str());
+    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
     return true;
     }
 
@@ -81,8 +82,8 @@ STORE * (*GetStore)();
 GetStore = (STORE * (*)())dlsym(handle, "GetStore");
 if (!GetStore)
     {
-    errorStr = "GetStore not found.";
-    printfd(__FILE__, "STORE_LOADER::Load - %s\n", errorStr.c_str());
+    errorStr = std::string("GetStore() not found! ") + dlerror();
+    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
     return true;
     }
 
@@ -90,8 +91,8 @@ plugin = GetStore();
 
 if (!plugin)
     {
-    errorStr = "NULL store plugin";
-    printfd(__FILE__, "STORE_LOADER::Load - %s\n");
+    errorStr = "Plugin was not created!";
+    printfd(__FILE__, "STORE_LOADER::Load() - %s\n");
     return true;
     }
 
@@ -99,7 +100,7 @@ plugin->SetSettings(storeSettings);
 if (plugin->ParseSettings())
     {
     errorStr = plugin->GetStrError();
-    printfd(__FILE__, "Failed to parse settings. Plugin reports: '%s'\n", errorStr.c_str());
+    printfd(__FILE__, "STORE_LOADER::Load() - Failed to parse settings. Plugin reports: '%s'\n", errorStr.c_str());
     return true;
     }
 
@@ -111,15 +112,15 @@ bool STORE_LOADER::Unload()
 printfd(__FILE__, "STORE_LOADER::Unload()\n");
 if (!isLoaded)
     {
-    return false;
+    return true;
     }
 
 if (dlclose(handle))
     {
-    errorStr = "Failed to unload plugin: '";
+    errorStr = "Failed to unload plugin '";
+    errorStr += pluginFileName + "': ";
     errorStr += dlerror();
-    errorStr += "'";
-    printfd(__FILE__, "STORE_LOADER::Unload - %s\n", errorStr.c_str());
+    printfd(__FILE__, "STORE_LOADER::Unload() - %s\n", errorStr.c_str());
     return true;
     }
 

@@ -6,10 +6,10 @@
 
 #include "rpcconfig.h"
 
+#include "common.h"
 #include "admin.h"
 #include "module_settings.h"
-#include "../../../settings.h"
-#include "common.h"
+#include "settings.h"
 
 #include "info_methods.h"
 #include "users_methods.h"

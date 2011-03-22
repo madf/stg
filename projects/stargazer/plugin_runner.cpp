@@ -26,21 +26,24 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include "plugin_runner.h"
 #include "common.h"
-#include "conffiles.h"
+#include "settings_impl.h"
+#include "admins_impl.h"
+#include "tariffs_impl.h"
+#include "users_impl.h"
+#include "traffcounter.h"
 
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
                              const MODULE_SETTINGS & ms,
-                             ADMINS * a,
-                             TARIFFS * t,
-                             USERS * u,
+                             ADMINS_IMPL * a,
+                             TARIFFS_IMPL * t,
+                             USERS_IMPL * u,
                              TRAFFCOUNTER * tc,
                              STORE * st,
-                             const SETTINGS * s)
+                             const SETTINGS_IMPL * s)
     : pluginFileName(pFileName),
       pluginSettingFileName(),
       plugin(NULL),
@@ -103,11 +106,18 @@ if (isPluginLoaded)
     Unload();
     }
 
-isPluginLoaded = 0;
+isPluginLoaded = false;
 }
 //-----------------------------------------------------------------------------
 PLUGIN * PLUGIN_RUNNER::GetPlugin()
 {
+if (!isPluginLoaded)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' is not loaded yet!";
+    printfd(__FILE__, "PLUGIN_LOADER::GetPlugin() - %s\n", errorStr.c_str());
+    return NULL;
+    }
+
 return plugin;
 }
 //-----------------------------------------------------------------------------
@@ -116,6 +126,13 @@ int PLUGIN_RUNNER::Start()
 if (!isPluginLoaded)
     if (Load())
         return -1;
+
+if (!plugin)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not created!";
+    printfd(__FILE__, "PLUGIN_LOADER::Start() - %s\n", errorStr.c_str());
+    return -1;
+    }
 
 plugin->SetTariffs(tariffs);
 plugin->SetAdmins(admins);
@@ -129,20 +146,47 @@ if (plugin->Start())
     errorStr = plugin->GetStrError();
     return -1;
     }
+
 return 0;
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Stop()
 {
+if (!isPluginLoaded)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
+    printfd(__FILE__, "PLUGIN_LOADER::Stop() - %s\n", errorStr.c_str());
+    return -1;
+    }
+
+if (!plugin)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not created!";
+    printfd(__FILE__, "PLUGIN_LOADER::Stop() - %s\n", errorStr.c_str());
+    return -1;
+    }
+
 plugin->Stop();
 
-//if (Unload())
-//    return -1;
 return 0;
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Reload()
 {
+if (!isPluginLoaded)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
+    printfd(__FILE__, "PLUGIN_LOADER::Reload() - %s\n", errorStr.c_str());
+    return -1;
+    }
+
+if (!plugin)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not created!";
+    printfd(__FILE__, "PLUGIN_LOADER::Reload() - %s\n", errorStr.c_str());
+    return -1;
+    }
+
 int res = plugin->Reload();
 errorStr = plugin->GetStrError();
 return res;
@@ -151,16 +195,35 @@ return res;
 bool PLUGIN_RUNNER::IsRunning()
 {
 if (!isPluginLoaded)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
+    printfd(__FILE__, "PLUGIN_LOADER::IsRunning() - %s\n", errorStr.c_str());
     return false;
+    }
+
+if (!plugin)
+    {
+    errorStr = "Plugin '" + pluginFileName + "' was not created!";
+    printfd(__FILE__, "PLUGIN_LOADER::IsRunning() - %s\n", errorStr.c_str());
+    return false;
+    }
+
 return plugin->IsRunning();
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Load()
 {
-if (!pluginFileName.size())
+if (isPluginLoaded)
     {
-    errorStr = "Plugin loading failed. No plugin";
-    printfd(__FILE__, "%s\n", errorStr.c_str());
+    errorStr = "Plugin '" + pluginFileName + "' was already loaded!";
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - %s\n", errorStr.c_str());
+    return -1;
+    }
+
+if (pluginFileName.empty())
+    {
+    errorStr = "Empty plugin file name!";
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - %s\n", errorStr.c_str());
     return -1;
     }
 
@@ -168,33 +231,36 @@ libHandle = dlopen(pluginFileName.c_str(), RTLD_NOW);
 
 if (!libHandle)
     {
-    errorStr = std::string("Plugin loading failed. ") + dlerror();
-    printfd(__FILE__, "%s\n", errorStr.c_str());
+    errorStr = "Error loading plugin '"
+        + pluginFileName + "': '" + dlerror() + "'";
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - %s\n", errorStr.c_str());
     return -1;
     }
+
+isPluginLoaded = true;
 
 PLUGIN * (*GetPlugin)();
 GetPlugin = (PLUGIN * (*)())dlsym(libHandle, "GetPlugin");
 if (!GetPlugin)
     {
     errorStr = std::string("GetPlugin() not found. ") + dlerror();
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - %s\n", errorStr.c_str());
     return -1;
     }
 plugin = GetPlugin();
-isPluginLoaded++;
 
 if (!plugin)
     {
     errorStr = "Plugin was not created!";
-    printfd(__FILE__, "%s\n", errorStr.c_str());
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - %s\n", errorStr.c_str());
     return -1;
     }
 
 plugin->SetSettings(modSettings);
-printfd(__FILE__, "Plugin %s parsesettings\n", plugin->GetVersion().c_str());
 if (plugin->ParseSettings())
     {
-    errorStr = "Plugin \'" + plugin->GetVersion() + "\' error: " + plugin->GetStrError();
+    errorStr = plugin->GetStrError();
+    printfd(__FILE__, "PLUGIN_LOADER::Load() - Failed to parse settings. Plugin reports: '%s'\n", errorStr.c_str());
     return -1;
     }
 
@@ -207,27 +273,15 @@ if (isPluginLoaded)
     {
     if (dlclose(libHandle))
         {
-        errorStr = dlerror();
-        printfd(__FILE__, "Error unloading plugin '%s': '%s'", pluginFileName.c_str(), dlerror());
+        errorStr = "Failed to unload plugin '";
+        errorStr += pluginFileName + "': ";
+        errorStr += dlerror();
+        printfd(__FILE__, "PLUGIN_LOADER::Unload() - %s", errorStr.c_str());
         return -1;
         }
-    isPluginLoaded--;
+    plugin = NULL;
+    isPluginLoaded = false;
     }
 return 0;
-}
-//-----------------------------------------------------------------------------
-const std::string & PLUGIN_RUNNER::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-uint16_t PLUGIN_RUNNER::GetStartPosition() const
-{
-return plugin->GetStartPosition();
-}
-//-----------------------------------------------------------------------------
-uint16_t PLUGIN_RUNNER::GetStopPosition() const
-{
-return plugin->GetStopPosition();
 }
 //-----------------------------------------------------------------------------

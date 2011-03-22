@@ -48,6 +48,7 @@ class TARIFF;
 class TARIFFS;
 class ADMIN;
 class USER_IMPL;
+class SETTINGS_IMPL;
 //-----------------------------------------------------------------------------
 class USER_ID_GENERATOR {
 friend class USER_IMPL;
@@ -102,7 +103,7 @@ friend class CHG_TARIFF_NOTIFIER;
 friend class CHG_CASH_NOTIFIER;
 friend class CHG_IP_NOTIFIER;
 public:
-    USER_IMPL(const SETTINGS * settings,
+    USER_IMPL(const SETTINGS_IMPL * settings,
               const STORE * store,
               const TARIFFS * tariffs,
               const ADMIN * sysAdmin,
@@ -230,7 +231,7 @@ private:
     TRAFF_STAT      traffStat;
     std::pair<time_t, TRAFF_STAT> traffStatSaved;
 
-    const SETTINGS * settings;
+    const SETTINGS_IMPL * settings;
 
     std::set<const AUTH *> authorizedBy;
 

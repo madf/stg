@@ -27,28 +27,30 @@
 #ifndef PLUGIN_RUNNER_H
 #define PLUGIN_RUNNER_H
 
-#include <pthread.h>
-
 #include <string>
 
-#include "plugin.h"
 #include "module_settings.h"
-#include "traffcounter.h"
-#include "tariffs.h"
-#include "admins.h"
-#include "users.h"
+#include "plugin.h"
+#include "os_int.h"
+
+class SETTINGS_IMPL;
+class ADMINS_IMPL;
+class TARIFFS_IMPL;
+class USERS_IMPL;
+class TRAFFCOUNTER;
+class STORE;
 
 //-----------------------------------------------------------------------------
 class PLUGIN_RUNNER {
 public:
     PLUGIN_RUNNER(const std::string & pluginFileName,
                   const MODULE_SETTINGS & ms,
-                  ADMINS * admins,
-                  TARIFFS * tariffs,
-                  USERS * users,
+                  ADMINS_IMPL * admins,
+                  TARIFFS_IMPL * tariffs,
+                  USERS_IMPL * users,
                   TRAFFCOUNTER * tc,
                   STORE * store,
-                  const SETTINGS * s);
+                  const SETTINGS_IMPL * s);
     PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue);
     ~PLUGIN_RUNNER();
 
@@ -60,33 +62,33 @@ public:
     int             Restart();
     bool            IsRunning();
 
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     PLUGIN *        GetPlugin();
     const std::string & GetFileName() const { return pluginFileName; }
 
     int             Load();
     int             Unload();
 
-    uint16_t        GetStartPosition() const;
-    uint16_t        GetStopPosition() const;
+    uint16_t        GetStartPosition() const { return plugin->GetStartPosition(); }
+    uint16_t        GetStopPosition() const { return plugin->GetStopPosition(); }
 
 private:
     std::string     pluginFileName;
     std::string     pluginSettingFileName;
 
     PLUGIN *        plugin;
-    int             isPluginLoaded;
+    bool            isPluginLoaded;
     std::string     errorStr;
 
     void *          libHandle;
     bool            isRunning;
 
-    ADMINS *        admins;
-    TARIFFS *       tariffs;
-    USERS *         users;
+    ADMINS_IMPL *   admins;
+    TARIFFS_IMPL *  tariffs;
+    USERS_IMPL *    users;
     STORE *         store;
     TRAFFCOUNTER *  traffCnt;
-    const SETTINGS * stgSettings;
+    const SETTINGS_IMPL * stgSettings;
     MODULE_SETTINGS modSettings;
 };
 //-----------------------------------------------------------------------------

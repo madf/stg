@@ -34,12 +34,13 @@
  */
 
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef SETTINGS_IMPL_H
+#define SETTINGS_IMPL_H
 
 #include <string>
 #include <vector>
 
+#include "settings.h"
 #include "common.h"
 #include "stg_logger.h"
 #include "module_settings.h"
@@ -55,12 +56,12 @@ dsPeriod_1_6,
 class STG_LOGGER;
 class DOTCONFDocumentNode;
 //-----------------------------------------------------------------------------
-class SETTINGS {
+class SETTINGS_IMPL : public SETTINGS {
 public:
-    SETTINGS();
-    SETTINGS(const std::string &);
-    SETTINGS(const SETTINGS &);
-    virtual ~SETTINGS();
+    SETTINGS_IMPL();
+    SETTINGS_IMPL(const std::string &);
+    SETTINGS_IMPL(const SETTINGS_IMPL &);
+    virtual ~SETTINGS_IMPL() {}
     int Reload() { return ReadSettings(); }
     int ReadSettings();
 
@@ -68,14 +69,14 @@ public:
 
     int                 GetExecMsgKey() const { return stgExecMsgKey; }
     unsigned            GetExecutersNum() const { return executersNum; }
-    const std::string & GetDirName(int num) const { return dirName[num]; };
+    const std::string & GetDirName(size_t num) const { return dirName[num]; }
     const std::string & GetConfDir() const { return confDir; }
     const std::string & GetScriptsDir() const { return scriptsDir; }
     const std::string & GetRulesFileName() const { return rules; }
     const std::string & GetLogFileName() const { return logFile; }
     const std::string & GetPIDFileName() const { return pidFile; }
     unsigned            GetDetailStatWritePeriod() const 
-        { return detailStatWritePeriod; };
+        { return detailStatWritePeriod; }
     unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
     unsigned            GetDayFee() const { return dayFee; }
     bool                GetFullFee() const { return fullFee; }

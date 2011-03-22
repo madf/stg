@@ -41,13 +41,13 @@
 #include "user_impl.h"
 #include "users.h"
 #include "common.h"
-#include "settings.h"
+#include "settings_impl.h"
 #include "script_executer.h"
 #include "tariff.h"
 #include "tariffs.h"
 #include "admin.h"
 
-USER_IMPL::USER_IMPL(const SETTINGS * s,
+USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
            const STORE * st,
            const TARIFFS * t,
            const ADMIN * a,

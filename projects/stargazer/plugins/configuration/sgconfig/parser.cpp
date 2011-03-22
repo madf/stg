@@ -13,7 +13,7 @@
 #include "version.h"
 #include "tariffs.h"
 #include "user_property.h"
-#include "../../../settings.h"
+#include "settings.h"
 
 #define  UNAME_LEN      (256)
 //-----------------------------------------------------------------------------
