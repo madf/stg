@@ -40,9 +40,14 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL()
-    : confDir("/etc/stargazer"),
+    : strError(),
+      modulesPath("/usr/lib/stg"),
+      confDir("/etc/stargazer"),
       scriptsDir("/etc/stargazer"),
+      rules("/etc/stargazer/rules"),
+      logFile("/var/log/stargazer.log"),
       pidFile("/var/run/stargazer.pid"),
+      monitorDir("/var/stargazer/monitoring"),
       monitoring(false),
       detailStatWritePeriod(dsPeriod_1_6),
       statWritePeriod(10),
@@ -57,13 +62,21 @@ SETTINGS_IMPL::SETTINGS_IMPL()
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
       messageTimeout(0),
+      modulesSettings(),
+      storeModuleSettings(),
       logger(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
-    : confDir(cd),
+    : strError(),
+      modulesPath("/usr/lib/stg"),
+      confDir(cd),
       scriptsDir(cd),
+      rules(cd + "/rules"),
+      logFile("/var/log/stargazer.log"),
+      pidFile("/var/run/stargazer.pid"),
+      monitorDir("/var/stargazer/monitoring"),
       monitoring(false),
       detailStatWritePeriod(dsPeriod_1_6),
       statWritePeriod(10),
@@ -78,28 +91,37 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
       messageTimeout(0),
+      modulesSettings(),
+      storeModuleSettings(),
       logger(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
-    : confDir(rval.confDir),
+    : strError(),
+      modulesPath(rval.modulesPath),
+      confDir(rval.confDir),
       scriptsDir(rval.scriptsDir),
+      rules(rval.rules),
+      logFile(rval.logFile),
       pidFile(rval.pidFile),
+      monitorDir(rval.monitorDir),
       monitoring(rval.monitoring),
-      detailStatWritePeriod(dsPeriod_1_6),
-      statWritePeriod(10),
+      detailStatWritePeriod(rval.detailStatWritePeriod),
+      statWritePeriod(rval.statWritePeriod),
       stgExecMsgKey(rval.stgExecMsgKey),
       executersNum(rval.executersNum),
       fullFee(rval.fullFee),
-      dayFee(0),
-      dayResetTraff(0),
+      dayFee(rval.dayFee),
+      dayResetTraff(rval.dayResetTraff),
       spreadFee(rval.spreadFee),
-      freeMbAllowInet(false),
-      dayFeeIsLastDay(false),
-      writeFreeMbTraffCost(false),
+      freeMbAllowInet(rval.freeMbAllowInet),
+      dayFeeIsLastDay(rval.dayFeeIsLastDay),
+      writeFreeMbTraffCost(rval.writeFreeMbTraffCost),
       showFeeInCash(rval.showFeeInCash),
       messageTimeout(rval.messageTimeout),
+      modulesSettings(rval.modulesSettings),
+      storeModuleSettings(rval.storeModuleSettings),
       logger(GetStgLogger())
 {
 }
