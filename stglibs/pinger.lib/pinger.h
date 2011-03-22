@@ -9,7 +9,6 @@
 
 #include <ctime>
 #include <string>
-#include <vector>
 #include <list>
 #include <map>
 
@@ -29,8 +28,6 @@
 #endif
 
 #include "os_int.h"
-
-using namespace std;
 
 //-----------------------------------------------------------------------------
 struct ICMP_HDR
@@ -95,12 +92,11 @@ public:
     void    AddIP(uint32_t ip);
     void    DelIP(uint32_t ip);
     int     GetPingIPNum() const;
-    //void    GetAllIP(vector<PING_IP_TIME> * ipTime) const;
     void    PrintAllIP();
     int     GetIPTime(uint32_t ip, time_t * t) const;
-    void    SetDelayTime(time_t delay);
-    time_t  GetDelayTime() const;
-    string  GetStrError() const;
+    void    SetDelayTime(time_t d) { delay = d; }
+    time_t  GetDelayTime() const { return delay; }
+    const std::string & GetStrError() const { return errorStr; }
 
 private:
     uint16_t    PingCheckSum(void * data, int len);
@@ -124,11 +120,11 @@ private:
     PING_MESSAGE pmSend;
     uint32_t    pid;
 
-    string      errorStr;
+    std::string errorStr;
 
-    multimap<uint32_t, time_t>   pingIP;
-    list<uint32_t>          ipToAdd;
-    list<uint32_t>          ipToDel;
+    std::multimap<uint32_t, time_t> pingIP;
+    std::list<uint32_t>          ipToAdd;
+    std::list<uint32_t>          ipToDel;
 
     mutable pthread_mutex_t mutex;
 };

@@ -76,8 +76,7 @@ int STG_PINGER::Stop()
     if (isRunningRecver)
         {
         //5 seconds to thread stops itself
-        int i;
-        for (i = 0; i < 25; i++)
+        for (size_t i = 0; i < 25; i++)
             {
             if (i % 5 == 0)
                 SendPing(0x0100007f);//127.0.0.1
@@ -91,20 +90,18 @@ int STG_PINGER::Stop()
         //after 5 seconds waiting thread still running. now killing it
         if (isRunningRecver)
             {
-            //if (pthread_kill(recvThread, SIGINT))
-            //    {
+            if (pthread_kill(recvThread, SIGINT))
+                {
                 errorStr = "Cannot kill thread.";
                 return -1;
-            //    }
-            //printf("recvThread killed\n");
+                }
             }
         }
 
     if (isRunningSender)
         {
         //5 seconds to thread stops itself
-        int i;
-        for (i = 0; i < 25; i++)
+        for (size_t i = 0; i < 25; i++)
             {
             if (!isRunningSender)
                 break;
@@ -115,12 +112,11 @@ int STG_PINGER::Stop()
         //after 5 seconds waiting thread still running. now killing it
         if (isRunningSender)
             {
-            //if (pthread_kill(sendThread, SIGINT))
-            //    {
+            if (pthread_kill(sendThread, SIGINT))
+                {
                 errorStr = "Cannot kill thread.";
                 return -1;
-            //    }
-            //printf("sendThread killed\n");
+                }
             }
         }
 
@@ -131,14 +127,12 @@ int STG_PINGER::Stop()
 void STG_PINGER::AddIP(uint32_t ip)
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    //printf("AddIP\n");
     ipToAdd.push_back(ip);
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::DelIP(uint32_t ip)
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    //printf("DelIP\n");
     ipToDel.push_back(ip);
 }
 //-----------------------------------------------------------------------------
@@ -146,14 +140,12 @@ void STG_PINGER::RealAddIP()
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-    list<uint32_t>::iterator iter;
+    std::list<uint32_t>::iterator iter;
     iter = ipToAdd.begin();
     while (iter != ipToAdd.end())
         {
-        /*packets.insert(pair<RAW_PACKET, PACKET_EXTRA_DATA>(rawPacket, ed));*/
-        //pingIP[*iter] = 0;
-        pingIP.insert(pair<uint32_t, time_t>(*iter, 0));
-        iter++;
+        pingIP.insert(std::make_pair(*iter, 0));
+        ++iter;
         }
     ipToAdd.erase(ipToAdd.begin(), ipToAdd.end());
     }
@@ -162,17 +154,16 @@ void STG_PINGER::RealDelIP()
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-    list<uint32_t>::iterator iter;
-    multimap<uint32_t, time_t>::iterator treeIter;
+    std::list<uint32_t>::iterator iter;
+    std::multimap<uint32_t, time_t>::iterator treeIter;
     iter = ipToDel.begin();
     while (iter != ipToDel.end())
         {
         treeIter = pingIP.find(*iter);
-        //printf("Found %X\n", *iter);
         if (treeIter != pingIP.end())
             pingIP.erase(treeIter);
 
-        iter++;
+        ++iter;
         }
     ipToDel.erase(ipToDel.begin(), ipToDel.end());
 }
@@ -182,24 +173,19 @@ int STG_PINGER::GetPingIPNum() const
     return pingIP.size();
 }
 //-----------------------------------------------------------------------------
-/*void STG_PINGER::GetAllIP(vector<PING_IP_TIME> *) const
-{
-    //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-}*/
-//-----------------------------------------------------------------------------
 void STG_PINGER::PrintAllIP()
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    multimap<uint32_t, time_t>::iterator iter;
+    std::multimap<uint32_t, time_t>::iterator iter;
     iter = pingIP.begin();
     while (iter != pingIP.end())
         {
         uint32_t ip = iter->first;
         time_t t = iter->second;
-        string s;
+        std::string s;
         x2str(t, s);
         printf("ip = %s, time = %9s\n", inet_ntostring(ip).c_str(), s.c_str());
-        iter++;
+        ++iter;
         }
 
 }
@@ -207,7 +193,7 @@ void STG_PINGER::PrintAllIP()
 int STG_PINGER::GetIPTime(uint32_t ip, time_t * t) const
 {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    multimap<uint32_t, time_t>::const_iterator treeIter;
+    std::multimap<uint32_t, time_t>::const_iterator treeIter;
 
     treeIter = pingIP.find(ip);
     if (treeIter == pingIP.end())
@@ -215,21 +201,6 @@ int STG_PINGER::GetIPTime(uint32_t ip, time_t * t) const
 
     *t = treeIter->second;
     return 0;
-}
-//-----------------------------------------------------------------------------
-void STG_PINGER::SetDelayTime(time_t d)
-{
-    delay = d;
-}
-//-----------------------------------------------------------------------------
-time_t STG_PINGER::GetDelayTime() const
-{
-    return delay;
-}
-//-----------------------------------------------------------------------------
-string STG_PINGER::GetStrError() const
-{
-    return errorStr;
 }
 //-----------------------------------------------------------------------------
 uint16_t STG_PINGER::PingCheckSum(void * data, int len)
@@ -253,7 +224,6 @@ uint16_t STG_PINGER::PingCheckSum(void * data, int len)
 int STG_PINGER::SendPing(uint32_t ip)
 {
     struct sockaddr_in addr;
-    //printf("SendPing %X \n", ip);
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = 0;
@@ -268,7 +238,7 @@ int STG_PINGER::SendPing(uint32_t ip)
 
     if (sendto(sendSocket, &pmSend, sizeof(pmSend), 0, (sockaddr *)&addr, sizeof(addr)) <= 0 )
         {
-        errorStr = "Send ping error: " + string(strerror(errno));
+        errorStr = "Send ping error: " + std::string(strerror(errno));
         return -1;
         }
 
@@ -287,13 +257,11 @@ uint32_t STG_PINGER::RecvPing()
     socklen_t len = sizeof(addr);
 
     bytes = recvfrom(recvSocket, &buf, sizeof(buf), 0, (struct sockaddr*)&addr, &len);
-    //printf("recvfrom\n");
     if (bytes > 0)
         {
         struct IP_HDR * ip = (struct IP_HDR *)buf;
         struct ICMP_HDR *icmp = (struct ICMP_HDR *)(buf + ip->ihl * 4);
 
-        //printf("icmp->un.echo.id=%d,  pid=%d, tid: %d\n", icmp->un.echo.id, pid);
         if (icmp->un.echo.id != pid)
             return 0;
 
@@ -314,13 +282,12 @@ void * STG_PINGER::RunSendPing(void * d)
         pinger->RealAddIP();
         pinger->RealDelIP();
 
-        multimap<uint32_t, time_t>::iterator iter;
+        std::multimap<uint32_t, time_t>::iterator iter;
         iter = pinger->pingIP.begin();
         while (iter != pinger->pingIP.end())
             {
-            uint32_t ip = iter->first;
-            pinger->SendPing(ip);
-            iter++;
+            pinger->SendPing(iter->first);
+            ++iter;
             }
 
         time_t currTime;
@@ -341,7 +308,6 @@ void * STG_PINGER::RunSendPing(void * d)
             #endif
             usleep(20000);
             }
-        //printf("new ping cycle\n");
         }
 
     pinger->isRunningSender = false;
@@ -356,8 +322,8 @@ void * STG_PINGER::RunRecvPing(void * d)
     pinger->isRunningRecver = true;
 
     uint32_t ip;
-    multimap<uint32_t, time_t>::iterator treeIterLower;
-    multimap<uint32_t, time_t>::iterator treeIterUpper;
+    std::multimap<uint32_t, time_t>::iterator treeIterLower;
+    std::multimap<uint32_t, time_t>::iterator treeIterUpper;
 
     while (pinger->nonstop)
         {
@@ -365,16 +331,11 @@ void * STG_PINGER::RunRecvPing(void * d)
 
         if (ip)
             {
-            //printf("RecvPing %X\n", ip);
             treeIterUpper = pinger->pingIP.upper_bound(ip);
             treeIterLower = pinger->pingIP.lower_bound(ip);
             int i = 0;
             while (treeIterUpper != treeIterLower)
-            //treeIterUpper = pinger->pingIP.find(ip);
-            //if (treeIterUpper != pinger->pingIP.end())
                 {
-                //printf("+++! time=%d %X i=%d !+++\n", time(NULL), ip, i);
-                //printf("--- time=%d ---\n", time(NULL));
                 #ifdef STG_TIME
                 treeIterLower->second = stgTime;
                 #else
