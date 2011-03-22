@@ -204,7 +204,6 @@ private:
 
     RecvServerInfoDataCb_t RecvServerInfoDataCb;
     void * serverInfoDataCb;
-    USERDATA user;
     int depth;
     bool error;
     SERVERINFO serverInfo;
@@ -268,7 +267,6 @@ private:
 
     NETTRANSACT nt;
     int parseDepth;
-    USERDATA ud;
 
     std::string errorMsg;
     int error;

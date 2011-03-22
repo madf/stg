@@ -34,7 +34,6 @@
 #include <string>
 
 #include "common.h"
-//#include "srvconf_common.h"
 #include "stg_const.h"
 #include "servconf.h"
 
@@ -46,6 +45,7 @@ using namespace std;
 PARSER_GET_USERS::PARSER_GET_USERS()
     : RecvUserDataCb(NULL),
       userDataCb(NULL),
+      user(),
       depth(0),
       error(false)
 {
@@ -387,6 +387,7 @@ userDataCb = data;
 PARSER_GET_USER::PARSER_GET_USER()
     : RecvUserDataCb(NULL),
       userDataCb(NULL),
+      user(),
       depth(0),
       error(false)
 {
@@ -665,7 +666,8 @@ PARSER_GET_SERVER_INFO::PARSER_GET_SERVER_INFO()
     : RecvServerInfoDataCb(NULL),
       serverInfoDataCb(NULL),
       depth(0),
-      error(false)
+      error(false),
+      serverInfo()
 {
 }
 //-----------------------------------------------------------------------------
