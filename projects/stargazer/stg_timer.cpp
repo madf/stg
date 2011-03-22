@@ -62,12 +62,12 @@ while (nonstop)
     {
     #ifdef STG_TIMER_DEBUG
     struct timespec ts = {0, 1000000000 / TIME_SPEED};
-    nanosleep(&ts);
+    nanosleep(&ts, NULL);
     //usleep(1000000 / TIME_SPEED);
     stgTime++;
     #else
     struct timespec ts = {0, 500000000};
-    nanosleep(&ts);
+    nanosleep(&ts, NULL);
     //usleep(500000);
     stgTime = time(NULL);
     #endif
@@ -109,11 +109,11 @@ int stgUsleep(unsigned long t)
 {
 #ifdef STG_TIMER_DEBUG
 struct timespec ts = {(t / TIME_SPEED) / 1000000, ((t / TIME_SPEED) % 1000000) * 1000};
-return nanosleep(&ts);
+return nanosleep(&ts, NULL);
 //return usleep(t / TIME_SPEED);
 #else
 struct timespec ts = {t / 1000000, (t % 1000000) * 1000};
-return nanosleep(&ts);
+return nanosleep(&ts, NULL);
 //return usleep(t);
 #endif
 }
