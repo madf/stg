@@ -804,7 +804,7 @@ try
     {
     i = StrToIPS(ipStr);
     }
-catch (string s)
+catch (const string & s)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter IP address. " + s;
