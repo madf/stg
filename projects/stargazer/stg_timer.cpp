@@ -1,6 +1,6 @@
-#include <unistd.h>
 #include <pthread.h>
 
+#include <ctime>
 #include <cstring>
 
 #include "common.h"
@@ -61,11 +61,15 @@ isTimerRunning = true;
 while (nonstop)
     {
     #ifdef STG_TIMER_DEBUG
-    usleep(1000000 / TIME_SPEED);
+    struct timespec ts = {0, 1000000000 / TIME_SPEED};
+    nanosleep(&ts);
+    //usleep(1000000 / TIME_SPEED);
     stgTime++;
     #else
+    struct timespec ts = {0, 500000000};
+    nanosleep(&ts);
+    //usleep(500000);
     stgTime = time(NULL);
-    usleep(500000);
     #endif
     }
 isTimerRunning = false;
@@ -104,9 +108,13 @@ return isTimerRunning;
 int stgUsleep(unsigned long t)
 {
 #ifdef STG_TIMER_DEBUG
-return usleep(t / TIME_SPEED);
+struct timespec ts = {(t / TIME_SPEED) / 1000000, ((t / TIME_SPEED) % 1000000) * 1000};
+return nanosleep(&ts);
+//return usleep(t / TIME_SPEED);
 #else
-return usleep(t);
+struct timespec ts = {t / 1000000, (t % 1000000) * 1000};
+return nanosleep(&ts);
+//return usleep(t);
 #endif
 }
 //-----------------------------------------------------------------------------
@@ -116,5 +124,3 @@ void WaitTimer()
         stgUsleep(200000);
 }
 //-----------------------------------------------------------------------------
-
-

@@ -386,6 +386,7 @@ switch (stgChildPid)
         break;
 
     default:
+        struct timespec ts = {0, 200000000};
         for (int i = 0; i < 120 * 5; i++)
             {
             if (access(startFile.c_str(), F_OK) == 0)
@@ -399,7 +400,7 @@ switch (stgChildPid)
                 unlink(startFile.c_str());
                 exit(1);
                 }
-            usleep(200000);
+            nanosleep(&ts, NULL);
             }
         unlink(startFile.c_str());
         exit(1);

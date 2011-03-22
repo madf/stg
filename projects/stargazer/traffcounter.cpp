@@ -139,9 +139,10 @@ while (users->SearchNext(h, &u) == 0)
 users->CloseSearch(h);
 
 //5 seconds to thread stops itself
+struct timespec ts = {0, 200000000};
 for (int i = 0; i < 25 && !stopped; i++)
     {
-    usleep(200000);
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now kill it
@@ -166,10 +167,10 @@ tc->stopped = false;
 int c = 0;
 
 time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
-
+struct timespec ts = {0, 500000000};
 while (tc->running)
     {
-    usleep(500000);
+    nanosleep(&ts, 0);
     if (!tc->running)
         {
         tc->FlushAndRemove();

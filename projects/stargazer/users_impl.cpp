@@ -467,13 +467,13 @@ if (!isRunning)
 nonstop = false;
 
 //5 seconds to thread stops itself
-unsigned i;
-for (i = 0; i < 25 * (users.size() / 50 + 1); i++)
+struct timespec ts = {0, 200000000};
+for (size_t i = 0; i < 25 * (users.size() / 50 + 1); i++)
     {
     if (!isRunning)
         break;
 
-    usleep(200000);
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now kill it
