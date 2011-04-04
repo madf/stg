@@ -938,7 +938,7 @@ return;
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)
 {
-TRAFFCOUNTER::monitorDir = monitorDir;
+TRAFFCOUNTER_IMPL::monitorDir = monitorDir;
 monitoring = (monitorDir != "");
 }
 //-----------------------------------------------------------------------------

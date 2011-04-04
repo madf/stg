@@ -154,7 +154,7 @@ private:
     TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
-class TRAFFCOUNTER : public TRAFFCOUNTER, private NONCOPYABLE {
+class TRAFFCOUNTER_IMPL : public TRAFFCOUNTER, private NONCOPYABLE {
 friend class ADD_USER_NONIFIER;
 friend class DEL_USER_NONIFIER;
 friend class TRF_IP_BEFORE;
@@ -232,7 +232,7 @@ void TRF_IP_BEFORE::Notify(const uint32_t & oldValue, const uint32_t &)
 if (!oldValue)
     return;
 
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::DelUser, oldValue);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::DelUser, oldValue);
 }
 //-----------------------------------------------------------------------------
 inline
@@ -242,20 +242,20 @@ void TRF_IP_AFTER::Notify(const uint32_t &, const uint32_t & newValue)
 if (!newValue)
     return;
 
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::AddUser, user);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::AddUser, user);
 }
 //-----------------------------------------------------------------------------
 inline
 void ADD_USER_NONIFIER::Notify(const USER_PTR & user)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::SetUserNotifiers, user);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::SetUserNotifiers, user);
 }
 //-----------------------------------------------------------------------------
 inline
 void DEL_USER_NONIFIER::Notify(const USER_PTR & user)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::UnSetUserNotifiers, user);
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER::DelUser, user->GetCurrIP());
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::UnSetUserNotifiers, user);
+EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::DelUser, user->GetCurrIP());
 }
 //-----------------------------------------------------------------------------
 #endif //TRAFFCOUNTER_H
