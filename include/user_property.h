@@ -62,7 +62,7 @@ template<typename varT>
 class USER_PROPERTY_LOGGED: public USER_PROPERTY<varT> {
 public:
     USER_PROPERTY_LOGGED(varT & val,
-                         const std::string n,
+                         const std::string & n,
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
@@ -259,7 +259,7 @@ afterNotifiers.erase(n);
 template <typename varT>
 inline
 USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
-                                                 std::string n,
+                                                 const std::string & n,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
