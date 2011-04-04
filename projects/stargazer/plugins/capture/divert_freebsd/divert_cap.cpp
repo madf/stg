@@ -22,22 +22,25 @@
 $Revision: 1.13 $
 $Date: 2010/09/10 06:43:03 $
 */
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
 
 #include <sys/uio.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
 
-#include <errno.h>
 #include <fcntl.h>
-#include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
+
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
+#include <cstdlib>
+#include <csignal>
+
+#include <algorithm>
 
 #include "common.h"
 #include "divert_cap.h"
@@ -277,7 +280,7 @@ PARAM_VALUE pv;
 vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "Port";
-pvi = find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
+pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
 if (pvi == settings.moduleParams.end())
     {
     port = 15701;
