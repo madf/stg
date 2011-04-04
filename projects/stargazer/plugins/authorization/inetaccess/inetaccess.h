@@ -118,7 +118,8 @@ private:
 //-----------------------------------------------------------------------------
 struct IA_USER {
     IA_USER()
-        : lastSendAlive(0),
+        : user(NULL),
+          lastSendAlive(0),
           rnd(random()),
           port(0),
           protoVer(0),
