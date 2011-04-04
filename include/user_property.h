@@ -7,6 +7,8 @@ $Author: faust $
 #ifndef USER_PROPERTY_H
 #define USER_PROPERTY_H
 
+#include <unistd.h> // access
+
 #include <ctime>
 #include <string>
 #include <set>
