@@ -5,7 +5,7 @@
 
 #include "ipq_cap.h"
 #include "raw_ip_packet.h"
-#include "../../../traffcounter.h"
+#include "traffcounter.h"
 
 extern "C"
 {
