@@ -41,6 +41,7 @@ $Date: 2010/09/10 06:43:03 $
 #include <csignal>
 
 #include <algorithm>
+#include <vector>
 
 #include "common.h"
 #include "divert_cap.h"
@@ -277,7 +278,7 @@ int DIVERT_CAP::ParseSettings()
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "Port";
 pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
