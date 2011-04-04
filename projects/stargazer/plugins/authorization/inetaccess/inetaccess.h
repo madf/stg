@@ -185,6 +185,18 @@ private:
     FREEMB          freeMbShowType;
 };
 //-----------------------------------------------------------------------------
+class AUTH_IA;
+//-----------------------------------------------------------------------------
+class DEL_USER_NOTIFIER: public NOTIFIER_BASE<USER_PTR> {
+public:
+    DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
+    virtual ~DEL_USER_NOTIFIER() {}
+
+    void Notify(const USER_PTR & user);
+private:
+    AUTH_IA & auth;
+};
+//-----------------------------------------------------------------------------
 class AUTH_IA :public AUTH {
 friend class DEL_USER_NOTIFIER;
 public:
@@ -316,19 +328,7 @@ private:
 
     uint32_t            enabledDirs;
 
-    class DEL_USER_NOTIFIER: public NOTIFIER_BASE<USER_PTR> {
-    public:
-        DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
-        virtual ~DEL_USER_NOTIFIER() {}
-
-        void Notify(const USER_PTR & user)
-            {
-            auth.DelUser(user);
-            }
-
-    private:
-        AUTH_IA & auth;
-    } onDelUserNotifier;
+    DEL_USER_NOTIFIER   onDelUserNotifier;
 
     class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
         public:
@@ -343,5 +343,10 @@ private:
 
 };
 //-----------------------------------------------------------------------------
+inline
+void DEL_USER_NOTIFIER::Notify(const USER_PTR & user)
+{
+    auth.DelUser(user);
+}
 
 #endif
