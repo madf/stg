@@ -186,7 +186,7 @@ private:
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA :public AUTH {
-friend class DEL_USER_NONIFIER;
+friend class DEL_USER_NOTIFIER;
 public:
                         AUTH_IA();
     virtual             ~AUTH_IA();
@@ -316,10 +316,10 @@ private:
 
     uint32_t            enabledDirs;
 
-    class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
+    class DEL_USER_NOTIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        DEL_USER_NONIFIER(AUTH_IA & a) : auth(a) {}
-        virtual ~DEL_USER_NONIFIER() {}
+        DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
+        virtual ~DEL_USER_NOTIFIER() {}
 
         void Notify(const USER_PTR & user)
             {
