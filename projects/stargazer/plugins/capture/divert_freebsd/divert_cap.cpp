@@ -41,6 +41,7 @@ $Date: 2010/09/10 06:43:03 $
 
 #include "common.h"
 #include "divert_cap.h"
+#include "traffcounter.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
 
@@ -63,16 +64,16 @@ public:
     DIVERT_CAP_CREATOR()
         : divc(new DIVERT_CAP())
         {
-        };
+        }
     ~DIVERT_CAP_CREATOR()
         {
         delete divc;
-        };
+        }
 
     DIVERT_CAP * GetCapturer()
     {
     return divc;
-    };
+    }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -99,16 +100,6 @@ DIVERT_CAP::DIVERT_CAP()
       isRunning(false),
       traffCnt(NULL)
 {
-}
-//-----------------------------------------------------------------------------
-void DIVERT_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
-{
-traffCnt = tc;
-}
-//-----------------------------------------------------------------------------
-const std::string & DIVERT_CAP::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int DIVERT_CAP::Start()
@@ -168,73 +159,28 @@ if (isRunning)
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool DIVERT_CAP::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * DIVERT_CAP::Run(void * d)
 {
 DIVERT_CAP * dc = (DIVERT_CAP *)d;
 dc->isRunning = true;
 
-/*struct ETH_IP
-{
-uint16_t    ethHdr[8];
-RAW_PACKET  rp;
-char        padding[4];
-char        padding1[8];
-};
-
-ETH_IP * ethIP;
-
-char ethip[sizeof(ETH_IP)];
-
-//memset(&ethIP, 0, sizeof(ethIP));
-memset(&ethip, 0, sizeof(ETH_IP));
-
-ethIP = (ETH_IP *)&ethip;
-ethIP->rp.dataLen = -1;
-*/
-//char * iface = NULL;
 char buffer[64];
 while (dc->nonstop)
     {
     RAW_PACKET rp;
     dc->DivertCapRead(buffer, 64, NULL);
 
-    //printf("%x %x %x %x \n", buffer[0], buffer[4], buffer[8], buffer[12]);
-    //printf("%x %x %x %x \n", buffer[16], buffer[20], buffer[24], buffer[28]);
-    //printf("%x %x %x %x \n", buffer[32], buffer[36], buffer[40], buffer[44]);
-
     if (buffer[12] != 0x8)
         continue;
 
     memcpy(rp.pckt, &buffer[14], pcktSize);
 
-    //dc->traffCnt->Process(*((RAW_PACKET*)( &buffer[14] ))); // - too dirty!
     dc->traffCnt->Process(rp);
     }
 
 dc->isRunning = false;
 return NULL;
 }
-//-----------------------------------------------------------------------------
-uint16_t DIVERT_CAP::GetStartPosition() const
-{
-return 10;
-}
-//-----------------------------------------------------------------------------
-uint16_t DIVERT_CAP::GetStopPosition() const
-{
-return 10;
-}
-//-----------------------------------------------------------------------------
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
 //-----------------------------------------------------------------------------
 int DIVERT_CAP::DivertCapOpen()
 {
@@ -365,9 +311,3 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void DIVERT_CAP::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
-

@@ -47,12 +47,12 @@ $Date: 2009/12/13 13:45:13 $
 #include "ether_cap.h"
 #include "common.h"
 #include "raw_ip_packet.h"
+#include "traffcounter.h"
 
 //#define CAP_DEBUG 1
 
 //-----------------------------------------------------------------------------
-class ETHER_CAP_CREATOR
-{
+class ETHER_CAP_CREATOR {
 private:
     ETHER_CAP * ec;
 
@@ -60,16 +60,16 @@ public:
     ETHER_CAP_CREATOR()
         : ec(new ETHER_CAP())
         {
-        };
+        }
     ~ETHER_CAP_CREATOR()
         {
         delete ec;
-        };
+        }
 
     ETHER_CAP * GetCapturer()
         {
         return ec;
-        };
+        }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -96,16 +96,6 @@ ETHER_CAP::ETHER_CAP()
       capSock(-1),
       traffCnt(NULL)
 {
-}
-//-----------------------------------------------------------------------------
-void ETHER_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
-{
-traffCnt = tc;
-}
-//-----------------------------------------------------------------------------
-const std::string & ETHER_CAP::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int ETHER_CAP::Start()
@@ -170,11 +160,6 @@ EthCapClose();
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool ETHER_CAP::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * ETHER_CAP::Run(void * d)
 {
 ETHER_CAP * dc = (ETHER_CAP *)d;
@@ -214,16 +199,6 @@ while (dc->nonstop)
 
 dc->isRunning = false;
 return NULL;
-}
-//-----------------------------------------------------------------------------
-uint16_t ETHER_CAP::GetStartPosition() const
-{
-return 10;
-}
-//-----------------------------------------------------------------------------
-uint16_t ETHER_CAP::GetStopPosition() const
-{
-return 10;
 }
 //-----------------------------------------------------------------------------
 int ETHER_CAP::EthCapOpen()

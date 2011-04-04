@@ -42,23 +42,21 @@ $Author: faust $
 #include "common.h" 
 #include "cap_nf.h"
 #include "raw_ip_packet.h"
+#include "traffcounter.h"
 
-#include "../../../traffcounter.h"
-
-class CAP_NF_CREATOR
-{
+class CAP_NF_CREATOR {
 public:
     CAP_NF_CREATOR()
         : nf(new NF_CAP())
         {
-        };
+        }
 
     ~CAP_NF_CREATOR()
         {
         delete nf;
-        };
+        }
 
-    NF_CAP * GetCapturer() { return nf; };
+    NF_CAP * GetCapturer() { return nf; }
 private:
     NF_CAP * nf;
 } cnc;
@@ -280,9 +278,6 @@ while (cap->runningUDP)
         continue;
         }
 
-
-    // Wrong logic!
-    // Need to check actual data length and wait all data to receive
     if (res < 24)
         {
         if (errno != EINTR)
@@ -392,14 +387,6 @@ for (int i = 0; i < packets; ++i)
     {
     NF_DATA * data = reinterpret_cast<NF_DATA *>(buf + 24 + i * 48);
 
-    /*ip.pckt[0] = 4 << 4;
-    ip.pckt[0] |= 5;
-    ip.pckt[9] = data->proto;
-    ip.dataLen = ntohl(data->octets);
-    *(uint32_t *)(ip.pckt + 12) = data->srcAddr;
-    *(uint32_t *)(ip.pckt + 16) = data->dstAddr;
-    *(uint16_t *)(ip.pckt + 20) = data->srcPort;
-    *(uint16_t *)(ip.pckt + 22) = data->dstPort;*/
     ip.header.ipHeader.ip_v = 4;
     ip.header.ipHeader.ip_hl = 5;
     ip.header.ipHeader.ip_p = data->proto;

@@ -32,7 +32,6 @@
 
 #include "plugin.h"
 #include "module_settings.h"
-#include "../../../traffcounter.h"
 
 class USERS;
 class TARIFFS;
@@ -42,8 +41,10 @@ class SETTINGS;
 
 extern "C" PLUGIN * GetPlugin();
 
+class TRAFFCOUNTER;
+
 //-----------------------------------------------------------------------------
-class ETHER_CAP :public PLUGIN {
+class ETHER_CAP : public PLUGIN {
 public:
     ETHER_CAP();
     virtual ~ETHER_CAP() {}
@@ -51,21 +52,21 @@ public:
     void                SetUsers(USERS *) {}
     void                SetTariffs(TARIFFS *) {}
     void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER * tc);
+    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
     void                SetStore(STORE *) {}
     void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
-    bool                IsRunning();
+    bool                IsRunning() { return isRunning; }
 
     void                SetSettings(const MODULE_SETTINGS &) {}
     int                 ParseSettings() { return 0; }
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const;
-    uint16_t            GetStopPosition() const;
+    uint16_t            GetStartPosition() const { return 10; }
+    uint16_t            GetStopPosition() const { return 10; }
 
 private:
     static void *       Run(void *);

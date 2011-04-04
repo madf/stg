@@ -51,6 +51,7 @@ $Author: faust $
 #include "ether_cap.h"
 #include "common.h"
 #include "raw_ip_packet.h"
+#include "traffcounter.h"
 
 //#define CAP_DEBUG 1
 //-----------------------------------------------------------------------------
@@ -64,16 +65,16 @@ public:
     BPF_CAP_CREATOR()
         : bpfc(new BPF_CAP())
         {
-        };
+        }
     ~BPF_CAP_CREATOR()
         {
         delete bpfc;
-        };
+        }
 
     BPF_CAP * GetCapturer()
     {
     return bpfc;
-    };
+    }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -91,17 +92,9 @@ return bcc.GetCapturer();
 //-----------------------------------------------------------------------------
 int BPF_CAP_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-//char sep[]= ", \t\n\r";
-//char *s;
 std::string ifaces;
-//char * str;
-//char *p;
 
 iface.erase(iface.begin(), iface.end());
-
-//PARAM_VALUE pv;
-//pv.param = "WorkDir";
-//vector<PARAM_VALUE>::const_iterator pvi;
 
 if (s.moduleParams.empty())
     {
@@ -123,32 +116,6 @@ for (unsigned i = 0; i < s.moduleParams.size(); i++)
         iface.push_back(s.moduleParams[i].value[j]);
         }
     }
-
-/*if (cf.ReadString("Iface", &ifaces, "NoIface") < 0)
-    {
-    errorStr = "Cannot read parameter \'Iface\' from " + cf.GetFileName();
-    return -1;
-    }
-
-str = new char[ifaces.size() + 1];
-strcpy(str, ifaces.c_str());
-p = str;
-
-while((s = strtok(p, sep)))
-    {
-    printfd(__FILE__, "iface[] = %s\n", s);
-    p = NULL;
-    iface.push_back(s);
-    //strncpy(iface[i++], s, DEV_NAME_LEN);
-    //devNum++;
-    }
-
-delete[] str;
-if (!ifaces.size())
-    {
-    errorStr = "Error read parameter \'Iface\' from " + cf.GetFileName();
-    return -1;
-    }*/
 
 return 0;
 }
@@ -177,11 +144,6 @@ BPF_CAP::BPF_CAP()
 {
 }
 //-----------------------------------------------------------------------------
-void BPF_CAP::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
 int BPF_CAP::ParseSettings()
 {
 int ret = capSettings.ParseSettings(settings);
@@ -191,16 +153,6 @@ if (ret)
     return ret;
     }
 return 0;
-}
-//-----------------------------------------------------------------------------
-void BPF_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
-{
-traffCnt = tc;
-}
-//-----------------------------------------------------------------------------
-const std::string & BPF_CAP::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int BPF_CAP::Start()
@@ -260,11 +212,6 @@ if (isRunning)
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool BPF_CAP::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * BPF_CAP::Run(void * d)
 {
 BPF_CAP * dc = (BPF_CAP *)d;
@@ -294,19 +241,8 @@ dc->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-uint16_t BPF_CAP::GetStartPosition() const
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
-uint16_t BPF_CAP::GetStopPosition() const
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
 int BPF_CAP::BPFCapOpen()
 {
-//for (int i = 0; i < settings->devNum; i++)
 int i = 0;
 BPF_DATA bd;
 pollfd pd;
@@ -315,9 +251,9 @@ while ((bd.iface = capSettings.GetIface(i)) != "")
     {
     bpfData.push_back(bd);
     if (BPFCapOpen(&bpfData[i]) < 0)
-    {
-    return -1;
-    }
+        {
+        return -1;
+        }
 
     pd.events = POLLIN;
     pd.fd = bpfData[i].fd;
@@ -328,7 +264,6 @@ while ((bd.iface = capSettings.GetIface(i)) != "")
 return 0;
 }
 //-----------------------------------------------------------------------------
-//int BPF_CAP::BPFCapOpen(string ifaceToOpen)
 int BPF_CAP::BPFCapOpen(BPF_DATA * bd)
 {
 char devbpf[20];
@@ -337,15 +272,13 @@ int l = BUFF_LEN;
 int im = 1;
 struct ifreq ifr;
 
-do  {
+do
+    {
     sprintf(devbpf, "/dev/bpf%d", i);
     i++;
     bd->fd = open(devbpf, O_RDONLY);
-    //cd[n].fd = open(devbpf, O_RDONLY);
     } while(bd->fd < 0 && errno == EBUSY);
-      //while(cd[n].fd < 0 && errno == EBUSY);
 
-//if (cd[n].fd < 0)
 if (bd->fd < 0)
     {
     errorStr = "Can't capture packets. Open bpf device for " + bd->iface + " error.";
@@ -353,10 +286,8 @@ if (bd->fd < 0)
     return -1;
     }
 
-//strncpy(ifr.ifr_name, settings->iface[n], sizeof(ifr.ifr_name));
 strncpy(ifr.ifr_name, bd->iface.c_str(), sizeof(ifr.ifr_name));
 
-//if (ioctl(cd[n].fd, BIOCSBLEN, (caddr_t)&l) < 0)
 if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
     {
     errorStr = bd->iface + " BIOCSBLEN " + std::string(strerror(errno));
@@ -364,7 +295,6 @@ if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
     return -1;
     }
 
-//if (ioctl(cd[n].fd, BIOCSETIF, (caddr_t)&ifr) < 0 )
 if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
     {
     errorStr = bd->iface + " BIOCSETIF " + std::string(strerror(errno));
@@ -372,7 +302,6 @@ if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
     return -1;
     }
 
-//if (ioctl(cd[n].fd, BIOCIMMEDIATE, &im) < 0 )
 if (ioctl(bd->fd, BIOCIMMEDIATE, &im) < 0)
     {
     errorStr = bd->iface + " BIOCIMMEDIATE " + std::string(strerror(errno));
@@ -381,13 +310,12 @@ if (ioctl(bd->fd, BIOCIMMEDIATE, &im) < 0)
     }
 
 return bd->fd;
-//return 0;
 }
 //-----------------------------------------------------------------------------
 int BPF_CAP::BPFCapClose()
 {
 for (unsigned int i = 0; i < bpfData.size(); i++)
-  close(bpfData[i].fd);
+    close(bpfData[i].fd);
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -426,8 +354,6 @@ if (bd->canRead)
 if(bd->r > bd->sum)
     {
     memcpy(buffer, (char*)(bd->p) + bd->bh->bh_hdrlen, blen);
-    //strncpy(iface, settings->iface[n], 9);
-    //*iface = settings->iface[n];
 
     bd->sum += BPF_WORDALIGN(bd->bh->bh_hdrlen + bd->bh->bh_caplen);
     bd->p = bd->p + BPF_WORDALIGN(bd->bh->bh_hdrlen + bd->bh->bh_caplen);
@@ -443,4 +369,3 @@ if(bd->r <= bd->sum)
 return 0;
 }
 //-----------------------------------------------------------------------------
-

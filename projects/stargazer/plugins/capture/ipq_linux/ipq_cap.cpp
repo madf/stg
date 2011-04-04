@@ -5,6 +5,7 @@
 
 #include "ipq_cap.h"
 #include "raw_ip_packet.h"
+#include "../../../traffcounter.h"
 
 extern "C"
 {
@@ -19,16 +20,16 @@ public:
     IPQ_CAP_CREATOR()
         : ic(new IPQ_CAP())
         {
-        };
+        }
     ~IPQ_CAP_CREATOR()
         {
         delete ic;
-        };
+        }
 
     IPQ_CAP * GetCapturer()
         {
         return ic;
-        };
+        }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -57,16 +58,6 @@ IPQ_CAP::IPQ_CAP()
       traffCnt(NULL)
 {
 memset(buf, 0, BUFSIZE);
-}
-//-----------------------------------------------------------------------------
-void IPQ_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
-{
-traffCnt = tc;
-}
-//-----------------------------------------------------------------------------
-const std::string & IPQ_CAP::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int IPQ_CAP::Start()
@@ -126,15 +117,9 @@ IPQCapClose();
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool IPQ_CAP::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * IPQ_CAP::Run(void * d)
 {
 RAW_PACKET raw_packet;
-int status;
 
 IPQ_CAP * dc = (IPQ_CAP *)d;
 dc->isRunning = true;
@@ -142,7 +127,7 @@ memset(&raw_packet, 0, sizeof(raw_packet));
 raw_packet.dataLen = -1;
 while (dc->nonstop)
     {
-    status = dc->IPQCapRead(&raw_packet, 68);
+    int status = dc->IPQCapRead(&raw_packet, 68);
     if (status == -1 ||
         status == -2 ||
         status == -3 ||
@@ -154,20 +139,8 @@ dc->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-uint16_t IPQ_CAP::GetStartPosition() const
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
-uint16_t IPQ_CAP::GetStopPosition() const
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
 int IPQ_CAP::IPQCapOpen()
 {
-int status;
-
 ipq_h = ipq_create_handle(0, PF_INET);
 if (ipq_h == NULL)
     {
@@ -175,7 +148,7 @@ if (ipq_h == NULL)
     errorStr = "Cannot create ipq handle!";
     return -1;
     }
-status = ipq_set_mode(ipq_h, IPQ_COPY_PACKET, PAYLOAD_LEN);
+int status = ipq_set_mode(ipq_h, IPQ_COPY_PACKET, PAYLOAD_LEN);
 if (status < 0)
     {
     ipq_destroy_handle(ipq_h);
@@ -193,11 +166,8 @@ return 0;
 //-----------------------------------------------------------------------------
 int IPQ_CAP::IPQCapRead(void * buffer, int blen)
 {
-int status;
-static ipq_packet_msg_t *m;
-
 memset(buf, 0, BUFSIZE);
-status = ipq_read(ipq_h, buf, BUFSIZE, 1);
+int status = ipq_read(ipq_h, buf, BUFSIZE, 1);
 if (status == 0)
     return -4;
 if (errno == EINTR)
@@ -206,7 +176,7 @@ if (status < 0)
     return -1;
 if (ipq_message_type(buf) != IPQM_PACKET)
     return -2;
-m = ipq_get_packet(buf);
+static ipq_packet_msg_t * m = ipq_get_packet(buf);
 memcpy(buffer, m->payload, blen);
 ipq_set_verdict(ipq_h, m->packet_id, NF_ACCEPT, 0, NULL);
 return 0;

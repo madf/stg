@@ -32,21 +32,15 @@
 #include <string>
 #include <vector>
 
-#ifdef FREE_BSD5
-#include <inttypes.h>
-#endif
-
-#ifdef FREE_BSD
-#include <sys/inttypes.h>
-#endif
-
+#include "os_int.h"
 #include "plugin.h"
 #include "module_settings.h"
-#include "../../../traffcounter.h"
 
 extern "C" PLUGIN * GetPlugin();
 
 #define BUFF_LEN (128)
+
+class TRAFFCOUNTER;
 
 //-----------------------------------------------------------------------------
 struct BPF_DATA {
@@ -74,14 +68,14 @@ struct BPF_DATA {
         iface = bd.iface;
         };
 
-int             fd;
-uint8_t *       p;
-int             r;
-int             sum;
-uint8_t         buffer[BUFF_LEN];
+int              fd;
+uint8_t *        p;
+int              r;
+int              sum;
+uint8_t          buffer[BUFF_LEN];
 struct bpf_hdr * bh;
-int             canRead;
-std::string     iface;
+int              canRead;
+std::string      iface;
 };
 //-----------------------------------------------------------------------------
 class BPF_CAP_SETTINGS {
@@ -104,22 +98,22 @@ public:
     void                SetUsers(USERS *) {}
     void                SetTariffs(TARIFFS *) {}
     void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER * tc);
+    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
     void                SetStore(STORE *) {}
     void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
-    bool                IsRunning();
+    bool                IsRunning() { return isRunning; }
 
-    void                SetSettings(const MODULE_SETTINGS & s);
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const;
-    uint16_t            GetStopPosition() const;
+    uint16_t            GetStartPosition() const { return 10; }
+    uint16_t            GetStopPosition() const { return 10; }
 
 private:
     static void *       Run(void *);
