@@ -186,6 +186,7 @@ private:
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA :public AUTH {
+friend class DEL_USER_NONIFIER;
 public:
                         AUTH_IA();
     virtual             ~AUTH_IA();
