@@ -35,9 +35,9 @@
 
 #include <csignal>
 #include <cassert>
-#include <cstdio> // Functions fopen and similar
+#include <cstdio> // fopen and similar
 
-#include "traffcounter.h"
+#include "traffcounter_impl.h"
 #include "common.h"
 #include "stg_locker.h"
 #include "stg_timer.h"
@@ -49,12 +49,12 @@ const char protoName[PROTOMAX][8] =
 {"TCP", "UDP", "ICMP", "TCP_UDP", "ALL"};
 
 enum protoNum
-    {
-    tcp = 0, udp, icmp, tcp_udp, all
-    };
+{
+tcp = 0, udp, icmp, tcp_udp, all
+};
 
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER::TRAFFCOUNTER(USERS * u, const TARIFFS *, const std::string & fn)
+TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS * u, const TARIFFS *, const std::string & fn)
     : WriteServLog(GetStgLogger()),
       rulesFileName(fn),
       monitoring(false),
@@ -75,12 +75,12 @@ users->AddNotifierUserDel(&delUserNotifier);
 pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER::~TRAFFCOUNTER()
+TRAFFCOUNTER_IMPL::~TRAFFCOUNTER_IMPL()
 {
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER::Start()
+int TRAFFCOUNTER_IMPL::Start()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -117,7 +117,7 @@ if (pthread_create(&thread, NULL, Run, this))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER::Stop()
+int TRAFFCOUNTER_IMPL::Stop()
 {
 if (stopped)
     return 0;
@@ -160,9 +160,9 @@ printfd(__FILE__, "TRAFFCOUNTER::Stop()\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * TRAFFCOUNTER::Run(void * data)
+void * TRAFFCOUNTER_IMPL::Run(void * data)
 {
-TRAFFCOUNTER * tc = static_cast<TRAFFCOUNTER *>(data);
+TRAFFCOUNTER_IMPL * tc = static_cast<TRAFFCOUNTER_IMPL *>(data);
 tc->stopped = false;
 int c = 0;
 
@@ -193,7 +193,7 @@ tc->stopped = true;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::Process(const RAW_PACKET & rawPacket)
+void TRAFFCOUNTER_IMPL::Process(const RAW_PACKET & rawPacket)
 {
 if (!running)
     return;
@@ -284,7 +284,7 @@ if (ed.userUPresent ||
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::FlushAndRemove()
+void TRAFFCOUNTER_IMPL::FlushAndRemove()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -410,7 +410,7 @@ printfd(__FILE__, "FlushAndRemove() packets: %d(rem %d) ip2packets: %d(rem %d)\n
 
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::AddUser(USER_PTR user)
+void TRAFFCOUNTER_IMPL::AddUser(USER_PTR user)
 {
 printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
@@ -448,7 +448,7 @@ while (pi.first != pi.second)
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::DelUser(uint32_t uip)
+void TRAFFCOUNTER_IMPL::DelUser(uint32_t uip)
 {
 printfd(__FILE__, "DelUser: %s \n", inet_ntostring(uip).c_str());
 std::pair<ip2p_iter, ip2p_iter> pi;
@@ -501,7 +501,7 @@ while (pi.first != pi.second)
 ip2packets.erase(pi.first, pi.second);
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetUserNotifiers(USER_PTR user)
+void TRAFFCOUNTER_IMPL::SetUserNotifiers(USER_PTR user)
 {
 // Adding user. Adding notifiers to user.
 TRF_IP_BEFORE ipBNotifier(*this, user);
@@ -513,7 +513,7 @@ ipAfterNotifiers.push_front(ipANotifier);
 user->AddCurrIPAfterNotifier(&(*ipAfterNotifiers.begin()));
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::UnSetUserNotifiers(USER_PTR user)
+void TRAFFCOUNTER_IMPL::UnSetUserNotifiers(USER_PTR user)
 {
 // Removing user. Removing notifiers from user.
 std::list<TRF_IP_BEFORE>::iterator bi;
@@ -544,9 +544,9 @@ while (ai != ipAfterNotifiers.end())
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::DeterminateDir(const RAW_PACKET & packet,
-                                 int * dirU, // Direction for incoming packet
-                                 int * dirD) const // Direction for outgoing packet
+void TRAFFCOUNTER_IMPL::DeterminateDir(const RAW_PACKET & packet,
+                                       int * dirU, // Direction for incoming packet
+                                       int * dirD) const // Direction for outgoing packet
 {
 bool addrMatchU;
 bool portMatchU;
@@ -668,12 +668,12 @@ if (!foundD)
 return;
 };
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetRulesFile(const std::string & fn)
+void TRAFFCOUNTER_IMPL::SetRulesFile(const std::string & fn)
 {
 rulesFileName = fn;
 }
 //-----------------------------------------------------------------------------
-bool TRAFFCOUNTER::ReadRules(bool test)
+bool TRAFFCOUNTER_IMPL::ReadRules(bool test)
 {
 //printfd(__FILE__, "TRAFFCOUNTER::ReadRules()\n");
 
@@ -762,7 +762,7 @@ if (!test)
 return false;
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER::Reload()
+int TRAFFCOUNTER_IMPL::Reload()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -778,7 +778,7 @@ WriteServLog("TRAFFCOUNTER: Reload rules successfull.");
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool TRAFFCOUNTER::ParseAddress(const char * ta, RULE * rule) const
+bool TRAFFCOUNTER_IMPL::ParseAddress(const char * ta, RULE * rule) const
 {
 char addr[50], mask[20], port1[20], port2[20], ports[40];
 
@@ -896,19 +896,19 @@ rule->port2 = prt2;
 return false;
 }
 //-----------------------------------------------------------------------------
-uint32_t TRAFFCOUNTER::CalcMask(uint32_t msk) const
+uint32_t TRAFFCOUNTER_IMPL::CalcMask(uint32_t msk) const
 {
 if (msk >= 32) return 0xFFffFFff;
 if (msk == 0) return 0;
 return htonl(0xFFffFFff << (32 - msk));
 }
 //---------------------------------------------------------------------------
-void TRAFFCOUNTER::FreeRules()
+void TRAFFCOUNTER_IMPL::FreeRules()
 {
 rules.clear();
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::PrintRule(RULE rule) const
+void TRAFFCOUNTER_IMPL::PrintRule(RULE rule) const
 {
 printf("%15s   ", inet_ntostring(rule.ip).c_str());
 printf("mask=%08X ", rule.mask);
@@ -936,7 +936,7 @@ printf("dir=%d \n", rule.dir);
 return;
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER::SetMonitorDir(const std::string & monitorDir)
+void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)
 {
 TRAFFCOUNTER::monitorDir = monitorDir;
 monitoring = (monitorDir != "");

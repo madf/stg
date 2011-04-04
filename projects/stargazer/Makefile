@@ -17,7 +17,7 @@ SRCS = ./admin_impl.cpp \
        ./store_loader.cpp \
        ./tariff_impl.cpp \
        ./tariffs_impl.cpp \
-       ./traffcounter.cpp \
+       ./traffcounter_impl.cpp \
        ./user_impl.cpp \
        ./user_property.cpp \
        ./users_impl.cpp

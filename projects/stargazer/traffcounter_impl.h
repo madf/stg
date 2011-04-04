@@ -25,15 +25,17 @@
  */
 
 
-#ifndef TRAFFCOUNTER_H
-#define TRAFFCOUNTER_H
+#ifndef TRAFFCOUNTER_IMPL_H
+#define TRAFFCOUNTER_IMPL_H
 
 #include <pthread.h>
+
 #include <ctime>
 #include <list>
 #include <map>
 #include <string>
 
+#include "traffcounter.h"
 #include "os_int.h"
 #include "stg_logger.h"
 #include "raw_ip_packet.h"
@@ -47,8 +49,7 @@
 class TARIFFS;
 
 //-----------------------------------------------------------------------------
-struct RULE
-{
+struct RULE {
 uint32_t    ip;             // IP
 uint32_t    mask;           // Network mask
 uint16_t    port1;          // Min port
@@ -57,8 +58,7 @@ uint8_t     proto;          // Protocol
 uint32_t    dir;            // Direction
 };
 //-----------------------------------------------------------------------------
-struct PACKET_EXTRA_DATA
-{
+struct PACKET_EXTRA_DATA {
 PACKET_EXTRA_DATA()
     : flushTime(0),
       updateTime(0),
@@ -70,7 +70,7 @@ PACKET_EXTRA_DATA()
       dirD(DIR_NUM),
       lenU(0),
       lenD(0)
-{};
+{}
 
 PACKET_EXTRA_DATA(const PACKET_EXTRA_DATA & pp)
     : flushTime(pp.flushTime),
@@ -83,7 +83,7 @@ PACKET_EXTRA_DATA(const PACKET_EXTRA_DATA & pp)
       dirD(pp.dirD),
       lenU(pp.lenU),
       lenD(pp.lenD)
-{};
+{}
 
 time_t      flushTime;          // Last flush time
 time_t      updateTime;         // Last update time
@@ -97,74 +97,71 @@ uint32_t    lenU;               // Upload length
 uint32_t    lenD;               // Download length
 };
 //-----------------------------------------------------------------------------
-class TRAFFCOUNTER;
+class TRAFFCOUNTER_IMPL;
 //-----------------------------------------------------------------------------
-class TRF_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t>
-{
+class TRF_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_BEFORE(TRAFFCOUNTER & t, USER_PTR u)
+                    TRF_IP_BEFORE(TRAFFCOUNTER_IMPL & t, USER_PTR u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
-                    {};
+                    {}
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
     void            SetUser(USER_PTR u) { user = u; }
     USER_PTR        GetUser() const { return user; }
 
 private:
-    TRAFFCOUNTER &  traffCnt;
-    USER_PTR        user;
+    TRAFFCOUNTER_IMPL & traffCnt;
+    USER_PTR            user;
 };
 //-----------------------------------------------------------------------------
-class TRF_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t>
-{
+class TRF_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_AFTER(TRAFFCOUNTER & t, USER_PTR u)
+                    TRF_IP_AFTER(TRAFFCOUNTER_IMPL & t, USER_PTR u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
-                    {};
+                    {}
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
     void            SetUser(USER_PTR u) { user = u; }
     USER_PTR        GetUser() const { return user; }
 private:
-    TRAFFCOUNTER &  traffCnt;
-    USER_PTR        user;
+    TRAFFCOUNTER_IMPL & traffCnt;
+    USER_PTR            user;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR>
-{
+class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-            ADD_USER_NONIFIER(TRAFFCOUNTER & t) :
+            ADD_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
                 NOTIFIER_BASE<USER_PTR>(),
-                traffCnt(t) {};
-    virtual ~ADD_USER_NONIFIER(){};
+                traffCnt(t)
+            {}
+    virtual ~ADD_USER_NONIFIER() {}
     void    Notify(const USER_PTR & user);
 private:
-    TRAFFCOUNTER & traffCnt;
+    TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR>
-{
+class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-            DEL_USER_NONIFIER(TRAFFCOUNTER & t) :
+            DEL_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
                 NOTIFIER_BASE<USER_PTR>(),
-                traffCnt(t) {};
-    virtual ~DEL_USER_NONIFIER(){};
+                traffCnt(t)
+            {}
+    virtual ~DEL_USER_NONIFIER() {}
     void    Notify(const USER_PTR & user);
 private:
-    TRAFFCOUNTER & traffCnt;
+    TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
-class TRAFFCOUNTER : private NONCOPYABLE
-{
+class TRAFFCOUNTER : public TRAFFCOUNTER, private NONCOPYABLE {
 friend class ADD_USER_NONIFIER;
 friend class DEL_USER_NONIFIER;
 friend class TRF_IP_BEFORE;
 friend class TRF_IP_AFTER;
 public:
-    TRAFFCOUNTER(USERS * users, const TARIFFS * tariffs, const std::string & rulesFileName);
-    ~TRAFFCOUNTER();
+    TRAFFCOUNTER_IMPL(USERS * users, const TARIFFS * tariffs, const std::string & rulesFileName);
+    ~TRAFFCOUNTER_IMPL();
 
     void        SetRulesFile(const std::string & rulesFileName);
 
@@ -195,37 +192,37 @@ private:
     void        SetUserNotifiers(USER_PTR user);
     void        UnSetUserNotifiers(USER_PTR user);
 
-    std::list<RULE>  rules;
     typedef std::list<RULE>::iterator rule_iter;
-
-    std::map<RAW_PACKET, PACKET_EXTRA_DATA> packets; // Packets tree
     typedef std::map<RAW_PACKET, PACKET_EXTRA_DATA>::iterator pp_iter;
-
-    std::multimap<uint32_t, pp_iter> ip2packets; // IP-to-Packet index
-
     typedef std::multimap<uint32_t, pp_iter>::iterator ip2p_iter;
     typedef std::multimap<uint32_t, pp_iter>::const_iterator ip2p_citer;
 
-    std::string dirName[DIR_NUM + 1];
+    std::list<RULE>          rules;
 
-    STG_LOGGER & WriteServLog;
-    std::string rulesFileName;
+    std::map<RAW_PACKET, PACKET_EXTRA_DATA> packets; // Packets tree
 
-    std::string monitorDir;
-    bool        monitoring;
+    std::multimap<uint32_t, pp_iter> ip2packets; // IP-to-Packet index
 
-    USERS *     users;
+    std::string              dirName[DIR_NUM + 1];
 
-    bool        running;
-    bool        stopped;
-    pthread_mutex_t         mutex;
-    pthread_t               thread;
+    STG_LOGGER &             WriteServLog;
+    std::string              rulesFileName;
 
-    std::list<TRF_IP_BEFORE>     ipBeforeNotifiers;
-    std::list<TRF_IP_AFTER>      ipAfterNotifiers;
+    std::string              monitorDir;
+    bool                     monitoring;
 
-    ADD_USER_NONIFIER       addUserNotifier;
-    DEL_USER_NONIFIER       delUserNotifier;
+    USERS *                  users;
+
+    bool                     running;
+    bool                     stopped;
+    pthread_mutex_t          mutex;
+    pthread_t                thread;
+
+    std::list<TRF_IP_BEFORE> ipBeforeNotifiers;
+    std::list<TRF_IP_AFTER>  ipAfterNotifiers;
+
+    ADD_USER_NONIFIER        addUserNotifier;
+    DEL_USER_NONIFIER        delUserNotifier;
 };
 //-----------------------------------------------------------------------------
 inline
