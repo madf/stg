@@ -162,7 +162,7 @@ while (n != ans->end())
 
     if (++n == ans->end())
         done = 1;
-    n--;
+    --n;
 
     if (XML_Parse(parser, n->c_str(), len, done) == XML_STATUS_ERROR)
         {
