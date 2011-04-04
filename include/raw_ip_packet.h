@@ -46,7 +46,7 @@ bool        operator<(const RAW_PACKET & rvalue) const;
 
 union
     {
-    uint8_t     pckt[pcktSize];         // Начало пакета захваченного из сети
+    uint8_t pckt[pcktSize]; // Packet header as a raw data
     struct
         {
         struct ip   ipHeader;
@@ -55,7 +55,7 @@ union
         uint16_t    dPort;
         } header __attribute__ ((packed));
     };
-int32_t     dataLen;                // Длина IP пакета. Если -1, то использовать длину из заголовка самого пакета.
+int32_t dataLen; // IP packet length. Set to -1 to use length field from the header
 };
 //-----------------------------------------------------------------------------
 inline uint16_t RAW_PACKET::GetIPVersion() const
@@ -128,26 +128,6 @@ if (header.ipHeader.ip_p != rvalue.header.ipHeader.ip_p)
 
 return true;
 }
-/*//-----------------------------------------------------------------------------
-inline bool operator==(const RAW_PACKET & lhs, const RAW_PACKET & rhs) 
-{
-if (lhs.GetSrcIP() != rhs.GetSrcIP())
-    return false;
-
-if (lhs.GetDstIP() != rhs.GetDstIP())
-    return false;
-
-if (lhs.GetSrcPort() != rhs.GetSrcPort())
-    return false;
-
-if (lhs.GetDstPort() != rhs.GetDstPort())
-    return false;
-
-if (lhs.GetProto() != rhs.GetProto())
-    return false;
-
-return true;
-}*/
 //-----------------------------------------------------------------------------
 inline bool RAW_PACKET::operator<(const RAW_PACKET & rvalue) const
 {
@@ -183,34 +163,6 @@ if (header.ipHeader.ip_p < rvalue.header.ipHeader.ip_p)
 
 return false;
 }
-//-----------------------------------------------------------------------------
-/*inline bool operator<(const RAW_PACKET & lhs, const RAW_PACKET & rhs)
-{
-if (lhs.GetSrcIP() < rhs.GetSrcIP()) 
-    return true;
-if (lhs.GetSrcIP() > rhs.GetSrcIP()) 
-    return false;
-
-if (lhs.GetDstIP() < rhs.GetDstIP()) 
-    return true;
-if (lhs.GetDstIP() > rhs.GetDstIP()) 
-    return false;
-
-if (lhs.GetSrcPort() < rhs.GetSrcPort()) 
-    return true;
-if (lhs.GetSrcPort() > rhs.GetSrcPort()) 
-    return false;
-
-if (lhs.GetDstPort() < rhs.GetDstPort()) 
-    return true;
-if (lhs.GetDstPort() > rhs.GetDstPort()) 
-    return false;
-
-if (lhs.GetProto() < rhs.GetProto()) 
-    return true;
-
-return false;
-}*/
 //-----------------------------------------------------------------------------
 
 #endif
