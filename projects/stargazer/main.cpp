@@ -29,7 +29,8 @@
 #include <sys/msg.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/stat.h>
+#include <sys/stat.h> // S_IRUSR
+#include <fcntl.h> // create
 
 #include <csignal>
 #include <cerrno>
