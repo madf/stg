@@ -96,8 +96,8 @@ if (pos == std::string::npos)
 
 std::string subnet(line.substr(0, pos)); // xxx.xxx.xxx.xxx/yy
 
-uint32_t ip;
-uint32_t mask;
+uint32_t ip = 0;
+uint32_t mask = 0;
 
 if (ParseNet(subnet, ip, mask))
     {
