@@ -50,7 +50,7 @@
 #include "admins_impl.h"
 #include "tariffs_impl.h"
 #include "common.h"
-#include "traffcounter.h"
+#include "traffcounter_impl.h"
 #include "plugin.h"
 #include "stg_logger.h"
 #include "stg_timer.h"
@@ -448,7 +448,7 @@ STORE * dataStore = NULL;
 TARIFFS_IMPL * tariffs = NULL;
 ADMINS_IMPL * admins = NULL;
 USERS_IMPL * users = NULL;
-TRAFFCOUNTER * traffCnt = NULL;
+TRAFFCOUNTER_IMPL * traffCnt = NULL;
 int msgID = -11;
 
     {
@@ -545,7 +545,7 @@ WriteServLog("Storage plugin: %s. Loading successfull.", dataStore->GetVersion()
 tariffs = new TARIFFS_IMPL(dataStore);
 admins = new ADMINS_IMPL(dataStore);
 users = new USERS_IMPL(settings, dataStore, tariffs, admins->GetSysAdmin());
-traffCnt = new TRAFFCOUNTER(users, tariffs, settings->GetRulesFileName());
+traffCnt = new TRAFFCOUNTER_IMPL(users, tariffs, settings->GetRulesFileName());
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
 
 modSettings = settings->GetModulesSettings();
