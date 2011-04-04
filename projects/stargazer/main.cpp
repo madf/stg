@@ -24,21 +24,15 @@
  $Author: faust $
  */
 
-/*#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>*/
 #include <unistd.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-/*#include <sys/stat.h>
-#include <dlfcn.h>
-#include <fcntl.h>*/
 
 #include <csignal>
 #include <cerrno>
+#include <cstdio>
 #include <fstream>
 #include <vector>
 #include <set>
