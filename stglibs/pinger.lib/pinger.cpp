@@ -33,6 +33,7 @@ STG_PINGER::STG_PINGER(time_t d)
       pid(0)
 {
     pthread_mutex_init(&mutex, NULL);
+    memset(&pmSend, 0, sizeof(pmSend));
 }
 //-----------------------------------------------------------------------------
 STG_PINGER::~STG_PINGER()
@@ -273,7 +274,7 @@ uint32_t STG_PINGER::RecvPing()
 //-----------------------------------------------------------------------------
 void * STG_PINGER::RunSendPing(void * d)
 {
-    STG_PINGER * pinger = (STG_PINGER*)d;
+    STG_PINGER * pinger = static_cast<STG_PINGER *>(d);
 
     pinger->isRunningSender = true;
     time_t lastPing = 0;
@@ -317,23 +318,18 @@ void * STG_PINGER::RunSendPing(void * d)
 //-----------------------------------------------------------------------------
 void * STG_PINGER::RunRecvPing(void * d)
 {
-    STG_PINGER * pinger = (STG_PINGER*)d;
+    STG_PINGER * pinger = static_cast<STG_PINGER *>(d);
 
     pinger->isRunningRecver = true;
 
-    uint32_t ip;
-    std::multimap<uint32_t, time_t>::iterator treeIterLower;
-    std::multimap<uint32_t, time_t>::iterator treeIterUpper;
-
     while (pinger->nonstop)
         {
-        ip = pinger->RecvPing();
+        uint32_t ip = pinger->RecvPing();
 
         if (ip)
             {
-            treeIterUpper = pinger->pingIP.upper_bound(ip);
-            treeIterLower = pinger->pingIP.lower_bound(ip);
-            int i = 0;
+            std::multimap<uint32_t, time_t>::iterator treeIterUpper = pinger->pingIP.upper_bound(ip);
+            std::multimap<uint32_t, time_t>::iterator treeIterLower = pinger->pingIP.lower_bound(ip);
             while (treeIterUpper != treeIterLower)
                 {
                 #ifdef STG_TIME
@@ -342,7 +338,6 @@ void * STG_PINGER::RunRecvPing(void * d)
                 treeIterLower->second = time(NULL);
                 #endif
                 ++treeIterLower;
-                i++;
                 }
             }
 
