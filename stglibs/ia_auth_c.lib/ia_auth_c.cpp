@@ -696,6 +696,7 @@ return INFO_8_N;
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Process_ERROR(const char * buffer)
 {
+ERR_8 err;
 memcpy(&err, buffer, sizeof(err));
 
 #ifdef ARCH_BE

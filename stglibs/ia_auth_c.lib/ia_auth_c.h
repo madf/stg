@@ -191,7 +191,6 @@ private:
     DISCONN_SYN_8     * disconnSyn8;
     DISCONN_SYN_ACK_8 * disconnSynAck8;
     DISCONN_ACK_8     * disconnAck8;
-    ERR_8               err;
     INFO_8            * info;
 };
 //---------------------------------------------------------------------------
