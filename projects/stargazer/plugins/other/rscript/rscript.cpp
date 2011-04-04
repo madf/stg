@@ -81,6 +81,7 @@ return rsc.GetPlugin();
 //-----------------------------------------------------------------------------
 RS_USER::RS_USER()
     : lastSentTime(0),
+      user(NULL),
       shortPacketsCount(0)
 {
 }
