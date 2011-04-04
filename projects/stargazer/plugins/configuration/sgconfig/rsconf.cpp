@@ -26,6 +26,8 @@
 *
 *******************************************************************/
 
+#include <unistd.h> // cloase, usleep
+
 #include <cerrno>
 #include <csignal>
 #include <cstdio> // snprintf
