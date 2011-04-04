@@ -71,6 +71,7 @@ SETTINGS_IMPL::SETTINGS_IMPL()
 SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
     : strError(),
       modulesPath("/usr/lib/stg"),
+      dirName(DIR_NUM),
       confDir(cd),
       scriptsDir(cd),
       rules(cd + "/rules"),
@@ -100,6 +101,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
 SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
     : strError(),
       modulesPath(rval.modulesPath),
+      dirName(rval.dirName),
       confDir(rval.confDir),
       scriptsDir(rval.scriptsDir),
       rules(rval.rules),
@@ -432,6 +434,7 @@ while (node)
         if (child)
             {
             const DOTCONFDocumentNode * dirNameNode;
+            dirName.reserve(DIR_NUM);
             for (int i = 0; i < DIR_NUM; i++)
                 {
                 char strDirName[12];

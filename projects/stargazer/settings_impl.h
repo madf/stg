@@ -114,7 +114,7 @@ private:
 
     //////////settings
     std::string modulesPath;
-    std::string dirName[DIR_NUM];
+    std::vector<std::string> dirName;
     std::string confDir;
     std::string	scriptsDir;
     std::string rules;
