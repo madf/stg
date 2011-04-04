@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <signal.h>
 
+#include <ctime>
 #include <algorithm>
 
 #include "ping.h"
@@ -177,12 +177,13 @@ if (!isRunning)
 pinger.Stop();
 nonstop = false;
 //5 seconds to thread stops itself
+struct timespec ts = {0, 200000000};
 for (int i = 0; i < 25; i++)
     {
     if (!isRunning)
         break;
 
-    usleep(200000);
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now kill it
@@ -219,22 +220,22 @@ return isRunning;
 //-----------------------------------------------------------------------------
 void * PING::Run(void * d)
 {
-PING * ping = (PING*)d;
+PING * ping = (PING *)d;
 ping->isRunning = true;
-list<USER_PTR>::iterator iter;
-uint32_t ip;
-time_t t;
 
+long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
+ 
 while (ping->nonstop)
     {
-    iter = ping->usersList.begin();
+    list<USER_PTR>::iterator iter = ping->usersList.begin();
         {
         STG_LOCKER lock(&ping->mutex, __FILE__, __LINE__);
         while (iter != ping->usersList.end())
             {
             if ((*iter)->GetProperty().ips.ConstData().OnlyOneIP())
                 {
-                ip = (*iter)->GetProperty().ips.ConstData()[0].ip;
+                uint32_t ip = (*iter)->GetProperty().ips.ConstData()[0].ip;
+                time_t t;
                 if (ping->pinger.GetIPTime(ip, &t) == 0)
                     {
                     if (t)
@@ -243,9 +244,10 @@ while (ping->nonstop)
                 }
             else
                 {
-                ip = (*iter)->GetCurrIP();
+                uint32_t ip = (*iter)->GetCurrIP();
                 if (ip)
                     {
+                    time_t t;
                     if (ping->pinger.GetIPTime(ip, &t) == 0)
                         {
                         if (t)
@@ -256,14 +258,16 @@ while (ping->nonstop)
             ++iter;
             }
         }
+    struct timespec ts = {delay / 1000000000, delay % 1000000000};
     for (int i = 0; i < 100; i++)
         {
         if (ping->nonstop)
             {
-            usleep((10000*ping->pingSettings.GetPingDelay())/3 + 50000);
+            nanosleep(&ts, NULL);
             }
         }
     }
+
 ping->isRunning = false;
 return NULL;
 }
