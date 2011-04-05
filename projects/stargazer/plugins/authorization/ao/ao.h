@@ -44,36 +44,30 @@ class AUTH_AO;
 class USERS;
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
+class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
                 CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    USER_PTR      GetUser() const { return user; }
+    USER_PTR    GetUser() const { return user; }
 
 private:
-    USER_PTR      user;
-    const       AUTH_AO & auth;
-};
-//-----------------------------------------------------------------------------
-template <typename varParamType>
-class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
-public:
-                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
-    USER_PTR      GetUser() const { return user; }
-
-private:
-    USER_PTR          user;
+    USER_PTR        user;
     const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
-class AUTH_AO_SETTINGS {
+template <typename varParamType>
+class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
-    const std::string & GetStrError() const { static std::string s; return s; }
-    int ParseSettings(const MODULE_SETTINGS &) { return 0; }
+                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
+    void        Notify(const varParamType & oldValue, const varParamType & newValue);
+    USER_PTR    GetUser() const { return user; }
+
+private:
+    USER_PTR        user;
+    const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
-class AUTH_AO :public AUTH {
+class AUTH_AO : public AUTH {
 public:
     AUTH_AO();
     virtual ~AUTH_AO(){};
@@ -110,7 +104,6 @@ private:
     void                UnSetUserNotifiers(USER_PTR u);
 
     mutable std::string errorStr;
-    AUTH_AO_SETTINGS    aoSettings;
     USERS *             users;
     std::list<USER_PTR> usersList;
     bool                isRunning;
