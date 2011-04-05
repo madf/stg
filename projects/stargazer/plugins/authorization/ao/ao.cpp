@@ -34,6 +34,7 @@ $Author: faust $
 #include "user.h"
 #include "users.h"
 #include "user_property.h"
+#include "common.h"
 #include "../../../eventloop.h"
 
 class AO_CREATOR
@@ -135,33 +136,13 @@ isRunning = false;
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool AUTH_AO::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
-uint16_t AUTH_AO::GetStartPosition() const
-{
-return 70;
-}
-//-----------------------------------------------------------------------------
-uint16_t AUTH_AO::GetStopPosition() const
-{
-return 70;
-}
-//-----------------------------------------------------------------------------
 void AUTH_AO::SetUserNotifiers(USER_PTR u)
 {
 // ---------- AlwaysOnline -------------------
 CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier(*this, u);
 CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier(*this, u);
 
-/*BeforeChgAONotifier.SetAuthorizator(this);
-BeforeChgAONotifier.SetUser(u);*/
 BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
-
-/*AfterChgAONotifier.SetAuthorizator(this);
-AfterChgAONotifier.SetUser(u);*/
 AfterChgAONotifierList.push_front(AfterChgAONotifier);
 
 u->GetProperty().alwaysOnline.AddBeforeNotifier(&(*BeforeChgAONotifierList.begin()));
@@ -172,12 +153,7 @@ u->GetProperty().alwaysOnline.AddAfterNotifier(&(*AfterChgAONotifierList.begin()
 CHG_BEFORE_NOTIFIER<USER_IPS> BeforeChgIPNotifier(*this, u);
 CHG_AFTER_NOTIFIER<USER_IPS>  AfterChgIPNotifier(*this, u);
 
-/*BeforeChgIPNotifier.SetAuthorizator(this);
-BeforeChgIPNotifier.SetUser(u);*/
 BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
-
-/*AfterChgIPNotifier.SetAuthorizator(this);
-AfterChgIPNotifier.SetUser(u);*/
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
 u->GetProperty().ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
@@ -254,12 +230,8 @@ if (!h)
     return;
     }
 
-while (1)
+while (users->SearchNext(h, &u))
     {
-    if (users->SearchNext(h, &u))
-        {
-        break;
-        }
     usersList.push_back(u);
     SetUserNotifiers(u);
     }
@@ -297,8 +269,9 @@ void AUTH_AO::DelUser(USER_PTR u)
 {
 Unauthorize(u);
 UnSetUserNotifiers(u);
+usersList.remove(u);
 
-list<USER_PTR>::iterator users_iter;
+/*list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 
 while (users_iter != usersList.end())
@@ -309,7 +282,7 @@ while (users_iter != usersList.end())
         break;
         }
     ++users_iter;
-    }
+    }*/
 }
 //-----------------------------------------------------------------------------
 int AUTH_AO::SendMessage(const STG_MSG &, uint32_t) const

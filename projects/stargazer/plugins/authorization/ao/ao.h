@@ -88,13 +88,13 @@ public:
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
-    bool                IsRunning();
+    bool                IsRunning() { return isRunning; }
     void                SetSettings(const MODULE_SETTINGS &) {}
     int                 ParseSettings() { return 0; }
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const;
-    uint16_t            GetStopPosition() const;
+    uint16_t            GetStartPosition() const { return 70; }
+    uint16_t            GetStopPosition() const { return 70; }
 
     void                AddUser(USER_PTR u);
     void                DelUser(USER_PTR u);
