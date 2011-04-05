@@ -78,7 +78,7 @@ public:
     AUTH_AO();
     virtual ~AUTH_AO(){};
 
-    void                SetUsers(USERS * u);
+    void                SetUsers(USERS * u) { users = u; }
     void                SetTariffs(TARIFFS *) {}
     void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER *) {}
@@ -89,9 +89,9 @@ public:
     int                 Stop();
     int                 Reload() { return 0; }
     bool                IsRunning();
-    void                SetSettings(const MODULE_SETTINGS & s);
-    int                 ParseSettings();
-    const std::string & GetStrError() const;
+    void                SetSettings(const MODULE_SETTINGS &) {}
+    int                 ParseSettings() { return 0; }
+    const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
@@ -116,18 +116,11 @@ private:
     bool                isRunning;
     MODULE_SETTINGS     settings;
 
-    /*
-    мы должны перепроверить возможность авторизации юзера при изменении
-    следующих его параметров:
-    - alwaysOnline
-    - ips
-    */
+    list<CHG_BEFORE_NOTIFIER<int> >      BeforeChgAONotifierList;
+    list<CHG_AFTER_NOTIFIER<int> >       AfterChgAONotifierList;
 
-    list<CHG_BEFORE_NOTIFIER<int> >         BeforeChgAONotifierList;
-    list<CHG_AFTER_NOTIFIER<int> >          AfterChgAONotifierList;
-
-    list<CHG_BEFORE_NOTIFIER<USER_IPS> >    BeforeChgIPNotifierList;
-    list<CHG_AFTER_NOTIFIER<USER_IPS> >     AfterChgIPNotifierList;
+    list<CHG_BEFORE_NOTIFIER<USER_IPS> > BeforeChgIPNotifierList;
+    list<CHG_AFTER_NOTIFIER<USER_IPS> >  AfterChgIPNotifierList;
 
     class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:

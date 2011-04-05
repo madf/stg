@@ -24,9 +24,11 @@ $Date: 2010/03/04 12:29:06 $
 $Author: faust $
 */
 
-#include <stdio.h>
 #include <unistd.h>
-#include <signal.h>
+
+#include <csignal>
+#include <algorithm> // for_each
+#include <functional> // mem_fun_ref
 
 #include "ao.h"
 #include "user.h"
@@ -61,7 +63,6 @@ AO_CREATOR aoc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-// Класс для поиска юзера в списке нотификаторов
 template <typename varType>
 class IS_CONTAINS_USER: public binary_function<varType, USER_PTR, bool>
 {
@@ -94,44 +95,23 @@ AUTH_AO::AUTH_AO()
 {
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-void AUTH_AO::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
-int AUTH_AO::ParseSettings()
-{
-return 0;
-}
-//-----------------------------------------------------------------------------
-const string & AUTH_AO::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
 int AUTH_AO::Start()
 {
 GetUsers();
 
-list<USER_PTR>::iterator users_iter;
-
-/*onAddUserNotifier.SetAuthorizator(this);
-onDelUserNotifier.SetAuthorizator(this);*/
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
-users_iter = usersList.begin();
-while (users_iter != usersList.end())
+/*list<USER_PTR>::iterator it = usersList.begin();
+while (it != usersList.end())
     {
-    UpdateUserAuthorization(*users_iter);
-    ++users_iter;
-    }
+    UpdateUserAuthorization(*it);
+    ++it;
+    }*/
+std::for_each(usersList.begin(), usersList.end(), std::bind1st(std::mem_fun(&AUTH_AO::UpdateUserAuthorization), this));
+
 isRunning = true;
+
 return 0;
 }
 //-----------------------------------------------------------------------------
