@@ -35,7 +35,7 @@ $Author: faust $
 #include "users.h"
 #include "user_property.h"
 #include "common.h"
-#include "../../../eventloop.h"
+//#include "../../../eventloop.h"
 
 class AO_CREATOR
 {
@@ -98,17 +98,12 @@ AUTH_AO::AUTH_AO()
 //-----------------------------------------------------------------------------
 int AUTH_AO::Start()
 {
+printfd(__FILE__, "AUTH_AO::Start()\n");
 GetUsers();
 
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
-/*list<USER_PTR>::iterator it = usersList.begin();
-while (it != usersList.end())
-    {
-    UpdateUserAuthorization(*it);
-    ++it;
-    }*/
 std::for_each(usersList.begin(), usersList.end(), std::bind1st(std::mem_fun(&AUTH_AO::UpdateUserAuthorization), this));
 
 isRunning = true;
@@ -118,6 +113,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_AO::Stop()
 {
+printfd(__FILE__, "AUTH_AO::Stop()\n");
 if (!isRunning)
     return 0;
 
@@ -145,8 +141,8 @@ CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier(*this, u);
 BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
 AfterChgAONotifierList.push_front(AfterChgAONotifier);
 
-u->GetProperty().alwaysOnline.AddBeforeNotifier(&(*BeforeChgAONotifierList.begin()));
-u->GetProperty().alwaysOnline.AddAfterNotifier(&(*AfterChgAONotifierList.begin()));
+u->GetProperty().alwaysOnline.AddBeforeNotifier(&BeforeChgAONotifierList.front());
+u->GetProperty().alwaysOnline.AddAfterNotifier(&AfterChgAONotifierList.front());
 // ---------- AlwaysOnline end ---------------
 
 // ---------- IP -------------------
@@ -156,8 +152,8 @@ CHG_AFTER_NOTIFIER<USER_IPS>  AfterChgIPNotifier(*this, u);
 BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
-u->GetProperty().ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
-u->GetProperty().ips.AddAfterNotifier(&(*AfterChgIPNotifierList.begin()));
+u->GetProperty().ips.AddBeforeNotifier(&BeforeChgIPNotifierList.front());
+u->GetProperty().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
 // ---------- IP end ---------------
 }
 //-----------------------------------------------------------------------------
@@ -230,7 +226,7 @@ if (!h)
     return;
     }
 
-while (users->SearchNext(h, &u))
+while (!users->SearchNext(h, &u))
     {
     usersList.push_back(u);
     SetUserNotifiers(u);
@@ -241,11 +237,13 @@ users->CloseSearch(h);
 //-----------------------------------------------------------------------------
 void AUTH_AO::Unauthorize(USER_PTR u) const
 {
+printfd(__FILE__, "AUTH_AO::Unauthorize - login: '%s'\n", u->GetLogin().c_str());
 u->Unauthorize(this);
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::UpdateUserAuthorization(USER_PTR u) const
 {
+printfd(__FILE__, "AUTH_AO::UpdateUserAuthorization - login: '%s'\n", u->GetLogin().c_str());
 if (u->GetProperty().alwaysOnline)
     {
     USER_IPS ips = u->GetProperty().ips;
@@ -260,6 +258,7 @@ if (u->GetProperty().alwaysOnline)
 //-----------------------------------------------------------------------------
 void AUTH_AO::AddUser(USER_PTR u)
 {
+printfd(__FILE__, "AUTH_AO::AddUser - login: '%s'\n", u->GetLogin().c_str());
 SetUserNotifiers(u);
 usersList.push_back(u);
 UpdateUserAuthorization(u);
@@ -267,22 +266,10 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
+printfd(__FILE__, "AUTH_AO::DelUser - login: '%s'\n", u->GetLogin().c_str());
 Unauthorize(u);
 UnSetUserNotifiers(u);
 usersList.remove(u);
-
-/*list<USER_PTR>::iterator users_iter;
-users_iter = usersList.begin();
-
-while (users_iter != usersList.end())
-    {
-    if (u == *users_iter)
-        {
-        usersList.erase(users_iter);
-        break;
-        }
-    ++users_iter;
-    }*/
 }
 //-----------------------------------------------------------------------------
 int AUTH_AO::SendMessage(const STG_MSG &, uint32_t) const
@@ -294,12 +281,16 @@ return -1;
 template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
+printfd(__FILE__, "CHG_BEFORE_NOTIFIER::Notify\n");
+//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
+auth.Unauthorize(user);
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>
 void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
+printfd(__FILE__, "CHG_AFTER_NOTIFIER::Notify\n");
+//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
+auth.UpdateUserAuthorization(user);
 }
 //-----------------------------------------------------------------------------
