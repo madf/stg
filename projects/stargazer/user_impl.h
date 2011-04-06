@@ -240,7 +240,7 @@ private:
     bool            deleted;
 
     time_t          lastWriteStat;           // Время последней записи статистики
-    time_t          lastWriteDeatiledStat;   // Время последней записи детальной статистики
+    time_t          lastWriteDetailedStat;   // Время последней записи детальной статистики
 
     // Properties
     USER_PROPERTY<double>         & cash;

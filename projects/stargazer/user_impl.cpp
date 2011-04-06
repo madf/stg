@@ -116,7 +116,7 @@ tariff = tariffs->GetNoTariff();
 ips = StrToIPS("*");
 deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
-lastWriteDeatiledStat = stgTime;
+lastWriteDetailedStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
@@ -194,7 +194,7 @@ connected = 0;
 deleted = u.deleted;
 
 lastWriteStat = u.lastWriteStat;
-lastWriteDeatiledStat = u.lastWriteDeatiledStat;
+lastWriteDetailedStat = u.lastWriteDetailedStat;
 
 settings = u.settings;
 
@@ -981,7 +981,7 @@ printfd(__FILE__, "USER::WriteDetailedStat() - size = %d\n", ts.size());
 
 if (ts.size() && !disabledDetailStat)
     {
-    if (store->WriteDetailedStat(ts, lastWriteDeatiledStat, login))
+    if (store->WriteDetailedStat(ts, lastWriteDetailedStat, login))
         {
         printfd(__FILE__, "USER::WriteDetailStat() - failed to write current detail stat\n");
         WriteServLog("Cannot write detail stat for user %s.", login.c_str());
@@ -991,12 +991,12 @@ if (ts.size() && !disabledDetailStat)
             printfd(__FILE__, "USER::WriteDetailStat() - pushing detail stat to queue\n");
             STG_LOCKER lock(&mutex, __FILE__, __LINE__);
             traffStatSaved.second.swap(ts);
-            traffStatSaved.first = lastWriteDeatiledStat;
+            traffStatSaved.first = lastWriteDetailedStat;
             }
         return -1;
         }
     }
-lastWriteDeatiledStat = stgTime;
+lastWriteDetailedStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
