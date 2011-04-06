@@ -54,6 +54,8 @@ switch (START_TIME)
         stgTime = mktime(&lt);
         break;
     }
+#else
+stgTime = time(NULL);
 #endif
 
 nonstop = 1;
