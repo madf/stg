@@ -93,6 +93,25 @@ else
     SHELL="/usr/local/bin/bash"
 fi
 
+echo -n "Checking gcc... "
+gcc --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    echo "FAIL!"
+    echo "gcc not found"
+    exit;
+fi
+echo "found"
+echo -n "Checking g++... "
+g++ --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    echo "FAIL!"
+    echo "g++ not found"
+    exit;
+fi
+echo "found"
+
 echo -n "Checking endianess... "
 echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
 gcc $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
