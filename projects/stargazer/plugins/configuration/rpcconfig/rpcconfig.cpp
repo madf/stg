@@ -347,7 +347,7 @@ xmlrpc_c::methodPtr const methodAddCashPtr(new METHOD_USER_CASH_ADD(
             store,
             users
             ));
-rpcRegistry.addMethod("stargazer.add_cash", methodAddCashPtr);
+rpcRegistry.addMethod("stargazer.add_user_cash", methodAddCashPtr);
 
 xmlrpc_c::methodPtr const methodSetCashPtr(new METHOD_USER_CASH_SET(
             this,
@@ -355,7 +355,7 @@ xmlrpc_c::methodPtr const methodSetCashPtr(new METHOD_USER_CASH_SET(
             store,
             users
             ));
-rpcRegistry.addMethod("stargazer.set_cash", methodSetCashPtr);
+rpcRegistry.addMethod("stargazer.set_user_cash", methodSetCashPtr);
 
 xmlrpc_c::methodPtr const methodTariffChangePtr(new METHOD_USER_TARIFF_CHANGE(
             this,
@@ -364,7 +364,7 @@ xmlrpc_c::methodPtr const methodTariffChangePtr(new METHOD_USER_TARIFF_CHANGE(
             store,
             users
             ));
-rpcRegistry.addMethod("stargazer.tariff_change", methodTariffChangePtr);
+rpcRegistry.addMethod("stargazer.chg_user_tariff", methodTariffChangePtr);
 
 xmlrpc_c::methodPtr const methodGetTariffPtr(new METHOD_TARIFF_GET(
             this,
@@ -434,7 +434,7 @@ xmlrpc_c::methodPtr const methodSendMessagePtr(new METHOD_MESSAGE_SEND(
             this,
             users
             ));
-rpcRegistry.addMethod("stargazer.send_message", methodSendMessagePtr);
+rpcRegistry.addMethod("stargazer.send_user_message", methodSendMessagePtr);
 
 xmlrpc_c::methodPtr const methodGetOnlinIPsPtr(new METHOD_GET_ONLINE_IPS(
             this,

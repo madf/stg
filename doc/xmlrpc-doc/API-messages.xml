@@ -2,18 +2,18 @@
 <chapter xmlns="http://docbook.org/ns/docbook">
     <title>Управление сообщениями пользователю</title>
     <para>В этом разделе собраны вызовы API для отправки сообщений пользователям.</para>
-    <refentry id="stargazer.send_message">
+    <refentry id="stargazer.send_user_message">
         <refmeta>
-            <refentrytitle>stargazer.send_message</refentrytitle>
+            <refentrytitle>stargazer.send_user_message</refentrytitle>
         </refmeta>
         <refnamediv>
-            <refname>stargazer.send_message</refname>
+            <refname>stargazer.send_user_message</refname>
             <refpurpose>Отправляет сообщение пользователям</refpurpose>
         </refnamediv>
         <refsynopsisdiv>
             <funcsynopsis>
                 <funcprototype>
-                    <funcdef><function>stargazer.send_message</function></funcdef>
+                    <funcdef><function>stargazer.send_user_message</function></funcdef>
                     <paramdef>string <parameter>cookie</parameter></paramdef>
                     <paramdef>array of strings <parameter>logins</parameter></paramdef>
                     <paramdef>struct <parameter>info</parameter></paramdef>
@@ -22,7 +22,7 @@
         </refsynopsisdiv>
         <refsect1>
             <title>Description</title>
-            <para>Метод <function>stargazer.send_message</function> отправляет сообщение пользователям, логины которых перечислены в списке.</para>
+            <para>Метод <function>stargazer.send_user_message</function> отправляет сообщение пользователям, логины которых перечислены в списке.</para>
             <variablelist>
                 <varlistentry>
                     <term>string <parameter>cookie</parameter></term>
