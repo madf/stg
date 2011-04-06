@@ -241,7 +241,7 @@
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -479,7 +479,7 @@
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -532,7 +532,7 @@
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -730,7 +730,7 @@
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -783,7 +783,7 @@
                 <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -850,7 +850,7 @@
                 <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
@@ -917,23 +917,23 @@
                 <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
     </refentry>
-    <refentry id="stargazer.change_tariff">
+    <refentry id="stargazer.chg_tariff">
         <refmeta>
-            <refentrytitle>stargazer.change_tariff</refentrytitle>
+            <refentrytitle>stargazer.chg_tariff</refentrytitle>
         </refmeta>
         <refnamediv>
-            <refname>stargazer.change_tariff</refname>
+            <refname>stargazer.chg_tariff</refname>
             <refpurpose>Изменение тарифного плана пользователя</refpurpose>
         </refnamediv>
         <refsynopsisdiv>
             <funcsynopsis>
                 <funcprototype>
-                    <funcdef><function>stargazer.change_tariff</function></funcdef>
+                    <funcdef><function>stargazer.chg_tariff</function></funcdef>
                     <paramdef>string <parameter>cookie</parameter></paramdef>
                     <paramdef>string <parameter>login</parameter></paramdef>
                     <paramdef>string <parameter>tariff</parameter></paramdef>
@@ -944,7 +944,7 @@
         </refsynopsisdiv>
         <refsect1>
             <title>Description</title>
-            <para>Метод <function>stargazer.change_tariff</function> позволяет изменить тарифный план пользователя или запланировать его изменение на начало нового месяца.</para>
+            <para>Метод <function>stargazer.chg_tariff</function> позволяет изменить тарифный план пользователя или запланировать его изменение на начало нового месяца.</para>
             <variablelist>
                 <varlistentry>
                     <term>string <parameter>cookie</parameter></term>
@@ -1059,7 +1059,7 @@
                 <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
                 <link linkend="stargazer.add_cash"><function>stargazer.add_cash</function></link>,
                 <link linkend="stargazer.set_cash"><function>stargazer.set_cash</function></link>
-                <link linkend="stargazer.change_tariff"><function>stargazer.change_tariff</function></link>
+                <link linkend="stargazer.chg_tariff"><function>stargazer.chg_tariff</function></link>
             </para>
         </refsect1>
     </refentry>
