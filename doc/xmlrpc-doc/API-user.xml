@@ -155,7 +155,7 @@
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>boolean <structfield>disabledetailstat</structfield></term>
+                            <term>boolean <structfield>disableddetailstat</structfield></term>
                             <listitem>
                                 <para>Для пользователя отключено ведение детальной статистики</para>
                             </listitem>
@@ -393,7 +393,7 @@
                             </listitem>
                         </varlistentry>
                         <varlistentry>
-                            <term>boolean <structfield>disabledetailstat</structfield></term>
+                            <term>boolean <structfield>disableddetailstat</structfield></term>
                             <listitem>
                                 <para>Для пользователя отключено ведение детальной статистики</para>
                             </listitem>
@@ -550,6 +550,7 @@
                 <funcprototype>
                     <funcdef><function>stargazer.chg_user</function></funcdef>
                     <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
                     <paramdef>struct <parameter>info</parameter></paramdef>
                 </funcprototype>
             </funcsynopsis>
@@ -562,6 +563,12 @@
                     <term>string <parameter>cookie</parameter></term>
                     <listitem>
                         <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -673,7 +680,7 @@
                                     </listitem>
                                 </varlistentry>
                                 <varlistentry>
-                                    <term>boolean <structfield>disabledetailstat</structfield></term>
+                                    <term>boolean <structfield>disableddetailstat</structfield></term>
                                     <listitem>
                                         <para>Для пользователя отключено ведение детальной статистики</para>
                                     </listitem>
@@ -1057,4 +1064,3 @@
         </refsect1>
     </refentry>
 </chapter>
-
