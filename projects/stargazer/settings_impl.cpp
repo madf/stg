@@ -42,6 +42,7 @@ using namespace std;
 SETTINGS_IMPL::SETTINGS_IMPL()
     : strError(),
       modulesPath("/usr/lib/stg"),
+      dirName(DIR_NUM),
       confDir("/etc/stargazer"),
       scriptsDir("/etc/stargazer"),
       rules("/etc/stargazer/rules"),
