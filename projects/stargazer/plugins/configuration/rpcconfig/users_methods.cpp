@@ -125,7 +125,7 @@ if (admins->FindAdmin(adminInfo.admin, &admin))
 
 USER_PTR u;
 
-if (users->FindByName(login, &u))
+if (!users->FindByName(login, &u))
     {
     users->Del(login, admin);
     *retvalPtr = xmlrpc_c::value_boolean(true);
