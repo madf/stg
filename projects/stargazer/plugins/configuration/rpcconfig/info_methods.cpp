@@ -1,9 +1,9 @@
 #include <sys/utsname.h>
 
+#include "stg/version.h"
+#include "stg/common.h"
 #include "info_methods.h"
-#include "version.h"
 #include "rpcconfig.h"
-#include "common.h"
 
 void METHOD_INFO::execute(xmlrpc_c::paramList const & paramList,
                           xmlrpc_c::value *   const   retvalPtr)

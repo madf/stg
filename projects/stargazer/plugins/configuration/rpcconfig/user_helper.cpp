@@ -1,12 +1,11 @@
+#include "stg/tariffs.h"
+#include "stg/admin.h"
+#include "stg/store.h"
+#include "stg/user_ips.h"
+#include "stg/common.h"
+#include "stg/user_property.h"
 #include "user_helper.h"
-
-#include "tariffs.h"
-#include "admin.h"
-#include "store.h"
-#include "user_ips.h"
 #include "utils.h"
-#include "common.h"
-#include "user_property.h"
 
 //------------------------------------------------------------------------------
 

@@ -12,10 +12,10 @@
 #include <xmlrpc-c/registry.hpp>
 #include <xmlrpc-c/server_abyss.hpp>
 
-#include "os_int.h"
-#include "plugin.h"
-#include "admin_conf.h"
-#include "module_settings.h"
+#include "stg/os_int.h"
+#include "stg/plugin.h"
+#include "stg/admin_conf.h"
+#include "stg/module_settings.h"
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 

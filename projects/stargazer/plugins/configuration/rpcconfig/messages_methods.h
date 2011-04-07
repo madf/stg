@@ -4,7 +4,7 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "users.h"
+#include "stg/users.h"
 
 class RPC_CONFIG;
 

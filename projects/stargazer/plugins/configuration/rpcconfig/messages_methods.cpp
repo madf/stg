@@ -1,9 +1,8 @@
-#include "messages_methods.h"
-
-#include "rpcconfig.h"
-#include "stg_message.h"
+#include "stg/stg_message.h"
+#include "stg/common.h"
 #include "utils.h"
-#include "common.h"
+#include "messages_methods.h"
+#include "rpcconfig.h"
 
 extern const volatile time_t stgTime;
 

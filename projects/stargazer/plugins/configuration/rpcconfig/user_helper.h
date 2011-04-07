@@ -5,7 +5,7 @@
 
 #include <xmlrpc-c/base.hpp>
 
-#include "users.h"
+#include "stg/users.h"
 
 class ADMIN;
 class STORE;

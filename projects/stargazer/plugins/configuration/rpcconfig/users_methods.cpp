@@ -1,17 +1,16 @@
 #include <cerrno>
 
+#include "stg/users.h"
+#include "stg/admins.h"
+#include "stg/tariffs.h"
+#include "stg/user_ips.h"
+#include "stg/common.h"
+#include "stg/user_property.h"
+
 #include "users_methods.h"
-
-#include "users.h"
-#include "admins.h"
-#include "tariffs.h"
-
 #include "rpcconfig.h"
 #include "user_helper.h"
-#include "user_ips.h"
 #include "utils.h"
-#include "common.h"
-#include "user_property.h"
 
 //------------------------------------------------------------------------------
 

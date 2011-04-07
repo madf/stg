@@ -4,13 +4,12 @@
 #include <vector>
 #include <algorithm>
 
+#include "stg/common.h"
+#include "stg/admin.h"
+#include "stg/module_settings.h"
+#include "stg/settings.h"
+
 #include "rpcconfig.h"
-
-#include "common.h"
-#include "admin.h"
-#include "module_settings.h"
-#include "settings.h"
-
 #include "info_methods.h"
 #include "users_methods.h"
 #include "tariffs_methods.h"

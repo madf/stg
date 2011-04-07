@@ -1,10 +1,10 @@
-#include "rpcconfig.h"
 #include "tariffs_methods.h"
+#include "rpcconfig.h"
 #include "tariff_helper.h"
-#include "tariffs.h"
-#include "users.h"
-#include "admins.h"
-#include "admin.h"
+#include "stg/tariffs.h"
+#include "stg/users.h"
+#include "stg/admins.h"
+#include "stg/admin.h"
 
 void METHOD_TARIFF_GET::execute(xmlrpc_c::paramList const & paramList,
                                 xmlrpc_c::value *   const   retvalPtr)

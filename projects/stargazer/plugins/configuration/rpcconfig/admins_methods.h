@@ -4,8 +4,8 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "admins.h"
-#include "admin.h"
+#include "stg/admins.h"
+#include "stg/admin.h"
 
 class RPC_CONFIG;
 

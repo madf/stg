@@ -1,7 +1,6 @@
+#include "stg/common.h"
 #include "admins_methods.h"
-
 #include "rpcconfig.h"
-#include "common.h"
 
 //------------------------------------------------------------------------------
 

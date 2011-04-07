@@ -7,8 +7,8 @@
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "users.h"
-#include "tariffs.h"
+#include "stg/users.h"
+#include "stg/tariffs.h"
 
 // Forward declaration
 class RPC_CONFIG;
