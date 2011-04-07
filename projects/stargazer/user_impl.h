@@ -211,14 +211,10 @@ private:
 
     USER_ID_GENERATOR userIDGenerator;
 
-    uint32_t        __currIP; // Текущий адрес пользователя
+    uint32_t        __currIP; // Current user's ip
     USER_PROPERTY<uint32_t> currIP;
 
-    /*
-    К тому моменту как мы уже не авторизованиы, но еще не выполнен Disconnect,
-    currIP уже сброшен. Последнее значение currIP сохраняем в lastIPForDisconnect
-    */
-    uint32_t        lastIPForDisconnect;
+    uint32_t        lastIPForDisconnect; // User's ip after unauth but before disconnect
 
     time_t          pingTime;
 
@@ -239,8 +235,8 @@ private:
 
     bool            deleted;
 
-    time_t          lastWriteStat;           // Время последней записи статистики
-    time_t          lastWriteDetailedStat;   // Время последней записи детальной статистики
+    time_t          lastWriteStat;
+    time_t          lastWriteDetailedStat;
 
     // Properties
     USER_PROPERTY<double>         & cash;
