@@ -908,6 +908,30 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 currIP.DelAfterNotifier(n);
 }
 //-----------------------------------------------------------------------------
+void USER_IMPL::AddConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+connected.AddBeforeNotifier(n);
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::DelConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+connected.DelBeforeNotifier(n);
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::AddConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+connected.AddAfterNotifier(n);
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::DelConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+connected.DelAfterNotifier(n);
+}
+//-----------------------------------------------------------------------------
 void USER_IMPL::OnAdd()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);

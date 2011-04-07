@@ -129,6 +129,12 @@ public:
     void            AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
     void            DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
 
+    void            AddConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+    void            DelConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+
+    void            AddConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+    void            DelConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+
     int             GetID() const { return id; }
 
     double          GetPassiveTimePart() const;
