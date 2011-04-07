@@ -33,9 +33,9 @@ $Date: 2008/01/05 12:11:34 $
 #include <arpa/inet.h>
 #include <string.h>
 
+#include "stg/common.h"
+#include "stg/netunit.h"
 #include "request.h"
-#include "common.h"
-#include "netunit.h"
 
 #define FN_LEN          (512)
 #define REQ_STR_LEN     (300)

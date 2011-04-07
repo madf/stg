@@ -3,8 +3,8 @@
 #include <expat.h>
 #include <string.h>
 
-#include "common.h"
-#include "netunit.h"
+#include "stg/common.h"
+#include "stg/netunit.h"
 #include "request.h"
 
 int parse_depth = 0;

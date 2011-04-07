@@ -31,21 +31,10 @@
 #define request_h
 
 #include <string>
-#include "resetable.h"
 
-#ifdef LINUX
-#include <stdint.h>
-#endif
-
-#ifdef FREE_BSD5
-#include <inttypes.h>
-#endif
-
-#ifdef FREE_BSD
-#include <sys/inttypes.h>
-#endif
-
-#include "stg_const.h"
+#include "stg/resetable.h"
+#include "stg/os_int.h"
+#include "stg/stg_const.h"
 
 #ifndef ENODATA
 #define ENODATA 61
