@@ -67,7 +67,6 @@ echo "##########################################################################
 
 STG_LIBS="crypto.lib 
 	  common.lib 
-	  common_settings.lib
 	  conffiles.lib
 	  ia_auth_c.lib"
 
