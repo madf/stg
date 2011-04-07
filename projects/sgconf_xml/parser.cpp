@@ -10,7 +10,7 @@
 int parse_depth = 0;
 XML_Parser parser;
 //---------------------------------------------------------------------------
-int ParseAns(void * data, const char *el, const char **attr)
+int ParseAns(void *, const char *el, const char **attr)
 {
 if (strcasecmp(el, "ServerInfo") == 0 || strcasecmp(el, "Tariffs") == 0 || strcasecmp(el, "Admins") == 0 || strcasecmp(el, "Users") == 0 || strcasecmp(el, "user") == 0)
     {
@@ -127,7 +127,7 @@ if (parse_depth == 1)
     }
 }
 //-----------------------------------------------------------------------------
-void EndElement(void *data, const char *el)
+void EndElement(void *, const char *el)
 {
 parse_depth--;
 if (strcasecmp(el, "ServerInfo") == 0 || strcasecmp(el, "Tariffs") == 0 || strcasecmp(el, "Admins") == 0 || strcasecmp(el, "Users") == 0 || strcasecmp(el, "tariff") == 0 || strcasecmp(el, "user") == 0)
@@ -136,7 +136,7 @@ if (strcasecmp(el, "ServerInfo") == 0 || strcasecmp(el, "Tariffs") == 0 || strca
     }
 }
 //---------------------------------------------------------------------------
-int ParseReply(void * data, list<string> * ans)
+int ParseReply(void *, list<string> * ans)
 //int ParseReply(void * data, SLIST * ans)
 {
 //char answ[ENC_MSG_LEN + 1];
