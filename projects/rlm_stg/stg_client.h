@@ -35,8 +35,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h> // socklen_t
 
-#include "blowfish.h"
-#include "rad_packets.h"
+#include "stg/blowfish.h"
+#include "stg/rad_packets.h"
 
 class STG_CLIENT
 {

@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "os_int.h"
+#include "stg/os_int.h"
 
 #ifdef FREE_BSD
 #include <sys/types.h>

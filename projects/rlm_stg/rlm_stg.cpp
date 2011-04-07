@@ -38,7 +38,7 @@ extern "C" {
 }
 
 #include "stg_client.h"
-#include "common.h"
+#include "stg/common.h"
 
 STG_CLIENT * cli;
 volatile time_t stgTime;
