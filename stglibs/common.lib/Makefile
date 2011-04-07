@@ -7,14 +7,10 @@ include ../../Makefile.conf
 LIB_NAME = stg_common
 PROG = lib$(LIB_NAME)
 
-SRCS = debug.c \
-	stg_error.c \
-	common.cpp \
+SRCS = common.cpp \
 	stg_strptime.cpp
 
-INCS = debug.h \
-	stg_error.h \
-	common.h
+INCS = common.h
 
 ifneq ($(OS),linux)
 LIBS += -liconv
