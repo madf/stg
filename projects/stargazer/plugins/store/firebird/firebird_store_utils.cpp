@@ -32,7 +32,7 @@
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-time_t ts2time_t(const IBPP::Timestamp & ts) const
+time_t ts2time_t(const IBPP::Timestamp & ts)
 {
     char buf[32];
     int year, month, day, hour, min, sec;
@@ -47,7 +47,7 @@ time_t ts2time_t(const IBPP::Timestamp & ts) const
     return mktime(&time_tm);
 }
 //-----------------------------------------------------------------------------
-void time_t2ts(time_t t, IBPP::Timestamp * ts) const
+void time_t2ts(time_t t, IBPP::Timestamp * ts)
 {
     struct tm res;
 
@@ -56,7 +56,7 @@ void time_t2ts(time_t t, IBPP::Timestamp * ts) const
     *ts = IBPP::Timestamp(res.tm_year + 1900, res.tm_mon + 1, res.tm_mday, res.tm_hour, res.tm_min, res.tm_sec);
 }
 //-----------------------------------------------------------------------------
-void ym2date(int year, int month, IBPP::Date * date) const
+void ym2date(int year, int month, IBPP::Date * date)
 {
     date->SetDate(year + 1900, month + 1, 1);
     date->EndOfMonth();

@@ -127,8 +127,8 @@ private:
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
 };
 
-time_t ts2time_t(const IBPP::Timestamp & ts) const;
-void time_t2ts(time_t t, IBPP::Timestamp * ts) const;
-void ym2date(int year, int month, IBPP::Date * date) const;
+time_t ts2time_t(const IBPP::Timestamp & ts);
+void time_t2ts(time_t t, IBPP::Timestamp * ts);
+void ym2date(int year, int month, IBPP::Date * date);
 
 #endif //FIREBIRD_STORE_H
