@@ -31,8 +31,7 @@
 
 #include <libpq-fe.h>
 
-#include "common.h"
-
+#include "stg/common.h"
 #include "postgresql_store.h"
 
 int POSTGRESQL_STORE::StartTransaction() const

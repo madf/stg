@@ -34,7 +34,7 @@
 #include <libpq-fe.h>
 
 #include "postgresql_store.h"
-#include "stg_locker.h"
+#include "stg/stg_locker.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetServicesList(vector<string> * servicesList) const

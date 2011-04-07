@@ -46,7 +46,7 @@
 
 #include "postgresql_store.h"
 #include "postgresql_store_utils.h"
-#include "module_settings.h"
+#include "stg/module_settings.h"
 
 class POSTGRESQL_STORE_CREATOR
 {

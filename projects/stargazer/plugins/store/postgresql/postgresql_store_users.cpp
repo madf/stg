@@ -33,10 +33,10 @@
 
 #include <libpq-fe.h>
 
-#include "stg_const.h"
-#include "postgresql_store.h"
-#include "stg_locker.h"
+#include "stg/stg_const.h"
+#include "stg/stg_locker.h"
 #include "../../../stg_timer.h"
+#include "postgresql_store.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetUsersList(vector<string> * usersList) const

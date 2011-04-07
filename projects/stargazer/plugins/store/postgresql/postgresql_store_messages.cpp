@@ -34,8 +34,8 @@
 #include <libpq-fe.h>
 
 #include "postgresql_store.h"
-#include "stg_locker.h"
-#include "stg_message.h"
+#include "stg/stg_locker.h"
+#include "stg/stg_message.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddMessage(STG_MSG * msg, const string & login) const

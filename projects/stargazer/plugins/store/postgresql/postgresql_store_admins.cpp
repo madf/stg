@@ -32,10 +32,10 @@
 
 #include <libpq-fe.h>
 
+#include "stg/stg_locker.h"
+#include "stg/admin_conf.h"
+#include "stg/blowfish.h"
 #include "postgresql_store.h"
-#include "stg_locker.h"
-#include "admin_conf.h"
-#include "blowfish.h"
 
 #define adm_enc_passwd "cjeifY8m3"
 

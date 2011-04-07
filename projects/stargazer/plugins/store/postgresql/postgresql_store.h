@@ -35,7 +35,7 @@
 #include <vector>
 #include <map>
 
-#include "store.h"
+#include "stg/store.h"
 
 // Minimal DB version is 5
 // Recommended DB version is 6 (support FreeMb logging on disconnects)
