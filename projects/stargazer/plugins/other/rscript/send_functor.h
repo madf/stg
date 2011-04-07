@@ -32,7 +32,7 @@
 
 #include <functional>
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 class PacketSender : public std::unary_function<uint32_t, int> {
     public:

@@ -31,10 +31,10 @@
 #include <algorithm>
 #include <utility>
 
-#include "rscript.h"
-#include "os_int.h"
+#include "stg/os_int.h"
+#include "stg/common.h"
 
-#include "common.h"
+#include "rscript.h"
 
 class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS_USER>, void>
 {

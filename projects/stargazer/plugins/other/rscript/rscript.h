@@ -37,16 +37,16 @@
 #include <functional>
 #include <utility>
 
-#include "plugin.h"
-#include "store.h"
-#include "module_settings.h"
-#include "os_int.h"
-#include "notifer.h"
-#include "user_ips.h"
-#include "user.h"
-#include "users.h"
-#include "blowfish.h"
-#include "rs_packets.h"
+#include "stg/plugin.h"
+#include "stg/store.h"
+#include "stg/module_settings.h"
+#include "stg/os_int.h"
+#include "stg/notifer.h"
+#include "stg/user_ips.h"
+#include "stg/user.h"
+#include "stg/users.h"
+#include "stg/blowfish.h"
+#include "stg/rs_packets.h"
 #include "nrmap_parser.h"
 
 extern "C" PLUGIN * GetPlugin();

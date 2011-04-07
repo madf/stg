@@ -31,12 +31,12 @@
 #include <cassert>
 #include <algorithm>
 
+#include "stg/common.h"
+#include "stg/stg_locker.h"
+#include "stg/user_property.h"
 #include "rscript.h"
-#include "common.h"
 #include "ur_functor.h"
 #include "send_functor.h"
-#include "stg_locker.h"
-#include "user_property.h"
 
 extern volatile const time_t stgTime;
 

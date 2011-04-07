@@ -29,7 +29,8 @@
 
 #include <string>
 #include <vector>
-#include "os_int.h"
+
+#include "stg/os_int.h"
 
 struct NET_ROUTER
 {
