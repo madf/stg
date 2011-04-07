@@ -38,15 +38,15 @@
 #include <map>
 #include <vector>
 
-#include "os_int.h"
-#include "auth.h"
-#include "module_settings.h"
-#include "notifer.h"
-#include "user_ips.h"
-#include "user.h"
-#include "users.h"
-#include "blowfish.h"
-#include "rad_packets.h"
+#include "stg/os_int.h"
+#include "stg/auth.h"
+#include "stg/module_settings.h"
+#include "stg/notifer.h"
+#include "stg/user_ips.h"
+#include "stg/user.h"
+#include "stg/users.h"
+#include "stg/blowfish.h"
+#include "stg/rad_packets.h"
 
 extern "C" PLUGIN * GetPlugin();
 

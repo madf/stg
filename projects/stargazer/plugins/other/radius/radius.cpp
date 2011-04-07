@@ -30,11 +30,11 @@
 #include <cerrno>
 #include <algorithm>
 
+#include "stg/store.h"
+#include "stg/common.h"
+#include "stg/user_conf.h"
+#include "stg/user_property.h"
 #include "radius.h"
-#include "store.h"
-#include "common.h"
-#include "user_conf.h"
-#include "user_property.h"
 
 extern volatile const time_t stgTime;
 
