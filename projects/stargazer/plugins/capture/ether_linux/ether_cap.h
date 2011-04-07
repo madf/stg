@@ -30,8 +30,8 @@
 
 #include <string>
 
-#include "plugin.h"
-#include "module_settings.h"
+#include "stg/plugin.h"
+#include "stg/module_settings.h"
 
 class USERS;
 class TARIFFS;
