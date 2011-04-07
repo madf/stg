@@ -58,7 +58,7 @@ $(PROG): $(OBJS) $(STGLIBS)
 	cp *.a $(DIR_LIB)
 
 includes: $(INCS)
-	cp -p $(INCS) $(DIR_INCLUDE)
+	cp -p $(INCS) $(DIR_INCLUDE)/stg
 
 clean:
 	rm -f deps $(PROG) *.o *.a *.so tags *.*~ 
