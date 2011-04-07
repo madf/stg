@@ -32,19 +32,20 @@
 #include <ctime>
 #include <algorithm>
 
-#include "common.h"
-#include "store.h"
-#include "settings_impl.h"
-#include "conffiles.h"
+#include "stg/common.h"
+#include "stg/store.h"
+#include "stg/conffiles.h"
 
-#include "user_stat.h"
-#include "user_conf.h"
-#include "corp_conf.h"
-#include "service_conf.h"
-#include "admin_conf.h"
-#include "tariff_conf.h"
-#include "settings.h"
-#include "stg_message.h"
+#include "stg/user_stat.h"
+#include "stg/user_conf.h"
+#include "stg/corp_conf.h"
+#include "stg/service_conf.h"
+#include "stg/admin_conf.h"
+#include "stg/tariff_conf.h"
+#include "stg/settings.h"
+#include "stg/stg_message.h"
+
+#include "settings_impl.h"
 
 using namespace std;
 

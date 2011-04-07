@@ -27,10 +27,11 @@ $Revision: 1.6 $
 $Date: 2009/06/22 16:26:54 $
 */
 
-#include "dotconfpp.h"
-#include "module_settings.h"
+#include "stg/dotconfpp.h"
+#include "stg/module_settings.h"
+#include "stg/common.h"
+
 #include "settings_impl.h"
-#include "common.h"
 
 int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
 {
