@@ -7,7 +7,7 @@ include ../../Makefile.conf
 PROG = convertor
 
 SRCS = ./main.cpp \
-       ./settings.cpp
+       ./settings_impl.cpp
 
 STGLIBS =  -lstg_logger \
            -lstg_common \

@@ -34,7 +34,7 @@
 
 #include "common.h"
 #include "store.h"
-#include "settings.h"
+#include "settings_impl.h"
 #include "conffiles.h"
 
 #include "user_stat.h"
@@ -43,7 +43,7 @@
 #include "service_conf.h"
 #include "admin_conf.h"
 #include "tariff_conf.h"
-#include "module_settings.h"
+#include "settings.h"
 #include "stg_message.h"
 
 using namespace std;
@@ -57,7 +57,7 @@ printfd(__FILE__, "Start\n");
 STORE * fromStore = NULL;
 STORE * toStore = NULL;
 
-SETTINGS * settings = NULL;
+SETTINGS_IMPL * settings = NULL;
 
 string modulePath;
 
@@ -72,22 +72,18 @@ TARIFF_DATA td;
 CORP_CONF cc;
 SERVICE_CONF sc;
 vector<STG_MSG_HDR> hdrs;
-vector<STG_MSG_HDR>::iterator mit;
-
-void * src_lh;
-void * dst_lh;
 
 if (argc == 2)
-    settings = new SETTINGS(argv[1]);
+    settings = new SETTINGS_IMPL(argv[1]);
 else
-    settings = new SETTINGS();
+    settings = new SETTINGS_IMPL();
 
 if (settings->ReadSettings())
-{
+    {
     printfd(__FILE__, "Error reading settings\n");
     delete settings;
     return -1;
-}
+    }
 
 fromStoreSettings = settings->GetSourceStoreModuleSettings();
 toStoreSettings = settings->GetDestStoreModuleSettings();
@@ -96,7 +92,7 @@ modulePath = settings->GetModulesPath();
 string sourcePlugin(modulePath + "/mod_" + fromStoreSettings.moduleName + ".so");
 string destPlugin(modulePath + "/mod_" + toStoreSettings.moduleName + ".so");
 
-src_lh = dlopen(sourcePlugin.c_str(), RTLD_NOW);
+void * src_lh = dlopen(sourcePlugin.c_str(), RTLD_NOW);
 if (!src_lh)
     {
     printfd(__FILE__, "Source storage plugin loading failed: %s\n", dlerror());
@@ -104,7 +100,7 @@ if (!src_lh)
     return -1;
     }
 
-dst_lh = dlopen(destPlugin.c_str(), RTLD_NOW);
+void * dst_lh = dlopen(destPlugin.c_str(), RTLD_NOW);
 if (!dst_lh)
     {
     printfd(__FILE__, "Destination storage plugin loading failed: %s\n", dlerror());
@@ -134,7 +130,6 @@ toStore = GetDestStore();
 
 vector<string> entities;
 vector<string> ready;
-vector<string>::const_iterator it;
 fromStore->SetSettings(fromStoreSettings);
 fromStore->ParseSettings();
 toStore->SetSettings(toStoreSettings);
@@ -159,6 +154,8 @@ if (toStore->GetAdminsList(&ready))
     delete settings;
     return -1;
     }
+
+vector<string>::const_iterator it;
 for (it = entities.begin(); it != entities.end(); ++it)
     {
     printfd(__FILE__, "\t - %s\n", it->c_str());
@@ -209,6 +206,7 @@ if (toStore->GetTariffsList(&ready))
     delete settings;
     return -1;
     }
+
 for (it = entities.begin(); it != entities.end(); ++it)
     {
     printfd(__FILE__, "\t - %s\n", it->c_str());
@@ -258,6 +256,7 @@ if (toStore->GetServicesList(&ready))
     delete settings;
     return -1;
     }
+
 for (it = entities.begin(); it != entities.end(); ++it)
     {
     printfd(__FILE__, "\t - %s\n", it->c_str());
@@ -307,6 +306,7 @@ if (toStore->GetCorpsList(&ready))
     delete settings;
     return -1;
     }
+
 for (it = entities.begin(); it != entities.end(); ++it)
     {
     printfd(__FILE__, "\t - %s\n", it->c_str());
@@ -356,6 +356,7 @@ if (toStore->GetUsersList(&ready))
     delete settings;
     return -1;
     }
+
 sort(ready.begin(), ready.end());
 for (it = entities.begin(); it != entities.end(); ++it)
     {
@@ -413,6 +414,7 @@ for (it = entities.begin(); it != entities.end(); ++it)
         delete settings;
         return -1;
         }
+    vector<STG_MSG_HDR>::iterator mit;
     for (mit = hdrs.begin(); mit != hdrs.end(); ++mit)
         {
         if (fromStore->GetMessage(mit->id, &msg, *it))
@@ -433,7 +435,6 @@ for (it = entities.begin(); it != entities.end(); ++it)
             return -1;
             }
         }
-
     }
 
 dlclose(src_lh);
