@@ -32,11 +32,11 @@
 #include <string>
 #include <list>
 
-#include "auth.h"
-#include "store.h"
-#include "notifer.h"
-#include "user_ips.h"
-#include "user.h"
+#include "stg/auth.h"
+#include "stg/store.h"
+#include "stg/notifer.h"
+#include "stg/user_ips.h"
+#include "stg/user.h"
 
 extern "C" PLUGIN * GetPlugin();
 

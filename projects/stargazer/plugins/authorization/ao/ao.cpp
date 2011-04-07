@@ -30,12 +30,11 @@ $Author: faust $
 #include <algorithm> // for_each
 #include <functional> // mem_fun_ref
 
+#include "stg/user.h"
+#include "stg/users.h"
+#include "stg/user_property.h"
+#include "stg/common.h"
 #include "ao.h"
-#include "user.h"
-#include "users.h"
-#include "user_property.h"
-#include "common.h"
-//#include "../../../eventloop.h"
 
 class AO_CREATOR
 {
