@@ -4,10 +4,10 @@
 
 #include <algorithm>
 
+#include "stg/tariffs.h"
+#include "stg/admins.h"
+#include "stg/users.h"
 #include "stgconfig.h"
-#include "tariffs.h"
-#include "admins.h"
-#include "users.h"
 
 class STGCONFIG_CREATOR
 {

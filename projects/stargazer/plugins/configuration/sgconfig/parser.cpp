@@ -9,11 +9,11 @@
 #include <cerrno>
 #include <sstream>
 
+#include "stg/version.h"
+#include "stg/tariffs.h"
+#include "stg/user_property.h"
+#include "stg/settings.h"
 #include "parser.h"
-#include "version.h"
-#include "tariffs.h"
-#include "user_property.h"
-#include "settings.h"
 
 #define  UNAME_LEN      (256)
 //-----------------------------------------------------------------------------

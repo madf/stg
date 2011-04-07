@@ -35,11 +35,11 @@
 #include <string>
 #include <list>
 
+#include "stg/users.h"
+#include "stg/admins.h"
+#include "stg/tariffs.h"
+#include "stg/stg_logger.h"
 #include "parser.h"
-#include "users.h"
-#include "admins.h"
-#include "tariffs.h"
-#include "stg_logger.h"
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"

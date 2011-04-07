@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "plugin.h"
-#include "store.h"
+#include "stg/plugin.h"
+#include "stg/store.h"
 #include "configproto.h"
 
 extern "C" PLUGIN * GetPlugin();

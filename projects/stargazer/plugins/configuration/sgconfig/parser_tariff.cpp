@@ -1,8 +1,8 @@
 #include <cstdio> // snprintf
 #include <cstring>
 
+#include "stg/tariffs.h"
 #include "parser.h"
-#include "tariffs.h"
 
 const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------

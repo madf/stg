@@ -32,8 +32,8 @@
 #include <csignal>
 #include <cstdio> // snprintf
 
+#include "stg/blowfish.h"
 #include "configproto.h"
-#include "blowfish.h"
 
 #ifndef ENODATA
 // FreeBSD 4.* - suxx

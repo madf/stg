@@ -11,13 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "resetable.h"
-#include "stg_const.h"
-#include "store.h"
-#include "admins.h"
-#include "admin.h"
-#include "users.h"
-#include "stg_message.h"
+#include "stg/resetable.h"
+#include "stg/stg_const.h"
+#include "stg/store.h"
+#include "stg/admins.h"
+#include "stg/admin.h"
+#include "stg/users.h"
+#include "stg/stg_message.h"
 
 class TARIFFS;
 class SETTINGS;
