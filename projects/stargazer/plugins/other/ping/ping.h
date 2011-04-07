@@ -12,13 +12,13 @@
 #include <string>
 #include <list>
 
-#include "os_int.h"
-#include "plugin.h"
-#include "module_settings.h"
-#include "notifer.h"
-#include "user_ips.h"
-#include "pinger.h"
-#include "users.h"
+#include "stg/os_int.h"
+#include "stg/plugin.h"
+#include "stg/module_settings.h"
+#include "stg/notifer.h"
+#include "stg/user_ips.h"
+#include "stg/pinger.h"
+#include "stg/users.h"
 
 extern "C" PLUGIN * GetPlugin();
 

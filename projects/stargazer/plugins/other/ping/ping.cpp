@@ -4,10 +4,10 @@
 #include <ctime>
 #include <algorithm>
 
+#include "stg/user.h"
+#include "stg/stg_locker.h"
+#include "stg/user_property.h"
 #include "ping.h"
-#include "user.h"
-#include "stg_locker.h"
-#include "user_property.h"
 
 class PING_CREATOR
 {
