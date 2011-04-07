@@ -38,14 +38,14 @@
 #include <cassert>
 #include <cstdlib>
 
+#include "stg/users.h"
+#include "stg/common.h"
+#include "stg/script_executer.h"
+#include "stg/tariff.h"
+#include "stg/tariffs.h"
+#include "stg/admin.h"
 #include "user_impl.h"
-#include "users.h"
-#include "common.h"
 #include "settings_impl.h"
-#include "script_executer.h"
-#include "tariff.h"
-#include "tariffs.h"
-#include "admin.h"
 
 USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
            const STORE * st,

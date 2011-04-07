@@ -36,19 +36,18 @@ $Author: faust $
 #include <list>
 #include <set>
 
-#include "os_int.h"
-
-#include "store.h"
-#include "settings_impl.h"
-#include "users.h"
-#include "user.h"
-#include "user_impl.h"
-#include "tariffs.h"
-#include "stg_logger.h"
-#include "notifer.h"
+#include "stg/os_int.h"
+#include "stg/store.h"
+#include "stg/users.h"
+#include "stg/user.h"
+#include "stg/tariffs.h"
+#include "stg/stg_logger.h"
+#include "stg/notifer.h"
+#include "stg/noncopyable.h"
 #include "actions.h"
-#include "noncopyable.h"
 #include "eventloop.h"
+#include "settings_impl.h"
+#include "user_impl.h"
 
 const int userDeleteDelayTime = 120;
 

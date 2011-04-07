@@ -36,9 +36,9 @@
 #include <string>
 #include <list>
 
-#include "tariff.h"
-#include "os_int.h"
-#include "tariff_conf.h"
+#include "stg/tariff.h"
+#include "stg/os_int.h"
+#include "stg/tariff_conf.h"
 
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1

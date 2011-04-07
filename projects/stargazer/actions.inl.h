@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "stg_locker.h"
+#include "stg/stg_locker.h"
 
 // Polymorphick action invocation
 template <class ACTIVE_CLASS, typename DATA_TYPE>

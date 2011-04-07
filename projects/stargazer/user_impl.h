@@ -32,16 +32,16 @@
 #include <string>
 #include <set>
 
-#include "user.h"
-#include "os_int.h"
-#include "stg_const.h"
-#include "user_stat.h"
-#include "user_conf.h"
-#include "user_ips.h"
-#include "user_property.h"
-#include "auth.h"
-#include "stg_message.h"
-#include "noncopyable.h"
+#include "stg/user.h"
+#include "stg/os_int.h"
+#include "stg/stg_const.h"
+#include "stg/user_stat.h"
+#include "stg/user_conf.h"
+#include "stg/user_ips.h"
+#include "stg/user_property.h"
+#include "stg/auth.h"
+#include "stg/stg_message.h"
+#include "stg/noncopyable.h"
 
 //-----------------------------------------------------------------------------
 class TARIFF;

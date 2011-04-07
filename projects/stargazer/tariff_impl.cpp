@@ -31,9 +31,9 @@
 #include <ctime>
 #include <algorithm> // std::max
 
+#include "stg/common.h"
 #include "tariff_impl.h"
 #include "stg_timer.h"
-#include "common.h"
 
 //-----------------------------------------------------------------------------
 TARIFF & TARIFF_IMPL::operator=(const TARIFF_DATA & td)

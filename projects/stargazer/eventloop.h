@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#include "noncopyable.h"
+#include "stg/noncopyable.h"
 #include "actions.h"
 
 class EVENT_LOOP : private NONCOPYABLE,

@@ -1,4 +1,4 @@
-#include "user_property.h"
+#include "stg/user_property.h"
 
 //-----------------------------------------------------------------------------
 USER_PROPERTIES::USER_PROPERTIES(const std::string & sd)

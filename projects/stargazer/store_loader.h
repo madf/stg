@@ -33,8 +33,8 @@
 
 #include <string>
 
-#include "module_settings.h"
-#include "noncopyable.h"
+#include "stg/module_settings.h"
+#include "stg/noncopyable.h"
 
 class STORE;
 class SETTINGS_IMPL;

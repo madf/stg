@@ -32,9 +32,9 @@ $Author: faust $
 #include <cerrno>
 #include <string>
 
+#include "stg/stg_logger.h"
+#include "stg/dotconfpp.h"
 #include "settings_impl.h"
-#include "stg_logger.h"
-#include "dotconfpp.h"
 
 using namespace std;
 

@@ -29,9 +29,9 @@
 
 #include <string>
 
-#include "module_settings.h"
-#include "plugin.h"
-#include "os_int.h"
+#include "stg/module_settings.h"
+#include "stg/plugin.h"
+#include "stg/os_int.h"
 
 class SETTINGS_IMPL;
 class ADMINS_IMPL;

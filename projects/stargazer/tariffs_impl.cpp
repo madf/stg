@@ -32,11 +32,11 @@
 #include <algorithm>
 #include <vector>
 
+#include "stg/stg_locker.h"
+#include "stg/stg_logger.h"
+#include "stg/store.h"
+#include "stg/admin.h"
 #include "tariffs_impl.h"
-#include "stg_locker.h"
-#include "stg_logger.h"
-#include "store.h"
-#include "admin.h"
 
 using namespace std;
 

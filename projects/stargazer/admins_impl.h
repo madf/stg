@@ -36,12 +36,12 @@
 #include <list>
 #include <map>
 
-#include "admins.h"
-#include "admin.h"
+#include "stg/admins.h"
+#include "stg/admin.h"
+#include "stg/stg_locker.h"
+#include "stg/store.h"
+#include "stg/noncopyable.h"
 #include "admin_impl.h"
-#include "stg_locker.h"
-#include "store.h"
-#include "noncopyable.h"
 
 class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
 public:

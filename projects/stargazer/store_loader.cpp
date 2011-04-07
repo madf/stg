@@ -30,9 +30,9 @@
 
 #include <dlfcn.h>
 
+#include "stg/common.h"
+#include "stg/store.h"
 #include "store_loader.h"
-#include "common.h"
-#include "store.h"
 #include "settings_impl.h"
 
 STORE_LOADER::STORE_LOADER(const SETTINGS_IMPL & settings)

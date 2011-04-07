@@ -40,10 +40,10 @@
 #include <string>
 #include <vector>
 
-#include "settings.h"
-#include "common.h"
-#include "stg_logger.h"
-#include "module_settings.h"
+#include "stg/settings.h"
+#include "stg/common.h"
+#include "stg/stg_logger.h"
+#include "stg/module_settings.h"
 
 //-----------------------------------------------------------------------------
 enum DETAIL_STAT_PERIOD {

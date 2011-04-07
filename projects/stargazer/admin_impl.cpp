@@ -29,7 +29,7 @@
  */
 
 #include "admin_impl.h"
-#include "common.h"
+#include "stg/common.h"
 
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL()

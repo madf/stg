@@ -27,13 +27,13 @@
 #include <dlfcn.h>
 #include <unistd.h>
 
+#include "stg/common.h"
+#include "stg/traffcounter.h"
 #include "plugin_runner.h"
-#include "common.h"
 #include "settings_impl.h"
 #include "admins_impl.h"
 #include "tariffs_impl.h"
 #include "users_impl.h"
-#include "traffcounter.h"
 
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,

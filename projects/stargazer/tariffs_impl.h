@@ -41,10 +41,10 @@
 #include <string>
 #include <list>
 
-#include "tariff.h"
+#include "stg/tariff.h"
+#include "stg/tariffs.h"
+#include "stg/tariff_conf.h"
 #include "tariff_impl.h"
-#include "tariffs.h"
-#include "tariff_conf.h"
 
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1

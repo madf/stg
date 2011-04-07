@@ -1,9 +1,9 @@
 #include <cerrno>
 #include <cstring>
 
+#include "stg/stg_locker.h"
+#include "stg/common.h"
 #include "eventloop.h"
-#include "stg_locker.h"
-#include "common.h"
 
 EVENT_LOOP::EVENT_LOOP()
     : ACTIONS_LIST()

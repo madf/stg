@@ -3,7 +3,7 @@
 #include <ctime>
 #include <cstring>
 
-#include "common.h"
+#include "stg/common.h"
 
 static int nonstop;
 static pthread_t thrStgTimer;

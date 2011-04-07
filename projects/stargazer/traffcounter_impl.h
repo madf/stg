@@ -35,13 +35,13 @@
 #include <map>
 #include <string>
 
-#include "traffcounter.h"
-#include "os_int.h"
-#include "stg_logger.h"
-#include "raw_ip_packet.h"
-#include "users.h"
+#include "stg/traffcounter.h"
+#include "stg/os_int.h"
+#include "stg/stg_logger.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/users.h"
+#include "stg/noncopyable.h"
 #include "actions.h"
-#include "noncopyable.h"
 #include "eventloop.h"
 
 #define PROTOMAX    (5)

@@ -40,9 +40,9 @@
 #include <string>
 #include <vector>
 
-#include "settings.h"
+#include "stg/settings.h"
+#include "stg/common.h"
 #include "users_impl.h"
-#include "common.h"
 #include "stg_timer.h"
 
 using namespace std;

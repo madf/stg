@@ -40,20 +40,21 @@
 #include <set>
 #include <list>
 
+#include "stg/user.h"
+#include "stg/common.h"
+#include "stg/plugin.h"
+#include "stg/stg_logger.h"
+#include "stg/script_executer.h"
+#include "stg/conffiles.h"
+#include "stg/version.h"
+#include "stg/pinger.h"
+#include "stg_timer.h"
 #include "settings_impl.h"
-#include "user.h"
 #include "users_impl.h"
 #include "admins_impl.h"
 #include "tariffs_impl.h"
-#include "common.h"
 #include "traffcounter_impl.h"
-#include "plugin.h"
-#include "stg_logger.h"
-#include "stg_timer.h"
 #include "plugin_runner.h"
-#include "script_executer.h"
-#include "conffiles.h"
-#include "version.h"
 #include "store_loader.h"
 #include "pidfile.h"
 #include "eventloop.h"
@@ -74,7 +75,6 @@ static bool childExited = false;
 set<pid_t> executersPid;
 static pid_t stgChildPid;
 
-#include "pinger.h"
 
 //-----------------------------------------------------------------------------
 bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)

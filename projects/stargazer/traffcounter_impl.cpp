@@ -38,9 +38,9 @@
 #include <cassert>
 #include <cstdio> // fopen and similar
 
+#include "stg/common.h"
+#include "stg/stg_locker.h"
 #include "traffcounter_impl.h"
-#include "common.h"
-#include "stg_locker.h"
 #include "stg_timer.h"
 
 #define FLUSH_TIME  (10)
