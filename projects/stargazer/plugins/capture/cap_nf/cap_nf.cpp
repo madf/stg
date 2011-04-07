@@ -39,10 +39,10 @@ $Author: faust $
 
 #include <vector>
 
-#include "common.h" 
+#include "stg/common.h" 
+#include "stg/raw_ip_packet.h"
+#include "stg/traffcounter.h"
 #include "cap_nf.h"
-#include "raw_ip_packet.h"
-#include "traffcounter.h"
 
 class CAP_NF_CREATOR {
 public:
