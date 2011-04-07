@@ -26,10 +26,10 @@
 #include <list>
 #include <functional>
 
-#include "os_int.h"
-#include "blowfish.h"
-#include "rs_packets.h"
-#include "stg_logger.h"
+#include "stg/os_int.h"
+#include "stg/blowfish.h"
+#include "stg/rs_packets.h"
+#include "stg/stg_logger.h"
 
 struct UserData
 {

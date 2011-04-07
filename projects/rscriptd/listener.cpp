@@ -33,10 +33,10 @@
 #include <sstream>
 #include <algorithm>
 
+#include "stg/script_executer.h"
+#include "stg/stg_locker.h"
+#include "stg/common.h"
 #include "listener.h"
-#include "script_executer.h"
-#include "stg_locker.h"
-#include "common.h"
 
 void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
 void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);

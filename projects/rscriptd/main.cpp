@@ -38,13 +38,13 @@
 #include <csignal>
 #include <set>
 
-#include "common.h"
-#include "stg_logger.h"
-#include "script_executer.h"
-#include "conffiles.h"
+#include "stg/common.h"
+#include "stg/stg_logger.h"
+#include "stg/script_executer.h"
+#include "stg/conffiles.h"
+#include "stg/version.h"
 #include "listener.h"
 #include "pidfile.h"
-#include "version.h"
 
 using namespace std;
 
