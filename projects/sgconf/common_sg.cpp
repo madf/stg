@@ -34,10 +34,10 @@
 #include <iostream>
 #include <iconv.h>
 
+#include "stg/common.h"
+#include "sg_error_codes.h"
 #include "common_sg.h"
 #include "version_sg.h"
-#include "common.h"
-#include "sg_error_codes.h"
 
 using namespace std;
 

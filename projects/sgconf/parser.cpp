@@ -33,9 +33,9 @@
 #include <string>
 #include <list>
 
-#include "common.h"
-#include "netunit.h"
-#include "request.h"
+#include "stg/common.h"
+#include "stg/netunit.h"
+#include "stg/request.h"
 
 using namespace std;
 

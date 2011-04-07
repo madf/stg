@@ -30,7 +30,7 @@
 
 #include <string>
 
-#include "servconf.h"
+#include "stg/servconf.h"
 #include "request.h"
 
 void UsageConf();

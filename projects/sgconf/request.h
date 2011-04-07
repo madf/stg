@@ -32,9 +32,10 @@
 #define request_h
 
 #include <string>
-#include "resetable.h"
-#include "stg_const.h"
-#include "os_int.h"
+
+#include "stg/resetable.h"
+#include "stg/stg_const.h"
+#include "stg/os_int.h"
 
 #define TARIFF_NOW  (0)
 #define TARIFF_DEL  (1)
