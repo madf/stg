@@ -49,9 +49,9 @@ $Author: faust $
 #include <unistd.h>
 
 #include "ether_cap.h"
-#include "common.h"
-#include "raw_ip_packet.h"
-#include "traffcounter.h"
+#include "stg/common.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/traffcounter.h"
 
 //#define CAP_DEBUG 1
 //-----------------------------------------------------------------------------
