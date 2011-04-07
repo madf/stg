@@ -11,9 +11,9 @@
 
 #include <string>
 
-#include "module_settings.h"
-#include "store.h"
-#include "user_traff.h"
+#include "stg/module_settings.h"
+#include "stg/store.h"
+#include "stg/user_traff.h"
 
 using namespace std;
 //-----------------------------------------------------------------------------

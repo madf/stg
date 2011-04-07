@@ -8,11 +8,11 @@
 #include <mysql.h>
 #include <errmsg.h>
 
-#include "user_ips.h"
-#include "user_conf.h"
-#include "user_stat.h"
+#include "stg/user_ips.h"
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/blowfish.h"
 #include "mysql_store.h"
-#include "blowfish.h"
 
 #define adm_enc_passwd "cjeifY8m3"
 char qbuf[4096];
