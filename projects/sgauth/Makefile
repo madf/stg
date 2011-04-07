@@ -7,13 +7,13 @@ include ../../Makefile.conf
 PROG = sgauth
 
 SRCS = ./main.cpp \
+       ./settings_impl.cpp \
        ./web.cpp
 
 STGLIBS =  -lconffiles \
            -lstg_crypto \
            -lstg_common \
-           -lia_auth_c \
-           -lcommon_settings
+           -lia_auth_c
 
 LIBS += $(LIB_THREAD)
 
