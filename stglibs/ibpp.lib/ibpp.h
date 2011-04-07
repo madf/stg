@@ -79,7 +79,7 @@
 #endif
 	typedef __int64 int64_t;
 #else
-	#include <os_int.h>			// C99 (§7.18) integer types definitions
+	#include <stg/os_int.h>			// C99 (§7.18) integer types definitions
 #endif
 
 #if !defined(_)
