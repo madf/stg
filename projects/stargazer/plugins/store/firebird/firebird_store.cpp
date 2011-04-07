@@ -33,7 +33,7 @@
 using namespace std;
 
 #include "firebird_store.h"
-#include "ibpp.h"
+#include "stg/ibpp.h"
 
 class FIREBIRD_STORE_CREATOR
 {

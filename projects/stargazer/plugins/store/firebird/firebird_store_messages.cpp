@@ -30,7 +30,7 @@
 #include <sstream>
 
 #include "firebird_store.h"
-#include "ibpp.h"
+#include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddMessage(STG_MSG * msg, const string & login) const

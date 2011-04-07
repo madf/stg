@@ -34,9 +34,9 @@
 #include <vector>
 #include <map>
 
-#include "store.h"
-#include "stg_locker.h"
-#include "ibpp.h"
+#include "stg/store.h"
+#include "stg/stg_locker.h"
+#include "stg/ibpp.h"
 
 struct ToLower {
     char operator() (char c) const  { return std::tolower(c); }

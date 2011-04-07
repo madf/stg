@@ -32,8 +32,8 @@
 using namespace std;
 
 #include "firebird_store.h"
-#include "ibpp.h"
-#include "blowfish.h"
+#include "stg/ibpp.h"
+#include "stg/blowfish.h"
 
 #define adm_enc_passwd "cjeifY8m3"
 

@@ -26,9 +26,9 @@
  *
  */
 
-#include "stg_const.h"
+#include "stg/stg_const.h"
 #include "firebird_store.h"
-#include "ibpp.h"
+#include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetUsersList(vector<string> * usersList) const

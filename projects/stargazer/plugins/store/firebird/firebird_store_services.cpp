@@ -28,7 +28,7 @@
  */
 
 #include "firebird_store.h"
-#include "ibpp.h"
+#include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetServicesList(vector<string> * servicesList) const
