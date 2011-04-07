@@ -43,9 +43,9 @@ $Date: 2010/09/10 06:43:03 $
 #include <algorithm>
 #include <vector>
 
-#include "common.h"
+#include "stg/common.h"
+#include "stg/traffcounter.h"
 #include "divert_cap.h"
-#include "traffcounter.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
 

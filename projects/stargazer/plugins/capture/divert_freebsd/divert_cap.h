@@ -31,8 +31,8 @@ $Date: 2009/06/23 11:32:27 $
 
 #include <string>
 
-#include "plugin.h"
-#include "module_settings.h"
+#include "stg/plugin.h"
+#include "stg/module_settings.h"
 
 class USERS;
 class TARIFFS;
