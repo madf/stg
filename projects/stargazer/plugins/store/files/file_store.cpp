@@ -43,15 +43,15 @@
 #include <sstream>
 #include <algorithm>
 
-#include "common.h"
-#include "user_ips.h"
-#include "user_conf.h"
-#include "user_stat.h"
-#include "stg_const.h"
+#include "stg/common.h"
+#include "stg/user_ips.h"
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/stg_const.h"
+#include "stg/blowfish.h"
+#include "stg/stg_logger.h"
+#include "stg/stg_locker.h"
 #include "file_store.h"
-#include "blowfish.h"
-#include "stg_logger.h"
-#include "stg_locker.h"
 
 #define DELETED_USERS_DIR   "deleted_users"
 
