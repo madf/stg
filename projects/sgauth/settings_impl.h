@@ -23,7 +23,7 @@
 
 #include <string>
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 class SETTINGS_IMPL {
 public:

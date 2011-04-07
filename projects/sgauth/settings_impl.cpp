@@ -21,9 +21,9 @@
 #include <iostream>
 #include <cstring>
 
+#include "stg/common.h"
+#include "stg/conffiles.h"
 #include "settings_impl.h"
-#include "common.h"
-#include "conffiles.h"
 
 SETTINGS_IMPL::SETTINGS_IMPL()
     : port(0),

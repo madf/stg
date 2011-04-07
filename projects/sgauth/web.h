@@ -39,8 +39,8 @@
 #include <string>
 #include <list>
 
-#include "stg_const.h"
-#include "ia_packets.h"
+#include "stg/stg_const.h"
+#include "stg/ia_packets.h"
 
 using namespace std;
 

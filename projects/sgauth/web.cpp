@@ -28,9 +28,9 @@
 #include <time.h>
 #include <libintl.h>
 
+#include "stg/common.h"
+#include "stg/ia_auth_c.h"
 #include "web.h"
-#include "common.h"
-#include "ia_auth_c.h"
 
 extern WEB * web;
 extern IA_CLIENT_PROT * clnp;
