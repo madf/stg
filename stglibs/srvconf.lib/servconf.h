@@ -32,9 +32,9 @@
 #include <list>
 #include <string>
 
-#include "os_int.h"
+#include "stg/os_int.h"
+#include "stg/stg_const.h"
 #include "netunit.h"
-#include "stg_const.h"
 
 void Start(void *data, const char *el, const char **attr);
 void End(void *data, const char *el);

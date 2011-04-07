@@ -2,8 +2,10 @@
 #define STG_LOGGER_H
 
 #include <pthread.h>
+
 #include <string>
-#include "noncopyable.h"
+
+#include "stg/noncopyable.h"
 
 const char * LogDate(time_t t);
 //-----------------------------------------------------------------------------

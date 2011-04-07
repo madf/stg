@@ -5,10 +5,10 @@
  * Description:  C implementation of the Blowfish algorithm.
  */
 
-#include <string.h>
+#include <cstring>
 
 #include "blowfish.h"
-#include "stg_const.h"
+#include "stg/stg_const.h"
 
 /*typedef struct _BCoptions
     {

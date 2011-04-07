@@ -38,8 +38,8 @@
 #include <vector>
 #include <map>
 
-#include "blowfish.h"
-#include "ia_packets.h"
+#include "stg/blowfish.h"
+#include "stg/ia_packets.h"
 
 #define IA_BIND_ERROR           (1)
 #define IA_SERVER_ERROR         (2)

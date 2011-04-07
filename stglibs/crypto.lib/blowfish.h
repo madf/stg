@@ -8,7 +8,7 @@
 #ifndef BLOWFISH_H
 #define BLOWFISH_H
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 #define MAXKEYBYTES 56          /* 448 bits */
 

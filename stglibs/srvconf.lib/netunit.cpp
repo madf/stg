@@ -33,7 +33,7 @@
 #include <cstring>
 
 #include "netunit.h"
-#include "common.h"
+#include "stg/common.h"
 
 //---------------------------------------------------------------------------
 

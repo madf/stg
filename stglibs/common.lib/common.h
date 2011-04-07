@@ -34,8 +34,8 @@
 #endif
 #include <string>
 
-#include "os_int.h"
-#include "stg_const.h"
+#include "stg/os_int.h"
+#include "stg/stg_const.h"
 
 #define STAT_TIME_3         (1)
 #define STAT_TIME_2         (2)

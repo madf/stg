@@ -29,7 +29,6 @@
 #define STG_LOCKER_H
 
 #include <pthread.h>
-#include "noncopyable.h"
 
 #ifdef DEBUG_LOCKER
 
@@ -38,6 +37,8 @@
 #include <pthread.h>
 
 #endif
+
+#include "stg/noncopyable.h"
 //-----------------------------------------------------------------------------
 class STG_LOCKER : private NONCOPYABLE
 {

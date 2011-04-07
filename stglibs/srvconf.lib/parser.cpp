@@ -33,8 +33,8 @@
 #include <arpa/inet.h>
 #include <string>
 
-#include "common.h"
-#include "stg_const.h"
+#include "stg/common.h"
+#include "stg/stg_const.h"
 #include "servconf.h"
 
 using namespace std;

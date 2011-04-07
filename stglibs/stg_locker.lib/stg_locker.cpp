@@ -27,6 +27,7 @@
 
 
 #include <pthread.h>
+
 #include "stg_locker.h"
 
 #ifdef DEBUG_LOCKER

@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 typedef void (* DOTCONFCallback) (void * data, const char * buf);
 

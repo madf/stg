@@ -35,7 +35,7 @@
 #include <map>
 #include <string>
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 using namespace std;
 //---------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 #ifndef _MD5_H
 #define _MD5_H
 
-#include <time.h>
+#include <ctime>
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 struct MD5Context {
 	uint32_t buf[4];

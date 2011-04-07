@@ -27,7 +27,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include "os_int.h"
+#include "stg/os_int.h"
 
 //-----------------------------------------------------------------------------
 struct ICMP_HDR

@@ -41,7 +41,7 @@
 #include <fstream>
 
 #include "conffiles.h"
-#include "common.h"
+#include "stg/common.h"
 
 using namespace std;
 

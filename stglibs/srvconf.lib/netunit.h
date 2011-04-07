@@ -34,8 +34,7 @@
 #include <list>
 #include <string>
 
-#include "common.h"
-#include "blowfish.h"
+#include "stg/blowfish.h"
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"

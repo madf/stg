@@ -49,7 +49,7 @@
     #include <unistd.h>
 #endif
 
-#include "common.h"
+#include "stg/common.h"
 #include "ia_auth_c.h"
 
 #define IA_NONE            (0)
