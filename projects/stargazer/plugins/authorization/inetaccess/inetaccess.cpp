@@ -39,12 +39,12 @@
 #include <cerrno>
 #include <algorithm>
 
+#include "stg/common.h"
+#include "stg/stg_locker.h"
+#include "stg/tariff.h"
+#include "stg/user_property.h"
+#include "stg/settings.h"
 #include "inetaccess.h"
-#include "common.h"
-#include "stg_locker.h"
-#include "tariff.h"
-#include "user_property.h"
-#include "settings.h"
 
 extern volatile const time_t stgTime;
 

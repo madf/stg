@@ -38,17 +38,17 @@
 #include <functional>
 #include <utility>
 
-#include "os_int.h"
-#include "auth.h"
-#include "store.h"
-#include "notifer.h"
-#include "user_ips.h"
-#include "user.h"
-#include "users.h"
-#include "ia_packets.h"
-#include "blowfish.h"
-#include "stg_logger.h"
-#include "utime.h"
+#include "stg/os_int.h"
+#include "stg/auth.h"
+#include "stg/store.h"
+#include "stg/notifer.h"
+#include "stg/user_ips.h"
+#include "stg/user.h"
+#include "stg/users.h"
+#include "stg/ia_packets.h"
+#include "stg/blowfish.h"
+#include "stg/stg_logger.h"
+#include "stg/utime.h"
 
 extern "C" PLUGIN * GetPlugin();
 
