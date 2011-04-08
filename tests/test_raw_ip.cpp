@@ -9,7 +9,7 @@
 #include "tut/tut.hpp"
 
 #include "raw_ip_packet_old.h"
-#include "raw_ip_packet.h"
+#include "stg/raw_ip_packet.h"
 
 #ifndef ITERATIONS
 #define ITERATIONS 1000

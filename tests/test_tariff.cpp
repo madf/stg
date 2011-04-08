@@ -1,7 +1,7 @@
 #include "tut/tut.hpp"
 
-#include "tariff_conf.h"
-#include "tariff.h"
+#include "stg/tariff_conf.h"
+#include "tariff_impl.h"
 
 namespace tut
 {
@@ -35,7 +35,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure("freeMb = 2", tariff.GetFreeMb() == td.tariffConf.free);
         ensure("passiveCost = 4", tariff.GetPassiveCost() == td.tariffConf.passiveCost);
@@ -75,7 +75,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
@@ -145,7 +145,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure_equals("0000 == 0", tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
         ensure_equals("0001 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 1); // Near 17:30, 6 > 4 DB
@@ -201,7 +201,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure("freeMb = 2", tariff.GetFreeMb() == td.tariffConf.free);
         ensure("passiveCost = 4", tariff.GetPassiveCost() == td.tariffConf.passiveCost);
@@ -241,7 +241,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
@@ -311,7 +311,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF tariff(td);
+        TARIFF_IMPL tariff(td);
 
         ensure_equals("0000 == 0", tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 2); // Near 17:30, 0 < 4 NA
         ensure_equals("0001 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 3); // Near 17:30, 6 > 4 NB

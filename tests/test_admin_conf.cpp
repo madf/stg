@@ -2,7 +2,7 @@
 
 #include "tut/tut.hpp"
 
-#include "admin_conf.h"
+#include "stg/admin_conf.h"
 
 namespace tut
 {

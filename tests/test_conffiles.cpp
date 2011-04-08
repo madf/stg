@@ -5,7 +5,7 @@
 
 #include "tut/tut.hpp"
 
-#include "conffiles.h"
+#include "stg/conffiles.h"
 
 namespace tut
 {

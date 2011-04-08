@@ -6,9 +6,10 @@ SOURCES=main.cpp \
 	test_raw_ip.cpp \
 	test_admin_conf.cpp \
 	test_tariff.cpp \
-	test_stgconffiles.cpp \
-	../projects/stargazer/tariff.cpp \
-	../stglibs/stgconffiles.lib/stgconffiles.cpp
+	test_conffiles.cpp \
+	../projects/stargazer/tariff_impl.cpp \
+	../stglibs/conffiles.lib/conffiles.cpp \
+	../stglibs/common.lib/common.cpp
 
 all: $(PROG) 
 
