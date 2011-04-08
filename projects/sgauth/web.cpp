@@ -29,7 +29,7 @@
 #include <libintl.h>
 
 #include "stg/common.h"
-#include "stg/ia_auth_c.h"
+#include "stg/ia.h"
 #include "web.h"
 
 extern WEB * web;
