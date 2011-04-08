@@ -70,7 +70,7 @@ install: $(PROG)
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/stg
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/include/stg
-	install -m $(BIN_MODE) -o $(OWNER) -t $(PREFIX)/usr/include/stg/ $(INCS)
+	install -m $(DATA_MODE) -o $(OWNER) -t $(PREFIX)/usr/include/stg/ $(INCS)
 
 uninstall:
 	rm -f $(PREFIX)/usr/lib/stg/$(PROG)
