@@ -38,7 +38,7 @@
 #include "stg/users.h"
 #include "stg/admins.h"
 #include "stg/tariffs.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "parser.h"
 
 #define  STG_HEADER     "SG04"

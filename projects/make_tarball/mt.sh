@@ -19,8 +19,8 @@ arc_name=$src_dir.tar.gz
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/common_settings.lib $src_dir
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/conffiles.lib $src_dir
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/crypto.lib $src_dir
-./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/stg_logger.lib $src_dir
-./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/stg_locker.lib $src_dir
+./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/logger.lib $src_dir
+./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/locker.lib $src_dir
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/hostallow.lib $src_dir
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/pinger.lib $src_dir
 ./get_from_cvs $cvs_user $cvs_pass $cvs_host /cvsroot/stglibs stglibs/dotconfpp.lib $src_dir

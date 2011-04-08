@@ -16,7 +16,7 @@
 
 #include "pinger.h"
 #include "stg/common.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 
 #ifdef STG_TIME
 extern volatile time_t stgTime;

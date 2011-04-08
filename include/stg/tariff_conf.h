@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "resetable.h"
-#include "stg_const.h"
+#include "const.h"
 
 //-----------------------------------------------------------------------------
 enum

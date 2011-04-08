@@ -30,7 +30,7 @@
 #include <iostream>
 #include <vector>
 
-#include "stg_const.h"
+#include "const.h"
 #include "os_int.h"
 
 enum TRAFF_DIRECTION {TRAFF_UPLOAD, TRAFF_DOWNLOAD};

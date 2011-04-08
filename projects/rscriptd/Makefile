@@ -10,11 +10,11 @@ SRCS = ./main.cpp \
        ./listener.cpp \
        ./pidfile.cpp
 
-STGLIBS =  -lstg_logger \
-           -lstg_common \
-	   -lstg_crypto \
-           -lscript_executer \
-           -lconffiles
+STGLIBS =  -lstglogger \
+           -lstgcommon \
+	   -lstgcrypto \
+           -lstgscriptexecuter \
+           -lstgconffiles
 
 LIBS += $(LIB_THREAD)
 

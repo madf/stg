@@ -35,7 +35,7 @@
 #include <string>
 
 #include "stg/os_int.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 
 #define STAT_TIME_3         (1)
 #define STAT_TIME_2         (2)

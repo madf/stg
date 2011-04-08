@@ -15,7 +15,7 @@ SRCS =	./postgresql_store.cpp \
 	./postgresql_store_users.cpp \
 	./postgresql_store_utils.cpp
 
-STGLIBS = -lstg_common -lstg_crypto
+STGLIBS = -lstgcommon -lstgcrypto
 
 PG_CFLAGS = $(shell pg_config --includedir)
 PG_LDFLAGS = $(shell pg_config --libdir)

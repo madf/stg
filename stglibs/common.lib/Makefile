@@ -4,11 +4,11 @@
 
 include ../../Makefile.conf
 
-LIB_NAME = stg_common
+LIB_NAME = stgcommon
 PROG = lib$(LIB_NAME)
 
 SRCS = common.cpp \
-	stg_strptime.cpp
+	strptime.cpp
 
 INCS = common.h
 

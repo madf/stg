@@ -50,7 +50,7 @@
 #endif
 
 #include "stg/common.h"
-#include "ia_auth_c.h"
+#include "ia.h"
 
 #define IA_NONE            (0)
 #define IA_CONNECT         (1)

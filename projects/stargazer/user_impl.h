@@ -34,13 +34,13 @@
 
 #include "stg/user.h"
 #include "stg/os_int.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "stg/user_stat.h"
 #include "stg/user_conf.h"
 #include "stg/user_ips.h"
 #include "stg/user_property.h"
 #include "stg/auth.h"
-#include "stg/stg_message.h"
+#include "stg/message.h"
 #include "stg/noncopyable.h"
 
 //-----------------------------------------------------------------------------

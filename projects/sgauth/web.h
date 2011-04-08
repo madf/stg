@@ -39,7 +39,7 @@
 #include <string>
 #include <list>
 
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "stg/ia_packets.h"
 
 using namespace std;

@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include "blowfish.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 
 /*typedef struct _BCoptions
     {

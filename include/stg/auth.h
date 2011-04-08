@@ -27,7 +27,7 @@
 #define AUTH_H
 
 #include "plugin.h"
-#include "stg_message.h"
+#include "message.h"
 #include "noncopyable.h"
 
 class AUTH : public PLUGIN {

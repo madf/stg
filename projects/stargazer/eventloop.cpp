@@ -1,7 +1,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/common.h"
 #include "eventloop.h"
 

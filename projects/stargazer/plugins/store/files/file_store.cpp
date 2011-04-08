@@ -47,10 +47,10 @@
 #include "stg/user_ips.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "stg/blowfish.h"
-#include "stg/stg_logger.h"
-#include "stg/stg_locker.h"
+#include "stg/logger.h"
+#include "stg/locker.h"
 #include "file_store.h"
 
 #define DELETED_USERS_DIR   "deleted_users"

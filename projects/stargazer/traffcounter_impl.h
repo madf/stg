@@ -37,7 +37,7 @@
 
 #include "stg/traffcounter.h"
 #include "stg/os_int.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/users.h"
 #include "stg/noncopyable.h"

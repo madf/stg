@@ -33,7 +33,7 @@
 #include <string>
 
 #include "stg/os_int.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "netunit.h"
 
 void Start(void *data, const char *el, const char **attr);

@@ -10,7 +10,7 @@ PROG = mod_ping.so
 
 SRCS = ./ping.cpp
 
-STGLIBS = -lstg_pinger -lstg_common
+STGLIBS = -lstgpinger -lstgcommon
 
 include ../../Makefile.in
 

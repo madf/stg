@@ -10,7 +10,7 @@
 
 #include <cstring>
 
-#include "stg_const.h"
+#include "const.h"
 #include "common.h"
 
 #define IPv4 (2)

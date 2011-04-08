@@ -43,7 +43,7 @@
 #include "stg/user.h"
 #include "stg/common.h"
 #include "stg/plugin.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/script_executer.h"
 #include "stg/conffiles.h"
 #include "stg/version.h"

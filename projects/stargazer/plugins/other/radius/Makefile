@@ -10,7 +10,7 @@ PROG = mod_radius.so
 
 SRCS = ./radius.cpp
 
-STGLIBS = -lstg_common -lstg_crypto
+STGLIBS = -lstgcommon -lstgcrypto
 
 include ../../Makefile.in
 

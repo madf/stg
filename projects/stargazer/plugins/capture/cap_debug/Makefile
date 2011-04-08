@@ -16,7 +16,7 @@ SRCS = ./debug_cap.cpp \
        ./tcp.c \
        ./udp.c
 
-STGLIBS = -lstg_common
+STGLIBS = -lstgcommon
 
 LIBS += $(LIB_THREAD)
 

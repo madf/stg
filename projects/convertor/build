@@ -52,8 +52,8 @@ echo "##########################################################################
 echo "       Building convertor for $sys $release"
 echo "#############################################################################"
 
-STG_LIBS="stg_logger.lib 
-          stg_locker.lib
+STG_LIBS="logger.lib 
+          locker.lib
 	  crypto.lib 
 	  common.lib 
 	  conffiles.lib

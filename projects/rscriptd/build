@@ -65,11 +65,11 @@ echo "##########################################################################
 echo "       Building rscriptd for $sys $release"
 echo "#############################################################################"
 
-STG_LIBS="stg_logger.lib 
-          stg_locker.lib
+STG_LIBS="logger.lib 
+          locker.lib
 	  crypto.lib 
 	  common.lib 
-	  script_executer.lib 
+	  scriptexecuter.lib 
 	  conffiles.lib"
 
 if [ "$OS" = "linux" ]

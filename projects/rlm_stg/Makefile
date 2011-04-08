@@ -11,8 +11,8 @@ PROG = $(LIB_NAME).so
 SRCS = ./rlm_stg.cpp \
        ./stg_client.cpp
 
-STGLIBS = -lstg_common \
-          -lstg_crypto
+STGLIBS = -lstgcommon \
+          -lstgcrypto
 
 LIBS += $(LIB_THREAD)
 

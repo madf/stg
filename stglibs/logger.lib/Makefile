@@ -1,12 +1,12 @@
 ###############################################################################
-# $Id: Makefile,v 1.6 2010/01/21 13:02:12 faust Exp $
+# $Id: Makefile,v 1.3 2007/05/08 14:29:21 faust Exp $
 ###############################################################################
 
-LIB_NAME = script_executer
+LIB_NAME = stglogger
 PROG = lib$(LIB_NAME)
 
-SRCS = script_executer.cpp
+SRCS = logger.cpp
 
-INCS = script_executer.h
+INCS = logger.h
 
 include ../Makefile.in

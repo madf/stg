@@ -2,7 +2,7 @@
 # $Id: Makefile,v 1.5 2008/12/04 17:13:14 faust Exp $
 ###############################################################################
 
-LIB_NAME = stg_pinger
+LIB_NAME = stgpinger
 PROG = lib$(LIB_NAME)
 
 SRCS = pinger.cpp
@@ -15,4 +15,4 @@ include ../Makefile.in
 
 test: all
 	g++ -c test.cpp
-	g++ -o test test.o ./libstg_pinger.a -lpthread
+	g++ -o test test.o ./libstgpinger.a -lpthread

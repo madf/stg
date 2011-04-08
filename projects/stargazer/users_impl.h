@@ -41,7 +41,7 @@ $Author: faust $
 #include "stg/users.h"
 #include "stg/user.h"
 #include "stg/tariffs.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/notifer.h"
 #include "stg/noncopyable.h"
 #include "actions.h"

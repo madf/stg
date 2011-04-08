@@ -8,7 +8,7 @@ PROG = mod_auth_ao.so
 
 SRCS = ./ao.cpp
 
-STGLIBS = -lstg_common
+STGLIBS = -lstgcommon
 
 include ../../Makefile.in
 

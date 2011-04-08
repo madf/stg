@@ -32,8 +32,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "stg/stg_locker.h"
-#include "stg/stg_logger.h"
+#include "stg/locker.h"
+#include "stg/logger.h"
 #include "stg/store.h"
 #include "stg/admin.h"
 #include "tariffs_impl.h"

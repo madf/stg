@@ -10,7 +10,7 @@ SRCS = ./ipq_cap.cpp \
        ./libipq.c
 
 LIBS += $(LIB_THREAD)
-STGLIBS = -lstg_common
+STGLIBS = -lstgcommon
 
 include ../../Makefile.in
 

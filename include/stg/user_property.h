@@ -18,8 +18,8 @@ $Author: faust $
 #include "store.h"
 #include "admin.h"
 #include "notifer.h"
-#include "stg_logger.h"
-#include "stg_locker.h"
+#include "logger.h"
+#include "locker.h"
 #include "script_executer.h"
 #include "noncopyable.h"
 

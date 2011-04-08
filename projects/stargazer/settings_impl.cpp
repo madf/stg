@@ -32,7 +32,7 @@ $Author: faust $
 #include <cerrno>
 #include <string>
 
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/dotconfpp.h"
 #include "settings_impl.h"
 

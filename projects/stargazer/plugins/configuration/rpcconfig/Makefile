@@ -24,7 +24,7 @@ ifneq ($(OS),linux)
 LIBS += -liconv
 endif
 
-STGLIBS = -lstg_common -lstg_logger
+STGLIBS = -lstgcommon -lstglogger
 
 include ../../Makefile.in
 

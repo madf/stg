@@ -35,7 +35,7 @@
 #include <iostream>
 #include <vector>
 
-#include "stg/ia_auth_c.h"
+#include "stg/ia.h"
 #include "stg/common.h"
 #include "web.h"
 #include "settings_impl.h"

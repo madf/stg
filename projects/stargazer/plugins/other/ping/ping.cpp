@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "stg/user.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/user_property.h"
 #include "ping.h"
 

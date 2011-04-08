@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-#include "stg_const.h"
+#include "const.h"
 
 #define IPv4 (2)
 

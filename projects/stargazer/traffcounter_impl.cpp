@@ -39,7 +39,7 @@
 #include <cstdio> // fopen and similar
 
 #include "stg/common.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "traffcounter_impl.h"
 #include "stg_timer.h"
 

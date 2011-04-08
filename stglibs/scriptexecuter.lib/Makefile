@@ -1,14 +1,12 @@
 ###############################################################################
-# $Id: Makefile,v 1.2 2008/12/04 17:11:55 faust Exp $
+# $Id: Makefile,v 1.6 2010/01/21 13:02:12 faust Exp $
 ###############################################################################
 
-LIB_NAME = stg_locker
+LIB_NAME = stgscriptexecuter
 PROG = lib$(LIB_NAME)
 
-SRCS = stg_locker.cpp
+SRCS = scriptexecuter.cpp
 
-INCS = stg_locker.h
-
-LIBS=$(LIB_THREAD)
+INCS = scriptexecuter.h
 
 include ../Makefile.in

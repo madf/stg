@@ -16,7 +16,7 @@ SRCS = ./stgconfig.cpp \
 LIBS += -lexpat \
 	$(LIB_THREAD)
 
-STGLIBS = -lstg_common -lstg_logger -lstg_crypto
+STGLIBS = -lstgcommon -lstglogger -lstgcrypto
 
 include ../../Makefile.in
 

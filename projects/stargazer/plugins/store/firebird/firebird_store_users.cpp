@@ -26,7 +26,7 @@
  *
  */
 
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 

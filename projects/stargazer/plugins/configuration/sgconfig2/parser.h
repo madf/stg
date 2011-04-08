@@ -13,11 +13,11 @@
 using namespace std;
 
 #include "resetable.h"
-#include "stg_const.h"
+#include "const.h"
 #include "store.h"
 #include "admins.h"
 #include "users.h"
-#include "stg_message.h"
+#include "message.h"
 
 //-----------------------------------------------------------------------------
 class BASE_PARSER {

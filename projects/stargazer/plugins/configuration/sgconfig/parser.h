@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "stg/resetable.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "stg/store.h"
 #include "stg/admins.h"
 #include "stg/admin.h"
 #include "stg/users.h"
-#include "stg/stg_message.h"
+#include "stg/message.h"
 
 class TARIFFS;
 class SETTINGS;

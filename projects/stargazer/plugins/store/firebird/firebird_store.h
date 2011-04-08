@@ -35,7 +35,7 @@
 #include <map>
 
 #include "stg/store.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/ibpp.h"
 
 struct ToLower {

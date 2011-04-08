@@ -29,7 +29,7 @@
 #include "stg/os_int.h"
 #include "stg/blowfish.h"
 #include "stg/rs_packets.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 
 struct UserData
 {

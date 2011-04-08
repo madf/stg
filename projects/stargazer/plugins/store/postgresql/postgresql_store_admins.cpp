@@ -32,7 +32,7 @@
 
 #include <libpq-fe.h>
 
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/admin_conf.h"
 #include "stg/blowfish.h"
 #include "postgresql_store.h"

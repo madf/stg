@@ -47,7 +47,7 @@
 #include "stg/users.h"
 #include "stg/ia_packets.h"
 #include "stg/blowfish.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/utime.h"
 
 extern "C" PLUGIN * GetPlugin();

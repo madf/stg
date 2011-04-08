@@ -9,10 +9,10 @@ PROG = sgconf
 SRCS = ./main.cpp \
        ./common_sg.cpp
 
-STGLIBS =  -lconffiles \
-           -lstg_common \
-	   -lstg_crypto \
-           -lsrvconf
+STGLIBS =  -lstgconffiles \
+           -lstgcommon \
+	   -lstgcrypto \
+           -lstgsrvconf
 
 LIBS += -lexpat \
 	$(LIB_THREAD)

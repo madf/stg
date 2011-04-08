@@ -42,7 +42,7 @@
 
 #include "stg/settings.h"
 #include "stg/common.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 #include "stg/module_settings.h"
 
 //-----------------------------------------------------------------------------

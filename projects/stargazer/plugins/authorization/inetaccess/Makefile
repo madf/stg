@@ -10,7 +10,7 @@ PROG = mod_auth_ia.so
 
 SRCS = ./inetaccess.cpp
 
-STGLIBS = -lstg_common -lstg_crypto
+STGLIBS = -lstgcommon -lstgcrypto
 
 include ../../Makefile.in
 

@@ -23,8 +23,8 @@ PROG = mod_userstat.so
 SRCS = ./userstat.cpp \
        ./datathread.cpp
 
-LIBS += -lstg_common \
-	-lstg_crypto
+LIBS += -lstgcommon \
+	-lstgcrypto
 
 include ../../Makefile.in
 

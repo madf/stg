@@ -34,7 +34,7 @@
 
 #include "stg/resetable.h"
 #include "stg/os_int.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 
 #ifndef ENODATA
 #define ENODATA 61

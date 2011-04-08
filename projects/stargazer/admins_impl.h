@@ -38,7 +38,7 @@
 
 #include "stg/admins.h"
 #include "stg/admin.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/store.h"
 #include "stg/noncopyable.h"
 #include "admin_impl.h"

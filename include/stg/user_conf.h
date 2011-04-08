@@ -9,7 +9,7 @@
 
 #include <string>
 #include <vector>
-#include "stg_const.h"
+#include "const.h"
 #include "user_ips.h"
 #include "resetable.h"
 #include "os_int.h"

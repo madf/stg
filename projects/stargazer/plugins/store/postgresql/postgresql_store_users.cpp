@@ -33,8 +33,8 @@
 
 #include <libpq-fe.h>
 
-#include "stg/stg_const.h"
-#include "stg/stg_locker.h"
+#include "stg/const.h"
+#include "stg/locker.h"
 #include "../../../stg_timer.h"
 #include "postgresql_store.h"
 

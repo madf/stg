@@ -26,7 +26,7 @@
 
 #include "os_int.h"
 #include "notifer.h"
-#include "stg_message.h"
+#include "message.h"
 #include "tariff.h"
 #include "user_traff.h"
 

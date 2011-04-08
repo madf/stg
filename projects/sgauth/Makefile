@@ -10,10 +10,10 @@ SRCS = ./main.cpp \
        ./settings_impl.cpp \
        ./web.cpp
 
-STGLIBS =  -lconffiles \
-           -lstg_crypto \
-           -lstg_common \
-           -lia_auth_c
+STGLIBS =  -lstgconffiles \
+           -lstgcrypto \
+           -lstgcommon \
+           -lstgia
 
 LIBS += $(LIB_THREAD)
 

@@ -22,10 +22,10 @@ SRCS = ./admin_impl.cpp \
        ./user_property.cpp \
        ./users_impl.cpp
 
-STGLIBS =  -lstg_logger \
-    	   -lstg_locker \
-           -lstg_common \
-           -lscript_executer \
+STGLIBS =  -lstglogger \
+    	   -lstglocker \
+           -lstgcommon \
+           -lstgscriptexecuter \
            -ldotconfpp
 
 LIBS += -lexpat

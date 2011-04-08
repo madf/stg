@@ -9,10 +9,10 @@ PROG = convertor
 SRCS = ./main.cpp \
        ./settings_impl.cpp
 
-STGLIBS =  -lstg_logger \
-           -lstg_common \
+STGLIBS =  -lstglogger \
+           -lstgcommon \
            -ldotconfpp \
-	   -lstg_crypto
+	   -lstgcrypto
 
 LIBS += $(LIB_THREAD)
 

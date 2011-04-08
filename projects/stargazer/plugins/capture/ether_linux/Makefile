@@ -9,7 +9,7 @@ PROG = mod_cap_ether.so
 SRCS = ./ether_cap.cpp 
 
 LIBS += $(LIB_THREAD)
-STGLIBS = -lstg_common
+STGLIBS = -lstgcommon
 
 include ../../Makefile.in
 

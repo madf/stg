@@ -38,7 +38,7 @@
 #include "admin_conf.h"
 #include "tariff_conf.h"
 #include "module_settings.h"
-#include "stg_message.h"
+#include "message.h"
 
 //-----------------------------------------------------------------------------
 class STORE {

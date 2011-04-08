@@ -34,7 +34,7 @@
 #include <string>
 
 #include "stg/resetable.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "stg/os_int.h"
 
 #define TARIFF_NOW  (0)

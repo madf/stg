@@ -34,7 +34,7 @@
 #include <algorithm>
 
 #include "stg/script_executer.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/common.h"
 #include "listener.h"
 

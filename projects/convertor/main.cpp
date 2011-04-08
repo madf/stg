@@ -43,7 +43,7 @@
 #include "stg/admin_conf.h"
 #include "stg/tariff_conf.h"
 #include "stg/settings.h"
-#include "stg/stg_message.h"
+#include "stg/message.h"
 
 #include "settings_impl.h"
 

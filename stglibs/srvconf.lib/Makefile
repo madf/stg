@@ -2,11 +2,11 @@
 # $Id: Makefile,v 1.9 2010/08/18 07:47:03 faust Exp $
 ###############################################################################
 
-LIB_NAME = srvconf
+LIB_NAME = stgsrvconf
 PROG = lib$(LIB_NAME)
 
-STGLIBS = -lstg_common \
-          -lstg_crypto
+STGLIBS = -lstgcommon \
+          -lstgcrypto
 LIBS = -lexpat
 
 SRCS = 	netunit.cpp \

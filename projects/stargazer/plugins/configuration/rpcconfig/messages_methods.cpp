@@ -1,4 +1,4 @@
-#include "stg/stg_message.h"
+#include "stg/message.h"
 #include "stg/common.h"
 #include "utils.h"
 #include "messages_methods.h"

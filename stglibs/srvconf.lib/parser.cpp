@@ -34,7 +34,7 @@
 #include <string>
 
 #include "stg/common.h"
-#include "stg/stg_const.h"
+#include "stg/const.h"
 #include "servconf.h"
 
 using namespace std;

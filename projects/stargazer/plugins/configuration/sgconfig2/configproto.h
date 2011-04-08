@@ -39,7 +39,7 @@
 #include "users.h"
 #include "admins.h"
 #include "tariffs.h"
-#include "stg_logger.h"
+#include "logger.h"
 
 using namespace std;
 

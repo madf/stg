@@ -32,7 +32,7 @@
 #include <algorithm>
 
 #include "stg/common.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/user_property.h"
 #include "rscript.h"
 #include "ur_functor.h"

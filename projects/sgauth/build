@@ -68,7 +68,7 @@ echo "##########################################################################
 STG_LIBS="crypto.lib 
 	  common.lib 
 	  conffiles.lib
-	  ia_auth_c.lib"
+	  ia.lib"
 
 if [ "$OS" = "linux" ]
 then

@@ -39,8 +39,8 @@
 #include <set>
 
 #include "stg/common.h"
-#include "stg/stg_logger.h"
-#include "stg/script_executer.h"
+#include "stg/logger.h"
+#include "stg/scriptexecuter.h"
 #include "stg/conffiles.h"
 #include "stg/version.h"
 #include "listener.h"

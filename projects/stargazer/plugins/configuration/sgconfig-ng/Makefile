@@ -18,6 +18,6 @@ SRCS = ./stgconfig.cpp \
 LIBS += -lexpat \
 	-lboost_thread-mt
 
-STGLIBS = -lstg_common -lstg_logger -lcrypto
+STGLIBS = -lstgcommon -lstglogger -lcrypto
 
 include ../../Makefile.in

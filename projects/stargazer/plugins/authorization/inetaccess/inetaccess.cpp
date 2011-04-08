@@ -40,7 +40,7 @@
 #include <algorithm>
 
 #include "stg/common.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 #include "stg/tariff.h"
 #include "stg/user_property.h"
 #include "stg/settings.h"

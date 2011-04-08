@@ -36,7 +36,7 @@
 #include "stg/admin.h"
 #include "stg/os_int.h"
 #include "stg/admin_conf.h"
-#include "stg/stg_logger.h"
+#include "stg/logger.h"
 
 class ADMIN_IMPL : public ADMIN {
 public:

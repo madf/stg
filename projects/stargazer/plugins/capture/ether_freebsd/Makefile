@@ -8,7 +8,7 @@ PROG = mod_cap_bpf.so
 
 SRCS = ./ether_cap.cpp 
 
-STGLIBS = -lstg_common
+STGLIBS = -lstgcommon
 
 LIBS += $(LIB_THREAD)
 

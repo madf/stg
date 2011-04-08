@@ -33,7 +33,7 @@
 #include <libpq-fe.h>
 
 #include "postgresql_store.h"
-#include "stg/stg_locker.h"
+#include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetCorpsList(vector<string> * corpsList) const
