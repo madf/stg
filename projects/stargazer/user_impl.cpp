@@ -40,7 +40,7 @@
 
 #include "stg/users.h"
 #include "stg/common.h"
-#include "stg/script_executer.h"
+#include "stg/scriptexecuter.h"
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
 #include "stg/admin.h"

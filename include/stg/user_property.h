@@ -20,7 +20,7 @@ $Author: faust $
 #include "notifer.h"
 #include "logger.h"
 #include "locker.h"
-#include "script_executer.h"
+#include "scriptexecuter.h"
 #include "noncopyable.h"
 
 extern const volatile time_t stgTime;
