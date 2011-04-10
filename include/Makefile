@@ -1,4 +1,4 @@
-include ../../Makefile.conf
+include ../Makefile.conf
 
 INCS = stg/admin_conf.h \
        stg/admin_conf.inc.h \
