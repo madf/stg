@@ -35,6 +35,8 @@ INCS = stg/admin_conf.h \
        stg/utime.h \
        stg/version.h
 
-install:
+install: install-bin
+
+install-bin:
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/include/stg
 	install -m $(DATA_MODE) -o $(OWNER) -t $(PREFIX)/usr/include/stg/ $(INCS)
