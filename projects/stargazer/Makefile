@@ -74,6 +74,7 @@ install: install-bin install-data
 
 install-bin: $(PROG)
 	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+	$(MAKE) -C $(DIR_INCLUDE) install
 	$(MAKE) -C $(DIR_LIBSRC) install
 	$(MAKE) -C $(DIR_PLUGINS) install
 
