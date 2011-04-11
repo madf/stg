@@ -256,8 +256,6 @@ int ForkAndWait(const string & confDir)
 {
 #ifndef NO_DAEMON
 stgChildPid = fork();
-string startFile = confDir + START_FILE;
-unlink(startFile.c_str());
 
 switch (stgChildPid)
     {
@@ -273,23 +271,6 @@ switch (stgChildPid)
         break;
 
     default:    // Parent
-        for (int i = 0; i < 120 * 5; i++)
-            {
-            if (access(startFile.c_str(), F_OK) == 0)
-                {
-                //printf("Fork successfull. Exit.\n");
-                unlink(startFile.c_str());
-                exit(0);
-                }
-
-            if (childExited)
-                {
-                unlink(startFile.c_str());
-                exit(1);
-                }
-            usleep(200000);
-            }
-        unlink(startFile.c_str());
         exit(1);
         break;
     }
@@ -406,11 +387,6 @@ listener->Start();
 
 WriteServLog("rscriptd started successfully.");
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
-
-#ifndef NO_DAEMON
-string startFile(confDir + START_FILE);
-creat(startFile.c_str(), S_IRUSR);
-#endif
 
 while (nonstop.GetStatus())
     {
