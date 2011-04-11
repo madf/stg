@@ -236,13 +236,11 @@ users->CloseSearch(h);
 //-----------------------------------------------------------------------------
 void AUTH_AO::Unauthorize(USER_PTR u) const
 {
-printfd(__FILE__, "AUTH_AO::Unauthorize - login: '%s'\n", u->GetLogin().c_str());
 u->Unauthorize(this);
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::UpdateUserAuthorization(USER_PTR u) const
 {
-printfd(__FILE__, "AUTH_AO::UpdateUserAuthorization - login: '%s'\n", u->GetLogin().c_str());
 if (u->GetProperty().alwaysOnline)
     {
     USER_IPS ips = u->GetProperty().ips;
@@ -257,7 +255,6 @@ if (u->GetProperty().alwaysOnline)
 //-----------------------------------------------------------------------------
 void AUTH_AO::AddUser(USER_PTR u)
 {
-printfd(__FILE__, "AUTH_AO::AddUser - login: '%s'\n", u->GetLogin().c_str());
 SetUserNotifiers(u);
 usersList.push_back(u);
 UpdateUserAuthorization(u);
@@ -265,7 +262,6 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
-printfd(__FILE__, "AUTH_AO::DelUser - login: '%s'\n", u->GetLogin().c_str());
 Unauthorize(u);
 UnSetUserNotifiers(u);
 usersList.remove(u);
@@ -280,7 +276,6 @@ return -1;
 template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-printfd(__FILE__, "CHG_BEFORE_NOTIFIER::Notify\n");
 //EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
 auth.Unauthorize(user);
 }
@@ -288,7 +283,6 @@ auth.Unauthorize(user);
 template <typename varParamType>
 void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-printfd(__FILE__, "CHG_AFTER_NOTIFIER::Notify\n");
 //EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
 auth.UpdateUserAuthorization(user);
 }
