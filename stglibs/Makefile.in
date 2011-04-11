@@ -89,7 +89,7 @@ endif
 deps:	$(SRCS) ../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -MM -MG $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
 	  echo -e '\t$$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -c $$<' >> deps ;\
 	done
 
