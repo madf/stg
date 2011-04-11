@@ -37,7 +37,7 @@ std::vector<xmlrpc_c::value> dirnameVal;
 
 for (int i = 0; i< DIR_NUM; i++)
     {
-    dirnameVal.push_back(xmlrpc_c::value_string(dirNames[i]));
+    dirnameVal.push_back(xmlrpc_c::value_string(IconvString(dirNames[i], "KOI8-RU", "UTF-8")));
     }
 
 structVal["dir_names"] = xmlrpc_c::value_array(dirnameVal);
