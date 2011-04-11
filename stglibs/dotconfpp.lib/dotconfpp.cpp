@@ -339,7 +339,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
     char realpathBuf[PATH_MAX];
 
     if(realpath(_fileName, realpathBuf) == NULL){
-        error(0, NULL, "realpath(%s) failed: %s", _fileName, strerror(errno));
+        error(0, _fileName, "realpath('%s') failed: %s", _fileName, strerror(errno));
         return -1;
     }
 
@@ -509,13 +509,17 @@ void DOTCONFDocument::error(int lineNum, const char * fileName, const char * fmt
     va_list args;
     va_start(args, fmt);
 
-    size_t len = (lineNum!=0?strlen(fileName):0) + strlen(fmt) + 50;
+    char msg[256];
+
+    vsnprintf(msg, 256, fmt, args);
+
+    size_t len = (lineNum!=0?strlen(fileName):0) + strlen(msg) + 50;
     char * buf = (char*)mempool->alloc(len);
 
     if(lineNum)
-        (void) snprintf(buf, len, "DOTCONF++: file '%s', line %d: %s\n", fileName, lineNum, fmt);
+        (void) snprintf(buf, len, "DOTCONF++: file '%s', line %d: %s\n", fileName, lineNum, msg);
     else
-        (void) snprintf(buf, len, "DOTCONF++: %s\n", fmt);
+        (void) snprintf(buf, len, "DOTCONF++: file '%s':  %s\n", fileName, msg);
 
     if (errorCallback) {
         errorCallback(errorCallbackData, buf);
