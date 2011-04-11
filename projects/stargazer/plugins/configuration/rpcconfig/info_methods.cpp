@@ -37,9 +37,7 @@ std::vector<xmlrpc_c::value> dirnameVal;
 
 for (int i = 0; i< DIR_NUM; i++)
     {
-    std::string dn2e;
-    Encode12str(dn2e, dirNames[i]);
-    dirnameVal.push_back(xmlrpc_c::value_string(dn2e));
+    dirnameVal.push_back(xmlrpc_c::value_string(dirNames[i]));
     }
 
 structVal["dir_names"] = xmlrpc_c::value_array(dirnameVal);
