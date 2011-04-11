@@ -26,7 +26,7 @@
 
 class ADMIN;
 class TARIFF;
-class TARIFF_DATA;
+struct TARIFF_DATA;
 
 class TARIFFS {
 public:
