@@ -973,7 +973,7 @@ while (1)
             break;
 
         case 'N': //Note
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.note = str;
             break;
 
@@ -983,12 +983,12 @@ while (1)
             break;
 
         case 'D': //aDdress
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.address = str;
             break;
 
         case 'L': //emaiL
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.email = str;
             //printf("EMAIL=%s\n", optarg);
             break;
@@ -999,7 +999,7 @@ while (1)
             break;
 
         case 'G': //Group
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.group = str;
             break;
 
