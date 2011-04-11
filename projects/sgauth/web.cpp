@@ -66,6 +66,8 @@ for (int i = 0; i < DIR_NUM; i++)
     dirName[i] = "-";
 
 refreshPeriod = 5;
+
+memset(&ls, 0, sizeof(ls));
 }
 //---------------------------------------------------------------------------
 void WEB::Start()
