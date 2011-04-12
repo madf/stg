@@ -90,6 +90,7 @@ if (!stopped)
 
 if (ReadRules())
     {
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot read rules\n");
     WriteServLog("TRAFFCOUNTER: Cannot read rules.");
     return -1;
     }
@@ -99,6 +100,7 @@ int h = users->OpenSearch();
 USER_PTR u;
 if (!h)
     {
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot get users\n");
     WriteServLog("TRAFFCOUNTER: Cannot get users.");
     return -1;
     }
@@ -112,7 +114,8 @@ users->CloseSearch(h);
 running = true;
 if (pthread_create(&thread, NULL, Run, this))
     {
-    WriteServLog("TRAFFCOUNTER: Error: Cannot start thread!");
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot start thread\n");
+    WriteServLog("TRAFFCOUNTER: Error: Cannot start thread.");
     return -1;
     }
 return 0;
@@ -690,7 +693,8 @@ f = fopen(rulesFileName.c_str(), "rt");
 
 if (!f)
     {
-    WriteServLog("File %s cannot be oppened.", rulesFileName.c_str());
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - File '%s' cannot be opened.\n", rulesFileName.c_str());
+    WriteServLog("File '%s' cannot be oppened.", rulesFileName.c_str());
     return true;
     }
 
@@ -705,7 +709,8 @@ while (fgets(str, 1023, f))
     r = sscanf(str,"%s %s %s", tp, ta, td);
     if (r != 3)
         {
-        WriteServLog("Error in file %s. There must be 3 parameters. Line %d.", rulesFileName.c_str(), lineNumber);
+        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. There must be 3 parameters.\n", rulesFileName.c_str(), lineNumber);
+        WriteServLog("Error in file '%s' at line %d. There must be 3 parameters.", rulesFileName.c_str(), lineNumber);
         fclose(f);
         return true;
         }
@@ -727,6 +732,7 @@ while (fgets(str, 1023, f))
 
     if (rul.dir == 0xff || rul.proto == 0xff)
         {
+        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d.\n", rulesFileName.c_str(), lineNumber);
         WriteServLog("Error in file %s. Line %d.",
                      rulesFileName.c_str(), lineNumber);
         fclose(f);
@@ -735,6 +741,7 @@ while (fgets(str, 1023, f))
 
     if (ParseAddress(ta, &rul) != 0)
         {
+        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. Error in adress.\n", rulesFileName.c_str(), lineNumber);
         WriteServLog("Error in file %s. Error in adress. Line %d.",
                      rulesFileName.c_str(), lineNumber);
         fclose(f);
@@ -769,12 +776,14 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 if (ReadRules(true))
     {
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() - Failed to reload rules.\n");
     WriteServLog("TRAFFCOUNTER: Cannot reload rules. Errors found.");
     return -1;
     }
 
 FreeRules();
 ReadRules();
+printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() -  Reload rules successfull.\n");
 WriteServLog("TRAFFCOUNTER: Reload rules successfull.");
 return 0;
 }
@@ -829,6 +838,7 @@ if (n == ':')
     // port
     if (!(rule->proto == tcp || rule->proto == udp || rule->proto == tcp_udp))
         {
+        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - No ports specified for this protocol.\n");
         WriteServLog("No ports specified for this protocol.");
         return true;
         }
@@ -887,6 +897,7 @@ rule->mask = CalcMask(msk);
 
 if ((ip & rule->mask) != ip)
     {
+    printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - Address does'n match mask.\n");
     WriteServLog("Address does'n match mask.");
     return true;
     }

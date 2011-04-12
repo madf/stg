@@ -235,9 +235,9 @@ return 0;
 //-----------------------------------------------------------------------------
 void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
 {
-    printfd(__FILE__, buf);
+    printfd(__FILE__, "SETTINGS_IMPL::ErrorCallback() - %s\n", buf);
     SETTINGS_IMPL * settings = static_cast<SETTINGS_IMPL *>(data);
-    settings->logger(buf);
+    settings->logger("%s", buf);
 }
 //-----------------------------------------------------------------------------
 int SETTINGS_IMPL::ReadSettings()

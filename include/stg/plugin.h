@@ -39,7 +39,7 @@
 class TRAFFCOUNTER;
 class SETTINGS;
 class STORE;
-class MODULE_SETTINGS;
+struct MODULE_SETTINGS;
 
 class PLUGIN : private NONCOPYABLE {
 public:
