@@ -368,12 +368,6 @@ void Encode12(char * dst, const char * src, size_t srcLen)
 {
 for (size_t i = 0; i <= srcLen; i++)
     {
-    if (src[i] == 0)
-        {
-        dst[i * 2] = 'a';
-        dst[i * 2 + 1] = 'a';
-        break;
-        }
     char c1 = src[i] & 0x0f;
     char c2 = (src[i] & 0xf0) >> 4;
 
