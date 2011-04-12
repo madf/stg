@@ -28,6 +28,8 @@
 #define IA_AUTH_C_H
 
 #ifndef WIN32
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #else
