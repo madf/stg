@@ -85,7 +85,7 @@
                                 <varlistentry>
                                     <term>string <parameter>text</parameter></term>
                                     <listitem>
-                                        <para>Текст сообщения в кодировке CP1251</para>
+                                        <para>Текст сообщения в кодировке UTF-8</para>
                                     </listitem>
                                 </varlistentry>
                             </variablelist>
