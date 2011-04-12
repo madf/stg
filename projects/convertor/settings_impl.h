@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-class MODULE_SETTINGS;
+struct MODULE_SETTINGS;
 class DOTCONFDocumentNode;
 
 class SETTINGS_IMPL {
