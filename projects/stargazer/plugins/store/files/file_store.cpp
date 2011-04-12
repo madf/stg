@@ -1362,8 +1362,6 @@ if (cf.ReadString("password", &p, "*"))
 memset(passwordE, 0, sizeof(passwordE));
 strncpy(passwordE, p.c_str(), 2*ADM_PASSWD_LEN);
 
-//printfd(__FILE__, "passwordE %s\n", passwordE);
-
 memset(pass, 0, sizeof(pass));
 
 if (passwordE[0] != 0)
