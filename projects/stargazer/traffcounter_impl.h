@@ -39,14 +39,15 @@
 #include "stg/os_int.h"
 #include "stg/logger.h"
 #include "stg/raw_ip_packet.h"
-#include "stg/users.h"
 #include "stg/noncopyable.h"
+#include "stg/notifer.h"
 #include "actions.h"
 #include "eventloop.h"
+#include "user_impl.h"
 
 #define PROTOMAX    (5)
 
-class TARIFFS;
+class USERS_IMPL;
 
 //-----------------------------------------------------------------------------
 struct RULE {
@@ -62,9 +63,9 @@ struct PACKET_EXTRA_DATA {
 PACKET_EXTRA_DATA()
     : flushTime(0),
       updateTime(0),
-      userU(),
+      userU(NULL),
       userUPresent(false),
-      userD(),
+      userD(NULL),
       userDPresent(false),
       dirU(DIR_NUM),
       dirD(DIR_NUM),
@@ -87,9 +88,9 @@ PACKET_EXTRA_DATA(const PACKET_EXTRA_DATA & pp)
 
 time_t      flushTime;          // Last flush time
 time_t      updateTime;         // Last update time
-USER_PTR    userU;              // Uploader
+USER_IMPL * userU;              // Uploader
 bool        userUPresent;       // Uploader is registered user
-USER_PTR    userD;              // Downloader
+USER_IMPL * userD;              // Downloader
 bool        userDPresent;       // Downloader is registered user
 int         dirU;               // Upload direction
 int         dirD;               // Download direction
@@ -101,55 +102,55 @@ class TRAFFCOUNTER_IMPL;
 //-----------------------------------------------------------------------------
 class TRF_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_BEFORE(TRAFFCOUNTER_IMPL & t, USER_PTR u)
+                    TRF_IP_BEFORE(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
                     {}
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(USER_PTR u) { user = u; }
-    USER_PTR        GetUser() const { return user; }
+    void            SetUser(USER_IMPL * u) { user = u; }
+    USER_IMPL *     GetUser() const { return user; }
 
 private:
     TRAFFCOUNTER_IMPL & traffCnt;
-    USER_PTR            user;
+    USER_IMPL *         user;
 };
 //-----------------------------------------------------------------------------
 class TRF_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_AFTER(TRAFFCOUNTER_IMPL & t, USER_PTR u)
+                    TRF_IP_AFTER(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
                         : PROPERTY_NOTIFIER_BASE<uint32_t>(),
                           traffCnt(t),
                           user(u)
                     {}
     void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(USER_PTR u) { user = u; }
-    USER_PTR        GetUser() const { return user; }
+    void            SetUser(USER_IMPL * u) { user = u; }
+    USER_IMPL *     GetUser() const { return user; }
 private:
     TRAFFCOUNTER_IMPL & traffCnt;
-    USER_PTR            user;
+    USER_IMPL *         user;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
+class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_IMPL_PTR> {
 public:
             ADD_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
-                NOTIFIER_BASE<USER_PTR>(),
+                NOTIFIER_BASE<USER_IMPL_PTR>(),
                 traffCnt(t)
             {}
     virtual ~ADD_USER_NONIFIER() {}
-    void    Notify(const USER_PTR & user);
+    void    Notify(const USER_IMPL_PTR & user);
 private:
     TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
+class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_IMPL_PTR> {
 public:
             DEL_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
-                NOTIFIER_BASE<USER_PTR>(),
+                NOTIFIER_BASE<USER_IMPL_PTR>(),
                 traffCnt(t)
             {}
     virtual ~DEL_USER_NONIFIER() {}
-    void    Notify(const USER_PTR & user);
+    void    Notify(const USER_IMPL_PTR & user);
 private:
     TRAFFCOUNTER_IMPL & traffCnt;
 };
@@ -160,7 +161,7 @@ friend class DEL_USER_NONIFIER;
 friend class TRF_IP_BEFORE;
 friend class TRF_IP_AFTER;
 public:
-    TRAFFCOUNTER_IMPL(USERS * users, const TARIFFS * tariffs, const std::string & rulesFileName);
+    TRAFFCOUNTER_IMPL(USERS_IMPL * users, const std::string & rulesFileName);
     ~TRAFFCOUNTER_IMPL();
 
     void        SetRulesFile(const std::string & rulesFileName);
@@ -187,10 +188,10 @@ private:
 
     void        FlushAndRemove();
 
-    void        AddUser(USER_PTR user);
+    void        AddUser(USER_IMPL * user);
     void        DelUser(uint32_t uip);
-    void        SetUserNotifiers(USER_PTR user);
-    void        UnSetUserNotifiers(USER_PTR user);
+    void        SetUserNotifiers(USER_IMPL * user);
+    void        UnSetUserNotifiers(USER_IMPL * user);
 
     typedef std::list<RULE>::iterator rule_iter;
     typedef std::map<RAW_PACKET, PACKET_EXTRA_DATA>::iterator pp_iter;
@@ -211,7 +212,7 @@ private:
     std::string              monitorDir;
     bool                     monitoring;
 
-    USERS *                  users;
+    USERS_IMPL *             users;
 
     bool                     running;
     bool                     stopped;
@@ -246,13 +247,13 @@ EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::AddUse
 }
 //-----------------------------------------------------------------------------
 inline
-void ADD_USER_NONIFIER::Notify(const USER_PTR & user)
+void ADD_USER_NONIFIER::Notify(const USER_IMPL_PTR & user)
 {
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::SetUserNotifiers, user);
 }
 //-----------------------------------------------------------------------------
 inline
-void DEL_USER_NONIFIER::Notify(const USER_PTR & user)
+void DEL_USER_NONIFIER::Notify(const USER_IMPL_PTR & user)
 {
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::UnSetUserNotifiers, user);
 EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TRAFFCOUNTER_IMPL::DelUser, user->GetCurrIP());

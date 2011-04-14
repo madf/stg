@@ -42,6 +42,7 @@
 #include "stg/locker.h"
 #include "traffcounter_impl.h"
 #include "stg_timer.h"
+#include "users_impl.h"
 
 #define FLUSH_TIME  (10)
 #define REMOVE_TIME  (31)
@@ -55,7 +56,7 @@ tcp = 0, udp, icmp, tcp_udp, all
 };
 
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS * u, const TARIFFS *, const std::string & fn)
+TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
     : WriteServLog(GetStgLogger()),
       rulesFileName(fn),
       monitoring(false),
@@ -97,7 +98,7 @@ if (ReadRules())
 
 printfd(__FILE__, "TRAFFCOUNTER::Start()\n");
 int h = users->OpenSearch();
-USER_PTR u;
+USER_IMPL * u;
 if (!h)
     {
     printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot get users\n");
@@ -135,7 +136,7 @@ if (!h)
     return -1;
     }
 
-USER_PTR u;
+USER_IMPL * u;
 while (users->SearchNext(h, &u) == 0)
     {
     UnSetUserNotifiers(u);
@@ -351,49 +352,6 @@ while (pi != packets.end())
             }
         }
 
-    /*//Removing
-    if (stgTime - pi->second.updateTime > REMOVE_TIME)
-        {
-        // Remove packet and references from ip2packets index
-        //printfd(__FILE__, "+++ Removing +++\n");
-        pair<ip2p_iter, ip2p_iter> be(
-                ip2packets.equal_range(pi->first.GetSrcIP()));
-        while (be.first != be.second)
-            {
-            // Have a reference to a packet?
-            if (be.first->second == pi)
-                {
-                ip2packets.erase(be.first++);
-                //printfd(__FILE__, "Remove U from ip2packets %s\n", inet_ntostring(pi->first.GetSrcIP()).c_str());
-                }
-            else
-                {
-                ++be.first;
-                }
-            }
-
-        //printfd(__FILE__, "-------------------\n");
-        be = ip2packets.equal_range(pi->first.GetDstIP());
-        while (be.first != be.second)
-            {
-            // Have a reference to a packet?
-            if (be.first->second == pi)
-                {
-                ip2packets.erase(be.first++);
-                //printfd(__FILE__, "Remove D from ip2packets %s\n", inet_ntostring(pi->first.GetDstIP()).c_str());
-                }
-            else
-                {
-                ++be.first;
-                }
-            }
-        //printfd(__FILE__, "Remove packet\n");
-        packets.erase(pi++);
-        }
-    else
-        {
-        ++pi;
-        }*/
     if (stgTime - pi->second.updateTime < REMOVE_TIME)
         {
         std::pair<pp_iter, bool> res = newPackets.insert(*pi);
@@ -414,7 +372,7 @@ printfd(__FILE__, "FlushAndRemove() packets: %d(rem %d) ip2packets: %d(rem %d)\n
 
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::AddUser(USER_PTR user)
+void TRAFFCOUNTER_IMPL::AddUser(USER_IMPL * user)
 {
 printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
@@ -505,7 +463,7 @@ while (pi.first != pi.second)
 ip2packets.erase(pi.first, pi.second);
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::SetUserNotifiers(USER_PTR user)
+void TRAFFCOUNTER_IMPL::SetUserNotifiers(USER_IMPL * user)
 {
 // Adding user. Adding notifiers to user.
 TRF_IP_BEFORE ipBNotifier(*this, user);
@@ -517,7 +475,7 @@ ipAfterNotifiers.push_front(ipANotifier);
 user->AddCurrIPAfterNotifier(&(*ipAfterNotifiers.begin()));
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::UnSetUserNotifiers(USER_PTR user)
+void TRAFFCOUNTER_IMPL::UnSetUserNotifiers(USER_IMPL * user)
 {
 // Removing user. Removing notifiers from user.
 std::list<TRF_IP_BEFORE>::iterator bi;
