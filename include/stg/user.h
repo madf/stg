@@ -62,14 +62,6 @@ public:
     virtual const TARIFF *      GetTariff() const = 0;
     virtual void                ResetNextTariff() = 0;
 
-    #ifdef TRAFF_STAT_WITH_PORTS
-    virtual void                AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len) = 0;
-    virtual void                AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len) = 0;
-    #else
-    virtual void                AddTraffStatU(int dir, uint32_t ip, uint32_t len) = 0;
-    virtual void                AddTraffStatD(int dir, uint32_t ip, uint32_t len) = 0;
-    #endif
-
     virtual const DIR_TRAFF &   GetSessionUpload() const = 0;
     virtual const DIR_TRAFF &   GetSessionDownload() const = 0;
 
