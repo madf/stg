@@ -104,6 +104,12 @@ public:
     void            AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
     void            DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
 
+    void            AddNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> *);
+    void            DelNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> *);
+
+    void            AddNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> *);
+    void            DelNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> *);
+
     int             Add(const std::string & login, const ADMIN * admin);
     void            Del(const std::string & login, const ADMIN * admin);
 
@@ -111,10 +117,12 @@ public:
     int             GetUserNum() const;
 
     int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
+    int             FindByIPIdx(uint32_t ip, USER_IMPL ** user) const;
     bool            IsIPInIndex(uint32_t ip) const;
 
     int             OpenSearch();
     int             SearchNext(int handler, USER_PTR * user);
+    int             SearchNext(int handler, USER_IMPL ** user);
     int             CloseSearch(int handler);
 
     int             Start();
@@ -167,6 +175,8 @@ private:
 
     std::set<NOTIFIER_BASE<USER_PTR>*> onAddNotifiers;
     std::set<NOTIFIER_BASE<USER_PTR>*> onDelNotifiers;
+    std::set<NOTIFIER_BASE<USER_IMPL_PTR>*> onAddNotifiersImpl;
+    std::set<NOTIFIER_BASE<USER_IMPL_PTR>*> onDelNotifiersImpl;
 };
 //-----------------------------------------------------------------------------
 inline

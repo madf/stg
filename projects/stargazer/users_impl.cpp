@@ -71,7 +71,9 @@ USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st, TARIFFS * t, const ADMIN *
       handle(0),
       searchDescriptors(),
       onAddNotifiers(),
-      onDelNotifiers()
+      onDelNotifiers(),
+      onAddNotifiersImpl(),
+      onDelNotifiersImpl()
 {
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -179,12 +181,24 @@ users.push_front(u);
 AddUserIntoIndexes(users.begin());
 SetUserNotifiers(users.begin());
 
-// Уведомляем всех желающих, что добавлен новый пользователь
-set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onAddNotifiers.begin();
-while (ni != onAddNotifiers.end())
     {
-    (*ni)->Notify(&users.front());
-    ++ni;
+    // Fire all "on add" notifiers
+    set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onAddNotifiers.begin();
+    while (ni != onAddNotifiers.end())
+        {
+        (*ni)->Notify(&users.front());
+        ++ni;
+        }
+    }
+
+    {
+    // Fire all "on add" implementation notifiers
+    set<NOTIFIER_BASE<USER_IMPL_PTR> *>::iterator ni = onAddNotifiersImpl.begin();
+    while (ni != onAddNotifiersImpl.end())
+        {
+        (*ni)->Notify(&users.front());
+        ++ni;
+        }
     }
 
 return 0;
@@ -215,11 +229,22 @@ if (!priv->userAddDel)
         }
     }
 
-set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onDelNotifiers.begin();
-while (ni != onDelNotifiers.end())
     {
-    (*ni)->Notify(&(*u));
-    ++ni;
+    set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onDelNotifiers.begin();
+    while (ni != onDelNotifiers.end())
+        {
+        (*ni)->Notify(&(*u));
+        ++ni;
+        }
+    }
+
+    {
+    set<NOTIFIER_BASE<USER_IMPL_PTR> *>::iterator ni = onDelNotifiersImpl.begin();
+    while (ni != onDelNotifiersImpl.end())
+        {
+        (*ni)->Notify(&(*u));
+        ++ni;
+        }
     }
 
     {
@@ -579,6 +604,15 @@ ipIndex.erase(it);
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_PTR * usr) const
 {
+    USER_IMPL * ptr = NULL;
+    if (FindByIPIdx(ip, &ptr))
+        return -1;
+    *usr = ptr;
+    return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_IMPL ** usr) const
+{
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 map<uint32_t, user_iter>::const_iterator it;
@@ -613,7 +647,6 @@ onAddNotifiers.insert(n);
 void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-//printfd(__FILE__, "DelNotifierUserAdd\n");
 onAddNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
@@ -629,6 +662,30 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
+void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onAddNotifiersImpl.insert(n);
+}
+//-----------------------------------------------------------------------------
+void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onAddNotifiersImpl.erase(n);
+}
+//-----------------------------------------------------------------------------
+void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onDelNotifiersImpl.insert(n);
+}
+//-----------------------------------------------------------------------------
+void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onDelNotifiersImpl.erase(n);
+}
+//-----------------------------------------------------------------------------
 int USERS_IMPL::OpenSearch()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -638,6 +695,15 @@ return handle;
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::SearchNext(int h, USER_PTR * user)
+{
+    USER_IMPL * ptr = NULL;
+    if (SearchNext(h, &ptr))
+        return -1;
+    *user = ptr;
+    return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::SearchNext(int h, USER_IMPL ** user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
