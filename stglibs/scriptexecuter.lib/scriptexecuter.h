@@ -7,5 +7,3 @@ int ScriptExec(const std::string & str);
 void Executer(int msgKey, int msgID, pid_t pid, char * procName);
 
 #endif //SCRIPT_EXECUTER_H
-
-
