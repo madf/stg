@@ -36,6 +36,8 @@
 #include <cstdlib>
 #include <cstdio>
 #include <csignal>
+#include <cerrno>
+#include <cstring> // strerror
 #include <set>
 
 #include "stg/common.h"
@@ -193,6 +195,18 @@ newsa.sa_flags = 0;
 sigaction(SIGCHLD, &newsa, &oldsa);
 }
 //-----------------------------------------------------------------------------
+void KillExecuters()
+{
+set<pid_t>::iterator pid;
+pid = executersPid.begin();
+while (pid != executersPid.end())
+    {
+    printfd(__FILE__, "KillExecuters pid=%d\n", *pid);
+    kill(*pid, SIGUSR1);
+    ++pid;
+    }
+}
+//-----------------------------------------------------------------------------
 int StartScriptExecuter(char * procName, int msgKey, int * msgID)
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
@@ -248,6 +262,44 @@ switch (executerPid)
 return 0;
 }
 //-----------------------------------------------------------------------------
+void StopScriptExecuter(int msgID)
+{
+STG_LOGGER & WriteServLog = GetStgLogger();
+
+for (int i = 0; i < 5; ++i)
+    {
+    struct msqid_ds data;
+    if (msgctl(msgID, IPC_STAT, &data))
+        {
+        int e = errno;
+        printfd(__FILE__, "StopScriptExecuter() - msgctl for IPC_STAT failed: '%s'\n", strerror(e));
+        WriteServLog( "Failed to check queue emptiness: '%s'", strerror(e));
+        break;
+        }
+
+    WriteServLog("Messages in queue: %d", data.msg_qnum);
+
+    if (data.msg_qnum == 0)
+        break;
+
+    struct timespec ts = {1, 0};
+    nanosleep(&ts, NULL);
+    }
+
+if (msgctl(msgID, IPC_RMID, NULL))
+    {
+    int e = errno;
+    printfd(__FILE__, "StopScriptExecuter() - msgctl for IPC_STAT failed: '%s'\n", strerror(e));
+    WriteServLog("Failed to remove queue: '%s'", strerror(e));
+    }
+else
+    {
+    WriteServLog("Queue removed successfully.");
+    }
+
+KillExecuters();
+}
+//-----------------------------------------------------------------------------
 #ifdef NO_DAEMON
 int ForkAndWait(const string &)
 #else
@@ -276,18 +328,6 @@ switch (stgChildPid)
     }
 #endif
 return 0;
-}
-//-----------------------------------------------------------------------------
-void KillExecuters()
-{
-set<pid_t>::iterator pid;
-pid = executersPid.begin();
-while (pid != executersPid.end())
-    {
-    printfd(__FILE__, "KillExecuters pid=%d\n", *pid);
-    kill(*pid, SIGUSR1);
-    ++pid;
-    }
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char * argv[])
@@ -397,13 +437,7 @@ listener->Stop();
 
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-int res = msgctl(msgID, IPC_RMID, NULL);
-if (res)
-    WriteServLog("Queue was not removed. id=%d", msgID);
-else
-    WriteServLog("Queue removed successfully.");
-
-KillExecuters();
+StopScriptExecuter(msgID);
 
 WriteServLog("rscriptd stopped successfully.");
 WriteServLog("---------------------------------------------");
