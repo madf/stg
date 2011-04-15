@@ -8,6 +8,7 @@
 #include <cerrno>
 #include <csignal>
 
+#include "stg/common.h"
 #include "scriptexecuter.h"
 
 using namespace std;
@@ -32,14 +33,16 @@ nonstop = false;
 int ScriptExec(const string & str)
 {
 if (str.length() >= MAX_SCRIPT_LEN)
+    {
+    printfd(__FILE__, "ScriptExec() - script params exceeds MAX_SCRIPT_LENGTH (%d > %d)\n", str.length(), MAX_SCRIPT_LEN);
     return -1;
+    }
 
-int ret;
 strncpy(sd.script, str.c_str(), MAX_SCRIPT_LEN);
 sd.mtype = 1;
-ret = msgsnd(msgid, (void *)&sd, MAX_SCRIPT_LEN, 0);
-if (ret < 0)
+if (msgsnd(msgid, (void *)&sd, MAX_SCRIPT_LEN, 0) < 0)
     {
+    printfd(__FILE__, "ScriptExec() - failed to send message to the IPC queue: '%s'\n", strerror(errno));
     return -1;
     }
 return 0;
@@ -116,5 +119,3 @@ while (nonstop)
     }
 }
 //-----------------------------------------------------------------------------
-
-
