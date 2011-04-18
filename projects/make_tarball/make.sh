@@ -12,7 +12,7 @@ then
 fi
 
 rm -rf $SRC_DIR/.git
-rm -rf $SRC_DIR/.gitignore
+rm -f $SRC_DIR/.gitignore
 rm -r $SRC_DIR/projects/make_tarball
 rm -r $SRC_DIR/projects/traffcounter
 rm -r $SRC_DIR/projects/stargazer/plugins/authorization/stress
@@ -21,6 +21,7 @@ rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig-ng
 rm -r $SRC_DIR/projects/stargazer/plugins/configuration/xrconfig
 rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/store/db
+rm $SRC_DIR/doc/help.odt
 
 make -C $SRC_DIR/doc/xmlrpc-doc
 
