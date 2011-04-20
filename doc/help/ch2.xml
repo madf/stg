@@ -1,0 +1,9 @@
+<chapter xml:id="ch2">
+    <title>Описание компонентов системы</title>
+    <para>Составными компонентами системы являются:</para>
+    <orderedlist>
+        <listitem>Сервер</listitem>
+        <listitem>Конфигуратор</listitem>
+        <listitem>Авторизатор</listitem>
+    </orderedlist>
+</chapter>

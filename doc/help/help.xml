@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V5.0//EN"
+               "docbook.dtd" [
+<!ENTITY % local.common.attrib
+"xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2001/XInclude'">
+]>
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+    <info>
+        <title>Stargazer - руководство пользователя</title>
+        <author>
+            <personname><firstname>Maxim</firstname><surname>Mamontov</surname></personname>
+        </author>
+        <copyright><year>2011</year><holder>Maxim Mamontov</holder></copyright>
+    </info>
+    <xi:include href="ch1.xml"/>
+    <xi:include href="ch2.xml"/>
+    <xi:include href="ch3.xml"/>
+    <xi:include href="ch4.xml"/>
+    <xi:include href="ch5.xml"/>
+    <xi:include href="ch6.xml"/>
+    <xi:include href="ch7.xml"/>
+    <xi:include href="ch8.xml"/>
+    <xi:include href="ch9.xml"/>
+    <xi:include href="ch10.xml"/>
+    <xi:include href="ch11.xml"/>
+    <xi:include href="ch12.xml"/>
+</book>

@@ -1,0 +1,12 @@
+<chapter xml:id="ch5">
+    <title>Описание работы с конфигуратором</title>
+    <para>Как и говорилось выше, конфигуратор предназначен для выполнения различных административных действий над клиентами и над некоторыми параметрами сервера.</para>
+    <para>
+        Общий вид окна конфигуратора при работе показан ниже:
+        <mediaobject>
+            <imageobject>
+                <imagedata fileref="images/sgconfig-main.png" format="PNG"/>
+            </imageobject>
+        </mediaobject>
+    </para>
+</chapter>
