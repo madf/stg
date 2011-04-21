@@ -117,7 +117,7 @@ public:
     int             WriteStat();
     int             WriteMonthStat();
 
-    std::string const & GetLogin() const { return login; }
+    const std::string & GetLogin() const { return login; }
     void            SetLogin(std::string const & l);
 
     uint32_t        GetCurrIP() const { return currIP; }
