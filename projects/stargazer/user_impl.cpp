@@ -628,7 +628,7 @@ if (!authorizedBy.empty())
     {
     if (connected)
         {
-        lastActivityTime = *const_cast<time_t *>(&stgTime);
+        property.Stat().lastActivityTime = stgTime;
         }
     if (!connected && IsInetable())
         {
