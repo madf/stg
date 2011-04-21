@@ -674,21 +674,21 @@ bool USER_IMPL::IsInetable()
 {
 //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (disabled || passive)
+if (disabled.ConstData() || passive.ConstData())
     return false;
 
 if (settings->GetFreeMbAllowInet())
     {
-    if (freeMb >= 0)
+    if (freeMb.ConstData() >= 0)
         return true;
     }
 
 if (settings->GetShowFeeInCash())
     {
-    return (cash >= -credit);
+    return (cash.ConstData() >= -credit.ConstData());
     }
 
-return (cash - tariff->GetFee() >= -credit);
+return (cash.ConstData() - tariff->GetFee() >= -credit.ConstData());
 }
 //-----------------------------------------------------------------------------
 string USER_IMPL::GetEnabledDirs()
