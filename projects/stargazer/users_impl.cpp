@@ -525,7 +525,7 @@ for (list<USER_IMPL>::iterator it = users.begin();
     it->WriteDetailStat(true);
 
 for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteStat));
-for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteConf));
+//for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteConf));
 
 printfd(__FILE__, "USERS::Stop()\n");
 return 0;
