@@ -3,7 +3,6 @@
 ###############################################################################
 
 LIB_NAME = stgcrypto
-PROG = lib$(LIB_NAME)
 
 SRCS = ag_md5.cpp \
 	blowfish.cpp

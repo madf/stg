@@ -3,7 +3,6 @@
 ###############################################################################
 
 LIB_NAME = dotconfpp
-PROG = lib$(LIB_NAME)
 
 SRCS = dotconfpp.cpp \
        mempool.cpp

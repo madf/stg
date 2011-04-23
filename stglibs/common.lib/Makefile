@@ -5,7 +5,6 @@
 include ../../Makefile.conf
 
 LIB_NAME = stgcommon
-PROG = lib$(LIB_NAME)
 
 SRCS = common.cpp \
 	strptime.cpp

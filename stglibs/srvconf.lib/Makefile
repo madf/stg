@@ -3,7 +3,6 @@
 ###############################################################################
 
 LIB_NAME = stgsrvconf
-PROG = lib$(LIB_NAME)
 
 STGLIBS = -lstgcommon \
           -lstgcrypto

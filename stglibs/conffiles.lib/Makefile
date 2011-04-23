@@ -3,7 +3,6 @@
 ###############################################################################
 
 LIB_NAME = stgconffiles
-PROG = lib$(LIB_NAME)
 
 SRCS = conffiles.cpp
 

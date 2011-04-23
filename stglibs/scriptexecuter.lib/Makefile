@@ -3,7 +3,6 @@
 ###############################################################################
 
 LIB_NAME = stgscriptexecuter
-PROG = lib$(LIB_NAME)
 
 SRCS = scriptexecuter.cpp
 
