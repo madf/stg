@@ -26,10 +26,15 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <signal.h>
+
+#include <csignal>
+#include <algorithm>
+
+#include "stg/user.h"
+#include "stg/common.h"
+#include "stg/user_property.h"
 
 #include "stress.h"
-#include "../../../user.h"
 
 class STRESS_CREATOR
 {
@@ -48,7 +53,7 @@ public:
         delete dc;
         };
 
-    BASE_PLUGIN * GetPlugin()
+    PLUGIN * GetPlugin()
     {
         return dc;
     };
@@ -62,10 +67,10 @@ STRESS_CREATOR stressc;
 //-----------------------------------------------------------------------------
 // Класс для поиска юзера в списке нотификаторов
 template <typename varType>
-class IS_CONTAINS_USER: public binary_function<varType, user_iter, bool>
+class IS_CONTAINS_USER: public binary_function<varType, USER_PTR, bool>
 {
 public:
-    bool operator()(varType notifier, user_iter user) const
+    bool operator()(varType notifier, USER_PTR user) const
         {
         return notifier.GetUser() == user;
         };
@@ -73,7 +78,7 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 //printf("BASE_CAPTURER * GetCapturer()\n");
 return stressc.GetPlugin();
@@ -169,7 +174,7 @@ int AUTH_STRESS::Start()
 GetUsers();
 nonstop = true;
 
-list<user_iter>::iterator users_iter;
+list<USER_PTR>::iterator users_iter;
 
 onAddUserNotifier.SetAuthorizator(this);
 onDelUserNotifier.SetAuthorizator(this);
@@ -207,7 +212,7 @@ if (isRunning)
         {
         if (!isRunning)
             break;
-        stgUsleep(200000);
+        usleep(200000);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -243,7 +248,7 @@ uint16_t AUTH_STRESS::GetStopPosition() const
 return 70;
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::SetUserNotifiers(user_iter u)
+void AUTH_STRESS::SetUserNotifiers(USER_PTR u)
 {
 // ---------- IP -------------------
 CHG_BEFORE_NOTIFIER<USER_IPS> BeforeChgIPNotifier;
@@ -257,12 +262,12 @@ AfterChgIPNotifier.SetAuthorizator(this);
 AfterChgIPNotifier.SetUser(u);
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
-u->property.ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
-u->property.ips.AddAfterNotifier(&(*AfterChgIPNotifierList.begin()));
+u->GetProperty().ips.AddBeforeNotifier(&(*BeforeChgIPNotifierList.begin()));
+u->GetProperty().ips.AddAfterNotifier(&(*AfterChgIPNotifierList.begin()));
 // ---------- IP end ---------------
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::UnSetUserNotifiers(user_iter u)
+void AUTH_STRESS::UnSetUserNotifiers(USER_PTR u)
 {
 // ---          IP              ---
 IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<USER_IPS> > IsContainsUserIPB;
@@ -277,7 +282,7 @@ ipBIter = find_if(BeforeChgIPNotifierList.begin(),
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
-    ipBIter->GetUser()->property.ips.DelBeforeNotifier(&(*ipBIter));
+    ipBIter->GetUser()->GetProperty().ips.DelBeforeNotifier(&(*ipBIter));
     BeforeChgIPNotifierList.erase(ipBIter);
     }
 
@@ -287,7 +292,7 @@ ipAIter = find_if(AfterChgIPNotifierList.begin(),
 
 if (ipAIter != AfterChgIPNotifierList.end())
     {
-    ipAIter->GetUser()->property.ips.DelAfterNotifier(&(*ipAIter));
+    ipAIter->GetUser()->GetProperty().ips.DelAfterNotifier(&(*ipAIter));
     AfterChgIPNotifierList.erase(ipAIter);
     }
 // ---          IP end          ---
@@ -295,7 +300,7 @@ if (ipAIter != AfterChgIPNotifierList.end())
 //-----------------------------------------------------------------------------
 void AUTH_STRESS::GetUsers()
 {
-user_iter u;
+USER_PTR u;
 printfd(__FILE__, "users->OpenSearch() usernum=%d\n", users->GetUserNum());
 int h = users->OpenSearch();
 if (!h)
@@ -317,7 +322,7 @@ while (1)
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::Unauthorize(user_iter u) const
+void AUTH_STRESS::Unauthorize(USER_PTR u) const
 {
 if (!u->IsAuthorizedBy(this))
     return;
@@ -326,31 +331,31 @@ printfd(__FILE__, "Unauthorized user %s\n", u->GetLogin().c_str());
 u->Unauthorize(this);
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::Authorize(user_iter u) const
+void AUTH_STRESS::Authorize(USER_PTR u) const
 {
-USER_IPS ips = u->property.ips;
+USER_IPS ips = u->GetProperty().ips;
 if (ips.OnlyOneIP() && !u->IsAuthorizedBy(this))
     {
-    if (u->Authorize(ips[0].ip, "", 0xFFffFFff, this) == 0)
+    if (u->Authorize(ips[0].ip, 0xFFffFFff, this) == 0)
         {
         printfd(__FILE__, "Authorized user %s\n", u->GetLogin().c_str());
         }
     }
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::AddUser(user_iter u)
+void AUTH_STRESS::AddUser(USER_PTR u)
 {
 //printfd(__FILE__, "User added to list %s\n", u->GetLogin().c_str());
 SetUserNotifiers(u);
 usersList.push_back(u);
 }
 //-----------------------------------------------------------------------------
-void AUTH_STRESS::DelUser(user_iter u)
+void AUTH_STRESS::DelUser(USER_PTR u)
 {
 Unauthorize(u);
 UnSetUserNotifiers(u);
 
-list<user_iter>::iterator users_iter;
+list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 
 while (users_iter != usersList.end())
@@ -365,7 +370,7 @@ while (users_iter != usersList.end())
     }
 }
 //-----------------------------------------------------------------------------
-int AUTH_STRESS::SendMessage(const STG_MSG & msg, uint32_t ip) const
+int AUTH_STRESS::SendMessage(const STG_MSG &, uint32_t) const
 {
 errorStr = "Authorization modele \'AUTH_STRESS\' does not support sending messages";
 return -1;
@@ -380,21 +385,21 @@ ia->isRunning = true;
 
 while (ia->nonstop)
     {
-    printfd(__FILE__, "AUTH_STRESS::Run\n");
+    printfd(__FILE__, "AUTH_STRESS::Run - averageTime: %d\n", random() % (2*ia->stressSettings.GetAverageOnlineTime()));
 
-    list<user_iter>::iterator users_iter;
+    list<USER_PTR>::iterator users_iter;
     users_iter = ia->usersList.begin();
     while (users_iter != ia->usersList.end())
         {
-        if (random() % 2*ia->stressSettings.GetAverageOnlineTime() == 1)
+        if (random() % (2*ia->stressSettings.GetAverageOnlineTime()) == 1)
             {
             ia->Authorize(*users_iter);
-            printfd(__FILE__, "AUTH_STRESS::Authorize\n");
+            printfd(__FILE__, "AUTH_STRESS::Authorize - user: '%s'\n", (*users_iter)->GetLogin().c_str());
             }
-        if (random() % 2*ia->stressSettings.GetAverageOnlineTime() == 2)
+        if (random() % (2*ia->stressSettings.GetAverageOnlineTime()) == 2)
             {
             ia->Unauthorize(*users_iter);
-            printfd(__FILE__, "AUTH_STRESS::Unauthorize\n");
+            printfd(__FILE__, "AUTH_STRESS::Unauthorize - user: '%s'\n", (*users_iter)->GetLogin().c_str());
             }
 
         users_iter++;
@@ -406,17 +411,16 @@ while (ia->nonstop)
 ia->isRunning = false;
 return NULL;
 }
-
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType & oldValue, const varParamType & newValue)
+void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
 auth->Unauthorize(user);
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>
-void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType & oldValue, const varParamType & newValue)
+void CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
-auth->Unauthorize(user);
+auth->Authorize(user);
 }
 //-----------------------------------------------------------------------------
