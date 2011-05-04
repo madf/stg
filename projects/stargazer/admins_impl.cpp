@@ -72,7 +72,7 @@ admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
     {
-    strError = "Administrator \'" + login + "\' cannot not be added. Administrator alredy exist.";
+    strError = "Administrator \'" + login + "\' cannot not be added. Administrator already exist.";
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
     return -1;

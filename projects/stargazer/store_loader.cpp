@@ -54,7 +54,7 @@ bool STORE_LOADER::Load()
 {
 if (isLoaded)
     {
-    errorStr = "Store plugin '" + pluginFileName + "' was alredy loaded!";
+    errorStr = "Store plugin '" + pluginFileName + "' was already loaded!";
     printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
     return false;
     }

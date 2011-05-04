@@ -206,7 +206,7 @@ ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti != tariffs.end())
     {
-    strError = "Tariff \'" + name + "\' cannot be added. Tariff alredy exist.";
+    strError = "Tariff \'" + name + "\' cannot be added. Tariff already exist.";
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }

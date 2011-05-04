@@ -863,8 +863,8 @@ if ((*user)->GetProperty().passive.Get())
 
 if ((*user)->GetAuthorized() && (*user)->GetCurrIP() != sip)
     {
-    printfd(__FILE__, "Login %s alredy in use. IP \'%s\'\n", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("Login %s alredy in use. IP \'%s\'", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    printfd(__FILE__, "Login %s already in use. IP \'%s\'\n", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    WriteServLog("Login %s already in use. IP \'%s\'", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш логин уже используется!");
     return 0;
     }
@@ -872,8 +872,8 @@ if ((*user)->GetAuthorized() && (*user)->GetCurrIP() != sip)
 USER_PTR u;
 if (users->FindByIPIdx(sip, &u) == 0 && u->GetLogin() != (*user)->GetLogin())
     {
-    printfd(__FILE__, "IP address alredy in use. IP \'%s\'", inet_ntostring(sip).c_str());
-    WriteServLog("IP address alredy in use. IP \'%s\'", inet_ntostring(sip).c_str());
+    printfd(__FILE__, "IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
+    WriteServLog("IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
     return 0;
     }
