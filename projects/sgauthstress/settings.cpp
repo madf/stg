@@ -31,7 +31,7 @@
 SETTINGS::SETTINGS()
     : port(0),
       localPort(0),
-      confFile("/etc/sgauth.conf")
+      confFile("sgauthstress.conf")
 {
 }
 //-----------------------------------------------------------------------------
