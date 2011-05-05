@@ -24,8 +24,8 @@
 #include <string>
 
 #include "stg/os_int.h"
+#include "stg/module_settings.h"
 
-struct MODULE_SETTINGS;
 class DOTCONFDocumentNode;
 
 class SETTINGS {

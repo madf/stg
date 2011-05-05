@@ -35,7 +35,7 @@ SETTINGS::SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int ParseYesNo(const string & value, bool * val)
+int ParseYesNo(const std::string & value, bool * val)
 {
 if (0 == strcasecmp(value.c_str(), "yes"))
     {
@@ -51,7 +51,7 @@ if (0 == strcasecmp(value.c_str(), "no"))
 return -1;
 }
 //-----------------------------------------------------------------------------
-int ParseInt(const string & value, int * val)
+int ParseInt(const std::string & value, int * val)
 {
 if (str2x<int>(value, *val))
     return -1;
@@ -59,7 +59,7 @@ if (str2x<int>(value, *val))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ParseUnsigned(const string & value, unsigned * val)
+int ParseUnsigned(const std::string & value, unsigned * val)
 {
 if (str2x<unsigned>(value, *val))
     return -1;
@@ -67,7 +67,7 @@ if (str2x<unsigned>(value, *val))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ParseIntInRange(const string & value, int min, int max, int * val)
+int ParseIntInRange(const std::string & value, int min, int max, int * val)
 {
 if (ParseInt(value, val) != 0)
     return -1;
@@ -78,7 +78,7 @@ if (*val < min || *val > max)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ParseUnsignedInRange(const string & value, unsigned min, unsigned max, unsigned * val)
+int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val)
 {
 if (ParseUnsigned(value, val) != 0)
     return -1;
@@ -99,6 +99,7 @@ while (childNode)
     PARAM_VALUE pv;
     pv.param = childNode->getName();
     int i = 0;
+    const char * value;
     while ((value = childNode->getValue(i++)) != NULL)
         pv.value.push_back(value);
     params->push_back(pv);
@@ -116,7 +117,7 @@ const char * requiredOptions[] = {
     "Login",
     "Password",
     "ServerName",
-    "ServerPort"
+    "ServerPort",
     NULL
     };
 
@@ -144,19 +145,23 @@ while (node)
     else if (strcasecmp(node->getName(), "ServerName") == 0)
         serverName = node->getValue(0);
     else if (strcasecmp(node->getName(), "ServerPort") == 0)
+        {
         if (ParseIntInRange(node->getValue(0), 1, 65535, &port))
             {
             strError = "Parameter 'ServerPort' is not valid.";
             printfd(__FILE__, "SETTINGS::ReadSettings() - %s\n", strError.c_str());
             return -1;
             }
+        }
     else if (strcasecmp(node->getName(), "LocalPort") == 0)
+        {
         if (ParseIntInRange(node->getValue(0), 0, 65535, &localPort))
             {
             strError = "Parameter 'LocalPort' is not valid.";
             printfd(__FILE__, "SETTINGS::ReadSettings() - %s\n", strError.c_str());
             return -1;
             }
+        }
     else if (strcasecmp(node->getName(), "StoreModule") == 0)
         {
         if (node->getValue(1))

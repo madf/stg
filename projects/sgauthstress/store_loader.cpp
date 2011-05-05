@@ -31,17 +31,18 @@
 #include <dlfcn.h>
 
 #include "stg/common.h"
+#include "stg/module_settings.h"
 #include "stg/store.h"
 #include "store_loader.h"
-#include "settings_impl.h"
 
-STORE_LOADER::STORE_LOADER(const SETTINGS_IMPL & settings)
+STORE_LOADER::STORE_LOADER(const std::string & modulesPath,
+                           const MODULE_SETTINGS & settings)
     : isLoaded(false),
       handle(NULL),
       plugin(NULL),
       errorStr(),
-      storeSettings(settings.GetStoreModuleSettings()),
-      pluginFileName(settings.GetModulesPath() + "/mod_" + storeSettings.moduleName + ".so")
+      storeSettings(settings),
+      pluginFileName(modulesPath + "/mod_" + storeSettings.moduleName + ".so")
 {
 }
 

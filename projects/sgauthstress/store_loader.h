@@ -37,11 +37,12 @@
 #include "stg/noncopyable.h"
 
 class STORE;
-class SETTINGS_IMPL;
+class MODULE_SETTINGS;
 
 class STORE_LOADER : private NONCOPYABLE {
 public:
-    STORE_LOADER(const SETTINGS_IMPL & settings);
+    STORE_LOADER(const std::string & modulesPath,
+                 const MODULE_SETTINGS & settings);
     ~STORE_LOADER();
 
     bool Load();
