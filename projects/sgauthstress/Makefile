@@ -2,9 +2,11 @@ include ../../Makefile.conf
 
 PROG = sgauthstress
 
-SRCS = ./main.cpp \
-       ./settings.cpp \
-       ./store_loader.cpp
+SRCS = main.cpp \
+       settings.cpp \
+       store_loader.cpp \
+       user.cpp \
+       proto.cpp
 
 STGLIBS =  -lstgcrypto \
            -lstgcommon \
