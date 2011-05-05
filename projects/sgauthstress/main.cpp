@@ -31,8 +31,10 @@
 
 #include "stg/ia.h"
 #include "stg/common.h"
+#include "stg/store.h"
 
 #include "settings.h"
+#include "store_loader.h"
 
 time_t stgTime;
 bool running;
@@ -42,7 +44,7 @@ bool running;
 //-----------------------------------------------------------------------------
 void Usage()
 {
-std::cout << "sgauth <path_to_config>" << std::endl;
+std::cout << "Usage:\n\nsgauth <path_to_config>" << std::endl;
 }
 //-----------------------------------------------------------------------------
 void StatUpdate(const LOADSTAT &, void *)
@@ -99,13 +101,31 @@ if (argc == 2)
 
 if (settings.ReadSettings())
     {
-    std::cerr << "Failed to read settings\n"
-              << settings.GetStrError() << std::endl;
+    std::cerr << "Failed to read settings: '"
+              << settings.GetStrError() << "'" << std::endl;
     Usage();
     return -1;
     }
 
 SetSignalHandlers();
+
+STORE_LOADER storeLoader(settings.GetModulesPath(), settings.GetStoreModuleSettings());
+if (storeLoader.Load())
+    {
+    std::cerr << "Failed to load storage plugin: '" << storeLoader.GetStrError() << "'" << std::endl;
+    return -1;
+    }
+
+STORE * dataStore = storeLoader.GetStore();
+
+std::vector<std::string> userList;
+if (dataStore->GetUsersList(&userList))
+    {
+    std::cerr << "Failed to get user list: '" << dataStore->GetStrError() << "'" << std::endl;
+    return -1;
+    }
+
+std::cout << "Successfully loaded " << userList.size() << " users" << std::endl;
 
 IA_CLIENT_PROT proto(settings.GetServerName(), settings.GetServerPort(), settings.GetLocalPort());
 
@@ -130,6 +150,8 @@ while (running)
 proto.Disconnect();
 
 proto.Stop();
+
+storeLoader.Unload();
 
 return 0;
 }
