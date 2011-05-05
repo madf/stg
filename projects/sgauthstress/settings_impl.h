@@ -18,21 +18,20 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef SETTINGS_IMPL_H
-#define SETTINGS_IMPL_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #include <string>
-#include <vector>
 
 #include "stg/os_int.h"
 
 struct MODULE_SETTINGS;
 class DOTCONFDocumentNode;
 
-class SETTINGS_IMPL {
+class SETTINGS {
 public:
-                        SETTINGS_IMPL();
-                        ~SETTINGS_IMPL() {}
+                        SETTINGS();
+                        ~SETTINGS() {}
     int                 Reload() { return 0; }
     void                SetConfFile(const std::string cf) { confFile = cf; }
     int                 ReadSettings();
@@ -51,13 +50,6 @@ public:
     const MODULE_SETTINGS & GetStoreModuleSettings() const { return storeModuleSettings; }
 
 private:
-    int ParseInt(const std::string & value, int * val);
-    int ParseUnsigned(const std::string & value, unsigned * val);
-    int ParseIntInRange(const std::string & value, int min, int max, int * val);
-    int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val);
-    int ParseYesNo(const std::string & value, bool * val);
-    int ParseModuleSettings(const DOTCONFDocumentNode * dirNameNode, std::vector<PARAM_VALUE> * params);
-
     std::string login;
     std::string password;
     std::string serverName;
