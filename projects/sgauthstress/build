@@ -69,6 +69,7 @@ STG_LIBS="logger.lib
           locker.lib
           crypto.lib 
 	  common.lib 
+          conffiles.lib
           dotconfpp.lib
 	  ia.lib"
 

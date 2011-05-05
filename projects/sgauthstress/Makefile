@@ -3,7 +3,7 @@ include ../../Makefile.conf
 PROG = sgauthstress
 
 SRCS = ./main.cpp \
-       ./settings_impl.cpp \
+       ./settings.cpp \
        ./store_loader.cpp
 
 STGLIBS =  -lstgcrypto \
@@ -38,17 +38,13 @@ libs:
 plugins: libs 
 	$(MAKE) -C $(DIR_PLUGINS)
 
-$(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
+$(PROG): $(OBJS) libs
+	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
 
 clean:
-	rm -f deps $(PROG) *.o tags *.*~ .OS
-	rm -f .OS
-	rm -f .store
-	rm -f .db.sql
-	rm -f core*
-	rm -f css.h
+	rm -f deps $(PROG) *.o *.*~
 	$(MAKE) -C $(DIR_LIBSRC) clean
+	$(MAKE) -C $(DIR_PLUGINS) clean
 
 distclean: clean
 	rm -f ../../Makefile.conf
@@ -64,8 +60,7 @@ endif
 deps:	$(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC) includes
 	@>deps ;\
-	./make_css.sh
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
 	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
 	done
