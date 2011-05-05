@@ -29,12 +29,13 @@
 #include <csignal>
 #include <iostream>
 
-#include "stg/ia.h"
 #include "stg/common.h"
 #include "stg/store.h"
+#include "stg/user_conf.h"
 
 #include "settings.h"
 #include "store_loader.h"
+#include "user.h"
 
 time_t stgTime;
 bool running;
@@ -45,22 +46,6 @@ bool running;
 void Usage()
 {
 std::cout << "Usage:\n\nsgauth <path_to_config>" << std::endl;
-}
-//-----------------------------------------------------------------------------
-void StatUpdate(const LOADSTAT &, void *)
-{
-}
-//-----------------------------------------------------------------------------
-void StatusChanged(int, void *)
-{
-}
-//-----------------------------------------------------------------------------
-void ShowMessage(const string &, int, int, int, void *)
-{
-}
-//-----------------------------------------------------------------------------
-void ShowError(const string &, int, void *)
-{
 }
 //-----------------------------------------------------------------------------
 void CatchTERM(int)
@@ -125,31 +110,34 @@ if (dataStore->GetUsersList(&userList))
     return -1;
     }
 
-std::cout << "Successfully loaded " << userList.size() << " users" << std::endl;
+std::vector<USER> users;
+std::vector<std::string>::const_iterator it;
+for (it = userList.begin(); it != userList.end(); ++it)
+    {
+    USER_CONF userConf;
+    if (dataStore->RestoreUserConf(&userConf, *it))
+        {
+        std::cerr << "Failed to read user conf: '" << dataStore->GetStrError() << "'" << std::endl;
+        return -1;
+        }
+    users.push_back(
+            USER(
+                settings.GetServerName(),
+                settings.GetServerPort(),
+                settings.GetLocalPort(),
+                *it,
+                userConf.password
+            )
+    );
+    }
 
-IA_CLIENT_PROT proto(settings.GetServerName(), settings.GetServerPort(), settings.GetLocalPort());
-
-proto.SetLogin(settings.GetLogin());
-proto.SetPassword(settings.GetPassword());
-
-proto.SetStatusChangedCb(StatusChanged, NULL);
-proto.SetInfoCb(ShowMessage, NULL);
-proto.SetErrorCb(ShowError, NULL);
-proto.SetStatChangedCb(StatUpdate, NULL);
-
-proto.Start();
-
-proto.Connect();
+std::cout << "Successfully loaded " << users.size() << " users" << std::endl;
 
 running = true;
 while (running)
     {
     usleep(200000);
     }
-
-proto.Disconnect();
-
-proto.Stop();
 
 storeLoader.Unload();
 
