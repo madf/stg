@@ -110,11 +110,12 @@ return false;
 
 bool STORE_LOADER::Unload()
 {
-printfd(__FILE__, "STORE_LOADER::Unload()\n");
 if (!isLoaded)
     {
     return true;
     }
+
+printfd(__FILE__, "STORE_LOADER::Unload()\n");
 
 if (dlclose(handle))
     {
