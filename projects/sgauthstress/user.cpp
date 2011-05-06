@@ -1,26 +1,28 @@
+#include <cstring>
+
 #include "user.h"
 
 USER::USER(const std::string & l,
-           const std::string & pwd)
+           const std::string & pwd,
+           uint32_t i)
     : login(l),
+      password(pwd),
+      ip(i),
+      aliveTimeout(0),
+      userTimeout(0),
       phase(1),
-      rnd(0),
-      sock(0)
+      phaseChangeTime(0),
+      rnd(0)
 {
-char key[IA_PASSWD_LEN];
+unsigned char key[IA_PASSWD_LEN];
 memset(key, 0, IA_PASSWD_LEN);
-strncpy(key, password.c_str(), IA_PASSWD_LEN);
+strncpy((char *)key, password.c_str(), IA_PASSWD_LEN);
 Blowfish_Init(&ctx, key, IA_PASSWD_LEN);
+
+sock = socket(AF_INET, SOCK_DGRAM, 0);
 }
 
 USER::~USER()
 {
-}
-
-void USER::Connect()
-{
-}
-
-void USER::Disconnect()
-{
+close(sock);
 }
