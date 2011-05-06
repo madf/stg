@@ -3,6 +3,7 @@
 
 #include <netinet/ip.h>
 #include <pthread.h>
+#include <poll.h>
 
 #include <string>
 #include <map>
@@ -14,7 +15,7 @@
 
 class PROTO;
 
-typedef bool (PROTO::*PacketProcessor)(char *);
+typedef bool (PROTO::*PacketProcessor)(const void *, USER *);
 
 class PROTO {
     public:
@@ -29,16 +30,18 @@ class PROTO {
 
         const std::string GetStrError() const { return errorStr; }
 
-        bool Connect(const std::string & login);
-        bool Disconnect(const std::string & login);
+        void AddUser(const USER & user);
+
+        bool Connect(uint32_t ip);
+        bool Disconnect(uint32_t ip);
     private:
-        int sock;
         BLOWFISH_CTX ctx;
         struct sockaddr_in localAddr;
         struct sockaddr_in serverAddr;
         int timeout;
 
-        std::map<std::string, USER> users;
+        std::map<uint32_t, USER> users;
+        std::vector<struct pollfd> pollFds;
 
         bool running;
         bool stopped;
@@ -53,14 +56,21 @@ class PROTO {
 
         void Run();
         bool RecvPacket();
-        bool HandlePacket(char * buffer);
+        bool SendPacket(const void * buffer, size_t length, USER * user);
+        bool HandlePacket(const char * buffer, USER * user);
 
-        bool CONN_SYN_ACK_Proc(char * buffer);
-        bool ALIVE_SYN_Proc(char * buffer);
-        bool DISCONN_SYN_ACK_Proc(char * buffer);
-        bool FIN_Proc(char * buffer);
-        bool INFO_Proc(char * buffer);
-        bool ERR_Proc(char * buffer);
+        bool CONN_SYN_ACK_Proc(const void * buffer, USER * user);
+        bool ALIVE_SYN_Proc(const void * buffer, USER * user);
+        bool DISCONN_SYN_ACK_Proc(const void * buffer, USER * user);
+        bool FIN_Proc(const void * buffer, USER * user);
+        bool INFO_Proc(const void * buffer, USER * user);
+        bool ERR_Proc(const void * buffer, USER * user);
+
+        bool Send_CONN_SYN(USER * user);
+        bool Send_CONN_ACK(USER * user);
+        bool Send_DISCONN_SYN(USER * user);
+        bool Send_DISCONN_ACK(USER * user);
+        bool Send_ALIVE_ACK(USER * user);
 };
 
 #endif
