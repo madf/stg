@@ -303,5 +303,3 @@ int32_t         status; // Byte-order dependent
 #define FIN_7               FIN_6
 
 #endif
-
-
