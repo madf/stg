@@ -15,9 +15,9 @@ PROTO::PROTO(const std::string & server,
              uint16_t port,
              uint16_t localPort,
              int to)
-    : running(false),
-      stopped(true),
-      timeout(to)
+    : timeout(to),
+      running(false),
+      stopped(true)
 {
 uint32_t ip = inet_addr(server.c_str());
 if (ip == INADDR_NONE)
@@ -66,6 +66,7 @@ void * PROTO::Runner(void * data)
 {
 PROTO * protoPtr = static_cast<PROTO *>(data);
 protoPtr->Run();
+return NULL;
 }
 
 bool PROTO::Start()
@@ -202,6 +203,8 @@ it = processors.find(packetName);
 if (it != processors.end())
     return (this->*it->second)(buffer, user);
 
+printfd(__FILE__, "PROTO::HandlePacket() - invalid packet signature: '%s'\n", packetName.c_str());
+
 return false;
 }
 
@@ -320,7 +323,7 @@ bool PROTO::ERR_Proc(const void * buffer, USER * user)
 const ERR_8 * packet = static_cast<const ERR_8 *>(buffer);
 const char * ptr = static_cast<const char *>(buffer);
 
-for (int i = 0; i < sizeof(packet) / 8; i++)
+for (size_t i = 0; i < sizeof(ERR_8) / 8; i++)
     Blowfish_Decrypt(user->GetCtx(), (uint32_t *)(ptr + i * 8), (uint32_t *)(ptr + i * 8 + 4));
 
 //uint32_t len = packet->len;

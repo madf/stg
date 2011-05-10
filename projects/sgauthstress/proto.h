@@ -35,6 +35,8 @@ class PROTO {
 
         bool Connect(uint32_t ip);
         bool Disconnect(uint32_t ip);
+
+        size_t UserCount() const { return users.size(); }
     private:
         BLOWFISH_CTX ctx;
         struct sockaddr_in localAddr;
