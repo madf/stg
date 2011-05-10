@@ -6,6 +6,7 @@
 #include <poll.h>
 
 #include <string>
+#include <vector>
 #include <map>
 
 #include "stg/os_int.h"
@@ -40,7 +41,7 @@ class PROTO {
         struct sockaddr_in serverAddr;
         int timeout;
 
-        std::map<uint32_t, USER> users;
+        std::vector<std::pair<uint32_t, USER> > users;
         std::vector<struct pollfd> pollFds;
 
         bool running;

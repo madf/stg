@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "stg/common.h"
+#include "stg/ia_packets.h"
 
 #include "proto.h"
 
@@ -111,7 +112,7 @@ return true;
 
 void PROTO::AddUser(const USER & user)
 {
-    users.insert(std::make_pair(user.GetIP(), user));
+    users.push_back(std::make_pair(user.GetIP(), user));
     struct pollfd pfd;
     pfd.fd = user.GetSocket();
     pfd.events = POLLIN;
@@ -121,10 +122,10 @@ void PROTO::AddUser(const USER & user)
 
 bool PROTO::Connect(uint32_t ip)
 {
-std::map<uint32_t, USER>::const_iterator it;
+/*std::vector<std::pair<uint32_t, USER> >::const_iterator it;
 it = users.find(ip);
 if (it == users.end())
-    return false;
+    return false;*/
 
 // Do something
 
@@ -133,10 +134,10 @@ return true;
 
 bool PROTO::Disconnect(uint32_t ip)
 {
-std::map<uint32_t, USER>::const_iterator it;
+/*std::vector<std::pair<uint32_t, USER> >::const_iterator it;
 it = users.find(ip);
 if (it == users.end())
-    return false;
+    return false;*/
 
 // Do something
 
@@ -163,8 +164,8 @@ bool PROTO::RecvPacket()
 {
 bool result = true;
 std::vector<struct pollfd>::iterator it;
-std::map<uint32_t, USER>::iterator userIt(users.begin());
-for (it = pollFds.begin(); it != pollFds.end(); ++it)
+std::vector<std::pair<uint32_t, USER> >::iterator userIt;
+for (it = pollFds.begin(), userIt = users.begin(); it != pollFds.end() && userIt != users.end(); ++it, ++userIt)
     {
     if (it->revents)
         {
@@ -173,18 +174,16 @@ for (it = pollFds.begin(); it != pollFds.end(); ++it)
         struct sockaddr_in addr;
         socklen_t fromLen = sizeof(addr);
         char buffer[2048];
-        int res = recvfrom(userIt->second.GetSocket(), buffer, sizeof(buffer), 0, (struct sockaddr*)&addr, &fromLen);
+        int res = recvfrom(userIt->second.GetSocket(), buffer, sizeof(buffer), 0, (struct sockaddr *)&addr, &fromLen);
 
         if (res == -1)
             {
             result = false;
-            ++userIt;
             continue;
             }
 
         result = result && HandlePacket(buffer, &(userIt->second));
         }
-    ++userIt;
     }
 
 return result;
@@ -319,9 +318,10 @@ return true;
 bool PROTO::ERR_Proc(const void * buffer, USER * user)
 {
 const ERR_8 * packet = static_cast<const ERR_8 *>(buffer);
+const char * ptr = static_cast<const char *>(buffer);
 
-for (int i = 0; i < len/8; i++)
-    Blowfish_Decrypt(&ctxPass, (uint32_t*)(buffer + i*8), (uint32_t*)(buffer + i*8 + 4));
+for (int i = 0; i < sizeof(packet) / 8; i++)
+    Blowfish_Decrypt(user->GetCtx(), (uint32_t *)(ptr + i * 8), (uint32_t *)(ptr + i * 8 + 4));
 
 //uint32_t len = packet->len;
 
@@ -435,7 +435,7 @@ assert(sizeof(hdr) + length < 2048 && "Packet length must not exceed 2048 bytes"
 
 strncpy((char *)hdr.magic, IA_ID, 6);
 hdr.protoVer[0] = 0;
-hdr.protoVer[1] = IA_PROTO_VER;
+hdr.protoVer[1] = 8; // IA_PROTO_VER
 
 unsigned char buffer[2048];
 memcpy(buffer, &hdr, sizeof(hdr));
