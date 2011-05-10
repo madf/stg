@@ -130,7 +130,8 @@ for (it = userList.begin(); it != userList.end(); ++it)
                 *it,
                 userConf.password,
                 userConf.ips[0].ip
-            )
+            ),
+            true
     );
     }
 
