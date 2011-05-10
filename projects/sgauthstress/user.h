@@ -5,6 +5,7 @@
 #include <string>
 
 #include "stg/os_int.h"
+#include "stg/blowfish.h"
 
 class USER {
     public:
@@ -18,15 +19,15 @@ class USER {
         uint32_t GetAliveTimeout() const { return aliveTimeout; }
         uint32_t GetUserTimeout() const { return userTimeout; }
         int GetPhase() const { return phase; }
-        int GetRnd() const { return rnd; }
+        uint32_t GetRnd() const { return rnd; }
         int GetSocket() const { return sock; }
         time_t GetPhaseChangeTime() const { return phaseChangeTime; }
 
         BLOWFISH_CTX * GetCtx() { return &ctx; }
 
         void SetPhase(int p) { phase = p; time(&phaseChangeTime); }
-        void SetRnd(int r) { rnd = r; }
-        int IncRnd() { return ++rnd; }
+        void SetRnd(uint32_t r) { rnd = r; }
+        uint32_t IncRnd() { return ++rnd; }
         void SetAliveTimeout(uint32_t timeout) { aliveTimeout = timeout; }
         void SetUserTimeout(uint32_t timeout) { userTimeout = timeout; }
 
@@ -38,7 +39,7 @@ class USER {
         uint32_t userTimeout;
         int phase;
         time_t phaseChangeTime;
-        int rnd;
+        uint32_t rnd;
         int sock;
         BLOWFISH_CTX ctx;
 };
