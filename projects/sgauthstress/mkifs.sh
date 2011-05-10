@@ -5,7 +5,6 @@ hi=0
 lo=0
 for user in $users
 do
-    cp -R /var/stargazer/users/test /var/stargazer/users/$user
     if (( $lo > 254 ))
     then
         lo=0
