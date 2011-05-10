@@ -10,8 +10,7 @@ SRCS = main.cpp \
 
 STGLIBS =  -lstgcrypto \
            -lstgcommon \
-           -ldotconfpp \
-           -lstgia
+           -ldotconfpp
 
 LIBS += $(LIB_THREAD)
 

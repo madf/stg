@@ -70,8 +70,7 @@ STG_LIBS="logger.lib
           crypto.lib 
 	  common.lib 
           conffiles.lib
-          dotconfpp.lib
-	  ia.lib"
+          dotconfpp.lib"
 
 PLUGINS="store/files"
 
