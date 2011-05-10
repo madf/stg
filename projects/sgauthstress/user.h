@@ -5,7 +5,6 @@
 #include <string>
 
 #include "stg/os_int.h"
-#include "stg/ia.h"
 
 class USER {
     public:
