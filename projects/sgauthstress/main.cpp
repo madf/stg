@@ -35,6 +35,7 @@
 
 #include "settings.h"
 #include "store_loader.h"
+#include "proto.h"
 #include "user.h"
 
 time_t stgTime;
@@ -94,6 +95,11 @@ if (settings.ReadSettings())
 
 SetSignalHandlers();
 
+PROTO proto(settings.GetServerName(),
+            settings.GetServerPort(),
+            settings.GetLocalPort(),
+            1);
+
 STORE_LOADER storeLoader(settings.GetModulesPath(), settings.GetStoreModuleSettings());
 if (storeLoader.Load())
     {
@@ -110,7 +116,6 @@ if (dataStore->GetUsersList(&userList))
     return -1;
     }
 
-std::vector<USER> users;
 std::vector<std::string>::const_iterator it;
 for (it = userList.begin(); it != userList.end(); ++it)
     {
@@ -120,18 +125,16 @@ for (it = userList.begin(); it != userList.end(); ++it)
         std::cerr << "Failed to read user conf: '" << dataStore->GetStrError() << "'" << std::endl;
         return -1;
         }
-    users.push_back(
+    proto.AddUser(
             USER(
-                settings.GetServerName(),
-                settings.GetServerPort(),
-                settings.GetLocalPort(),
                 *it,
-                userConf.password
+                userConf.password,
+                userConf.ips[0].ip
             )
     );
     }
 
-std::cout << "Successfully loaded " << users.size() << " users" << std::endl;
+std::cout << "Successfully loaded " << proto.UserCount() << " users" << std::endl;
 
 running = true;
 while (running)
