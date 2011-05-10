@@ -5,11 +5,20 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
 
 #include "stg/common.h"
 #include "stg/ia_packets.h"
 
 #include "proto.h"
+
+class HasIP : public std::unary_function<std::pair<uint32_t, USER>, bool> {
+    public:
+        explicit HasIP(uint32_t i) : ip(i) {}
+        bool operator()(const std::pair<uint32_t, USER> & value) { return value.first == ip; }
+    private:
+        uint32_t ip;
+};
 
 PROTO::PROTO(const std::string & server,
              uint16_t port,
@@ -111,38 +120,45 @@ if (pthread_join(tid, NULL))
 return true;
 }
 
-void PROTO::AddUser(const USER & user)
+void PROTO::AddUser(const USER & user, bool connect)
 {
-    users.push_back(std::make_pair(user.GetIP(), user));
-    struct pollfd pfd;
-    pfd.fd = user.GetSocket();
-    pfd.events = POLLIN;
-    pfd.revents = 0;
-    pollFds.push_back(pfd);
+users.push_back(std::make_pair(user.GetIP(), user));
+struct pollfd pfd;
+pfd.fd = user.GetSocket();
+pfd.events = POLLIN;
+pfd.revents = 0;
+pollFds.push_back(pfd);
+
+users.back().second.InitNetwork();
+
+if (connect)
+    {
+    RealConnect(&users.back().second);
+    }
 }
 
 bool PROTO::Connect(uint32_t ip)
 {
-/*std::vector<std::pair<uint32_t, USER> >::const_iterator it;
-it = users.find(ip);
+std::vector<std::pair<uint32_t, USER> >::iterator it;
+it = std::find_if(users.begin(), users.end(), HasIP(ip));
 if (it == users.end())
-    return false;*/
+    return false;
 
 // Do something
 
-return true;
+return RealConnect(&it->second);
 }
 
 bool PROTO::Disconnect(uint32_t ip)
 {
-/*std::vector<std::pair<uint32_t, USER> >::const_iterator it;
-it = users.find(ip);
+std::vector<std::pair<uint32_t, USER> >::iterator it;
+it = std::find_if(users.begin(), users.end(), HasIP(ip));
 if (it == users.end())
-    return false;*/
+    return false;
 
 // Do something
 
-return true;
+return RealDisconnect(&it->second);
 }
 
 void PROTO::Run()
@@ -234,6 +250,8 @@ user->SetPhase(3);
 user->SetAliveTimeout(aliveTimeout);
 user->SetUserTimeout(userTimeout);
 user->SetRnd(rnd);
+
+printfd(__FILE__, "PROTO::CONN_SYN_ACK_Proc() - user '%s' successfully logged in from IP %s\n", user->GetLogin().c_str(), inet_ntostring(user->GetIP()).c_str());
 
 return true;
 }
@@ -468,7 +486,7 @@ if (res < 0)
     errorStr = "Failed to send packet: '";
     errorStr += strerror(errno);
     errorStr += "'";
-    printfd(__FILE__, "PROTO::SendPacket() - %s\n", errorStr.c_str());
+    printfd(__FILE__, "PROTO::SendPacket() - %s, fd: %d\n", errorStr.c_str(), user->GetSocket());
     return false;
     }
 
@@ -480,4 +498,29 @@ if (res < sizeof(buffer))
     }
 
 return true;
+}
+
+bool PROTO::RealConnect(USER * user)
+{
+if (user->GetPhase() != 1 &&
+    user->GetPhase() != 5)
+    {
+    errorStr = "Unexpected connect";
+    printfd(__FILE__, "PROTO::RealConnect() - wrong phase: %d\n", user->GetPhase());
+    }
+user->SetPhase(2);
+
+return Send_CONN_SYN(user);
+}
+
+bool PROTO::RealDisconnect(USER * user)
+{
+if (user->GetPhase() != 3)
+    {
+    errorStr = "Unexpected disconnect";
+    printfd(__FILE__, "PROTO::RealDisconnect() - wrong phase: %d\n", user->GetPhase());
+    }
+user->SetPhase(4);
+
+return Send_DISCONN_SYN(user);
 }

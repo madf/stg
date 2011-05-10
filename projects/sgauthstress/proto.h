@@ -31,7 +31,7 @@ class PROTO {
 
         const std::string GetStrError() const { return errorStr; }
 
-        void AddUser(const USER & user);
+        void AddUser(const USER & user, bool connect = false);
 
         bool Connect(uint32_t ip);
         bool Disconnect(uint32_t ip);
@@ -74,6 +74,9 @@ class PROTO {
         bool Send_DISCONN_SYN(USER * user);
         bool Send_DISCONN_ACK(USER * user);
         bool Send_ALIVE_ACK(USER * user);
+
+        bool RealConnect(USER * user);
+        bool RealDisconnect(USER * user);
 };
 
 #endif
