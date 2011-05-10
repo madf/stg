@@ -12,7 +12,12 @@ class USER {
         USER(const std::string & login,
              const std::string & password,
              uint32_t ip);
+        USER(const USER & rvalue);
         ~USER();
+
+        const USER & operator=(const USER & rvalue);
+
+        bool InitNetwork();
 
         const std::string & GetLogin() const { return login; }
         uint32_t GetIP() const { return ip; }
