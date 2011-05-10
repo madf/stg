@@ -1,6 +1,10 @@
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 #include <cstring>
 
 #include "user.h"
+#include "stg/ia_packets.h"
 
 USER::USER(const std::string & l,
            const std::string & pwd,
