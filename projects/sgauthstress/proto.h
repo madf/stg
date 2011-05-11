@@ -6,6 +6,7 @@
 #include <poll.h>
 
 #include <string>
+#include <list>
 #include <vector>
 #include <map>
 
@@ -43,13 +44,14 @@ class PROTO {
         struct sockaddr_in serverAddr;
         int timeout;
 
-        std::vector<std::pair<uint32_t, USER> > users;
+        std::list<std::pair<uint32_t, USER> > users;
         std::vector<struct pollfd> pollFds;
 
         bool running;
         bool stopped;
 
         pthread_t tid;
+        pthread_mutex_t mutex;
 
         std::string errorStr;
 
@@ -60,7 +62,7 @@ class PROTO {
         void Run();
         bool RecvPacket();
         bool SendPacket(const void * buffer, size_t length, USER * user);
-        bool HandlePacket(const char * buffer, USER * user);
+        bool HandlePacket(const char * buffer, size_t length, USER * user);
 
         bool CONN_SYN_ACK_Proc(const void * buffer, USER * user);
         bool ALIVE_SYN_Proc(const void * buffer, USER * user);
