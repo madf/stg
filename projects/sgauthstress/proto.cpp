@@ -172,7 +172,11 @@ void PROTO::Run()
 {
 while (running)
     {
-    int res = poll(&pollFds.front(), pollFds.size(), timeout);
+    int res;
+        {
+        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        res = poll(&pollFds.front(), pollFds.size(), timeout);
+        }
     if (res < 0)
         break;
     if (!running)
@@ -182,9 +186,35 @@ while (running)
         printfd(__FILE__, "PROTO::Run() - events: %d\n", res);
         RecvPacket();
         }
+    else
+        {
+        CheckTimeouts();
+        }
     }
 
 stopped = true;
+}
+
+void PROTO::CheckTimeouts()
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+std::list<std::pair<uint32_t, USER> >::iterator it;
+for (it = users.begin(); it != users.end(); ++it)
+    {
+    int delta = difftime(time(NULL), it->second.GetPhaseChangeTime());
+    if ((it->second.GetPhase() == 3) &&
+        (delta > it->second.GetUserTimeout()))
+        {
+        printfd(__FILE__, "PROTO::CheckTimeouts() - user alive timeout (ip: %s, login: '%s', delta: %d > %d)\n", inet_ntostring(it->second.GetIP()).c_str(), it->second.GetLogin().c_str(), delta, it->second.GetUserTimeout());
+        it->second.SetPhase(1);
+        }
+    if ((it->second.GetPhase() == 2) &&
+        (delta > it->second.GetAliveTimeout()))
+        {
+        printfd(__FILE__, "PROTO::CheckTimeouts() - user connect timeout (ip: %s, login: '%s', delta: %d > %d)\n", inet_ntostring(it->second.GetIP()).c_str(), it->second.GetLogin().c_str(), delta, it->second.GetAliveTimeout());
+        it->second.SetPhase(1);
+        }
+    }
 }
 
 bool PROTO::RecvPacket()
@@ -198,7 +228,6 @@ for (it = pollFds.begin(), userIt = users.begin(); it != pollFds.end() && userIt
     if (it->revents)
         {
         it->revents = 0;
-        printfd(__FILE__, "PROTO::RecvPacket() - pollfd: %d, socket: %d\n", it->fd, userIt->second.GetSocket());
         assert(it->fd == userIt->second.GetSocket() && "File descriptors from poll fds and users must be syncked");
         struct sockaddr_in addr;
         socklen_t fromLen = sizeof(addr);
@@ -260,6 +289,7 @@ if (user->GetPhase() != 2)
     {
     errorStr = "Unexpected CONN_SYN_ACK";
     printfd(__FILE__, "PROTO::CONN_SYN_ACK_Proc() - wrong phase: %d\n", user->GetPhase());
+    return false;
     }
 
 user->SetPhase(3);
@@ -288,6 +318,7 @@ if (user->GetPhase() != 3)
     {
     errorStr = "Unexpected ALIVE_SYN";
     printfd(__FILE__, "PROTO::ALIVE_SYN_Proc() - wrong phase: %d\n", user->GetPhase());
+    return false;
     }
 
 user->SetPhase(3);
@@ -312,6 +343,7 @@ if (user->GetPhase() != 4)
     {
     errorStr = "Unexpected DISCONN_SYN_ACK";
     printfd(__FILE__, "PROTO::DISCONN_SYN_ACK_Proc() - wrong phase: %d\n", user->GetPhase());
+    return false;
     }
 
 if (user->GetRnd() + 1 != rnd)
@@ -334,6 +366,7 @@ if (user->GetPhase() != 5)
     {
     errorStr = "Unexpected FIN";
     printfd(__FILE__, "PROTO::FIN_Proc() - wrong phase: %d\n", user->GetPhase());
+    return false;
     }
 
 user->SetPhase(1);

@@ -60,6 +60,7 @@ class PROTO {
         static void * Runner(void * data);
 
         void Run();
+        void CheckTimeouts();
         bool RecvPacket();
         bool SendPacket(const void * buffer, size_t length, USER * user);
         bool HandlePacket(const char * buffer, size_t length, USER * user);
