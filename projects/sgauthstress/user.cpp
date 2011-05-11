@@ -19,7 +19,8 @@ USER::USER(const std::string & l,
       userTimeout(0),
       phase(1),
       phaseChangeTime(0),
-      rnd(0)
+      rnd(0),
+      sock(-1)
 {
 unsigned char key[IA_PASSWD_LEN];
 memset(key, 0, IA_PASSWD_LEN);
@@ -35,7 +36,8 @@ USER::USER(const USER & rvalue)
       userTimeout(rvalue.userTimeout),
       phase(1),
       phaseChangeTime(0),
-      rnd(0)
+      rnd(0),
+      sock(-1)
 {
 unsigned char key[IA_PASSWD_LEN];
 memset(key, 0, IA_PASSWD_LEN);
@@ -45,7 +47,8 @@ Blowfish_Init(&ctx, key, IA_PASSWD_LEN);
 
 USER::~USER()
 {
-close(sock);
+if (sock > 0)
+    close(sock);
 }
 
 const USER & USER::operator=(const USER & rvalue)
@@ -58,6 +61,7 @@ userTimeout = rvalue.userTimeout;
 phase = 1;
 phaseChangeTime = 0;
 rnd = 0;
+sock = -1;
 
 unsigned char key[IA_PASSWD_LEN];
 memset(key, 0, IA_PASSWD_LEN);
@@ -71,6 +75,11 @@ bool USER::InitNetwork()
 {
 sock = socket(AF_INET, SOCK_DGRAM, 0);
 
+if (sock < 0)
+    {
+    throw std::runtime_error(std::string("USER::USER() - socket creation error: '") + strerror(errno) + "', ip: " + inet_ntostring(ip) + ", login: " + login);
+    }
+
 struct sockaddr_in addr;
 
 addr.sin_family = AF_INET;
@@ -82,4 +91,6 @@ if (res == -1)
     {
     throw std::runtime_error(std::string("USER::USER() - bind error: '") + strerror(errno) + "', ip: " + inet_ntostring(ip) + ", login: " + login);
     }
+
+return true;
 }
