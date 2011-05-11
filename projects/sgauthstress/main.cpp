@@ -98,7 +98,13 @@ SetSignalHandlers();
 PROTO proto(settings.GetServerName(),
             settings.GetServerPort(),
             settings.GetLocalPort(),
-            1);
+            1000);
+
+if (!proto.Start())
+    {
+    std::cerr << "Failed to start listening thread: '" << proto.GetStrError() << "'" << std::endl;
+    return -1;
+    }
 
 STORE_LOADER storeLoader(settings.GetModulesPath(), settings.GetStoreModuleSettings());
 if (storeLoader.Load())
@@ -142,6 +148,8 @@ while (running)
     {
     usleep(200000);
     }
+
+proto.Stop();
 
 storeLoader.Unload();
 
