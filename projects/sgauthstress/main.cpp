@@ -28,6 +28,8 @@
 
 #include <csignal>
 #include <iostream>
+#include <vector>
+#include <list>
 
 #include "stg/common.h"
 #include "stg/store.h"
@@ -98,13 +100,7 @@ SetSignalHandlers();
 PROTO proto(settings.GetServerName(),
             settings.GetServerPort(),
             settings.GetLocalPort(),
-            1000);
-
-if (!proto.Start())
-    {
-    std::cerr << "Failed to start listening thread: '" << proto.GetStrError() << "'" << std::endl;
-    return -1;
-    }
+            10);
 
 STORE_LOADER storeLoader(settings.GetModulesPath(), settings.GetStoreModuleSettings());
 if (storeLoader.Load())
@@ -122,23 +118,38 @@ if (dataStore->GetUsersList(&userList))
     return -1;
     }
 
-std::vector<std::string>::const_iterator it;
-for (it = userList.begin(); it != userList.end(); ++it)
+std::list<uint32_t> ips;
     {
-    USER_CONF userConf;
-    if (dataStore->RestoreUserConf(&userConf, *it))
+    std::vector<std::string>::const_iterator it;
+    for (it = userList.begin(); it != userList.end(); ++it)
         {
-        std::cerr << "Failed to read user conf: '" << dataStore->GetStrError() << "'" << std::endl;
-        return -1;
+        USER_CONF userConf;
+        if (dataStore->RestoreUserConf(&userConf, *it))
+            {
+            std::cerr << "Failed to read user conf: '" << dataStore->GetStrError() << "'" << std::endl;
+            return -1;
+            }
+        proto.AddUser(
+                USER(
+                    *it,
+                    userConf.password,
+                    userConf.ips[0].ip
+                )
+        );
+        ips.push_back(userConf.ips[0].ip);
         }
-    proto.AddUser(
-            USER(
-                *it,
-                userConf.password,
-                userConf.ips[0].ip
-            ),
-            true
-    );
+    }
+
+if (!proto.Start())
+    {
+    std::cerr << "Failed to start listening thread: '" << proto.GetStrError() << "'" << std::endl;
+    return -1;
+    }
+
+std::list<uint32_t>::const_iterator it;
+for (it = ips.begin(); it != ips.end(); ++it)
+    {
+    proto.Connect(*it);
     }
 
 std::cout << "Successfully loaded " << proto.UserCount() << " users" << std::endl;
