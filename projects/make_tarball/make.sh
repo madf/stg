@@ -15,6 +15,7 @@ rm -rf $SRC_DIR/.git
 rm -f $SRC_DIR/.gitignore
 rm -r $SRC_DIR/projects/make_tarball
 rm -r $SRC_DIR/projects/traffcounter
+rm -r $SRC_DIR/projects/sgauthstress
 rm -r $SRC_DIR/projects/stargazer/plugins/authorization/stress
 rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig2
 rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig-ng
