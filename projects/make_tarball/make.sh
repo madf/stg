@@ -22,7 +22,7 @@ rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig-ng
 rm -r $SRC_DIR/projects/stargazer/plugins/configuration/xrconfig
 rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/store/db
-rm -r $SRC_DIR/doc/book
+rm -r $SRC_DIR/doc/help
 rm $SRC_DIR/doc/help.odt
 
 make -C $SRC_DIR/doc/xmlrpc
