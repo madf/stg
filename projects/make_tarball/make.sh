@@ -24,6 +24,6 @@ rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
 rm -r $SRC_DIR/projects/stargazer/plugins/store/db
 rm $SRC_DIR/doc/help.odt
 
-make -C $SRC_DIR/doc/xmlrpc-doc
+make -C $SRC_DIR/doc/xmlrpc
 
 tar -zcf $ARC_NAME $SRC_DIR
