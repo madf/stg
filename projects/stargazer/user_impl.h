@@ -87,11 +87,11 @@ private:
     USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
-class CHG_IP_NOTIFIER : public PROPERTY_NOTIFIER_BASE<uint32_t>,
-                        private NONCOPYABLE {
+class CHG_IPS_NOTIFIER : public PROPERTY_NOTIFIER_BASE<USER_IPS>,
+                         private NONCOPYABLE {
 public:
-    CHG_IP_NOTIFIER(USER_IMPL * u) : user(u) {}
-    void Notify(const uint32_t & oldCash, const uint32_t & newCash);
+    CHG_IPS_NOTIFIER(USER_IMPL * u) : user(u) {}
+    void Notify(const USER_IPS & oldIPs, const USER_IPS & newIPs);
 
 private:
     USER_IMPL * user;
@@ -101,7 +101,7 @@ class USER_IMPL : public USER {
 friend class CHG_PASSIVE_NOTIFIER;
 friend class CHG_TARIFF_NOTIFIER;
 friend class CHG_CASH_NOTIFIER;
-friend class CHG_IP_NOTIFIER;
+friend class CHG_IPS_NOTIFIER;
 public:
     USER_IMPL(const SETTINGS_IMPL * settings,
               const STORE * store,
@@ -288,7 +288,7 @@ private:
     CHG_PASSIVE_NOTIFIER     passiveNotifier;
     CHG_TARIFF_NOTIFIER      tariffNotifier;
     CHG_CASH_NOTIFIER        cashNotifier;
-    CHG_IP_NOTIFIER          ipNotifier;
+    CHG_IPS_NOTIFIER          ipNotifier;
 
     mutable pthread_mutex_t  mutex;
 

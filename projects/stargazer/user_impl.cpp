@@ -121,7 +121,7 @@ lastWriteDetailedStat = stgTime;
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
-currIP.AddAfterNotifier(&ipNotifier);
+ips.AddAfterNotifier(&ipNotifier);
 
 lastScanMessages = 0;
 
@@ -201,7 +201,7 @@ settings = u.settings;
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
-currIP.AddAfterNotifier(&ipNotifier);
+ips.AddAfterNotifier(&ipNotifier);
 
 lastScanMessages = 0;
 
@@ -316,8 +316,6 @@ int USER_IMPL::WriteStat()
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 USER_STAT stat(property.GetStat());
 
-printfd(__FILE__, "USER::WriteStat()\n");
-
 if (store->SaveUserStat(stat, login))
     {
     WriteServLog("Cannot write stat for user %s.", login.c_str());
@@ -380,7 +378,7 @@ if (authorizedBy.size())
     if (currIP != ip)
         {
         //  We are already authorized, but with different IP address
-        errorStr = "User " + login + " alredy authorized with IP address " + inet_ntostring(ip);
+        errorStr = "User " + login + " already authorized with IP address " + inet_ntostring(ip);
         return -1;
         }
 
@@ -391,7 +389,7 @@ if (authorizedBy.size())
         //  If it's not our IP - throw an error
         if (u != this)
             {
-            errorStr = "IP address " + inet_ntostring(ip) + " alredy in use";
+            errorStr = "IP address " + inet_ntostring(ip) + " already in use";
             return -1;
             }
         }
@@ -401,7 +399,7 @@ else
     if (users->IsIPInIndex(ip))
         {
         //  Address is already present in IP-index
-        errorStr = "IP address " + inet_ntostring(ip) + " alredy in use";
+        errorStr = "IP address " + inet_ntostring(ip) + " already in use";
         return -1;
         }
 
@@ -1311,14 +1309,12 @@ user->lastCashAddTime = *const_cast<time_t *>(&stgTime);
 user->lastCashAdd = newCash - oldCash;
 }
 //-----------------------------------------------------------------------------
-void CHG_IP_NOTIFIER::Notify(const uint32_t & from, const uint32_t & to)
+void CHG_IPS_NOTIFIER::Notify(const USER_IPS & from, const USER_IPS & to)
 {
-    printfd(__FILE__, "Change IP from %s to %s\n", inet_ntostring(from).c_str(), inet_ntostring(to).c_str());
-    if (from != 0)
-        if (user->connected)
-            user->Disconnect(false, "Change IP");
-    if (to != 0)
-        if (user->IsInetable())
-            user->Connect(false);
+    printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.GetIpStr().c_str(), to.GetIpStr().c_str());
+    if (user->connected)
+        user->Disconnect(true, "Change IP");
+    if (user->IsInetable())
+        user->Connect(true);
 }
 //-----------------------------------------------------------------------------
