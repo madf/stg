@@ -620,11 +620,11 @@ srandom(stgTime);
  *
  * (c) man 2 nice
  */
-errno = 0;
+/*errno = 0;
 if (nice(-19) && errno) {
     printfd(__FILE__, "nice failed: '%s'\n", strerror(errno));
     WriteServLog("nice failed: '%s'", strerror(errno));
-}
+}*/
 
 WriteServLog("Stg started successfully.");
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
