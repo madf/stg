@@ -78,8 +78,8 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       user("stg"),
       password("123456"),
       version(0),
-      connection(NULL),
-      retries(3)
+      retries(3),
+      connection(NULL)
 {
 pthread_mutex_init(&mutex, NULL);
 }
