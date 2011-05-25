@@ -78,7 +78,8 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       user("stg"),
       password("123456"),
       version(0),
-      connection(NULL)
+      connection(NULL),
+      retries(3)
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -117,6 +118,15 @@ for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
         {
         password = *(i->value.begin());
         }
+    if (s == "retries")
+        {
+        if (str2x(*(i->value.begin()), retries))
+            {
+            strError = "Invalid 'retries' value";
+            printfd(__FILE__, "POSTGRESQL_STORE::ParseSettings(): '%s'\n", strError.c_str());
+            return -1;
+            }
+        }
     }
 
 clientEncoding = "KOI8";
@@ -138,7 +148,8 @@ if (PQstatus(connection) != CONNECTION_OK)
     {
     strError = PQerrorMessage(connection);
     printfd(__FILE__, "POSTGRESQL_STORE::Connect(): '%s'\n", strError.c_str());
-    return 1;
+    // Will try to connect later
+    return 0;
     }
 
 if (PQsetClientEncoding(connection, clientEncoding.c_str()))
@@ -153,7 +164,12 @@ return CheckVersion();
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::Reset() const
 {
-PQreset(connection);
+for (int i = 0; i < retries && PQstatus(connection) != CONNECTION_OK; ++i)
+    {
+    struct timespec ts = {1, 0};
+    nanosleep(&ts, NULL);
+    PQreset(connection);
+    }
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -166,7 +182,7 @@ if (PQsetClientEncoding(connection, clientEncoding.c_str()))
     {
     strError = PQerrorMessage(connection);
     printfd(__FILE__, "POSTGRESQL_STORE::Reset(): '%s'\n", strError.c_str());
-    return 1;
+    return -1;
     }
 
 return CheckVersion();

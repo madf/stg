@@ -152,6 +152,7 @@ private:
     MODULE_SETTINGS settings;
     mutable pthread_mutex_t mutex;
     mutable int version;
+    int retries;
 
     PGconn * connection;
 };
