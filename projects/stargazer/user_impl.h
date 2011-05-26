@@ -196,7 +196,6 @@ public:
 
     void            MidnightResetSessionStat();
     void            ProcessDayFee();
-    void            SetPrepaidTraff();
     void            ProcessDayFeeSpread();
     void            ProcessNewMonth();
 
@@ -214,6 +213,8 @@ private:
     void            Connect(bool fakeConnect = false);
     void            Disconnect(bool fakeDisconnect, const std::string & reason);
     int             SaveMonthStat(int month, int year);
+
+    void            SetPrepaidTraff();
 
     int             SendMessage(STG_MSG & msg) const;
     void            ScanMessage();
