@@ -39,6 +39,7 @@ public:
     virtual bool                GetShowFeeInCash() const = 0;
     virtual unsigned            GetMessageTimeout() const = 0;
     virtual unsigned            GetFeeChargeType() const = 0;
+    virtual bool                GetReconnectOnTariffChange() const = 0;
     virtual const std::string & GetMonitorDir() const = 0;
     virtual bool                GetMonitoring() const = 0;
 };

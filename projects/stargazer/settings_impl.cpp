@@ -64,6 +64,7 @@ SETTINGS_IMPL::SETTINGS_IMPL()
       showFeeInCash(true),
       messageTimeout(0),
       feeChargeType(0),
+      reconnectOnTariffChange(false),
       modulesSettings(),
       storeModuleSettings(),
       logger(GetStgLogger())
@@ -95,6 +96,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       showFeeInCash(true),
       messageTimeout(0),
       feeChargeType(0),
+      reconnectOnTariffChange(false),
       modulesSettings(),
       storeModuleSettings(),
       logger(GetStgLogger())
@@ -126,6 +128,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
       showFeeInCash(rval.showFeeInCash),
       messageTimeout(rval.messageTimeout),
       feeChargeType(rval.feeChargeType),
+      reconnectOnTariffChange(rval.reconnectOnTariffChange),
       modulesSettings(rval.modulesSettings),
       storeModuleSettings(rval.storeModuleSettings),
       logger(GetStgLogger())
@@ -437,6 +440,15 @@ while (node)
         if (ParseUnsignedInRange(node->getValue(0), 0, 2, &feeChargeType) != 0)
             {
             strError = "Incorrect FeeChargeType value: \'" + string(node->getValue(0)) + "\'";
+            return -1;
+            }
+        }
+
+    if (strcasecmp(node->getName(), "ReconnectOnTariffChange") == 0)
+        {
+        if (ParseYesNo(node->getValue(0), &reconnectOnTariffChange) != 0)
+            {
+            strError = "Incorrect ReconnectOnTariffChange value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
         }
