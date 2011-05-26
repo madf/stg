@@ -8,6 +8,7 @@
 #include "testadmin.h"
 #include "teststore.h"
 #include "testauth.h"
+#include "testusers.h"
 
 class AFTER_CONNECTED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<bool>,
                                  private NONCOPYABLE {
@@ -59,7 +60,8 @@ namespace tut
         TEST_ADMIN admin;
         TEST_STORE store;
         TEST_AUTH auth;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL);
+        TEST_USERS users;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, &users);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 
@@ -81,6 +83,8 @@ namespace tut
         ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
 
         user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
+
+        ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
         ensure_equals("user.connected = true", user.GetConnected(), true);
         ensure_equals("connects = 1", connectionNotifier.GetConnects(), 1);
