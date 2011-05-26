@@ -9,10 +9,10 @@ class TEST_ADMIN : public ADMIN {
 
         ADMIN & operator=(const ADMIN &) { return *this; }
         ADMIN & operator=(const ADMIN_CONF &) { return *this; }
-        bool    operator==(const ADMIN & rhs) const { return true; }
-        bool    operator!=(const ADMIN & rhs) const { return false; }
-        bool    operator<(const ADMIN & rhs) const { return true; }
-        bool    operator<=(const ADMIN & rhs) const { return true; }
+        bool    operator==(const ADMIN & /*rhs*/) const { return true; }
+        bool    operator!=(const ADMIN & /*rhs*/) const { return false; }
+        bool    operator<(const ADMIN & /*rhs*/) const { return true; }
+        bool    operator<=(const ADMIN & /*rhs*/) const { return true; }
 
         const std::string & GetPassword() const { return password; }
         const std::string & GetLogin() const { return login; }
