@@ -63,6 +63,7 @@ SETTINGS_IMPL::SETTINGS_IMPL()
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
       messageTimeout(0),
+      feeChargeType(0),
       modulesSettings(),
       storeModuleSettings(),
       logger(GetStgLogger())
@@ -93,6 +94,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
       messageTimeout(0),
+      feeChargeType(0),
       modulesSettings(),
       storeModuleSettings(),
       logger(GetStgLogger())
@@ -123,6 +125,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
       writeFreeMbTraffCost(rval.writeFreeMbTraffCost),
       showFeeInCash(rval.showFeeInCash),
       messageTimeout(rval.messageTimeout),
+      feeChargeType(rval.feeChargeType),
       modulesSettings(rval.modulesSettings),
       storeModuleSettings(rval.storeModuleSettings),
       logger(GetStgLogger())
@@ -425,6 +428,15 @@ while (node)
         if (ParseUnsigned(node->getValue(0), &messageTimeout) != 0)
             {
             strError = "Incorrect MessageTimeout value: \'" + string(node->getValue(0)) + "\'";
+            return -1;
+            }
+        }
+
+    if (strcasecmp(node->getName(), "FeeChargeType") == 0)
+        {
+        if (ParseUnsignedInRange(node->getValue(0), 0, 2, &feeChargeType) != 0)
+            {
+            strError = "Incorrect FeeChargeType value: \'" + string(node->getValue(0)) + "\'";
             return -1;
             }
         }

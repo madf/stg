@@ -1120,13 +1120,26 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (passive.ConstData())
     return;
 
-double f = tariff->GetFee() / DaysInCurrentMonth();
+double fee = tariff->GetFee() / DaysInCurrentMonth();
 
-if (f == 0.0)
+if (fee == 0.0)
     return;
 
 double c = cash;
-property.cash.Set(c - f, sysAdmin, login, store, "Subscriber fee charge");
+switch (settings->GetFeeChargeType())
+    {
+    case 0:
+        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 1:
+        if (c > 0)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 2:
+        if (c > fee)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    }
 ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
@@ -1147,11 +1160,11 @@ else
         return;
         }
     }
-double f = tariff->GetFee() * passiveTimePart;
+double fee = tariff->GetFee() * passiveTimePart;
 
 ResetPassiveTime();
 
-if (f == 0.0)
+if (fee == 0.0)
     return;
 
 double c = cash;
@@ -1159,8 +1172,21 @@ printfd(__FILE__, "login: %8s   Fee=%f PassiveTimePart=%f fee=%f\n",
         login.c_str(),
         tariff->GetFee(),
         passiveTimePart,
-        f);
-property.cash.Set(c - f, sysAdmin, login, store, "Subscriber fee charge");
+        fee);
+switch (settings->GetFeeChargeType())
+    {
+    case 0:
+        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 1:
+        if (c > 0)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 2:
+        if (c > fee)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    }
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPrepaidTraff()

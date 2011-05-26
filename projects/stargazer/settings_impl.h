@@ -90,6 +90,7 @@ public:
     const std::string & GetMonitorDir() const { return monitorDir; }
     bool                GetMonitoring() const { return monitoring; }
     unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
+    unsigned            GetFeeChargeType() const { return feeChargeType; }
 
     const std::string & GetModulesPath() const { return modulesPath; }
     const MODULE_SETTINGS & GetStoreModuleSettings() const
@@ -135,6 +136,7 @@ private:
     bool        writeFreeMbTraffCost;
     bool        showFeeInCash;
     unsigned    messageTimeout;
+    unsigned    feeChargeType;
 
     std::vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS storeModuleSettings;
