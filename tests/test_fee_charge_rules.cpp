@@ -8,8 +8,6 @@
 #include "testadmin.h"
 #include "teststore.h"
 
-const volatile time_t stgTime = 0;
-
 namespace tut
 {
     struct fee_charge_rules_data {

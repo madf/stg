@@ -12,6 +12,8 @@ namespace tut
     test_runner_singleton runner;
 }
 
+volatile time_t stgTime = 0;
+
 int main()
 {
     tut::reporter reporter;
