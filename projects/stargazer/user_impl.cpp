@@ -1190,7 +1190,7 @@ if (nextTariff.ConstData() != "")
     else
         {
         property.tariffName.Set(nextTariff, sysAdmin, login, store);
-        tariff = nt;
+        //tariff = nt;
         }
     ResetNextTariff();
     WriteConf();
@@ -1252,7 +1252,10 @@ double fee = tariff->GetFee() * passiveTimePart;
 ResetPassiveTime();
 
 if (fee == 0.0)
+    {
+    SetPrepaidTraff();
     return;
+    }
 
 double c = cash;
 printfd(__FILE__, "login: %8s   Fee=%f PassiveTimePart=%f fee=%f\n",
@@ -1264,22 +1267,27 @@ switch (settings->GetFeeChargeType())
     {
     case 0:
         property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        SetPrepaidTraff();
         break;
     case 1:
         if (c > 0)
+            {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            SetPrepaidTraff();
+            }
         break;
     case 2:
         if (c > fee)
+            {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            SetPrepaidTraff();
+            }
         break;
     }
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPrepaidTraff()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
 if (tariff != NULL)
     property.freeMb.Set(tariff->GetFree(), sysAdmin, login, store, "Prepaid traffic");
 }
@@ -1414,7 +1422,11 @@ if (newPassive && !oldPassive && user->tariff != NULL)
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const string &, const string & newTariff)
 {
+if (user->settings->GetReconnectOnTariffChange() && user->connected)
+    user->Disconnect(true, "Change tariff");
 user->tariff = user->tariffs->FindByName(newTariff);
+if (user->settings->GetReconnectOnTariffChange() && user->IsInetable())
+    user->Connect(true);
 }
 //-----------------------------------------------------------------------------
 void CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
