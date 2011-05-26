@@ -45,6 +45,26 @@ namespace tut
             unsigned feeChargeType;
     };
 
+    class TEST_TARIFFS : public TARIFFS {
+        public:
+            TEST_TARIFFS() {}
+
+            int            ReadTariffs () { return 0; }
+            const TARIFF * FindByName(const std::string & name) const { return NULL; }
+            const TARIFF * GetNoTariff() const { return NULL; }
+            int            GetTariffsNum() const { return 0; }
+            int            Del(const std::string & name, const ADMIN * admin) { return 0; }
+            int            Add(const std::string & name, const ADMIN * admin) { return 0; }
+            int            Chg(const TARIFF_DATA & td, const ADMIN * admin) { return 0; }
+
+            void           GetTariffsData(std::list<TARIFF_DATA> * tdl) {}
+
+            const std::string & GetStrError() const { return strError; }
+
+        private:
+            std::string strError;
+    };
+
     template<>
     template<>
     void testobject::test<1>()
@@ -52,7 +72,8 @@ namespace tut
         set_test_name("Check classic rules");
 
         TEST_SETTINGS settings(0);
-        USER_IMPL user(&settings, NULL, NULL, NULL, NULL);
+        TEST_TARIFFS tariffs;
+        USER_IMPL user(&settings, NULL, &tariffs, NULL, NULL);
 
         USER_PROPERTY<double> & cash(user.GetProperty().cash);
 
