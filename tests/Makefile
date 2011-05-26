@@ -8,6 +8,7 @@ SOURCES=main.cpp \
 	test_tariff.cpp \
 	test_conffiles.cpp \
 	test_fee_charge_rules.cpp \
+	test_reconnect_on_tariff_change.cpp \
 	../projects/stargazer/tariff_impl.cpp \
 	../projects/stargazer/user_impl.cpp \
 	../projects/stargazer/user_property.cpp \
