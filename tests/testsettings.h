@@ -21,6 +21,7 @@ class TEST_SETTINGS : public SETTINGS {
         bool                GetShowFeeInCash() const { return false; }
         unsigned            GetMessageTimeout() const { return 0; }
         unsigned            GetFeeChargeType() const { return 0; }
+        bool                GetReconnectOnTariffChange() const { return false; }
         const std::string & GetMonitorDir() const { return monitorDir; }
         bool                GetMonitoring() const { return false; }
 
