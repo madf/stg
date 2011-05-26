@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "tut/tut.hpp"
 
 #include "stg/admin_conf.h"
