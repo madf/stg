@@ -47,6 +47,91 @@
 #include "user_impl.h"
 #include "settings_impl.h"
 
+#ifdef USE_ABSTRACT_SETTINGS
+USER_IMPL::USER_IMPL(const SETTINGS * s,
+           const STORE * st,
+           const TARIFFS * t,
+           const ADMIN * a,
+           const USERS * u)
+    : users(u),
+      property(s->GetScriptsDir()),
+      WriteServLog(GetStgLogger()),
+      login(),
+      id(0),
+      __connected(0),
+      connected(__connected),
+      userIDGenerator(),
+      __currIP(0),
+      currIP(__currIP),
+      lastIPForDisconnect(0),
+      pingTime(0),
+      sysAdmin(a),
+      store(st),
+      tariffs(t),
+      tariff(tariffs->GetNoTariff()),
+      cash(property.cash),
+      up(property.up),
+      down(property.down),
+      lastCashAdd(property.lastCashAdd),
+      passiveTime(property.passiveTime),
+      lastCashAddTime(property.lastCashAddTime),
+      freeMb(property.freeMb),
+      lastActivityTime(property.lastActivityTime),
+      password(property.password),
+      passive(property.passive),
+      disabled(property.disabled),
+      disabledDetailStat(property.disabledDetailStat),
+      alwaysOnline(property.alwaysOnline),
+      tariffName(property.tariffName),
+      nextTariff(property.nextTariff),
+      address(property.address),
+      note(property.note),
+      group(property.group),
+      email(property.email),
+      phone(property.phone),
+      realName(property.realName),
+      credit(property.credit),
+      creditExpire(property.creditExpire),
+      ips(property.ips),
+      userdata0(property.userdata0),
+      userdata1(property.userdata1),
+      userdata2(property.userdata2),
+      userdata3(property.userdata3),
+      userdata4(property.userdata4),
+      userdata5(property.userdata5),
+      userdata6(property.userdata6),
+      userdata7(property.userdata7),
+      userdata8(property.userdata8),
+      userdata9(property.userdata9),
+      passiveNotifier(this),
+      tariffNotifier(this),
+      cashNotifier(this),
+      ipNotifier(this)
+{
+settings = s;
+
+password = "*_EMPTY_PASSWORD_*";
+tariffName = NO_TARIFF_NAME;
+connected = 0;
+tariff = tariffs->GetNoTariff();
+ips = StrToIPS("*");
+deleted = false;
+lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
+lastWriteDetailedStat = stgTime;
+
+property.tariffName.AddBeforeNotifier(&tariffNotifier);
+property.passive.AddBeforeNotifier(&passiveNotifier);
+property.cash.AddBeforeNotifier(&cashNotifier);
+ips.AddAfterNotifier(&ipNotifier);
+
+lastScanMessages = 0;
+
+pthread_mutexattr_t attr;
+pthread_mutexattr_init(&attr);
+pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+pthread_mutex_init(&mutex, &attr);
+}
+#else
 USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
            const STORE * st,
            const TARIFFS * t,
@@ -130,6 +215,7 @@ pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
+#endif
 //-----------------------------------------------------------------------------
 USER_IMPL::USER_IMPL(const USER_IMPL & u)
     : users(u.users),

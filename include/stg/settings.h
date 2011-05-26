@@ -26,6 +26,7 @@
 class SETTINGS {
 public:
     virtual const std::string & GetDirName(size_t num) const = 0;
+    virtual const std::string & GetScriptsDir() const = 0;
     virtual unsigned            GetDetailStatWritePeriod() const = 0;
     virtual unsigned            GetStatWritePeriod() const = 0;
     virtual unsigned            GetDayFee() const = 0;
@@ -37,6 +38,7 @@ public:
     virtual bool                GetWriteFreeMbTraffCost() const = 0;
     virtual bool                GetShowFeeInCash() const = 0;
     virtual unsigned            GetMessageTimeout() const = 0;
+    virtual unsigned            GetFeeChargeType() const = 0;
     virtual const std::string & GetMonitorDir() const = 0;
     virtual bool                GetMonitoring() const = 0;
 };
