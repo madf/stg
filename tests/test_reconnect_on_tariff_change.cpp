@@ -7,6 +7,7 @@
 #include "testtariffs.h"
 #include "testadmin.h"
 #include "teststore.h"
+#include "testauth.h"
 
 class AFTER_CONNECTED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<bool>,
                                  private NONCOPYABLE {
@@ -57,20 +58,33 @@ namespace tut
         TEST_TARIFFS tariffs;
         TEST_ADMIN admin;
         TEST_STORE store;
+        TEST_AUTH auth;
         USER_IMPL user(&settings, &store, &tariffs, &admin, NULL);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 
         user.AddConnectedAfterNotifier(&connectionNotifier);
 
+        USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
+        USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
 
+        ips = StrToIPS("*");
+
+        ensure_equals("user.connected = false", user.GetConnected(), false);
         ensure_equals("connects = 0", connectionNotifier.GetConnects(), 0);
         ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
 
         ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperty().tariffName.ConstData(), NO_TARIFF_NAME);
+
         tariffName = "test";
         ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
+
+        user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
+
+        ensure_equals("user.connected = true", user.GetConnected(), true);
+        ensure_equals("connects = 1", connectionNotifier.GetConnects(), 1);
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
     }
 }
 
