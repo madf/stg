@@ -1,4 +1,4 @@
-CXXFLAGS+=-g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/stgconffiles.lib -I.
+CXXFLAGS+=-g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/stgconffiles.lib -I. -DUSE_ABSTRACT_SETTINGS
 LIBS=-lpthread
 PROG=tests
 
@@ -7,11 +7,21 @@ SOURCES=main.cpp \
 	test_admin_conf.cpp \
 	test_tariff.cpp \
 	test_conffiles.cpp \
+	test_fee_charge_rules.cpp \
 	../projects/stargazer/tariff_impl.cpp \
+	../projects/stargazer/user_impl.cpp \
+	../projects/stargazer/user_property.cpp \
 	../stglibs/conffiles.lib/conffiles.cpp \
-	../stglibs/common.lib/common.cpp
+	../stglibs/common.lib/common.cpp \
+	../stglibs/logger.lib/logger.cpp \
+	../stglibs/scriptexecuter.lib/scriptexecuter.cpp
 
-all: $(PROG) 
+.PHONY: all includes clean
+
+all: includes $(PROG)
+
+includes:
+	make -C ../stglibs includes
 
 $(PROG): $(subst .cpp,.o,$(SOURCES))
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
