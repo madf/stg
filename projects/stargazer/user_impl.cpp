@@ -46,6 +46,7 @@
 #include "stg/admin.h"
 #include "user_impl.h"
 #include "settings_impl.h"
+#include "stg_timer.h"
 
 #ifdef USE_ABSTRACT_SETTINGS
 USER_IMPL::USER_IMPL(const SETTINGS * s,
