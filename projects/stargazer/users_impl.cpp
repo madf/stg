@@ -458,7 +458,7 @@ if (t1.tm_mday == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
     for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::ProcessNewMonth));
-    for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::SetPrepaidTraff));
+    //for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::SetPrepaidTraff));
     }
 }
 //-----------------------------------------------------------------------------
