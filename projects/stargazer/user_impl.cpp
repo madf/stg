@@ -68,7 +68,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       sysAdmin(a),
       store(st),
       tariffs(t),
-      tariff(tariffs->GetNoTariff()),
+      tariff(NULL),
       cash(property.cash),
       up(property.up),
       down(property.down),
@@ -113,7 +113,6 @@ settings = s;
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 connected = 0;
-tariff = tariffs->GetNoTariff();
 ips = StrToIPS("*");
 deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
@@ -152,7 +151,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       sysAdmin(a),
       store(st),
       tariffs(t),
-      tariff(tariffs->GetNoTariff()),
+      tariff(NULL),
       cash(property.cash),
       up(property.up),
       down(property.down),
@@ -197,7 +196,6 @@ settings = s;
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 connected = 0;
-tariff = tariffs->GetNoTariff();
 ips = StrToIPS("*");
 deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
@@ -767,7 +765,7 @@ if (settings->GetFreeMbAllowInet())
         return true;
     }
 
-if (settings->GetShowFeeInCash())
+if (settings->GetShowFeeInCash() || tariff == NULL)
     {
     return (cash >= -credit);
     }
@@ -793,7 +791,7 @@ void USER_IMPL::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (!connected)
+if (!connected || tariff == NULL)
     return;
 
 double cost = 0;
@@ -885,7 +883,7 @@ void USER_IMPL::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (!connected)
+if (!connected || tariff == NULL)
     return;
 
 double cost = 0;
@@ -1203,7 +1201,7 @@ void USER_IMPL::ProcessDayFeeSpread()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-if (passive.ConstData())
+if (passive.ConstData() || tariff == NULL)
     return;
 
 double fee = tariff->GetFee() / DaysInCurrentMonth();
@@ -1232,6 +1230,9 @@ ResetPassiveTime();
 void USER_IMPL::ProcessDayFee()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+if (tariff == NULL)
+    return;
 
 double passiveTimePart = 1.0;
 if (!settings->GetFullFee())
@@ -1279,7 +1280,8 @@ void USER_IMPL::SetPrepaidTraff()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-property.freeMb.Set(tariff->GetFree(), sysAdmin, login, store, "Prepaid traffic");
+if (tariff != NULL)
+    property.freeMb.Set(tariff->GetFree(), sysAdmin, login, store, "Prepaid traffic");
 }
 //-----------------------------------------------------------------------------
 int USER_IMPL::AddMessage(STG_MSG * msg)
@@ -1402,7 +1404,7 @@ while (it != messages.end())
 //-----------------------------------------------------------------------------
 void CHG_PASSIVE_NOTIFIER::Notify(const int & oldPassive, const int & newPassive)
 {
-if (newPassive && !oldPassive)
+if (newPassive && !oldPassive && user->tariff != NULL)
     user->property.cash.Set(user->cash - user->tariff->GetPassiveCost(),
                             user->sysAdmin,
                             user->login,
