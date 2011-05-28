@@ -5,7 +5,7 @@
 
 class TEST_ADMIN : public ADMIN {
     public:
-        TEST_ADMIN() : priv(0xffFF) {}
+        TEST_ADMIN() : priv(0xffFF), ip(0) {}
 
         ADMIN & operator=(const ADMIN &) { return *this; }
         ADMIN & operator=(const ADMIN_CONF &) { return *this; }
