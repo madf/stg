@@ -561,32 +561,54 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::RemoveDir(const char * path) const
 {
-vector<string> fileList;
+DIR * d = opendir(path);
 
-GetFileList(&fileList, path, S_IFREG, "");
-
-for (unsigned i = 0; i < fileList.size(); i++)
+if (!d)
     {
-    string file = path + string("/") + fileList[i];
-    if (unlink(file.c_str()))
+    errorStr = "failed to open dir. Message: '";
+    errorStr += strerror(errno);
+    errorStr += "'";
+    printfd(__FILE__, "FILE_STORE::RemoveDir() - Failed to open dir '%s': '%s'\n", path, strerror(errno));
+    return -1;
+    }
+
+dirent * entry;
+while ((entry = readdir(d)))
+    {
+    if (!(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")))
+        continue;
+
+    string str = path;
+    str += "/" + string(entry->d_name);
+
+    struct stat st;
+    if (stat(str.c_str(), &st))
+        continue;
+
+    if ((st.st_mode & S_IFREG))
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "unlink failed. Message: '";
-        errorStr += strerror(errno);
-        errorStr += "'";
-        printfd(__FILE__, "FILES_STORE::RemoveDir - unlink failed. Message: '%s'\n", strerror(errno));
-        return -1;
+        if (unlink(str.c_str()))
+            {
+            STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+            errorStr = "unlink failed. Message: '";
+            errorStr += strerror(errno);
+            errorStr += "'";
+            printfd(__FILE__, "FILES_STORE::RemoveDir() - unlink failed. Message: '%s'\n", strerror(errno));
+            return -1;
+            }
+        }
+
+    if (!(st.st_mode & S_IFDIR))
+        {
+        if (RemoveDir(str.c_str()))
+            {
+            return -1;
+            }
+
         }
     }
 
-fileList.clear();
-GetFileList(&fileList, path, S_IFDIR, "");
-
-for (unsigned i = 0; i < fileList.size(); i++)
-    {
-    string dir = string(path) + "/" + fileList[i];
-    RemoveDir(dir.c_str());
-    }
+closedir(d);
 
 if (rmdir(path))
     {
@@ -594,7 +616,7 @@ if (rmdir(path))
     errorStr = "rmdir failed. Message: '";
     errorStr += strerror(errno);
     errorStr += "'";
-    printfd(__FILE__, "FILES_STORE::RemoveDir - rmdir failed. Message: '%s'\n", strerror(errno));
+    printfd(__FILE__, "FILES_STORE::RemoveDir() - rmdir failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
 
