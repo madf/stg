@@ -1424,10 +1424,12 @@ if (newPassive && !oldPassive && user->tariff != NULL)
 void CHG_TARIFF_NOTIFIER::Notify(const string &, const string & newTariff)
 {
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
-    user->Disconnect(true, "Change tariff");
+    user->Disconnect(false, "Change tariff");
 user->tariff = user->tariffs->FindByName(newTariff);
-if (user->settings->GetReconnectOnTariffChange() && user->IsInetable())
-    user->Connect(true);
+if (user->settings->GetReconnectOnTariffChange() &&
+    !user->authorizedBy.empty() &&
+    user->IsInetable())
+    user->Connect(false);
 }
 //-----------------------------------------------------------------------------
 void CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
@@ -1440,8 +1442,8 @@ void CHG_IPS_NOTIFIER::Notify(const USER_IPS & from, const USER_IPS & to)
 {
     printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.GetIpStr().c_str(), to.GetIpStr().c_str());
     if (user->connected)
-        user->Disconnect(true, "Change IP");
-    if (user->IsInetable())
-        user->Connect(true);
+        user->Disconnect(false, "Change IP");
+    if (!user->authorizedBy.empty() && user->IsInetable())
+        user->Connect(false);
 }
 //-----------------------------------------------------------------------------
