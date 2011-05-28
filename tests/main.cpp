@@ -1,11 +1,5 @@
-#include <iostream>
-
 #include "tut/tut.hpp"
 #include "tut_reporter.h"
-
-using std::exception;
-using std::cerr;
-using std::endl;
 
 namespace tut
 {
