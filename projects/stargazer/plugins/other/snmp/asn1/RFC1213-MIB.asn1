@@ -1,0 +1,339 @@
+
+-- WinAgents MIB Extraction Wizard
+-- Extracted from rfc1213.txt 16.03.2005 20:20:14
+
+RFC1213-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        mgmt, NetworkAddress, IpAddress, Counter, Gauge,
+                TimeTicks
+            FROM RFC1155-SMI
+        OBJECT-TYPE
+                FROM RFC-1212;
+
+--  This MIB module uses the extended OBJECT-TYPE macro as
+--  defined in [14];
+
+
+--  MIB-II (same prefix as MIB-I)
+
+mib-2      OBJECT IDENTIFIER ::= { mgmt 1 }
+
+-- textual conventions
+
+DisplayString ::=
+    OCTET STRING
+-- This data type is used to model textual information taken
+-- from the NVT ASCII character set.  By convention, objects
+-- with this syntax are declared as having
+
+--
+--      SIZE (0..255)
+
+PhysAddress ::=
+    OCTET STRING
+-- This data type is used to model media addresses.  For many
+-- types of media, this will be in a binary representation.
+-- For example, an ethernet address would be represented as
+-- a string of 6 octets.
+
+
+-- groups in MIB-II
+
+system       OBJECT IDENTIFIER ::= { mib-2 1 }
+
+interfaces   OBJECT IDENTIFIER ::= { mib-2 2 }
+
+at           OBJECT IDENTIFIER ::= { mib-2 3 }
+
+ip           OBJECT IDENTIFIER ::= { mib-2 4 }
+
+icmp         OBJECT IDENTIFIER ::= { mib-2 5 }
+
+tcp          OBJECT IDENTIFIER ::= { mib-2 6 }
+
+udp          OBJECT IDENTIFIER ::= { mib-2 7 }
+
+egp          OBJECT IDENTIFIER ::= { mib-2 8 }
+
+-- historical (some say hysterical)
+-- cmot      OBJECT IDENTIFIER ::= { mib-2 9 }
+
+transmission OBJECT IDENTIFIER ::= { mib-2 10 }
+
+snmp         OBJECT IDENTIFIER ::= { mib-2 11 }
+
+
+-- the System group
+
+-- Implementation of the System group is mandatory for all
+-- systems.  If an agent is not configured to have a value
+-- for any of these variables, a string of length 0 is
+-- returned.
+
+
+IfEntry ::=
+    SEQUENCE {
+        ifIndex
+            INTEGER,
+
+        ifDescr
+            DisplayString,
+        ifType
+            INTEGER,
+        ifMtu
+            INTEGER,
+        ifSpeed
+            Gauge,
+        ifPhysAddress
+            PhysAddress,
+        ifAdminStatus
+            INTEGER,
+        ifOperStatus
+            INTEGER,
+        ifLastChange
+            TimeTicks,
+        ifInOctets
+            Counter,
+        ifInUcastPkts
+            Counter,
+        ifInNUcastPkts
+            Counter,
+        ifInDiscards
+            Counter,
+        ifInErrors
+            Counter,
+        ifInUnknownProtos
+            Counter,
+        ifOutOctets
+            Counter,
+        ifOutUcastPkts
+            Counter,
+        ifOutNUcastPkts
+            Counter,
+        ifOutDiscards
+            Counter,
+        ifOutErrors
+            Counter,
+        ifOutQLen
+            Gauge,
+        ifSpecific
+            OBJECT IDENTIFIER
+    }
+
+
+-- the Address Translation group
+
+-- Implementation of the Address Translation group is
+-- mandatory for all systems.  Note however that this group
+-- is deprecated by MIB-II. That is, it is being included
+
+-- solely for compatibility with MIB-I nodes, and will most
+-- likely be excluded from MIB-III nodes.  From MIB-II and
+-- onwards, each network protocol group contains its own
+-- address translation tables.
+
+-- The Address Translation group contains one table which is
+-- the union across all interfaces of the translation tables
+-- for converting a NetworkAddress (e.g., an IP address) into
+-- a subnetwork-specific address.  For lack of a better term,
+-- this document refers to such a subnetwork-specific address
+-- as a `physical' address.
+
+-- Examples of such translation tables are: for broadcast
+-- media where ARP is in use, the translation table is
+-- equivalent to the ARP cache; or, on an X.25 network where
+-- non-algorithmic translation to X.121 addresses is
+-- required, the translation table contains the
+-- NetworkAddress to X.121 address equivalences.
+
+
+AtEntry ::=
+    SEQUENCE {
+        atIfIndex
+            INTEGER,
+
+        atPhysAddress
+            PhysAddress,
+        atNetAddress
+            NetworkAddress
+    }
+
+
+
+
+
+-- the IP address table
+
+-- The IP address table contains this entity's IP addressing
+-- information.
+
+
+IpAddrEntry ::=
+    SEQUENCE {
+        ipAdEntAddr
+            IpAddress,
+        ipAdEntIfIndex
+            INTEGER,
+        ipAdEntNetMask
+            IpAddress,
+        ipAdEntBcastAddr
+            INTEGER,
+        ipAdEntReasmMaxSize
+            INTEGER (0..65535)
+    }
+
+
+IpRouteEntry ::=
+    SEQUENCE {
+        ipRouteDest
+            IpAddress,
+        ipRouteIfIndex
+            INTEGER,
+        ipRouteMetric1
+            INTEGER,
+        ipRouteMetric2
+            INTEGER,
+        ipRouteMetric3
+            INTEGER,
+        ipRouteMetric4
+            INTEGER,
+        ipRouteNextHop
+            IpAddress,
+        ipRouteType
+            INTEGER,
+        ipRouteProto
+            INTEGER,
+        ipRouteAge
+            INTEGER,
+        ipRouteMask
+            IpAddress,
+        ipRouteMetric5
+            INTEGER,
+
+        ipRouteInfo
+            OBJECT IDENTIFIER
+    }
+
+
+IpNetToMediaEntry ::=
+    SEQUENCE {
+        ipNetToMediaIfIndex
+            INTEGER,
+        ipNetToMediaPhysAddress
+            PhysAddress,
+        ipNetToMediaNetAddress
+            IpAddress,
+        ipNetToMediaType
+            INTEGER
+    }
+
+
+
+TcpConnEntry ::=
+    SEQUENCE {
+        tcpConnState
+            INTEGER,
+        tcpConnLocalAddress
+            IpAddress,
+        tcpConnLocalPort
+            INTEGER (0..65535),
+        tcpConnRemAddress
+            IpAddress,
+        tcpConnRemPort
+            INTEGER (0..65535)
+    }
+
+
+UdpEntry ::=
+    SEQUENCE {
+        udpLocalAddress
+            IpAddress,
+        udpLocalPort
+            INTEGER (0..65535)
+    }
+
+
+
+-- the EGP Neighbor table
+
+-- The EGP neighbor table contains information about this
+-- entity's EGP neighbors.
+
+
+EgpNeighEntry ::=
+    SEQUENCE {
+        egpNeighState
+            INTEGER,
+        egpNeighAddr
+            IpAddress,
+        egpNeighAs
+            INTEGER,
+        egpNeighInMsgs
+            Counter,
+        egpNeighInErrs
+            Counter,
+        egpNeighOutMsgs
+            Counter,
+        egpNeighOutErrs
+            Counter,
+
+        egpNeighInErrMsgs
+            Counter,
+        egpNeighOutErrMsgs
+            Counter,
+        egpNeighStateUps
+            Counter,
+        egpNeighStateDowns
+            Counter,
+        egpNeighIntervalHello
+            INTEGER,
+        egpNeighIntervalPoll
+            INTEGER,
+        egpNeighMode
+            INTEGER,
+        egpNeighEventTrigger
+            INTEGER
+    }
+
+
+
+-- the Transmission group
+
+-- Based on the transmission media underlying each interface
+-- on a system, the corresponding portion of the Transmission
+-- group is mandatory for that system.
+
+-- When Internet-standard definitions for managing
+-- transmission media are defined, the transmission group is
+-- used to provide a prefix for the names of those objects.
+
+-- Typically, such definitions reside in the experimental
+-- portion of the MIB until they are "proven", then as a
+-- part of the Internet standardization process, the
+-- definitions are accordingly elevated and a new object
+-- identifier, under the transmission group is defined. By
+-- convention, the name assigned is:
+--
+--     type OBJECT IDENTIFIER    ::= { transmission number }
+--
+-- where "type" is the symbolic value used for the media in
+-- the ifType column of the ifTable object, and "number" is
+-- the actual integer value corresponding to the symbol.
+
+
+-- the SNMP group
+
+-- Implementation of the SNMP group is mandatory for all
+-- systems which support an SNMP protocol entity.  Some of
+-- the objects defined below will be zero-valued in those
+-- SNMP implementations that are optimized to support only
+-- those functions specific to either a management agent or
+-- a management station.  In particular, it should be
+-- observed that the objects below refer to an SNMP entity,
+-- and there may be several SNMP entities residing on a
+-- managed node (e.g., if the node is hosting acting as
+-- a management station).
+
+
+END
