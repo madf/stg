@@ -153,13 +153,17 @@ return 0;
 //-----------------------------------------------------------------------------
 int MYSQL_STORE_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-if (ParseParam(s.moduleParams, "dbuser", dbUser) < 0)
+if (ParseParam(s.moduleParams, "user", dbUser) < 0 &&
+    ParseParam(s.moduleParams, "dbuser", dbUser) < 0)
     return -1;
-if (ParseParam(s.moduleParams, "rootdbpass", dbPass) < 0)
+if (ParseParam(s.moduleParams, "password", dbPass) < 0 &&
+    ParseParam(s.moduleParams, "rootdbpass", dbPass) < 0)
     return -1;
-if (ParseParam(s.moduleParams, "dbname", dbName) < 0)
+if (ParseParam(s.moduleParams, "database", dbName) < 0 &&
+    ParseParam(s.moduleParams, "dbname", dbName) < 0)
     return -1;
-if (ParseParam(s.moduleParams, "dbhost", dbHost) < 0)
+if (ParseParam(s.moduleParams, "server", dbHost) < 0 &&
+    ParseParam(s.moduleParams, "dbhost", dbHost) < 0)
     return -1;
 
 return 0;
