@@ -4,7 +4,6 @@
 #include <pthread.h>
 
 #include <string>
-#include <list>
 
 #include "stg/os_int.h"
 #include "stg/plugin.h"
@@ -23,8 +22,16 @@ public:
     const std::string & GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
 
+    uint32_t GetIP() const { return ip; }
+    uint16_t GetPort() const { return port; }
+    const std::string GetPassword() const { return password; }
+
 private:
     mutable std::string errorStr;
+
+    uint32_t ip;
+    uint16_t port;
+    std::string password;
 };
 //-----------------------------------------------------------------------------
 class SNMP_AGENT : public PLUGIN {
@@ -38,7 +45,7 @@ public:
     void SetTraffcounter(TRAFFCOUNTER *) {}
     void SetStore(STORE *) {}
     void SetStgSettings(const SETTINGS *) {}
-    void SetSettings(const MODULE_SETTINGS &) {}
+    void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
 
     int Start();
@@ -54,6 +61,7 @@ public:
 private:
     static void * Runner(void * d);
     void Run();
+    bool PrepareNet();
 
     mutable std::string errorStr;
     SNMP_AGENT_SETTINGS snmpAgentSettings;
@@ -63,7 +71,11 @@ private:
     pthread_mutex_t mutex;
     bool running;
     bool stopped;
+
+    int sock;
 };
 //-----------------------------------------------------------------------------
+
+extern "C" PLUGIN * GetPlugin();
 
 #endif

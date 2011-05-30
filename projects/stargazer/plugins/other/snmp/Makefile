@@ -45,7 +45,35 @@ SRCS =  snmp.cpp \
 	asn1/ClosePDU.c	\
 	asn1/RReqPDU.c	\
 	asn1/RRspPDU.c	\
-	asn1/SOutPDU.c
+	asn1/SOutPDU.c \
+	asn1/ANY.c \
+	asn1/BOOLEAN.c \
+	asn1/INTEGER.c \
+	asn1/NULL.c \
+	asn1/NativeEnumerated.c \
+	asn1/NativeInteger.c \
+	asn1/OBJECT_IDENTIFIER.c \
+	asn1/asn_SEQUENCE_OF.c \
+	asn1/asn_SET_OF.c \
+	asn1/constr_CHOICE.c \
+	asn1/constr_SEQUENCE.c \
+	asn1/constr_SEQUENCE_OF.c \
+	asn1/constr_SET_OF.c \
+	asn1/OCTET_STRING.c \
+	asn1/BIT_STRING.c \
+	asn1/asn_codecs_prim.c \
+	asn1/ber_tlv_length.c \
+	asn1/ber_tlv_tag.c \
+	asn1/ber_decoder.c \
+	asn1/der_encoder.c \
+	asn1/constr_TYPE.c \
+	asn1/constraints.c \
+	asn1/xer_support.c \
+	asn1/xer_decoder.c \
+	asn1/xer_encoder.c \
+	asn1/per_support.c \
+	asn1/per_decoder.c \
+	asn1/per_encoder.c
 
 STGLIBS = -lstgcommon
 
