@@ -4,6 +4,9 @@
 #include <pthread.h>
 
 #include <string>
+#include <map>
+
+#include "asn1/SMUX-PDUs.h"
 
 #include "stg/os_int.h"
 #include "stg/plugin.h"
@@ -14,6 +17,9 @@ extern "C" PLUGIN * GetPlugin();
 
 class USER;
 class SETTINGS;
+class SNMP_AGENT;
+
+typedef bool (SNMP_AGENT::*SNMPPacketHandler)(const SMUX_PDUs_t * pdus);
 //-----------------------------------------------------------------------------
 class SNMP_AGENT_SETTINGS {
 public:
@@ -63,6 +69,13 @@ private:
     void Run();
     bool PrepareNet();
 
+    bool DispatchPDUs(const SMUX_PDUs_t * pdus);
+
+    bool CloseHandler(const SMUX_PDUs_t * pdus);
+    bool RegisterResponseHandler(const SMUX_PDUs_t * pdus);
+    bool PDUsHandler(const SMUX_PDUs_t * pdus);
+    bool CommitOrRollbackHandler(const SMUX_PDUs_t * pdus);
+
     mutable std::string errorStr;
     SNMP_AGENT_SETTINGS snmpAgentSettings;
     MODULE_SETTINGS settings;
@@ -73,6 +86,8 @@ private:
     bool stopped;
 
     int sock;
+
+    std::map<SMUX_PDUs_PR, SNMPPacketHandler> handlers;
 };
 //-----------------------------------------------------------------------------
 
