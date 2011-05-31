@@ -1273,6 +1273,10 @@ char password[ADM_PASSWD_LEN + 1];
 char passwordE[2*ADM_PASSWD_LEN + 2];
 BLOWFISH_CTX ctx;
 
+memset(pass, 0, sizeof(pass));
+memset(password, 0, sizeof(password));
+memset(passwordE, 0, sizeof(passwordE));
+
 string p;
 MYSQL_RES *res;
 MYSQL_ROW row;
