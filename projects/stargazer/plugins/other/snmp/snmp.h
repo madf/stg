@@ -19,7 +19,10 @@ class USER;
 class SETTINGS;
 class SNMP_AGENT;
 
-typedef bool (SNMP_AGENT::*SNMPPacketHandler)(const SMUX_PDUs_t * pdus);
+typedef bool (SNMP_AGENT::*SMUXPacketHandler)(const SMUX_PDUs_t * pdus);
+typedef bool (SNMP_AGENT::*PDUsHandler)(const PDUs_t * pdus);
+typedef std::map<SMUX_PDUs_PR, SMUXPacketHandler> SMUXHandlers;
+typedef std::map<PDUs_PR, PDUsHandler> PDUsHandlers;
 //-----------------------------------------------------------------------------
 class SNMP_AGENT_SETTINGS {
 public:
@@ -76,6 +79,10 @@ private:
     bool PDUsHandler(const SMUX_PDUs_t * pdus);
     bool CommitOrRollbackHandler(const SMUX_PDUs_t * pdus);
 
+    bool GetRequestHandler(const PDUs_t * pdus);
+    bool GetNextRequestHandler(const PDUs_t * pdus);
+    bool SetRequestHandler(const PDUs_t * pdus);
+
     mutable std::string errorStr;
     SNMP_AGENT_SETTINGS snmpAgentSettings;
     MODULE_SETTINGS settings;
@@ -87,7 +94,8 @@ private:
 
     int sock;
 
-    std::map<SMUX_PDUs_PR, SNMPPacketHandler> handlers;
+    SMUXHandlers smuxHandlers;
+    PDUsHandlers pdusHandlers;
 };
 //-----------------------------------------------------------------------------
 

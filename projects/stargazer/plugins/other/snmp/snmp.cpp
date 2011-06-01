@@ -244,10 +244,14 @@ SNMP_AGENT::SNMP_AGENT()
 {
 pthread_mutex_init(&mutex, NULL);
 
-handlers[SMUX_PDUs_PR_close] = &SNMP_AGENT::CloseHandler;
-handlers[SMUX_PDUs_PR_registerResponse] = &SNMP_AGENT::RegisterResponseHandler;
-handlers[SMUX_PDUs_PR_pdus] = &SNMP_AGENT::PDUsHandler;
-handlers[SMUX_PDUs_PR_commitOrRollback] = &SNMP_AGENT::CommitOrRollbackHandler;
+smuxHandlers[SMUX_PDUs_PR_close] = &SNMP_AGENT::CloseHandler;
+smuxHandlers[SMUX_PDUs_PR_registerResponse] = &SNMP_AGENT::RegisterResponseHandler;
+smuxHandlers[SMUX_PDUs_PR_pdus] = &SNMP_AGENT::PDUsHandler;
+smuxHandlers[SMUX_PDUs_PR_commitOrRollback] = &SNMP_AGENT::CommitOrRollbackHandler;
+
+pdusHandlers[PDUs_PR_get_request] = &SNMP_AGENT::GetRequestHandler;
+pdusHandlers[PDUs_PR_get_next_request] = &SNMP_AGENT::GetNextRequestHandler;
+pdusHandlers[PDUs_PR_set_request] = &SNMP_AGENT::SetRequestHandler;
 }
 
 SNMP_AGENT::~SNMP_AGENT()
@@ -404,9 +408,9 @@ return true;
 
 bool SNMP_AGENT::DispatchPDUs(const SMUX_PDUs_t * pdus)
 {
-std::map<SMUX_PDUs_PR, SNMPPacketHandler>::iterator it;
-it = handlers.find(pdus->present);
-if (it != handlers.end())
+SMUXHandlers::iterator it;
+it = smuxHandlers.find(pdus->present);
+if (it != smuxHandlers.end())
     {
     return (this->*(it->second))(pdus);
     }
@@ -458,3 +462,25 @@ printfd(__FILE__, "SNMP_AGENT::CommitOrRollbackHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 return false;
 }
+
+bool SNMP_AGENT::GetRequestHandler(const PDUs_t * pdus)
+{
+printfd(__FILE__, "SNMP_AGENT::GetRequestHandler()\n");
+asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+return false;
+}
+
+bool SNMP_AGENT::GetNextRequestHandler(const PDUs_t * pdus)
+{
+printfd(__FILE__, "SNMP_AGENT::GetNextRequestHandler()\n");
+asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+return false;
+}
+
+bool SNMP_AGENT::SetRequestHandler(const PDUs_t * pdus)
+{
+printfd(__FILE__, "SNMP_AGENT::SetRequestHandler()\n");
+asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+return false;
+}
+
