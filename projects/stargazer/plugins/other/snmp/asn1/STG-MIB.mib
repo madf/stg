@@ -1,0 +1,38 @@
+STG-MIB DEFINITIONS ::=
+
+BEGIN
+
+IMPORTS
+    enterprises, OBJECT-TYPE FROM RFC1155-SMI
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+    NOTIFICATION-TYPE FROM SNMPv2-SMI
+
+stgMIB MODULE-IDENTITY
+    LAST-UPDATED "201101060000Z"
+    ORGANIZATION "STG"
+    CONTACT-INFO    
+        "Primary Contact: Maxim Mamontov
+         email:     faust@stg.dp.ua"
+    DESCRIPTION
+        "This MIB module defines objects for Stargazer derived data."
+    REVISION     "201101060000Z"
+    DESCRIPTION
+        "Derived from LM_SENSORS."
+    ::= { enterprises 9363 }
+
+someValue OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+	"This is a simple object which merely houses a writable
+	 integer.  It's only purposes is to hold the value of a single
+	 integer.  Writing to it will simply change the value for
+	 subsequent GET/GETNEXT/GETBULK retrievals.
+
+	 This example object is implemented in the
+	 agent/mibgroup/examples/scalar_int.c file."
+    DEFVAL { 0 }
+    ::= { stg 1 }
+
+END
