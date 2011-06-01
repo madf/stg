@@ -453,6 +453,29 @@ bool SNMP_AGENT::PDUsHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SNMP_AGENT::PDUsHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
+PDUsHandlers::iterator it;
+it = pdusHandlers.find(pdus->choice.pdus.present);
+if (it != pdusHandlers.end())
+    {
+    return (this->*(it->second))(&pdus->choice.pdus);
+    }
+else
+    {
+    switch (pdus->present)
+        {
+        case PDUs_PR_NOTHING:
+            printfd(__FILE__, "SNMP_AGENT::PDUsHandler() - nothing\n");
+            break;
+        case PDUs_PR_get_response:
+            printfd(__FILE__, "SNMP_AGENT::PDUsHandler() - get response\n");
+            break;
+        case PDUs_PR_trap:
+            printfd(__FILE__, "SNMP_AGENT::PDUsHandler() - trap\n");
+            break;
+        default:
+            printfd(__FILE__, "SNMP_AGENT::PDUsHandler() - undefined\n");
+        }
+    }
 return false;
 }
 
