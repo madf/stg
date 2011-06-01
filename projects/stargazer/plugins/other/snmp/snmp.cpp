@@ -13,6 +13,10 @@
 #include "asn1/OpenPDU.h"
 #include "asn1/ClosePDU.h"
 #include "asn1/RReqPDU.h"
+#include "asn1/GetRequest-PDU.h"
+#include "asn1/GetResponse-PDU.h"
+#include "asn1/VarBindList.h"
+#include "asn1/VarBind.h"
 #include "asn1/OBJECT_IDENTIFIER.h"
 #include "asn1/ber_decoder.h"
 #include "asn1/der_encoder.h"
@@ -21,6 +25,62 @@
 #include "stg/common.h"
 
 bool WaitPackets(int sd);
+
+std::string OI2String(OBJECT_IDENTIFIER_t * oi)
+{
+std::string res;
+
+int arcs[1024];
+int count = OBJECT_IDENTIFIER_get_arcs(oi, arcs, sizeof(arcs[0]), 1024);
+
+if (count > 1024)
+    return "";
+
+for (int i = 0; i < count; ++i)
+    {
+    res += ".";
+    std::string arc;
+    strprintf(&arc, "%d", arcs[i]);
+    res += arc;
+    }
+
+return res;
+}
+
+bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi)
+{
+size_t left = 0, pos = 0, arcPos = 0;
+int arcs[1024];
+pos = str.find_first_of('.', left);
+if (pos == 0)
+    {
+    left = 1;
+    pos = str.find_first_of('.', left);
+    }
+while (pos != std::string::npos)
+    {
+    int arc = 0;
+    if (str2x(str.substr(left, left - pos), arc))
+        {
+        return false;
+        }
+    arcs[arcPos++] = arc;
+    left = pos + 1;
+    pos = str.find_first_of('.', left);
+    }
+if (left < str.length())
+    {
+    int arc = 0;
+    if (str2x(str.substr(left, left - pos), arc))
+        {
+        return false;
+        }
+    arcs[arcPos++] = arc;
+    }
+printfd(__FILE__, "String2OI() - arcPos: %d\n", arcPos);
+OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), arcPos);
+return true;
+}
 
 class SNMP_AGENT_CREATOR
 {
@@ -54,7 +114,7 @@ return sac.GetPlugin();
 int SendOpenPDU(int fd)
 {
 const char * description = "Stg SNMP Agent";
-int oid[] = {1, 3, 6, 1, 4, 1, 9363, 1, 5, 2, 1, 1};
+//int oid[] = {1, 3, 6, 1, 4, 1, 9363, 1, 5, 2, 1, 1};
 asn_enc_rval_t error;
 OpenPDU_t msg;
 
@@ -62,10 +122,15 @@ memset(&msg, 0, sizeof(msg));
 
 msg.present = OpenPDU_PR_simple;
 asn_long2INTEGER(&msg.choice.simple.version, SimpleOpen__version_version_1);
-OBJECT_IDENTIFIER_set_arcs(&msg.choice.simple.identity,
+/*OBJECT_IDENTIFIER_set_arcs(&msg.choice.simple.identity,
                            oid,
                            sizeof(oid[0]),
-                           7);
+                           7);*/
+if (!String2OI(".1.3.6.1.4.1.9363", &msg.choice.simple.identity))
+    {
+    printfd(__FILE__, "SendOpenPDU() - failed to convert string to OBJECT_IDENTIFIER\n");
+    return -1;
+    }
 OCTET_STRING_fromString(&msg.choice.simple.description,
                      description);
 OCTET_STRING_fromString(&msg.choice.simple.password,
@@ -142,6 +207,35 @@ else
     {
     write(fd, buffer, error.encoded);
     printfd(__FILE__, "RReqPDU encoded successfully to %d bytes\n", error.encoded);
+    }
+return 0;
+}
+
+int SendSetResponsePDU(int fd, const PDU_t * pdu)
+{
+//int oid[] = {1, 3, 6, 1, 4, 1, 9363, 1};
+asn_enc_rval_t error;
+GetResponse_PDU_t msg;
+
+memset(&msg, 0, sizeof(msg));
+
+msg.request_id = pdu->request_id;
+asn_long2INTEGER(&msg.error_status, PDU__error_status_readOnly);
+asn_long2INTEGER(&msg.error_index, PDU__error_status_readOnly);
+
+char buffer[1024];
+error = der_encode_to_buffer(&asn_DEF_GetResponse_PDU, &msg, buffer, sizeof(buffer));
+
+if (error.encoded == -1)
+    {
+    printfd(__FILE__, "Could not encode GetResponsePDU (at %s)\n",
+            error.failed_type ? error.failed_type->name : "unknown");
+    return -1;
+    }
+else
+    {
+    write(fd, buffer, error.encoded);
+    printfd(__FILE__, "GetResponsePDU encoded successfully to %d bytes\n", error.encoded);
     }
 return 0;
 }
@@ -490,6 +584,12 @@ bool SNMP_AGENT::GetRequestHandler(const PDUs_t * pdus)
 {
 printfd(__FILE__, "SNMP_AGENT::GetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+const VarBindList_t * vbl = &pdus->choice.get_request.variable_bindings; 
+for (int i = 0; i < vbl->list.count; ++i)
+    {
+    VarBind_t * vb = pdus->choice.get_request.variable_bindings.list.array[i];
+    printfd(__FILE__, "OID: %s\n", OI2String(&vb->name).c_str());
+    }
 return false;
 }
 
@@ -504,6 +604,7 @@ bool SNMP_AGENT::SetRequestHandler(const PDUs_t * pdus)
 {
 printfd(__FILE__, "SNMP_AGENT::SetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+SendSetResponsePDU(sock, &pdus->choice.set_request);
 return false;
 }
 
