@@ -7,11 +7,15 @@
 #include <map>
 
 #include "asn1/SMUX-PDUs.h"
+#include "asn1/ObjectSyntax.h"
 
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/users.h"
+#include "stg/tariffs.h"
+
+#include "sensors.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -48,8 +52,8 @@ public:
     SNMP_AGENT();
     virtual ~SNMP_AGENT();
 
-    void SetUsers(USERS *) {}
-    void SetTariffs(TARIFFS *) {}
+    void SetUsers(USERS * u) { users = u; }
+    void SetTariffs(TARIFFS * t) { tariffs = t; }
     void SetAdmins(ADMINS *) {}
     void SetTraffcounter(TRAFFCOUNTER *) {}
     void SetStore(STORE *) {}
@@ -83,6 +87,9 @@ private:
     bool GetNextRequestHandler(const PDUs_t * pdus);
     bool SetRequestHandler(const PDUs_t * pdus);
 
+    USERS * users;
+    TARIFFS * tariffs;
+
     mutable std::string errorStr;
     SNMP_AGENT_SETTINGS snmpAgentSettings;
     MODULE_SETTINGS settings;
@@ -96,6 +103,7 @@ private:
 
     SMUXHandlers smuxHandlers;
     PDUsHandlers pdusHandlers;
+    Sensors sensors;
 };
 //-----------------------------------------------------------------------------
 
