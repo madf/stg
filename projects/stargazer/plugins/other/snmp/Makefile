@@ -9,6 +9,7 @@ LIBS += $(LIB_THREAD)
 PROG = mod_snmp_agent.so
 
 SRCS =  snmp.cpp \
+	sensors.cpp \
 	asn1/DisplayString.c	\
 	asn1/PhysAddress.c	\
 	asn1/IfEntry.c	\
