@@ -37,9 +37,9 @@
 
 #include "stg/store.h"
 
-// Minimal DB version is 5
-// Recommended DB version is 6 (support FreeMb logging on disconnects)
-#define DB_MIN_VERSION 5
+// Minimal DB version is 7
+// Recommended DB version is 7 (support full month stats)
+#define DB_MIN_VERSION 7
 
 extern "C" STORE * GetStore();
 

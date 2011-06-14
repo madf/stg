@@ -227,30 +227,20 @@ int POSTGRESQL_STORE::SaveUserStat(const USER_STAT & stat,
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-return SaveStat(stat, login);
-}
-//-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveStat(const USER_STAT & stat,
-                               const string & login,
-                               int year,
-                               int month) const
-{
 if (PQstatus(connection) != CONNECTION_OK)
     {
-    printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Connection lost. Trying to reconnect...'\n", strError.c_str());
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Connection lost. Trying to reconnect...'\n", strError.c_str());
     if (Reset())
         {
         strError = "Connection lost";
-        printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): '%s'\n", strError.c_str());
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): '%s'\n", strError.c_str());
         return -1;
         }
     }
 
-PGresult * result;
-
 if (StartTransaction())
     {
-    printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to start transaction'\n");
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to start transaction'\n");
     return -1;
     }
 
@@ -258,10 +248,10 @@ std::string elogin = login;
 
 if (EscapeString(elogin))
     {
-    printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to escape login'\n");
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to escape login'\n");
     if (RollbackTransaction())
 	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to rollback transaction'\n");
 	}
     return -1;
     }
@@ -276,32 +266,27 @@ query << "UPDATE tb_users SET "
             "passive_time = " << stat.passiveTime << " "
          "WHERE name = '" << elogin << "'";
 
-result = PQexec(connection, query.str().c_str());
+PGresult * result = PQexec(connection, query.str().c_str());
 
 if (PQresultStatus(result) != PGRES_COMMAND_OK)
     {
     strError = PQresultErrorMessage(result);
     PQclear(result);
-    printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): '%s'\n", strError.c_str());
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
 	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to rollback transaction'\n");
 	}
     return -1;
     }
 
 PQclear(result);
 
-std::string date;
-
-MakeDate(date, year, month);
-
 for (int dir = 0; dir < DIR_NUM; ++dir)
     {
     query.str("");
     query << "SELECT sp_add_stats_traffic ("
                 "'" << elogin << "', "
-                "CAST('" << date << "' AS DATE), "
                 "CAST(" << dir << " AS SMALLINT), "
                 "CAST(" << stat.up[dir] << " AS BIGINT), "
                 "CAST(" << stat.down[dir] << " AS BIGINT))";
@@ -312,10 +297,10 @@ for (int dir = 0; dir < DIR_NUM; ++dir)
         {
         strError = PQresultErrorMessage(result);
         PQclear(result);
-        printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): '%s'\n", strError.c_str());
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): '%s'\n", strError.c_str());
         if (RollbackTransaction())
             {
-            printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
+            printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to rollback transaction'\n");
             }
         return -1;
         }
@@ -325,7 +310,7 @@ for (int dir = 0; dir < DIR_NUM; ++dir)
 
 if (CommitTransaction())
     {
-    printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to commit transaction'\n");
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveUserStat(): 'Failed to commit transaction'\n");
     return -1;
     }
 
@@ -639,7 +624,7 @@ if (EscapeString(elogin))
     }
 
 std::stringstream query;
-query << "SELECT cash, free_mb, "
+query << "SELECT pk_user, cash, free_mb, "
             "last_activity_time, last_cash_add, "
             "last_cash_add_time, passive_time "
          "FROM tb_users "
@@ -676,14 +661,18 @@ if (tuples != 1)
 std::stringstream tuple;
 tuple << PQgetvalue(result, 0, 0) << " ";
 tuple << PQgetvalue(result, 0, 1) << " ";
-stat->lastActivityTime = TS2Int(PQgetvalue(result, 0, 2));
-tuple << PQgetvalue(result, 0, 3) << " ";
-stat->lastCashAddTime = TS2Int(PQgetvalue(result, 0, 4));
-tuple << PQgetvalue(result, 0, 5) << " ";
+tuple << PQgetvalue(result, 0, 2) << " ";
+stat->lastActivityTime = TS2Int(PQgetvalue(result, 0, 3));
+tuple << PQgetvalue(result, 0, 4) << " ";
+stat->lastCashAddTime = TS2Int(PQgetvalue(result, 0, 5));
+tuple << PQgetvalue(result, 0, 6);
 
 PQclear(result);
 
-tuple >> stat->cash
+uint32_t uid;
+
+tuple >> uid
+      >> stat->cash
       >> stat->freeMb
       >> stat->lastCashAdd
       >> stat->passiveTime;
@@ -692,8 +681,7 @@ query.str("");
 
 query << "SELECT dir_num, upload, download "
          "FROM tb_stats_traffic "
-         "WHERE fk_user IN (SELECT pk_user FROM tb_users WHERE name = '" << elogin << "') AND "
-               "DATE_TRUNC('month', stats_date) = DATE_TRUNC('month', CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP))";
+         "WHERE fk_user = " << uid;
 
 result = PQexec(connection, query.str().c_str());
 
@@ -1421,7 +1409,127 @@ int POSTGRESQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year,
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-return SaveStat(stat, login, year, month);
+if (PQstatus(connection) != CONNECTION_OK)
+    {
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Connection lost. Trying to reconnect...'\n", strError.c_str());
+    if (Reset())
+        {
+        strError = "Connection lost";
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): '%s'\n", strError.c_str());
+        return -1;
+        }
+    }
+
+if (StartTransaction())
+    {
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to start transaction'\n");
+    return -1;
+    }
+
+std::string elogin = login;
+
+if (EscapeString(elogin))
+    {
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to escape login'\n");
+    if (RollbackTransaction())
+	{
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to rollback transaction'\n");
+	}
+    return -1;
+    }
+
+std::string date;
+
+MakeDate(date, year, month);
+
+std::stringstream query;
+query << "SELECT sp_add_month_stats("
+            "'" << elogin << "',"
+            "CAST('" << date << "' AS DATE), "
+            "CAST(" << stat.cash << " AS dm_money), "
+            "CAST(" << stat.freeMb << " AS dm_money), "
+            "CAST('" << Int2TS(stat.lastActivityTime) << "' AS TIMESTAMP), "
+            "CAST(" << stat.lastCashAdd << " AS dm_money), "
+            "CAST('" << Int2TS(stat.lastCashAddTime) << "' AS TIMESTAMP), "
+            "CAST(" << stat.passiveTime << " AS INTEGER))";
+
+PGresult * result = PQexec(connection, query.str().c_str());
+
+if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+    strError = PQresultErrorMessage(result);
+    PQclear(result);
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): '%s'\n", strError.c_str());
+    if (RollbackTransaction())
+	{
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to rollback transaction'\n");
+	}
+    return -1;
+    }
+
+int tuples = PQntuples(result);
+
+if (tuples != 1)
+    {
+    strError = "Failed to fetch month stat's ID";
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
+    PQclear(result);
+    if (RollbackTransaction())
+	{
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to rollback transaction'\n");
+	}
+    return -1;
+    }
+
+uint32_t sid;
+
+if (str2x(PQgetvalue(result, 0, 0), sid))
+    {
+    strError = "Failed to convert string to int";
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): '%s'\n", strError.c_str());
+    PQclear(result);
+    if (RollbackTransaction())
+	{
+	printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to rollback transaction'\n");
+	}
+    return -1;
+    }
+
+PQclear(result);
+
+for (int dir = 0; dir < DIR_NUM; ++dir)
+    {
+    query.str("");
+    query << "SELECT sp_add_month_stats_traffic ("
+                << sid << ", "
+                "CAST(" << dir << " AS SMALLINT), "
+                "CAST(" << stat.up[dir] << " AS BIGINT), "
+                "CAST(" << stat.down[dir] << " AS BIGINT))";
+
+    result = PQexec(connection, query.str().c_str());
+
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+        {
+        strError = PQresultErrorMessage(result);
+        PQclear(result);
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): '%s'\n", strError.c_str());
+        if (RollbackTransaction())
+            {
+            printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to rollback transaction'\n");
+            }
+        return -1;
+        }
+
+    PQclear(result);
+    }
+
+if (CommitTransaction())
+    {
+    printfd(__FILE__, "POSTGRESQL_STORE::SaveMonthStat(): 'Failed to commit transaction'\n");
+    return -1;
+    }
+
+return 0;
 }
 
 //-----------------------------------------------------------------------------
