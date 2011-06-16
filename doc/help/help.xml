@@ -5,7 +5,8 @@
 "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2001/XInclude'">
 ]>
 <book xmlns="http://docbook.org/ns/docbook"
-      xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+      xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0"
+      lang="ru">
     <info>
         <title>Stargazer - руководство пользователя</title>
         <author>
