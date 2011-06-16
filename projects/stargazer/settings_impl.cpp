@@ -40,7 +40,8 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL()
-    : strError(),
+    : SETTINGS(),
+      strError(),
       modulesPath("/usr/lib/stg"),
       dirName(DIR_NUM),
       confDir("/etc/stargazer"),
@@ -72,7 +73,8 @@ SETTINGS_IMPL::SETTINGS_IMPL()
 }
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
-    : strError(),
+    : SETTINGS(),
+      strError(),
       modulesPath("/usr/lib/stg"),
       dirName(DIR_NUM),
       confDir(cd),
@@ -104,7 +106,8 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
 }
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
-    : strError(),
+    : SETTINGS(),
+      strError(),
       modulesPath(rval.modulesPath),
       dirName(rval.dirName),
       confDir(rval.confDir),
