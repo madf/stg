@@ -29,6 +29,7 @@
 
 #include <csignal>
 #include <cassert>
+#include <cstdlib>
 #include <algorithm>
 
 #include "stg/common.h"

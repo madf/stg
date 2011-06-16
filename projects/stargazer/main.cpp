@@ -35,6 +35,7 @@
 #include <csignal>
 #include <cerrno>
 #include <cstdio>
+#include <cstdlib> // srandom, exit
 #include <fstream>
 #include <vector>
 #include <set>
