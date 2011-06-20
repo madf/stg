@@ -91,6 +91,16 @@ else
     SHELL="/usr/local/bin/bash"
 fi
 
+if [ -z "$CC" ]
+then
+    CC=gcc
+fi
+
+if [ -z "$CXX" ]
+then
+    CXX=g++
+fi
+
 echo -n "Checking CC... "
 $CC --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
