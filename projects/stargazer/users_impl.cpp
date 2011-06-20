@@ -53,7 +53,8 @@ extern const volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st, TARIFFS * t, const ADMIN * sa)
-    : users(),
+    : USERS(),
+      users(),
       usersToDelete(),
       userIPNotifiersBefore(),
       userIPNotifiersAfter(),
@@ -274,7 +275,7 @@ usersList.clear();
 if (store->GetUsersList(&usersList) < 0)
     {
     WriteServLog(store->GetStrError().c_str());
-    exit(1);
+    return -1;
     }
 
 user_iter ui;

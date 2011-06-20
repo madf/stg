@@ -54,7 +54,8 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
            const TARIFFS * t,
            const ADMIN * a,
            const USERS * u)
-    : users(u),
+    : USER(),
+      users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       login(),
@@ -137,7 +138,8 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
            const TARIFFS * t,
            const ADMIN * a,
            const USERS * u)
-    : users(u),
+    : USER(),
+      users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       login(),
@@ -217,7 +219,8 @@ pthread_mutex_init(&mutex, &attr);
 #endif
 //-----------------------------------------------------------------------------
 USER_IMPL::USER_IMPL(const USER_IMPL & u)
-    : users(u.users),
+    : USER(),
+      users(u.users),
       property(u.settings->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       login(u.login),

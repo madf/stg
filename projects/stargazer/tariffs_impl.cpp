@@ -42,7 +42,8 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
-    : tariffs(),
+    : TARIFFS(),
+      tariffs(),
       store(st),
       WriteServLog(GetStgLogger()),
       strError(),

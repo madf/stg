@@ -42,7 +42,8 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 ADMINS_IMPL::ADMINS_IMPL(STORE * st)
-    : stg(0xFFFF, "@stargazer", ""),
+    : ADMINS(),
+      stg(0xFFFF, "@stargazer", ""),
       noAdmin(0xFFFF, "NO-ADMIN", ""),
       data(),
       store(st),

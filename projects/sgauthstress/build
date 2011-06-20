@@ -96,28 +96,28 @@ else
     SHELL="/usr/local/bin/bash"
 fi
 
-echo -n "Checking gcc... "
-gcc --version > /dev/null 2> /dev/null
+echo -n "Checking CC... "
+$CC --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     echo "FAIL!"
-    echo "gcc not found"
+    echo "$CC not found"
     exit;
 fi
 echo "found"
-echo -n "Checking g++... "
-g++ --version > /dev/null 2> /dev/null
+echo -n "Checking CXX... "
+$CXX --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     echo "FAIL!"
-    echo "g++ not found"
+    echo "$CXX not found"
     exit;
 fi
 echo "found"
 
 echo -n "Checking endianess... "
 echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
-gcc $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
+$CC $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     echo "FAIL!"
@@ -140,7 +140,7 @@ rm -f fake
 rm -f build_check.c
 
 echo -n "Checking for -lfbclient... "
-gcc $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+$CC $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -157,7 +157,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lmysqlclient... "
-    gcc $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
@@ -198,7 +198,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lpq... "
-    gcc $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no

@@ -33,14 +33,16 @@
 
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL()
-    : conf(),
+    : ADMIN(),
+      conf(),
       ip(0),
       WriteServLog(GetStgLogger())
 {
 }
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
-    : conf(ac),
+    : ADMIN(),
+      conf(ac),
       ip(0),
       WriteServLog(GetStgLogger())
 {
@@ -49,7 +51,8 @@ ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
 ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
                        const std::string & login,
                        const std::string & password)
-    : conf(priv, login, password),
+    : ADMIN(),
+      conf(priv, login, password),
       ip(0),
       WriteServLog(GetStgLogger())
 {

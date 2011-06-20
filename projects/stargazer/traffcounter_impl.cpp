@@ -37,6 +37,7 @@
 #include <csignal>
 #include <cassert>
 #include <cstdio> // fopen and similar
+#include <cstdlib> // strtol
 
 #include "stg/common.h"
 #include "stg/locker.h"
@@ -57,7 +58,8 @@ tcp = 0, udp, icmp, tcp_udp, all
 
 //-----------------------------------------------------------------------------
 TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
-    : WriteServLog(GetStgLogger()),
+    : TRAFFCOUNTER(),
+      WriteServLog(GetStgLogger()),
       rulesFileName(fn),
       monitoring(false),
       users(u),

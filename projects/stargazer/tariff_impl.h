@@ -46,16 +46,20 @@
 class TARIFF_IMPL : public TARIFF {
 public:
     TARIFF_IMPL()
-        : tariffData()
+        : TARIFF(),
+          tariffData()
     {};
     TARIFF_IMPL(const std::string & name)
-        : tariffData(name)
+        : TARIFF(),
+          tariffData(name)
     {};
     TARIFF_IMPL(const TARIFF_DATA & td)
-        : tariffData(td)
+        : TARIFF(),
+          tariffData(td)
     {};
     TARIFF_IMPL(const TARIFF_IMPL & t)
-        : tariffData(t.tariffData)
+        : TARIFF(),
+          tariffData(t.tariffData)
     {};
     virtual ~TARIFF_IMPL() {};
 
