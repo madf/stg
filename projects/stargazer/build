@@ -59,7 +59,7 @@ MIN_XMLRPCC_VERSION="1.06.27"
 XMLRPC_FEATURES="c++2 abyss-server"
 
 
-if [ -z $1 ]
+if [ -z "$1" ]
 then
     DEFS="$DEFS -DNDEBUG"
     MAKEOPTS="-j1"
@@ -156,6 +156,16 @@ else
              capture/ether_freebsd
              capture/divert_freebsd"
     SHELL="/usr/local/bin/bash"
+fi
+
+if [ -z "$CC" ]
+then
+    CC=gcc
+fi
+
+if [ -z "$CXX" ]
+then
+    CXX=g++
 fi
 
 echo -n "Checking CC... "
