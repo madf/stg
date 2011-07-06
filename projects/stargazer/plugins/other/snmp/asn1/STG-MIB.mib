@@ -1,11 +1,11 @@
-STG-MIB DEFINITIONS ::=
-
-BEGIN
+STG-MIB DEFINITIONS ::= BEGIN
 
 IMPORTS
-    enterprises, OBJECT-TYPE FROM RFC1155-SMI
-    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
-    NOTIFICATION-TYPE FROM SNMPv2-SMI
+    enterprises,
+    MODULE-IDENTITY, OBJECT-TYPE,
+    Integer32,
+    NOTIFICATION-TYPE               FROM SNMPv2-SMI
+    DisplayString                   FROM RFC1213-MIB;
 
 stgMIB MODULE-IDENTITY
     LAST-UPDATED "201101060000Z"
@@ -14,21 +14,18 @@ stgMIB MODULE-IDENTITY
         "Primary Contact: Maxim Mamontov
          email:     faust@stg.dp.ua"
     DESCRIPTION
-        "This MIB module defines objects for Stargazer derived data."
+        "This MIB module defines objects for Stargazer data."
     REVISION     "201101060000Z"
-    DESCRIPTION
-        "Derived from LM_SENSORS."
+    DESCRIPTION "Initial revision"
     ::= { enterprises 9363 }
 
-stgMIB ::= OBJECT IDENTIFIER { enterprises 9363 }
+stg-24 OBJECT IDENTIFIER ::= { stgMIB 1 }
 
-stg-24 ::= OBJECT IDENTIFIER { stgMIB 1 }
-
-users ::= OBJECT IDENTIFIER { stg-24 1 }
-tariffs ::= OBJECT IDENTIFIER { stg-24 2 }
-admins ::= OBJECT IDENTIFIER { stg-24 3 }
-services ::= OBJECT IDENTIFIER { stg-24 4 }
-corporations ::= OBJECT IDENTIFIER { stg-24 5 }
+users OBJECT IDENTIFIER ::= { stg-24 1 }
+tariffs OBJECT IDENTIFIER ::= { stg-24 2 }
+admins OBJECT IDENTIFIER ::= { stg-24 3 }
+services OBJECT IDENTIFIER ::= { stg-24 4 }
+corporations OBJECT IDENTIFIER ::= { stg-24 5 }
 
 totalUsers OBJECT-TYPE
     SYNTAX      Integer32
@@ -77,19 +74,51 @@ noCashUsers OBJECT-TYPE
 
 tariffUsers OBJECT-TYPE
     SYNTAX      SEQUENCE OF UsersByTariff
-    MAX-ACCESS  read-only
+    MAX-ACCESS  not-accessible
     STATUS      current
     DESCRIPTION
 	"The number of users with negative cash"
     DEFVAL { 0 }
     ::= { users 6 }
 
-UsersByTariff ::= SEQUENCE
-    {
+usersByTariff OBJECT-TYPE
+    SYNTAX      UsersByTariff
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A row describing a given tariff"
+    INDEX   { tariffId }
+    ::= {tariffUsers 1 }
+
+UsersByTariff ::= SEQUENCE {
     tariffId Integer32,
     tariffName DisplayString,
     userCount Integer32
-    }
+}
+
+tariffId OBJECT-TYPE
+    SYNTAX      Integer32 (0..255)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The id of the tariff this table describes."
+    ::= { usersByTariff 1 }
+
+tariffName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the tariff this table describes."
+    ::= { usersByTariff 2 }
+
+userCount OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The count fo users of the tariff this table describes."
+    ::= { usersByTariff 3 }
 
 disabledDetailStatsUsers OBJECT-TYPE
     SYNTAX      Integer32
