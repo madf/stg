@@ -17,7 +17,7 @@ stgMIB MODULE-IDENTITY
         "This MIB module defines objects for Stargazer data."
     REVISION     "201101060000Z"
     DESCRIPTION "Initial revision"
-    ::= { enterprises 9363 }
+    ::= { enterprises 38313 }
 
 stg-24 OBJECT IDENTIFIER ::= { stgMIB 1 }
 

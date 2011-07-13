@@ -114,7 +114,7 @@ return sac.GetPlugin();
 int SendOpenPDU(int fd)
 {
 const char * description = "Stg SNMP Agent";
-//int oid[] = {1, 3, 6, 1, 4, 1, 9363, 1, 5, 2, 1, 1};
+//int oid[] = {1, 3, 6, 1, 4, 1, 38313, 1, 5, 2, 1, 1};
 asn_enc_rval_t error;
 OpenPDU_t msg;
 
@@ -126,7 +126,7 @@ asn_long2INTEGER(&msg.choice.simple.version, SimpleOpen__version_version_1);
                            oid,
                            sizeof(oid[0]),
                            7);*/
-if (!String2OI(".1.3.6.1.4.1.9363", &msg.choice.simple.identity))
+if (!String2OI(".1.3.6.1.4.1.38313", &msg.choice.simple.identity))
     {
     printfd(__FILE__, "SendOpenPDU() - failed to convert string to OBJECT_IDENTIFIER\n");
     return -1;
@@ -181,7 +181,7 @@ return 0;
 
 int SendRReqPDU(int fd)
 {
-int oid[] = {1, 3, 6, 1, 4, 1, 9363, 1};
+int oid[] = {1, 3, 6, 1, 4, 1, 38313, 1};
 asn_enc_rval_t error;
 RReqPDU_t msg;
 
@@ -390,18 +390,18 @@ if (PrepareNet())
     return -1;
 
 // Users
-sensors[".1.3.6.1.4.1.9363.1.1.1"] = new TotalUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.2"] = new ConnectedUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.3"] = new AuthorizedUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.4"] = new AlwaysOnlineUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.5"] = new NoCashUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.7"] = new DisabledDetailStatsUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.8"] = new DisabledUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.9"] = new PassiveUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.10"] = new CreditUsersSensor(*users);
-sensors[".1.3.6.1.4.1.9363.1.1.11"] = new FreeMbUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.1"] = new TotalUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.2"] = new ConnectedUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.3"] = new AuthorizedUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.4"] = new AlwaysOnlineUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.5"] = new NoCashUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.7"] = new DisabledDetailStatsUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.8"] = new DisabledUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.9"] = new PassiveUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.10"] = new CreditUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.11"] = new FreeMbUsersSensor(*users);
 // Tariffs
-sensors[".1.3.6.1.4.1.9363.1.2.1"] = new TotalTariffsSensor(*tariffs);
+sensors[".1.3.6.1.4.1.38313.1.2.1"] = new TotalTariffsSensor(*tariffs);
 
 if (!running)
     {
