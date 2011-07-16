@@ -400,6 +400,7 @@ sensors[".1.3.6.1.4.1.38313.1.1.8"] = new DisabledUsersSensor(*users);
 sensors[".1.3.6.1.4.1.38313.1.1.9"] = new PassiveUsersSensor(*users);
 sensors[".1.3.6.1.4.1.38313.1.1.10"] = new CreditUsersSensor(*users);
 sensors[".1.3.6.1.4.1.38313.1.1.11"] = new FreeMbUsersSensor(*users);
+sensors[".1.3.6.1.4.1.38313.1.1.12"] = new TariffChangeUsersSensor(*users);
 // Tariffs
 sensors[".1.3.6.1.4.1.38313.1.2.1"] = new TotalTariffsSensor(*tariffs);
 

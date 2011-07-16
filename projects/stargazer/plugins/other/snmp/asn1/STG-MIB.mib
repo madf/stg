@@ -165,6 +165,15 @@ freeMbUsers OBJECT-TYPE
     DEFVAL { 0 }
     ::= { users 11 }
 
+tariffChangeUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of users changing tariff next month"
+    DEFVAL { 0 }
+    ::= { users 12 }
+
 totalTariffs OBJECT-TYPE
     SYNTAX      Integer32
     MAX-ACCESS  read-only

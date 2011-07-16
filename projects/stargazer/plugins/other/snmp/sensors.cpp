@@ -192,3 +192,23 @@ users.CloseSearch(handle);
 Int2OS(objectSyntax, count);
 return true;
 }
+
+bool TariffChangeUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+{
+int handle = users.OpenSearch();
+if (!handle)
+    return false;
+
+USER_PTR user;
+size_t count = 0;
+while (!users.SearchNext(handle, &user))
+    {
+    if (!user->GetProperty().nextTariff.ConstData().empty())
+        ++count;
+    }
+
+users.CloseSearch(handle);
+
+Int2OS(objectSyntax, count);
+return true;
+}

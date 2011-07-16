@@ -152,6 +152,19 @@ class FreeMbUsersSensor : public Sensor {
         USERS & users;
 };
 
+class TariffChangeUsersSensor : public Sensor {
+    public:
+        TariffChangeUsersSensor(USERS & u)
+            : users(u)
+        {}
+        virtual ~TariffChangeUsersSensor() {}
+
+        bool GetValue(ObjectSyntax_t * objectSyntax);
+
+    private:
+        USERS & users;
+};
+
 class TotalTariffsSensor : public Sensor {
     public:
         TotalTariffsSensor(const TARIFFS & t)
