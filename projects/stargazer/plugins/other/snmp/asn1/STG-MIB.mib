@@ -77,7 +77,7 @@ tariffUsers OBJECT-TYPE
     MAX-ACCESS  not-accessible
     STATUS      current
     DESCRIPTION
-	"The number of users with negative cash"
+	"The number of users by each tariff"
     DEFVAL { 0 }
     ::= { users 6 }
 
