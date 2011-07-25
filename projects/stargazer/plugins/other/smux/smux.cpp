@@ -358,7 +358,7 @@ pthread_mutex_init(&mutex, NULL);
 
 smuxHandlers[SMUX_PDUs_PR_close] = &SMUX::CloseHandler;
 smuxHandlers[SMUX_PDUs_PR_registerResponse] = &SMUX::RegisterResponseHandler;
-smuxHandlers[SMUX_PDUs_PR_pdus] = &SMUX::PDUsHandler;
+smuxHandlers[SMUX_PDUs_PR_pdus] = &SMUX::PDUsRequestHandler;
 smuxHandlers[SMUX_PDUs_PR_commitOrRollback] = &SMUX::CommitOrRollbackHandler;
 
 pdusHandlers[PDUs_PR_get_request] = &SMUX::GetRequestHandler;

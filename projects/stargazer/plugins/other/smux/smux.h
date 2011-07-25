@@ -80,7 +80,7 @@ private:
 
     bool CloseHandler(const SMUX_PDUs_t * pdus);
     bool RegisterResponseHandler(const SMUX_PDUs_t * pdus);
-    bool PDUsHandler(const SMUX_PDUs_t * pdus);
+    bool PDUsRequestHandler(const SMUX_PDUs_t * pdus);
     bool CommitOrRollbackHandler(const SMUX_PDUs_t * pdus);
 
     bool GetRequestHandler(const PDUs_t * pdus);

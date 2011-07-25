@@ -27,7 +27,7 @@ asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 return false;
 }
 
-bool SMUX::PDUsHandler(const SMUX_PDUs_t * pdus)
+bool SMUX::PDUsRequestHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::PDUsHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
