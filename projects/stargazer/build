@@ -127,6 +127,7 @@ PLUGINS="authorization/ao
          other/ping
          other/rscript
          other/radius
+         other/smux
          store/files
          capture/cap_nf"
 
