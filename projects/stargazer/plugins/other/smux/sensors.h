@@ -6,6 +6,7 @@
 
 #include "stg/users.h"
 #include "stg/tariffs.h"
+#include "stg/user_property.h"
 
 #include "asn1/ObjectSyntax.h"
 
@@ -17,6 +18,11 @@ class Sensor {
 };
 
 typedef std::map<std::string, Sensor *> Sensors;
+
+class TableSensor {
+    public:
+        virtual bool appendTable(Sensors & sensors);
+};
 
 class TotalUsersSensor : public Sensor {
     public:
@@ -33,114 +39,117 @@ class TotalUsersSensor : public Sensor {
         const USERS & users;
 };
 
-class ConnectedUsersSensor : public Sensor {
+class UsersSensor : public Sensor {
     public:
-        ConnectedUsersSensor(USERS & u) : users(u) {}
+        UsersSensor(USERS & u) : users(u) {}
+        virtual ~UsersSensor() {};
+
+        bool GetValue(ObjectSyntax_t * objectSyntax) const;
+
+    private:
+        USERS & users;
+
+        virtual bool UserPredicate(USER_PTR userPtr) const = 0;
+};
+
+class ConnectedUsersSensor : public UsersSensor {
+    public:
+        ConnectedUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~ConnectedUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetConnected(); }
 };
 
-class AuthorizedUsersSensor : public Sensor {
+class AuthorizedUsersSensor : public UsersSensor {
     public:
-        AuthorizedUsersSensor(USERS & u) : users(u) {}
+        AuthorizedUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~AuthorizedUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetAuthorized(); }
 };
 
-class AlwaysOnlineUsersSensor : public Sensor {
+class AlwaysOnlineUsersSensor : public UsersSensor {
     public:
-        AlwaysOnlineUsersSensor(USERS & u) : users(u) {}
+        AlwaysOnlineUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~AlwaysOnlineUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().alwaysOnline; }
 };
 
-class NoCashUsersSensor : public Sensor {
+class NoCashUsersSensor : public UsersSensor {
     public:
-        NoCashUsersSensor(USERS & u) : users(u) {}
+        NoCashUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~NoCashUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().cash < 0; }
 };
 
-class DisabledDetailStatsUsersSensor : public Sensor {
+class DisabledDetailStatsUsersSensor : public UsersSensor {
     public:
-        DisabledDetailStatsUsersSensor(USERS & u) : users(u) {}
+        DisabledDetailStatsUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~DisabledDetailStatsUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().disabledDetailStat; }
 };
 
-class DisabledUsersSensor : public Sensor {
+class DisabledUsersSensor : public UsersSensor {
     public:
-        DisabledUsersSensor(USERS & u) : users(u) {}
+        DisabledUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~DisabledUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().disabled; }
 };
 
-class PassiveUsersSensor : public Sensor {
+class PassiveUsersSensor : public UsersSensor {
     public:
-        PassiveUsersSensor(USERS & u) : users(u) {}
+        PassiveUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~PassiveUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().passive; }
 };
 
-class CreditUsersSensor : public Sensor {
+class CreditUsersSensor : public UsersSensor {
     public:
-        CreditUsersSensor(USERS & u) : users(u) {}
+        CreditUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~CreditUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().credit > 0; }
 };
 
-class FreeMbUsersSensor : public Sensor {
+class FreeMbUsersSensor : public UsersSensor {
     public:
-        FreeMbUsersSensor(USERS & u) : users(u) {}
+        FreeMbUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~FreeMbUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().freeMb > 0; }
 };
 
-class TariffChangeUsersSensor : public Sensor {
+class TariffChangeUsersSensor : public UsersSensor {
     public:
-        TariffChangeUsersSensor(USERS & u) : users(u) {}
+        TariffChangeUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~TariffChangeUsersSensor() {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
-
     private:
-        USERS & users;
+        bool UserPredicate(USER_PTR userPtr) const
+        { return userPtr->GetProperty().nextTariff.ConstData().empty(); }
 };
 
 class TotalTariffsSensor : public Sensor {
