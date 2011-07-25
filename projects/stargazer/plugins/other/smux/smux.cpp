@@ -34,22 +34,6 @@ PLUGIN * GetPlugin()
 return sac.GetPlugin();
 }
 
-int ParseIntInRange(const std::string & str,
-                    int min,
-                    int max,
-                    int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    return -1;
-    }
-return 0;
-}
-
 SMUX_SETTINGS::SMUX_SETTINGS()
     : ip(0),
       port(0)

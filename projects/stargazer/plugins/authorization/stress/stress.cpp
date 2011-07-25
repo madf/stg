@@ -91,21 +91,6 @@ AUTH_STRESS_SETTINGS::AUTH_STRESS_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int AUTH_STRESS_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
 int AUTH_STRESS_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 PARAM_VALUE pv;

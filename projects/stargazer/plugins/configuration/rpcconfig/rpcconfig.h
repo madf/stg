@@ -36,10 +36,6 @@ public:
     uint16_t             GetPort() const { return port; };
     double               GetCookieTimeout() const { return cookieTimeout; };
 private:
-    int     ParseIntInRange(const std::string & str,
-                            int min,
-                            int max,
-                            int * val);
     std::string  errorStr;
     int          port;
     double       cookieTimeout;

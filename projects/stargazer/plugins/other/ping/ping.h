@@ -76,8 +76,6 @@ public:
     int ParseSettings(const MODULE_SETTINGS & s);
     int GetPingDelay() const { return pingDelay; }
 private:
-    int ParseIntInRange(const std::string & str, int min, int max, int * val);
-
     int pingDelay;
     mutable std::string errorStr;
 };

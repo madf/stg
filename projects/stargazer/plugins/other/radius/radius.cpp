@@ -78,21 +78,6 @@ return radc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int RAD_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
 int RAD_SETTINGS::ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst)
 {
 std::copy(str.begin(), str.end(), std::back_inserter(*lst));

@@ -66,7 +66,6 @@ public:
     const std::list<string> & GetAcctServices() const { return acctServices; }
 
 private:
-    int ParseIntInRange(const std::string & str, int min, int max, int * val);
     int ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst);
 
     uint16_t port;

@@ -300,18 +300,3 @@ port = p;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int DIVERT_CAP::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------

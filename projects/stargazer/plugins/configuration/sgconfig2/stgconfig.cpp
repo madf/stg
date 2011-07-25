@@ -47,21 +47,6 @@ const string& STG_CONFIG_SETTINGS::GetStrError() const
 return errorStr;
 }
 
-int STG_CONFIG_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-
 int STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;

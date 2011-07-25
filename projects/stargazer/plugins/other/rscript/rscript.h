@@ -114,7 +114,6 @@ public:
     const std::string & GetMapFileName() const { return subnetFile; }
 
 private:
-    int                 ParseIntInRange(const std::string & str, int min, int max, int * val);
     int                 sendPeriod;
     uint16_t            port;
     string              errorStr;

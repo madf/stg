@@ -98,6 +98,13 @@ std::string &   Trim(std::string & val);
 
 std::string     IconvString(const std::string & source, const std::string & from, const std::string & to);
 
+int ParseInt(const std::string & str, int * val);
+int ParseUnsigned(const std::string & str, unsigned * val);
+int ParseIntInRange(const std::string & str, int min, int max, int * val);
+int ParseUnsignedInRange(const std::string & str, unsigned min,
+                         unsigned max, unsigned * val);
+int ParseYesNo(const std::string & str, bool * val);
+
 //-----------------------------------------------------------------------------
 template <typename varT>
 int str2x(const std::string & str, varT & x)

@@ -76,7 +76,6 @@ public:
     int             ParseSettings(const MODULE_SETTINGS & s);
     int             GetAverageOnlineTime() const;
 private:
-    int             ParseIntInRange(const std::string & str, int min, int max, int * val);
     int             averageOnlineTime;
     std::string     errorStr;
 };

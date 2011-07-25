@@ -35,60 +35,6 @@ SETTINGS::SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int ParseYesNo(const std::string & value, bool * val)
-{
-if (0 == strcasecmp(value.c_str(), "yes"))
-    {
-    *val = true;
-    return 0;
-    }
-if (0 == strcasecmp(value.c_str(), "no"))
-    {
-    *val = false;
-    return 0;
-    }
-
-return -1;
-}
-//-----------------------------------------------------------------------------
-int ParseInt(const std::string & value, int * val)
-{
-if (str2x<int>(value, *val))
-    return -1;
-
-return 0;
-}
-//-----------------------------------------------------------------------------
-int ParseUnsigned(const std::string & value, unsigned * val)
-{
-if (str2x<unsigned>(value, *val))
-    return -1;
-
-return 0;
-}
-//-----------------------------------------------------------------------------
-int ParseIntInRange(const std::string & value, int min, int max, int * val)
-{
-if (ParseInt(value, val) != 0)
-    return -1;
-
-if (*val < min || *val > max)
-    return -1;
-
-return 0;
-}
-//-----------------------------------------------------------------------------
-int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val)
-{
-if (ParseUnsigned(value, val) != 0)
-    return -1;
-
-if (*val < min || *val > max)
-    return -1;
-
-return 0;
-}
-//-----------------------------------------------------------------------------
 int ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
 {
 assert(node && "DOTCONFDocumentNode must not be NULL!");

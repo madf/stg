@@ -101,13 +101,7 @@ public:
 
 private:
 
-    int ParseInt(const std::string & value, int * val);
-    int ParseUnsigned(const std::string & value, unsigned * val);
-    int ParseIntInRange(const std::string & value, int min, int max, int * val);
-    int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val);
-    int ParseYesNo(const std::string & value, bool * val);
-    int ParseDetailStatWritePeriod(const std::string & detailStatPeriodStr);
-
+    int ParseDetailStatWritePeriod(const std::string & str);
     int ParseModuleSettings(const DOTCONFDocumentNode * dirNameNode, std::vector<PARAM_VALUE> * params);
 
     static void ErrorCallback(void * data, const char * buf);

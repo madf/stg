@@ -44,41 +44,8 @@ const string & XR_CONFIG_SETTINGS::GetStrError() const
 return errorStr;
 }
 //-----------------------------------------------------------------------------
-int XR_CONFIG_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (strtoi2(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
 int XR_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-/*int p;
-PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
-
-pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
-    {
-    errorStr = "Parameter \'Port\' not found.";
-    return -1;
-    }
-
-if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
-    {
-    errorStr = "Cannot parse parameter \'Port\': " + errorStr;
-    return -1;
-    }
-port = p;*/
 
 return 0;
 }

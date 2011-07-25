@@ -67,12 +67,6 @@ private:
 
     std::string confFile;
     std::string strError;
-
-    int ParseInt(const std::string & value, int * val);
-    int ParseUnsigned(const std::string & value, unsigned * val);
-    int ParseIntInRange(const std::string & value, int min, int max, int * val);
-    int ParseUnsignedInRange(const std::string & value, unsigned min, unsigned max, unsigned * val);
-    int ParseYesNo(const std::string & value, bool * val);
 };
 
 #endif

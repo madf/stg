@@ -1,9 +1,7 @@
 #include <string>
 #include <pthread.h>
 #include "base_plugin.h"
-//#include "common_settings.h"
 #include "common.h"
-//#include "configproto.h"
 
 using namespace std;
 
@@ -22,7 +20,6 @@ public:
     uint16_t        GetPort();
 
 private:
-    int     ParseIntInRange(const string & str, int min, int max, int * val);
     string  errorStr;
     int     port;
 };

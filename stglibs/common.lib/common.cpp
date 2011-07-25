@@ -978,4 +978,59 @@ delete[] inBuf;
 
 return dst;
 }
-//---------------------------------------------------------------------------
+
+int ParseYesNo(const std::string & str, bool * val)
+{
+if (0 == strncasecmp(str.c_str(), "yes", 3))
+    {
+    *val = true;
+    return 0;
+    }
+
+if (0 == strncasecmp(str.c_str(), "no", 2))
+    {
+    *val = false;
+    return 0;
+    }
+
+return -1;
+}
+
+inline
+int ParseInt(const std::string & str, int * val)
+{
+if (str2x<int>(str, *val))
+    return -1;
+return 0;
+}
+
+inline
+int ParseUnsigned(const string & str, unsigned * val)
+{
+if (str2x<unsigned>(str, *val))
+    return -1;
+return 0;
+}
+
+int ParseIntInRange(const string & str, int min, int max, int * val)
+{
+if (ParseInt(str, val) != 0)
+    return -1;
+
+if (*val < min || *val > max)
+    return -1;
+
+return 0;
+}
+
+int ParseUnsignedInRange(const string & str, unsigned min,
+                         unsigned max, unsigned * val)
+{
+if (ParseUnsigned(str, val) != 0)
+    return -1;
+
+if (*val < min || *val > max)
+    return -1;
+
+return 0;
+}

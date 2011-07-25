@@ -76,8 +76,6 @@ private:
     int                 DivertCapRead(char * buffer, int blen, char ** iface, int n);
     int                 DivertCapClose();
 
-    int                 ParseIntInRange(const std::string & str, int min, int max, int * val);
-
     MODULE_SETTINGS     settings;
 
     int                 port;

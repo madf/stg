@@ -22,7 +22,6 @@ public:
     int             ParseSettings(const MODULE_SETTINGS & s);
     uint16_t        GetPort();
 private:
-    int     ParseIntInRange(const string & str, int min, int max, int * val);
     string  errorStr;
     int     port;
 };
