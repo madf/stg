@@ -10,6 +10,7 @@
 #include "stg/admin.h"
 #include "stg/module_settings.h"
 #include "stg/settings.h"
+#include "stg/plugin_creator.h"
 
 #include "rpcconfig.h"
 #include "info_methods.h"
@@ -18,27 +19,7 @@
 #include "admins_methods.h"
 #include "messages_methods.h"
 
-class RPC_CONFIG_CREATOR {
-private:
-    RPC_CONFIG * rpcconfig;
-
-public:
-    RPC_CONFIG_CREATOR()
-        : rpcconfig(new RPC_CONFIG())
-        {
-        }
-    ~RPC_CONFIG_CREATOR()
-        {
-        delete rpcconfig;
-        }
-
-    RPC_CONFIG * GetPlugin()
-        {
-        return rpcconfig;
-        }
-};
-
-RPC_CONFIG_CREATOR rpcc;
+PLUGIN_CREATOR<RPC_CONFIG> rpcc;
 
 RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
     : errorStr(),

@@ -42,28 +42,14 @@ $Author: faust $
 #include "stg/common.h" 
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
 #include "cap_nf.h"
 
-class CAP_NF_CREATOR {
-public:
-    CAP_NF_CREATOR()
-        : nf(new NF_CAP())
-        {
-        }
-
-    ~CAP_NF_CREATOR()
-        {
-        delete nf;
-        }
-
-    NF_CAP * GetCapturer() { return nf; }
-private:
-    NF_CAP * nf;
-} cnc;
+PLUGIN_CREATOR<NF_CAP> cnc;
 
 PLUGIN * GetPlugin()
 {
-return cnc.GetCapturer();
+return cnc.GetPlugin();
 }
 
 NF_CAP::NF_CAP()

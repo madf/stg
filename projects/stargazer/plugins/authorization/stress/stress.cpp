@@ -33,35 +33,14 @@
 #include "stg/user.h"
 #include "stg/common.h"
 #include "stg/user_property.h"
+#include "stg/plugin_creator.h"
 
 #include "stress.h"
 
-class STRESS_CREATOR
-{
-private:
-    AUTH_STRESS * dc;
-
-public:
-    STRESS_CREATOR()
-        {
-        printfd(__FILE__, "constructor STRESS_CREATOR\n");
-        dc = new AUTH_STRESS();
-        };
-    ~STRESS_CREATOR()
-        {
-        printfd(__FILE__, "destructor STRESS_CREATOR\n");
-        delete dc;
-        };
-
-    PLUGIN * GetPlugin()
-    {
-        return dc;
-    };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STRESS_CREATOR stressc;
+PLUGIN_CREATOR<AUTH_STRESS> stressc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

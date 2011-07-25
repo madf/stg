@@ -45,6 +45,7 @@ $Date: 2010/09/10 06:43:03 $
 
 #include "stg/common.h"
 #include "stg/traffcounter.h"
+#include "sg/plugin_creator.h"
 #include "divert_cap.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
@@ -60,35 +61,15 @@ char iface[10];
 pollfd pollddiv;
 DIVERT_DATA cddiv;  //capture data
 //-----------------------------------------------------------------------------
-class DIVERT_CAP_CREATOR {
-private:
-    DIVERT_CAP * divc;
-
-public:
-    DIVERT_CAP_CREATOR()
-        : divc(new DIVERT_CAP())
-        {
-        }
-    ~DIVERT_CAP_CREATOR()
-        {
-        delete divc;
-        }
-
-    DIVERT_CAP * GetCapturer()
-    {
-    return divc;
-    }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-DIVERT_CAP_CREATOR dcc;
+PLUGIN_CREATOR<DIVERT_CAP> dcc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return dcc.GetCapturer();
+return dcc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

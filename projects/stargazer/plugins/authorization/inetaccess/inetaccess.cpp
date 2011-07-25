@@ -44,6 +44,7 @@
 #include "stg/tariff.h"
 #include "stg/user_property.h"
 #include "stg/settings.h"
+#include "stg/plugin_creator.h"
 #include "inetaccess.h"
 
 extern volatile const time_t stgTime;
@@ -53,30 +54,9 @@ void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
 //-----------------------------------------------------------------------------
-class IA_CREATOR
-{
-private:
-    AUTH_IA * ia;
-
-public:
-    IA_CREATOR()
-        : ia(new AUTH_IA())
-        {
-        };
-    ~IA_CREATOR()
-        {
-        delete ia;
-        };
-
-    AUTH_IA * GetPlugin()
-    {
-        return ia;
-    };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-IA_CREATOR iac;
+PLUGIN_CREATOR<AUTH_IA> iac;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

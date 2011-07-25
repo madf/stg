@@ -30,27 +30,13 @@
 #include <vector>
 #include <algorithm>
 
+#include "stg/ibpp.h"
+#include "stg/plugin_creator.h"
+#include "firebird_store.h"
+
 using namespace std;
 
-#include "firebird_store.h"
-#include "stg/ibpp.h"
-
-class FIREBIRD_STORE_CREATOR
-{
-public:
-    FIREBIRD_STORE_CREATOR()
-        : frb(new FIREBIRD_STORE())
-        {
-        };
-    ~FIREBIRD_STORE_CREATOR()
-        {
-        delete frb;
-        };
-    FIREBIRD_STORE * GetStore() { return frb; };
-private:
-    FIREBIRD_STORE * frb;
-} frsc;
-
+PLUGIN_CREATOR<FIREBIRD_STORE> frsc;
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {

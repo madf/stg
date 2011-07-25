@@ -51,6 +51,7 @@
 #include "stg/blowfish.h"
 #include "stg/logger.h"
 #include "stg/locker.h"
+#include "stg/plugin_creator.h"
 #include "file_store.h"
 
 #define DELETED_USERS_DIR   "deleted_users"
@@ -63,78 +64,15 @@ int GetFileList(vector<string> * fileList, const string & directory, mode_t mode
 
 const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
-class BAK_FILE
-{
-public:
-
-    //-------------------------------------------------------------------------
-    BAK_FILE(const string & fileName, bool removeBak)
-            : f(NULL),
-              removeBak(false)
-        {
-        bakSuccessed = false;
-        BAK_FILE::removeBak = removeBak;
-        fileNameBak = fileName + ".bak";
-        if (rename(fileName.c_str(), fileNameBak.c_str()))
-            {
-            printfd(__FILE__, "BAK_FILE::BAK_FILE - rename failed. Message: '%s'\n", strerror(errno));
-            }
-        else
-            {
-            bakSuccessed = true;
-            }
-
-        }
-    //-------------------------------------------------------------------------
-    ~BAK_FILE()
-        {
-        if(bakSuccessed && removeBak)
-            {
-            if (unlink(fileNameBak.c_str()))
-                {
-                printfd(__FILE__, "BAK_FILE::~BAK_FILE - unlink failed. Message: '%s'\n", strerror(errno));
-                }
-            }
-        }
-    //-------------------------------------------------------------------------
-
-private:
-    FILE * f;
-    bool bakSuccessed;
-    string fileNameBak;
-    bool removeBak;
-};
-//-----------------------------------------------------------------------------
-class FILES_STORE_CREATOR
-{
-private:
-    FILES_STORE * fs;
-
-public:
-    FILES_STORE_CREATOR()
-        : fs(new FILES_STORE())
-        {
-        };
-    ~FILES_STORE_CREATOR()
-        {
-        delete fs;
-        };
-
-    FILES_STORE * GetStore()
-    {
-        return fs;
-    };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-FILES_STORE_CREATOR fsc;
+PLUGIN_CREATOR<FILES_STORE> fsc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return fsc.GetStore();
+return fsc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
@@ -978,8 +916,6 @@ int FILES_STORE::SaveUserConf(const USER_CONF & conf, const string & login) cons
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 
-//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
-
 CONFIGFILE cfstat(fileName, true);
 
 int e = cfstat.Error();
@@ -1036,8 +972,6 @@ int FILES_STORE::SaveUserStat(const USER_STAT & stat, const string & login) cons
 char s[22];
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
-
-//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
     {
     CONFIGFILE cfstat(fileName, true);

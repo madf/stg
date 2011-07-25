@@ -12,6 +12,7 @@
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
 #include "stg/blowfish.h"
+#include "stg/plugin_creator.h"
 #include "mysql_store.h"
 
 #define adm_enc_passwd "cjeifY8m3"
@@ -95,26 +96,7 @@ int GetULongLongInt(const string & str, uint64_t * val, uint64_t defaultVal)
     return 0;
 } 
 
-class MYSQL_STORE_CREATOR
-{
-private:
-    MYSQL_STORE * ms;
-
-public:
-    MYSQL_STORE_CREATOR()
-        : ms(new MYSQL_STORE())
-        {
-        };
-    ~MYSQL_STORE_CREATOR()
-        {
-        delete ms;
-        };
-
-    MYSQL_STORE * GetStore()
-        {
-        return ms;
-        };
-} msc;
+PLUGIN_CREATOR<MYSQL_STORE> msc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

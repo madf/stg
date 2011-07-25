@@ -4,33 +4,13 @@
 #include <functional>
 #include <algorithm>
 
+#include "stg/plugin_creator.h"
 #include "stgconfig.h"
 #include "../../../tariffs.h"
 #include "../../../admins.h"
 #include "../../../users.h"
 
-class STGCONFIG_CREATOR
-{
-private:
-    STG_CONFIG * stgconfig;
-
-public:
-    STGCONFIG_CREATOR()
-        : stgconfig(new STG_CONFIG())
-        {
-        };
-    ~STGCONFIG_CREATOR()
-        {
-        delete stgconfig;
-        };
-
-    STG_CONFIG * GetPlugin()
-        {
-        return stgconfig;
-        };
-};
-
-STGCONFIG_CREATOR stgc;
+PLUGIN_CREATOR<STG_CONFIG> stgc;
 
 BASE_PLUGIN * GetPlugin()
 {

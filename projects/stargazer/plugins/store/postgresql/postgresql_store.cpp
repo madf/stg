@@ -44,30 +44,17 @@
 
 #include <libpq-fe.h>
 
-#include "postgresql_store.h"
-#include "postgresql_store_utils.h"
 #include "stg/module_settings.h"
+#include "stg/plugin_creator.h"
+#include "postgresql_store_utils.h"
+#include "postgresql_store.h"
 
-class POSTGRESQL_STORE_CREATOR
-{
-public:
-    POSTGRESQL_STORE_CREATOR()
-        : pqStore(new POSTGRESQL_STORE())
-        {
-        };
-    ~POSTGRESQL_STORE_CREATOR()
-        {
-        delete pqStore;
-        };
-    POSTGRESQL_STORE * GetStore() { return pqStore; };
-private:
-    POSTGRESQL_STORE * pqStore;
-} pqStoreeCreator;
+PLUGIN_CREATOR<POSTGRESQL_STORE> pqStoreeCreator;
 
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return pqStoreeCreator.GetStore();
+return pqStoreeCreator.GetPlugin();
 }
 
 //-----------------------------------------------------------------------------

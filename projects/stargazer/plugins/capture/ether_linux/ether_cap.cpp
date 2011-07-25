@@ -44,43 +44,24 @@ $Date: 2009/12/13 13:45:13 $
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include "ether_cap.h"
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
+#include "ether_cap.h"
 
 //#define CAP_DEBUG 1
 
 //-----------------------------------------------------------------------------
-class ETHER_CAP_CREATOR {
-private:
-    ETHER_CAP * ec;
-
-public:
-    ETHER_CAP_CREATOR()
-        : ec(new ETHER_CAP())
-        {
-        }
-    ~ETHER_CAP_CREATOR()
-        {
-        delete ec;
-        }
-
-    ETHER_CAP * GetCapturer()
-        {
-        return ec;
-        }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-ETHER_CAP_CREATOR ecc;
+PLUGIN_CREATOR<ETHER_CAP> ecc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return ecc.GetCapturer();
+return ecc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

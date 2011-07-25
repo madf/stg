@@ -7,32 +7,13 @@
 #include "stg/tariffs.h"
 #include "stg/admins.h"
 #include "stg/users.h"
+#include "stg/plugin_creator.h"
 #include "stgconfig.h"
 
-class STGCONFIG_CREATOR
-{
-private:
-    STG_CONFIG * stgconfig;
-
-public:
-    STGCONFIG_CREATOR()
-        : stgconfig(new STG_CONFIG())
-        {
-        };
-    ~STGCONFIG_CREATOR()
-        {
-        delete stgconfig;
-        };
-
-    STG_CONFIG * GetPlugin()
-        {
-        return stgconfig;
-        };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STGCONFIG_CREATOR stgc;
+PLUGIN_CREATOR<STG_CONFIG> stgc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

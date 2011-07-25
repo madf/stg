@@ -11,23 +11,12 @@
 #include <algorithm>
 
 #include "stg/common.h"
+#include "stg/plugin_creator.h"
 
 #include "smux.h"
 #include "utils.h"
 
-class SMUX_CREATOR
-{
-private:
-    SMUX * smux;
-
-public:
-    SMUX_CREATOR() : smux(new SMUX()) {}
-    ~SMUX_CREATOR() { delete smux; }
-
-    SMUX * GetPlugin() { return smux; }
-};
-
-SMUX_CREATOR sac;
+PLUGIN_CREATOR<SMUX> sac;
 
 PLUGIN * GetPlugin()
 {
