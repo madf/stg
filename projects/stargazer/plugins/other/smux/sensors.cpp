@@ -5,15 +5,7 @@
 
 #include "sensors.h"
 
-void Int2OS(ObjectSyntax_t * dst, long src)
-{
-dst->present = ObjectSyntax_PR_simple;
-SimpleSyntax_t * simpleSyntax = &dst->choice.simple;
-simpleSyntax->present = SimpleSyntax_PR_number;
-asn_long2INTEGER(&simpleSyntax->choice.number, src);
-}
-
-bool ConnectedUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool ConnectedUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -29,11 +21,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool AuthorizedUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool AuthorizedUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -49,11 +41,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool AlwaysOnlineUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool AlwaysOnlineUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -69,11 +61,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool NoCashUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool NoCashUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -89,11 +81,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool DisabledDetailStatsUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool DisabledDetailStatsUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -109,11 +101,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool DisabledUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool DisabledUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -129,11 +121,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool PassiveUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool PassiveUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -149,11 +141,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool CreditUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool CreditUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -169,11 +161,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool FreeMbUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool FreeMbUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -189,11 +181,11 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
 
-bool TariffChangeUsersSensor::GetValue(ObjectSyntax_t * objectSyntax)
+bool TariffChangeUsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 if (!handle)
@@ -209,6 +201,6 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-Int2OS(objectSyntax, count);
+ValueToOS(count, objectSyntax);
 return true;
 }
