@@ -27,27 +27,6 @@
 
 bool WaitPackets(int sd);
 
-std::string OI2String(OBJECT_IDENTIFIER_t * oi)
-{
-std::string res;
-
-int arcs[1024];
-int count = OBJECT_IDENTIFIER_get_arcs(oi, arcs, sizeof(arcs[0]), 1024);
-
-if (count > 1024)
-    return "";
-
-for (int i = 0; i < count; ++i)
-    {
-    res += ".";
-    std::string arc;
-    strprintf(&arc, "%d", arcs[i]);
-    res += arc;
-    }
-
-return res;
-}
-
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi)
 {
 size_t left = 0, pos = 0, arcPos = 0;
@@ -194,63 +173,6 @@ else
     {
     write(fd, buffer, error.encoded);
     printfd(__FILE__, "RReqPDU encoded successfully to %d bytes\n",
-            error.encoded);
-    }
-return 0;
-}
-
-int SendGetResponsePDU(int fd, GetResponse_PDU_t * getResponse)
-{
-asn_enc_rval_t error;
-
-char buffer[1024];
-error = der_encode_to_buffer(&asn_DEF_GetResponse_PDU, getResponse, buffer,
-                             sizeof(buffer));
-
-if (error.encoded == -1)
-    {
-    printfd(__FILE__, "Could not encode GetResponsePDU (at %s)\n",
-            error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
-    }
-else
-    {
-    write(fd, buffer, error.encoded);
-    printfd(__FILE__, "GetResponsePDU encoded successfully to %d bytes\n",
-            error.encoded);
-    }
-return 0;
-}
-
-int SendGetResponseErrorPDU(int fd,
-                            const PDU_t * getRequest,
-                            int errorStatus,
-                            int errorIndex)
-{
-asn_enc_rval_t error;
-GetResponse_PDU_t msg;
-
-memset(&msg, 0, sizeof(msg));
-
-msg.request_id = getRequest->request_id;
-asn_long2INTEGER(&msg.error_status, errorStatus);
-asn_long2INTEGER(&msg.error_index, errorIndex);
-
-char buffer[1024];
-error = der_encode_to_buffer(&asn_DEF_GetResponse_PDU, &msg, buffer,
-                             sizeof(buffer));
-
-if (error.encoded == -1)
-    {
-    printfd(__FILE__, "Could not encode GetResponsePDU for error (at %s)\n",
-            error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
-    }
-else
-    {
-    write(fd, buffer, error.encoded);
-    printfd(__FILE__,
-            "GetResponsePDU for error encoded successfully to %d bytes\n",
             error.encoded);
     }
 return 0;

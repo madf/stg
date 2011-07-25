@@ -6,6 +6,7 @@ PROG = mod_smux.so
 
 SRCS =  smux.cpp \
 	sensors.cpp \
+	handlers.cpp \
 	asn1/DisplayString.c \
 	asn1/PhysAddress.c \
 	asn1/IfEntry.c \
