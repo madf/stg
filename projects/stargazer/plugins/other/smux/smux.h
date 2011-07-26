@@ -6,8 +6,8 @@
 #include <string>
 #include <map>
 
-#include "asn1/SMUX-PDUs.h"
-#include "asn1/ObjectSyntax.h"
+#include "stg/SMUX-PDUs.h"
+#include "stg/ObjectSyntax.h"
 
 #include "stg/os_int.h"
 #include "stg/plugin.h"

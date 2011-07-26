@@ -7,7 +7,7 @@
 #include "stg/tariffs.h"
 #include "stg/user_property.h"
 
-#include "asn1/ObjectSyntax.h"
+#include "stg/ObjectSyntax.h"
 
 #include "value2os.h"
 #include "types.h"

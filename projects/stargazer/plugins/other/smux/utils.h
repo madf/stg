@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "asn1/OBJECT_IDENTIFIER.h"
-#include "SMUX-PDUs.h"
-#include "asn1/GetResponse-PDU.h"
+#include "stg/OBJECT_IDENTIFIER.h"
+#include "stg/SMUX-PDUs.h"
+#include "stg/GetResponse-PDU.h"
 
 bool WaitPackets(int sd);
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi);

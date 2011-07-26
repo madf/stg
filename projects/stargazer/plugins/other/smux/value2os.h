@@ -1,6 +1,8 @@
 #ifndef __VALUE_2_OS_H__
 #define __VALUE_2_OS_H__
 
+#include "stg/ObjectSyntax.h"
+
 template <typename T>
 bool ValueToOS(const T & value, ObjectSyntax * objectSyntax);
 

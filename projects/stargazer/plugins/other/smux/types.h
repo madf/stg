@@ -5,7 +5,7 @@
 #include <vector>
 #include <istream>
 
-#include "asn1/OBJECT_IDENTIFIER.h"
+#include "stg/OBJECT_IDENTIFIER.h"
 
 class OID {
     public:

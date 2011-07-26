@@ -1,7 +1,7 @@
-#include "asn1/GetRequest-PDU.h"
-#include "asn1/GetResponse-PDU.h"
-#include "asn1/VarBindList.h"
-#include "asn1/VarBind.h"
+#include "stg/GetRequest-PDU.h"
+#include "stg/GetResponse-PDU.h"
+#include "stg/VarBindList.h"
+#include "stg/VarBind.h"
 
 #include "stg/common.h"
 

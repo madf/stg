@@ -6,11 +6,11 @@
 
 #include "stg/common.h"
 
-#include "asn1/OpenPDU.h"
-#include "asn1/ClosePDU.h"
-#include "asn1/RReqPDU.h"
-#include "asn1/ber_decoder.h"
-#include "asn1/der_encoder.h"
+#include "stg/OpenPDU.h"
+#include "stg/ClosePDU.h"
+#include "stg/RReqPDU.h"
+#include "stg/ber_decoder.h"
+#include "stg/der_encoder.h"
 
 #include "pen.h"
 #include "utils.h"

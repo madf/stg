@@ -1,4 +1,4 @@
-#include "asn1/INTEGER.h"
+#include "stg/INTEGER.h"
 
 #include "stg/user.h"
 
