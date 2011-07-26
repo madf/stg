@@ -12,7 +12,7 @@ SRCS =  smux.cpp \
 
 STGLIBS = -lstgcommon -lstgsmux
 
-CXXFLAGS += -Iasn1
+CXXFLAGS += -I$(DIR_INCLUDE)/stg
 
 include ../../Makefile.in
 
