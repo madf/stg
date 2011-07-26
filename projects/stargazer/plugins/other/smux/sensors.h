@@ -1,7 +1,6 @@
 #ifndef __SENSORS_H__
 #define __SENSORS_H__
 
-#include <string>
 #include <map>
 
 #include "stg/users.h"
@@ -11,13 +10,14 @@
 #include "asn1/ObjectSyntax.h"
 
 #include "value2os.h"
+#include "types.h"
 
 class Sensor {
     public:
         virtual bool GetValue(ObjectSyntax_t * objectSyntax) const = 0;
 };
 
-typedef std::map<std::string, Sensor *> Sensors;
+typedef std::map<OID, Sensor *> Sensors;
 
 class TableSensor {
     public:

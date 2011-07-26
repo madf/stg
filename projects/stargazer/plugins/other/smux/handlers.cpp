@@ -77,7 +77,7 @@ for (int i = 0; i < vbl->list.count; ++i)
     {
     VarBind_t * vb = getRequest->variable_bindings.list.array[i];
     Sensors::iterator it;
-    it = sensors.find(OI2String(&vb->name));
+    it = sensors.find(OID(&vb->name));
     if (it == sensors.end())
         {
         SendGetResponseErrorPDU(sock, getRequest,
@@ -117,7 +117,7 @@ for (int i = 0; i < vbl->list.count; ++i)
     {
     VarBind_t * vb = getRequest->variable_bindings.list.array[i];
     Sensors::iterator it;
-    it = sensors.upper_bound(OI2String(&vb->name));
+    it = sensors.upper_bound(OID(&vb->name));
     if (it == sensors.end())
         {
         SendGetResponseErrorPDU(sock, getRequest,

@@ -74,6 +74,27 @@ OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), arcPos);
 return true;
 }
 
+std::string OI2String(OBJECT_IDENTIFIER_t * oi)
+{
+std::string res;
+
+int arcs[1024];
+int count = OBJECT_IDENTIFIER_get_arcs(oi, arcs, sizeof(arcs[0]), 1024);
+
+if (count > 1024)
+    return "";
+
+for (int i = 0; i < count; ++i)
+    {
+    res += ".";
+    std::string arc;
+    strprintf(&arc, "%d", arcs[i]);
+    res += arc;
+    }
+
+return res;
+}
+
 bool SendOpenPDU(int fd)
 {
 const char * description = "Stg SMUX Plugin";
@@ -189,27 +210,6 @@ if(error.code != RC_OK)
     return NULL;
     }
 return pdus;
-}
-
-std::string OI2String(OBJECT_IDENTIFIER_t * oi)
-{
-std::string res;
-
-int arcs[1024];
-int count = OBJECT_IDENTIFIER_get_arcs(oi, arcs, sizeof(arcs[0]), 1024);
-
-if (count > 1024)
-    return "";
-
-for (int i = 0; i < count; ++i)
-    {
-    res += ".";
-    std::string arc;
-    strprintf(&arc, "%d", arcs[i]);
-    res += arc;
-    }
-
-return res;
 }
 
 int SendGetResponsePDU(int fd, GetResponse_PDU_t * getResponse)

@@ -16,6 +16,7 @@
 #include "stg/tariffs.h"
 
 #include "sensors.h"
+#include "types.h"
 
 extern "C" PLUGIN * GetPlugin();
 

@@ -8,6 +8,7 @@ SRCS =  smux.cpp \
 	sensors.cpp \
 	handlers.cpp \
 	utils.cpp \
+	types.cpp \
 	asn1/DisplayString.c \
 	asn1/PhysAddress.c \
 	asn1/IfEntry.c \
