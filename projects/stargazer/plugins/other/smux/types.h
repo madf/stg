@@ -23,9 +23,12 @@ class OID {
 
         OID & operator=(const OID & rvalue);
         bool operator==(const OID & rvalue) const;
+        bool operator!=(const OID & rvalue) const { return !operator==(rvalue); }
         bool operator<(const OID & rvalue) const;
+        bool operator>(const OID & rvalue) const
+        { return !operator==(rvalue) && !operator<(rvalue); }
 
-        std::ostream & operator<<(std::ostream & stream) const;
+        friend std::ostream & operator<<(std::ostream & stream, const OID & oid);
 
     private:
         std::vector<unsigned> arcs;

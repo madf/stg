@@ -113,9 +113,9 @@ if (rvalue.arcs.size() < arcs.size())
 return true;
 }
 
-std::ostream & OID::operator<<(std::ostream & stream) const
+std::ostream & operator<<(std::ostream & stream, const OID & oid)
 {
-for (size_t i = 0; i < arcs.size(); ++i)
-    stream << "." << arcs[i];
+for (size_t i = 0; i < oid.arcs.size(); ++i)
+    stream << "." << oid.arcs[i];
 return stream;
 }
