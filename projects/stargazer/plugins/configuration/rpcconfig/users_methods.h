@@ -9,7 +9,7 @@ class ADMINS;
 class TARIFFS;
 class USERS;
 class STORE;
-class IP_MASK;
+struct IP_MASK;
 
 class METHOD_USER_GET : public xmlrpc_c::method {
 public:
