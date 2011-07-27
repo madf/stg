@@ -347,12 +347,12 @@ switch (executerPid)
 
     case 0:
         delete settings;
-        Executer(msgKey, *msgID, executerPid, procName);
+        Executer(*msgID, executerPid, procName);
         return 1;
 
     default:
         if (executersPid.empty()) {
-            Executer(msgKey, *msgID, executerPid, NULL);
+            Executer(*msgID, executerPid, NULL);
         }
         executersPid.insert(executerPid);
     }
