@@ -5,20 +5,10 @@
  * Description:  C implementation of the Blowfish algorithm.
  */
 
-#include <cstring>
+#include <string.h>
 
-#include "blowfish.h"
 #include "stg/const.h"
-
-/*typedef struct _BCoptions
-    {
-    unsigned char remove;
-    unsigned char standardout;
-    unsigned char compression;
-    unsigned char type;
-    uint32_t origsize;
-    unsigned char securedelete;
-    } BCoptions;*/
+#include "blowfish.h"
 
 #define ENCRYPT 0
 #define DECRYPT 1
@@ -445,28 +435,24 @@ for (i = 0; i < 4; ++i)
     }
 }
 //-----------------------------------------------------------------------------
-void EnDecodeInit(const char * passwd, int, BLOWFISH_CTX *ctx)
+void EnDecodeInit(const char * passwd, int length, BLOWFISH_CTX *ctx)
 {
-unsigned char * keyL = NULL;//[PASSWD_LEN];  // ðÁÒÏÌØ ÄÌÑ ÛÉÆÒÏ×ËÉ
-
-keyL = new unsigned char[PASSWD_LEN];
+unsigned char keyL[PASSWD_LEN];
 
 memset(keyL, 0, PASSWD_LEN);
 
 strncpy((char *)keyL, passwd, PASSWD_LEN);
 
 Blowfish_Init(ctx, keyL, PASSWD_LEN);
-
-delete[] keyL;
 }
 //-----------------------------------------------------------------------------
 // Note: swap bytes order for compatibility with OpenSSL
 uint32_t bytes2block(const char * c)
 {
-    uint32_t t = static_cast<unsigned char>(*c++);
-    t += static_cast<unsigned char>(*c++) << 8;
-    t += static_cast<unsigned char>(*c++) << 16;
-    t += static_cast<unsigned char>(*c) << 24;
+    uint32_t t = (unsigned char)(*c++);
+    t += (unsigned char)(*c++) << 8;
+    t += (unsigned char)(*c++) << 16;
+    t += (unsigned char)(*c) << 24;
     return t;
 }
 //-----------------------------------------------------------------------------
