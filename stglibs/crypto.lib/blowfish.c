@@ -16,6 +16,8 @@
 #define endianBig ((unsigned char) 0x45)
 #define endianLittle ((unsigned char) 0x54)
 
+#define MIN(a,b) ((a) < (b) ? a : b)
+
 #ifdef WIN32 /* Win32 doesn't have random() or lstat */
     #define random() rand()
     #define initstate(x,y,z) srand(x)
@@ -27,7 +29,7 @@
 #endif
 
 
-#define N               16
+#define N 16
 
 static uint32_t F(BLOWFISH_CTX *ctx, uint32_t x);
 static const uint32_t ORIG_P[16 + 2] = {
@@ -435,13 +437,13 @@ for (i = 0; i < 4; ++i)
     }
 }
 //-----------------------------------------------------------------------------
-void EnDecodeInit(const char * passwd, int length, BLOWFISH_CTX *ctx)
+void EnDecodeInit(const char * passwd, size_t length, BLOWFISH_CTX *ctx)
 {
 unsigned char keyL[PASSWD_LEN];
 
 memset(keyL, 0, PASSWD_LEN);
 
-strncpy((char *)keyL, passwd, PASSWD_LEN);
+strncpy((char *)keyL, passwd, MIN(length, PASSWD_LEN));
 
 Blowfish_Init(ctx, keyL, PASSWD_LEN);
 }

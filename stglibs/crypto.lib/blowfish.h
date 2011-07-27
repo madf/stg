@@ -25,7 +25,7 @@ void Blowfish_Init(BLOWFISH_CTX *ctx, unsigned char *key, int keyLen);
 void Blowfish_Encrypt(BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr);
 void Blowfish_Decrypt(BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr);
 
-void EnDecodeInit(const char * key, int passwdLen, BLOWFISH_CTX *ctx);
+void EnDecodeInit(const char * key, size_t length, BLOWFISH_CTX *ctx);
 void DecodeString(char * d, const char * s, BLOWFISH_CTX *ctx);
 void EncodeString(char * d, const char * s, BLOWFISH_CTX *ctx);
 
