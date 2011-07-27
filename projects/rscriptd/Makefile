@@ -18,12 +18,6 @@ STGLIBS =  -lstglogger \
 
 LIBS += $(LIB_THREAD)
 
-#ifeq ($(OS),linux)
-#LIBS += -ldl
-#else
-#LIBS += -lc
-#endif
-
 SEARCH_DIRS = -I $(DIR_INCLUDE)
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
@@ -31,7 +25,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall
 LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs install uninstall
 all: libs $(PROG) ../../Makefile.conf
@@ -40,7 +34,7 @@ libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
 $(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS

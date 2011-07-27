@@ -29,7 +29,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall
 LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(DIR_LIB)
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs plugins install uninstall
 all: libs plugins $(PROG) ../../Makefile.conf
@@ -41,7 +41,7 @@ plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS

@@ -566,7 +566,7 @@ if (!fakeConnect)
                 id,
                 dirsStr);
 
-        ScriptExec(scriptOnConnectParams);
+        ScriptExec(scriptOnConnectParams.c_str());
         }
     else
         {
@@ -623,7 +623,7 @@ if (!fakeDisconnect)
                 id,
                 dirsStr);
 
-        ScriptExec(scriptOnDisonnectParams);
+        ScriptExec(scriptOnDisonnectParams.c_str());
         }
     else
         {
@@ -1032,7 +1032,7 @@ if (access(scriptOnAdd.c_str(), X_OK) == 0)
             scriptOnAdd.c_str(),
             login.c_str());
 
-    ScriptExec(scriptOnAddParams);
+    ScriptExec(scriptOnAddParams.c_str());
     }
 else
     {
@@ -1054,7 +1054,7 @@ if (access(scriptOnDel.c_str(), X_OK) == 0)
             scriptOnDel.c_str(),
             login.c_str());
 
-    ScriptExec(scriptOnDelParams);
+    ScriptExec(scriptOnDelParams.c_str());
     }
 else
     {

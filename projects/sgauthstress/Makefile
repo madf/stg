@@ -28,7 +28,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall
 LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs plugins
 all: libs plugins $(PROG) ../../Makefile.conf

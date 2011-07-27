@@ -11,9 +11,9 @@ SRCS = ./main.cpp \
        ./web.cpp
 
 STGLIBS =  -lstgconffiles \
+           -lstgia \
            -lstgcrypto \
-           -lstgcommon \
-           -lstgia
+           -lstgcommon
 
 LIBS += $(LIB_THREAD)
 
@@ -30,7 +30,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall
 LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs install uninstall install-bin install-data uninstall-bin uninstall-data
 all: libs $(PROG) ../../Makefile.conf
@@ -39,7 +39,7 @@ libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
 $(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
+	$(CXX) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS

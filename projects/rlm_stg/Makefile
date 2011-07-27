@@ -30,7 +30,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall -fPIC -I./ 
 LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs install uninstall install-bin uninstall-bin
 all: libs $(PROG) ../../Makefile.conf
@@ -39,7 +39,7 @@ libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
 $(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
+	$(CXX) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS

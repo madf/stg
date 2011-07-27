@@ -10,9 +10,9 @@ SRCS = ./main.cpp \
        ./parser.cpp
 
 LIBS =  -lstgconffiles \
+        -lstgsrvconf \
         -lstgcrypto \
-        -lstgcommon \
-        -lstgsrvconf
+        -lstgcommon
 
 LIBS += -lexpat \
 	$(LIB_THREAD)
@@ -41,7 +41,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 CXXFLAGS += -Wall
 LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 .PHONY: all clean distclean libs install uninstall install-bin install-data uninstall-bin uninstall-data
 all: libs $(PROG) ../../Makefile.conf
@@ -50,7 +50,7 @@ libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
 $(PROG): $(OBJS) $(STGLIBS)
-	$(CC) $^ $(LIBS) $(LDFLAGS) -o $(PROG)
+	$(CXX) $^ $(LIBS) $(LDFLAGS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
