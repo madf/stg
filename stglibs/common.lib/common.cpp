@@ -996,7 +996,6 @@ if (0 == strncasecmp(str.c_str(), "no", 2))
 return -1;
 }
 
-inline
 int ParseInt(const std::string & str, int * val)
 {
 if (str2x<int>(str, *val))
@@ -1004,7 +1003,6 @@ if (str2x<int>(str, *val))
 return 0;
 }
 
-inline
 int ParseUnsigned(const string & str, unsigned * val)
 {
 if (str2x<unsigned>(str, *val))
