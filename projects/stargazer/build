@@ -68,7 +68,7 @@ else
     then
         DEFS="$DEFS -DDEBUG"
         MAKEOPTS="-j1"
-        CXXFLAGS="$CXXFLAGS -g3 -W -Wall"
+        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
     else
         DEFS="$DEFS -DNDEBUG"
         MAKEOPTS="-j1"

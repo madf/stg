@@ -24,7 +24,7 @@ else
     then
         DEFS="-DDEBUG"
         MAKEOPTS="-j1"
-        CXXFLAGS="$CXXFLAGS -g3 -W -Wall"
+        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
     else
         MAKEOPTS="-j1"
     fi
