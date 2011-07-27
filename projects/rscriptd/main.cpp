@@ -251,12 +251,12 @@ switch (executerPid)
         //close(1);
         //close(2);
         //setsid();
-        Executer(msgKey, *msgID, executerPid, procName);
+        Executer(*msgID, executerPid, procName);
         return 1;
 
     default:    // Parent
         if (executersPid.empty())
-            Executer(msgKey, *msgID, executerPid, NULL);
+            Executer(*msgID, executerPid, NULL);
         executersPid.insert(executerPid);
     }
 return 0;

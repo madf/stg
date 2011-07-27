@@ -363,7 +363,7 @@ std::string filePath = scriptsDir + "/OnChange";
 if (access(filePath.c_str(), X_OK) == 0)
     {
     std::string execString("\"" + filePath + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
-    ScriptExec(execString);
+    ScriptExec(execString.c_str());
     }
 else
     {

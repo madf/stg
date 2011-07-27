@@ -4,19 +4,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <cstring>
-#include <cerrno>
-#include <csignal>
+#include <string.h>
+#include <errno.h>
+#include <signal.h>
 
-#include "stg/common.h"
 #include "scriptexecuter.h"
 
-using namespace std;
 
 #define MAX_SCRIPT_LEN  (1100)
 
 static int msgid;
-static bool nonstop;
+static int nonstop;
 
 //-----------------------------------------------------------------------------
 struct SCRIPT_DATA
@@ -25,39 +23,34 @@ struct SCRIPT_DATA
     char    script[MAX_SCRIPT_LEN];
 } sd;
 //-----------------------------------------------------------------------------
-static void CatchUSR1Executer(int)
+static void CatchUSR1Executer()
 {
-nonstop = false;
+nonstop = 0;
 }
 //-----------------------------------------------------------------------------
-int ScriptExec(const string & str)
+int ScriptExec(const char * str)
 {
-if (str.length() >= MAX_SCRIPT_LEN)
-    {
-    printfd(__FILE__, "ScriptExec() - script params exceeds MAX_SCRIPT_LENGTH (%d > %d)\n", str.length(), MAX_SCRIPT_LEN);
+if (strlen(str) >= MAX_SCRIPT_LEN)
     return -1;
-    }
 
-strncpy(sd.script, str.c_str(), MAX_SCRIPT_LEN);
+strncpy(sd.script, str, MAX_SCRIPT_LEN);
 sd.mtype = 1;
 if (msgsnd(msgid, (void *)&sd, MAX_SCRIPT_LEN, 0) < 0)
-    {
-    printfd(__FILE__, "ScriptExec() - failed to send message to the IPC queue: '%s'\n", strerror(errno));
     return -1;
-    }
+
 return 0;
 }
 //-----------------------------------------------------------------------------
 #ifdef LINUX
-void Executer(int, int msgID, pid_t pid, char * procName)
+void Executer(int msgID, pid_t pid, char * procName)
 #else
-void Executer(int, int msgID, pid_t pid, char *)
+void Executer(int msgID, pid_t pid)
 #endif
 {
 msgid = msgID;
 if (pid)
     return;
-nonstop = true;
+nonstop = 1;
 
 #ifdef LINUX
 memset(procName, 0, strlen(procName));
@@ -99,7 +92,7 @@ sigaction(SIGUSR1, &newsa, &oldsa);
 
 int ret;
 
-SCRIPT_DATA sd;
+struct SCRIPT_DATA sd;
 
 while (nonstop)
     {

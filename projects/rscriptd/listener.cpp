@@ -410,7 +410,7 @@ bool LISTENER::Connect(const UserData & data) const
 printfd(__FILE__, "Connect %s\n", data.login.c_str());
 if (access(scriptOnConnect.c_str(), X_OK) == 0)
     {
-    if (ScriptExec(scriptOnConnect + " " + data.params))
+    if (ScriptExec((scriptOnConnect + " " + data.params).c_str()))
         {
         WriteServLog("Script %s cannot be executed for an unknown reason.", scriptOnConnect.c_str());
         return true;
@@ -429,7 +429,7 @@ bool LISTENER::Disconnect(const UserData & data) const
 printfd(__FILE__, "Disconnect %s\n", data.login.c_str());
 if (access(scriptOnDisconnect.c_str(), X_OK) == 0)
     {
-    if (ScriptExec(scriptOnDisconnect + " " + data.params))
+    if (ScriptExec((scriptOnDisconnect + " " + data.params).c_str()))
         {
         WriteServLog("Script %s cannot be executed for an unknown reson.", scriptOnDisconnect.c_str());
         return true;
