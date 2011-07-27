@@ -11,7 +11,7 @@ LN = ln
 CXXFLAGS += -fPIC
 LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
 
-vpath %.so $(DIR_LIB)
+vpath %.a $(DIR_LIB)
 
 all: $(PROG)
 
