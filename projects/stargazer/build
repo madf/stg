@@ -119,7 +119,8 @@ STG_LIBS="logger.lib
 	  scriptexecuter.lib 
 	  conffiles.lib
 	  pinger.lib 
-	  dotconfpp.lib"
+	  dotconfpp.lib
+          smux.lib"
 
 PLUGINS="authorization/ao
          authorization/inetaccess
