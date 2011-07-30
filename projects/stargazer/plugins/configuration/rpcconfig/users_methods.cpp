@@ -394,6 +394,7 @@ if (tariffs->FindByName(tariff))
                                             login,
                                             store))
             {
+            u->ResetNextTariff();
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
             return;
