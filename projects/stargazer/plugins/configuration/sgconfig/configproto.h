@@ -70,7 +70,7 @@ public:
 private:
     int             RecvHdr(int sock);
     int             RecvLogin(int sock);
-    int             SendLoginAnswer(int sock, int err);
+    int             SendLoginAnswer(int sock);
     int             SendHdrAnswer(int sock, int err);
     int             RecvLoginS(int sock);
     int             SendLoginSAnswer(int sock, int err);
