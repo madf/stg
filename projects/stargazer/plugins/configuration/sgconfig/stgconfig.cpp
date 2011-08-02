@@ -17,16 +17,6 @@ PLUGIN_CREATOR<STG_CONFIG> stgc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STG_CONFIG_SETTINGS::STG_CONFIG_SETTINGS()
-    : port(0)
-{
-}
-//-----------------------------------------------------------------------------
-const std::string & STG_CONFIG_SETTINGS::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
 int STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
@@ -50,11 +40,6 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
 port = p;
 
 return 0;
-}
-//-----------------------------------------------------------------------------
-uint16_t STG_CONFIG_SETTINGS::GetPort() const
-{
-return port;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -82,47 +67,12 @@ STG_CONFIG::STG_CONFIG()
 {
 }
 //-----------------------------------------------------------------------------
-void STG_CONFIG::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetTariffs(TARIFFS * t)
-{
-tariffs = t;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetAdmins(ADMINS * a)
-{
-admins = a;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetStore(STORE * s)
-{
-store = s;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetStgSettings(const SETTINGS * s)
-{
-stgSettings = s;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
 int STG_CONFIG::ParseSettings()
 {
 int ret = stgConfigSettings.ParseSettings(settings);
 if (ret)
     errorStr = stgConfigSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-const std::string & STG_CONFIG::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int STG_CONFIG::Start()
@@ -188,11 +138,6 @@ if (isRunning)
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool STG_CONFIG::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * STG_CONFIG::Run(void * d)
 {
 STG_CONFIG * stgConf = (STG_CONFIG *)d;
@@ -204,15 +149,3 @@ stgConf->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-uint16_t STG_CONFIG::GetStartPosition() const
-{
-return 220;
-}
-//-----------------------------------------------------------------------------
-uint16_t STG_CONFIG::GetStopPosition() const
-{
-return 220;
-}
-//-----------------------------------------------------------------------------
-
-
