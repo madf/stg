@@ -102,7 +102,7 @@ PLUGIN_CREATOR<MYSQL_STORE> msc;
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return msc.GetStore();
+return msc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
