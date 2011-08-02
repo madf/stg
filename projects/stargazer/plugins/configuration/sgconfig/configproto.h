@@ -61,10 +61,10 @@ public:
     void            SetTariffs(TARIFFS * t);
     void            SetStore(STORE * s);
     void            SetStgSettings(const SETTINGS * s);
-    uint32_t        GetAdminIP() const;
+    uint32_t        GetAdminIP() const { return adminIP; }
     int             Prepare();
     int             Stop();
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     void            Run();
 
 private:
