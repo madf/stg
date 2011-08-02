@@ -130,7 +130,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 // Функция общения с конфигуратором
-void * CONFIGPROTO::Run(void * a)
+void CONFIGPROTO::Run()
 {
 /*
  * Function Name:ReciveSendConf
@@ -141,19 +141,18 @@ void * CONFIGPROTO::Run(void * a)
  * Returns: возвращает NULL
  */
 
-CONFIGPROTO * cp = (CONFIGPROTO*)a;
-cp->state = confHdr;
+state = confHdr;
 
-while (cp->nonstop)
+while (nonstop)
     {
-    cp->state = confHdr;
+    state = confHdr;
     struct sockaddr_in outerAddr;
     socklen_t outerAddrLen(sizeof(outerAddr));
-    int outerSocket = accept(cp->listenSocket,
+    int outerSocket = accept(listenSocket,
                              (struct sockaddr*)(&outerAddr),
                              &outerAddrLen);
 
-    if (!cp->nonstop)
+    if (!nonstop)
         {
         continue;
         }
@@ -165,77 +164,77 @@ while (cp->nonstop)
         continue;
         }
 
-    cp->adminIP = *(unsigned int*)&(outerAddr.sin_addr);
+    adminIP = *(unsigned int*)&(outerAddr.sin_addr);
 
     printfd(__FILE__, "Connection accepted from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
 
-    if (cp->state == confHdr)
+    if (state == confHdr)
         {
-        if (cp->RecvHdr(outerSocket) < 0)
+        if (RecvHdr(outerSocket) < 0)
             {
             close(outerSocket);
             continue;
             }
-        if (cp->state == confLogin)
+        if (state == confLogin)
             {
-            if (cp->SendHdrAnswer(outerSocket, ans_ok) < 0)
+            if (SendHdrAnswer(outerSocket, ans_ok) < 0)
                 {
                 close(outerSocket);
                 continue;
                 }
 
-            if (cp->RecvLogin(outerSocket) < 0)
+            if (RecvLogin(outerSocket) < 0)
                 {
                 close(outerSocket);
                 continue;
                 }
 
-            if (cp->state == confLoginCipher)
+            if (state == confLoginCipher)
                 {
-                if (cp->SendLoginAnswer(outerSocket, ans_ok) < 0)
+                if (SendLoginAnswer(outerSocket, ans_ok) < 0)
                     {
                     close(outerSocket);
                     continue;
                     }
-                if (cp->RecvLoginS(outerSocket) < 0)
+                if (RecvLoginS(outerSocket) < 0)
                     {
                     close(outerSocket);
                     continue;
                     }
 
-                if (cp->state == confData)
+                if (state == confData)
                     {
-                    if (cp->SendLoginSAnswer(outerSocket, ans_ok) < 0)
+                    if (SendLoginSAnswer(outerSocket, ans_ok) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    if (cp->RecvData(outerSocket) < 0)
+                    if (RecvData(outerSocket) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    cp->state = confHdr;
+                    state = confHdr;
                     }
                 else
                     {
-                    if (cp->SendLoginSAnswer(outerSocket, ans_err) < 0)
+                    if (SendLoginSAnswer(outerSocket, ans_err) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    cp->WriteLogAccessFailed(cp->adminIP);
+                    WriteLogAccessFailed(adminIP);
                     }
                 }
             else
                 {
-                cp->WriteLogAccessFailed(cp->adminIP);
+                WriteLogAccessFailed(adminIP);
                 }
             }
         else
             {
-            cp->WriteLogAccessFailed(cp->adminIP);
-            if (cp->SendHdrAnswer(outerSocket, ans_err) < 0)
+            WriteLogAccessFailed(adminIP);
+            if (SendHdrAnswer(outerSocket, ans_err) < 0)
                 {
                 close(outerSocket);
                 continue;
@@ -244,12 +243,10 @@ while (cp->nonstop)
         }
     else
         {
-        cp->WriteLogAccessFailed(cp->adminIP);
+        WriteLogAccessFailed(adminIP);
         }
     close(outerSocket);
     }
-
-return NULL;
 }
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvHdr(int sock)

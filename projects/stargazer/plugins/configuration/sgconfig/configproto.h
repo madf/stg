@@ -65,7 +65,7 @@ public:
     int             Prepare();
     int             Stop();
     const std::string & GetStrError() const;
-    static void *   Run(void * a);
+    void            Run();
 
 private:
     int             RecvHdr(int sock);

@@ -142,7 +142,7 @@ void * STG_CONFIG::Run(void * d)
 STG_CONFIG * stgConf = (STG_CONFIG *)d;
 stgConf->isRunning = true;
 
-stgConf->config.Run(&stgConf->config);
+stgConf->config.Run();
 
 stgConf->isRunning = false;
 return NULL;
