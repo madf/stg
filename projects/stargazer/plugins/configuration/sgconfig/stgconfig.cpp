@@ -1,7 +1,6 @@
-#include <stdio.h>
 #include <unistd.h>
-#include <signal.h>
 
+#include <csignal>
 #include <algorithm>
 
 #include "stg/tariffs.h"
