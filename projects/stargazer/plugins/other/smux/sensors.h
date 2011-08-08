@@ -15,14 +15,12 @@
 class Sensor {
     public:
         virtual bool GetValue(ObjectSyntax_t * objectSyntax) const = 0;
+#ifdef DEBUG
+        virtual std::string ToString() const = 0;
+#endif
 };
 
 typedef std::map<OID, Sensor *> Sensors;
-
-class TableSensor {
-    public:
-        virtual bool appendTable(Sensors & sensors);
-};
 
 class TotalUsersSensor : public Sensor {
     public:
@@ -35,6 +33,11 @@ class TotalUsersSensor : public Sensor {
         return true;
         }
 
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(users.GetUserNum(), res); return res; }
+#endif
+
     private:
         const USERS & users;
 };
@@ -42,9 +45,12 @@ class TotalUsersSensor : public Sensor {
 class UsersSensor : public Sensor {
     public:
         UsersSensor(USERS & u) : users(u) {}
-        virtual ~UsersSensor() {};
+        virtual ~UsersSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const;
+#ifdef DEBUG
+        std::string ToString() const;
+#endif
 
     private:
         USERS & users;
@@ -163,6 +169,11 @@ class TotalTariffsSensor : public Sensor {
         return true;
         }
 
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(tariffs.GetTariffsNum(), res); return res; }
+#endif
+
     private:
         const TARIFFS & tariffs;
 };
@@ -176,8 +187,20 @@ class ConstSensor : public Sensor {
         bool GetValue(ObjectSyntax * objectSyntax) const
         { return ValueToOS(value, objectSyntax); }
 
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(value, res); return res; }
+#endif
+
     private:
         T value;
 };
+
+template <>
+inline
+std::string ConstSensor<std::string>::ToString() const
+{
+return value;
+}
 
 #endif
