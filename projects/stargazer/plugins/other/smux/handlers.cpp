@@ -128,7 +128,7 @@ for (int i = 0; i < vbl->list.count; ++i)
     VarBind_t newVb;
     memset(&newVb, 0, sizeof(newVb));
 
-    newVb.name = vb->name;
+    it->first.ToOID(&newVb.name);
     it->second->GetValue(&newVb.value);
 
     ASN_SEQUENCE_ADD(varBindList, &newVb);
