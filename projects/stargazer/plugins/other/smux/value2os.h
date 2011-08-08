@@ -50,4 +50,15 @@ asn_long2INTEGER(&simpleSyntax->choice.number, value);
 return true;
 }
 
+template <>
+inline
+bool ValueToOS<std::string>(const std::string & value, ObjectSyntax * objectSyntax)
+{
+objectSyntax->present = ObjectSyntax_PR_simple;
+SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
+simpleSyntax->present = SimpleSyntax_PR_string;
+OCTET_STRING_fromBuf(&simpleSyntax->choice.string, value.c_str(), value.length());
+return true;
+}
+
 #endif
