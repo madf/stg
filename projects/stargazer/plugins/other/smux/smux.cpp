@@ -9,6 +9,9 @@
 
 #include <vector>
 #include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <utility>
 
 #include "stg/common.h"
 #include "stg/plugin_creator.h"
@@ -21,6 +24,12 @@ PLUGIN_CREATOR<SMUX> smc;
 PLUGIN * GetPlugin()
 {
 return smc.GetPlugin();
+}
+
+bool SPrefixLess(const Sensors::value_type & a,
+                 const Sensors::value_type & b)
+{
+return a.first.PrefixLess(b.first);
 }
 
 SMUX_SETTINGS::SMUX_SETTINGS()
@@ -98,9 +107,16 @@ pdusHandlers[PDUs_PR_set_request] = &SMUX::SetRequestHandler;
 
 SMUX::~SMUX()
 {
-Sensors::iterator it;
-for (it = sensors.begin(); it != sensors.end(); ++it)
-    delete it->second;
+    {
+    Sensors::iterator it;
+    for (it = sensors.begin(); it != sensors.end(); ++it)
+        delete it->second;
+    }
+    {
+    Tables::iterator it;
+    for (it = tables.begin(); it != tables.end(); ++it)
+        delete it->second;
+    }
 printfd(__FILE__, "SMUX::~SMUX()\n");
 pthread_mutex_destroy(&mutex);
 }
@@ -129,6 +145,22 @@ sensors[OID(".1.3.6.1.4.1.38313.1.1.11")] = new FreeMbUsersSensor(*users);
 sensors[OID(".1.3.6.1.4.1.38313.1.1.12")] = new TariffChangeUsersSensor(*users);
 // Tariffs
 sensors[OID(".1.3.6.1.4.1.38313.1.2.1")] = new TotalTariffsSensor(*tariffs);
+
+// Table data
+tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *users);
+
+UpdateTables();
+
+#ifdef DEBUG
+Sensors::const_iterator it(sensors.begin());
+while (it != sensors.end())
+    {
+    printfd(__FILE__, "%s = %s\n",
+            it->first.ToString().c_str(),
+            it->second->ToString().c_str());
+    ++it;
+    }
+#endif
 
 if (!running)
     {
@@ -263,4 +295,59 @@ else
     asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
     }
 return false;
+}
+
+bool SMUX::UpdateTables()
+{
+Sensors newSensors;
+bool done = true;
+Tables::iterator it(tables.begin());
+while (it != tables.end())
+    {
+    try
+        {
+        it->second->UpdateSensors(newSensors);
+        }
+    catch (const std::runtime_error & ex)
+        {
+        printfd(__FILE__,
+                "SMUX::UpdateTables - failed to update table '%s': '%s'\n",
+                it->first.c_str(), ex.what());
+        done = false;
+        break;
+        }
+    ++it;
+    }
+if (!done)
+    {
+    Sensors::iterator it(newSensors.begin());
+    while (it != newSensors.end())
+        {
+        delete it->second;
+        ++it;
+        }
+    return false;
+    }
+
+it = tables.begin();
+while (it != tables.end())
+    {
+    std::pair<Sensors::iterator, Sensors::iterator> res;
+    res = std::equal_range(sensors.begin(),
+                           sensors.end(),
+                           std::pair<OID, Sensor *>(OID(it->first), NULL),
+                           SPrefixLess);
+    Sensors::iterator sit(res.first);
+    while (sit != res.second)
+        {
+        delete sit->second;
+        ++sit;
+        }
+    sensors.erase(res.first, res.second);
+    ++it;
+    }
+
+sensors.insert(newSensors.begin(), newSensors.end());
+
+return true;
 }

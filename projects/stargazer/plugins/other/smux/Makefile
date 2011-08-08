@@ -6,6 +6,7 @@ PROG = mod_smux.so
 
 SRCS =  smux.cpp \
 	sensors.cpp \
+	tables.cpp \
 	handlers.cpp \
 	utils.cpp \
 	types.cpp

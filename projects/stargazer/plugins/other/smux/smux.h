@@ -16,6 +16,7 @@
 #include "stg/tariffs.h"
 
 #include "sensors.h"
+#include "tables.h"
 #include "types.h"
 
 extern "C" PLUGIN * GetPlugin();
@@ -88,6 +89,8 @@ private:
     bool GetNextRequestHandler(const PDUs_t * pdus);
     bool SetRequestHandler(const PDUs_t * pdus);
 
+    bool UpdateTables();
+
     USERS * users;
     TARIFFS * tariffs;
 
@@ -105,6 +108,7 @@ private:
     SMUXHandlers smuxHandlers;
     PDUsHandlers pdusHandlers;
     Sensors sensors;
+    Tables tables;
 
 };
 //-----------------------------------------------------------------------------
