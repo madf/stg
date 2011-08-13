@@ -61,9 +61,6 @@ public:
     void SetAdmins(ADMINS * a) { admins = a; }
     void SetServices(SERVICES * s) { services = s; }
     void SetCorporations(CORPORATIONS * c) { corporations = c; }
-    void SetTraffcounter(TRAFFCOUNTER *) {}
-    void SetStore(STORE *) {}
-    void SetStgSettings(const SETTINGS *) {}
     void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
 

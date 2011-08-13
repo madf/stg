@@ -73,11 +73,6 @@ public:
     virtual ~AUTH_AO(){};
 
     void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();

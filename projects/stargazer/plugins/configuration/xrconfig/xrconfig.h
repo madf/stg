@@ -34,7 +34,6 @@ public:
     void                SetTariffs(TARIFFS * t);
     void                SetAdmins(ADMINS * a);
     void                SetStore(BASE_STORE * s);
-    void                SetTraffcounter(TRAFFCOUNTER * tc){};
     void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();

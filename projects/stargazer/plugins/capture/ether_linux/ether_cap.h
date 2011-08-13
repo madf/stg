@@ -49,19 +49,13 @@ public:
     ETHER_CAP();
     virtual ~ETHER_CAP() {}
 
-    void                SetUsers(USERS *) {}
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
     bool                IsRunning() { return isRunning; }
 
-    void                SetSettings(const MODULE_SETTINGS &) {}
     int                 ParseSettings() { return 0; }
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;

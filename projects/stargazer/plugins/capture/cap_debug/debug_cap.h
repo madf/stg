@@ -68,18 +68,12 @@ public:
     DEBUG_CAP();
     virtual ~DEBUG_CAP() {}
 
-    void                SetUsers(USERS * u) {}
-    void                SetTariffs(TARIFFS * t) {}
-    void                SetAdmins(ADMINS * a) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc);
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
     int                 ParseSettings() { return 0; }
-    void                SetSettings(const MODULE_SETTINGS & s) {}
     bool                IsRunning();
     const string &      GetStrError() const;
     const string        GetVersion() const;

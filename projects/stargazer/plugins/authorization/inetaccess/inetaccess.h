@@ -204,10 +204,6 @@ public:
     virtual             ~AUTH_IA();
 
     void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE *) {}
     void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();

@@ -86,9 +86,6 @@ public:
     virtual             ~RADIUS() {};
 
     void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
     void                SetStore(STORE * );
     void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s);

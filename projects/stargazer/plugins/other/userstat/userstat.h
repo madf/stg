@@ -46,27 +46,23 @@ public:
     USERSTAT();
     ~USERSTAT();
 
-    virtual void SetUsers(USERS * u) { users = u; };
-    virtual void SetTariffs(TARIFFS * t) {};
-    virtual void SetAdmins(ADMINS * a) {};
-    virtual void SetTraffcounter(TRAFFCOUNTER * tc) {};
-    virtual void SetStore(BASE_STORE * st) { store = st; };
-    virtual void SetStgSettings(const SETTINGS * s) {};
-    virtual void SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    virtual void SetUsers(USERS * u) { users = u; }
+    virtual void SetStore(BASE_STORE * st) { store = st; }
+    virtual void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     virtual int  ParseSettings();
 
     virtual int  Start();
     virtual int  Stop();
-    virtual bool IsRunning() { return isRunning; };
-    virtual const string  & GetStrError() const { return errorStr; };
-    virtual const string    GetVersion() const { return version; };
-    virtual uint16_t        GetStartPosition() const { return 0; };
-    virtual uint16_t        GetStopPosition() const { return 0; };
+    virtual bool IsRunning() { return isRunning; }
+    virtual const string  & GetStrError() const { return errorStr; }
+    virtual const string    GetVersion() const { return version; }
+    virtual uint16_t        GetStartPosition() const { return 0; }
+    virtual uint16_t        GetStopPosition() const { return 0; }
 
 private:
     struct IsDone : public unary_function<DataThread, bool>
     {
-        bool operator()(const DataThread & info) { return info.IsDone(); };
+        bool operator()(const DataThread & info) { return info.IsDone(); }
     };
     struct ToLower : public unary_function<char, char>
     {

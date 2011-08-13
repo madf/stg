@@ -48,12 +48,7 @@ public:
     DIVERT_CAP();
     virtual ~DIVERT_CAP() {}
 
-    void                SetUsers(USERS *) {}
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();

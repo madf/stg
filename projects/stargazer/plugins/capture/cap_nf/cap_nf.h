@@ -92,12 +92,7 @@ public:
     NF_CAP();
     ~NF_CAP();
 
-    void            SetUsers(USERS *) {}
-    void            SetTariffs(TARIFFS *) {}
-    void            SetAdmins(ADMINS *) {}
     void            SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
-    void            SetStore(STORE *) {}
-    void            SetStgSettings(const SETTINGS *) {}
     void            SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int             ParseSettings();
 
