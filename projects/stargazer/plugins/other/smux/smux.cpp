@@ -6,6 +6,7 @@
 #include <cerrno>
 #include <ctime>
 #include <csignal>
+#include <cassert>
 
 #include <vector>
 #include <algorithm>
@@ -136,6 +137,12 @@ return smuxSettings.ParseSettings(settings);
 
 int SMUX::Start()
 {
+assert(users != NULL && "users not NULL");
+assert(tariffs != NULL && "tariffs not NULL");
+assert(admins != NULL && "admins not NULL");
+assert(services != NULL && "services not NULL");
+assert(corporations != NULL && "corporations not NULL");
+
 if (PrepareNet())
     return -1;
 
