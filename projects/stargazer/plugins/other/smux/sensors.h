@@ -178,6 +178,66 @@ class TotalTariffsSensor : public Sensor {
         const TARIFFS & tariffs;
 };
 
+class TotalAdminsSensor : public Sensor {
+    public:
+        TotalAdminsSensor(const ADMINS & a) : admins(a) {}
+        virtual ~TotalAdminsSensor() {}
+
+        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        {
+        ValueToOS(admins.GetAdminsNum(), objectSyntax);
+        return true;
+        }
+
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(admins.GetAdminsNum(), res); return res; }
+#endif
+
+    private:
+        const ADMINS & admins;
+};
+
+class TotalServicesSensor : public Sensor {
+    public:
+        TotalServicesSensor(const SERVICES & s) : services(s) {}
+        virtual ~TotalServicesSensor() {}
+
+        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        {
+        ValueToOS(services.GetServicesNum(), objectSyntax);
+        return true;
+        }
+
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(services.GetServicesNum(), res); return res; }
+#endif
+
+    private:
+        const SERVICES & services;
+};
+
+class TotalCorporationsSensor : public Sensor {
+    public:
+        TotalCorporationsSensor(const CORPORATIONS & c) : corporations(c) {}
+        virtual ~TotalCorporationsSensor() {}
+
+        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        {
+        ValueToOS(corporations.GetCorporationsNum(), objectSyntax);
+        return true;
+        }
+
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(services.GetCorporationsNum(), res); return res; }
+#endif
+
+    private:
+        const CORPORATIONS & corporations;
+};
+
 template <typename T>
 class ConstSensor : public Sensor {
     public:

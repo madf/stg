@@ -12,8 +12,6 @@
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
-#include "stg/users.h"
-#include "stg/tariffs.h"
 
 #include "sensors.h"
 #include "tables.h"
@@ -24,6 +22,10 @@ extern "C" PLUGIN * GetPlugin();
 class USER;
 class SETTINGS;
 class SMUX;
+class USERS;
+class TARIFFS;
+class SERVICES;
+class CORPORATIONS;
 
 typedef bool (SMUX::*SMUXPacketHandler)(const SMUX_PDUs_t * pdus);
 typedef bool (SMUX::*PDUsHandler)(const PDUs_t * pdus);
@@ -56,7 +58,9 @@ public:
 
     void SetUsers(USERS * u) { users = u; }
     void SetTariffs(TARIFFS * t) { tariffs = t; }
-    void SetAdmins(ADMINS *) {}
+    void SetAdmins(ADMINS * a) { admins = a; }
+    void SetServices(SERVICES * s) { services = s; }
+    void SetCorporations(CORPORATIONS * c) { corporations = c; }
     void SetTraffcounter(TRAFFCOUNTER *) {}
     void SetStore(STORE *) {}
     void SetStgSettings(const SETTINGS *) {}
@@ -93,6 +97,9 @@ private:
 
     USERS * users;
     TARIFFS * tariffs;
+    ADMINS * admins;
+    SERVICES * services;
+    CORPORATIONS * corporations;
 
     mutable std::string errorStr;
     SMUX_SETTINGS smuxSettings;

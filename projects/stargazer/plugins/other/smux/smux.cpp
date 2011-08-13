@@ -15,6 +15,11 @@
 
 #include "stg/common.h"
 #include "stg/plugin_creator.h"
+#include "stg/users.h"
+#include "stg/tariffs.h"
+#include "stg/admins.h"
+#include "stg/services.h"
+#include "stg/corporations.h"
 
 #include "smux.h"
 #include "utils.h"
@@ -89,6 +94,9 @@ SMUX::SMUX()
     : PLUGIN(),
       users(NULL),
       tariffs(NULL),
+      admins(NULL),
+      services(NULL),
+      corporations(NULL),
       running(false),
       stopped(true),
       sock(-1)
@@ -145,6 +153,12 @@ sensors[OID(".1.3.6.1.4.1.38313.1.1.11")] = new FreeMbUsersSensor(*users);
 sensors[OID(".1.3.6.1.4.1.38313.1.1.12")] = new TariffChangeUsersSensor(*users);
 // Tariffs
 sensors[OID(".1.3.6.1.4.1.38313.1.2.1")] = new TotalTariffsSensor(*tariffs);
+// Admins
+sensors[OID(".1.3.6.1.4.1.38313.1.3.1")] = new TotalAdminsSensor(*admins);
+// Services
+sensors[OID(".1.3.6.1.4.1.38313.1.4.1")] = new TotalServicesSensor(*services);
+// Corporations
+sensors[OID(".1.3.6.1.4.1.38313.1.5.1")] = new TotalCorporationsSensor(*corporations);
 
 // Table data
 tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *users);
