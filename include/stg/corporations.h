@@ -33,6 +33,7 @@ public:
     virtual bool FindCorp(const std::string & name, CORP_CONF & corp) = 0;
     virtual bool CorpExists(const std::string & name) const = 0;
     virtual const std::string & GetStrError() const = 0;
+    virtual size_t Count() const = 0;
 
     virtual int OpenSearch() const = 0;
     virtual int SearchNext(int, CORP_CONF * corp) const = 0;
