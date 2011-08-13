@@ -33,6 +33,7 @@ public:
     virtual bool FindService(const std::string & name, SERVICE_CONF & service) = 0;
     virtual bool ServiceExists(const std::string & name) const = 0;
     virtual const std::string & GetStrError() const = 0;
+    virtual size_t Count() const = 0;
 
     virtual int OpenSearch() const = 0;
     virtual int SearchNext(int, SERVICE_CONF * service) const = 0;

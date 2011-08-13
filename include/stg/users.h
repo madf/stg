@@ -44,7 +44,7 @@ public:
     virtual void Del(const std::string & login, const ADMIN * admin) = 0;
 
     virtual int  ReadUsers() = 0;
-    virtual int  GetUserNum() const = 0;
+    virtual size_t Count() const = 0;
 
     virtual int  FindByIPIdx(uint32_t ip, USER_PTR * user) const = 0;
     virtual bool IsIPInIndex(uint32_t ip) const = 0;
