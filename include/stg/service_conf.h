@@ -5,6 +5,9 @@
 
 struct SERVICE_CONF
 {
+SERVICE_CONF()
+    : name(), comment(), cost(0), payDay(0)
+{}
 SERVICE_CONF(const std::string & n)
     : name(n), comment(), cost(0), payDay(0)
 {}
@@ -24,6 +27,12 @@ std::string comment;
 double      cost;
 unsigned    payDay;
 };
+
+inline
+bool operator==(const SERVICE_CONF & a, const SERVICE_CONF & b)
+{
+return a.name == b.name;
+}
 
 #endif //SERVICE_CONF_H
 
