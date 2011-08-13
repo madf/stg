@@ -42,6 +42,7 @@
 #include "stg/locker.h"
 #include "stg/store.h"
 #include "stg/noncopyable.h"
+#include "stg/logger.h"
 #include "admin_impl.h"
 
 class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
@@ -55,12 +56,14 @@ public:
     void          PrintAdmins() const;
     const ADMIN * GetSysAdmin() const { return &stg; }
     const ADMIN * GetNoAdmin() const { return &noAdmin; }
-    bool          FindAdmin(const std::string & l, ADMIN ** admin);
-    bool          AdminExists(const std::string & login) const;
-    bool          AdminCorrect(const std::string & login,
-                               const std::string & password,
-                               ADMIN ** admin);
+    bool          Find(const std::string & l, ADMIN ** admin);
+    bool          Exists(const std::string & login) const;
+    bool          Correct(const std::string & login,
+                          const std::string & password,
+                          ADMIN ** admin);
     const std::string & GetStrError() const { return strError; }
+
+    size_t        Count() const { return data.size(); }
 
     int OpenSearch() const;
     int SearchNext(int, ADMIN_CONF * ac) const;
@@ -70,7 +73,7 @@ private:
     typedef list<ADMIN_IMPL>::iterator admin_iter;
     typedef list<ADMIN_IMPL>::const_iterator const_admin_iter;
 
-    int             ReadAdmins();
+    int             Read();
 
     ADMIN_IMPL              stg;
     ADMIN_IMPL              noAdmin;
