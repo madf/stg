@@ -1280,6 +1280,8 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
     cf.WriteInt("UsrAddDel",   ac.priv.userAddDel);
     cf.WriteInt("ChgTariff",   ac.priv.tariffChg);
     cf.WriteInt("ChgAdmin",    ac.priv.adminChg);
+    cf.WriteInt("ChgService",  ac.priv.serviceChg);
+    cf.WriteInt("ChgCorp",     ac.priv.corpChg);
     }
 
 return 0;
@@ -1406,6 +1408,16 @@ else
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgtariff read failed for admin '%s'\n", ac->login.c_str());
     return -1;
     }
+
+if (cf.ReadInt("ChgService", &a, 0) == 0)
+    ac->priv.serviceChg = a;
+else
+    ac->priv.serviceChg = 0;
+
+if (cf.ReadInt("ChgCorp", &a, 0) == 0)
+    ac->priv.corpChg = a;
+else
+    ac->priv.corpChg = 0;
 
 return 0;
 }
