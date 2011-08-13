@@ -26,9 +26,9 @@ un += " ";
 un += utsn.nodename;
 
 structVal["version"] = xmlrpc_c::value_string(SERVER_VERSION);
-structVal["tariff_num"] = xmlrpc_c::value_int(tariffs->GetTariffsNum());
+structVal["tariff_num"] = xmlrpc_c::value_int(tariffs->Count());
 structVal["tariff"] = xmlrpc_c::value_int(2);
-structVal["users_num"] = xmlrpc_c::value_int(users->GetUserNum());
+structVal["users_num"] = xmlrpc_c::value_int(users->Count());
 structVal["uname"] = xmlrpc_c::value_string(un);
 structVal["dir_num"] = xmlrpc_c::value_int(DIR_NUM);
 structVal["day_fee"] = xmlrpc_c::value_int(dayFee);

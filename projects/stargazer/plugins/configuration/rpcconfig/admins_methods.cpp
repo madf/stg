@@ -23,7 +23,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(login, &admin))
+if (admins->Find(login, &admin))
     {
     structVal["result"] = xmlrpc_c::value_boolean(false);
     *retvalPtr = xmlrpc_c::value_struct(structVal);
@@ -67,7 +67,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     printfd(__FILE__, "METHOD_ADMIN_ADD::execute(): 'Invalid admin (logged)'\n");
     *retvalPtr = xmlrpc_c::value_boolean(false);
@@ -104,7 +104,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -139,7 +139,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * loggedAdmin;
 
-if (admins->FindAdmin(adminInfo.admin, &loggedAdmin))
+if (admins->Find(adminInfo.admin, &loggedAdmin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -147,7 +147,7 @@ if (admins->FindAdmin(adminInfo.admin, &loggedAdmin))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(login, &admin))
+if (admins->Find(login, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;

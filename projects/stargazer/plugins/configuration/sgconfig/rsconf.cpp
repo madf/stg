@@ -317,7 +317,7 @@ if (ret < ADM_LOGIN_LEN)
     return ENODATA;
     }
 
-if (admins->FindAdmin(login, &currAdmin))
+if (admins->Find(login, &currAdmin))
     {
     // Admin not found
     state = confHdr;

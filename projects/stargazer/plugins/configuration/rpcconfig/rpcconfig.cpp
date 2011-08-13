@@ -204,7 +204,7 @@ bool RPC_CONFIG::CheckAdmin(const std::string & login,
 {
 ADMIN * admin = NULL;
 
-if (!admins->AdminCorrect(login, password, &admin))
+if (!admins->Correct(login, password, &admin))
     {
     return true;
     }
