@@ -35,6 +35,7 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "stg/admins.h"
 #include "stg/admin.h"
@@ -48,8 +49,8 @@ public:
     ADMINS_IMPL(STORE * st);
     virtual ~ADMINS_IMPL() {}
 
-    int           Add(const string & login, const ADMIN * admin);
-    int           Del(const string & login, const ADMIN * admin);
+    int           Add(const std::string & login, const ADMIN * admin);
+    int           Del(const std::string & login, const ADMIN * admin);
     int           Change(const ADMIN_CONF & ac, const ADMIN * admin);
     void          PrintAdmins() const;
     const ADMIN * GetSysAdmin() const { return &stg; }
@@ -71,15 +72,15 @@ private:
 
     int             ReadAdmins();
 
-    ADMIN_IMPL           stg;
-    ADMIN_IMPL           noAdmin;
-    list<ADMIN_IMPL>     data;
-    STORE *              store;
-    STG_LOGGER &         WriteServLog;
-    mutable map<int, const_admin_iter> searchDescriptors;
-    mutable unsigned int handle;
+    ADMIN_IMPL              stg;
+    ADMIN_IMPL              noAdmin;
+    std::list<ADMIN_IMPL>   data;
+    STORE *                 store;
+    STG_LOGGER &            WriteServLog;
+    mutable std::map<int, const_admin_iter> searchDescriptors;
+    mutable unsigned int    handle;
     mutable pthread_mutex_t mutex;
-    std::string          strError;
+    std::string             strError;
 };
 
 #endif

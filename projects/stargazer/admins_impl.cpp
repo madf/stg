@@ -32,8 +32,6 @@
 #include <cassert>
 #include <algorithm>
 
-#include "stg/admins.h"
-#include "stg/admin.h"
 #include "stg/common.h"
 #include "admins_impl.h"
 #include "admin_impl.h"
