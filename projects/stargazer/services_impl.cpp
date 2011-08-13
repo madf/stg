@@ -36,7 +36,7 @@ SERVICES_IMPL::SERVICES_IMPL(STORE * st)
       handle(0)
 {
 pthread_mutex_init(&mutex, NULL);
-ReadServices();
+Read();
 }
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::Add(const SERVICE_CONF & service, const ADMIN * admin)
@@ -44,201 +44,164 @@ int SERVICES_IMPL::Add(const SERVICE_CONF & service, const ADMIN * admin)
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin->GetPriv();
 
-if (!priv->adminChg)
+if (!priv->serviceChg)
     {
-    string s = admin->GetLogStr() + " Add administrator \'" + login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Add service \'" + service.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
     }
 
-ADMIN_IMPL adm(0, login, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+srv_iter si(find(data.begin(), data.end(), service));
 
-if (ai != data.end())
+if (si != data.end())
     {
-    strError = "Administrator \'" + login + "\' cannot not be added. Administrator already exist.";
+    strError = "Service \'" + service.name + "\' cannot not be added. Service already exist.";
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
     return -1;
     }
 
-data.push_back(adm);
+data.push_back(service);
 
-if (store->AddAdmin(login) == 0)
+if (store->AddService(service.name) == 0)
     {
-    WriteServLog("%s Administrator \'%s\' added.",
-                 admin->GetLogStr().c_str(), login.c_str());
+    WriteServLog("%s Service \'%s\' added.",
+                 admin->GetLogStr().c_str(), service.name.c_str());
     return 0;
     }
 
-strError = "Administrator \'" + login + "\' was not added. Error: " + store->GetStrError();
+strError = "Service \'" + service.name + "\' was not added. Error: " + store->GetStrError();
 WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
 return -1;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::Del(const string & login, const ADMIN * admin)
+int SERVICES_IMPL::Del(const string & name, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-ADMIN_IMPL adm(0, login, "");
 const PRIV * priv = admin->GetPriv();
 
-if (!priv->adminChg)
+if (!priv->serviceChg)
     {
-    string s = admin->GetLogStr() + " Delete administrator \'" + login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Delete service \'" + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
     }
 
-admin_iter ai(find(data.begin(), data.end(), adm));
+srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
-if (ai == data.end())
+if (si == data.end())
     {
-    strError = "Administrator \'" + login + "\' cannot be deleted. Administrator does not exist.";
+    strError = "Service \'" + name + "\' cannot be deleted. Service does not exist.";
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
-map<int, const_admin_iter>::iterator si;
-si = searchDescriptors.begin();
-while (si != searchDescriptors.end())
+map<int, const_srv_iter>::iterator csi;
+csi = searchDescriptors.begin();
+while (csi != searchDescriptors.end())
     {
-    if (si->second == ai)
-        (si->second)++;
-    si++;
+    if (csi->second == si)
+        (csi->second)++;
+    csi++;
     }
 
-data.remove(*ai);
-if (store->DelAdmin(login) < 0)
+data.remove(*si);
+if (store->DelService(name) < 0)
     {
-    strError = "Administrator \'" + login + "\' was not deleted. Error: " + store->GetStrError();
+    strError = "Service \'" + name + "\' was not deleted. Error: " + store->GetStrError();
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 
     return -1;
     }
 
-WriteServLog("%s Administrator \'%s\' deleted.", admin->GetLogStr().c_str(), login.c_str());
+WriteServLog("%s Service \'%s\' deleted.", admin->GetLogStr().c_str(), name.c_str());
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::Change(const ADMIN_CONF & ac, const ADMIN * admin)
+int SERVICES_IMPL::Change(const SERVICE_CONF & service, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin->GetPriv();
 
-if (!priv->adminChg)
+if (!priv->serviceChg)
     {
-    string s = admin->GetLogStr() + " Change administrator \'" + ac.login + "\'. Access denied.";
+    string s = admin->GetLogStr() + " Change service \'" + service.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
     }
 
-ADMIN_IMPL adm(0, ac.login, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+srv_iter si(find(data.begin(), data.end(), service));
 
-if (ai == data.end())
+if (si == data.end())
     {
-    strError = "Administrator \'" + ac.login + "\' cannot be changed " + ". Administrator does not exist.";
+    strError = "Service \'" + service.name + "\' cannot be changed " + ". Service does not exist.";
     WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
     return -1;
     }
 
-*ai = ac;
-if (store->SaveAdmin(ac))
+*si = service;
+if (store->SaveService(service))
     {
-    WriteServLog("Cannot write admin %s.", ac.login.c_str());
+    WriteServLog("Cannot write service %s.", service.name.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
     return -1;
     }
 
-WriteServLog("%s Administrator \'%s\' changed.",
-             admin->GetLogStr().c_str(), ac.login.c_str());
+WriteServLog("%s Service \'%s\' changed.",
+             admin->GetLogStr().c_str(), service.name.c_str());
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::ReadAdmins()
+bool SERVICES_IMPL::Read()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-vector<string> adminsList;
-if (store->GetAdminsList(&adminsList) < 0)
+vector<string> servicesList;
+if (store->GetServicesList(&servicesList) < 0)
     {
     WriteServLog(store->GetStrError().c_str());
-    return -1;
+    return true;
     }
 
-for (unsigned int i = 0; i < adminsList.size(); i++)
+for (size_t i = 0; i < servicesList.size(); i++)
     {
-    ADMIN_CONF ac(0, adminsList[i], "");
+    SERVICE_CONF service;
 
-    if (store->RestoreAdmin(&ac, adminsList[i]))
+    if (store->RestoreService(&service, servicesList[i]))
         {
         WriteServLog(store->GetStrError().c_str());
-        return -1;
+        return true;
         }
 
-    data.push_back(ADMIN_IMPL(ac));
+    data.push_back(service);
     }
-return 0;
-}
-//-----------------------------------------------------------------------------
-void SERVICES_IMPL::PrintAdmins() const
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const_admin_iter ai(data.begin());
-while (ai != data.end())
-    {
-    ai->Print();
-    ai++;
-    }
-}
-//-----------------------------------------------------------------------------
-bool SERVICES_IMPL::FindAdmin(const string & l, ADMIN ** admin)
-{
-assert(admin != NULL && "Pointer to admin is not null");
-
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-if (data.empty())
-    {
-    printfd(__FILE__, "no admin in system!\n");
-    *admin = &noAdmin;
-    return false;
-    }
-
-ADMIN_IMPL adm(0, l, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
-
-if (ai != data.end())
-    {
-    *admin = &(*ai);
-    return false;
-    }
-
-return true;
-}
-//-----------------------------------------------------------------------------
-bool SERVICES_IMPL::AdminExists(const string & login) const
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-if (data.empty())
-    {
-    printfd(__FILE__, "no admin in system!\n");
-    return true;
-    }
-
-ADMIN_IMPL adm(0, login, "");
-const_admin_iter ai(find(data.begin(), data.end(), adm));
-
-if (ai != data.end())
-    return true;
-
 return false;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::AdminCorrect(const string & login, const std::string & password, ADMIN ** admin)
+bool SERVICES_IMPL::Find(const string & name, SERVICE_CONF * service)
+{
+assert(service != NULL && "Pointer to service is not null");
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+if (data.empty())
+    return false;
+
+srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+
+if (si != data.end())
+    {
+    *service = *si;
+    return false;
+    }
+
+return true;
+}
+//-----------------------------------------------------------------------------
+bool SERVICES_IMPL::Exists(const string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
@@ -247,22 +210,12 @@ if (data.empty())
     return true;
     }
 
-ADMIN_IMPL adm(0, login, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+const_srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
-if (ai == data.end())
-    {
-    return false;
-    }
+if (si != data.end())
+    return true;
 
-if (ai->GetPassword() != password)
-    {
-    return false;
-    }
-
-*admin = &(*ai);
-
-return true;
+return false;
 }
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::OpenSearch() const
@@ -273,7 +226,7 @@ searchDescriptors[handle] = data.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::SearchNext(int h, ADMIN_CONF * ac) const
+int SERVICES_IMPL::SearchNext(int h, SERVICE_CONF * service) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (searchDescriptors.find(h) == searchDescriptors.end())
@@ -285,9 +238,7 @@ if (searchDescriptors.find(h) == searchDescriptors.end())
 if (searchDescriptors[h] == data.end())
     return -1;
 
-ADMIN_IMPL a = *searchDescriptors[h]++;
-
-*ac = a.GetConf();
+*service = *searchDescriptors[h]++;
 
 return 0;
 }

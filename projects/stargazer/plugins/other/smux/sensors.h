@@ -5,6 +5,9 @@
 
 #include "stg/users.h"
 #include "stg/tariffs.h"
+#include "stg/admins.h"
+#include "stg/services.h"
+#include "stg/corporations.h"
 #include "stg/user_property.h"
 
 #include "stg/ObjectSyntax.h"
@@ -29,13 +32,13 @@ class TotalUsersSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
         {
-        ValueToOS(users.GetUserNum(), objectSyntax);
+        ValueToOS(users.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(users.GetUserNum(), res); return res; }
+        { std::string res; x2str(users.Count(), res); return res; }
 #endif
 
     private:
@@ -165,13 +168,13 @@ class TotalTariffsSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
         {
-        ValueToOS(tariffs.GetTariffsNum(), objectSyntax);
+        ValueToOS(tariffs.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(tariffs.GetTariffsNum(), res); return res; }
+        { std::string res; x2str(tariffs.Count(), res); return res; }
 #endif
 
     private:
@@ -185,13 +188,13 @@ class TotalAdminsSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
         {
-        ValueToOS(admins.GetAdminsNum(), objectSyntax);
+        ValueToOS(admins.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(admins.GetAdminsNum(), res); return res; }
+        { std::string res; x2str(admins.Count(), res); return res; }
 #endif
 
     private:
@@ -205,13 +208,13 @@ class TotalServicesSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
         {
-        ValueToOS(services.GetServicesNum(), objectSyntax);
+        ValueToOS(services.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(services.GetServicesNum(), res); return res; }
+        { std::string res; x2str(services.Count(), res); return res; }
 #endif
 
     private:
@@ -225,13 +228,13 @@ class TotalCorporationsSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
         {
-        ValueToOS(corporations.GetCorporationsNum(), objectSyntax);
+        ValueToOS(corporations.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(services.GetCorporationsNum(), res); return res; }
+        { std::string res; x2str(corporations.Count(), res); return res; }
 #endif
 
     private:

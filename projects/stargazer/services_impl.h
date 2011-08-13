@@ -32,20 +32,21 @@
 #include "stg/locker.h"
 #include "stg/store.h"
 #include "stg/noncopyable.h"
+#include "stg/logger.h"
 
 class ADMIN;
 
 class SERVICES_IMPL : private NONCOPYABLE, public SERVICES {
 public:
     SERVICES_IMPL(STORE * st);
-    virtual SERVICES_IMPL() {}
+    virtual ~SERVICES_IMPL() {}
 
     int Add(const SERVICE_CONF & service, const ADMIN * admin);
     int Del(const std::string & name, const ADMIN * admin);
     int Change(const SERVICE_CONF & service, const ADMIN * admin);
-    bool FindService(const std::string & name, SERVICE_CONF & service);
-    bool ServiceExists(const std::string & name) const;
-    const std::string & GetStrError() const;
+    bool Find(const std::string & name, SERVICE_CONF * service);
+    bool Exists(const std::string & name) const;
+    const std::string & GetStrError() const { return strError; }
 
     int OpenSearch() const;
     int SearchNext(int, SERVICE_CONF * service) const;
@@ -55,7 +56,7 @@ private:
     typedef list<SERVICE_CONF>::iterator       srv_iter;
     typedef list<SERVICE_CONF>::const_iterator const_srv_iter;
 
-    bool ReadServices();
+    bool Read();
 
     std::list<SERVICE_CONF> data;
     STORE *                 store;
@@ -65,3 +66,5 @@ private:
     mutable pthread_mutex_t mutex;
     std::string             strError;
 };
+
+#endif
