@@ -37,6 +37,8 @@ class SETTINGS_IMPL;
 class ADMINS_IMPL;
 class TARIFFS_IMPL;
 class USERS_IMPL;
+class SERVICES_IMPL;
+class CORPORATIONS_IMPL;
 class TRAFFCOUNTER;
 class STORE;
 
@@ -48,6 +50,8 @@ public:
                   ADMINS_IMPL * admins,
                   TARIFFS_IMPL * tariffs,
                   USERS_IMPL * users,
+                  SERVICES_IMPL * services,
+                  CORPORATIONS_IMPL * corporations,
                   TRAFFCOUNTER * tc,
                   STORE * store,
                   const SETTINGS_IMPL * s);
@@ -86,6 +90,8 @@ private:
     ADMINS_IMPL *   admins;
     TARIFFS_IMPL *  tariffs;
     USERS_IMPL *    users;
+    SERVICES_IMPL * services;
+    CORPORATIONS_IMPL * corps;
     STORE *         store;
     TRAFFCOUNTER *  traffCnt;
     const SETTINGS_IMPL * stgSettings;

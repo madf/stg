@@ -25,13 +25,15 @@
 
 #include "corp_conf.h"
 
+class ADMIN;
+
 class CORPORATIONS {
 public:
-    virtual int Add(const CORP_CONF & corp) = 0;
-    virtual int Del(const std::string & name) = 0;
-    virtual int Change(const CORP_CONF & corp) = 0;
-    virtual bool FindCorp(const std::string & name, CORP_CONF & corp) = 0;
-    virtual bool CorpExists(const std::string & name) const = 0;
+    virtual int Add(const CORP_CONF & corp, const ADMIN * admin) = 0;
+    virtual int Del(const std::string & name, const ADMIN * admin) = 0;
+    virtual int Change(const CORP_CONF & corp, const ADMIN * admin) = 0;
+    virtual bool Find(const std::string & name, CORP_CONF * corp) = 0;
+    virtual bool Exists(const std::string & name) const = 0;
     virtual const std::string & GetStrError() const = 0;
     virtual size_t Count() const = 0;
 

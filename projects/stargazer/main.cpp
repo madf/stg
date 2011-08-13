@@ -54,6 +54,8 @@
 #include "users_impl.h"
 #include "admins_impl.h"
 #include "tariffs_impl.h"
+#include "services_impl.h"
+#include "corps_impl.h"
 #include "traffcounter_impl.h"
 #include "plugin_runner.h"
 #include "store_loader.h"
@@ -446,6 +448,8 @@ TARIFFS_IMPL * tariffs = NULL;
 ADMINS_IMPL * admins = NULL;
 USERS_IMPL * users = NULL;
 TRAFFCOUNTER_IMPL * traffCnt = NULL;
+SERVICES_IMPL * services = NULL;
+CORPORATIONS_IMPL * corps = NULL;
 int msgID = -11;
 
     {
@@ -543,6 +547,8 @@ tariffs = new TARIFFS_IMPL(dataStore);
 admins = new ADMINS_IMPL(dataStore);
 users = new USERS_IMPL(settings, dataStore, tariffs, admins->GetSysAdmin());
 traffCnt = new TRAFFCOUNTER_IMPL(users, settings->GetRulesFileName());
+services = new SERVICES_IMPL(dataStore);
+corps = new CORPORATIONS_IMPL(dataStore);
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
 
 modSettings = settings->GetModulesSettings();
@@ -560,6 +566,8 @@ for (size_t i = 0; i < modSettings.size(); i++)
                       admins,
                       tariffs,
                       users,
+                      services,
+                      corps,
                       traffCnt,
                       dataStore,
                       settings)
@@ -726,6 +734,8 @@ KillExecuters();
 StopStgTimer();
 WriteServLog("StgTimer: Stop successfull.");
 
+delete corps;
+delete services;
 delete traffCnt;
 delete users;
 delete admins;

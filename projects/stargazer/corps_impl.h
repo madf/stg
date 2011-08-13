@@ -48,6 +48,8 @@ public:
     bool Exists(const std::string & name) const;
     const std::string & GetStrError() const { return strError; }
 
+    size_t Count() const { return data.size(); }
+
     int OpenSearch() const;
     int SearchNext(int, CORP_CONF * corp) const;
     int CloseSearch(int) const;
