@@ -60,7 +60,7 @@ public:
     int     ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;
     const TARIFF * GetNoTariff() const { return &noTariff; };
-    int     GetTariffsNum() const;
+    size_t  Count() const;
     int     Del(const std::string & name, const ADMIN * admin);
     int     Add(const std::string & name, const ADMIN * admin);
     int     Chg(const TARIFF_DATA & td, const ADMIN * admin);

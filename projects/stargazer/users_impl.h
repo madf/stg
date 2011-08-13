@@ -114,7 +114,7 @@ public:
     void            Del(const std::string & login, const ADMIN * admin);
 
     int             ReadUsers();
-    int             GetUserNum() const;
+    size_t          Count() const { return users.size(); }
 
     int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
     int             FindByIPIdx(uint32_t ip, USER_IMPL ** user) const;

@@ -86,7 +86,7 @@ for (int i = 0; i < tariffsNum; i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::GetTariffsNum() const
+size_t TARIFFS_IMPL::Count() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return tariffs.size();

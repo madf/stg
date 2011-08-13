@@ -561,11 +561,6 @@ while (iter != usersToDelete.end())
 return;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::GetUserNum() const
-{
-return users.size();
-}
-//-----------------------------------------------------------------------------
 void USERS_IMPL::AddToIPIdx(user_iter user)
 {
 printfd(__FILE__, "USERS: Add IP Idx\n");
