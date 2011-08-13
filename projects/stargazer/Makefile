@@ -8,11 +8,13 @@ PROG = stargazer
 
 SRCS = ./admin_impl.cpp \
        ./admins_impl.cpp \
+       ./corps_impl.cpp \
        ./eventloop.cpp \
        ./main.cpp \
        ./pidfile.cpp \
        ./plugin_runner.cpp \
        ./settings_impl.cpp \
+       ./services_impl.cpp \
        ./stg_timer.cpp \
        ./store_loader.cpp \
        ./tariff_impl.cpp \
