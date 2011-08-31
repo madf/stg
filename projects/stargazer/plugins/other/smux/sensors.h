@@ -8,6 +8,7 @@
 #include "stg/admins.h"
 #include "stg/services.h"
 #include "stg/corporations.h"
+#include "stg/traffcounter.h"
 #include "stg/user_property.h"
 
 #include "stg/ObjectSyntax.h"
@@ -239,6 +240,26 @@ class TotalCorporationsSensor : public Sensor {
 
     private:
         const CORPORATIONS & corporations;
+};
+
+class TotalRulesSensor : public Sensor {
+    public:
+        TotalRulesSensor(const TRAFFCOUNTER & t) : traffcounter(t) {}
+        virtual ~TotalRulesSensor() {}
+
+        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        {
+        ValueToOS(traffcounter.RulesCount(), objectSyntax);
+        return true;
+        }
+
+#ifdef DEBUG
+        std::string ToString() const
+        { std::string res; x2str(traffcounter.RulesCount(), res); return res; }
+#endif
+
+    private:
+        const TRAFFCOUNTER & traffcounter;
 };
 
 template <typename T>

@@ -26,6 +26,7 @@ class USERS;
 class TARIFFS;
 class SERVICES;
 class CORPORATIONS;
+class TRAFFCOUNTER;
 
 typedef bool (SMUX::*SMUXPacketHandler)(const SMUX_PDUs_t * pdus);
 typedef bool (SMUX::*PDUsHandler)(const PDUs_t * pdus);
@@ -60,6 +61,7 @@ public:
     void SetTariffs(TARIFFS * t) { tariffs = t; }
     void SetAdmins(ADMINS * a) { admins = a; }
     void SetServices(SERVICES * s) { services = s; }
+    void SetTraffcounter(TRAFFCOUNTER * tc) { traffcounter = tc; }
     void SetCorporations(CORPORATIONS * c) { corporations = c; }
     void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
@@ -97,6 +99,7 @@ private:
     ADMINS * admins;
     SERVICES * services;
     CORPORATIONS * corporations;
+    TRAFFCOUNTER * traffcounter;
 
     mutable std::string errorStr;
     SMUX_SETTINGS smuxSettings;

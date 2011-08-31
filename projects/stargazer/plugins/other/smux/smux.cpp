@@ -16,11 +16,12 @@
 
 #include "stg/common.h"
 #include "stg/plugin_creator.h"
-#include "stg/users.h"
+/*#include "stg/users.h"
 #include "stg/tariffs.h"
 #include "stg/admins.h"
 #include "stg/services.h"
 #include "stg/corporations.h"
+#include "stg/traffcounter.h"*/
 
 #include "smux.h"
 #include "utils.h"
@@ -98,6 +99,7 @@ SMUX::SMUX()
       admins(NULL),
       services(NULL),
       corporations(NULL),
+      traffcounter(NULL),
       running(false),
       stopped(true),
       sock(-1)
@@ -137,11 +139,12 @@ return smuxSettings.ParseSettings(settings);
 
 int SMUX::Start()
 {
-assert(users != NULL && "users not NULL");
-assert(tariffs != NULL && "tariffs not NULL");
-assert(admins != NULL && "admins not NULL");
-assert(services != NULL && "services not NULL");
-assert(corporations != NULL && "corporations not NULL");
+assert(users != NULL && "users must not be NULL");
+assert(tariffs != NULL && "tariffs must not be NULL");
+assert(admins != NULL && "admins must not be NULL");
+assert(services != NULL && "services must not be NULL");
+assert(corporations != NULL && "corporations must not be NULL");
+assert(traffcounter != NULL && "traffcounter must not be NULL");
 
 if (PrepareNet())
     return -1;
@@ -166,6 +169,8 @@ sensors[OID(".1.3.6.1.4.1.38313.1.3.1")] = new TotalAdminsSensor(*admins);
 sensors[OID(".1.3.6.1.4.1.38313.1.4.1")] = new TotalServicesSensor(*services);
 // Corporations
 sensors[OID(".1.3.6.1.4.1.38313.1.5.1")] = new TotalCorporationsSensor(*corporations);
+// Traffcounter
+sensors[OID(".1.3.6.1.4.1.38313.1.6.1")] = new TotalRulesSensor(*traffcounter);
 
 // Table data
 tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *users);
