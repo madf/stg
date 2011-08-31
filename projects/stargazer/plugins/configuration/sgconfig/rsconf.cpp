@@ -461,7 +461,7 @@ while (1)
         }
 
     char buffer[8];
-    buffer[8] = 0;
+    buffer[7] = 0;
 
     DecodeString(buffer, bufferS, &ctx);
     requestList.push_back(std::string(buffer, pos));
