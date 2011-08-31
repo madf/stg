@@ -239,16 +239,23 @@ int CONFIGPROTO::RecvHdr(int sock)
 {
 char buf[sizeof(STG_HEADER)];
 memset(buf, 0, sizeof(STG_HEADER));
-int ret;
 size_t stgHdrLen = sizeof(STG_HEADER) - 1; // Without 0-char
-for (size_t i = 0; i < stgHdrLen; i++)
+size_t pos = 0;
+while (pos < stgHdrLen)
     {
-    ret = recv(sock, &buf[i], 1, 0);
-    if (ret <= 0)
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        SendError("Bad request");
+        return -1;
+        }
+    int ret = recv(sock, &buf[pos], stgHdrLen - pos, 0);
+    if (ret < 0)
         {
         state = confHdr;
         return -1;
         }
+    pos += ret;
     }
 
 if (0 == strncmp(buf, STG_HEADER, strlen(STG_HEADER)))
@@ -267,12 +274,9 @@ return -1;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::SendHdrAnswer(int sock, int err)
 {
-int ret;
-
 if (err)
     {
-    ret = send(sock, ERR_HEADER, sizeof(ERR_HEADER) - 1, 0);
-    if (ret < 0)
+    if (send(sock, ERR_HEADER, sizeof(ERR_HEADER) - 1, 0) < 0)
         {
         WriteServLog("send ERR_HEADER error in SendHdrAnswer.");
         return -1;
@@ -280,8 +284,7 @@ if (err)
     }
 else
     {
-    ret = send(sock, OK_HEADER, sizeof(OK_HEADER) - 1, 0);
-    if (ret < 0)
+    if (send(sock, OK_HEADER, sizeof(OK_HEADER) - 1, 0) < 0)
         {
         WriteServLog("send OK_HEADER error in SendHdrAnswer.");
         return -1;
@@ -294,25 +297,28 @@ return 0;
 int CONFIGPROTO::RecvLogin(int sock)
 {
 char login[ADM_LOGIN_LEN + 1];
-int ret;
 
 memset(login, 0, ADM_LOGIN_LEN + 1);
 
-ret = recv(sock, login, ADM_LOGIN_LEN, 0);
+size_t pos = 0;
+while (pos < ADM_LOGIN_LEN) {
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        return ENODATA;
+        }
 
-if (ret < 0)
-    {
-    // Error in network
-    state = confHdr;
-    return ENODATA;
-    }
+    int ret = recv(sock, &login[pos], ADM_LOGIN_LEN - pos, 0);
 
-if (ret < ADM_LOGIN_LEN)
-    {
-    // Error in protocol
-    state = confHdr;
-    return ENODATA;
-    }
+    if (ret < 0)
+        {
+        // Error in network
+        state = confHdr;
+        return ENODATA;
+        }
+
+    pos += ret;
+}
 
 if (admins->Find(login, &currAdmin))
     {
@@ -320,6 +326,7 @@ if (admins->Find(login, &currAdmin))
     state = confHdr;
     return ENODATA;
     }
+
 currAdmin->SetIP(adminIP);
 adminLogin = login;
 state = confLoginCipher;
@@ -328,10 +335,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::SendLoginAnswer(int sock)
 {
-int ret;
-
-ret = send(sock, OK_LOGIN, sizeof(OK_LOGIN) - 1, 0);
-if (ret < 0)
+if (send(sock, OK_LOGIN, sizeof(OK_LOGIN) - 1, 0) < 0)
     {
     WriteServLog("Send OK_LOGIN error in SendLoginAnswer.");
     return -1;
@@ -342,15 +346,18 @@ return 0;
 int CONFIGPROTO::RecvLoginS(int sock)
 {
 char loginS[ADM_LOGIN_LEN + 1];
-char login[ADM_LOGIN_LEN + 1];
-BLOWFISH_CTX ctx;
 memset(loginS, 0, ADM_LOGIN_LEN + 1);
 
-int total = 0;
-
-while (total < ADM_LOGIN_LEN)
+size_t pos = 0;
+while (pos < ADM_LOGIN_LEN)
     {
-    int ret = recv(sock, &loginS[total], ADM_LOGIN_LEN - total, 0);
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        return ENODATA;
+        }
+
+    int ret = recv(sock, &loginS[pos], ADM_LOGIN_LEN - pos, 0);
 
     if (ret < 0)
         {
@@ -360,7 +367,7 @@ while (total < ADM_LOGIN_LEN)
         return ENODATA;
         }
 
-    total += ret;
+    pos += ret;
     }
 
 if (currAdmin->GetLogin().empty())
@@ -369,9 +376,11 @@ if (currAdmin->GetLogin().empty())
     return ENODATA;
     }
 
+BLOWFISH_CTX ctx;
 EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
-for (int i = 0; i < ADM_LOGIN_LEN / 8; i++)
+char login[ADM_LOGIN_LEN + 1];
+for (size_t i = 0; i < ADM_LOGIN_LEN / 8; i++)
     {
     DecodeString(login + i * 8, loginS + i * 8, &ctx);
     }
@@ -397,8 +406,7 @@ int CONFIGPROTO::SendLoginSAnswer(int sock, int err)
 {
 if (err)
     {
-    int ret = send(sock, ERR_LOGINS, sizeof(ERR_LOGINS) - 1, 0);
-    if (ret < 0)
+    if (send(sock, ERR_LOGINS, sizeof(ERR_LOGINS) - 1, 0) < 0)
         {
         WriteServLog("send ERR_LOGIN error in SendLoginAnswer.");
         return -1;
@@ -406,8 +414,7 @@ if (err)
     }
 else
     {
-    int ret = send(sock, OK_LOGINS, sizeof(OK_LOGINS) - 1, 0);
-    if (ret < 0)
+    if (send(sock, OK_LOGINS, sizeof(OK_LOGINS) - 1, 0) < 0)
         {
         WriteServLog("send OK_LOGINS error in SendLoginSAnswer.");
         return -1;
@@ -418,11 +425,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvData(int sock)
 {
-char bufferS[8];
-char buffer[9];
-
-buffer[8] = 0;
-
 requestList.clear();
 BLOWFISH_CTX ctx;
 
@@ -430,14 +432,22 @@ EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (1)
     {
-    int total = 0;
     bool done = false;
-    while (total < 8)
+    char bufferS[8];
+    size_t pos = 0;
+    while (pos < sizeof(bufferS))
         {
-        int ret = recv(sock, &bufferS[total], 8 - total, 0);
+        if (!WaitPackets(sock))
+            {
+            done = true;
+            break;
+            }
+
+        int ret = recv(sock, &bufferS[pos], sizeof(bufferS) - pos, 0);
         if (ret < 0)
             {
             // Network error
+            printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
             return -1;
             }
 
@@ -447,15 +457,18 @@ while (1)
             break;
             }
 
-        total += ret;
+        pos += ret;
         }
 
-    DecodeString(buffer, bufferS, &ctx);
-    requestList.push_back(std::string(buffer, total));
+    char buffer[8];
+    buffer[8] = 0;
 
-    if (done || memchr(buffer, 0, total) != NULL)
+    DecodeString(buffer, bufferS, &ctx);
+    requestList.push_back(std::string(buffer, pos));
+
+    if (done || memchr(buffer, 0, pos) != NULL)
         {
-        // Конец посылки
+        // End of data
         if (ParseCommand())
             {
             SendError("Bad command");
