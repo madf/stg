@@ -15,7 +15,7 @@ class USER {
         USER(const USER & rvalue);
         ~USER();
 
-        const USER & operator=(const USER & rvalue);
+        USER & operator=(const USER & rvalue);
 
         bool InitNetwork();
 
