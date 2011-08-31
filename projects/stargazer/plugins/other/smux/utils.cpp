@@ -227,7 +227,9 @@ GetResponse_PDU_t msg;
 
 memset(&msg, 0, sizeof(msg));
 
-msg.request_id = getRequest->request_id;
+long id = 0;
+asn_INTEGER2long(&getRequest->request_id, &id);
+asn_long2INTEGER(&msg.request_id, id);
 asn_long2INTEGER(&msg.error_status, errorStatus);
 asn_long2INTEGER(&msg.error_index, errorIndex);
 

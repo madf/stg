@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "stg/GetRequest-PDU.h"
 #include "stg/GetResponse-PDU.h"
 #include "stg/VarBindList.h"
@@ -64,13 +66,15 @@ bool SMUX::GetRequestHandler(const PDUs_t * pdus)
 printfd(__FILE__, "SMUX::GetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
 const GetRequest_PDU_t * getRequest = &pdus->choice.get_request;
-GetResponse_PDU_t msg;
-VarBindList_t * varBindList = &msg.variable_bindings;
-memset(&msg, 0, sizeof(msg));
+GetResponse_PDU_t * msg = static_cast<GetResponse_PDU_t *>(calloc(1, sizeof(GetResponse_PDU_t)));
+assert(msg && "Enought mempry to allocate GetResponse_PDU_t");
+VarBindList_t * varBindList = &msg->variable_bindings;
 
-msg.request_id = getRequest->request_id;
-asn_long2INTEGER(&msg.error_status, 0);
-asn_long2INTEGER(&msg.error_index, 0);
+long id = 0;
+asn_INTEGER2long(&getRequest->request_id, &id);
+asn_long2INTEGER(&msg->request_id, id);
+asn_long2INTEGER(&msg->error_status, 0);
+asn_long2INTEGER(&msg->error_index, 0);
 
 const VarBindList_t * vbl = &getRequest->variable_bindings; 
 for (int i = 0; i < vbl->list.count; ++i)
@@ -85,17 +89,18 @@ for (int i = 0; i < vbl->list.count; ++i)
         return true;
         }
 
-    VarBind_t newVb;
-    memset(&newVb, 0, sizeof(newVb));
+    VarBind_t * newVb = static_cast<VarBind_t *>(calloc(1, sizeof(VarBind_t)));
+    assert(newVb && "Enought mempry to allocate VarBind_t");
 
-    newVb.name = vb->name;
-    it->second->GetValue(&newVb.value);
+    it->first.ToOID(&newVb->name);
+    it->second->GetValue(&newVb->value);
 
-    ASN_SEQUENCE_ADD(varBindList, &newVb);
+    ASN_SEQUENCE_ADD(varBindList, newVb);
     }
 
-SendGetResponsePDU(sock, &msg);
-asn_fprint(stderr, &asn_DEF_PDU, &msg);
+SendGetResponsePDU(sock, msg);
+asn_fprint(stderr, &asn_DEF_GetResponse_PDU, msg);
+ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
 return false;
 }
 
@@ -104,13 +109,15 @@ bool SMUX::GetNextRequestHandler(const PDUs_t * pdus)
 printfd(__FILE__, "SMUX::GetNextRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
 const GetRequest_PDU_t * getRequest = &pdus->choice.get_request;
-GetResponse_PDU_t msg;
-VarBindList_t * varBindList = &msg.variable_bindings;
-memset(&msg, 0, sizeof(msg));
+GetResponse_PDU_t * msg = static_cast<GetResponse_PDU_t *>(calloc(1, sizeof(GetResponse_PDU_t)));
+assert(msg && "Enought mempry to allocate GetResponse_PDU_t");
+VarBindList_t * varBindList = &msg->variable_bindings;
 
-msg.request_id = getRequest->request_id;
-asn_long2INTEGER(&msg.error_status, 0);
-asn_long2INTEGER(&msg.error_index, 0);
+long id = 0;
+asn_INTEGER2long(&getRequest->request_id, &id);
+asn_long2INTEGER(&msg->request_id, id);
+asn_long2INTEGER(&msg->error_status, 0);
+asn_long2INTEGER(&msg->error_index, 0);
 
 const VarBindList_t * vbl = &getRequest->variable_bindings; 
 for (int i = 0; i < vbl->list.count; ++i)
@@ -120,22 +127,24 @@ for (int i = 0; i < vbl->list.count; ++i)
     it = sensors.upper_bound(OID(&vb->name));
     if (it == sensors.end())
         {
+        printfd(__FILE__, "SMUX::GetNextRequestHandler() - '%s' not found\n", OID(&vb->name).ToString().c_str());
         SendGetResponseErrorPDU(sock, getRequest,
                                 PDU__error_status_noSuchName, i);
         return true;
         }
 
-    VarBind_t newVb;
-    memset(&newVb, 0, sizeof(newVb));
+    VarBind_t * newVb = static_cast<VarBind_t *>(calloc(1, sizeof(VarBind_t)));
+    assert(newVb && "Enought mempry to allocate VarBind_t");
 
-    it->first.ToOID(&newVb.name);
-    it->second->GetValue(&newVb.value);
+    it->first.ToOID(&newVb->name);
+    it->second->GetValue(&newVb->value);
 
-    ASN_SEQUENCE_ADD(varBindList, &newVb);
+    ASN_SEQUENCE_ADD(varBindList, newVb);
     }
 
-SendGetResponsePDU(sock, &msg);
-asn_fprint(stderr, &asn_DEF_PDU, &msg);
+SendGetResponsePDU(sock, msg);
+asn_fprint(stderr, &asn_DEF_PDU, msg);
+ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
 return false;
 }
 

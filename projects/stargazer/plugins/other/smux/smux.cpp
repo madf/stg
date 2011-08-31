@@ -258,7 +258,10 @@ while(running)
         {
         SMUX_PDUs_t * pdus = RecvSMUXPDUs(sock);
         if (pdus)
+            {
             DispatchPDUs(pdus);
+            ASN_STRUCT_FREE(asn_DEF_SMUX_PDUs, pdus);
+            }
         }
     if (!running)
         break;
