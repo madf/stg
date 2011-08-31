@@ -171,13 +171,11 @@ while (nonstop)
                 close(outerSocket);
                 continue;
                 }
-
             if (RecvLogin(outerSocket) < 0)
                 {
                 close(outerSocket);
                 continue;
                 }
-
             if (state == confLoginCipher)
                 {
                 if (SendLoginAnswer(outerSocket) < 0)
@@ -190,7 +188,6 @@ while (nonstop)
                     close(outerSocket);
                     continue;
                     }
-
                 if (state == confData)
                     {
                     if (SendLoginSAnswer(outerSocket, ans_ok) < 0)
@@ -243,7 +240,7 @@ int CONFIGPROTO::RecvHdr(int sock)
 char buf[sizeof(STG_HEADER)];
 memset(buf, 0, sizeof(STG_HEADER));
 int ret;
-size_t stgHdrLen = sizeof(STG_HEADER);
+size_t stgHdrLen = sizeof(STG_HEADER) - 1; // Without 0-char
 for (size_t i = 0; i < stgHdrLen; i++)
     {
     ret = recv(sock, &buf[i], 1, 0);
