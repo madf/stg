@@ -1,21 +1,22 @@
-CXXFLAGS+=-g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/stgconffiles.lib -I. -DUSE_ABSTRACT_SETTINGS
-LIBS=-lpthread
-PROG=tests
+CFLAGS += -g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/stgconffiles.lib -I. -DUSE_ABSTRACT_SETTINGS -DLINUX
+CXXFLAGS = ${CFLAGS}
+LIBS = -lpthread
+PROG = tests
 
-SOURCES=main.cpp \
-	test_raw_ip.cpp \
-	test_admin_conf.cpp \
-	test_tariff.cpp \
-	test_conffiles.cpp \
-	test_fee_charge_rules.cpp \
-	test_reconnect_on_tariff_change.cpp \
-	../projects/stargazer/tariff_impl.cpp \
-	../projects/stargazer/user_impl.cpp \
-	../projects/stargazer/user_property.cpp \
-	../stglibs/conffiles.lib/conffiles.cpp \
-	../stglibs/common.lib/common.cpp \
-	../stglibs/logger.lib/logger.cpp \
-	../stglibs/scriptexecuter.lib/scriptexecuter.cpp
+SOURCES = main.cpp \
+	  test_raw_ip.cpp \
+  	  test_admin_conf.cpp \
+	  test_tariff.cpp \
+	  test_conffiles.cpp \
+	  test_fee_charge_rules.cpp \
+	  test_reconnect_on_tariff_change.cpp \
+	  ../projects/stargazer/tariff_impl.cpp \
+	  ../projects/stargazer/user_impl.cpp \
+	  ../projects/stargazer/user_property.cpp \
+	  ../stglibs/conffiles.lib/conffiles.cpp \
+	  ../stglibs/common.lib/common.cpp \
+	  ../stglibs/logger.lib/logger.cpp \
+	  ../stglibs/scriptexecuter.lib/scriptexecuter.cpp
 
 .PHONY: all includes clean
 
