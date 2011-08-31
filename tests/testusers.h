@@ -22,7 +22,7 @@ class TEST_USERS : public USERS {
         void Del(const std::string & /*login*/, const ADMIN * /*admin*/) {}
 
         int  ReadUsers() { return 0; }
-        int  GetUserNum() const { return 0; }
+        virtual size_t Count() const { return 0; };
 
         int  FindByIPIdx(uint32_t /*ip*/, USER_PTR * /*user*/) const
         { return -1; }
