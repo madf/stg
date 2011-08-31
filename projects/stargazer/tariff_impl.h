@@ -82,10 +82,10 @@ public:
     int     GetThreshold(int dir) const;
     const TARIFF_DATA & GetTariffData() const { return tariffData; }
 
-    TARIFF & operator=(const TARIFF_DATA & td);
-    TARIFF & operator=(const TARIFF & t);
-    bool     operator==(const TARIFF & rhs) const { return GetName() == rhs.GetName(); }
-    bool     operator!=(const TARIFF & rhs) const { return GetName() != rhs.GetName(); }
+    TARIFF_IMPL & operator=(const TARIFF_DATA & td);
+    TARIFF_IMPL & operator=(const TARIFF_IMPL & t);
+    bool     operator==(const TARIFF_IMPL & rhs) const { return GetName() == rhs.GetName(); }
+    bool     operator!=(const TARIFF_IMPL & rhs) const { return GetName() != rhs.GetName(); }
 
 private:
     TARIFF_DATA     tariffData;

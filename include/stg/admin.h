@@ -28,13 +28,6 @@
 
 class ADMIN {
 public:
-      virtual ADMIN & operator=(const ADMIN &) = 0;
-      virtual ADMIN & operator=(const ADMIN_CONF &) = 0;
-      virtual bool    operator==(const ADMIN & rhs) const = 0;
-      virtual bool    operator!=(const ADMIN & rhs) const = 0;
-      virtual bool    operator<(const ADMIN & rhs) const = 0;
-      virtual bool    operator<=(const ADMIN & rhs) const = 0;
-
       virtual const std::string & GetPassword() const = 0;
       virtual const std::string & GetLogin() const = 0;
       virtual PRIV const *        GetPriv() const = 0;

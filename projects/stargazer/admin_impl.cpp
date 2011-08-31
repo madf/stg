@@ -58,40 +58,40 @@ ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
 {
 }
 //-----------------------------------------------------------------------------
-ADMIN & ADMIN_IMPL::operator=(const ADMIN & adm)
+ADMIN_IMPL & ADMIN_IMPL::operator=(const ADMIN_IMPL & adm)
 {
 if (&adm == this)
     return *this;
 
-conf = adm.GetConf();
-ip = adm.GetIP();
+conf = adm.conf;
+ip = adm.ip;
 return *this;
 }
 //-----------------------------------------------------------------------------
-ADMIN & ADMIN_IMPL::operator=(const ADMIN_CONF & ac)
+ADMIN_IMPL & ADMIN_IMPL::operator=(const ADMIN_CONF & ac)
 {
 conf = ac;
 return *this;
 }
 //-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator==(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator==(const ADMIN_IMPL & rhs) const
 {
-return conf.login == rhs.GetLogin();
+return conf.login == rhs.conf.login;
 }
 //-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator!=(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator!=(const ADMIN_IMPL & rhs) const
 {
-return conf.login != rhs.GetLogin();
+return conf.login != rhs.conf.login;
 }
 //-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator<(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator<(const ADMIN_IMPL & rhs) const
 {
-return conf.login < rhs.GetLogin();
+return conf.login < rhs.conf.login;
 }
 //-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator<=(const ADMIN & rhs) const
+bool ADMIN_IMPL::operator<=(const ADMIN_IMPL & rhs) const
 {
-return conf.login <= rhs.GetLogin();
+return conf.login <= rhs.conf.login;
 }
 //-----------------------------------------------------------------------------
 std::string ADMIN_IMPL::GetIPStr() const
