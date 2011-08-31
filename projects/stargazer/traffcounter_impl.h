@@ -173,6 +173,8 @@ public:
     void        Process(const RAW_PACKET & rawPacket);
     void        SetMonitorDir(const std::string & monitorDir);
 
+    size_t      RulesCount() const { return rules.size(); }
+
 private:
     bool        ParseAddress(const char * ta, RULE * rule) const;
     uint32_t    CalcMask(uint32_t msk) const;

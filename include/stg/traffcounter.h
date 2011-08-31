@@ -26,6 +26,7 @@
 class TRAFFCOUNTER {
 public:
     virtual void Process(const RAW_PACKET & rawPacket) = 0;
+    virtual size_t RulesCount() const = 0;
 };
 
 #endif
