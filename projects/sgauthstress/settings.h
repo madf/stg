@@ -33,7 +33,7 @@ public:
                         SETTINGS();
                         ~SETTINGS() {}
     int                 Reload() { return 0; }
-    void                SetConfFile(const std::string cf) { confFile = cf; }
+    void                SetConfFile(const std::string & cf) { confFile = cf; }
     int                 ReadSettings();
 
     const std::string & GetStrError() const { return strError; }
