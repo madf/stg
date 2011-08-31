@@ -219,31 +219,3 @@ if (-1 == res)
 
 return 0;
 }
-//-----------------------------------------------------------------------------
-bool ETHER_CAP::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
-}

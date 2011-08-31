@@ -1,4 +1,3 @@
-#include <sys/select.h>
 #include <unistd.h> // write
 
 #include <cstring> // memset
@@ -14,30 +13,6 @@
 
 #include "pen.h"
 #include "utils.h"
-
-bool WaitPackets(int sd)
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-    return false;
-    }
-
-if (res == 0) // Timeout
-    return false;
-
-return true;
-}
 
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi)
 {
@@ -117,6 +92,8 @@ OCTET_STRING_fromString(&msg.choice.simple.password, "");
 char buffer[1024];
 error = der_encode_to_buffer(&asn_DEF_OpenPDU, &msg, buffer, sizeof(buffer));
 
+ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_OpenPDU, &msg);
+
 if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode OpenPDU (at %s)\n",
@@ -143,6 +120,8 @@ asn_long2INTEGER(&msg, ClosePDU_goingDown);
 char buffer[1024];
 asn_enc_rval_t error;
 error = der_encode_to_buffer(&asn_DEF_ClosePDU, &msg, buffer, sizeof(buffer));
+
+ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_ClosePDU, &msg);
 
 if (error.encoded == -1)
     {
@@ -176,6 +155,8 @@ OBJECT_IDENTIFIER_set_arcs(&msg.subtree,
 char buffer[1024];
 error = der_encode_to_buffer(&asn_DEF_RReqPDU, &msg, buffer, sizeof(buffer));
 
+ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_RReqPDU, &msg);
+
 if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode RReqPDU (at %s)\n",
@@ -203,6 +184,7 @@ if (length < 1)
     return NULL;
 asn_dec_rval_t error;
 error = ber_decode(0, &asn_DEF_SMUX_PDUs, (void **)&pdus, buffer, length);
+
 if(error.code != RC_OK)
     {
     printfd(__FILE__, "Failed to decode PDUs at byte %ld\n",
@@ -252,6 +234,8 @@ asn_long2INTEGER(&msg.error_index, errorIndex);
 char buffer[1024];
 error = der_encode_to_buffer(&asn_DEF_GetResponse_PDU, &msg, buffer,
                              sizeof(buffer));
+
+ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_GetResponse_PDU, &msg);
 
 if (error.encoded == -1)
     {

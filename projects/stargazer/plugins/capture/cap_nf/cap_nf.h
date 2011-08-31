@@ -128,8 +128,6 @@ private:
     bool OpenUDP();
     void CloseTCP() { close(sockTCP); }
     void CloseUDP() { close(sockUDP); }
-
-    bool WaitPackets(int sd) const;
 };
 
 extern "C" PLUGIN * GetPlugin();

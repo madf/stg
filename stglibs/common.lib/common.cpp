@@ -64,6 +64,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/select.h>
 #endif
 
 #include <iconv.h>
@@ -1031,4 +1032,28 @@ if (*val < min || *val > max)
     return -1;
 
 return 0;
+}
+
+bool WaitPackets(int sd)
+{
+fd_set rfds;
+FD_ZERO(&rfds);
+FD_SET(sd, &rfds);
+
+struct timeval tv;
+tv.tv_sec = 0;
+tv.tv_usec = 500000;
+
+int res = select(sd + 1, &rfds, NULL, NULL, &tv);
+if (res == -1) // Error
+    {
+    if (errno != EINTR)
+        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
+    return false;
+    }
+
+if (res == 0) // Timeout
+    return false;
+
+return true;
 }

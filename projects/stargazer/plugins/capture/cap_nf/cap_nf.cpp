@@ -248,7 +248,7 @@ socklen_t slen;
 cap->stoppedUDP = false;
 while (cap->runningUDP)
     {
-    if (!cap->WaitPackets(cap->sockUDP))
+    if (!WaitPackets(cap->sockUDP))
         {
         continue;
         }
@@ -291,7 +291,7 @@ socklen_t slen;
 cap->stoppedTCP = false;
 while (cap->runningTCP)
     {
-    if (!cap->WaitPackets(cap->sockTCP))
+    if (!WaitPackets(cap->sockTCP))
         {
         continue;
         }
@@ -312,7 +312,7 @@ while (cap->runningTCP)
         continue;
         }
 
-    if (!cap->WaitPackets(sd))
+    if (!WaitPackets(sd))
         {
         close(sd);
         continue;
@@ -384,32 +384,4 @@ for (int i = 0; i < packets; ++i)
 
     traffCnt->Process(ip);
     }
-}
-
-bool NF_CAP::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }

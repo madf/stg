@@ -283,8 +283,6 @@ private:
     int                 RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user);
 
-    bool                WaitPackets(int sd) const;
-
     BLOWFISH_CTX        ctxS;        //for loginS
 
     mutable std::string errorStr;

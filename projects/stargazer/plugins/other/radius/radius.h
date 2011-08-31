@@ -125,8 +125,6 @@ private:
     bool                CanAcctService(const std::string & svc) const;
     bool                IsAllowedService(const std::string & svc) const;
 
-    bool                WaitPackets(int sd) const;
-
     void                PrintServices(const std::list<std::string> & svcs);
 
     struct Printer : public unary_function<std::string, void>

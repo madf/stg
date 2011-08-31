@@ -295,7 +295,7 @@ rad->isRunning = true;
 
 while (rad->nonstop)
     {
-    if (!rad->WaitPackets(rad->sock))
+    if (!WaitPackets(rad->sock))
         {
         continue;
         }
@@ -586,34 +586,6 @@ return find(acctServices.begin(), acctServices.end(), svc) != acctServices.end()
 bool RADIUS::IsAllowedService(const std::string & svc) const
 {
 return CanAuthService(svc) || CanAcctService(svc);
-}
-//-----------------------------------------------------------------------------
-bool RADIUS::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }
 //-----------------------------------------------------------------------------
 inline

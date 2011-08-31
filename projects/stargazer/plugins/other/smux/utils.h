@@ -7,7 +7,6 @@
 #include "stg/SMUX-PDUs.h"
 #include "stg/GetResponse-PDU.h"
 
-bool WaitPackets(int sd);
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi);
 std::string OI2String(OBJECT_IDENTIFIER_t * oi);
 bool SendOpenPDU(int fd);

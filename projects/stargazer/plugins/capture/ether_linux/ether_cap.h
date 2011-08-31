@@ -67,7 +67,6 @@ private:
     int                 EthCapOpen();
     int                 EthCapClose();
     int                 EthCapRead(void * buffer, int blen, char ** iface);
-    bool                WaitPackets(int sd) const;
 
     mutable std::string errorStr;
 

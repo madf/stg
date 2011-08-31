@@ -94,7 +94,6 @@ private:
     // Networking stuff
     bool                PrepareNet();
     bool                FinalizeNet();
-    bool                WaitPackets(int sd) const;
     bool                RecvPacket();
     // Parsing stuff
     bool                CheckHeader(const RS_PACKET_HEADER & header) const;

@@ -105,6 +105,8 @@ int ParseUnsignedInRange(const std::string & str, unsigned min,
                          unsigned max, unsigned * val);
 int ParseYesNo(const std::string & str, bool * val);
 
+bool WaitPackets(int sd);
+
 //-----------------------------------------------------------------------------
 template <typename varT>
 int str2x(const std::string & str, varT & x)
