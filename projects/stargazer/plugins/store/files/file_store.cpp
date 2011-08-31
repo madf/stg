@@ -532,6 +532,7 @@ while ((entry = readdir(d)))
             errorStr += strerror(errno);
             errorStr += "'";
             printfd(__FILE__, "FILES_STORE::RemoveDir() - unlink failed. Message: '%s'\n", strerror(errno));
+            closedir(d);
             return -1;
             }
         }
@@ -540,6 +541,7 @@ while ((entry = readdir(d)))
         {
         if (RemoveDir(str.c_str()))
             {
+            closedir(d);
             return -1;
             }
 
