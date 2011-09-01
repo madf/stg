@@ -28,6 +28,8 @@ assert(handle && "USERS::OpenSearch is always correct");
 USER_PTR user;
 while (!users.SearchNext(handle, &user))
     {
+    if (user->GetDeleted())
+        continue;
     std::string tariffName(user->GetProperty().tariffName.ConstData());
     std::map<std::string, size_t>::iterator it;
     it = data.lower_bound(tariffName);
