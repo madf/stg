@@ -3,9 +3,8 @@ STG-MIB DEFINITIONS ::= BEGIN
 IMPORTS
     enterprises,
     MODULE-IDENTITY, OBJECT-TYPE,
-    Integer32,
-    NOTIFICATION-TYPE               FROM SNMPv2-SMI
-    DisplayString                   FROM RFC1213-MIB;
+    Integer32                       FROM SNMPv2-SMI
+    DisplayString                   FROM SNMPv2-TC;
 
 stgMIB MODULE-IDENTITY
     LAST-UPDATED "201101060000Z"
@@ -19,14 +18,14 @@ stgMIB MODULE-IDENTITY
     DESCRIPTION "Initial revision"
     ::= { enterprises 38313 }
 
-stg-24 OBJECT IDENTIFIER ::= { stgMIB 1 }
+stg24 OBJECT IDENTIFIER ::= { stgMIB 1 }
 
-users OBJECT IDENTIFIER ::= { stg-24 1 }
-tariffs OBJECT IDENTIFIER ::= { stg-24 2 }
-admins OBJECT IDENTIFIER ::= { stg-24 3 }
-services OBJECT IDENTIFIER ::= { stg-24 4 }
-corporations OBJECT IDENTIFIER ::= { stg-24 5 }
-traffcounter OBJECT IDENTIFIER ::= { stg-24 6 }
+users OBJECT IDENTIFIER ::= { stg24 1 }
+tariffs OBJECT IDENTIFIER ::= { stg24 2 }
+admins OBJECT IDENTIFIER ::= { stg24 3 }
+services OBJECT IDENTIFIER ::= { stg24 4 }
+corporations OBJECT IDENTIFIER ::= { stg24 5 }
+traffcounter OBJECT IDENTIFIER ::= { stg24 6 }
 
 totalUsers OBJECT-TYPE
     SYNTAX      Integer32
@@ -73,25 +72,88 @@ noCashUsers OBJECT-TYPE
     DEFVAL { 0 }
     ::= { users 5 }
 
-tariffUsers OBJECT-TYPE
-    SYNTAX      SEQUENCE OF UsersByTariff
+disabledDetailStatsUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of users with disabled detail stats"
+    DEFVAL { 0 }
+    ::= { users 6 }
+
+disabledUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of disabled users"
+    DEFVAL { 0 }
+    ::= { users 7 }
+
+passiveUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of passive users"
+    DEFVAL { 0 }
+    ::= { users 8 }
+
+creditUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of users with positive credit"
+    DEFVAL { 0 }
+    ::= { users 9 }
+
+freeMbUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of users with positive freeMb"
+    DEFVAL { 0 }
+    ::= { users 10 }
+
+tariffChangeUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"The number of users changing tariff next month"
+    DEFVAL { 0 }
+    ::= { users 11 }
+
+totalTariffs OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+	"Total tariffs registered in the billing"
+    DEFVAL { 0 }
+    ::= { tariffs 1 }
+
+tariffUsageTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF TariffUsageTable
     MAX-ACCESS  not-accessible
     STATUS      current
     DESCRIPTION
 	"The number of users by each tariff"
     DEFVAL { 0 }
-    ::= { users 6 }
+    ::= { tariffs 2 }
 
-usersByTariff OBJECT-TYPE
-    SYNTAX      UsersByTariff
+tariffUsageTableEntry OBJECT-TYPE
+    SYNTAX      TariffUsageTable
     MAX-ACCESS  not-accessible
     STATUS      current
     DESCRIPTION
         "A row describing a given tariff"
     INDEX   { tariffIndex }
-    ::= {tariffUsers 1 }
+    ::= {tariffUsageTable 1 }
 
-UsersByTariff ::= SEQUENCE {
+TariffUsageTable ::= SEQUENCE {
     tariffIndex Integer32,
     tariffName DisplayString,
     userCount Integer32
@@ -103,7 +165,7 @@ tariffIndex OBJECT-TYPE
     STATUS      current
     DESCRIPTION
         "The id of the tariff this table describes."
-    ::= { usersByTariff 1 }
+    ::= { tariffUsageTableEntry 1 }
 
 tariffName OBJECT-TYPE
     SYNTAX      DisplayString
@@ -111,7 +173,7 @@ tariffName OBJECT-TYPE
     STATUS      current
     DESCRIPTION
         "The name of the tariff this table describes."
-    ::= { usersByTariff 2 }
+    ::= { tariffUsageTableEntry 2 }
 
 userCount OBJECT-TYPE
     SYNTAX      Integer32
@@ -119,70 +181,7 @@ userCount OBJECT-TYPE
     STATUS      current
     DESCRIPTION
         "The count fo users of the tariff this table describes."
-    ::= { usersByTariff 3 }
-
-disabledDetailStatsUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of users with disabled detail stats"
-    DEFVAL { 0 }
-    ::= { users 7 }
-
-disabledUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of disabled users"
-    DEFVAL { 0 }
-    ::= { users 8 }
-
-passiveUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of passive users"
-    DEFVAL { 0 }
-    ::= { users 9 }
-
-creditUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of users with positive credit"
-    DEFVAL { 0 }
-    ::= { users 10 }
-
-freeMbUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of users with positive freeMb"
-    DEFVAL { 0 }
-    ::= { users 11 }
-
-tariffChangeUsers OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"The number of users changing tariff next month"
-    DEFVAL { 0 }
-    ::= { users 12 }
-
-totalTariffs OBJECT-TYPE
-    SYNTAX      Integer32
-    MAX-ACCESS  read-only
-    STATUS      current
-    DESCRIPTION
-	"Total tariffs registered in the billing"
-    DEFVAL { 0 }
-    ::= { tariffs 1 }
+    ::= { tariffUsageTableEntry 3 }
 
 totalAdmins OBJECT-TYPE
     SYNTAX      Integer32
