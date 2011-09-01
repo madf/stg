@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "stg/INTEGER.h"
 
 #include "stg/user.h"
@@ -7,8 +9,7 @@
 bool UsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
-if (!handle)
-    return false;
+assert(handle && "USERS::OpenSearch is always correct");
 
 USER_PTR user;
 size_t count = 0;
@@ -28,8 +29,7 @@ return true;
 std::string UsersSensor::ToString() const
 {
 int handle = users.OpenSearch();
-if (!handle)
-    return "";
+assert(handle && "USERS::OpenSearch is always correct");
 
 USER_PTR user;
 size_t count = 0;
