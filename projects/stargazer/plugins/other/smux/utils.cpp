@@ -44,7 +44,6 @@ if (left < str.length())
         }
     arcs[arcPos++] = arc;
     }
-printfd(__FILE__, "String2OI() - arcPos: %d\n", arcPos);
 OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), arcPos);
 return true;
 }
@@ -103,8 +102,6 @@ if (error.encoded == -1)
 else
     {
     write(fd, buffer, error.encoded);
-    printfd(__FILE__, "OpenPDU encoded successfully to %d bytes\n",
-            error.encoded);
     }
 return true;
 }
@@ -132,7 +129,6 @@ if (error.encoded == -1)
 else
     {
     write(fd, buffer, error.encoded);
-    printfd(__FILE__, "ClosePDU encoded successfully\n");
     }
 return 0;
 }
@@ -166,8 +162,6 @@ if (error.encoded == -1)
 else
     {
     write(fd, buffer, error.encoded);
-    printfd(__FILE__, "RReqPDU encoded successfully to %d bytes\n",
-            error.encoded);
     }
 return 0;
 }
@@ -211,8 +205,6 @@ if (error.encoded == -1)
 else
     {
     write(fd, buffer, error.encoded);
-    printfd(__FILE__, "GetResponsePDU encoded successfully to %d bytes\n",
-            error.encoded);
     }
 return 0;
 }
@@ -248,9 +240,6 @@ if (error.encoded == -1)
 else
     {
     write(fd, buffer, error.encoded);
-    printfd(__FILE__,
-            "GetResponsePDU for error encoded successfully to %d bytes\n",
-            error.encoded);
     }
 return 0;
 }

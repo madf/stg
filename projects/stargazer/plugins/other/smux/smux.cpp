@@ -16,12 +16,6 @@
 
 #include "stg/common.h"
 #include "stg/plugin_creator.h"
-/*#include "stg/users.h"
-#include "stg/tariffs.h"
-#include "stg/admins.h"
-#include "stg/services.h"
-#include "stg/corporations.h"
-#include "stg/traffcounter.h"*/
 
 #include "smux.h"
 #include "utils.h"
@@ -163,12 +157,12 @@ sensors[OID(".1.3.6.1.4.1.38313.1.1.2")] = new ConnectedUsersSensor(*users);
 sensors[OID(".1.3.6.1.4.1.38313.1.1.3")] = new AuthorizedUsersSensor(*users);
 sensors[OID(".1.3.6.1.4.1.38313.1.1.4")] = new AlwaysOnlineUsersSensor(*users);
 sensors[OID(".1.3.6.1.4.1.38313.1.1.5")] = new NoCashUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.7")] = new DisabledDetailStatsUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.8")] = new DisabledUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.9")] = new PassiveUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.10")] = new CreditUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.11")] = new FreeMbUsersSensor(*users);
-sensors[OID(".1.3.6.1.4.1.38313.1.1.12")] = new TariffChangeUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.6")] = new DisabledDetailStatsUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.7")] = new DisabledUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.8")] = new PassiveUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.9")] = new CreditUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.10")] = new FreeMbUsersSensor(*users);
+sensors[OID(".1.3.6.1.4.1.38313.1.1.11")] = new TariffChangeUsersSensor(*users);
 // Tariffs
 sensors[OID(".1.3.6.1.4.1.38313.1.2.1")] = new TotalTariffsSensor(*tariffs);
 // Admins
@@ -181,12 +175,12 @@ sensors[OID(".1.3.6.1.4.1.38313.1.5.1")] = new TotalCorporationsSensor(*corporat
 sensors[OID(".1.3.6.1.4.1.38313.1.6.1")] = new TotalRulesSensor(*traffcounter);
 
 // Table data
-tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *tariffs, *users);
+tables[".1.3.6.1.4.1.38313.1.2.2"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.2.2", *tariffs, *users);
 
 UpdateTables();
 SetNotifiers();
 
-#ifdef DEBUG
+#ifdef SMUX_DEBUG
 Sensors::const_iterator it(sensors.begin());
 while (it != sensors.end())
     {
@@ -319,6 +313,7 @@ if (it != smuxHandlers.end())
     }
 else
     {
+#ifdef SMUX_DEBUG
     switch (pdus->present)
         {
         case SMUX_PDUs_PR_NOTHING:
@@ -334,6 +329,7 @@ else
             printfd(__FILE__, "PDUs: undefined\n");
         }
     asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
+#endif
     }
 return false;
 }

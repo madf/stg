@@ -10,24 +10,40 @@
 #include "utils.h"
 #include "smux.h"
 
+#ifdef SMUX_DEBUG
 bool SMUX::CloseHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::CloseHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 return false;
 }
+#else
+bool SMUX::CloseHandler(const SMUX_PDUs_t *)
+{
+return false;
+}
+#endif
 
+#ifdef SMUX_DEBUG
 bool SMUX::RegisterResponseHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::RegisterResponseHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 return false;
 }
+#else
+bool SMUX::RegisterResponseHandler(const SMUX_PDUs_t *)
+{
+return false;
+}
+#endif
 
 bool SMUX::PDUsRequestHandler(const SMUX_PDUs_t * pdus)
 {
+#ifdef SMUX_DEBUG
 printfd(__FILE__, "SMUX::PDUsRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
+#endif
 PDUsHandlers::iterator it;
 it = pdusHandlers.find(pdus->choice.pdus.present);
 if (it != pdusHandlers.end())
@@ -36,6 +52,7 @@ if (it != pdusHandlers.end())
     }
 else
     {
+#ifdef SMUX_DEBUG
     switch (pdus->present)
         {
         case PDUs_PR_NOTHING:
@@ -50,21 +67,31 @@ else
         default:
             printfd(__FILE__, "SMUX::PDUsRequestHandler() - undefined\n");
         }
+#endif
     }
 return false;
 }
 
+#ifdef SMUX_DEBUG
 bool SMUX::CommitOrRollbackHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::CommitOrRollbackHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 return false;
 }
+#else
+bool SMUX::CommitOrRollbackHandler(const SMUX_PDUs_t *)
+{
+return false;
+}
+#endif
 
 bool SMUX::GetRequestHandler(const PDUs_t * pdus)
 {
+#ifdef SMUX_DEBUG
 printfd(__FILE__, "SMUX::GetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+#endif
 const GetRequest_PDU_t * getRequest = &pdus->choice.get_request;
 GetResponse_PDU_t * msg = static_cast<GetResponse_PDU_t *>(calloc(1, sizeof(GetResponse_PDU_t)));
 assert(msg && "Enought mempry to allocate GetResponse_PDU_t");
@@ -99,15 +126,19 @@ for (int i = 0; i < vbl->list.count; ++i)
     }
 
 SendGetResponsePDU(sock, msg);
+#ifdef SMUX_DEBUG
 asn_fprint(stderr, &asn_DEF_GetResponse_PDU, msg);
+#endif
 ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
 return false;
 }
 
 bool SMUX::GetNextRequestHandler(const PDUs_t * pdus)
 {
+#ifdef SMUX_DEBUG
 printfd(__FILE__, "SMUX::GetNextRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+#endif
 const GetRequest_PDU_t * getRequest = &pdus->choice.get_request;
 GetResponse_PDU_t * msg = static_cast<GetResponse_PDU_t *>(calloc(1, sizeof(GetResponse_PDU_t)));
 assert(msg && "Enought mempry to allocate GetResponse_PDU_t");
@@ -127,7 +158,9 @@ for (int i = 0; i < vbl->list.count; ++i)
     it = sensors.upper_bound(OID(&vb->name));
     if (it == sensors.end())
         {
+#ifdef SMUX_DEBUG
         printfd(__FILE__, "SMUX::GetNextRequestHandler() - '%s' not found\n", OID(&vb->name).ToString().c_str());
+#endif
         SendGetResponseErrorPDU(sock, getRequest,
                                 PDU__error_status_noSuchName, i);
         return true;
@@ -143,15 +176,19 @@ for (int i = 0; i < vbl->list.count; ++i)
     }
 
 SendGetResponsePDU(sock, msg);
+#ifdef SMUX_DEBUG
 asn_fprint(stderr, &asn_DEF_PDU, msg);
+#endif
 ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
 return false;
 }
 
 bool SMUX::SetRequestHandler(const PDUs_t * pdus)
 {
+#ifdef SMUX_DEBUG
 printfd(__FILE__, "SMUX::SetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
+#endif
 SendGetResponseErrorPDU(sock, &pdus->choice.set_request,
                         PDU__error_status_readOnly, 0);
 return false;
