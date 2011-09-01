@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <signal.h>
-
+#include <cstdio>
+#include <cassert>
+#include <csignal>
 #include <ctime>
 #include <algorithm>
 
@@ -296,11 +296,7 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 USER_PTR u;
 int h = users->OpenSearch();
-if (!h)
-    {
-    printfd(__FILE__, "users->OpenSearch() error\n");
-    return;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 while (users->SearchNext(h, &u) == 0)
     {

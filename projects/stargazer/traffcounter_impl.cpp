@@ -100,13 +100,8 @@ if (ReadRules())
 
 printfd(__FILE__, "TRAFFCOUNTER::Start()\n");
 int h = users->OpenSearch();
+assert(h && "USERS::OpenSearch is always correct");
 USER_IMPL * u;
-if (!h)
-    {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot get users\n");
-    WriteServLog("TRAFFCOUNTER: Cannot get users.");
-    return -1;
-    }
 
 while (users->SearchNext(h, &u) == 0)
     {
@@ -132,11 +127,7 @@ if (stopped)
 running = false;
 
 int h = users->OpenSearch();
-if (!h)
-    {
-    WriteServLog("TRAFFCOUNTER: Fatal error: Cannot get users.");
-    return -1;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 USER_IMPL * u;
 while (users->SearchNext(h, &u) == 0)

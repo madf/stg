@@ -27,6 +27,7 @@ $Author: faust $
 #include <unistd.h>
 
 #include <csignal>
+#include <cassert>
 #include <algorithm> // for_each
 #include <functional> // mem_fun_ref
 
@@ -200,11 +201,7 @@ void AUTH_AO::GetUsers()
 {
 USER_PTR u;
 int h = users->OpenSearch();
-if (!h)
-    {
-    printfd(__FILE__, "users->OpenSearch() error\n");
-    return;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 while (!users->SearchNext(h, &u))
     {
