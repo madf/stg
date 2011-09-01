@@ -1,16 +1,29 @@
+#include <cassert>
 #include <utility>
+#include <iterator>
+#include <algorithm>
 
 #include "stg/user_property.h"
+#include "stg/tariffs.h"
+#include "stg/users.h"
 
 #include "tables.h"
+
+std::pair<std::string, size_t> TD2Info(const TARIFF_DATA & td);
 
 void TariffUsersTable::UpdateSensors(Sensors & sensors) const
 {
 std::map<std::string, size_t> data;
 
+std::list<TARIFF_DATA> tdl;
+tariffs.GetTariffsData(&tdl);
+std::transform(tdl.begin(),
+               tdl.end(),
+               std::inserter(data, data.begin()),
+               TD2Info);
+
 int handle = users.OpenSearch();
-if (!handle)
-    return;
+assert(handle && "USERS::OpenSearch is always correct");
 
 USER_PTR user;
 while (!users.SearchNext(handle, &user))
@@ -42,4 +55,9 @@ while (it != data.end())
     ++idx;
     ++it;
     }
+}
+
+std::pair<std::string, size_t> TD2Info(const TARIFF_DATA & td)
+{
+return std::make_pair(td.tariffConf.name, 0);
 }

@@ -6,6 +6,9 @@
 
 #include "sensors.h"
 
+class TARIFFS;
+class USERS;
+
 class TableSensor {
     public:
         TableSensor(const std::string & p) : prefix(p) {}
@@ -21,8 +24,10 @@ class TableSensor {
 class TariffUsersTable : public TableSensor {
     public:
         TariffUsersTable(const std::string & p,
+                         TARIFFS & t,
                          USERS & u)
             : TableSensor(p),
+              tariffs(t),
               users(u)
         {}
         virtual ~TariffUsersTable() {}
@@ -30,6 +35,7 @@ class TariffUsersTable : public TableSensor {
         void UpdateSensors(Sensors & sensors) const;
 
     private:
+        TARIFFS & tariffs;
         USERS & users;
 };
 
