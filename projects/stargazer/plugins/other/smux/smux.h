@@ -5,6 +5,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 
 #include "stg/SMUX-PDUs.h"
 #include "stg/ObjectSyntax.h"
@@ -52,6 +53,27 @@ private:
     std::string password;
 };
 //-----------------------------------------------------------------------------
+class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string> {
+public:
+                CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u) : smux(s), userPtr(u) {}
+    void        Notify(const std::string &, const std::string &);
+
+    USER_PTR    GetUserPtr() { return userPtr; }
+
+private:
+    SMUX & smux;
+    USER_PTR userPtr;
+};
+//-----------------------------------------------------------------------------
+class ADD_DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+public:
+                ADD_DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
+    void        Notify(const USER_PTR &);
+
+private:
+    SMUX & smux;
+};
+//-----------------------------------------------------------------------------
 class SMUX : public PLUGIN {
 public:
     SMUX();
@@ -76,6 +98,8 @@ public:
     uint16_t GetStartPosition() const { return 100; }
     uint16_t GetStopPosition() const { return 100; }
 
+    bool UpdateTables();
+
 private:
     static void * Runner(void * d);
     void Run();
@@ -92,7 +116,8 @@ private:
     bool GetNextRequestHandler(const PDUs_t * pdus);
     bool SetRequestHandler(const PDUs_t * pdus);
 
-    bool UpdateTables();
+    void SetNotifiers();
+    void ResetNotifiers();
 
     USERS * users;
     TARIFFS * tariffs;
@@ -117,6 +142,8 @@ private:
     Sensors sensors;
     Tables tables;
 
+    std::list<CHG_AFTER_NOTIFIER> notifiers;
+    ADD_DEL_USER_NOTIFIER addDelNotifier;
 };
 //-----------------------------------------------------------------------------
 

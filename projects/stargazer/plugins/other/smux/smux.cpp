@@ -102,7 +102,13 @@ SMUX::SMUX()
       traffcounter(NULL),
       running(false),
       stopped(true),
-      sock(-1)
+      sock(-1),
+      smuxHandlers(),
+      pdusHandlers(),
+      sensors(),
+      tables(),
+      notifiers(),
+      addDelNotifier(*this)
 {
 pthread_mutex_init(&mutex, NULL);
 
@@ -173,9 +179,12 @@ sensors[OID(".1.3.6.1.4.1.38313.1.5.1")] = new TotalCorporationsSensor(*corporat
 sensors[OID(".1.3.6.1.4.1.38313.1.6.1")] = new TotalRulesSensor(*traffcounter);
 
 // Table data
-tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *users);
+tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.1.6", *tariffs, *users);
 
 UpdateTables();
+SetNotifiers();
+users->AddNotifierUserAdd(&addDelNotifier);
+users->AddNotifierUserDel(&addDelNotifier);
 
 #ifdef DEBUG
 Sensors::const_iterator it(sensors.begin());
@@ -205,6 +214,10 @@ int SMUX::Stop()
 {
 printfd(__FILE__, "SMUX::Stop() - Before\n");
 running = false;
+
+users->DelNotifierUserDel(&addDelNotifier);
+users->DelNotifierUserAdd(&addDelNotifier);
+ResetNotifiers();
 
 if (!stopped)
     {
@@ -252,6 +265,7 @@ SendOpenPDU(sock);
 SendRReqPDU(sock);
 running = true;
 stopped = false;
+
 while(running)
     {
     if (WaitPackets(sock))
@@ -379,4 +393,39 @@ while (it != tables.end())
 sensors.insert(newSensors.begin(), newSensors.end());
 
 return true;
+}
+
+void SMUX::SetNotifiers()
+{
+USER_PTR u;
+int h = users->OpenSearch();
+assert(h && "USERS::OpenSearch is always correct");
+
+while (!users->SearchNext(h, &u))
+    {
+    notifiers.push_back(CHG_AFTER_NOTIFIER(*this, u));
+    u->GetProperty().tariffName.AddAfterNotifier(&notifiers.back());
+    }
+
+users->CloseSearch(h);
+}
+
+void SMUX::ResetNotifiers()
+{
+std::list<CHG_AFTER_NOTIFIER>::iterator it = notifiers.begin();
+while (it != notifiers.end())
+    {
+    it->GetUserPtr()->GetProperty().tariffName.DelAfterNotifier(&(*it));
+    ++it;
+    }
+}
+
+void CHG_AFTER_NOTIFIER::Notify(const std::string &, const std::string &)
+{
+smux.UpdateTables();
+}
+
+void ADD_DEL_USER_NOTIFIER::Notify(const USER_PTR &)
+{
+smux.UpdateTables();
 }
