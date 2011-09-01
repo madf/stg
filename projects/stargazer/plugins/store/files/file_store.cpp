@@ -1181,10 +1181,10 @@ if (s2.Error())
 for (size_t i = 0; i < DIR_NUM; i++)
     {
     char dirName[3];
-    snprintf(dirName, 3, "U%d", i);
+    snprintf(dirName, 3, "U%llu", (unsigned long long)i);
     s.WriteInt(dirName, stat.up[i]); // Classic
     s2.WriteInt(dirName, stat.up[i]); // New
-    snprintf(dirName, 3, "D%d", i);
+    snprintf(dirName, 3, "D%llu", (unsigned long long)i);
     s.WriteInt(dirName, stat.down[i]); // Classic
     s2.WriteInt(dirName, stat.down[i]); // New
     }

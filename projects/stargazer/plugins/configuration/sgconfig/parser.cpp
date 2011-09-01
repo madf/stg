@@ -63,13 +63,13 @@ answerList->push_back("<ServerInfo>");
 sprintf(s, "<version value=\"%s\"/>", SERVER_VERSION);
 answerList->push_back(s);
 
-sprintf(s, "<tariff_num value=\"%u\"/>", tariffs->Count());
+sprintf(s, "<tariff_num value=\"%llu\"/>", (unsigned long long)tariffs->Count());
 answerList->push_back(s);
 
 sprintf(s, "<tariff value=\"%d\"/>", 2);
 answerList->push_back(s);
 
-sprintf(s, "<users_num value=\"%u\"/>", users->Count());
+sprintf(s, "<users_num value=\"%llu\"/>", (unsigned long long)users->Count());
 answerList->push_back(s);
 
 sprintf(s, "<uname value=\"%s\"/>", un);
