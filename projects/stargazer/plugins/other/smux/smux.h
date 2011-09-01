@@ -13,6 +13,7 @@
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/notifer.h"
 
 #include "sensors.h"
 #include "tables.h"
@@ -65,9 +66,27 @@ private:
     USER_PTR userPtr;
 };
 //-----------------------------------------------------------------------------
-class ADD_DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA> {
 public:
-                ADD_DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
+                ADD_DEL_TARIFF_NOTIFIER(SMUX & s) : smux(s) {}
+    void        Notify(const TARIFF_DATA &);
+
+private:
+    SMUX & smux;
+};
+//-----------------------------------------------------------------------------
+class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+public:
+                ADD_USER_NOTIFIER(SMUX & s) : smux(s) {}
+    void        Notify(const USER_PTR &);
+
+private:
+    SMUX & smux;
+};
+//-----------------------------------------------------------------------------
+class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+public:
+                DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
     void        Notify(const USER_PTR &);
 
 private:
@@ -99,6 +118,9 @@ public:
     uint16_t GetStopPosition() const { return 100; }
 
     bool UpdateTables();
+
+    void SetNotifier(USER_PTR userPtr);
+    void UnsetNotifier(USER_PTR userPtr);
 
 private:
     static void * Runner(void * d);
@@ -143,9 +165,31 @@ private:
     Tables tables;
 
     std::list<CHG_AFTER_NOTIFIER> notifiers;
-    ADD_DEL_USER_NOTIFIER addDelNotifier;
+    ADD_USER_NOTIFIER addUserNotifier;
+    DEL_USER_NOTIFIER delUserNotifier;
+    ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
 };
 //-----------------------------------------------------------------------------
+
+inline
+void ADD_DEL_TARIFF_NOTIFIER::Notify(const TARIFF_DATA &)
+{
+smux.UpdateTables();
+}
+
+inline
+void ADD_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
+{
+smux.SetNotifier(userPtr);
+smux.UpdateTables();
+}
+
+inline
+void DEL_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
+{
+smux.UnsetNotifier(userPtr);
+smux.UpdateTables();
+}
 
 extern "C" PLUGIN * GetPlugin();
 

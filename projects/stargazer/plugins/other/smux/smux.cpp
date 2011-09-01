@@ -108,7 +108,9 @@ SMUX::SMUX()
       sensors(),
       tables(),
       notifiers(),
-      addDelNotifier(*this)
+      addUserNotifier(*this),
+      delUserNotifier(*this),
+      addDelTariffNotifier(*this)
 {
 pthread_mutex_init(&mutex, NULL);
 
@@ -183,8 +185,6 @@ tables[".1.3.6.1.4.1.38313.1.1.6"] = new TariffUsersTable(".1.3.6.1.4.1.38313.1.
 
 UpdateTables();
 SetNotifiers();
-users->AddNotifierUserAdd(&addDelNotifier);
-users->AddNotifierUserDel(&addDelNotifier);
 
 #ifdef DEBUG
 Sensors::const_iterator it(sensors.begin());
@@ -215,8 +215,6 @@ int SMUX::Stop()
 printfd(__FILE__, "SMUX::Stop() - Before\n");
 running = false;
 
-users->DelNotifierUserDel(&addDelNotifier);
-users->DelNotifierUserAdd(&addDelNotifier);
 ResetNotifiers();
 
 if (!stopped)
@@ -395,23 +393,53 @@ sensors.insert(newSensors.begin(), newSensors.end());
 return true;
 }
 
+void SMUX::SetNotifier(USER_PTR userPtr)
+{
+notifiers.push_back(CHG_AFTER_NOTIFIER(*this, userPtr));
+userPtr->GetProperty().tariffName.AddAfterNotifier(&notifiers.back());
+}
+
+void SMUX::UnsetNotifier(USER_PTR userPtr)
+{
+std::list<CHG_AFTER_NOTIFIER>::iterator it = notifiers.begin();
+while (it != notifiers.end())
+    {
+    if (it->GetUserPtr() == userPtr)
+        {
+        userPtr->GetProperty().tariffName.DelAfterNotifier(&(*it));
+        notifiers.erase(it);
+        break;
+        }
+    ++it;
+    }
+}
+
 void SMUX::SetNotifiers()
 {
-USER_PTR u;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
+USER_PTR u;
 while (!users->SearchNext(h, &u))
-    {
-    notifiers.push_back(CHG_AFTER_NOTIFIER(*this, u));
-    u->GetProperty().tariffName.AddAfterNotifier(&notifiers.back());
-    }
+    SetNotifier(u);
 
 users->CloseSearch(h);
+
+users->AddNotifierUserAdd(&addUserNotifier);
+users->AddNotifierUserDel(&delUserNotifier);
+
+tariffs->AddNotifierAdd(&addDelTariffNotifier);
+tariffs->AddNotifierDel(&addDelTariffNotifier);
 }
 
 void SMUX::ResetNotifiers()
 {
+tariffs->DelNotifierDel(&addDelTariffNotifier);
+tariffs->DelNotifierAdd(&addDelTariffNotifier);
+
+users->DelNotifierUserDel(&delUserNotifier);
+users->DelNotifierUserAdd(&addUserNotifier);
+
 std::list<CHG_AFTER_NOTIFIER>::iterator it = notifiers.begin();
 while (it != notifiers.end())
     {
@@ -421,11 +449,6 @@ while (it != notifiers.end())
 }
 
 void CHG_AFTER_NOTIFIER::Notify(const std::string &, const std::string &)
-{
-smux.UpdateTables();
-}
-
-void ADD_DEL_USER_NOTIFIER::Notify(const USER_PTR &)
 {
 smux.UpdateTables();
 }
