@@ -228,6 +228,8 @@ if (!priv->userAddDel)
                      login.c_str());
         return;
         }
+
+    u->SetDeleted();
     }
 
     {
@@ -252,7 +254,6 @@ if (!priv->userAddDel)
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
     u->OnDelete();
-    u->SetDeleted();
 
     USER_TO_DEL utd;
     utd.iter = u;
