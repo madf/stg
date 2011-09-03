@@ -280,11 +280,13 @@ class ConstSensor : public Sensor {
         T value;
 };
 
+#ifdef DEBUG
 template <>
 inline
 std::string ConstSensor<std::string>::ToString() const
 {
 return value;
 }
+#endif
 
 #endif
