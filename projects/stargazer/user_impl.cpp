@@ -345,6 +345,9 @@ std::vector<STG_MSG_HDR> hdrsList;
 if (store->GetMessageHdrs(&hdrsList, login))
     {
     printfd(__FILE__, "Error GetMessageHdrs %s\n", store->GetStrError().c_str());
+    WriteServLog("Cannot read user %s. Error reading message headers: %s.",
+                 login.c_str(),
+                 store->GetStrError().c_str());
     return -1;
     }
 
