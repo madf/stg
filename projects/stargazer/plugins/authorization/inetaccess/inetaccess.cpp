@@ -30,7 +30,6 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/select.h>
 #include <unistd.h> // usleep, close
 
 #include <csignal>
@@ -837,7 +836,7 @@ if ((*user)->GetAuthorized() && (*user)->GetCurrIP() != sip)
 USER_PTR u;
 if (users->FindByIPIdx(sip, &u) == 0 && u->GetLogin() != (*user)->GetLogin())
     {
-    printfd(__FILE__, "IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
+    printfd(__FILE__, "IP address already in use. IP \'%s\'\n", inet_ntostring(sip).c_str());
     WriteServLog("IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
     return 0;
