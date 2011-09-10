@@ -118,7 +118,8 @@ private:
 //-----------------------------------------------------------------------------
 struct IA_USER {
     IA_USER()
-        : user(NULL),
+        : login(),
+          user(NULL),
           lastSendAlive(0),
           rnd(random()),
           port(0),
@@ -137,7 +138,8 @@ struct IA_USER {
     };
 
     IA_USER(const IA_USER & u)
-        : user(u.user),
+        : login(u.login),
+          user(u.user),
           phase(u.phase),
           lastSendAlive(u.lastSendAlive),
           rnd(u.rnd),
@@ -152,7 +154,8 @@ struct IA_USER {
         memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
     };
 
-    USER_PTR        user;
+    std::string     login;
+    CONST_USER_PTR  user;
     IA_PHASE        phase;
     UTIME           lastSendAlive;
     uint32_t        rnd;
@@ -228,7 +231,7 @@ private:
     void                DelUser(USER_PTR u);
     int                 RecvData(char * buffer, int bufferSize);
     int                 CheckHeader(const char * buffer, int * protoVer);
-    int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR * user);
+    int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
 
     int                 Process_CONN_SYN_6(CONN_SYN_6 * connSyn, IA_USER * iaUser, uint32_t sip);
     int                 Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, uint32_t sip);
@@ -329,7 +332,7 @@ private:
             UnauthorizeUser(AUTH_IA * a) : auth(a) {}
             void operator()(const std::pair<uint32_t, IA_USER> & p)
             {
-                p.second.user->Unauthorize(auth);
+                auth->users->Unauthorize(p.second.user->GetLogin(), auth);
             }
         private:
             AUTH_IA * auth;

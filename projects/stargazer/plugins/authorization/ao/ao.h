@@ -88,15 +88,13 @@ public:
     void                AddUser(USER_PTR u);
     void                DelUser(USER_PTR u);
 
-    void                UpdateUserAuthorization(USER_PTR u) const;
-    void                Unauthorize(USER_PTR u) const;
-
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
     void                GetUsers();
     void                SetUserNotifiers(USER_PTR u);
     void                UnSetUserNotifiers(USER_PTR u);
+    void                UpdateUserAuthorization(CONST_USER_PTR u) const;
 
     mutable std::string errorStr;
     USERS *             users;
@@ -137,6 +135,11 @@ private:
     private:
         AUTH_AO & auth;
     } onDelUserNotifier;
+
+    friend class CHG_BEFORE_NOTIFIER<int>;
+    friend class CHG_AFTER_NOTIFIER<int>;
+    friend class CHG_BEFORE_NOTIFIER<USER_IPS>;
+    friend class CHG_AFTER_NOTIFIER<USER_IPS>;
 
 };
 //-----------------------------------------------------------------------------

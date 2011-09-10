@@ -105,7 +105,8 @@ list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
-    Unauthorize(*users_iter);
+    if ((*users_iter)->IsAuthorizedBy(this))
+        users->Unauthorize((*users_iter)->GetLogin(), this);
     UnSetUserNotifiers(*users_iter);
     ++users_iter;
     }
@@ -212,21 +213,14 @@ while (!users->SearchNext(h, &u))
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::Unauthorize(USER_PTR u) const
-{
-u->Unauthorize(this);
-}
-//-----------------------------------------------------------------------------
-void AUTH_AO::UpdateUserAuthorization(USER_PTR u) const
+void AUTH_AO::UpdateUserAuthorization(CONST_USER_PTR u) const
 {
 if (u->GetProperty().alwaysOnline)
     {
     USER_IPS ips = u->GetProperty().ips;
     if (ips.OnlyOneIP())
         {
-        if (u->Authorize(ips[0].ip, 0xFFffFFff, this) == 0)
-            {
-            }
+        users->Authorize(u->GetLogin(), ips[0].ip, 0xFFffFFff, this);
         }
     }
 }
@@ -240,7 +234,7 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
-Unauthorize(u);
+users->Unauthorize(u->GetLogin(), this);
 UnSetUserNotifiers(u);
 usersList.remove(u);
 }
@@ -255,7 +249,8 @@ template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
 //EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
-auth.Unauthorize(user);
+if (user->IsAuthorizedBy(&auth))
+    auth.users->Unauthorize(user->GetLogin(), &auth);
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>

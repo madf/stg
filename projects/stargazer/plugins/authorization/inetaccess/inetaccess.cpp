@@ -616,7 +616,7 @@ USER_PTR user;
 if (users->FindByName(login, &user) == 0)
     {
     printfd(__FILE__, "User %s FOUND!\n", user->GetLogin().c_str());
-    PacketProcessor(buffer, dataLen, sip, sport, protoVer, &user);
+    PacketProcessor(buffer, dataLen, sip, sport, protoVer, user);
     }
 else
     {
@@ -720,7 +720,7 @@ while (it != ip2user.end())
 
         if ((currTime - it->second.phase.GetTime()) > iaSettings.GetUserTimeout())
             {
-            it->second.user->Unauthorize(this);
+            users->Unauthorize(it->second.user->GetLogin(), this);
             ip2user.erase(it++);
             continue;
             }
@@ -739,11 +739,10 @@ while (it != ip2user.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR * user)
+int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+std::string login(user->GetLogin());
 // Тут собраны обработчики разных пакетов
-int pn = -1;
 const int offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
 IA_USER * iaUser = NULL;
@@ -757,19 +756,20 @@ ALIVE_ACK_6 * aliveAck;
 DISCONN_SYN_6 * disconnSyn;
 DISCONN_ACK_6 * disconnAck;
 
-map<uint32_t, IA_USER>::iterator it;
-it = ip2user.find(sip);
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
-if (it == ip2user.end() || (*user)->GetID() != it->second.user->GetID())
+if (it == ip2user.end())
     {
     // Еще не было запросов с этого IP
     printfd(__FILE__, "Add new user\n");
+    ip2user[sip].login = user->GetLogin();
+    ip2user[sip].user = user;
     ip2user[sip].protoVer = protoVer;
-    ip2user[sip].user = *user;
     ip2user[sip].port = sport;
     #ifdef IA_PHASE_DEBUG
     ip2user[sip].phase.SetLogFileName(stgSettings->GetLogFileName());
-    ip2user[sip].phase.SetUserLogin((*user)->GetLogin());
+    ip2user[sip].phase.SetUserLogin(login);
     #endif
 
 
@@ -780,16 +780,23 @@ if (it == ip2user.end() || (*user)->GetID() != it->second.user->GetID())
         return -1;
         }
     }
+else if (user->GetID() != it->second.user->GetID())
+    {
+    printfd(__FILE__, "IP address already in use. IP \'%s\'\n", inet_ntostring(sip).c_str());
+    WriteServLog("IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
+    SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
+    return 0;
+    }
 
 iaUser = &(it->second);
 
 if (iaUser->port != sport)
     iaUser->port = sport;
 
-if (iaUser->password != (*user)->GetProperty().password.Get())
+if (iaUser->password != user->GetProperty().password.Get())
     {
-    InitEncrypt(&iaUser->ctx, (*user)->GetProperty().password.Get());
-    iaUser->password = (*user)->GetProperty().password.Get();
+    InitEncrypt(&iaUser->ctx, user->GetProperty().password.Get());
+    iaUser->password = user->GetProperty().password.Get();
     }
 
 buff += offset;
@@ -799,8 +806,7 @@ char packetName[IA_MAX_TYPE_LEN];
 strncpy(packetName,  buff + 4, IA_MAX_TYPE_LEN);
 packetName[IA_MAX_TYPE_LEN - 1] = 0;
 
-map<string, int>::iterator pi;
-pi = packetTypes.find(packetName);
+map<string, int>::iterator pi(packetTypes.find(packetName));
 if (pi == packetTypes.end())
     {
     SendError(sip, sport, protoVer, "Неправильный логин или пароль!");
@@ -808,53 +814,40 @@ if (pi == packetTypes.end())
     WriteServLog("User's connect failed. IP \'%s\'. Wrong login or password", inet_ntostring(sip).c_str());
     return 0;
     }
-else
-    {
-    pn = pi->second;
-    }
 
-if ((*user)->GetProperty().disabled.Get())
+if (user->GetProperty().disabled.Get())
     {
     SendError(sip, sport, protoVer, "Учетная запись заблокирована");
     return 0;
     }
 
-if ((*user)->GetProperty().passive.Get())
+if (user->GetProperty().passive.Get())
     {
     SendError(sip, sport, protoVer, "Учетная запись заморожена");
     return 0;
     }
 
-if ((*user)->GetAuthorized() && (*user)->GetCurrIP() != sip)
+if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
     {
-    printfd(__FILE__, "Login %s already in use. IP \'%s\'\n", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("Login %s already in use. IP \'%s\'", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    printfd(__FILE__, "Login %s already in use. IP \'%s\'\n", login.c_str(), inet_ntostring(sip).c_str());
+    WriteServLog("Login %s already in use. IP \'%s\'", login.c_str(), inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш логин уже используется!");
     return 0;
     }
 
-USER_PTR u;
-if (users->FindByIPIdx(sip, &u) == 0 && u->GetLogin() != (*user)->GetLogin())
-    {
-    printfd(__FILE__, "IP address already in use. IP \'%s\'\n", inet_ntostring(sip).c_str());
-    WriteServLog("IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
-    SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
-    return 0;
-    }
-
 // Теперь мы должны проверить, может ли пользователь подключится с этого адреса.
-int ipFound = (*user)->GetProperty().ips.Get().IsIPInIPS(sip);
+int ipFound = user->GetProperty().ips.Get().IsIPInIPS(sip);
 if (!ipFound)
     {
-    printfd(__FILE__, "User %s. IP address is incorrect. IP \'%s\'\n", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("User %s. IP address is incorrect. IP \'%s\'", (*user)->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    printfd(__FILE__, "User %s. IP address is incorrect. IP \'%s\'\n", login.c_str(), inet_ntostring(sip).c_str());
+    WriteServLog("User %s. IP address is incorrect. IP \'%s\'", login.c_str(), inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Пользователь не опознан! Проверьте IP адрес.");
     return 0;
     }
 
 int ret = -1;
 
-switch (pn)
+switch (pi->second)
     {
     case CONN_SYN_N:
         switch (protoVer)
@@ -1033,7 +1026,7 @@ if (it == ip2user.end())
 if (it->second.user == u)
     {
     printfd(__FILE__, "User removed!\n");
-    it->second.user->Unauthorize(this);
+    users->Unauthorize(u->GetLogin(), this);
     ip2user.erase(it);
     }
 }
@@ -1127,7 +1120,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::RealSendMessage6(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
-printfd(__FILE__, "RealSendMessage 6 user=%s\n", user.user->GetLogin().c_str());
+printfd(__FILE__, "RealSendMessage 6 user=%s\n", user.login.c_str());
 
 char buffer[256];
 INFO_6 info;
@@ -1154,7 +1147,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
-printfd(__FILE__, "RealSendMessage 7 user=%s\n", user.user->GetLogin().c_str());
+printfd(__FILE__, "RealSendMessage 7 user=%s\n", user.login.c_str());
 
 char buffer[300];
 INFO_7 info;
@@ -1187,7 +1180,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
-printfd(__FILE__, "RealSendMessage 8 user=%s\n", user.user->GetLogin().c_str());
+printfd(__FILE__, "RealSendMessage 8 user=%s\n", user.login.c_str());
 
 char buffer[1500];
 memset(buffer, 0, sizeof(buffer));
@@ -1259,7 +1252,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     iaUser->phase.UpdateTime();
 
     iaUser->lastSendAlive = iaUser->phase.GetTime();
-    if (iaUser->user->Authorize(sip, enabledDirs, this) == 0)
+    if (users->Authorize(iaUser->login, sip, enabledDirs, this))
         {
         iaUser->phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 2 to 3. Reason: CONN_ACK_6\n");
@@ -1294,7 +1287,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     {
     iaUser->phase.UpdateTime();
     iaUser->lastSendAlive = iaUser->phase.GetTime();
-    if (iaUser->user->Authorize(sip, enabledDirs, this) == 0)
+    if (users->Authorize(iaUser->login, sip, enabledDirs, this))
         {
         iaUser->phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 2 to 3. Reason: CONN_ACK_8\n");
@@ -1558,7 +1551,7 @@ else
 #ifdef IA_DEBUG
 if (iaUser->aliveSent)
     {
-    printfd(__FILE__, "========= ALIVE_ACK_6(7) TIMEOUT !!! %s =========\n", iaUser->user->GetLogin().c_str());
+    printfd(__FILE__, "========= ALIVE_ACK_6(7) TIMEOUT !!! %s =========\n", iaUser->login.c_str());
     }
 iaUser->aliveSent = true;
 #endif
@@ -1728,7 +1721,7 @@ SwapBytes(fin6.len);
 
 Encrypt(&iaUser->ctx, (char*)&fin6, (char*)&fin6, Min8(sizeof(fin6))/8);
 
-iaUser->user->Unauthorize(this);
+users->Unauthorize(iaUser->login, this);
 
 int ret = Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
 ip2user.erase(it);
@@ -1756,7 +1749,7 @@ SwapBytes(fin8.len);
 
 Encrypt(&iaUser->ctx, (char*)&fin8, (char*)&fin8, Min8(sizeof(fin8))/8);
 
-iaUser->user->Unauthorize(this);
+users->Unauthorize(iaUser->login, this);
 
 int ret = Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
 ip2user.erase(it);

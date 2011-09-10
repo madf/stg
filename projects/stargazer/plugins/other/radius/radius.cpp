@@ -255,7 +255,7 @@ for (it = sessions.begin(); it != sessions.end(); ++it)
     USER_PTR ui;
     if (users->FindByName(it->second.userName, &ui))
         {
-        ui->Unauthorize(this);
+        users->Unauthorize(ui->GetLogin(), this);
         }
     }
 sessions.erase(sessions.begin(), sessions.end());
@@ -498,7 +498,7 @@ if (CanAcctService((char *)packet->service))
         return -1;
         }
     USER_IPS ips = ui->GetProperty().ips;
-    if (ui->Authorize(ips[0].ip, 0xffFFffFF, this))
+    if (users->Authorize(ui->GetLogin(), ips[0].ip, 0xffFFffFF, this))
         {
         printfd(__FILE__, "RADIUS::ProcessAcctStartPacket cannot authorize user '%s'\n", packet->login);
         packet->packetType = RAD_REJECT_PACKET;
@@ -539,7 +539,7 @@ if (!FindUser(&ui, sid->second.userName))
 
 sessions.erase(sid);
 
-ui->Unauthorize(this);
+users->Unauthorize(ui->GetLogin(), this);
 
 packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
