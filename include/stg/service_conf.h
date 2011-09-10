@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "os_int.h"
+
 struct SERVICE_CONF
 {
 SERVICE_CONF()
@@ -25,7 +27,7 @@ SERVICE_CONF(const std::string & n, double c,
 std::string name;
 std::string comment;
 double      cost;
-unsigned    payDay;
+uint8_t     payDay;
 };
 
 inline
