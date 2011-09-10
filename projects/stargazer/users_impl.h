@@ -56,7 +56,7 @@ typedef std::list<USER_IMPL>::const_iterator const_user_iter;
 
 class USERS_IMPL;
 //-----------------------------------------------------------------------------
-class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
+/*class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
     PROPERTY_NOTIFER_IP_BEFORE(USERS_IMPL & us, user_iter u) : users(us), user(u) {}
     void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
@@ -74,7 +74,7 @@ public:
 private:
     USERS_IMPL & users;
     user_iter    user;
-};
+};*/
 //-----------------------------------------------------------------------------
 struct USER_TO_DEL {
 USER_TO_DEL()
@@ -113,6 +113,10 @@ public:
     int             Add(const std::string & login, const ADMIN * admin);
     void            Del(const std::string & login, const ADMIN * admin);
 
+    bool            Authorize(const std::string & login, uint32_t ip,
+                              uint32_t enabledDirs, const AUTH * auth);
+    bool            Unauthorize(const std::string & login, const AUTH * auth);
+
     int             ReadUsers();
     size_t          Count() const { return users.size(); }
 
@@ -131,6 +135,7 @@ public:
 private:
     void            AddToIPIdx(user_iter user);
     void            DelFromIPIdx(uint32_t ip);
+    bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
 
     int             FindByNameNonLock(const std::string & login, user_iter * user);
 
@@ -152,8 +157,8 @@ private:
 
     std::list<USER_IMPL>                  users;
     std::list<USER_TO_DEL>                usersToDelete;
-    std::list<PROPERTY_NOTIFER_IP_BEFORE> userIPNotifiersBefore;
-    std::list<PROPERTY_NOTIFER_IP_AFTER>  userIPNotifiersAfter;
+    /*std::list<PROPERTY_NOTIFER_IP_BEFORE> userIPNotifiersBefore;
+    std::list<PROPERTY_NOTIFER_IP_AFTER>  userIPNotifiersAfter;*/
 
     std::map<uint32_t, user_iter>         ipIndex;
     std::map<std::string, user_iter>      loginIndex;
@@ -179,7 +184,7 @@ private:
     std::set<NOTIFIER_BASE<USER_IMPL_PTR>*> onDelNotifiersImpl;
 };
 //-----------------------------------------------------------------------------
-inline
+/*inline
 void PROPERTY_NOTIFER_IP_BEFORE::Notify(const uint32_t & oldValue,
                                         const uint32_t &)
 {
@@ -201,6 +206,6 @@ if (!newValue)
 //EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &USERS::AddToIPIdx, user);
 // Using explicit call to assure that index is valid, because fast reconnect with delayed call can result in authorization error
 users.AddToIPIdx(user);
-}
+}*/
 //-----------------------------------------------------------------------------
 #endif

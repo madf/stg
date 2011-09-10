@@ -68,10 +68,10 @@ public:
     virtual bool                GetConnected() const = 0;
     virtual time_t              GetConnectedModificationTime() const = 0;
     virtual int                 GetAuthorized() const = 0;
-    virtual int                 Authorize(uint32_t ip,
+    /*virtual int                 Authorize(uint32_t ip,
                                           uint32_t enabledDirs,
                                           const AUTH * auth) = 0;
-    virtual void                Unauthorize(const AUTH * auth) = 0;
+    virtual void                Unauthorize(const AUTH * auth) = 0;*/
     virtual bool                IsAuthorizedBy(const AUTH * auth) const = 0;
 
     virtual int                 AddMessage(STG_MSG * msg) = 0;
@@ -99,5 +99,6 @@ public:
 };
 
 typedef USER * USER_PTR;
+typedef const USER * CONST_USER_PTR;
 
 #endif

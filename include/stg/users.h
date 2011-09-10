@@ -43,6 +43,10 @@ public:
     virtual int  Add(const std::string & login, const ADMIN * admin) = 0;
     virtual void Del(const std::string & login, const ADMIN * admin) = 0;
 
+    virtual bool Authorize(const std::string & login, uint32_t ip,
+                           uint32_t enabledDirs, const AUTH * auth) = 0;
+    virtual bool Unauthorize(const std::string & login, const AUTH * auth) = 0;
+
     virtual int  ReadUsers() = 0;
     virtual size_t Count() const = 0;
 
