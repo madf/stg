@@ -1028,9 +1028,6 @@ sendAddr.sin_addr.s_addr = ip;
 
 int res = sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
 
-static struct timeval tv;
-gettimeofday(&tv, NULL);
-
 if (res == len)
     return 0;
 
