@@ -213,8 +213,6 @@ void IA_PHASE::WritePhaseChange(int newPhase)
 UTIME newPhaseTime;
 gettimeofday(&newPhaseTime, NULL);
 flog = fopen(log.c_str(), "at");
-/*int64_t tn = newPhaseTime.GetSec()*1000000 + newPhaseTime.GetUSec();
-int64_t to = phaseTime.GetSec()*1000000 + phaseTime.GetUSec();*/
 if (flog)
     {
     string action = newPhase == phase ? "U" : "C";
@@ -416,7 +414,6 @@ if (isRunningRun)
     //after 5 seconds waiting thread still running. now killing it
     if (isRunningRun)
         {
-        //TODO pthread_cancel()
         if (pthread_kill(recvThread, SIGINT))
             {
             errorStr = "Cannot kill thread.";
@@ -450,7 +447,6 @@ if (isRunningRunTimeouter)
     //after 5 seconds waiting thread still running. now killing it
     if (isRunningRunTimeouter)
         {
-        //TODO pthread_cancel()
         if (pthread_kill(timeouterThread, SIGINT))
             {
             errorStr = "Cannot kill thread.";
@@ -752,7 +748,6 @@ return 0;
 int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user)
 {
 std::string login(user->GetLogin());
-// Тут собраны обработчики разных пакетов
 const int offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -985,8 +980,7 @@ switch (protoVer)
 
         sendAddr.sin_family = AF_INET;
         sendAddr.sin_port = htons(port);
-
-        sendAddr.sin_addr.s_addr = ip;// IP пользователя
+        sendAddr.sin_addr.s_addr = ip;
 
         err.len = 1;
         strncpy((char*)err.type, "ERR", 16);
@@ -1006,8 +1000,7 @@ switch (protoVer)
 
         sendAddr.sin_family = AF_INET;
         sendAddr.sin_port = htons(port);
-
-        sendAddr.sin_addr.s_addr = ip;// IP пользователя
+        sendAddr.sin_addr.s_addr = ip;
 
         err8.len = 256;
         strncpy((char*)err8.type, "ERR", 16);
