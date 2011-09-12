@@ -772,7 +772,7 @@ if (it == ip2user.end())
             return 0;
             }
         }
-    // Еще не было запросов с этого IP
+
     printfd(__FILE__, "Add new user '%s' from ip %s\n",
             login.c_str(), inet_ntostring(sip).c_str());
     ip2user[sip].login = login;
