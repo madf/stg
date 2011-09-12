@@ -605,19 +605,38 @@ uint16_t sport = htons(outerAddr.sin_port);
 USER_PTR user;
 if (users->FindByName(login, &user) == 0)
     {
-    printfd(__FILE__, "User %s FOUND!\n", user->GetLogin().c_str());
-    PacketProcessor(buffer, dataLen, sip, sport, protoVer, user);
-    }
-else
-    {
-    WriteServLog("User\'s connect failed:: user \'%s\' not found. IP \'%s\'",
+    WriteServLog("User's connect failed: user '%s' not found. IP %s",
                  login,
                  inet_ntostring(sip).c_str());
     printfd(__FILE__, "User %s NOT found!\n", login);
-    SendError(sip, sport, protoVer, "Неправильный логин или пароль!");
+    SendError(sip, sport, protoVer, "Неправильный логин!");
     }
 
-return 0;
+printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
+
+if (user->GetProperty().disabled.Get())
+    {
+    SendError(sip, sport, protoVer, "Учетная запись заблокирована");
+    return 0;
+    }
+
+if (user->GetProperty().passive.Get())
+    {
+    SendError(sip, sport, protoVer, "Учетная запись заморожена");
+    return 0;
+    }
+
+if (!user->GetProperty().ips.Get().IsIPInIPS(sip))
+    {
+    printfd(__FILE__, "User %s. IP address is incorrect. IP %s\n",
+            user->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    WriteServLog("User %s. IP address is incorrect. IP %s",
+                 user->GetLogin().c_str(), inet_ntostring(sip).c_str());
+    SendError(sip, sport, protoVer, "Пользователь не опознан! Проверьте IP адрес.");
+    return 0;
+    }
+
+return PacketProcessor(buffer, dataLen, sip, sport, protoVer, user);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::CheckHeader(const char * buffer, int * protoVer)
@@ -736,25 +755,32 @@ std::string login(user->GetLogin());
 // Тут собраны обработчики разных пакетов
 const int offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
-IA_USER * iaUser = NULL;
-
-CONN_SYN_6 * connSyn6;
-CONN_SYN_7 * connSyn7;
-CONN_SYN_8 * connSyn8;
-
-CONN_ACK_6 * connAck;
-ALIVE_ACK_6 * aliveAck;
-DISCONN_SYN_6 * disconnSyn;
-DISCONN_ACK_6 * disconnAck;
-
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
 if (it == ip2user.end())
     {
+    USER_PTR userPtr;
+    if (!users->FindByIPIdx(sip, &userPtr))
+        {
+        if (userPtr->GetID() != user->GetID())
+            {
+            printfd(__FILE__, "IP address already in use by user '%s'. IP %s, login: '%s'\n",
+                    userPtr->GetLogin().c_str(),
+                    inet_ntostring(sip).c_str(),
+                   login.c_str());
+            WriteServLog("IP address already in use by user '%s'. IP %s, login: '%s'",
+                         userPtr->GetLogin().c_str(),
+                         inet_ntostring(sip).c_str(),
+                         login.c_str());
+            SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
+            return 0;
+            }
+        }
     // Еще не было запросов с этого IP
-    printfd(__FILE__, "Add new user\n");
-    ip2user[sip].login = user->GetLogin();
+    printfd(__FILE__, "Add new user '%s' from ip %s\n",
+            login.c_str(), inet_ntostring(sip).c_str());
+    ip2user[sip].login = login;
     ip2user[sip].user = user;
     ip2user[sip].protoVer = protoVer;
     ip2user[sip].port = sport;
@@ -785,7 +811,7 @@ else if (user->GetID() != it->second.user->GetID())
     return 0;
     }
 
-iaUser = &(it->second);
+IA_USER * iaUser = &(it->second);
 
 if (iaUser->port != sport)
     iaUser->port = sport;
@@ -808,19 +834,10 @@ if (pi == packetTypes.end())
     {
     SendError(sip, sport, protoVer, "Неправильный логин или пароль!");
     printfd(__FILE__, "Login or password is wrong!\n");
-    WriteServLog("User's connect failed. IP \'%s\'. Wrong login or password", inet_ntostring(sip).c_str());
-    return 0;
-    }
-
-if (user->GetProperty().disabled.Get())
-    {
-    SendError(sip, sport, protoVer, "Учетная запись заблокирована");
-    return 0;
-    }
-
-if (user->GetProperty().passive.Get())
-    {
-    SendError(sip, sport, protoVer, "Учетная запись заморожена");
+    WriteServLog("User's connect failed. User: '%s', ip %s. Wrong login or password",
+                 login.c_str(),
+                 inet_ntostring(sip).c_str());
+    ip2user.erase(it);
     return 0;
     }
 
@@ -834,22 +851,9 @@ if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
                  inet_ntostring(user->GetCurrIP()).c_str(),
                  inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш логин уже используется!");
+    ip2user.erase(it);
     return 0;
     }
-
-// Теперь мы должны проверить, может ли пользователь подключится с этого адреса.
-int ipFound = user->GetProperty().ips.Get().IsIPInIPS(sip);
-if (!ipFound)
-    {
-    printfd(__FILE__, "User %s. IP address is incorrect. IP %s\n",
-            login.c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("User %s. IP address is incorrect. IP %s",
-                 login.c_str(), inet_ntostring(sip).c_str());
-    SendError(sip, sport, protoVer, "Пользователь не опознан! Проверьте IP адрес.");
-    return 0;
-    }
-
-int ret = -1;
 
 switch (pi->second)
     {
@@ -857,161 +861,92 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                connSyn6 = (CONN_SYN_6*)(buff - offset);
-                ret = Process_CONN_SYN_6(connSyn6, &(it->second), sip);
-                break;
+                if (Process_CONN_SYN_6((CONN_SYN_6 *)(buff - offset), &(it->second), sip))
+                    return -1;
+                return Send_CONN_SYN_ACK_6(iaUser, sip);
             case 7:
-                connSyn7 = (CONN_SYN_7*)(buff - offset);
-                ret = Process_CONN_SYN_7(connSyn7, &(it->second), sip);
-                break;
+                if (Process_CONN_SYN_7((CONN_SYN_7 *)(buff - offset), &(it->second), sip))
+                    return -1;
+                return Send_CONN_SYN_ACK_7(iaUser, sip);
             case 8:
-                connSyn8 = (CONN_SYN_8*)(buff - offset);
-                ret = Process_CONN_SYN_8(connSyn8, &(it->second), sip);
-                break;
-            }
-
-        if (ret != 0)
-            {
-            return 0;
-            }
-        switch (protoVer)
-            {
-            case 6:
-                Send_CONN_SYN_ACK_6(iaUser, sip);
-                break;
-            case 7:
-                Send_CONN_SYN_ACK_7(iaUser, sip);
-                break;
-            case 8:
-                Send_CONN_SYN_ACK_8(iaUser, sip);
-                break;
+                if (Process_CONN_SYN_8((CONN_SYN_8 *)(buff - offset), &(it->second), sip))
+                    return -1;
+                return Send_CONN_SYN_ACK_8(iaUser, sip);
             }
         break;
 
     case CONN_ACK_N:
-        connAck = (CONN_ACK_6*)(buff - offset);
         switch (protoVer)
             {
             case 6:
-                ret = Process_CONN_ACK_6(connAck, iaUser, sip);
-                break;
+                if (Process_CONN_ACK_6((CONN_ACK_6 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_ALIVE_SYN_6(iaUser, sip);
             case 7:
-                ret = Process_CONN_ACK_7(connAck, iaUser, sip);
-                break;
+                if (Process_CONN_ACK_7((CONN_ACK_6 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_ALIVE_SYN_7(iaUser, sip);
             case 8:
-                ret = Process_CONN_ACK_8((CONN_ACK_8*)(buff - offset), iaUser, sip);
-                break;
+                if (Process_CONN_ACK_8((CONN_ACK_8 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_ALIVE_SYN_8(iaUser, sip);
             }
-
-        if (ret != 0)
-            {
-            SendError(sip, sport, protoVer, errorStr);
-            return 0;
-            }
-
-        switch (protoVer)
-            {
-            case 6:
-                Send_ALIVE_SYN_6(iaUser, sip);
-                break;
-            case 7:
-                Send_ALIVE_SYN_7(iaUser, sip);
-                break;
-            case 8:
-                Send_ALIVE_SYN_8(iaUser, sip);
-                break;
-            }
-
         break;
 
-        // Прибыл ответ с подтверждением ALIVE
     case ALIVE_ACK_N:
-        aliveAck = (ALIVE_ACK_6*)(buff - offset);
         switch (protoVer)
             {
             case 6:
-                ret = Process_ALIVE_ACK_6(aliveAck, iaUser, sip);
-                break;
+                return Process_ALIVE_ACK_6((ALIVE_ACK_6 *)(buff - offset), iaUser, sip);
             case 7:
-                ret = Process_ALIVE_ACK_7(aliveAck, iaUser, sip);
-                break;
+                return Process_ALIVE_ACK_7((ALIVE_ACK_6 *)(buff - offset), iaUser, sip);
             case 8:
-                ret = Process_ALIVE_ACK_8((ALIVE_ACK_8*)(buff - offset), iaUser, sip);
-                break;
+                return Process_ALIVE_ACK_8((ALIVE_ACK_8 *)(buff - offset), iaUser, sip);
             }
         break;
 
-        // Запрос на отключение
     case DISCONN_SYN_N:
-
-        disconnSyn = (DISCONN_SYN_6*)(buff - offset);
         switch (protoVer)
             {
             case 6:
-                ret = Process_DISCONN_SYN_6(disconnSyn, iaUser, sip);
-                break;
+                if (Process_DISCONN_SYN_6((DISCONN_SYN_6 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_DISCONN_SYN_ACK_6(iaUser, sip);
             case 7:
-                ret = Process_DISCONN_SYN_7(disconnSyn, iaUser, sip);
-                break;
+                if (Process_DISCONN_SYN_7((DISCONN_SYN_6 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_DISCONN_SYN_ACK_7(iaUser, sip);
             case 8:
-                ret = Process_DISCONN_SYN_8((DISCONN_SYN_8*)(buff - offset), iaUser, sip);
-                break;
-            }
-
-        if (ret != 0)
-            return 0;
-
-        switch (protoVer)
-            {
-            case 6:
-                Send_DISCONN_SYN_ACK_6(iaUser, sip);
-                break;
-            case 7:
-                Send_DISCONN_SYN_ACK_7(iaUser, sip);
-                break;
-            case 8:
-                Send_DISCONN_SYN_ACK_8(iaUser, sip);
-                break;
+                if (Process_DISCONN_SYN_8((DISCONN_SYN_8 *)(buff - offset), iaUser, sip))
+                    return -1;
+                return Send_DISCONN_SYN_ACK_8(iaUser, sip);
             }
         break;
 
     case DISCONN_ACK_N:
-        disconnAck = (DISCONN_ACK_6*)(buff - offset);
-
         switch (protoVer)
             {
             case 6:
-                ret = Process_DISCONN_ACK_6(disconnAck, iaUser, sip, it);
-                break;
+                if (Process_DISCONN_ACK_6((DISCONN_ACK_6 *)(buff - offset), iaUser, sip, it))
+                    return -1;
+                return Send_FIN_6(iaUser, sip, it);
             case 7:
-                ret = Process_DISCONN_ACK_7(disconnAck, iaUser, sip, it);
-                break;
+                if (Process_DISCONN_ACK_7((DISCONN_ACK_6 *)(buff - offset), iaUser, sip, it))
+                    return -1;
+                return Send_FIN_7(iaUser, sip, it);
             case 8:
-                ret = Process_DISCONN_ACK_8((DISCONN_ACK_8*)(buff - offset), iaUser, sip, it);
-                break;
-            }
-
-        switch (protoVer)
-            {
-            case 6:
-                Send_FIN_6(iaUser, sip, it);
-                break;
-            case 7:
-                Send_FIN_7(iaUser, sip, it);
-                break;
-            case 8:
-                Send_FIN_8(iaUser, sip, it);
-                break;
+                if (Process_DISCONN_ACK_8((DISCONN_ACK_8 *)(buff - offset), iaUser, sip, it))
+                    return -1;
+                return Send_FIN_8(iaUser, sip, it);
             }
         break;
     }
 
-return 0;
+return -1;
 }
 //-----------------------------------------------------------------------------
 void AUTH_IA::DelUser(USER_PTR u)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 uint32_t ip = u->GetCurrIP();
 
@@ -1019,6 +954,8 @@ if (!ip)
     return;
 
 map<uint32_t, IA_USER>::iterator it;
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {
@@ -1091,27 +1028,29 @@ return 0;
 int AUTH_IA::Send(uint32_t ip, uint16_t port, const char * buffer, int len)
 {
 struct sockaddr_in sendAddr;
-int res;
 
 sendAddr.sin_family = AF_INET;
 sendAddr.sin_port = htons(port);
 sendAddr.sin_addr.s_addr = ip;
 
-res = sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
+int res = sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
 
 static struct timeval tv;
 gettimeofday(&tv, NULL);
 
-return res;
+if (res == len)
+    return 0;
+
+return -1;
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::SendMessage(const STG_MSG & msg, uint32_t ip) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
 printfd(__FILE__, "SendMessage userIP=%s\n", inet_ntostring(ip).c_str());
 
 map<uint32_t, IA_USER>::iterator it;
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {
@@ -1126,9 +1065,7 @@ int AUTH_IA::RealSendMessage6(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 6 user=%s\n", user.login.c_str());
 
-char buffer[256];
 INFO_6 info;
-
 memset(&info, 0, sizeof(INFO_6));
 
 info.len = 256;
@@ -1142,27 +1079,23 @@ size_t len = info.len;
 SwapBytes(info.len);
 #endif
 
+char buffer[256];
 memcpy(buffer, &info, sizeof(INFO_6));
 Encrypt(&user.ctx, buffer, buffer, len / 8);
-Send(ip, iaSettings.GetUserPort(), buffer, len);
-
-return 0;
+return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 7 user=%s\n", user.login.c_str());
 
-char buffer[300];
 INFO_7 info;
-
 memset(&info, 0, sizeof(INFO_7));
 
 info.len = 264;
 strncpy((char*)info.type, "INFO_7", 16);
 info.infoType = msg.header.type;
 info.showTime = msg.header.showTime;
-
 info.sendTime = msg.header.creationTime;
 
 size_t len = info.len;
@@ -1174,23 +1107,18 @@ SwapBytes(info.sendTime);
 strncpy((char*)info.text, msg.text.c_str(), MAX_MSG_LEN - 1);
 info.text[MAX_MSG_LEN - 1] = 0;
 
+char buffer[300];
 memcpy(buffer, &info, sizeof(INFO_7));
 
 Encrypt(&user.ctx, buffer, buffer, len / 8);
-Send(ip, iaSettings.GetUserPort(), buffer, len);
-
-return 0;
+return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 8 user=%s\n", user.login.c_str());
 
-char buffer[1500];
-memset(buffer, 0, sizeof(buffer));
-
 INFO_8 info;
-
 memset(&info, 0, sizeof(INFO_8));
 
 info.len = 1056;
@@ -1208,12 +1136,11 @@ SwapBytes(info.len);
 SwapBytes(info.sendTime);
 #endif
 
+char buffer[1500];
 memcpy(buffer, &info, sizeof(INFO_8));
 
 Encrypt(&user.ctx, buffer, buffer, len / 8);
-Send(ip, user.port, buffer, len);
-
-return 0;
+return Send(ip, user.port, buffer, len);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Process_CONN_SYN_6(CONN_SYN_6 *, IA_USER * iaUser, uint32_t)
@@ -1499,7 +1426,6 @@ SwapBytes(connSynAck8.aliveDelay);
 
 Encrypt(&iaUser->ctx, (char*)&connSynAck8, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8))/8);
 return Send(sip, iaUser->port, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)));
-//return Send(sip, iaUser->port, (char*)&connSynAck8, 384);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_ALIVE_SYN_6(IA_USER * iaUser, uint32_t sip)
@@ -1728,10 +1654,9 @@ SwapBytes(fin6.len);
 Encrypt(&iaUser->ctx, (char*)&fin6, (char*)&fin6, Min8(sizeof(fin6))/8);
 
 users->Unauthorize(iaUser->login, this);
-
-int ret = Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
 ip2user.erase(it);
-return ret;
+
+return Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_FIN_7(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
@@ -1756,16 +1681,15 @@ SwapBytes(fin8.len);
 Encrypt(&iaUser->ctx, (char*)&fin8, (char*)&fin8, Min8(sizeof(fin8))/8);
 
 users->Unauthorize(iaUser->login, this);
-
-int ret = Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
 ip2user.erase(it);
-return ret;
+
+return Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
 }
 //-----------------------------------------------------------------------------
 inline
 void InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
 {
-unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
+unsigned char keyL[PASSWD_LEN];
 memset(keyL, 0, PASSWD_LEN);
 strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
 Blowfish_Init(ctx, keyL, PASSWD_LEN);
@@ -1774,8 +1698,6 @@ Blowfish_Init(ctx, keyL, PASSWD_LEN);
 inline
 void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
 {
-// len8 - длина в 8-ми байтовых блоках
-
 for (int i = 0; i < len8; i++)
     DecodeString(dst + i * 8, src + i * 8, ctx);
 }
@@ -1783,8 +1705,6 @@ for (int i = 0; i < len8; i++)
 inline
 void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
 {
-// len8 - длина в 8-ми байтовых блоках
-
 for (int i = 0; i < len8; i++)
     EncodeString(dst + i * 8, src + i * 8, ctx);
 }
