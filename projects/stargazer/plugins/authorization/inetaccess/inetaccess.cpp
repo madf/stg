@@ -511,8 +511,8 @@ while (ia->nonstop)
     {
     usleep(20000);
     ia->Timeouter();
-    // TODO cahange counter to timer and MONITOR_TIME_DELAY_SEC
-    if (++a % (50*60) == 0 && ia->stgSettings->GetMonitoring())
+    // TODO change counter to timer and MONITOR_TIME_DELAY_SEC
+    if (++a % (50 * 60) == 0 && ia->stgSettings->GetMonitoring())
         {
         TouchFile(monFile.c_str());
         }
