@@ -209,8 +209,6 @@ int SMUX::Stop()
 printfd(__FILE__, "SMUX::Stop() - Before\n");
 running = false;
 
-ResetNotifiers();
-
 if (!stopped)
     {
     //5 seconds to thread stops itself
@@ -235,6 +233,22 @@ if (!stopped)
     }
 
 pthread_join(thread, NULL);
+
+ResetNotifiers();
+
+    {
+    Tables::iterator it;
+    for (it = tables.begin(); it != tables.end(); ++it)
+        delete it->second;
+    }
+    {
+    Sensors::iterator it;
+    for (it = sensors.begin(); it != sensors.end(); ++it)
+        delete it->second;
+    }
+
+tables.erase(tables.begin(), tables.end());
+sensors.erase(sensors.begin(), sensors.end());
 
 close(sock);
 
