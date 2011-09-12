@@ -552,16 +552,6 @@ if (bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr)) < 0)
     return -1;
     }
 
-/*int buffLen;
-if (getsockopt(listenSocket, SOL_SOCKET, SO_SNDBUF, &buffLen, sizeof(buffLen)) < 0)
-    {
-
-    errorStr = "Getsockopt failed. " + string(strerror(errno));
-    return -1;
-    }*/
-
-//WriteServLog("buffLen = %d", buffLen);
-
 return 0;
 }
 //-----------------------------------------------------------------------------
