@@ -618,7 +618,6 @@ else
     }
 
 return 0;
-
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::CheckHeader(const char * buffer, int * protoVer)
