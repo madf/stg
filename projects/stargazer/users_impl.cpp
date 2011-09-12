@@ -280,9 +280,6 @@ if (FindByNameNonLock(login, &iter))
     return false;
     }
 
-if (iter->Authorize(ip, enabledDirs, auth))
-    return false;
-
 if (FindByIPIdx(ip, iter))
     {
     if (iter->GetLogin() != login)
@@ -292,8 +289,13 @@ if (FindByIPIdx(ip, iter))
                      iter->GetLogin().c_str());
         return false;
         }
+    if (iter->Authorize(ip, enabledDirs, auth))
+        return false;
     return true;
     }
+
+if (iter->Authorize(ip, enabledDirs, auth))
+    return false;
 
 AddToIPIdx(iter);
 return true;
