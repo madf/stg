@@ -256,6 +256,15 @@ printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;
 }
 
+int SMUX::Reload()
+{
+if (Stop())
+    return -1;
+if (Start())
+    return -1;
+return 0;
+}
+
 void * SMUX::Runner(void * d)
 {
 SMUX * smux = static_cast<SMUX *>(d);
