@@ -599,7 +599,7 @@ memset(login, 0, PASSWD_LEN);
 
 Decrypt(&ctxS, login, buffer + 8, PASSWD_LEN / 8);
 
-uint32_t sip = *((uint32_t*)&outerAddr.sin_addr);
+uint32_t sip = outerAddr.sin_addr.s_addr;
 uint16_t sport = htons(outerAddr.sin_port);
 
 USER_PTR user;
@@ -671,6 +671,8 @@ while (it != ip2user.end())
         {
         it->second.phase.SetPhase1();
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: timeout\n");
+        ip2user.erase(it++);
+        continue;
         }
 
     if (it->second.phase.GetPhase() == 3)
@@ -771,8 +773,14 @@ if (it == ip2user.end())
     }
 else if (user->GetID() != it->second.user->GetID())
     {
-    printfd(__FILE__, "IP address already in use. IP \'%s\'\n", inet_ntostring(sip).c_str());
-    WriteServLog("IP address already in use. IP \'%s\'", inet_ntostring(sip).c_str());
+    printfd(__FILE__, "IP address already in use by user '%s'. IP %s, login: '%s'\n",
+            it->second.user->GetLogin().c_str(),
+            inet_ntostring(sip).c_str(),
+            user->GetLogin().c_str());
+    WriteServLog("IP address already in use by user '%s'. IP %s, login: '%s'",
+                 it->second.user->GetLogin().c_str(),
+                 inet_ntostring(sip).c_str(),
+                 user->GetLogin().c_str());
     SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
     return 0;
     }
@@ -818,8 +826,13 @@ if (user->GetProperty().passive.Get())
 
 if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
     {
-    printfd(__FILE__, "Login %s already in use. IP \'%s\'\n", login.c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("Login %s already in use. IP \'%s\'", login.c_str(), inet_ntostring(sip).c_str());
+    printfd(__FILE__, "Login %s already in use from ip %s. IP %s\n",
+            login.c_str(), inet_ntostring(user->GetCurrIP()).c_str(),
+            inet_ntostring(sip).c_str());
+    WriteServLog("Login %s already in use from ip %s. IP %s",
+                 login.c_str(),
+                 inet_ntostring(user->GetCurrIP()).c_str(),
+                 inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Ваш логин уже используется!");
     return 0;
     }
@@ -828,8 +841,10 @@ if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
 int ipFound = user->GetProperty().ips.Get().IsIPInIPS(sip);
 if (!ipFound)
     {
-    printfd(__FILE__, "User %s. IP address is incorrect. IP \'%s\'\n", login.c_str(), inet_ntostring(sip).c_str());
-    WriteServLog("User %s. IP address is incorrect. IP \'%s\'", login.c_str(), inet_ntostring(sip).c_str());
+    printfd(__FILE__, "User %s. IP address is incorrect. IP %s\n",
+            login.c_str(), inet_ntostring(sip).c_str());
+    WriteServLog("User %s. IP address is incorrect. IP %s",
+                 login.c_str(), inet_ntostring(sip).c_str());
     SendError(sip, sport, protoVer, "Пользователь не опознан! Проверьте IP адрес.");
     return 0;
     }
@@ -1251,6 +1266,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         {
         errorStr = iaUser->user->GetStrError();
         iaUser->phase.SetPhase1();
+        ip2user.erase(sip);
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: failed to authorize user\n");
         return -1;
         }
@@ -1286,6 +1302,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         {
         errorStr = iaUser->user->GetStrError();
         iaUser->phase.SetPhase1();
+        ip2user.erase(sip);
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: failed to authorize user\n");
         return -1;
         }
