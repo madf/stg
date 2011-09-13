@@ -126,15 +126,14 @@ struct IA_USER {
           protoVer(0),
           password("NO PASSWORD")
     {
-        // +++ Preparing CTX +++
-        unsigned char keyL[PASSWD_LEN];
-        memset(keyL, 0, PASSWD_LEN);
-        strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-        Blowfish_Init(&ctx, keyL, PASSWD_LEN);
-        // --- Preparing CTX ---
-        #ifdef IA_DEBUG
-        aliveSent = false;
-        #endif
+    unsigned char keyL[PASSWD_LEN];
+    memset(keyL, 0, PASSWD_LEN);
+    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    Blowfish_Init(&ctx, keyL, PASSWD_LEN);
+
+    #ifdef IA_DEBUG
+    aliveSent = false;
+    #endif
     };
 
     IA_USER(const IA_USER & u)
@@ -148,11 +147,36 @@ struct IA_USER {
           protoVer(u.protoVer),
           password(u.password)
     {
-        #ifdef IA_DEBUG
-        aliveSent  = u.aliveSent;
-        #endif
-        memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
+    #ifdef IA_DEBUG
+    aliveSent  = u.aliveSent;
+    #endif
+    memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
     };
+
+    IA_USER(const std::string & l,
+            CONST_USER_PTR u,
+            uint16_t p,
+            int ver)
+        : login(l),
+          user(u),
+          phase(),
+          lastSendAlive(0),
+          rnd(random()),
+          port(p),
+          ctx(),
+          messagesToSend(),
+          protoVer(ver),
+          password(user->GetProperty().password.Get())
+    {
+    unsigned char keyL[PASSWD_LEN];
+    memset(keyL, 0, PASSWD_LEN);
+    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    Blowfish_Init(&ctx, keyL, PASSWD_LEN);
+
+    #ifdef IA_DEBUG
+    aliveSent = false;
+    #endif
+    }
 
     std::string     login;
     CONST_USER_PTR  user;
