@@ -599,13 +599,14 @@ uint32_t sip = outerAddr.sin_addr.s_addr;
 uint16_t sport = htons(outerAddr.sin_port);
 
 USER_PTR user;
-if (users->FindByName(login, &user) == 0)
+if (users->FindByName(login, &user))
     {
     WriteServLog("User's connect failed: user '%s' not found. IP %s",
                  login,
                  inet_ntostring(sip).c_str());
-    printfd(__FILE__, "User %s NOT found!\n", login);
+    printfd(__FILE__, "User '%s' NOT found!\n", login);
     SendError(sip, sport, protoVer, "Неправильный логин!");
+    return -1;
     }
 
 printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
@@ -775,22 +776,24 @@ if (it == ip2user.end())
 
     printfd(__FILE__, "Add new user '%s' from ip %s\n",
             login.c_str(), inet_ntostring(sip).c_str());
-    ip2user[sip].login = login;
+    std::pair<std::map<uint32_t, IA_USER>::iterator, bool> res;
+    res = ip2user.insert(std::make_pair(sip, IA_USER(login, user, sport, protoVer)));
+    it = res.first;
+    /*ip2user[sip].login = login;
     ip2user[sip].user = user;
     ip2user[sip].protoVer = protoVer;
-    ip2user[sip].port = sport;
+    ip2user[sip].port = sport;*/
     #ifdef IA_PHASE_DEBUG
-    ip2user[sip].phase.SetLogFileName(stgSettings->GetLogFileName());
-    ip2user[sip].phase.SetUserLogin(login);
+    it->second.phase.SetLogFileName(stgSettings->GetLogFileName());
+    it->second.phase.SetUserLogin(login);
     #endif
 
-
-    it = ip2user.find(sip); //TODO
+    /*it = ip2user.find(sip); //TODO
     if (it == ip2user.end())
         {
         printfd(__FILE__, "+++ ERROR +++\n");
         return -1;
-        }
+        }*/
     }
 else if (user->GetID() != it->second.user->GetID())
     {
@@ -808,8 +811,8 @@ else if (user->GetID() != it->second.user->GetID())
 
 IA_USER * iaUser = &(it->second);
 
-if (iaUser->port != sport)
-    iaUser->port = sport;
+/*if (iaUser->port != sport)
+    iaUser->port = sport;*/
 
 if (iaUser->password != user->GetProperty().password.Get())
     {
@@ -1644,9 +1647,12 @@ SwapBytes(fin6.len);
 Encrypt(&iaUser->ctx, (char*)&fin6, (char*)&fin6, Min8(sizeof(fin6))/8);
 
 users->Unauthorize(iaUser->login, this);
+
+int res = Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
+
 ip2user.erase(it);
 
-return Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
+return res;
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_FIN_7(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
@@ -1671,9 +1677,12 @@ SwapBytes(fin8.len);
 Encrypt(&iaUser->ctx, (char*)&fin8, (char*)&fin8, Min8(sizeof(fin8))/8);
 
 users->Unauthorize(iaUser->login, this);
+
+int res = Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
+
 ip2user.erase(it);
 
-return Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
+return res;
 }
 //-----------------------------------------------------------------------------
 inline
