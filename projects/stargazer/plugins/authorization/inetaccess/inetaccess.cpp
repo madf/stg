@@ -779,21 +779,10 @@ if (it == ip2user.end())
     std::pair<std::map<uint32_t, IA_USER>::iterator, bool> res;
     res = ip2user.insert(std::make_pair(sip, IA_USER(login, user, sport, protoVer)));
     it = res.first;
-    /*ip2user[sip].login = login;
-    ip2user[sip].user = user;
-    ip2user[sip].protoVer = protoVer;
-    ip2user[sip].port = sport;*/
     #ifdef IA_PHASE_DEBUG
     it->second.phase.SetLogFileName(stgSettings->GetLogFileName());
     it->second.phase.SetUserLogin(login);
     #endif
-
-    /*it = ip2user.find(sip); //TODO
-    if (it == ip2user.end())
-        {
-        printfd(__FILE__, "+++ ERROR +++\n");
-        return -1;
-        }*/
     }
 else if (user->GetID() != it->second.user->GetID())
     {
@@ -810,9 +799,6 @@ else if (user->GetID() != it->second.user->GetID())
     }
 
 IA_USER * iaUser = &(it->second);
-
-/*if (iaUser->port != sport)
-    iaUser->port = sport;*/
 
 if (iaUser->password != user->GetProperty().password.Get())
     {
@@ -1170,7 +1156,7 @@ SwapBytes(connAck->len);
 SwapBytes(connAck->rnd);
 #endif
 printfd( __FILE__, "CONN_ACK_6 %s\n", connAck->type);
-// установить новую фазу и время и разрешить инет
+
 if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     {
     iaUser->phase.UpdateTime();
