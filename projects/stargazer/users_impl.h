@@ -142,9 +142,6 @@ private:
     void            RealDelUser();
     void            ProcessActions();
 
-    void            SetUserNotifiers(user_iter user);
-    void            UnSetUserNotifiers(user_iter user);
-
     void            AddUserIntoIndexes(user_iter user);
     void            DelUserFromIndexes(user_iter user);
 
@@ -157,8 +154,6 @@ private:
 
     std::list<USER_IMPL>                  users;
     std::list<USER_TO_DEL>                usersToDelete;
-    /*std::list<PROPERTY_NOTIFER_IP_BEFORE> userIPNotifiersBefore;
-    std::list<PROPERTY_NOTIFER_IP_AFTER>  userIPNotifiersAfter;*/
 
     std::map<uint32_t, user_iter>         ipIndex;
     std::map<std::string, user_iter>      loginIndex;

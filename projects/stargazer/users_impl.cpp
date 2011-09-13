@@ -180,7 +180,6 @@ u.OnAdd();
 users.push_front(u);
 
 AddUserIntoIndexes(users.begin());
-SetUserNotifiers(users.begin());
 
     {
     // Fire all "on add" notifiers
@@ -260,7 +259,6 @@ if (!priv->userAddDel)
     utd.delTime = stgTime;
     usersToDelete.push_back(utd);
 
-    UnSetUserNotifiers(u);
     DelUserFromIndexes(u);
 
     WriteServLog("%s User \'%s\' deleted.",
@@ -342,7 +340,6 @@ for (unsigned int i = 0; i < usersList.size(); i++)
     ui = users.begin();
 
     AddUserIntoIndexes(ui);
-    SetUserNotifiers(ui);
 
     if (ui->ReadConf() < 0)
         return -1;
@@ -413,7 +410,6 @@ while (us->nonstop)
 user_iter ui = us->users.begin();
 while (ui != us->users.end())
     {
-    us->UnSetUserNotifiers(ui);
     us->DelUserFromIndexes(ui);
     ++ui;
     }
@@ -801,54 +797,6 @@ if (searchDescriptors.find(h) != searchDescriptors.end())
 
 WriteServLog("USERS. Incorrect search handle.");
 return -1;
-}
-//-----------------------------------------------------------------------------
-void USERS_IMPL::SetUserNotifiers(user_iter user)
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-/*PROPERTY_NOTIFER_IP_BEFORE nb(*this, user);
-PROPERTY_NOTIFER_IP_AFTER  na(*this, user);
-
-userIPNotifiersBefore.push_front(nb);
-userIPNotifiersAfter.push_front(na);
-
-user->AddCurrIPBeforeNotifier(&(*userIPNotifiersBefore.begin()));
-user->AddCurrIPAfterNotifier(&(*userIPNotifiersAfter.begin()));*/
-}
-//-----------------------------------------------------------------------------
-void USERS_IMPL::UnSetUserNotifiers(user_iter user)
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-/*list<PROPERTY_NOTIFER_IP_BEFORE>::iterator  bi;
-list<PROPERTY_NOTIFER_IP_AFTER>::iterator   ai;
-
-bi = userIPNotifiersBefore.begin();
-while (bi != userIPNotifiersBefore.end())
-    {
-    if (bi->GetUser() == user)
-        {
-        bi->GetUser()->DelCurrIPBeforeNotifier(&(*bi));
-        userIPNotifiersBefore.erase(bi);
-        //printfd(__FILE__, "Notifier Before removed. User %s\n", bi->GetUser()->GetLogin().c_str());
-        break;
-        }
-    ++bi;
-    }
-
-ai = userIPNotifiersAfter.begin();
-while (ai != userIPNotifiersAfter.end())
-    {
-    if (ai->GetUser() == user)
-        {
-        ai->GetUser()->DelCurrIPAfterNotifier(&(*ai));
-        userIPNotifiersAfter.erase(ai);
-        //printfd(__FILE__, "Notifier After removed. User %s\n", ai->GetUser()->GetLogin().c_str());
-        break;
-        }
-    ++ai;
-    }*/
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddUserIntoIndexes(user_iter user)
