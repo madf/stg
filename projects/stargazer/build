@@ -191,7 +191,7 @@ echo "found"
 
 echo -n "Checking endianess... "
 echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
-$CC $CXXFLAGS $LDFLAGS build_check.c -o fake
+$CC $CFLAGS $LDFLAGS build_check.c -o fake
 if [ $? != 0 ]
 then
     echo "FAIL!"
@@ -203,10 +203,12 @@ else
     then
         ARCH=le
         CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        CFLAGS="$CFLAGS -DARCH_LE"
         echo "Little Endian"
     else
         ARCH=be
         CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        CFLAGS="$CFLAGS -DARCH_BE"
         echo "Big Endian"
     fi
 fi
@@ -214,7 +216,7 @@ rm -f fake
 
 echo -n "Checking for -lexpat... "
 echo "int main() { return 0; }" > build_check.c
-$CC $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_EXPAT=no
@@ -226,7 +228,7 @@ fi
 rm -f fake
 
 echo -n "Checking for -lfbclient... "
-$CC $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -243,7 +245,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lmysqlclient... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
@@ -262,7 +264,6 @@ else
         CHECK_MYSQLCLIENT=no
         echo "no"
     else
-        #CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
         echo "[$MYSQL_CFLAGS]"
         echo -n "Checking for mysql_config --libs_r... "
         MYSQL_LDFLAGS=`mysql_config --libs_r 2> /dev/null`
@@ -272,7 +273,6 @@ else
             echo "no"
         else
             CHECK_MYSQLCLIENT=yes
-            #LDFLAGS="$LDFLAGS $MYSQL_LDFLAGS"
             echo "[$MYSQL_LDFLAGS]"
         fi
     fi
@@ -284,7 +284,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lpq... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -323,7 +323,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lxmlrpc... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_XMLRPC=no
@@ -423,7 +423,7 @@ done
 echo "" >> $CONFFILE
 echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
-echo "CFLAGS=$CXXFLAGS" >> $CONFFILE
+echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
 echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
 echo "PREFIX=$PREFIX" >> $CONFFILE
