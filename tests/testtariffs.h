@@ -16,6 +16,12 @@ class TEST_TARIFFS : public TARIFFS {
         int            Add(const std::string & /*name*/, const ADMIN * /*admin*/) { return 0; }
         int            Chg(const TARIFF_DATA & /*td*/, const ADMIN * /*admin*/) { return 0; }
 
+        void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> *) {}
+        void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> *) {}
+
+        void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> *) {}
+        void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> *) {}
+
         void           GetTariffsData(std::list<TARIFF_DATA> * /*tdl*/) {}
 
         size_t         Count() const { return 0; }
