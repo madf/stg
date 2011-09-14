@@ -357,7 +357,11 @@ while (it != authorizedUsers.end())
     }
 }
 //-----------------------------------------------------------------------------
+#ifdef NDEBUG
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+#else
 bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+#endif
 {
 RS_PACKET_HEADER packetHead;
 
