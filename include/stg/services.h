@@ -29,6 +29,7 @@ class ADMIN;
 
 class SERVICES {
 public:
+    virtual ~SERVICES() {}
     virtual int Add(const SERVICE_CONF & service, const ADMIN * admin) = 0;
     virtual int Del(const std::string & name, const ADMIN * admin) = 0;
     virtual int Change(const SERVICE_CONF & service, const ADMIN * admin) = 0;

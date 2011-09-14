@@ -29,6 +29,7 @@ class ADMIN;
 
 class CORPORATIONS {
 public:
+    virtual ~CORPORATIONS() {}
     virtual int Add(const CORP_CONF & corp, const ADMIN * admin) = 0;
     virtual int Del(const std::string & name, const ADMIN * admin) = 0;
     virtual int Change(const CORP_CONF & corp, const ADMIN * admin) = 0;

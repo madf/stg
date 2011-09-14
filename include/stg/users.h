@@ -30,6 +30,7 @@ class ADMIN;
 
 class USERS {
 public:
+    virtual ~USERS() {}
     virtual int  FindByName(const std::string & login, USER_PTR * user) = 0;
 
     virtual bool TariffInUse(const std::string & tariffName) const = 0;

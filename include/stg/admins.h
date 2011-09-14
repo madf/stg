@@ -28,6 +28,7 @@
 
 class ADMINS {
 public:
+    virtual ~ADMINS() {}
     virtual int Add(const std::string & login, const ADMIN * admin) = 0;
     virtual int Del(const std::string & login, const ADMIN * admin) = 0;
     virtual int Change(const ADMIN_CONF & ac, const ADMIN * admin) = 0;

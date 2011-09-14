@@ -27,7 +27,7 @@ STG_MSG_HDR()
       showTime(0),
       repeat(0),
       repeatPeriod(0)
-{};
+{}
 
 uint64_t    id;
 unsigned    ver;
@@ -41,12 +41,12 @@ unsigned    repeatPeriod;
 //-----------------------------------------------------------------------------
 struct STG_MSG
 {
-STG_MSG() {};
+STG_MSG() : header(), text() {}
 
 time_t GetNextSendTime() const
 {
 return header.lastSendTime + header.repeat * 60;
-};
+}
 
 STG_MSG_HDR header;
 std::string text;

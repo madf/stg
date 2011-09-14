@@ -30,6 +30,7 @@
 
 class TARIFF {
 public:
+    virtual ~TARIFF() {}
     virtual double  GetPriceWithTraffType(uint64_t up,
                                           uint64_t down,
                                           int dir,

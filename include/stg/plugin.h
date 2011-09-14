@@ -45,6 +45,7 @@ struct MODULE_SETTINGS;
 
 class PLUGIN : private NONCOPYABLE {
 public:
+    virtual ~PLUGIN() {}
     virtual void                SetUsers(USERS *) {}
     virtual void                SetTariffs(TARIFFS *) {}
     virtual void                SetAdmins(ADMINS *) {}

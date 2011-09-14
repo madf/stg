@@ -35,6 +35,7 @@ class AUTH;
 
 class USER {
 public:
+    virtual ~USER() {}
     virtual int                 WriteConf() = 0;
     virtual int                 WriteStat() = 0;
 
