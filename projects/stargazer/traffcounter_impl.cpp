@@ -59,12 +59,21 @@ tcp = 0, udp, icmp, tcp_udp, all
 //-----------------------------------------------------------------------------
 TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
     : TRAFFCOUNTER(),
+      rules(),
+      packets(),
+      ip2packets(),
+      dirName(),
       WriteServLog(GetStgLogger()),
       rulesFileName(fn),
+      monitorDir(),
       monitoring(false),
       users(u),
       running(false),
       stopped(true),
+      mutex(),
+      thread(),
+      ipBeforeNotifiers(),
+      ipAfterNotifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this)
 {
