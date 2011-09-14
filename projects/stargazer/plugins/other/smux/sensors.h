@@ -18,6 +18,7 @@
 
 class Sensor {
     public:
+        virtual ~Sensor() {}
         virtual bool GetValue(ObjectSyntax_t * objectSyntax) const = 0;
 #ifdef DEBUG
         virtual std::string ToString() const = 0;
