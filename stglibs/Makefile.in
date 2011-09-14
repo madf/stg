@@ -64,8 +64,12 @@ endif
 
 deps:	$(SRCS) ../../Makefile.conf
 	@>deps ;\
-	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -c $$<' >> deps ;\
-	done
+	for file in `echo "$(SRCS)" | grep ".c$$"`; do\
+	  echo "`$(CC) $(CFLAGS) $(SEARCH_DIRS) $(DEFS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CC) $(CFLAGS) $(SEARCH_DIRS) $(DEFS) -c $$<' >> deps ;\
+	done;\
+	for file in `echo "$(SRCS)" | grep ".cpp$$"`; do\
+	  echo "`$(CXX) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CXX) $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS) -c $$<' >> deps ;\
+	done\
 
