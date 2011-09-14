@@ -1859,8 +1859,8 @@ MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
 
-sprintf(qbuf,"SELECT * FROM messages WHERE login='%s' AND id=%lld LIMIT 1",
-    login.c_str(), id);
+sprintf(qbuf,"SELECT * FROM messages WHERE login='%s' AND id=%llu LIMIT 1",
+        login.c_str(), static_cast<unsigned long long>(id));
     
 if(MysqlGetQuery(qbuf,sock))
 {
