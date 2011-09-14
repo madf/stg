@@ -53,12 +53,14 @@ return true;
 }
 
 OID::OID(const std::string & str)
+    : arcs()
 {
 if (!StringToArcs(str.c_str(), str.length(), arcs))
     throw std::runtime_error("Invalid oid");
 }
 
 OID::OID(const char * str, size_t length)
+    : arcs()
 {
 if (!StringToArcs(str, length, arcs))
     throw std::runtime_error("Invalid oid");
@@ -70,12 +72,14 @@ OID::OID(const std::vector<unsigned> & a)
 }
 
 OID::OID(const unsigned * a, size_t length)
+    : arcs()
 {
 std::vector<unsigned> newArcs(a, a + length);
 arcs.swap(newArcs);
 }
 
 OID::OID(OBJECT_IDENTIFIER_t * oid)
+    : arcs()
 {
 unsigned a[1024];
 int count = OBJECT_IDENTIFIER_get_arcs(oid, a, sizeof(a[0]), 1024);
