@@ -6,7 +6,12 @@
 #include "eventloop.h"
 
 EVENT_LOOP::EVENT_LOOP()
-    : ACTIONS_LIST()
+    : ACTIONS_LIST(),
+      _running(false),
+      _stopped(true),
+      _tid(),
+      _mutex(),
+      _condition()
 {
 pthread_mutex_init(&_mutex, NULL);
 pthread_cond_init(&_condition, NULL);
