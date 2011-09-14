@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-bool ParseArcs(const char * str, size_t length, unsigned * a, size_t * pos)
+bool ParseArcs(const char * str, ptrdiff_t length, unsigned * a, size_t * pos)
 {
 if (length == 0)
     return false;
