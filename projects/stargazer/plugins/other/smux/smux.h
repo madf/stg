@@ -14,6 +14,7 @@
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/notifer.h"
+#include "stg/noncopyable.h"
 
 #include "sensors.h"
 #include "tables.h"
@@ -56,38 +57,40 @@ private:
 //-----------------------------------------------------------------------------
 class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string> {
 public:
-                CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u) : smux(s), userPtr(u) {}
-    void        Notify(const std::string &, const std::string &);
+             CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u) : smux(s), userPtr(u) {}
+             CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER & rvalue) : smux(rvalue.smux), userPtr(rvalue.userPtr) {}
+    void     Notify(const std::string &, const std::string &);
 
-    USER_PTR    GetUserPtr() { return userPtr; }
+    USER_PTR GetUserPtr() { return userPtr; }
 
 private:
+    CHG_AFTER_NOTIFIER & operator=(const CHG_AFTER_NOTIFIER & rvalue);
     SMUX & smux;
     USER_PTR userPtr;
 };
 //-----------------------------------------------------------------------------
-class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA> {
+class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA>, private NONCOPYABLE {
 public:
-                ADD_DEL_TARIFF_NOTIFIER(SMUX & s) : smux(s) {}
-    void        Notify(const TARIFF_DATA &);
+         ADD_DEL_TARIFF_NOTIFIER(SMUX & s) : smux(s) {}
+    void Notify(const TARIFF_DATA &);
 
 private:
     SMUX & smux;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-                ADD_USER_NOTIFIER(SMUX & s) : smux(s) {}
-    void        Notify(const USER_PTR &);
+         ADD_USER_NOTIFIER(SMUX & s) : smux(s) {}
+    void Notify(const USER_PTR &);
 
 private:
     SMUX & smux;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR> {
+class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-                DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
-    void        Notify(const USER_PTR &);
+         DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
+    void Notify(const USER_PTR &);
 
 private:
     SMUX & smux;
@@ -123,6 +126,9 @@ public:
     void UnsetNotifier(USER_PTR userPtr);
 
 private:
+    SMUX(const SMUX & rvalue);
+    SMUX & operator=(const SMUX & rvalue);
+
     static void * Runner(void * d);
     void Run();
     bool PrepareNet();

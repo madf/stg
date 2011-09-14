@@ -34,8 +34,10 @@ return a.first.PrefixLess(b.first);
 }
 
 SMUX_SETTINGS::SMUX_SETTINGS()
-    : ip(0),
-      port(0)
+    : errorStr(),
+      ip(0),
+      port(0),
+      password()
 {}
 
 int SMUX_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
@@ -94,6 +96,11 @@ SMUX::SMUX()
       services(NULL),
       corporations(NULL),
       traffcounter(NULL),
+      errorStr(),
+      smuxSettings(),
+      settings(),
+      thread(),
+      mutex(),
       running(false),
       stopped(true),
       sock(-1),
