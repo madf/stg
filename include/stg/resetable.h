@@ -17,82 +17,50 @@
 
 #include <iostream>
 
-template <typename varT>
+template <typename T>
 class RESETABLE
 {
-    template <typename varT1>
-    friend std::ostream & operator<<(std::ostream & o, RESETABLE<varT1> v);
 public:
-    typedef varT value_type;
+    typedef T value_type;
 
-    //-------------------------------------------------------------------------
-    RESETABLE()
-        : value(),
-          is_set(false)
-    {
-    }
-    //-------------------------------------------------------------------------
-    RESETABLE<value_type>(const RESETABLE<value_type> & rvalue)
+    RESETABLE() : value(), is_set(false) {}
+
+    RESETABLE(const RESETABLE<value_type> & rvalue)
         : value(rvalue.value),
           is_set(rvalue.is_set)
-    {
-    }
-    //-------------------------------------------------------------------------
-    RESETABLE(const value_type& val)
-        : value(val),
-          is_set(true)
-    {
-    }
-    //-------------------------------------------------------------------------
+    {}
+
+    RESETABLE(const value_type& val) : value(val), is_set(true) {}
+
     RESETABLE<value_type> & operator=(const RESETABLE<value_type> & rvalue)
     {
         value = rvalue.value;
         is_set = rvalue.is_set;
         return *this;
     }
-    //-------------------------------------------------------------------------
-    RESETABLE<value_type> & operator= (const value_type& rhs)
+
+    RESETABLE<value_type> & operator=(const value_type& rhs)
     {
         value = rhs;
         is_set = true;
         return *this;
     }
-    //-------------------------------------------------------------------------
-    const value_type& const_data() const throw()
-    {
-        return value;
-    }
-    //-------------------------------------------------------------------------
-    value_type& data() throw()
-    {
-        return value;
-    }
-    //-------------------------------------------------------------------------
-    operator const value_type&() const throw()
-    {
-        return value;
-    }
-    //-------------------------------------------------------------------------
-    bool res_empty() const throw()
-    {
-        return !is_set;
-    }
-    //-------------------------------------------------------------------------
-    void reset() throw()
-    {
-        is_set = false;
-    }
-    //-------------------------------------------------------------------------
-protected:
-    value_type  value;
-    bool        is_set;
-};
-//-----------------------------------------------------------------------------
-template <typename varT>
-std::ostream & operator<<(std::ostream & o, RESETABLE<varT> v)
-{
-    return o << v.value;
-}
-//-------------------------------------------------------------------------
-#endif // RESETABLE_VARIABLE_H
 
+    const value_type & const_data() const throw() { return value; }
+    value_type & data() throw() { return value; }
+    operator const value_type&() const throw() { return value; }
+    bool res_empty() const throw() { return !is_set; }
+    void reset() throw() { is_set = false; }
+
+private:
+    value_type value;
+    bool       is_set;
+};
+
+template <typename T>
+std::ostream & operator<<(std::ostream & o, const RESETABLE<T> & v)
+{
+    return o << v.const_data();
+}
+
+#endif // RESETABLE_VARIABLE_H
