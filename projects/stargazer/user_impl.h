@@ -206,6 +206,8 @@ public:
     void            OnDelete();
 
 private:
+    USER_IMPL & operator=(const USER_IMPL & rvalue);
+
     const USERS *   users;
     USER_PROPERTIES property;
     STG_LOGGER &    WriteServLog;
