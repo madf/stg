@@ -12,6 +12,9 @@ public:
 
 private:
     T * plugin;
+
+    PLUGIN_CREATOR(const PLUGIN_CREATOR<T> & rvalue);
+    PLUGIN_CREATOR<T> & operator=(const PLUGIN_CREATOR<T> & rvalue);
 };
 
 #endif
