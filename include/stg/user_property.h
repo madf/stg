@@ -173,7 +173,10 @@ template <typename varT>
 inline
 USER_PROPERTY<varT>::USER_PROPERTY(varT & val)
     : value(val),
-      modificationTime(stgTime)
+      modificationTime(stgTime),
+      beforeNotifiers(),
+      afterNotifiers(),
+      mutex()
 {
 pthread_mutex_init(&mutex, NULL);
 }
