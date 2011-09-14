@@ -101,12 +101,16 @@ if (error.encoded == -1)
     }
 else
     {
-    write(fd, buffer, error.encoded);
+    if (write(fd, buffer, error.encoded) < 0)
+        {
+        printfd(__FILE__, "Failed to send OpenPDU: %s\n", strerror(errno));
+        return false;
+        }
     }
 return true;
 }
 
-int SendClosePDU(int fd)
+bool SendClosePDU(int fd)
 {
 ClosePDU_t msg;
 
@@ -124,16 +128,20 @@ if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode ClosePDU (at %s)\n",
             error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
+    return false;
     }
 else
     {
-    write(fd, buffer, error.encoded);
+    if (write(fd, buffer, error.encoded) < 0)
+        {
+        printfd(__FILE__, "Failed to send ClosePDU: %s\n", strerror(errno));
+        return false;
+        }
     }
-return 0;
+return true;
 }
 
-int SendRReqPDU(int fd)
+bool SendRReqPDU(int fd)
 {
 int oid[] = {1, 3, 6, 1, 4, 1, 38313, 1};
 asn_enc_rval_t error;
@@ -157,13 +165,17 @@ if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode RReqPDU (at %s)\n",
             error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
+    return false;
     }
 else
     {
-    write(fd, buffer, error.encoded);
+    if (write(fd, buffer, error.encoded) < 0)
+        {
+        printfd(__FILE__, "Failed to send RReqPDU: %s\n", strerror(errno));
+        return false;
+        }
     }
-return 0;
+return true;
 }
 
 SMUX_PDUs_t * RecvSMUXPDUs(int fd)
@@ -188,7 +200,7 @@ if(error.code != RC_OK)
 return pdus;
 }
 
-int SendGetResponsePDU(int fd, GetResponse_PDU_t * getResponse)
+bool SendGetResponsePDU(int fd, GetResponse_PDU_t * getResponse)
 {
 asn_enc_rval_t error;
 
@@ -200,19 +212,23 @@ if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode GetResponsePDU (at %s)\n",
             error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
+    return false;
     }
 else
     {
-    write(fd, buffer, error.encoded);
+    if (write(fd, buffer, error.encoded) < 0)
+        {
+        printfd(__FILE__, "Failed to send GetResponsePDU: %s\n", strerror(errno));
+        return false;
+        }
     }
-return 0;
+return true;
 }
 
-int SendGetResponseErrorPDU(int fd,
-                            const PDU_t * getRequest,
-                            int errorStatus,
-                            int errorIndex)
+bool SendGetResponseErrorPDU(int fd,
+                             const PDU_t * getRequest,
+                             int errorStatus,
+                             int errorIndex)
 {
 asn_enc_rval_t error;
 GetResponse_PDU_t msg;
@@ -235,11 +251,15 @@ if (error.encoded == -1)
     {
     printfd(__FILE__, "Could not encode GetResponsePDU for error (at %s)\n",
             error.failed_type ? error.failed_type->name : "unknown");
-    return -1;
+    return false;
     }
 else
     {
-    write(fd, buffer, error.encoded);
+    if (write(fd, buffer, error.encoded) < 0)
+        {
+        printfd(__FILE__, "Failed to send GetResponseErrorPDU: %s\n", strerror(errno));
+        return false;
+        }
     }
-return 0;
+return true;
 }

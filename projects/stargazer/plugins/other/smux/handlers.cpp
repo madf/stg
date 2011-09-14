@@ -15,12 +15,12 @@ bool SMUX::CloseHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::CloseHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
-return false;
+return true;
 }
 #else
 bool SMUX::CloseHandler(const SMUX_PDUs_t *)
 {
-return false;
+return true;
 }
 #endif
 
@@ -29,12 +29,12 @@ bool SMUX::RegisterResponseHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::RegisterResponseHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
-return false;
+return true;
 }
 #else
 bool SMUX::RegisterResponseHandler(const SMUX_PDUs_t *)
 {
-return false;
+return true;
 }
 #endif
 
@@ -69,7 +69,7 @@ else
         }
 #endif
     }
-return false;
+return true;
 }
 
 #ifdef SMUX_DEBUG
@@ -77,12 +77,12 @@ bool SMUX::CommitOrRollbackHandler(const SMUX_PDUs_t * pdus)
 {
 printfd(__FILE__, "SMUX::CommitOrRollbackHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
-return false;
+return true;
 }
 #else
 bool SMUX::CommitOrRollbackHandler(const SMUX_PDUs_t *)
 {
-return false;
+return true;
 }
 #endif
 
@@ -111,9 +111,8 @@ for (int i = 0; i < vbl->list.count; ++i)
     it = sensors.find(OID(&vb->name));
     if (it == sensors.end())
         {
-        SendGetResponseErrorPDU(sock, getRequest,
-                                PDU__error_status_noSuchName, i);
-        return true;
+        return SendGetResponseErrorPDU(sock, getRequest,
+                                       PDU__error_status_noSuchName, i);
         }
 
     VarBind_t * newVb = static_cast<VarBind_t *>(calloc(1, sizeof(VarBind_t)));
@@ -125,12 +124,12 @@ for (int i = 0; i < vbl->list.count; ++i)
     ASN_SEQUENCE_ADD(varBindList, newVb);
     }
 
-SendGetResponsePDU(sock, msg);
+bool res = SendGetResponsePDU(sock, msg);
 #ifdef SMUX_DEBUG
 asn_fprint(stderr, &asn_DEF_GetResponse_PDU, msg);
 #endif
 ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
-return false;
+return res;
 }
 
 bool SMUX::GetNextRequestHandler(const PDUs_t * pdus)
@@ -161,9 +160,8 @@ for (int i = 0; i < vbl->list.count; ++i)
 #ifdef SMUX_DEBUG
         printfd(__FILE__, "SMUX::GetNextRequestHandler() - '%s' not found\n", OID(&vb->name).ToString().c_str());
 #endif
-        SendGetResponseErrorPDU(sock, getRequest,
-                                PDU__error_status_noSuchName, i);
-        return true;
+        return SendGetResponseErrorPDU(sock, getRequest,
+                                       PDU__error_status_noSuchName, i);
         }
 
     VarBind_t * newVb = static_cast<VarBind_t *>(calloc(1, sizeof(VarBind_t)));
@@ -175,12 +173,12 @@ for (int i = 0; i < vbl->list.count; ++i)
     ASN_SEQUENCE_ADD(varBindList, newVb);
     }
 
-SendGetResponsePDU(sock, msg);
+bool res = SendGetResponsePDU(sock, msg);
 #ifdef SMUX_DEBUG
 asn_fprint(stderr, &asn_DEF_PDU, msg);
 #endif
 ASN_STRUCT_FREE(asn_DEF_GetResponse_PDU, msg);
-return false;
+return res;
 }
 
 bool SMUX::SetRequestHandler(const PDUs_t * pdus)
@@ -189,7 +187,6 @@ bool SMUX::SetRequestHandler(const PDUs_t * pdus)
 printfd(__FILE__, "SMUX::SetRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_PDUs, pdus);
 #endif
-SendGetResponseErrorPDU(sock, &pdus->choice.set_request,
-                        PDU__error_status_readOnly, 0);
-return false;
+return SendGetResponseErrorPDU(sock, &pdus->choice.set_request,
+                               PDU__error_status_readOnly, 0);
 }

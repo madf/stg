@@ -276,8 +276,11 @@ return NULL;
 
 void SMUX::Run()
 {
-SendOpenPDU(sock);
-SendRReqPDU(sock);
+stopped = true;
+if (!SendOpenPDU(sock))
+    return;
+if (!SendRReqPDU(sock))
+    return;
 running = true;
 stopped = false;
 
