@@ -28,7 +28,7 @@ typedef void (ACTIVE_CLASS::*TYPE)(DATA_TYPE);
 class BASE_ACTION
 {
 public:
-    virtual ~BASE_ACTION() {};
+    virtual ~BASE_ACTION() {}
     virtual void Invoke() = 0;
 };
 
@@ -44,6 +44,9 @@ public:
         : activeClass(ac), actor(a), data(d) {};
     void Invoke();
 private:
+    ACTION(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
+    ACTION<ACTIVE_CLASS, DATA_TYPE> & operator=(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
+
     ACTIVE_CLASS & activeClass;
     typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE actor;
     DATA_TYPE data;
@@ -60,7 +63,7 @@ public:
     // Initialize mutex
     ACTIONS_LIST();
     // Delete actions and destroy mutex
-    ~ACTIONS_LIST();
+    virtual ~ACTIONS_LIST();
 
     parent::iterator begin();
     parent::iterator end();
