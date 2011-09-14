@@ -58,10 +58,12 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
+      lastScanMessages(0),
       login(),
       id(0),
       __connected(0),
       connected(__connected),
+      enabledDirs(),
       userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
@@ -71,6 +73,14 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       store(st),
       tariffs(t),
       tariff(NULL),
+      traffStat(),
+      traffStatSaved(),
+      settings(s),
+      authorizedBy(),
+      messages(),
+      deleted(false),
+      lastWriteStat(0),
+      lastWriteDetailedStat(0),
       cash(property.cash),
       up(property.up),
       down(property.down),
@@ -105,18 +115,18 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
+      sessionUpload(),
+      sessionDownload(),
       passiveNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this)
+      ipNotifier(this),
+      mutex(),
+      errorStr()
 {
-settings = s;
-
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
-connected = 0;
 ips = StrToIPS("*");
-deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDetailedStat = stgTime;
 
@@ -124,8 +134,6 @@ property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
-
-lastScanMessages = 0;
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -134,18 +142,20 @@ pthread_mutex_init(&mutex, &attr);
 }
 #else
 USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
-           const STORE * st,
-           const TARIFFS * t,
-           const ADMIN * a,
-           const USERS * u)
+                     const STORE * st,
+                     const TARIFFS * t,
+                     const ADMIN * a,
+                     const USERS * u)
     : USER(),
       users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
+      lastScanMessages(0),
       login(),
       id(0),
       __connected(0),
       connected(__connected),
+      enabledDirs(),
       userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
@@ -155,6 +165,14 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       store(st),
       tariffs(t),
       tariff(NULL),
+      traffStat(),
+      traffStatSaved(),
+      settings(s),
+      authorizedBy(),
+      messages(),
+      deleted(false),
+      lastWriteStat(0),
+      lastWriteDetailedStat(0),
       cash(property.cash),
       up(property.up),
       down(property.down),
@@ -189,18 +207,18 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
+      sessionUpload(),
+      sessionDownload(),
       passiveNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this)
+      ipNotifier(this),
+      mutex(),
+      errorStr()
 {
-settings = s;
-
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
-connected = 0;
 ips = StrToIPS("*");
-deleted = false;
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDetailedStat = stgTime;
 
@@ -208,8 +226,6 @@ property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
-
-lastScanMessages = 0;
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -223,10 +239,13 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       users(u.users),
       property(u.settings->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
+      lastScanMessages(0),
       login(u.login),
       id(u.id),
-      __connected(u.__connected),
+      __connected(0),
       connected(__connected),
+      enabledDirs(),
+      userIDGenerator(u.userIDGenerator),
       __currIP(u.__currIP),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -235,6 +254,14 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       store(u.store),
       tariffs(u.tariffs),
       tariff(u.tariff),
+      traffStat(u.traffStat),
+      traffStatSaved(u.traffStatSaved),
+      settings(u.settings),
+      authorizedBy(),
+      messages(u.messages),
+      deleted(u.deleted),
+      lastWriteStat(u.lastWriteStat),
+      lastWriteDetailedStat(u.lastWriteDetailedStat),
       cash(property.cash),
       up(property.up),
       down(property.down),
@@ -269,29 +296,22 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
+      sessionUpload(),
+      sessionDownload(),
       passiveNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this)
+      ipNotifier(this),
+      mutex(),
+      errorStr()
 {
 if (&u == this)
     return;
-
-connected = 0;
-
-deleted = u.deleted;
-
-lastWriteStat = u.lastWriteStat;
-lastWriteDetailedStat = u.lastWriteDetailedStat;
-
-settings = u.settings;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
-
-lastScanMessages = 0;
 
 property.SetProperties(u.property);
 

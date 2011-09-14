@@ -307,7 +307,7 @@ private:
     CHG_PASSIVE_NOTIFIER     passiveNotifier;
     CHG_TARIFF_NOTIFIER      tariffNotifier;
     CHG_CASH_NOTIFIER        cashNotifier;
-    CHG_IPS_NOTIFIER          ipNotifier;
+    CHG_IPS_NOTIFIER         ipNotifier;
 
     mutable pthread_mutex_t  mutex;
 
