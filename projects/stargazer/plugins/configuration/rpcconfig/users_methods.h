@@ -22,7 +22,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_GET(const METHOD_USER_GET & rvalue);
+    METHOD_USER_GET & operator=(const METHOD_USER_GET & rvalue);
+
     RPC_CONFIG * config;
     USERS * users;
 };
@@ -40,7 +44,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_ADD(const METHOD_USER_ADD & rvalue);
+    METHOD_USER_ADD & operator=(const METHOD_USER_ADD & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     USERS * users;
@@ -59,7 +67,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_DEL(const METHOD_USER_DEL & rvalue);
+    METHOD_USER_DEL & operator=(const METHOD_USER_DEL & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     USERS * users;
@@ -76,7 +88,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USERS_GET(const METHOD_USERS_GET & rvalue);
+    METHOD_USERS_GET & operator=(const METHOD_USERS_GET & rvalue);
+
     RPC_CONFIG * config;
     USERS * users;
 };
@@ -98,7 +114,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_CHG(const METHOD_USER_CHG & rvalue);
+    METHOD_USER_CHG & operator=(const METHOD_USER_CHG & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
@@ -121,7 +141,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_CASH_ADD(const METHOD_USER_CASH_ADD & rvalue);
+    METHOD_USER_CASH_ADD & operator=(const METHOD_USER_CASH_ADD & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     STORE * store;
@@ -143,7 +167,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_CASH_SET(const METHOD_USER_CASH_SET & rvalue);
+    METHOD_USER_CASH_SET & operator=(const METHOD_USER_CASH_SET & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     STORE * store;
@@ -167,7 +195,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_USER_TARIFF_CHANGE(const METHOD_USER_TARIFF_CHANGE & rvalue);
+    METHOD_USER_TARIFF_CHANGE & operator=(const METHOD_USER_TARIFF_CHANGE & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
@@ -186,7 +218,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_GET_ONLINE_IPS(const METHOD_GET_ONLINE_IPS & rvalue);
+    METHOD_GET_ONLINE_IPS & operator=(const METHOD_GET_ONLINE_IPS & rvalue);
+
     RPC_CONFIG * config;
     USERS * users;
 

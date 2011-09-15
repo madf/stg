@@ -75,14 +75,21 @@ return rpcc.GetPlugin();
 }
 
 RPC_CONFIG::RPC_CONFIG()
-    : users(NULL),
+    : errorStr(),
+      rpcConfigSettings(),
+      users(NULL),
       admins(NULL),
       tariffs(NULL),
       store(NULL),
+      settings(),
+      rpcRegistry(),
       rpcServer(NULL),
       running(false),
       stopped(true),
-      dayFee(0)
+      tid(),
+      cookies(),
+      dayFee(0),
+      dirNames()
 {
 }
 
