@@ -9,6 +9,7 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 LN = ln
 
 CXXFLAGS += -fPIC
+CFLAGS += -fPIC
 LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
 
 vpath %.a $(DIR_LIB)
@@ -38,6 +39,13 @@ endif
 deps:	$(SRCS) ../../../../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
-	done
+	  echo "$$file" | grep ".c$$" > /dev/null;\
+	  if [ $$? == 0 ];\
+	  then\
+	    echo "`$(CC) $(CFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
+	    echo -e '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  else\
+	    echo "`$(CXX) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
+	    echo -e '\t$$(CXX) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  fi;\
+	done;
