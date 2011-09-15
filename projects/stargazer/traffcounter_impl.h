@@ -198,6 +198,9 @@ public:
     size_t      RulesCount() const { return rules.size(); }
 
 private:
+    TRAFFCOUNTER_IMPL(const TRAFFCOUNTER_IMPL & rvalue);
+    TRAFFCOUNTER_IMPL & operator=(const TRAFFCOUNTER_IMPL & rvalue);
+
     bool        ParseAddress(const char * ta, RULE * rule) const;
     uint32_t    CalcMask(uint32_t msk) const;
     void        FreeRules();

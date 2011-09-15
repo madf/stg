@@ -46,6 +46,7 @@ TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
       tariffs(),
       store(st),
       WriteServLog(GetStgLogger()),
+      mutex(),
       strError(),
       noTariff(NO_TARIFF_NAME),
       onAddNotifiers(),

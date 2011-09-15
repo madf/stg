@@ -55,6 +55,9 @@ public:
     int CloseSearch(int) const;
 
 private:
+    SERVICES_IMPL(const SERVICES_IMPL & rvalue);
+    SERVICES_IMPL & operator=(const SERVICES_IMPL & rvalue);
+
     typedef list<SERVICE_CONF>::iterator       srv_iter;
     typedef list<SERVICE_CONF>::const_iterator const_srv_iter;
 

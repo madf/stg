@@ -70,6 +70,9 @@ public:
     int CloseSearch(int) const;
 
 private:
+    ADMINS_IMPL(const ADMINS_IMPL & rvalue);
+    ADMINS_IMPL & operator=(const ADMINS_IMPL & rvalue);
+
     typedef list<ADMIN_IMPL>::iterator admin_iter;
     typedef list<ADMIN_IMPL>::const_iterator const_admin_iter;
 

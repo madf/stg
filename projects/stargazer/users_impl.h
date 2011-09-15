@@ -56,26 +56,6 @@ typedef std::list<USER_IMPL>::const_iterator const_user_iter;
 
 class USERS_IMPL;
 //-----------------------------------------------------------------------------
-/*class PROPERTY_NOTIFER_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
-public:
-    PROPERTY_NOTIFER_IP_BEFORE(USERS_IMPL & us, user_iter u) : users(us), user(u) {}
-    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() const { return user; }
-private:
-    USERS_IMPL & users;
-    user_iter    user;
-};
-//-----------------------------------------------------------------------------
-class PROPERTY_NOTIFER_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
-public:
-    PROPERTY_NOTIFER_IP_AFTER(USERS_IMPL & us, user_iter u) : users(us), user(u) {}
-    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    user_iter   GetUser() const { return user; }
-private:
-    USERS_IMPL & users;
-    user_iter    user;
-};*/
-//-----------------------------------------------------------------------------
 struct USER_TO_DEL {
 USER_TO_DEL()
     : iter(),
@@ -133,6 +113,9 @@ public:
     int             Stop();
 
 private:
+    USERS_IMPL(const USERS_IMPL & rvalue);
+    USERS_IMPL & operator=(const USERS_IMPL & rvalue);
+
     void            AddToIPIdx(user_iter user);
     void            DelFromIPIdx(uint32_t ip);
     bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;

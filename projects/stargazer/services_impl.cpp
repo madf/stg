@@ -33,7 +33,9 @@ SERVICES_IMPL::SERVICES_IMPL(STORE * st)
       store(st),
       WriteServLog(GetStgLogger()),
       searchDescriptors(),
-      handle(0)
+      handle(0),
+      mutex(),
+      strError()
 {
 pthread_mutex_init(&mutex, NULL);
 Read();

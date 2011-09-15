@@ -55,18 +55,21 @@ public:
     int CloseSearch(int) const;
 
 private:
+    CORPORATIONS_IMPL(const CORPORATIONS_IMPL & rvalue);
+    CORPORATIONS_IMPL & operator=(const CORPORATIONS_IMPL & rvalue);
+
     typedef list<CORP_CONF>::iterator       crp_iter;
     typedef list<CORP_CONF>::const_iterator const_crp_iter;
 
     bool Read();
 
     std::list<CORP_CONF> data;
-    STORE *                 store;
-    STG_LOGGER &            WriteServLog;
+    STORE * store;
+    STG_LOGGER & WriteServLog;
     mutable std::map<int, const_crp_iter> searchDescriptors;
-    mutable unsigned int    handle;
+    mutable unsigned int handle;
     mutable pthread_mutex_t mutex;
-    std::string             strError;
+    std::string strError;
 };
 
 #endif

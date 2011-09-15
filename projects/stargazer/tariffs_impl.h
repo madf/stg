@@ -64,7 +64,11 @@ public:
     void    GetTariffsData(std::list<TARIFF_DATA> * tdl);
 
     const std::string & GetStrError() const { return strError; }
+
 private:
+    TARIFFS_IMPL(const TARIFFS_IMPL & rvalue);
+    TARIFFS_IMPL & operator=(const TARIFFS_IMPL & rvalue);
+
     std::list<TARIFF_IMPL>  tariffs;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
