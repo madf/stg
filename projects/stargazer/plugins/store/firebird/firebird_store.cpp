@@ -46,18 +46,19 @@ return frsc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::FIREBIRD_STORE()
+    : version("firebird_store v.1.4"),
+      strError(),
+      db_server("localhost"),
+      db_database("/var/stg/stargazer.fdb"),
+      db_user("stg"),
+      db_password("123456"),
+      settings(),
+      db(),
+      mutex(),
+      til(IBPP::ilConcurrency),
+      tlr(IBPP::lrWait)
 {
-db_server = "localhost";
-db_database = "/var/stg/stargazer.fdb";
-db_user = "stg";
-db_password = "123456";
-version = "firebird_store v.1.4";
 pthread_mutex_init(&mutex, NULL);
-
-// Advanced settings defaults
-
-til = IBPP::ilConcurrency;
-tlr = IBPP::lrWait;
 }
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::~FIREBIRD_STORE()

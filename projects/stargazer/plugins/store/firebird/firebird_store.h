@@ -114,7 +114,11 @@ public:
     int RestoreService(SERVICE_CONF * sc, const std::string & name) const;
     int AddService(const std::string & name) const;
     int DelService(const std::string & name) const;
+
 private:
+    FIREBIRD_STORE(const FIREBIRD_STORE & rvalue);
+    FIREBIRD_STORE & operator=(const FIREBIRD_STORE & rvalue);
+
     std::string version;
     mutable std::string strError;
     mutable std::string db_server, db_database, db_user, db_password;

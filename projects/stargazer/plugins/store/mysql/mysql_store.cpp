@@ -106,13 +106,13 @@ return msc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
-    : settings(NULL)
+    : settings(NULL),
+      errorStr(),
+      dbUser(),
+      dbPass(),
+      dbName(),
+      dbHost()
 {
-}
-//-----------------------------------------------------------------------------
-MYSQL_STORE_SETTINGS::~MYSQL_STORE_SETTINGS()
-{
-
 }
 //-----------------------------------------------------------------------------
 int MYSQL_STORE_SETTINGS::ParseParam(const vector<PARAM_VALUE> & moduleParams, 
@@ -151,46 +151,15 @@ if (ParseParam(s.moduleParams, "server", dbHost) < 0 &&
 return 0;
 }
 //-----------------------------------------------------------------------------
-const string & MYSQL_STORE_SETTINGS::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-string MYSQL_STORE_SETTINGS::GetDBUser() const
-{
-return dbUser;
-}
-//-----------------------------------------------------------------------------
-string MYSQL_STORE_SETTINGS::GetDBPassword() const
-{
-return dbPass;
-}
-//-----------------------------------------------------------------------------
-string MYSQL_STORE_SETTINGS::GetDBHost() const
-{
-return dbHost;
-}
-//-----------------------------------------------------------------------------
-string MYSQL_STORE_SETTINGS::GetDBName() const
-{
-return dbName;
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 MYSQL_STORE::MYSQL_STORE()
+    : errorStr(),
+      version("mysql_store v.0.67"),
+      storeSettings(),
+      settings()
 {
-version = "mysql_store v.0.67";
 };
-//-----------------------------------------------------------------------------
-MYSQL_STORE::~MYSQL_STORE()
-{    
-};
-//-----------------------------------------------------------------------------
-void MYSQL_STORE::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
 //-----------------------------------------------------------------------------
 int    MYSQL_STORE::MysqlQuery(const char* sQuery,MYSQL * sock) const
 {
@@ -269,16 +238,6 @@ else
     
 }
 return ret;
-}
-//-----------------------------------------------------------------------------
-const string & MYSQL_STORE::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-const string & MYSQL_STORE::GetVersion() const
-{
-return version;
 }
 //-----------------------------------------------------------------------------
 bool MYSQL_STORE::IsTablePresent(const string & str,MYSQL * sock)

@@ -60,10 +60,14 @@ return pqStoreeCreator.GetPlugin();
 //-----------------------------------------------------------------------------
 POSTGRESQL_STORE::POSTGRESQL_STORE()
     : versionString("postgresql_store v.1.3"),
+      strError(),
       server("localhost"),
       database("stargazer"),
       user("stg"),
       password("123456"),
+      clientEncoding("KOI8"),
+      settings(),
+      mutex(),
       version(0),
       retries(3),
       connection(NULL)
