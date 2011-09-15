@@ -29,10 +29,15 @@ class SETTINGS;
 class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
     CHG_CURRIP_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
+    CHG_CURRIP_NOTIFIER_PING(const CHG_CURRIP_NOTIFIER_PING & rvalue)
+        : user(rvalue.user), ping(rvalue.ping)
+    {}
     void Notify(const uint32_t & oldIP, const uint32_t & newIP);
     USER_PTR GetUser() const { return user; }
 
 private:
+    CHG_CURRIP_NOTIFIER_PING & operator=(const CHG_CURRIP_NOTIFIER_PING & rvalue);
+
     USER_PTR user;
     const PING & ping;
 };
@@ -40,10 +45,15 @@ private:
 class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS> {
 public:
     CHG_IPS_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
+    CHG_IPS_NOTIFIER_PING(const CHG_IPS_NOTIFIER_PING & rvalue)
+        : user(rvalue.user), ping(rvalue.ping)
+    {}
     void Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS);
     USER_PTR GetUser() const { return user; }
 
 private:
+    CHG_IPS_NOTIFIER_PING & operator=(const CHG_IPS_NOTIFIER_PING & rvalue);
+
     USER_PTR user;
     const PING & ping;
 };
@@ -55,6 +65,9 @@ public:
     void Notify(const USER_PTR & user);
 
 private:
+    ADD_USER_NONIFIER_PING(const ADD_USER_NONIFIER_PING & rvalue);
+    ADD_USER_NONIFIER_PING & operator=(const ADD_USER_NONIFIER_PING & rvalue);
+
     PING & ping;
 };
 //-----------------------------------------------------------------------------
@@ -65,12 +78,15 @@ public:
     void Notify(const USER_PTR & user);
 
 private:
+    DEL_USER_NONIFIER_PING(const DEL_USER_NONIFIER_PING & rvalue);
+    DEL_USER_NONIFIER_PING & operator=(const DEL_USER_NONIFIER_PING & rvalue);
+
     PING & ping;
 };
 //-----------------------------------------------------------------------------
 class PING_SETTINGS {
 public:
-    PING_SETTINGS();
+    PING_SETTINGS() : pingDelay(0), errorStr() {}
     virtual ~PING_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
@@ -87,8 +103,8 @@ public:
     PING();
     virtual ~PING();
 
-    void SetUsers(USERS * u);
-    void SetSettings(const MODULE_SETTINGS & s);
+    void SetUsers(USERS * u) { users = u; }
+    void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
 
     int Start();
@@ -96,15 +112,18 @@ public:
     int Reload() { return 0; }
     bool IsRunning();
 
-    const std::string & GetStrError() const;
-    const std::string GetVersion() const;
-    uint16_t GetStartPosition() const;
-    uint16_t GetStopPosition() const;
+    const std::string & GetStrError() const { return errorStr; }
+    const std::string GetVersion() const { return "Pinger v.1.01"; }
+    uint16_t GetStartPosition() const { return 100; }
+    uint16_t GetStopPosition() const { return 100; }
 
     void AddUser(USER_PTR u);
     void DelUser(USER_PTR u);
 
 private:
+    PING(const PING & rvalue);
+    PING & operator=(const PING & rvalue);
+
     void GetUsers();
     void SetUserNotifiers(USER_PTR u);
     void UnSetUserNotifiers(USER_PTR u);
@@ -116,12 +135,6 @@ private:
     USERS * users;
     std::list<USER_PTR> usersList;
 
-    /*
-    мы должны перепроверить возможность пингования юзера при изменении
-    следующих его параметров:
-    - currIP
-    - ips
-    */
     pthread_t thread;
     pthread_mutex_t mutex;
     bool nonstop;

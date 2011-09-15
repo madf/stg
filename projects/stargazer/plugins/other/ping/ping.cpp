@@ -37,11 +37,6 @@ private:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PING_SETTINGS::PING_SETTINGS()
-    : pingDelay(0)
-{
-}
-//-----------------------------------------------------------------------------
 int PING_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 PARAM_VALUE pv;
@@ -66,9 +61,18 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 PING::PING()
-    : users(NULL),
+    : errorStr(),
+      pingSettings(),
+      settings(),
+      users(NULL),
+      usersList(),
+      thread(),
+      mutex(),
       nonstop(false),
       isRunning(false),
+      pinger(),
+      ChgCurrIPNotifierList(),
+      ChgIPNotifierList(),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this)
 {
@@ -80,32 +84,12 @@ PING::~PING()
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-const std::string PING::GetVersion() const
-{
-return "Pinger v.1.01";
-}
-//-----------------------------------------------------------------------------
-void PING::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
 int PING::ParseSettings()
 {
 int ret = pingSettings.ParseSettings(settings);
 if (ret)
     errorStr = pingSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-void PING::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-const std::string & PING::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int PING::Start()
@@ -233,16 +217,6 @@ while (ping->nonstop)
 
 ping->isRunning = false;
 return NULL;
-}
-//-----------------------------------------------------------------------------
-uint16_t PING::GetStartPosition() const
-{
-return 100;
-}
-//-----------------------------------------------------------------------------
-uint16_t PING::GetStopPosition() const
-{
-return 100;
 }
 //-----------------------------------------------------------------------------
 void PING::SetUserNotifiers(USER_PTR u)
