@@ -77,12 +77,22 @@ return fsc.GetPlugin();
 //-----------------------------------------------------------------------------
 FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
     : settings(NULL),
+      errorStr(),
+      workDir(),
+      usersDir(),
+      adminsDir(),
+      tariffsDir(),
+      statMode(0),
+      statUID(0),
+      statGID(0),
+      confMode(0),
+      confUID(0),
+      confGID(0),
+      userLogMode(0),
+      userLogUID(0),
+      userLogGID(0),
       removeBak(true),
       readBak(true)
-{
-}
-//-----------------------------------------------------------------------------
-FILES_STORE_SETTINGS::~FILES_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
@@ -306,31 +316,6 @@ c = str[2] - '0';
 return 0;
 }
 //-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetWorkDir() const
-{
-return workDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetUsersDir() const
-{
-return usersDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetAdminsDir() const
-{
-return adminsDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetTariffsDir() const
-{
-return tariffsDir;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetStatMode() const
-{
-return statMode;
-}
-//-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetStatModeDir() const
 {
 mode_t mode = statMode;
@@ -338,21 +323,6 @@ if (statMode & S_IRUSR) mode |= S_IXUSR;
 if (statMode & S_IRGRP) mode |= S_IXGRP;
 if (statMode & S_IROTH) mode |= S_IXOTH;
 return mode;
-}
-//-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetStatUID() const
-{
-return statUID;
-}
-//-----------------------------------------------------------------------------
-gid_t  FILES_STORE_SETTINGS::GetStatGID() const
-{
-return statGID;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetConfMode() const
-{
-return confMode;
 }
 //-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetConfModeDir() const
@@ -364,62 +334,20 @@ if (confMode & S_IROTH) mode |= S_IXOTH;
 return mode;
 }
 //-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetConfUID() const
-{
-return confUID;
-}
-//-----------------------------------------------------------------------------
-gid_t  FILES_STORE_SETTINGS::GetConfGID() const
-{
-return confGID;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetLogMode() const
-{
-return userLogMode;
-}
-//-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetLogUID() const
-{
-return userLogUID;
-}
-//-----------------------------------------------------------------------------
-gid_t FILES_STORE_SETTINGS::GetLogGID() const
-{
-return userLogGID;
-}
-//-----------------------------------------------------------------------------
-bool FILES_STORE_SETTINGS::GetRemoveBak() const
-{
-return removeBak;
-}
-//-----------------------------------------------------------------------------
-bool FILES_STORE_SETTINGS::GetReadBak() const
-{
-return readBak;
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 FILES_STORE::FILES_STORE()
+    : errorStr(),
+      version("file_store v.1.04"),
+      storeSettings(),
+      settings(),
+      mutex()
 {
-version = "file_store v.1.04";
-
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 };
-//-----------------------------------------------------------------------------
-FILES_STORE::~FILES_STORE()
-{
-
-};
-//-----------------------------------------------------------------------------
-void FILES_STORE::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
 //-----------------------------------------------------------------------------
 int FILES_STORE::ParseSettings()
 {
@@ -430,17 +358,6 @@ if (ret)
     errorStr = storeSettings.GetStrError();
     }
 return ret;
-}
-//-----------------------------------------------------------------------------
-const string & FILES_STORE::GetStrError() const
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-const string & FILES_STORE::GetVersion() const
-{
-return version;
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::GetUsersList(vector<string> * userList) const
@@ -585,27 +502,6 @@ if (Touch(fileName))
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-/*f = fopen(fileName.c_str(), "wt");
-if (f)
-    {
-    if (fprintf(f, "\n") < 0)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "fprintf failed. Message: '";
-        errorStr += strerror(errno);
-        errorStr += "'";
-        printfd(__FILE__, "FILES_STORE::AddUser - fprintf failed. Message: '%s'\n", strerror(errno));
-        return -1;
-        }
-    fclose(f);
-    }
-else
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot create file \"" + fileName + "\'";
-    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
-    return -1;
-    }*/
 
 strprintf(&fileName, "%s%s/stat", storeSettings.GetUsersDir().c_str(), login.c_str());
 if (Touch(fileName))
@@ -615,27 +511,6 @@ if (Touch(fileName))
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-/*f = fopen(fileName.c_str(), "wt");
-if (f)
-    {
-    if (fprintf(f, "\n") < 0)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "fprintf failed. Message: '";
-        errorStr += strerror(errno);
-        errorStr += "'";
-        printfd(__FILE__, "FILES_STORE::AddUser - fprintf failed. Message: '%s'\n", strerror(errno));
-        return -1;
-        }
-    fclose(f);
-    }
-else
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot create file \"" + fileName + "\'";
-    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
-    return -1;
-    }*/
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1878,10 +1753,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::AddMessage(STG_MSG * msg, const string & login) const
 {
-//Проверить есть ли директория для сообщений. Если нет - создать.
-//Затем положить сообщение с именем файла - временнOй меткой. Записать туда
-//текст и приоритет.
-
 string fn;
 string dn;
 struct timeval tv;
@@ -1922,10 +1793,6 @@ return EditMessage(*msg, login);
 //-----------------------------------------------------------------------------
 int FILES_STORE::EditMessage(const STG_MSG & msg, const string & login) const
 {
-//Проверить еслть ли директория для сообщений. Если нет - создать.
-//Затем положить сообщение с именем файла - временнOй меткой. Записать туда
-//текст и приоритет.
-
 string fileName;
 
 FILE * msgFile;
@@ -2006,8 +1873,6 @@ return unlink(fn.c_str());
 int FILES_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const string & login) const
 {
 string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
-
-//hdrsList->resize(messages.size());
 
 if (access(dn.c_str(), F_OK) != 0)
     {
@@ -2160,8 +2025,6 @@ return -1;
 //-----------------------------------------------------------------------------
 int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext)
 {
-// Функция просматривает содержимое директории
-
 DIR * d = opendir(directory.c_str());
 
 if (!d)
