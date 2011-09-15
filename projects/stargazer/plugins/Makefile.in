@@ -48,4 +48,4 @@ deps:	$(SRCS) ../../../../../Makefile.conf
 	    echo "`$(CXX) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
 	    echo -e '\t$$(CXX) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
 	  fi;\
-	done;
+	done
