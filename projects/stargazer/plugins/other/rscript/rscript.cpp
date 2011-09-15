@@ -58,24 +58,23 @@ return rsc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RS_USER::RS_USER()
-    : lastSentTime(0),
-      user(NULL),
-      shortPacketsCount(0)
+RS_USER & RS_USER::operator=(const RS_USER & rvalue)
 {
-}
-//-----------------------------------------------------------------------------
-RS_USER::RS_USER(const std::vector<uint32_t> & r, USER_PTR it)
-    : lastSentTime(0),
-      user(it),
-      routers(r),
-      shortPacketsCount(0)
-{
+lastSentTime = rvalue.lastSentTime;
+user = rvalue.user;
+routers = rvalue.routers;
+shortPacketsCount = rvalue.shortPacketsCount;
+return *this;
 }
 //-----------------------------------------------------------------------------
 RS_SETTINGS::RS_SETTINGS()
     : sendPeriod(0),
-      port(0)
+      port(0),
+      errorStr(),
+      netRouters(),
+      userParams(),
+      password(),
+      subnetFile()
 {
 }
 //-----------------------------------------------------------------------------
@@ -171,11 +170,20 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 REMOTE_SCRIPT::REMOTE_SCRIPT()
-    : sendPeriod(15),
+    : ctx(),
+      afterChgIPNotifierList(),
+      authorizedUsers(),
+      errorStr(),
+      rsSettings(),
+      settings(),
+      sendPeriod(15),
       halfPeriod(8),
       nonstop(false),
       isRunning(false),
       users(NULL),
+      netRouters(),
+      thread(),
+      mutex(),
       sock(0),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this)
