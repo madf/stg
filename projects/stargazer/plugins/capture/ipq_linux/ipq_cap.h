@@ -58,6 +58,9 @@ public:
     uint16_t GetStopPosition() const { return 10; }
 
 private:
+    IPQ_CAP(const IPQ_CAP & rvalue);
+    IPQ_CAP & operator=(const IPQ_CAP & rvalue);
+
     static void * Run(void *);
     int IPQCapOpen();
     int IPQCapClose();

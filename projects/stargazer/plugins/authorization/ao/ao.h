@@ -43,26 +43,36 @@ extern "C" PLUGIN * GetPlugin();
 class AUTH_AO;
 class USERS;
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
+template <typename T>
+class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
                 CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
+                CHG_BEFORE_NOTIFIER(const CHG_BEFORE_NOTIFIER<T> & rvalue)
+                    : user(rvalue.user), auth(rvalue.auth)
+                {}
+    void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 
 private:
+    CHG_BEFORE_NOTIFIER<T> & operator=(const CHG_BEFORE_NOTIFIER<T> & rvalue);
+
     USER_PTR        user;
     const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
+template <typename T>
+class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
                 CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
+                CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER<T> & rvalue)
+                    : user(rvalue.user), auth(rvalue.auth)
+                {}
+    void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 
 private:
+    CHG_AFTER_NOTIFIER<T> & operator=(const CHG_AFTER_NOTIFIER<T> & rvalue);
+
     USER_PTR        user;
     const AUTH_AO & auth;
 };
@@ -91,6 +101,9 @@ public:
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
+    AUTH_AO(const AUTH_AO & rvalue);
+    AUTH_AO & operator=(const AUTH_AO & rvalue);
+
     void                GetUsers();
     void                SetUserNotifiers(USER_PTR u);
     void                UnSetUserNotifiers(USER_PTR u);
@@ -112,13 +125,12 @@ private:
     public:
         ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~ADD_USER_NONIFIER() {}
-
-        void Notify(const USER_PTR & user)
-            {
-            auth.AddUser(user);
-            }
+        void Notify(const USER_PTR & user) { auth.AddUser(user); }
 
     private:
+        ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
+        ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER & rvalue);
+
         AUTH_AO & auth;
     } onAddUserNotifier;
 
@@ -126,13 +138,12 @@ private:
     public:
         DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~DEL_USER_NONIFIER() {}
-
-        void Notify(const USER_PTR & user)
-            {
-            auth.DelUser(user);
-            }
+        void Notify(const USER_PTR & user) { auth.DelUser(user); }
 
     private:
+        DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
+        DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER & rvalue);
+
         AUTH_AO & auth;
     } onDelUserNotifier;
 

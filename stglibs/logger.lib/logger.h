@@ -5,19 +5,21 @@
 
 #include <string>
 
-#include "stg/noncopyable.h"
-
 const char * LogDate(time_t t);
 //-----------------------------------------------------------------------------
 class STG_LOGGER;
 STG_LOGGER & GetStgLogger();
 //-----------------------------------------------------------------------------
-class STG_LOGGER_LOCKER : private NONCOPYABLE
+class STG_LOGGER_LOCKER
 {
 public:
     STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); };
     ~STG_LOGGER_LOCKER() { pthread_mutex_unlock(mutex); };
+
 private:
+    STG_LOGGER_LOCKER(const STG_LOGGER_LOCKER & rvalue);
+    STG_LOGGER_LOCKER & operator=(const STG_LOGGER_LOCKER & rvalue);
+
     pthread_mutex_t * mutex;
 };
 //-----------------------------------------------------------------------------
@@ -32,6 +34,9 @@ public:
 
 private:
     STG_LOGGER();
+    STG_LOGGER(const STG_LOGGER & rvalue);
+    STG_LOGGER & operator=(const STG_LOGGER & rvalue);
+
     const char * LogDate(time_t t);
 
     std::string fileName;

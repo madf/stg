@@ -117,9 +117,15 @@ return "bpf_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
-    : nonstop(false),
+    : capSettings(),
+      errorStr(),
+      bpfData(),
+      polld(),
+      thread(),
+      nonstop(false),
       isRunning(false),
       capSock(-1),
+      settings(),
       traffCnt(NULL)
 {
 }

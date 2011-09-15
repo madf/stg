@@ -80,7 +80,10 @@ return "Divert_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 DIVERT_CAP::DIVERT_CAP()
-    : port(0),
+    : settings(),
+      port(0),
+      errorStr(),
+      thread(),
       nonstop(false),
       isRunning(false),
       traffCnt(NULL)

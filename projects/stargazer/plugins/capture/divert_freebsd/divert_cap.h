@@ -63,6 +63,9 @@ public:
     uint16_t            GetStopPosition() const { return 10; }
 
 private:
+    DIVERT_CAP(const DIVERT_CAP & rvalue);
+    DIVERT_CAP & operator=(const DIVERT_CAP & rvalue);
+
     static void *       Run(void *);
 
     int                 DivertCapOpen();

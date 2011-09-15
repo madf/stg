@@ -30,7 +30,15 @@ STG_PINGER::STG_PINGER(time_t d)
       isRunningSender(false),
       sendSocket(-1),
       recvSocket(-1),
-      pid(0)
+      sendThread(),
+      recvThread(),
+      pmSend(),
+      pid(0),
+      errorStr(),
+      pingIP(),
+      ipToAdd(),
+      ipToDel(),
+      mutex()
 {
     pthread_mutex_init(&mutex, NULL);
     memset(&pmSend, 0, sizeof(pmSend));

@@ -106,6 +106,9 @@ public:
     uint16_t        GetStopPosition() const { return STOP_POS; }
 
 private:
+    NF_CAP(const NF_CAP & rvalue);
+    NF_CAP & operator=(const NF_CAP & rvalue);
+
     TRAFFCOUNTER * traffCnt;
     MODULE_SETTINGS settings;
     pthread_t tidTCP;

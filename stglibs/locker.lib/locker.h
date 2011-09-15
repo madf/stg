@@ -38,9 +38,8 @@
 
 #endif
 
-#include "stg/noncopyable.h"
 //-----------------------------------------------------------------------------
-class STG_LOCKER : private NONCOPYABLE
+class STG_LOCKER
 {
 public:
     #ifdef DEBUG_LOCKER
@@ -48,6 +47,7 @@ public:
         : mutex(m),
           file(__file__),
           line(__line__),
+          lockerMutex(),
           lockID(0)
     #else
     STG_LOCKER(pthread_mutex_t * m, const char *, int)
@@ -79,6 +79,9 @@ public:
         #endif
         };
 private:
+    STG_LOCKER(const STG_LOCKER & rvalue);
+    STG_LOCKER & operator=(const STG_LOCKER & rvalue);
+
     pthread_mutex_t * mutex;
     #ifdef DEBUG_LOCKER
     std::string file;

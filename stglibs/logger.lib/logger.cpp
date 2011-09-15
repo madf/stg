@@ -15,7 +15,8 @@ return logger;
 }
 //-----------------------------------------------------------------------------
 STG_LOGGER::STG_LOGGER()
-    : fileName()
+    : fileName(),
+      mutex()
 {
 pthread_mutex_init(&mutex, NULL);
 }

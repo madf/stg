@@ -70,6 +70,7 @@ AUTH_IA_SETTINGS::AUTH_IA_SETTINGS()
     : userDelay(0),
       userTimeout(0),
       port(0),
+      errorStr(),
       freeMbShowType(freeMbCash)
 {
 }
@@ -173,13 +174,15 @@ return 0;
 #ifdef IA_PHASE_DEBUG
 IA_PHASE::IA_PHASE()
     : phase(1),
+      phaseTime(),
       flog(NULL)
 {
 gettimeofday(&phaseTime, NULL);
 }
 #else
 IA_PHASE::IA_PHASE()
-    : phase(1)
+    : phase(1),
+      phaseTime()
 {
 gettimeofday(&phaseTime, NULL);
 }
@@ -295,12 +298,29 @@ return phaseTime;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 AUTH_IA::AUTH_IA()
-    : nonstop(false),
+    : ctxS(),
+      errorStr(),
+      iaSettings(),
+      settings(),
+      nonstop(false),
       isRunningRun(false),
       isRunningRunTimeouter(false),
       users(NULL),
       stgSettings(NULL),
+      ip2user(),
+      recvThread(),
+      timeouterThread(),
+      mutex(),
       listenSocket(-1),
+      connSynAck6(),
+      connSynAck8(),
+      disconnSynAck6(),
+      disconnSynAck8(),
+      aliveSyn6(),
+      aliveSyn8(),
+      fin6(),
+      fin8(),
+      packetTypes(),
       WriteServLog(GetStgLogger()),
       enabledDirs(0xFFffFFff),
       onDelUserNotifier(*this)

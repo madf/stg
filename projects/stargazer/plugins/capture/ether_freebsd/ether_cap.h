@@ -111,6 +111,9 @@ public:
     uint16_t            GetStopPosition() const { return 10; }
 
 private:
+    BPF_CAP(const BPF_CAP & rvalue);
+    BPF_CAP & operator=(const BPF_CAP & rvalue);
+
     static void *       Run(void *);
     int                 BPFCapOpen();
     int                 BPFCapOpen(BPF_DATA * bd);

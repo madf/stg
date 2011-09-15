@@ -54,8 +54,9 @@ return cnc.GetPlugin();
 
 NF_CAP::NF_CAP()
     : traffCnt(NULL),
-      tidTCP(0),
-      tidUDP(0),
+      settings(),
+      tidTCP(),
+      tidUDP(),
       runningTCP(false),
       runningUDP(false),
       stoppedTCP(true),
@@ -63,7 +64,8 @@ NF_CAP::NF_CAP()
       portT(0),
       portU(0),
       sockTCP(-1),
-      sockUDP(-1)
+      sockUDP(-1),
+      errorStr()
 {
 }
 
@@ -373,14 +375,14 @@ for (int i = 0; i < packets; ++i)
     {
     NF_DATA * data = reinterpret_cast<NF_DATA *>(buf + 24 + i * 48);
 
-    ip.header.ipHeader.ip_v = 4;
-    ip.header.ipHeader.ip_hl = 5;
-    ip.header.ipHeader.ip_p = data->proto;
+    ip.rawPacket.header.ipHeader.ip_v = 4;
+    ip.rawPacket.header.ipHeader.ip_hl = 5;
+    ip.rawPacket.header.ipHeader.ip_p = data->proto;
     ip.dataLen = ntohl(data->octets);
-    ip.header.ipHeader.ip_src.s_addr = data->srcAddr;
-    ip.header.ipHeader.ip_dst.s_addr = data->dstAddr;
-    ip.header.sPort = data->srcPort;
-    ip.header.dPort = data->dstPort;
+    ip.rawPacket.header.ipHeader.ip_src.s_addr = data->srcAddr;
+    ip.rawPacket.header.ipHeader.ip_dst.s_addr = data->dstAddr;
+    ip.rawPacket.header.sPort = data->srcPort;
+    ip.rawPacket.header.dPort = data->dstPort;
 
     traffCnt->Process(ip);
     }

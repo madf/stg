@@ -120,9 +120,12 @@ struct IA_USER {
     IA_USER()
         : login(),
           user(NULL),
+          phase(),
           lastSendAlive(0),
           rnd(random()),
           port(0),
+          ctx(),
+          messagesToSend(),
           protoVer(0),
           password("NO PASSWORD")
     {
@@ -143,6 +146,7 @@ struct IA_USER {
           lastSendAlive(u.lastSendAlive),
           rnd(u.rnd),
           port(u.port),
+          ctx(),
           messagesToSend(u.messagesToSend),
           protoVer(u.protoVer),
           password(u.password)
@@ -191,6 +195,9 @@ struct IA_USER {
     #ifdef IA_DEBUG
     bool            aliveSent;
     #endif
+
+private:
+    IA_USER & operator=(const IA_USER & rvalue);
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA_SETTINGS {
@@ -221,6 +228,9 @@ public:
 
     void Notify(const USER_PTR & user);
 private:
+    DEL_USER_NOTIFIER(const DEL_USER_NOTIFIER & rvalue);
+    DEL_USER_NOTIFIER & operator=(const DEL_USER_NOTIFIER & rvalue);
+
     AUTH_IA & auth;
 };
 //-----------------------------------------------------------------------------
@@ -248,6 +258,9 @@ public:
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
+    AUTH_IA(const AUTH_IA & rvalue);
+    AUTH_IA & operator=(const AUTH_IA & rvalue);
+
     static void *       Run(void *);
     static void *       RunTimeouter(void * d);
     int                 PrepareNet();
@@ -354,11 +367,14 @@ private:
     class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
         public:
             UnauthorizeUser(AUTH_IA * a) : auth(a) {}
+            UnauthorizeUser(const UnauthorizeUser & rvalue) : auth(rvalue.auth) {}
             void operator()(const std::pair<uint32_t, IA_USER> & p)
             {
                 auth->users->Unauthorize(p.second.user->GetLogin(), auth);
             }
         private:
+            UnauthorizeUser & operator=(const UnauthorizeUser & rvalue);
+
             AUTH_IA * auth;
     };
 

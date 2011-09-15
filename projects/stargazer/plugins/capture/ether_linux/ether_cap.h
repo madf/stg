@@ -63,6 +63,9 @@ public:
     uint16_t            GetStopPosition() const { return 10; }
 
 private:
+    ETHER_CAP(const ETHER_CAP & rvalue);
+    ETHER_CAP & operator=(const ETHER_CAP & rvalue);
+
     static void *       Run(void *);
     int                 EthCapOpen();
     int                 EthCapClose();

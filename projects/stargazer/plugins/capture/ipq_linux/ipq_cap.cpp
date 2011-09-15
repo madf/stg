@@ -54,10 +54,13 @@ return "ipq_cap v.1.2";
 //-----------------------------------------------------------------------------
 IPQ_CAP::IPQ_CAP()
     : ipq_h(NULL),
+      errorStr(),
+      thread(),
       nonstop(false),
       isRunning(false),
       capSock(-1),
-      traffCnt(NULL)
+      traffCnt(NULL),
+      buf()
 {
 memset(buf, 0, BUFSIZE);
 }
