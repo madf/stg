@@ -15,7 +15,7 @@ class STG_CONFIG;
 
 class STG_CONFIG_SETTINGS {
 public:
-                    STG_CONFIG_SETTINGS() : port(0) {}
+                    STG_CONFIG_SETTINGS() : errorStr(), port(0) {}
     virtual         ~STG_CONFIG_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
@@ -49,7 +49,11 @@ public:
     uint16_t            GetStopPosition() const { return 220; }
 
 private:
+    STG_CONFIG(const STG_CONFIG & rvalue);
+    STG_CONFIG & operator=(const STG_CONFIG & rvalue);
+
     static void *       Run(void *);
+
     mutable std::string errorStr;
     STG_CONFIG_SETTINGS stgConfigSettings;
     pthread_t           thread;

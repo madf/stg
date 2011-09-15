@@ -26,7 +26,8 @@ class SETTINGS;
 class BASE_PARSER {
 public:
     BASE_PARSER()
-        : admins(NULL),
+        : strError(),
+          admins(NULL),
           users(NULL),
           tariffs(NULL),
           store(NULL),
@@ -34,7 +35,7 @@ public:
           currAdmin(NULL),
           depth(0),
           answerList(NULL)
-    { }
+    {}
     virtual ~BASE_PARSER() {}
     virtual int ParseStart(void *data, const char *el, const char **attr) = 0;
     virtual int ParseEnd(void *data, const char *el) = 0;
@@ -50,7 +51,11 @@ public:
     virtual void SetCurrAdmin(ADMIN & cua) { currAdmin = &cua; }
     virtual std::string & GetStrError() { return strError; }
     virtual void Reset() { answerList->clear(); depth = 0; }
+
 protected:
+    BASE_PARSER(const BASE_PARSER & rvalue);
+    BASE_PARSER & operator=(const BASE_PARSER & rvalue);
+
     std::string      strError;
     ADMINS *         admins;
     USERS *          users;
@@ -71,7 +76,7 @@ public:
 //-----------------------------------------------------------------------------
 class PARSER_ADD_ADMIN: public BASE_PARSER {
 public:
-        PARSER_ADD_ADMIN() : BASE_PARSER() {}
+        PARSER_ADD_ADMIN() : BASE_PARSER(), adminToAdd() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -81,7 +86,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_DEL_ADMIN: public BASE_PARSER {
 public:
-        PARSER_DEL_ADMIN() : BASE_PARSER() {}
+        PARSER_DEL_ADMIN() : BASE_PARSER(), adminToDel() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -92,7 +97,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_CHG_ADMIN: public BASE_PARSER {
 public:
-        PARSER_CHG_ADMIN() : BASE_PARSER() {}
+        PARSER_CHG_ADMIN() : BASE_PARSER(), login(), password(), privAsString() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -111,8 +116,8 @@ public:
 //-----------------------------------------------------------------------------
 class PARSER_GET_USER: public BASE_PARSER {
 public:
-        PARSER_GET_USER();
-        ~PARSER_GET_USER(){};
+        PARSER_GET_USER() : BASE_PARSER(), login() {}
+        ~PARSER_GET_USER() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -122,7 +127,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_GET_USERS: public BASE_PARSER {
 public:
-        PARSER_GET_USERS();
+        PARSER_GET_USERS() : BASE_PARSER(), lastUserUpdateTime(0), lastUpdateFound(false) {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -140,7 +145,7 @@ public:
 //-----------------------------------------------------------------------------
 class PARSER_ADD_TARIFF: public BASE_PARSER {
 public:
-        PARSER_ADD_TARIFF() : BASE_PARSER() {}
+        PARSER_ADD_TARIFF() : BASE_PARSER(), tariffToAdd() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -150,7 +155,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_DEL_TARIFF: public BASE_PARSER {
 public:
-        PARSER_DEL_TARIFF() : BASE_PARSER() {}
+        PARSER_DEL_TARIFF() : BASE_PARSER(), tariffToDel() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -160,7 +165,7 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_CHG_TARIFF: public BASE_PARSER {
 public:
-        PARSER_CHG_TARIFF() : BASE_PARSER() {}
+        PARSER_CHG_TARIFF() : BASE_PARSER(), td() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
@@ -175,7 +180,7 @@ private:
 //-----------------------------------------------------------------------------/
 class PARSER_ADD_USER: public BASE_PARSER {
 public:
-        PARSER_ADD_USER();
+        PARSER_ADD_USER() : BASE_PARSER(), login() {}
         ~PARSER_ADD_USER() {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
@@ -195,6 +200,9 @@ public:
     void CreateAnswer();
     void Reset();
 private:
+    PARSER_CHG_USER(const PARSER_CHG_USER & rvalue);
+    PARSER_CHG_USER & operator=(const PARSER_CHG_USER & rvalue);
+
     std::string EncChar2String(const char *);
     int AplayChanges();
 
@@ -216,6 +224,9 @@ public:
     void CreateAnswer();
 
 private:
+    PARSER_DEL_USER(const PARSER_DEL_USER & rvalue);
+    PARSER_DEL_USER & operator=(const PARSER_DEL_USER & rvalue);
+
     int res;
     USER * u;
 };
@@ -232,11 +243,14 @@ private:
 //-----------------------------------------------------------------------------
 class PARSER_SEND_MESSAGE: public BASE_PARSER {
 public:
-        PARSER_SEND_MESSAGE() : BASE_PARSER(), result(0), u(NULL) {}
+        PARSER_SEND_MESSAGE() : BASE_PARSER(), logins(), result(0), msg(), u(NULL) {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
     void CreateAnswer();
 private:
+    PARSER_SEND_MESSAGE(const PARSER_SEND_MESSAGE & rvalue);
+    PARSER_SEND_MESSAGE & operator=(const PARSER_SEND_MESSAGE & rvalue);
+
     int ParseLogins(const char * logins);
 
     enum {res_ok, res_params_error, res_unknown};

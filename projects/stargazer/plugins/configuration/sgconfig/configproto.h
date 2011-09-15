@@ -68,6 +68,9 @@ public:
     void            Run();
 
 private:
+    CONFIGPROTO(const CONFIGPROTO & rvalue);
+    CONFIGPROTO & operator=(const CONFIGPROTO & rvalue);
+
     int             RecvHdr(int sock);
     int             RecvLogin(int sock);
     int             SendLoginAnswer(int sock);

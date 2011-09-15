@@ -94,11 +94,6 @@ answerList->push_back("</ServerInfo>");
 //-----------------------------------------------------------------------------
 //  GET USER
 //-----------------------------------------------------------------------------
-PARSER_GET_USER::PARSER_GET_USER()
-{
-
-}
-//-----------------------------------------------------------------------------
 int PARSER_GET_USER::ParseStart(void *, const char *el, const char **attr)
 {
 if (strcasecmp(el, "GetUser") == 0)
@@ -295,12 +290,6 @@ answerList->push_back(s);
 }
 //-----------------------------------------------------------------------------
 //  GET USERS
-//-----------------------------------------------------------------------------
-PARSER_GET_USERS::PARSER_GET_USERS()
-    : lastUserUpdateTime(0),
-      lastUpdateFound(false)
-{
-}
 //-----------------------------------------------------------------------------
 int PARSER_GET_USERS::ParseStart(void *, const char *el, const char ** attr)
 {
@@ -643,11 +632,6 @@ answerList->push_back("</Users>");
 //-----------------------------------------------------------------------------
 //  ADD USER
 //-----------------------------------------------------------------------------
-PARSER_ADD_USER::PARSER_ADD_USER()
-{
-depth = 0;
-}
-//-----------------------------------------------------------------------------
 int PARSER_ADD_USER::ParseStart(void *, const char *el, const char **attr)
 {
 depth++;
@@ -720,10 +704,13 @@ return -1;
 //  PARSER CHG USER
 //-----------------------------------------------------------------------------
 PARSER_CHG_USER::PARSER_CHG_USER()
-    : usr(NULL),
+    : BASE_PARSER(),
+      usr(NULL),
       ucr(NULL),
       upr(NULL),
       downr(NULL),
+      cashMsg(),
+      login(),
       cashMustBeAdded(false),
       res(0)
 {

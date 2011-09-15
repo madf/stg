@@ -56,12 +56,17 @@ return "Stg configurator v.0.08";
 }
 //-----------------------------------------------------------------------------
 STG_CONFIG::STG_CONFIG()
-    : nonstop(false),
+    : errorStr(),
+      stgConfigSettings(),
+      thread(),
+      nonstop(false),
       isRunning(false),
+      config(),
       users(NULL),
       admins(NULL),
       tariffs(NULL),
       store(NULL),
+      settings(),
       stgSettings(NULL)
 {
 }

@@ -87,15 +87,38 @@ else
 }
 //-----------------------------------------------------------------------------
 CONFIGPROTO::CONFIGPROTO()
-    : adminIP(0),
+    : answerList(),
+      requestList(),
+      adminIP(0),
+      adminLogin(),
       port(0),
-      nonstop(1),
+      thrReciveSendConf(),
+      nonstop(true),
       state(0),
-      currAdmin(),
+      currAdmin(NULL),
       WriteServLog(GetStgLogger()),
-      listenSocket(0),
+      listenSocket(-1),
+      parserGetServInfo(),
+      parserGetUsers(),
+      parserGetUser(),
+      parserChgUser(),
+      parserAddUser(),
+      parserDelUser(),
+      parserCheckUser(),
+      parserSendMessage(),
+      parserGetAdmins(),
+      parserAddAdmin(),
+      parserDelAdmin(),
+      parserChgAdmin(),
+      parserGetTariffs(),
+      parserAddTariff(),
+      parserDelTariff(),
+      parserChgTariff(),
       admins(NULL),
-      currParser(NULL)
+      currParser(NULL),
+      dataParser(),
+      xmlParser(),
+      errorStr()
 {
 dataParser.push_back(&parserGetServInfo);
 
