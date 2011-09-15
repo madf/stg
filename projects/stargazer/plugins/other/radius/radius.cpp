@@ -121,34 +121,24 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 RADIUS::RADIUS()
-    : nonstop(false),
+    : ctx(),
+      errorStr(),
+      radSettings(),
+      settings(),
+      authServices(),
+      acctServices(),
+      sessions(),
+      nonstop(false),
       isRunning(false),
       users(NULL),
       stgSettings(NULL),
       store(NULL),
-      sock(-1)
+      thread(),
+      mutex(),
+      sock(-1),
+      packet()
 {
 InitEncrypt(&ctx, "");
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetStgSettings(const SETTINGS * s)
-{
-stgSettings = s;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetStore(STORE * s)
-{
-store = s;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ParseSettings()
@@ -157,27 +147,6 @@ int ret = radSettings.ParseSettings(settings);
 if (ret)
     errorStr = radSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-bool RADIUS::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
-const std::string RADIUS::GetVersion() const
-{
-return "RADIUS data access plugin v 0.6";
-}
-//-----------------------------------------------------------------------------
-uint16_t RADIUS::GetStartPosition() const
-{
-// Start before any authorizers!!!
-return 20;
-}
-//-----------------------------------------------------------------------------
-uint16_t RADIUS::GetStopPosition() const
-{
-return 20;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::PrepareNet()
