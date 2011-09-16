@@ -72,7 +72,6 @@ using namespace std;
 #define START_FILE "/._ST_ART_ED_"
 
 set<pid_t> executersPid;
-static pid_t stgChildPid;
 
 //-----------------------------------------------------------------------------
 bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
@@ -394,9 +393,12 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 creat(startFile.c_str(), S_IRUSR);
 #endif
 
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 while (true)
     {
-    sigset_t signalSet;
     sigfillset(&signalSet);
     int sig = 0;
     sigwait(&signalSet, &sig);

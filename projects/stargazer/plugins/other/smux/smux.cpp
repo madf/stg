@@ -224,22 +224,10 @@ if (!stopped)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (!stopped)
-        {
-        printfd(__FILE__, "SMUX::Stop() - failed to stop thread, killing it\n");
-        if (pthread_kill(thread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            printfd(__FILE__, "SMUX::Stop() - Cannot kill thread\n");
-            return -1;
-            }
-        printfd(__FILE__, "SMUX::Stop() -  killed Run\n");
-        }
     }
 
-pthread_join(thread, NULL);
+if (stopped)
+    pthread_join(thread, NULL);
 
 ResetNotifiers();
 
@@ -258,6 +246,12 @@ tables.erase(tables.begin(), tables.end());
 sensors.erase(sensors.begin(), sensors.end());
 
 close(sock);
+
+if (!stopped)
+    {
+    running = true;
+    return -1;
+    }
 
 printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;

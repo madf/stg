@@ -152,16 +152,9 @@ for (int i = 0; i < 25 && !stopped; i++)
     nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now kill it
 if (!stopped)
-    {
-    printfd(__FILE__, "kill TRAFFCOUNTER thread.\n");
-    if (pthread_kill(thread, SIGINT))
-        {
-        return -1;
-        }
-    printfd(__FILE__, "TRAFFCOUNTER killed\n");
-    }
+    return -1;
+
 printfd(__FILE__, "TRAFFCOUNTER::Stop()\n");
 
 return 0;

@@ -57,143 +57,9 @@ using namespace std;
 
 #define START_FILE "/._ST_ART_ED_"
 
-static bool childExited = false;
 set<pid_t> executersPid;
-static pid_t stgChildPid;
 volatile time_t stgTime = time(NULL);
 
-class STG_STOPPER
-{
-public:
-    STG_STOPPER() { nonstop = true; }
-    bool GetStatus() const { return nonstop; };
-    void Stop(const char * __file__, int __line__)
-        {
-        #ifdef NO_DAEMON
-        printfd(__FILE__, "rscriptd stopped at %s:%d\n", __file__, __line__);
-        #endif
-        nonstop = false;
-        }
-private:
-    bool nonstop;
-};
-//-----------------------------------------------------------------------------
-STG_STOPPER nonstop;
-//-----------------------------------------------------------------------------
-void CatchPROF(int)
-{
-}
-//-----------------------------------------------------------------------------
-void CatchUSR1(int)
-{
-}
-//-----------------------------------------------------------------------------
-void CatchTERM(int sig)
-{
-/*
- *Function Name:CatchINT
- *Parameters: sig_num - signal number
- *Description: INT signal handler
- *Returns: Nothing
- */
-STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog("Shutting down... %d", sig);
-
-nonstop.Stop(__FILE__, __LINE__);
-
-struct sigaction newsa, oldsa;
-sigset_t sigmask;
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGTERM);
-newsa.sa_handler = SIG_IGN;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGTERM, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGINT);
-newsa.sa_handler = SIG_IGN;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGINT, &newsa, &oldsa);
-}
-//-----------------------------------------------------------------------------
-void CatchPIPE(int)
-{
-STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog("Broken pipe!");
-}
-//-----------------------------------------------------------------------------
-void CatchHUP(int)
-{
-}
-//-----------------------------------------------------------------------------
-void CatchCHLD(int)
-{
-int status;
-pid_t childPid;
-childPid = waitpid(-1, &status, WNOHANG);
-
-set<pid_t>::iterator pid;
-pid = executersPid.find(childPid);
-if (pid != executersPid.end())
-    {
-    executersPid.erase(pid);
-    }
-if (childPid == stgChildPid)
-    {
-    childExited = true;
-    }
-}
-//-----------------------------------------------------------------------------
-void SetSignalHandlers()
-{
-struct sigaction newsa, oldsa;
-sigset_t sigmask;
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGTERM);
-newsa.sa_handler = CatchTERM;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGTERM, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGUSR1);
-newsa.sa_handler = CatchUSR1;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGUSR1, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGINT);
-newsa.sa_handler = CatchTERM;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGINT, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGPIPE);
-newsa.sa_handler = CatchPIPE;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGPIPE, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGHUP);
-newsa.sa_handler = CatchHUP;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGHUP, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGCHLD);
-newsa.sa_handler = CatchCHLD;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGCHLD, &newsa, &oldsa);
-}
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
@@ -307,9 +173,9 @@ int ForkAndWait(const string & confDir)
 #endif
 {
 #ifndef NO_DAEMON
-stgChildPid = fork();
+pid_t childPid = fork();
 
-switch (stgChildPid)
+switch (childPid)
     {
     case -1:    // Failure
         return -1;
@@ -332,15 +198,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int main(int argc, char * argv[])
 {
-
-/*
-  Initialization order:
-  - Logger
-  - Config
-  - Set signal nandlers
-  - Fork and exit
- */
-
 CONFIGFILE * cfg = NULL;
 LISTENER * listener = NULL;
 int msgID = -11;
@@ -385,7 +242,6 @@ cfg->ReadInt("UserTimeout", &userTimeout, 60);
 cfg->ReadString("ScriptOnConnect", &onConnect, "/etc/rscriptd/OnConnect");
 cfg->ReadString("ScriptOnDisconnect", &onDisconnect, "/etc/rscriptd/OnDisconnect");
 
-SetSignalHandlers();
 if (ForkAndWait(confDir) < 0)
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
@@ -428,10 +284,32 @@ listener->Start();
 WriteServLog("rscriptd started successfully.");
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-while (nonstop.GetStatus())
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+while (true)
     {
-    struct timespec ts = {0, 100000000};
-    nanosleep(&ts, NULL);
+    sigfillset(&signalSet);
+    int sig = 0;
+    printfd(__FILE__, "Before sigwait\n");
+    sigwait(&signalSet, &sig);
+    printfd(__FILE__, "After sigwait. Signal: %d\n", sig);
+    bool stop = false;
+    switch (sig)
+        {
+        case SIGTERM:
+            stop = true;
+            break;
+        case SIGINT:
+            stop = true;
+            break;
+        default:
+            WriteServLog("Ignore signel %d", sig);
+            break;
+        }
+    if (stop)
+        break;
     }
 
 listener->Stop();

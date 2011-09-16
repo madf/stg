@@ -127,18 +127,8 @@ for (i = 0; i < 25; i++)
     nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    //TODO pthread_cancel()
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill thread.";
-        printfd(__FILE__, "Cannot kill thread\n");
-        return -1;
-        }
-    printfd(__FILE__, "STG_CONFIG killed\n");
-    }
+    return -1;
 
 return 0;
 }

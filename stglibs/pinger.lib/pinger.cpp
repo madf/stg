@@ -98,16 +98,6 @@ if (isRunningRecver)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunningRecver)
-        {
-        if (pthread_kill(recvThread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            return -1;
-            }
-        }
     }
 
 if (isRunningSender)
@@ -121,19 +111,13 @@ if (isRunningSender)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunningSender)
-        {
-        if (pthread_kill(sendThread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            return -1;
-            }
-        }
     }
 
 close(sendSocket);
+
+if (isRunningSender || isRunningRecver)
+    return -1;
+
 return 0;
 }
 //-----------------------------------------------------------------------------

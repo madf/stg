@@ -289,22 +289,13 @@ if (isRunning)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunning)
-        {
-        if (pthread_kill(thread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            printfd(__FILE__, "Cannot kill thread\n");
-            return -1;
-            }
-        printfd(__FILE__, "REMOTE_SCRIPT killed Run\n");
-        }
     }
 
 users->DelNotifierUserDel(&onDelUserNotifier);
 users->DelNotifierUserAdd(&onAddUserNotifier);
+
+if (isRunning)
+    return -1;
 
 return 0;
 }

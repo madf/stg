@@ -133,19 +133,6 @@ for (int i = 0; i < 25; i++)
     nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now kill it
-if (isRunning)
-    {
-    printfd(__FILE__, "kill PING thread.\n");
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill PING thread.";
-        printfd(__FILE__, "Cannot kill PING thread.\n");
-        return -1;
-        }
-    printfd(__FILE__, "PING killed\n");
-    }
-
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
@@ -156,6 +143,9 @@ while (users_iter != usersList.end())
     UnSetUserNotifiers(*users_iter);
     ++users_iter;
     }
+
+if (isRunning)
+    return -1;
 
 return 0;
 }

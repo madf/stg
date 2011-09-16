@@ -431,31 +431,6 @@ if (isRunningRun)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunningRun)
-        {
-        if (pthread_kill(recvThread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            printfd(__FILE__, "Cannot kill thread\n");
-            return -1;
-            }
-        for (int i = 0; i < 25 && isRunningRun; ++i)
-            {
-            struct timespec ts = {0, 200000000};
-            nanosleep(&ts, NULL);
-            }
-        if (isRunningRun)
-            {
-            printfd(__FILE__, "Failed to stop recv thread\n");
-            }
-        else
-            {
-            pthread_join(recvThread, NULL);
-            }
-        printfd(__FILE__, "AUTH_IA killed Run\n");
-        }
     }
 
 FinalizeNet();
@@ -468,33 +443,14 @@ if (isRunningRunTimeouter)
         struct timespec ts = {0, 200000000};
         nanosleep(&ts, NULL);
         }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunningRunTimeouter)
-        {
-        if (pthread_kill(timeouterThread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            return -1;
-            }
-        for (int i = 0; i < 25 && isRunningRunTimeouter; ++i)
-            {
-            struct timespec ts = {0, 200000000};
-            nanosleep(&ts, NULL);
-            }
-        if (isRunningRunTimeouter)
-            {
-            printfd(__FILE__, "Failed to stop timeouter thread\n");
-            }
-        else
-            {
-            pthread_join(timeouterThread, NULL);
-            }
-        printfd(__FILE__, "AUTH_IA killed Timeouter\n");
-        }
     }
-printfd(__FILE__, "AUTH_IA::Stoped successfully.\n");
+
 users->DelNotifierUserDel(&onDelUserNotifier);
+
+if (isRunningRun || isRunningRunTimeouter)
+    return -1;
+
+printfd(__FILE__, "AUTH_IA::Stoped successfully.\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
