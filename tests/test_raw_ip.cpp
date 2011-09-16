@@ -36,17 +36,17 @@ namespace tut
         set_test_name("Check structure consistency");
 
         RAW_PACKET rp;
-        rp.header.ipHeader.ip_v = 4;
-        rp.header.ipHeader.ip_hl = 5;
-        rp.header.ipHeader.ip_tos = 0;
-        rp.header.ipHeader.ip_len = htons(40); // 20 of header + 20 of data
-        rp.header.ipHeader.ip_p = 6;
-        rp.header.ipHeader.ip_src.s_addr = inet_addr("192.168.0.1");
-        rp.header.ipHeader.ip_dst.s_addr = inet_addr("192.168.0.101");
-        rp.header.sPort = htons(80);
-        rp.header.dPort = htons(38546);
+        rp.rawPacket.header.ipHeader.ip_v = 4;
+        rp.rawPacket.header.ipHeader.ip_hl = 5;
+        rp.rawPacket.header.ipHeader.ip_tos = 0;
+        rp.rawPacket.header.ipHeader.ip_len = htons(40); // 20 of header + 20 of data
+        rp.rawPacket.header.ipHeader.ip_p = 6;
+        rp.rawPacket.header.ipHeader.ip_src.s_addr = inet_addr("192.168.0.1");
+        rp.rawPacket.header.ipHeader.ip_dst.s_addr = inet_addr("192.168.0.101");
+        rp.rawPacket.header.sPort = htons(80);
+        rp.rawPacket.header.dPort = htons(38546);
 
-        ensure_equals("IP header size (explicitly)", sizeof(rp.header.ipHeader), 20);
+        ensure_equals("IP header size (explicitly)", sizeof(rp.rawPacket.header.ipHeader), 20);
         ensure_equals("IP version", rp.GetIPVersion(), 4);
         ensure_equals("IP header size (with options)", rp.GetHeaderLen(), 20);
         ensure_equals("Underlying protocol version", rp.GetProto(), 6);
@@ -71,8 +71,8 @@ namespace tut
             genVector(buf);
 
             memcpy(p1.pckt, buf, 68);
-            memcpy(p2.pckt, buf, 68);
-            memcpy(p3.pckt, buf, 68);
+            memcpy(p2.rawPacket.pckt, buf, 68);
+            memcpy(p3.rawPacket.pckt, buf, 68);
 
             ensure_equals("IP versions", p1.GetIPVersion(), p2.GetIPVersion());
             ensure_equals("IP headers length", p1.GetHeaderLen(), p2.GetHeaderLen());
@@ -101,8 +101,8 @@ std::ostream & operator<<(std::ostream & stream, const RAW_PACKET & p)
 {
     stream.unsetf(std::ios::dec);
     stream.setf(std::ios::hex);
-    for (size_t i = 0; i < sizeof(p.pckt); ++i) {
-        stream << static_cast<unsigned>(p.pckt[i]);
+    for (size_t i = 0; i < sizeof(p.rawPacket.pckt); ++i) {
+        stream << static_cast<unsigned>(p.rawPacket.pckt[i]);
     }
     stream.unsetf(std::ios::hex);
     stream.setf(std::ios::dec);
