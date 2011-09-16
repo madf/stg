@@ -101,6 +101,7 @@ private:
     TARIFFS *               tariffs;
     STORE *                 store;
     MODULE_SETTINGS         settings;
+    int                     fd;
     xmlrpc_c::registry      rpcRegistry;
     xmlrpc_c::serverAbyss * rpcServer;
     bool                    running;

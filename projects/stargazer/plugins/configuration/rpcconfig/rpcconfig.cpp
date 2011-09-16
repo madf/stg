@@ -1,6 +1,12 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <cstdlib>
 #include <csignal>
-
+#include <cerrno>
+#include <cstring>
 #include <vector>
 #include <algorithm>
 
@@ -80,6 +86,7 @@ RPC_CONFIG::RPC_CONFIG()
       tariffs(NULL),
       store(NULL),
       settings(),
+      fd(-1),
       rpcRegistry(),
       rpcServer(NULL),
       running(false),
@@ -120,17 +127,57 @@ int RPC_CONFIG::Start()
 {
 InitiateRegistry();
 running = true;
+
+fd = socket(AF_INET, SOCK_STREAM, 0);
+if (fd < 0)
+    {
+    errorStr = "Failed to create socket";
+    printfd(__FILE__, "Failed to create listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
+int flag = 1;
+
+if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)))
+    {
+    errorStr = "Setsockopt failed.";
+    printfd(__FILE__, "Setsockopt failed: %s\n", strerror(errno));
+    return -1;
+    }
+
+struct sockaddr_in addr;
+addr.sin_family = AF_INET;
+addr.sin_port = htons(rpcConfigSettings.GetPort());
+addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+
+if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
+    {
+    errorStr = "Failed to bind socket";
+    printfd(__FILE__, "Failed to bind listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
+if (listen(fd, 10))
+    {
+    errorStr = "Failed to listen socket";
+    printfd(__FILE__, "Failed to listen listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
 rpcServer = new xmlrpc_c::serverAbyss(
-        rpcRegistry,
-        rpcConfigSettings.GetPort(),
-        "/var/log/stargazer_rpc.log"
+        xmlrpc_c::serverAbyss::constrOpt()
+        .registryP(&rpcRegistry)
+        .logFileName("/var/log/stargazer_rpc.log")
+        .socketFd(fd)
         );
+
 if (pthread_create(&tid, NULL, Run, this))
     {
     errorStr = "Failed to create RPC thread";
     printfd(__FILE__, "Failed to crate RPC thread\n");
     return -1;
     }
+
 return 0;
 }
 
@@ -142,31 +189,21 @@ for (int i = 0; i < 5 && !stopped; ++i)
     struct timespec ts = {0, 200000000};
     nanosleep(&ts, NULL);
     }
-//rpcServer->terminate();
+
 if (!stopped)
     {
-    if (pthread_kill(tid, SIGTERM))
-        {
-        errorStr = "Failed to kill thread";
-        printfd(__FILE__, "Failed to kill thread\n");
-        }
-    for (int i = 0; i < 25 && !stopped; ++i)
-        {
-        struct timespec ts = {0, 200000000};
-        nanosleep(&ts, NULL);
-        }
-    if (!stopped)
-        {
-        running = true;
-        printfd(__FILE__, "Failed to stop RPC thread\n");
-        errorStr = "Failed to stop RPC thread";
-        return -1;
-        }
-    else
-        {
-        pthread_join(tid, NULL);
-        }
+    running = true;
+    printfd(__FILE__, "Failed to stop RPC thread\n");
+    errorStr = "Failed to stop RPC thread";
+    return -1;
     }
+else
+    {
+    pthread_join(tid, NULL);
+    }
+
+close(fd);
+
 return 0;
 }
 
@@ -181,7 +218,8 @@ RPC_CONFIG * config = static_cast<RPC_CONFIG *>(rc);
 config->stopped = false;
 while (config->running)
     {
-    config->rpcServer->runOnce();
+    if (WaitPackets(config->fd))
+        config->rpcServer->runOnce();
     }
 config->stopped = true;
 
