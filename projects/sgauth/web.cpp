@@ -182,7 +182,8 @@ while (1)
         #ifdef WIN32
         Sleep(1000);
         #else
-        usleep(1000000);
+        struct timespec ts = {1, 0};
+        nanosleep(&ts, NULL);
         #endif
         exit(0);
         }

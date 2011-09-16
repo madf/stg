@@ -239,7 +239,8 @@ clnp->Connect();
 
 while (1)
     {
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
 
     char state[20];
 

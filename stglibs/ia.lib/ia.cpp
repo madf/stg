@@ -69,7 +69,7 @@ static int a = 0;
 
 if (a == 0)
     {
-    usleep(50000);
+    Sleep(50);
     a = 1;
     }
 
@@ -82,7 +82,9 @@ return NULL;
 //---------------------------------------------------------------------------
 void Sleep(int ms)
 {
-usleep(ms * 1000);
+long long res = ms * 1000000;
+struct timespec ts = {res / 1000000000, res % 1000000000};
+nanosleep(&ts, NULL);
 }
 //---------------------------------------------------------------------------
 long GetTickCount()

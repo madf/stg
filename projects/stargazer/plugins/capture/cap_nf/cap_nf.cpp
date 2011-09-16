@@ -148,7 +148,8 @@ if (portU && !stoppedUDP)
     CloseUDP();
     for (int i = 0; i < 25 && !stoppedUDP; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (stoppedUDP)
         {
@@ -170,7 +171,8 @@ if (portT && !stoppedTCP)
     CloseTCP();
     for (int i = 0; i < 25 && !stoppedTCP; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (stoppedTCP)
         {

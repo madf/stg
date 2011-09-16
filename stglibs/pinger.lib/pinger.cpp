@@ -93,7 +93,8 @@ int STG_PINGER::Stop()
             if (!isRunningRecver)
                 break;
 
-            usleep(200000);
+            struct timespec ts = {0, 200000000};
+            nanosleep(&ts, NULL);
             }
 
         //after 5 seconds waiting thread still running. now killing it
@@ -115,7 +116,8 @@ int STG_PINGER::Stop()
             if (!isRunningSender)
                 break;
 
-            usleep(200000);
+            struct timespec ts = {0, 200000000};
+            nanosleep(&ts, NULL);
             }
 
         //after 5 seconds waiting thread still running. now killing it
@@ -315,7 +317,8 @@ void * STG_PINGER::RunSendPing(void * d)
             #else
             currTime = time(NULL);
             #endif
-            usleep(20000);
+            struct timespec ts = {0, 20000000};
+            nanosleep(&ts, NULL);
             }
         }
 

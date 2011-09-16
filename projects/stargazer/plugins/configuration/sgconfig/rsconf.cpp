@@ -26,7 +26,7 @@
 *
 *******************************************************************/
 
-#include <unistd.h> // cloase, usleep
+#include <unistd.h> // close
 
 #include <cerrno>
 #include <csignal>

@@ -430,7 +430,8 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
 while (nonstop.GetStatus())
     {
-    usleep(100000);
+    struct timespec ts = {0, 100000000};
+    nanosleep(&ts, NULL);
     }
 
 listener->Stop();

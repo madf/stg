@@ -180,7 +180,8 @@ for (i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now killing it
@@ -213,12 +214,11 @@ char * iface;
 
 while (dc->nonstop)
     {
-    dc->BPFCapRead((char*)&hdr, 68 + 14, &iface);
+    if (dc->BPFCapRead((char*)&hdr, 68 + 14, &iface))
+        continue;
 
     if (!(hdr[12] == 0x8 && hdr[13] == 0x0))
-    {
         continue;
-    }
 
     dc->traffCnt->Process(*rpp);
     }
@@ -313,12 +313,16 @@ for (unsigned int i = 0; i < polld.size(); i++)
     {
     if (polld[i].revents & POLLIN)
         {
-        BPFCapRead(buffer, blen, capIface, &bpfData[i]);
+        if (BPFCapRead(buffer, blen, capIface, &bpfData[i]))
+            {
+            polld[i].revents = 0;
+            continue;
+            }
         polld[i].revents = 0;
         return 0;
         }
     }
-return 0;
+return -1;
 }
 //-----------------------------------------------------------------------------
 int BPF_CAP::BPFCapRead(char * buffer, int blen, char **, BPF_DATA * bd)
@@ -328,8 +332,9 @@ if (bd->canRead)
     bd->r = read(bd->fd, bd->buffer, BUFF_LEN);
     if (bd->r < 0)
         {
-        //printfd(__FILE__, " error read\n");
-        usleep(20000);
+        struct timespec ts = {0, 20000000};
+        nanosleep(&ts, NULL);
+        return -1;
         }
 
     bd->p = bd->buffer;

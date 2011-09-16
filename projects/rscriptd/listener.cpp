@@ -102,14 +102,16 @@ running = false;
 
 printfd(__FILE__, "LISTENER::Stop()\n");
 
-usleep(500000);
+struct timespec ts = {0, 500000000};
+nanosleep(&ts, NULL);
 
 if (!processorStopped)
     {
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && !processorStopped; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -130,7 +132,8 @@ if (!receiverStopped)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && !receiverStopped; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -196,7 +199,8 @@ processorStopped = false;
 
 while (running)
     {
-    usleep(500000);
+    struct timespec ts = {0, 500000000};
+    nanosleep(&ts, NULL);
     if (!pending.empty())
         ProcessPending();
     ProcessTimeouts();

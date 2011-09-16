@@ -1,5 +1,3 @@
-#include <unistd.h> // TODO: usleep
-
 #include <cstdlib>
 #include <csignal>
 
@@ -140,7 +138,10 @@ int RPC_CONFIG::Stop()
 {
 running = false;
 for (int i = 0; i < 5 && !stopped; ++i)
-    usleep(200000);
+    {
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
+    }
 //rpcServer->terminate();
 if (!stopped)
     {
@@ -150,7 +151,10 @@ if (!stopped)
         printfd(__FILE__, "Failed to kill thread\n");
         }
     for (int i = 0; i < 25 && !stopped; ++i)
-        usleep(200000);
+        {
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
+        }
     if (!stopped)
         {
         printfd(__FILE__, "Failed to stop RPC thread\n");

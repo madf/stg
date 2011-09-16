@@ -95,7 +95,8 @@ for (int i = 0; i < 25; i++)
     {
     if (!isRunning)
         break;
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
@@ -107,7 +108,8 @@ if (isRunning)
         }
     for (int i = 0; i < 25 && isRunning; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (isRunning)
         {

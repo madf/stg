@@ -30,7 +30,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h> // usleep, close
+#include <unistd.h> // close
 
 #include <csignal>
 #include <cstdlib>
@@ -428,7 +428,8 @@ if (isRunningRun)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && isRunningRun; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -441,7 +442,10 @@ if (isRunningRun)
             return -1;
             }
         for (int i = 0; i < 25 && isRunningRun; ++i)
-            usleep(200000);
+            {
+            struct timespec ts = {0, 200000000};
+            nanosleep(&ts, NULL);
+            }
         if (isRunningRun)
             {
             printfd(__FILE__, "Failed to stop recv thread\n");
@@ -461,7 +465,8 @@ if (isRunningRunTimeouter)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && isRunningRunTimeouter; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -473,7 +478,10 @@ if (isRunningRunTimeouter)
             return -1;
             }
         for (int i = 0; i < 25 && isRunningRunTimeouter; ++i)
-            usleep(200000);
+            {
+            struct timespec ts = {0, 200000000};
+            nanosleep(&ts, NULL);
+            }
         if (isRunningRunTimeouter)
             {
             printfd(__FILE__, "Failed to stop timeouter thread\n");
@@ -525,7 +533,8 @@ int a = -1;
 string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_t";
 while (ia->nonstop)
     {
-    usleep(20000);
+    struct timespec ts = {0, 20000000};
+    nanosleep(&ts, NULL);
     ia->Timeouter();
     // TODO change counter to timer and MONITOR_TIME_DELAY_SEC
     if (++a % (50 * 60) == 0 && ia->stgSettings->GetMonitoring())
