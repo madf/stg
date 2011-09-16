@@ -145,6 +145,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * STG_CONFIG::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 STG_CONFIG * stgConf = (STG_CONFIG *)d;
 stgConf->isRunning = true;
 

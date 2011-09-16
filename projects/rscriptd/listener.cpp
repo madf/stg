@@ -165,6 +165,10 @@ return false;
 //-----------------------------------------------------------------------------
 void * LISTENER::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 LISTENER * listener = static_cast<LISTENER *>(d);
 
 listener->Runner();
@@ -186,6 +190,10 @@ receiverStopped = true;
 //-----------------------------------------------------------------------------
 void * LISTENER::RunProcessor(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 LISTENER * listener = static_cast<LISTENER *>(d);
 
 listener->ProcessorRunner();

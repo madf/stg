@@ -198,6 +198,10 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 void * REMOTE_SCRIPT::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 REMOTE_SCRIPT * rs = static_cast<REMOTE_SCRIPT *>(d);
 
 rs->isRunning = true;

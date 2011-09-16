@@ -23,10 +23,12 @@
  $Date: 2010/03/15 12:58:17 $
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 #include <libintl.h>
+
+#include <csignal>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
 #include "stg/common.h"
 #include "stg/ia.h"
@@ -42,10 +44,15 @@ extern IA_CLIENT_PROT * clnp;
 //---------------------------------------------------------------------------
 #ifndef WIN32
 void * RunWeb(void *)
+{
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 #else
 unsigned long WINAPI RunWeb(void *)
-#endif
 {
+#endif
 while (1)
     web->Run();
 return NULL;

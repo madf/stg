@@ -39,19 +39,20 @@ $Author: faust $
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <csignal>
 
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
 #include "stg/plugin_creator.h"
+
 #include "ether_cap.h"
 
 //#define CAP_DEBUG 1
@@ -201,7 +202,11 @@ return 0;
 //-----------------------------------------------------------------------------
 void * BPF_CAP::Run(void * d)
 {
-BPF_CAP * dc = (BPF_CAP *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+BPF_CAP * dc = static_cast<BPF_CAP *>(d);
 dc->isRunning = true;
 
 uint8_t hdr[96]; //68 + 14 + 4(size) + 9(SYS_IFACE) + 1(align to 4) = 96

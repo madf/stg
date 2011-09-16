@@ -33,6 +33,7 @@
 #endif
 
 #include <pthread.h>
+
 #include <csignal>
 #include <cassert>
 #include <algorithm>
@@ -353,6 +354,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * USERS_IMPL::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 USERS_IMPL * us = (USERS_IMPL*) d;
 

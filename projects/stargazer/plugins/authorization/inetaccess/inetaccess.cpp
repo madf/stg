@@ -500,6 +500,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * AUTH_IA::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 AUTH_IA * ia = static_cast<AUTH_IA *>(d);
 
 ia->isRunningRun = true;
@@ -525,6 +529,10 @@ return NULL;
 //-----------------------------------------------------------------------------
 void * AUTH_IA::RunTimeouter(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 AUTH_IA * ia = static_cast<AUTH_IA *>(d);
 
 ia->isRunningRunTimeouter = true;

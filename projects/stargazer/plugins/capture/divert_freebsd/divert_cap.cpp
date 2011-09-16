@@ -150,7 +150,11 @@ return 0;
 //-----------------------------------------------------------------------------
 void * DIVERT_CAP::Run(void * d)
 {
-DIVERT_CAP * dc = (DIVERT_CAP *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
 dc->isRunning = true;
 
 char buffer[64];

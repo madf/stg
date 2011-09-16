@@ -244,6 +244,10 @@ return false;
 
 void * NF_CAP::RunUDP(void * c)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 NF_CAP * cap = static_cast<NF_CAP *>(c);
 uint8_t buf[BUF_SIZE];
 int res;
@@ -286,6 +290,10 @@ return NULL;
 
 void * NF_CAP::RunTCP(void * c)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 NF_CAP * cap = static_cast<NF_CAP *>(c);
 uint8_t buf[BUF_SIZE];
 int res;

@@ -1,6 +1,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#include <csignal>
 #include <cerrno>
 #include <cstring>
 #include <cassert>
@@ -77,6 +78,10 @@ pthread_mutex_destroy(&mutex);
 
 void * PROTO::Runner(void * data)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 PROTO * protoPtr = static_cast<PROTO *>(data);
 protoPtr->Run();
 return NULL;

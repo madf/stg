@@ -484,7 +484,7 @@ for (int i = 0; i < DIR_NUM; i++)
     enabledDirs[i] = dirs & (1 << i);
     }
 
-if (authorizedBy.size())
+if (!authorizedBy.empty())
     {
     if (currIP != ip)
         {

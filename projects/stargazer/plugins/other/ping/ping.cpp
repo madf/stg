@@ -167,7 +167,11 @@ return isRunning;
 //-----------------------------------------------------------------------------
 void * PING::Run(void * d)
 {
-PING * ping = (PING *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+PING * ping = static_cast<PING *>(d);
 ping->isRunning = true;
 
 long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;

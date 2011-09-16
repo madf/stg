@@ -274,6 +274,10 @@ return 0;
 
 void * SMUX::Runner(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 SMUX * smux = static_cast<SMUX *>(d);
 
 smux->Run();

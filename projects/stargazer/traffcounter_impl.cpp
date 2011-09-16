@@ -169,6 +169,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * TRAFFCOUNTER_IMPL::Run(void * data)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 TRAFFCOUNTER_IMPL * tc = static_cast<TRAFFCOUNTER_IMPL *>(data);
 tc->stopped = false;
 int c = 0;

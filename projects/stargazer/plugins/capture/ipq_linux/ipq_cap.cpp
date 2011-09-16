@@ -18,14 +18,16 @@
 * Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
 */
 
-#include <signal.h>
-#include <cerrno>
 #include <netinet/in.h>
 #include <linux/netfilter.h>
+
+#include <csignal>
+#include <cerrno>
 
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
 #include "stg/plugin_creator.h"
+
 #include "ipq_cap.h"
 
 extern "C"
@@ -126,9 +128,13 @@ return 0;
 //-----------------------------------------------------------------------------
 void * IPQ_CAP::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RAW_PACKET raw_packet;
 
-IPQ_CAP * dc = (IPQ_CAP *)d;
+IPQ_CAP * dc = static_cast<IPQ_CAP *>(d);
 dc->isRunning = true;
 memset(&raw_packet, 0, sizeof(raw_packet));
 raw_packet.dataLen = -1;

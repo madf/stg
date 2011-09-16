@@ -157,6 +157,7 @@ if (!stopped)
         }
     if (!stopped)
         {
+        running = true;
         printfd(__FILE__, "Failed to stop RPC thread\n");
         errorStr = "Failed to stop RPC thread";
         return -1;
@@ -171,6 +172,10 @@ return 0;
 
 void * RPC_CONFIG::Run(void * rc)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RPC_CONFIG * config = static_cast<RPC_CONFIG *>(rc);
 
 config->stopped = false;

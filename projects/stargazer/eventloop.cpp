@@ -1,3 +1,4 @@
+#include <csignal>
 #include <cerrno>
 #include <cstring>
 
@@ -53,6 +54,10 @@ return NULL;
 
 void EVENT_LOOP::Runner()
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 _stopped = false;
 printfd(__FILE__, "EVENT_LOOP::Runner - Before start\n");
 while (_running)

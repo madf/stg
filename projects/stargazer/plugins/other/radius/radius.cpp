@@ -258,6 +258,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * RADIUS::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RADIUS * rad = (RADIUS *)d;
 RAD_PACKET packet;
 

@@ -63,6 +63,10 @@
 #include <sys/time.h>
 void * RunL(void * data)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 
 IA_CLIENT_PROT * c = (IA_CLIENT_PROT *)data;
 static int a = 0;

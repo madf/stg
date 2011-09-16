@@ -32,22 +32,23 @@ $Date: 2009/12/13 13:45:13 $
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
-#include <signal.h>
-
 #include <sys/ioctl.h>
 #include <net/if.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <csignal>
 
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
 #include "stg/plugin_creator.h"
+
 #include "ether_cap.h"
 
 //#define CAP_DEBUG 1
@@ -149,6 +150,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * ETHER_CAP::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 ETHER_CAP * dc = (ETHER_CAP *)d;
 dc->isRunning = true;
 
