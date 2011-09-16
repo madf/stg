@@ -178,9 +178,7 @@ if (!plugin)
     return -1;
     }
 
-plugin->Stop();
-
-return 0;
+return plugin->Stop();
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Reload()
