@@ -87,7 +87,7 @@ namespace tut
         user.ProcessDayFee();
         ensure_equals("user.cash == 0", user.GetProperty().cash, 0);
         user.ProcessDayFee();
-        ensure_equals("user.cash == 0", user.GetProperty().cash, 0);
+        ensure_equals("user.cash == 0", user.GetProperty().cash, -50);
         cash = 49;
         ensure_equals("user.cash == 49", user.GetProperty().cash, 49);
         user.ProcessDayFee();
@@ -119,10 +119,11 @@ namespace tut
         user.ProcessDayFee();
         ensure_equals("user.cash == 50", user.GetProperty().cash, 50);
         user.ProcessDayFee();
-        ensure_equals("user.cash == 50", user.GetProperty().cash, 50);
-        tariffs.SetFee(49);
+        ensure_equals("user.cash == 50", user.GetProperty().cash, 0);
+        cash = 50;
+        tariffs.SetFee(51);
         user.ProcessDayFee();
-        ensure_equals("user.cash == 1", user.GetProperty().cash, 1);
+        ensure_equals("user.cash == 50", user.GetProperty().cash, 50);
         cash = 0;
         ensure_equals("user.cash == 0", user.GetProperty().cash, 0);
         user.ProcessDayFee();
