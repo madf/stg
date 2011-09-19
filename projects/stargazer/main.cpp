@@ -286,6 +286,10 @@ for (size_t i = 0; i < settings->GetExecutersNum(); i++)
 
 PIDFile pidFile(settings->GetPIDFileName());
 
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 StartTimer();
 WaitTimer();
 if (!IsStgTimerRunning())
@@ -392,10 +396,6 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 #ifndef NO_DAEMON
 creat(startFile.c_str(), S_IRUSR);
 #endif
-
-sigset_t signalSet;
-sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 while (true)
     {
