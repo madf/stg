@@ -1,5 +1,5 @@
 #include "tut/tut.hpp"
-#include "tut_reporter.h"
+#include "tut/tut_reporter.hpp"
 
 namespace tut
 {
