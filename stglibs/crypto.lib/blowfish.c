@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "stg/const.h"
-#include "blowfish.h"
+#include "stg/blowfish.h"
 
 #define ENCRYPT 0
 #define DECRYPT 1

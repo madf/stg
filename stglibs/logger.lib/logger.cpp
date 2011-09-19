@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <syslog.h>
 
-#include "logger.h"
+#include "stg/logger.h"
 
 #ifdef STG_TIME
 extern const volatile time_t stgTime;

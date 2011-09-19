@@ -10,9 +10,6 @@
 
 #include <cstring>
 
-#include "const.h"
-#include "common.h"
-
 #define IPv4 (2)
 
 enum { pcktSize = 68 }; //60(max) ip + 8 udp or tcp (part of tcp or udp header to ports)

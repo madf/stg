@@ -41,7 +41,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "common.h"
+#include "stg/common.h"
 #include "os_int.h"
 
 using namespace std;

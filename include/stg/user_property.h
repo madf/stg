@@ -15,12 +15,13 @@ $Author: faust $
 #include <sstream>
 #include <iostream>
 
+#include "stg/logger.h"
+#include "stg/locker.h"
+#include "stg/scriptexecuter.h"
+
 #include "store.h"
 #include "admin.h"
 #include "notifer.h"
-#include "logger.h"
-#include "locker.h"
-#include "scriptexecuter.h"
 #include "noncopyable.h"
 
 extern const volatile time_t stgTime;

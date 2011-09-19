@@ -4,9 +4,11 @@ LIB_NAME = stgsmux
 
 SRCS = $(wildcard *.c)
 
-INCS = $(wildcard *.h)
+INCS = $(wildcard include/stg/*.h)
 
-.PHONY: asn1
+LIB_INCS = -I ./include/stg
+
+#.PHONY: asn1
 
 #ASN1_SOURCES = RFC1213-MIB.asn1 \
 #	       RFC1155-SMI.asn1 \

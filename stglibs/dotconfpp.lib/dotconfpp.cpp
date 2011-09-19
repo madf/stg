@@ -19,7 +19,7 @@
 #include <glob.h> // glob
 #include <string>
 
-#include "dotconfpp.h"
+#include "stg/dotconfpp.h"
 #include "mempool.h"
 
 DOTCONFDocumentNode::DOTCONFDocumentNode():previousNode(NULL), nextNode(NULL), parentNode(NULL), childNode(NULL),

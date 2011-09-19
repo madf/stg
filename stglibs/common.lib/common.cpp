@@ -28,32 +28,6 @@
  $Author: faust $
  */
 
-
-/*#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <iconv.h>
-
-
-#include <stdarg.h>
-
-
-#include <sys/types.h>
-#include <math.h>
-
-#ifdef WIN32
-#include <sysutils.hpp>
-#else
-#include <unistd.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#endif*/
-
 #ifdef FREE_BSD
 #include <sys/types.h>
 #endif
@@ -76,7 +50,7 @@
 #include <cerrno>
 #include <cassert>
 
-#include "common.h"
+#include "stg/common.h"
 
 #ifndef INET_ADDRSTRLEN
 #   define INET_ADDRSTRLEN 16

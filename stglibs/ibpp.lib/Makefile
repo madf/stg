@@ -26,7 +26,7 @@ SRCS = array.cpp \
 
 INCS = ibpp.h 
 
-ADD_DEFS = -DIBPP_LINUX
+LIB_DEFS = -DIBPP_LINUX
 
 LIBS = -lfbclient
        

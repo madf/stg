@@ -15,4 +15,7 @@ SRCS = 	netunit.cpp \
 INCS = servconf.h \
        netunit.h
 
+LIB_INCS = -I ../common.lib/include \
+	   -I ../crypto.lib/include
+
 include ../Makefile.in

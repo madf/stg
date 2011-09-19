@@ -28,7 +28,7 @@
 #include <cstring>
 
 #include "stg/common.h"
-#include "servconf.h"
+#include "stg/servconf.h"
 
 using namespace std;
 

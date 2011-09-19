@@ -1,4 +1,3 @@
-
 #ifdef WIN32
 #include <process.h>
 #include <windows.h>
@@ -11,8 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ag_md5.h"
 
+#include "stg/ag_md5.h"
 
 #define F1(x, y, z) (z ^ (x & (y ^ z)))
 #define F2(x, y, z) F1(z, x, y)
@@ -21,7 +20,6 @@
 
 #define MD5STEP(f, w, x, y, z, data, s) \
     ( w += f(x, y, z) + data,  w = w<<s | w>>(32-s),  w += x )
-
 
 int i64c(int i)
 {

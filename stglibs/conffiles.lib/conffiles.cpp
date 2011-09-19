@@ -40,8 +40,7 @@
 
 #include <fstream>
 
-#include "conffiles.h"
-#include "stg/common.h"
+#include "stg/conffiles.h"
 
 using namespace std;
 
@@ -105,33 +104,13 @@ int e = error;
 error = 0;
 return e;
 }
-/*//---------------------------------------------------------------------------
-int CONFIGFILE::ReadString(const string & param, char * str, int * maxLen, const char * defaultVal) const
-{
-it = param_val.find(param);
-// Нашли нужную переменную
-
-if (it != param_val.end())
-    {
-    // Что-то стоит
-    strncpy(str, param_val[param].c_str(), *maxLen);
-    *maxLen = param_val[param].size();
-    return 0;
-    }
-
-strncpy(str, defaultVal, *maxLen);
-*maxLen = strlen(defaultVal);
-return -1;
-}*/
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadString(const string & param, string * val, const string & defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     *val = it->second;
     return 0;
     }
@@ -169,11 +148,9 @@ return -1;
 int CONFIGFILE::ReadInt(const string & param, int * val, int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtol(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -191,11 +168,9 @@ return -1;
 int CONFIGFILE::ReadUInt(const string & param, unsigned int * val, unsigned int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtoul(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -213,11 +188,9 @@ return -1;
 int CONFIGFILE::ReadLongInt(const string & param, long int * val, long int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtol(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -235,11 +208,9 @@ return -1;
 int CONFIGFILE::ReadULongInt(const string & param, unsigned long int * val, unsigned long int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtoul(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -257,11 +228,9 @@ return -1;
 int CONFIGFILE::ReadLongLongInt(const string & param, int64_t * val, int64_t defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtoll(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -279,11 +248,9 @@ return -1;
 int CONFIGFILE::ReadULongLongInt(const string & param, uint64_t * val, uint64_t defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtoull(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -301,11 +268,9 @@ return -1;
 int CONFIGFILE::ReadShortInt(const string & param, short int * val, short int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = (short)strtol(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -323,11 +288,9 @@ return -1;
 int CONFIGFILE::ReadUShortInt(const string & param, unsigned short int * val, unsigned short int defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = (short)strtoul(it->second.c_str(), &res, 10);
     if (*res != 0)
@@ -344,20 +307,18 @@ return -1;
 //---------------------------------------------------------------------------
 void CONFIGFILE::WriteInt(const string & param, int64_t val)
 {
-string s;
-x2str(val, s);
-param_val[param] = s;
+char buf[32];
+snprintf(buf, sizeof(buf), "%lld", static_cast<long long int>(val));
+param_val[param] = buf;
 changed = true;
 }
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadDouble(const string & param, double * val, double defaultVal) const
 {
 const map<string, string>::const_iterator it(param_val.find(param));
-// Нашли нужную переменную
 
 if (it != param_val.end())
     {
-    // Что-то стоит
     char *res;
     *val = strtod(it->second.c_str(), &res);
     if (*res != 0)
@@ -405,8 +366,8 @@ int CONFIGFILE::Flush() const
 if (!changed)
     return 0;
 
-std::string pid;
-x2str(getpid(), pid);
+char pid[6];
+snprintf(pid, sizeof(pid), "%d", getpid());
 
 if (Flush(fileName + "." + pid))
     return -1;
