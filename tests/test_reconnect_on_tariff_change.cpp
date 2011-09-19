@@ -68,15 +68,14 @@ namespace tut
 
         user.AddConnectedAfterNotifier(&connectionNotifier);
 
-        USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
         USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
 
         ips = StrToIPS("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
-        ensure_equals("connects = 0", connectionNotifier.GetConnects(), 0);
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
+        ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperty().tariffName.ConstData(), NO_TARIFF_NAME);
 
@@ -86,8 +85,8 @@ namespace tut
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
         ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), 1);
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
+        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         tariffName = "test";
         ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
@@ -95,8 +94,8 @@ namespace tut
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
         ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), 1);
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
+        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
     }
 
 
@@ -126,15 +125,14 @@ namespace tut
 
         user.AddConnectedAfterNotifier(&connectionNotifier);
 
-        USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
         USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
 
         ips = StrToIPS("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
-        ensure_equals("connects = 0", connectionNotifier.GetConnects(), 0);
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
+        ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperty().tariffName.ConstData(), NO_TARIFF_NAME);
 
@@ -144,8 +142,8 @@ namespace tut
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
         ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), 1);
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), 0);
+        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
+        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         tariffName = "test";
         ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
@@ -153,8 +151,8 @@ namespace tut
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
         ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 2", connectionNotifier.GetConnects(), 2);
-        ensure_equals("disconnects = 1", connectionNotifier.GetDisconnects(), 1);
+        ensure_equals("connects = 2", connectionNotifier.GetConnects(), static_cast<size_t>(2));
+        ensure_equals("disconnects = 1", connectionNotifier.GetDisconnects(), static_cast<size_t>(1));
     }
 }
 
