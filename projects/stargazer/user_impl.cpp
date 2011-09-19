@@ -1243,11 +1243,11 @@ switch (settings->GetFeeChargeType())
         property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     case 1:
-        if (c > 0)
+        if (c >= 0)
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     case 2:
-        if (c > fee)
+        if (c >= fee)
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     }
@@ -1297,14 +1297,14 @@ switch (settings->GetFeeChargeType())
         SetPrepaidTraff();
         break;
     case 1:
-        if (c > 0)
+        if (c >= 0)
             {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
             SetPrepaidTraff();
             }
         break;
     case 2:
-        if (c > fee)
+        if (c >= fee)
             {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
             SetPrepaidTraff();
