@@ -8,6 +8,7 @@
 
 #include "tut/tut.hpp"
 
+#include "stg/os_int.h"
 #include "raw_ip_packet_old.h"
 #include "stg/raw_ip_packet.h"
 
@@ -46,11 +47,11 @@ namespace tut
         rp.rawPacket.header.sPort = htons(80);
         rp.rawPacket.header.dPort = htons(38546);
 
-        ensure_equals("IP header size (explicitly)", sizeof(rp.rawPacket.header.ipHeader), 20);
+        ensure_equals("IP header size (explicitly)", sizeof(rp.rawPacket.header.ipHeader), static_cast<size_t>(20));
         ensure_equals("IP version", rp.GetIPVersion(), 4);
         ensure_equals("IP header size (with options)", rp.GetHeaderLen(), 20);
         ensure_equals("Underlying protocol version", rp.GetProto(), 6);
-        ensure_equals("Packet length", rp.GetLen(), 40);
+        ensure_equals("Packet length", rp.GetLen(), static_cast<uint32_t>(40));
         ensure_equals("Source IP address", rp.GetSrcIP(), inet_addr("192.168.0.1"));
         ensure_equals("Destination IP address", rp.GetDstIP(), inet_addr("192.168.0.101"));
         ensure_equals("Source port number", rp.GetSrcPort(), 80);
