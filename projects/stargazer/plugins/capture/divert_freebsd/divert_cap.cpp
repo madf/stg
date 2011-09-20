@@ -45,7 +45,7 @@ $Date: 2010/09/10 06:43:03 $
 
 #include "stg/common.h"
 #include "stg/traffcounter.h"
-#include "sg/plugin_creator.h"
+#include "stg/plugin_creator.h"
 #include "divert_cap.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
@@ -166,7 +166,7 @@ while (dc->nonstop)
     if (buffer[12] != 0x8)
         continue;
 
-    memcpy(rp.pckt, &buffer[14], pcktSize);
+    memcpy(rp.rawPacket.pckt, &buffer[14], pcktSize);
 
     dc->traffCnt->Process(rp);
     }
