@@ -8,7 +8,8 @@ PROG = mod_store_mysql.so
 
 SRCS = ./mysql_store.cpp
 
-STGLIBS = -lstgcommon -lstgcrypto
+STGLIBS = common \
+	  crypto
 
 MYSQL_CFLAGS = $(shell mysql_config --cflags)
 MYSQL_LDFLAGS = $(shell mysql_config --libs_r)

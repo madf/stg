@@ -2,7 +2,7 @@
 # $Id: Makefile,v 1.3 2007/05/08 14:29:19 faust Exp $
 ###############################################################################
 
-LIB_NAME = dotconfpp
+LIB_NAME = stgdotconfpp
 
 SRCS = dotconfpp.cpp \
        mempool.cpp

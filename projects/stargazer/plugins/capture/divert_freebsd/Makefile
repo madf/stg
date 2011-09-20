@@ -8,9 +8,9 @@ PROG = mod_cap_divert.so
 
 SRCS = ./divert_cap.cpp 
 
-STGLIBS = -lstgcommon
-
 LIBS += $(LIB_THREAD)
+
+STGLIBS = common
 
 include ../../Makefile.in
 

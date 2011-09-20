@@ -24,28 +24,30 @@ SRCS = ./admin_impl.cpp \
        ./user_property.cpp \
        ./users_impl.cpp
 
-STGLIBS =  -lstglogger \
-    	   -lstglocker \
-           -lstgcommon \
-           -lstgscriptexecuter \
-           -ldotconfpp
+STGLIBS = logger \
+    	  locker \
+          common \
+          scriptexecuter \
+          dotconfpp
 
-LIBS += -lexpat
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+
+LIBS += -lexpat $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
 
 ifeq ($(OS),linux)
-LIBS += $(LIB_THREAD) \
-        -ldl
+LIBS += -ldl
 else
-LIBS += $(LIB_THREAD) \
-        -lc
+LIBS += -lc
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB) 
-vpath %.so $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins install uninstall install-bin install-data
 all: libs plugins $(PROG)
@@ -56,8 +58,8 @@ libs:
 plugins: libs 
 	$(MAKE) -C $(DIR_PLUGINS)
 
-$(PROG): $(OBJS) libs
-	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
+$(PROG): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
@@ -146,9 +148,9 @@ endif
 endif
 
 deps: $(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done

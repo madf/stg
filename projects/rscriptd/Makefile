@@ -10,22 +10,25 @@ SRCS = ./main.cpp \
        ./listener.cpp \
        ./pidfile.cpp
 
-STGLIBS =  -lstglogger \
-           -lstgcommon \
-	   -lstgcrypto \
-           -lstgscriptexecuter \
-           -lstgconffiles
+STGLIBS =  logger \
+	   locker \
+           common \
+	   crypto \
+           scriptexecuter \
+           conffiles
 
-LIBS += $(LIB_THREAD)
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CXXFLAGS += -Wall
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
-
-vpath %.a $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs install uninstall
 all: libs $(PROG) ../../Makefile.conf
@@ -33,7 +36,7 @@ all: libs $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-$(PROG): $(OBJS) $(STGLIBS) 
+$(PROG): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
@@ -77,11 +80,11 @@ endif
 endif
 
 deps:	$(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
 
 

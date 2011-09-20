@@ -16,7 +16,8 @@ SRCS = ./stgconfig.cpp \
 LIBS += -lexpat \
 	$(LIB_THREAD)
 
-STGLIBS = -lstgcommon -lstglogger
+STGLIBS = common \
+	  logger
 
 include ../../Makefile.in
 

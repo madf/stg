@@ -8,15 +8,18 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
 LN = ln
 
-CXXFLAGS += -fPIC
-CFLAGS += -fPIC
-LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
+STGLIBS_INCS = $(addprefix -I ../../../../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-vpath %.a $(DIR_LIB)
+LIBS += $(addprefix -lstg,$(STGLIBS))
+
+CXXFLAGS += -fPIC $(STGLIBS_INCS)
+CFLAGS += -fPIC $(STGLIBS_INCS)
+LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg $(STGLIBS_LIBS)
 
 all: $(PROG)
 
-$(PROG): $(OBJS) $(STGLIBS)
+$(PROG): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 

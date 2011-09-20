@@ -11,10 +11,13 @@ PROG = $(LIB_NAME).so
 SRCS = ./rlm_stg.cpp \
        ./stg_client.cpp
 
-STGLIBS = -lstgcommon \
-          -lstgcrypto
+STGLIBS = common \
+          crypto
 
-LIBS += $(LIB_THREAD)
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+
+LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
 
 ifeq ($(OS),linux)
 LIBS += -ldl
@@ -23,14 +26,13 @@ LIBS += -lintl \
         -lc
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CXXFLAGS += -Wall -fPIC -I./ 
-LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
-
-vpath %.a $(DIR_LIB)
+CXXFLAGS += -fPIC $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs install uninstall install-bin uninstall-bin
 all: libs $(PROG) ../../Makefile.conf
@@ -38,7 +40,7 @@ all: libs $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-$(PROG): $(OBJS) $(STGLIBS) 
+$(PROG): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
 
 clean:
@@ -70,11 +72,11 @@ endif
 endif
 
 deps:	$(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
 
 

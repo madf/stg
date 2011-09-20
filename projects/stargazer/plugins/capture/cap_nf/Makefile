@@ -9,7 +9,8 @@ PROG = mod_cap_nf.so
 SRCS = ./cap_nf.cpp
 
 LIBS += $(LIB_THREAD)
-STGLIBS = -lstgcommon
+
+STGLIBS = common
 
 include ../../Makefile.in
 

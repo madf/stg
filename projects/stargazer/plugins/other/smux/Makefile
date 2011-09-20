@@ -11,13 +11,13 @@ SRCS =  smux.cpp \
 	utils.cpp \
 	types.cpp
 
-STGLIBS = -lstgcommon -lstgsmux
+STGLIBS = common \
+	  smux \
+	  logger \
+	  locker \
+	  scriptexecuter
 
-CXXFLAGS += -I$(DIR_INCLUDE)/stg
+CFLAGS += -I ../../../../../stglibs/smux.lib/include/stg
+CXXFLAGS += -I ../../../../../stglibs/smux.lib/include/stg
 
 include ../../Makefile.in
-
-.PHONY: asn1
-
-asn1:
-	$(MAKE) -C asn1 asn1

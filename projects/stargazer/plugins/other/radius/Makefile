@@ -10,7 +10,11 @@ PROG = mod_radius.so
 
 SRCS = ./radius.cpp
 
-STGLIBS = -lstgcommon -lstgcrypto
+STGLIBS = common \
+	  crypto \
+	  logger \
+	  locker \
+	  scriptexecuter
 
 include ../../Makefile.in
 

@@ -8,7 +8,11 @@ PROG = mod_store_files.so
 
 SRCS = ./file_store.cpp
 
-STGLIBS = -lstgconffiles -lstgcommon -lstglocker -lstgcrypto
+STGLIBS = conffiles \
+	  common \
+	  locker \
+	  logger \
+	  crypto
 
 include ../../Makefile.in
 

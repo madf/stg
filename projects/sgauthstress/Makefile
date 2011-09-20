@@ -8,11 +8,15 @@ SRCS = main.cpp \
        user.cpp \
        proto.cpp
 
-STGLIBS =  -lstgcrypto \
-           -lstgcommon \
-           -ldotconfpp
+STGLIBS = crypto \
+          common \
+          dotconfpp \
+	  locker
 
-LIBS += $(LIB_THREAD)
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+
+LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
 
 ifeq ($(OS),linux)
 LIBS += -ldl
@@ -21,14 +25,13 @@ LIBS += -lintl \
         -lc
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CXXFLAGS += -Wall
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
-
-vpath %.a $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins
 all: libs plugins $(PROG) ../../Makefile.conf
@@ -39,8 +42,8 @@ libs:
 plugins: libs 
 	$(MAKE) -C $(DIR_PLUGINS)
 
-$(PROG): $(OBJS) libs
-	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
+$(PROG): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o *.*~
@@ -59,9 +62,9 @@ endif
 endif
 
 deps:	$(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done

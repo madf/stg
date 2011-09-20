@@ -14,9 +14,7 @@ $(STG_LIBS):
 includes: all
 
 clean: all
-	rm -f $(DIR_LIB)/*
 
 install: all
 
 uninstall: all
-
