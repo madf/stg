@@ -140,12 +140,20 @@ switch (executerPid)
 
     case 0:
         delete settings;
+#ifdef LINUX
         Executer(*msgID, executerPid, procName);
+#else
+        Executer(*msgID, executerPid);
+#endif
         return 1;
 
     default:
         if (executersPid.empty()) {
+#ifdef LINUX
             Executer(*msgID, executerPid, NULL);
+#else
+            Executer(*msgID, executerPid);
+#endif
         }
         executersPid.insert(executerPid);
     }

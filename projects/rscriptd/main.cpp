@@ -117,12 +117,20 @@ switch (executerPid)
         //close(1);
         //close(2);
         //setsid();
+#ifdef LINUX
         Executer(*msgID, executerPid, procName);
+#else
+        Executer(*msgID, executerPid);
+#endif
         return 1;
 
     default:    // Parent
         if (executersPid.empty())
+#ifdef LINUX
             Executer(*msgID, executerPid, NULL);
+#else
+            Executer(*msgID, executerPid);
+#endif
         executersPid.insert(executerPid);
     }
 return 0;
