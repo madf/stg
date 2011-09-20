@@ -364,20 +364,21 @@ private:
 
     DEL_USER_NOTIFIER   onDelUserNotifier;
 
-    class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
-        public:
-            UnauthorizeUser(AUTH_IA * a) : auth(a) {}
-            UnauthorizeUser(const UnauthorizeUser & rvalue) : auth(rvalue.auth) {}
-            void operator()(const std::pair<uint32_t, IA_USER> & p)
-            {
-                auth->users->Unauthorize(p.second.user->GetLogin(), auth);
-            }
-        private:
-            UnauthorizeUser & operator=(const UnauthorizeUser & rvalue);
+    friend class UnauthorizeUser;
+};
+//-----------------------------------------------------------------------------
+class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
+    public:
+        UnauthorizeUser(AUTH_IA * a) : auth(a) {}
+        UnauthorizeUser(const UnauthorizeUser & rvalue) : auth(rvalue.auth) {}
+        void operator()(const std::pair<uint32_t, IA_USER> & p)
+        {
+            auth->users->Unauthorize(p.second.user->GetLogin(), auth);
+        }
+    private:
+        UnauthorizeUser & operator=(const UnauthorizeUser & rvalue);
 
-            AUTH_IA * auth;
-    };
-
+        AUTH_IA * auth;
 };
 //-----------------------------------------------------------------------------
 inline
