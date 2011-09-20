@@ -51,7 +51,7 @@ if (sock > 0)
     close(sock);
 }
 
-const USER & USER::operator=(const USER & rvalue)
+USER & USER::operator=(const USER & rvalue)
 {
 login = rvalue.login;
 password = rvalue.password;
