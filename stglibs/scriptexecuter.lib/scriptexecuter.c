@@ -46,6 +46,11 @@ void Executer(int msgID, pid_t pid, char * procName)
 void Executer(int msgID, pid_t pid)
 #endif
 {
+int ret;
+struct SCRIPT_DATA sd;
+struct sigaction newsa, oldsa;
+sigset_t sigmask;
+
 msgid = msgID;
 if (pid)
     return;
@@ -57,9 +62,6 @@ strcpy(procName, "stg-exec");
 #else
 setproctitle("stg-exec");
 #endif
-
-struct sigaction newsa, oldsa;
-sigset_t sigmask;
 
 sigemptyset(&sigmask);
 sigaddset(&sigmask, SIGTERM);
@@ -89,10 +91,6 @@ newsa.sa_mask = sigmask;
 newsa.sa_flags = 0;
 sigaction(SIGUSR1, &newsa, &oldsa);
 
-int ret;
-
-struct SCRIPT_DATA sd;
-
 while (nonstop)
     {
     sd.mtype = 1;
@@ -103,7 +101,7 @@ while (nonstop)
         usleep(20000);
         continue;
         }
-    int ret = system(sd.script);
+    ret = system(sd.script);
     if (ret == -1)
         {
         // Fork failed
