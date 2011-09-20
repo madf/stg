@@ -1,6 +1,9 @@
 #ifndef __PROTO_H__
 #define __PROTO_H__
 
+#ifndef LINUX
+#include <netinet/in_systm.h>
+#endif
 #include <netinet/ip.h>
 #include <pthread.h>
 #include <poll.h>
