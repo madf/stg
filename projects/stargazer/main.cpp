@@ -99,7 +99,11 @@ else
     }
 }
 //-----------------------------------------------------------------------------
+#ifdef LINUX
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+#else
+int StartScriptExecuter(char *, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+#endif
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
 

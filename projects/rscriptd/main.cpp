@@ -73,7 +73,11 @@ while (pid != executersPid.end())
     }
 }
 //-----------------------------------------------------------------------------
+#ifdef LINUX
 int StartScriptExecuter(char * procName, int msgKey, int * msgID)
+#else
+int StartScriptExecuter(char *, int msgKey, int * msgID)
+#endif
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
 
