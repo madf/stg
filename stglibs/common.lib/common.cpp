@@ -31,6 +31,7 @@
 #ifdef FREE_BSD
 #include <sys/types.h>
 #endif
+#include <sys/time.h>
 
 #ifdef WIN32
 #include <winsock2.h>
