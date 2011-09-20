@@ -28,10 +28,13 @@
  $Author: faust $
  */
 
-#ifdef FREE_BSD
+#include <sys/select.h>
+
+// For old and dub systems
+// Like FreeBSD4
 #include <sys/types.h>
-#endif
 #include <sys/time.h>
+#include <unistd.h>
 
 #ifdef WIN32
 #include <winsock2.h>
