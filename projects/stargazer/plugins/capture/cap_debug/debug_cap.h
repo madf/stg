@@ -32,9 +32,9 @@ $Author: faust $
 
 #include <string>
 
-#include "os_int.h"
-#include "plugin.h"
-#include "module_settings.h"
+#include "stg/os_int.h"
+#include "stg/plugin.h"
+#include "stg/module_settings.h"
 
 using namespace std;
 extern "C" PLUGIN * GetPlugin();

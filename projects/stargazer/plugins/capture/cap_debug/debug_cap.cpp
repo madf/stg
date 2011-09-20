@@ -37,10 +37,10 @@ $Author: faust $
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "stg/plugin_creator.h"
-#include "debug_cap.h"
-#include "../../../traffcounter.h"
 #include "libpal.h"
+#include "stg/plugin_creator.h"
+#include "stg/traffcounter.h"
+#include "debug_cap.h"
 
 //-----------------------------------------------------------------------------
 void WriteStat(uint32_t u, uint32_t d)
