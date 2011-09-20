@@ -28,13 +28,13 @@
  $Author: faust $
  */
 
-#include <sys/select.h>
-
 // For old and dub systems
 // Like FreeBSD4
 #include <sys/types.h>
 #include <sys/time.h>
 #include <unistd.h>
+
+#include <sys/select.h>
 
 #ifdef WIN32
 #include <winsock2.h>
