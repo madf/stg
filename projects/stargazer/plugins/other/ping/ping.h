@@ -28,10 +28,11 @@ class SETTINGS;
 //-----------------------------------------------------------------------------*/
 class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-    CHG_CURRIP_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
+    CHG_CURRIP_NOTIFIER_PING(const PING & p, USER_PTR u)
+        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(u), ping(p) {}
     CHG_CURRIP_NOTIFIER_PING(const CHG_CURRIP_NOTIFIER_PING & rvalue)
-        : user(rvalue.user), ping(rvalue.ping)
-    {}
+        : PROPERTY_NOTIFIER_BASE<uint32_t>(),
+          user(rvalue.user), ping(rvalue.ping) {}
     void Notify(const uint32_t & oldIP, const uint32_t & newIP);
     USER_PTR GetUser() const { return user; }
 
@@ -44,10 +45,11 @@ private:
 //-----------------------------------------------------------------------------
 class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS> {
 public:
-    CHG_IPS_NOTIFIER_PING(const PING & p, USER_PTR u) : user(u), ping(p) {}
+    CHG_IPS_NOTIFIER_PING(const PING & p, USER_PTR u)
+        : PROPERTY_NOTIFIER_BASE<USER_IPS>(), user(u), ping(p) {}
     CHG_IPS_NOTIFIER_PING(const CHG_IPS_NOTIFIER_PING & rvalue)
-        : user(rvalue.user), ping(rvalue.ping)
-    {}
+        : PROPERTY_NOTIFIER_BASE<USER_IPS>(),
+          user(rvalue.user), ping(rvalue.ping) {}
     void Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS);
     USER_PTR GetUser() const { return user; }
 
@@ -60,7 +62,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
-    ADD_USER_NONIFIER_PING(PING & p) : ping(p) {}
+    ADD_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
     virtual ~ADD_USER_NONIFIER_PING() {}
     void Notify(const USER_PTR & user);
 
@@ -73,7 +75,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
-    DEL_USER_NONIFIER_PING(PING & p) : ping(p) {}
+    DEL_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
     virtual ~DEL_USER_NONIFIER_PING() {}
     void Notify(const USER_PTR & user);
 

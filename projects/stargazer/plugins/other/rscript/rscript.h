@@ -60,7 +60,8 @@ class SETTINGS;
 //-----------------------------------------------------------------------------
 class RS_ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    RS_ADD_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    RS_ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
+        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~RS_ADD_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
 
@@ -73,7 +74,8 @@ private:
 //-----------------------------------------------------------------------------
 class RS_DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    RS_DEL_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    RS_DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
+        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~RS_DEL_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
 
@@ -87,10 +89,10 @@ private:
 template <typename T>
 class RS_CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<T> {
 public:
-    RS_CHG_AFTER_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u) : user(u), rs(r) {}
+    RS_CHG_AFTER_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
+        : PROPERTY_NOTIFIER_BASE<T>(), user(u), rs(r) {}
     RS_CHG_AFTER_NOTIFIER(const RS_CHG_AFTER_NOTIFIER<T> & rvalue)
-        : user(rvalue.user), rs(rvalue.rs)
-    {}
+        : PROPERTY_NOTIFIER_BASE<T>(), user(rvalue.user), rs(rvalue.rs) {}
     void Notify(const T & oldValue, const T & newValue);
     USER_PTR GetUser() { return user; }
 

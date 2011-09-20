@@ -46,10 +46,11 @@ class USERS;
 template <typename T>
 class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
-                CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
+                CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u)
+                    : PROPERTY_NOTIFIER_BASE<T>(), user(u), auth(a) {}
                 CHG_BEFORE_NOTIFIER(const CHG_BEFORE_NOTIFIER<T> & rvalue)
-                    : user(rvalue.user), auth(rvalue.auth)
-                {}
+                    : PROPERTY_NOTIFIER_BASE<T>(),
+                      user(rvalue.user), auth(rvalue.auth) {}
     void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 
@@ -63,10 +64,11 @@ private:
 template <typename T>
 class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
-                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
+                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u)
+                    : PROPERTY_NOTIFIER_BASE<T>(), user(u), auth(a) {}
                 CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER<T> & rvalue)
-                    : user(rvalue.user), auth(rvalue.auth)
-                {}
+                    : PROPERTY_NOTIFIER_BASE<T>(),
+                      user(rvalue.user), auth(rvalue.auth) {}
     void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 

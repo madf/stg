@@ -57,8 +57,12 @@ private:
 //-----------------------------------------------------------------------------
 class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string> {
 public:
-             CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u) : smux(s), userPtr(u) {}
-             CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER & rvalue) : smux(rvalue.smux), userPtr(rvalue.userPtr) {}
+             CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u)
+                 : PROPERTY_NOTIFIER_BASE<std::string>(),
+                   smux(s), userPtr(u) {}
+             CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER & rvalue)
+                 : PROPERTY_NOTIFIER_BASE<std::string>(),
+                   smux(rvalue.smux), userPtr(rvalue.userPtr) {}
     void     Notify(const std::string &, const std::string &);
 
     USER_PTR GetUserPtr() { return userPtr; }
@@ -71,7 +75,8 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA>, private NONCOPYABLE {
 public:
-         ADD_DEL_TARIFF_NOTIFIER(SMUX & s) : smux(s) {}
+         ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
+             : NOTIFIER_BASE<TARIFF_DATA>(), smux(s) {}
     void Notify(const TARIFF_DATA &);
 
 private:
@@ -80,7 +85,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-         ADD_USER_NOTIFIER(SMUX & s) : smux(s) {}
+         ADD_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
     void Notify(const USER_PTR &);
 
 private:
@@ -89,7 +94,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-         DEL_USER_NOTIFIER(SMUX & s) : smux(s) {}
+         DEL_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
     void Notify(const USER_PTR &);
 
 private:
