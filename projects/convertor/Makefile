@@ -23,7 +23,7 @@ LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
 ifeq ($(OS),linux)
 LIBS += -ldl
 else
-LIBS += -lc
+LIBS += -lc -liconv
 endif
 
 SEARCH_DIRS = -I ../../include

@@ -17,6 +17,10 @@ STGLIBS =  logger \
            scriptexecuter \
            conffiles
 
+ifneq ($(OS),linux)
+LIBS += -liconv
+endif
+
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 

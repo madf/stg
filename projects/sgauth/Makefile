@@ -20,10 +20,10 @@ STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
 LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
 
-ifeq ($(OS),linux)
-else
+ifneq ($(OS),linux)
 LIBS += -lintl \
-        -lc
+        -lc \
+	-liconv
 endif
 
 SEARCH_DIRS = -I ../../include

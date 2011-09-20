@@ -23,7 +23,8 @@ ifeq ($(OS),linux)
 LIBS += -ldl
 else
 LIBS += -lintl \
-        -lc
+        -lc \
+	-liconv
 endif
 
 SEARCH_DIRS = -I ../../include
