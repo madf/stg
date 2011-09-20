@@ -27,6 +27,7 @@
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
 #include "stg/plugin_creator.h"
+#include "stg/common.h"
 
 #include "ipq_cap.h"
 
