@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <istream>
+#include <iostream>
 
 #include "stg/OBJECT_IDENTIFIER.h"
 
