@@ -46,9 +46,7 @@
 #include "stg/plugin.h"
 #include "stg/logger.h"
 #include "stg/scriptexecuter.h"
-#include "stg/conffiles.h"
 #include "stg/version.h"
-#include "stg/pinger.h"
 #include "stg_timer.h"
 #include "settings_impl.h"
 #include "users_impl.h"
@@ -161,11 +159,11 @@ int ForkAndWait(const string &)
 #endif
 {
 #ifndef NO_DAEMON
-stgChildPid = fork();
+pid_t childPid = fork();
 string startFile = confDir + START_FILE;
 unlink(startFile.c_str());
 
-switch (stgChildPid)
+switch (childPid)
     {
     case -1:
         return -1;
