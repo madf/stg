@@ -4,7 +4,7 @@ LIB_NAME = stgsmux
 
 SRCS = $(wildcard *.c)
 
-INCS = $(wildcard include/stg/*.h)
+INCS = $(notdir $(wildcard include/stg/*.h))
 
 LIB_INCS = -I ./include/stg
 
