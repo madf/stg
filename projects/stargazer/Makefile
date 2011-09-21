@@ -24,16 +24,16 @@ SRCS = ./admin_impl.cpp \
        ./user_property.cpp \
        ./users_impl.cpp
 
-STGLIBS = logger \
-    	  locker \
-          common \
-          scriptexecuter \
-          dotconfpp
+STGLIBS = scriptexecuter \
+          dotconfpp \
+	  locker \
+	  logger \
+	  common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += -lexpat $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl

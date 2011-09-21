@@ -11,13 +11,13 @@ PROG = $(LIB_NAME).so
 SRCS = ./rlm_stg.cpp \
        ./stg_client.cpp
 
-STGLIBS = common \
-          crypto
-
+STGLIBS = crypto \
+	  common
+          
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
@@ -79,5 +79,3 @@ deps:	$(SRCS) ../../Makefile.conf
 	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
 	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
-
-

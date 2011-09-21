@@ -8,15 +8,15 @@ SRCS = main.cpp \
        user.cpp \
        proto.cpp
 
-STGLIBS = crypto \
-          common \
-          dotconfpp \
-	  locker
+STGLIBS = dotconfpp \
+	  locker \
+	  crypto \
+	  common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl

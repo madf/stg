@@ -10,21 +10,21 @@ SRCS = ./main.cpp \
        ./listener.cpp \
        ./pidfile.cpp
 
-STGLIBS =  logger \
-	   locker \
-           common \
-	   crypto \
-           scriptexecuter \
-           conffiles
-
-ifneq ($(OS),linux)
-LIBS += -liconv
-endif
+STGLIBS = scriptexecuter \
+          conffiles \
+	  logger \
+	  locker \
+	  crypto \
+          common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
+
+ifneq ($(OS),linux)
+LIBS += -liconv
+endif
 
 SEARCH_DIRS = -I ../../include
 
@@ -90,5 +90,3 @@ deps:	$(SRCS) ../../Makefile.conf
 	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
 	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
-
-

@@ -11,14 +11,14 @@ SRCS = ./main.cpp \
        ./web.cpp
 
 STGLIBS =  conffiles \
-           ia \
            crypto \
+           ia \
            common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(LIB_THREAD) $(addprefix -lstg,$(STGLIBS))
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifneq ($(OS),linux)
 LIBS += -lintl \
