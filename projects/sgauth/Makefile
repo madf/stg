@@ -11,8 +11,8 @@ SRCS = ./main.cpp \
        ./web.cpp
 
 STGLIBS =  conffiles \
-           crypto \
            ia \
+           crypto \
            common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
