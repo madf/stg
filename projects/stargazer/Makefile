@@ -89,10 +89,10 @@ install-data:
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer/conf-enabled.d
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/stargazer.conf $(PREFIX)/etc/stargazer/stargazer.conf
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/conf-available.d/*.conf $(PREFIX)/etc/stargazer/conf-available.d
-	ln -s ../conf-available.d/mod_ao.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ao.conf
-	ln -s ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
-	ln -s ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
-	ln -s ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
+	ln -sf ../conf-available.d/mod_ao.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ao.conf
+	ln -sf ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
+	ln -sf ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
+	ln -sf ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
 
 ifeq ($(OS),linux)
 	ln -s ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
