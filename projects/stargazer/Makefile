@@ -111,19 +111,6 @@ endif
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/tariffs/tariff.tf $(PREFIX)/var/stargazer/tariffs/tariff.tf
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/users/test/conf $(PREFIX)/var/stargazer/users/test/conf
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/users/test/stat $(PREFIX)/var/stargazer/users/test/stat
-	
-ifeq ($(CHECK_FBCLIENT),yes)
-	# Install firebird db
-	mkdir -p $(PREFIX)/var/stargazer
-	chown $(OWNER):$(FIREBIRD_GROUP) $(PREFIX)/var/stargazer
-	chmod g+rw $(PREFIX)/var/stargazer
-	echo "connect '$(DB_ADDRESS)' user '$(DB_USER)' password '$(DB_PASSWORD)';" > .db.sql
-	echo "drop database;" >> .db.sql
-	echo "create database '$(DB_ADDRESS)' user '$(DB_USER)' password '$(DB_PASSWORD)' default character set win1251;" >> .db.sql
-	cat $(VAR_DIR)/../00-base-00.sql >> .db.sql
-	$(FIREBIRD_ISQL) -i .db.sql
-	rm -f .db.sql
-endif
 
 uninstall: uninstall-bin uninstall-data
 
