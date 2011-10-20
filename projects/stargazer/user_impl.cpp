@@ -1243,11 +1243,11 @@ switch (settings->GetFeeChargeType())
         property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     case 1:
-        if (c >= 0)
+        if (c + credit >= 0)
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     case 2:
-        if (c >= fee)
+        if (c + credit >= fee)
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
     }
@@ -1285,8 +1285,10 @@ if (fee == 0.0)
     }
 
 double c = cash;
-printfd(__FILE__, "login: %8s   Fee=%f PassiveTimePart=%f fee=%f\n",
+printfd(__FILE__, "login: %8s Cash=%f Credit=%f  Fee=%f PassiveTimePart=%f fee=%f\n",
         login.c_str(),
+        cash.ConstData(),
+        credit.ConstData(),
         tariff->GetFee(),
         passiveTimePart,
         fee);
@@ -1297,14 +1299,14 @@ switch (settings->GetFeeChargeType())
         SetPrepaidTraff();
         break;
     case 1:
-        if (c >= 0)
+        if (c + credit >= 0)
             {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
             SetPrepaidTraff();
             }
         break;
     case 2:
-        if (c >= fee)
+        if (c + credit >= fee)
             {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
             SetPrepaidTraff();
