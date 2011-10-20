@@ -478,7 +478,10 @@ while (modIter != modules.end())
                      modIter->GetStrError().c_str());
         printfd(__FILE__, "Failed to stop module '%s'\n", name.c_str());
         }
-    WriteServLog("Module: \'%s\'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
+    else
+        {
+        WriteServLog("Module: \'%s\'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
+        }
     ++modIter;
     }
 
