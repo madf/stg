@@ -19,11 +19,6 @@ CASH=$3
 ID=$4
 
 #Selected dirs to disconnect
-DIRS=$4
+DIRS=$5
 
 #echo "D `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
-
-
-
-
-
