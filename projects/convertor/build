@@ -65,7 +65,6 @@ PLUGINS="store/files"
 if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
-    SHELL="/bin/bash"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
@@ -81,7 +80,6 @@ else
             LIB_THREAD=-lc_r
         fi
     fi
-    SHELL="/usr/local/bin/bash"
 fi
 
 if [ -z "$CC" ]
@@ -273,7 +271,6 @@ do
     echo -n "$plugin " >> $CONFFILE
 done
 echo "" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
 echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE

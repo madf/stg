@@ -74,7 +74,6 @@ if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
     LIB_THREAD=-lpthread
-    SHELL="/bin/bash"
 else
     if [ "$OS" = "bsd" ]
     then
@@ -89,7 +88,6 @@ else
             LIB_THREAD=-lc_r
         fi
     fi
-    SHELL="/usr/local/bin/bash"
 fi
 
 if [ -z "$CC" ]
@@ -162,7 +160,6 @@ do
 done
 echo "" >> $CONFFILE
 echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
 echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE

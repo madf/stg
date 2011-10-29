@@ -114,7 +114,6 @@ then
     PLUGINS="$PLUGINS
              capture/ether_linux
              capture/ipq_linux"
-    SHELL="/bin/bash"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
@@ -133,7 +132,6 @@ else
     PLUGINS="$PLUGINS
              capture/ether_freebsd
              capture/divert_freebsd"
-    SHELL="/usr/local/bin/bash"
 fi
 
 if [ -z "$CC" ]
@@ -397,7 +395,6 @@ do
     echo -n "$plugin " >> $CONFFILE
 done
 echo "" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
 echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE

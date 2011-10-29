@@ -71,7 +71,6 @@ if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
     LIB_THREAD=-lpthread
-    SHELL="/bin/bash"
 else
     if [ "$OS" = "bsd" ]
     then
@@ -85,7 +84,6 @@ else
             LIB_THREAD=-lc_r
         fi
     fi
-    SHELL="/usr/local/bin/bash"
     CXXFLAGS="$CXXFLAGS -DHAVE_CLOSEFROM"
 fi
 
@@ -166,6 +164,5 @@ echo "BIN_MODE=$BIN_MODE" >> $CONFFILE
 echo "DATA_MODE=$DATA_MODE" >> $CONFFILE
 echo "DIR_MODE=$DIR_MODE" >> $CONFFILE
 echo "OWNER=$OWNER" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 $MAKE $MAKEOPTS
 
