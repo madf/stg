@@ -95,9 +95,9 @@ install-data:
 	ln -sf ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
 
 ifeq ($(OS),linux)
-	ln -s ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
+	ln -sf ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
 else
-	ln -s ../conf-available.d/mod_cap_bpf.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_bpf.conf
+	ln -sf ../conf-available.d/mod_cap_bpf.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_bpf.conf
 endif
 
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/rules $(PREFIX)/etc/stargazer/rules
