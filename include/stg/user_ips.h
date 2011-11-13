@@ -134,6 +134,14 @@ return ips.size();
 }
 //-----------------------------------------------------------------------------
 inline
+uint32_t USER_IPS::CalcMask(unsigned int msk) const
+{
+if (msk > 32)
+    return 0;
+return htonl(0xFFffFFff << (32 - msk));
+}
+//-----------------------------------------------------------------------------
+inline
 bool USER_IPS::IsIPInIPS(uint32_t ip) const
 {
 if (ips.empty())
@@ -160,14 +168,6 @@ if (ips.size() == 1 && ips.front().mask == 32)
     return true;
 
 return false;
-}
-//-----------------------------------------------------------------------------
-inline
-uint32_t USER_IPS::CalcMask(unsigned int msk) const
-{
-if (msk > 32)
-    return 0;
-return htonl(0xFFffFFff << (32 - msk));
 }
 //-----------------------------------------------------------------------------
 inline
