@@ -107,8 +107,16 @@ int ParseYesNo(const std::string & str, bool * val);
 
 bool WaitPackets(int sd);
 
+template <typename varT>
+int str2x(const std::string & str, varT & x);
+template <typename varT>
+const std::string & x2str(varT x, std::string & s);
+template <typename varT>
+const std::string & unsigned2str(varT x, std::string & s);
+
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 int str2x(const std::string & str, varT & x)
 {
     int pos = 0;
@@ -146,6 +154,7 @@ int str2x(const std::string & str, varT & x)
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 const std::string & x2str(varT x, std::string & s)
 {
     varT xx = x;
@@ -191,6 +200,7 @@ const std::string & x2str(varT x, std::string & s)
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
+inline
 const std::string & unsigned2str(varT x, std::string & s)
 {
     varT xx = x;
