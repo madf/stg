@@ -673,13 +673,13 @@ while (fgets(str, 1023, f))
     rul.proto = 0xff;
     rul.dir = 0xff;
 
-    for (int i = 0; i < PROTOMAX; i++)
+    for (size_t i = 0; i < PROTOMAX; i++)
         {
         if (strcasecmp(tp, protoName[i]) == 0)
             rul.proto = i;
         }
 
-    for (int i = 0; i < DIR_NUM + 1; i++)
+    for (size_t i = 0; i < DIR_NUM + 1; i++)
         {
         if (td == dirName[i])
             rul.dir = i;
@@ -825,8 +825,8 @@ else
     }
 
 // Convert strings to mask, ports and IP
-int prt1, prt2, msk;
-unsigned ip;
+uint16_t prt1, prt2, msk;
+struct in_addr ipaddr;
 char *res;
 
 msk = strtol(mask, &res, 10);
@@ -841,16 +841,16 @@ prt2 = strtol(port2, &res, 10);
 if (*res != 0)
     return true;
 
-int r = inet_aton(addr, (struct in_addr*)&ip);
+int r = inet_aton(addr, &ipaddr);
 if (r == 0)
     return true;
 
-rule->ip = ip;
+rule->ip = ipaddr.s_addr;
 rule->mask = CalcMask(msk);
 //msk = 1;
 //printfd(__FILE__, "msk=%d mask=%08X   mask=%08X\n", msk, rule->mask, (0xFFffFFff << (32 - msk)));
 
-if ((ip & rule->mask) != ip)
+if ((ipaddr.s_addr & rule->mask) != ipaddr.s_addr)
     {
     printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - Address does'n match mask.\n");
     WriteServLog("Address does'n match mask.");
