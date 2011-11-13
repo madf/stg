@@ -50,7 +50,7 @@ enum DETAIL_STAT_PERIOD {
 dsPeriod_1,
 dsPeriod_1_2,
 dsPeriod_1_4,
-dsPeriod_1_6,
+dsPeriod_1_6
 };
 //-----------------------------------------------------------------------------
 class STG_LOGGER;
