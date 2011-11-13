@@ -625,9 +625,7 @@ if (!foundU)
 
 if (!foundD)
     *dirD = DIR_NUM;
-
-return;
-};
+}
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetRulesFile(const std::string & fn)
 {
@@ -901,8 +899,7 @@ switch (rule.proto)
         printf("ALL     ");
         break;
     }
-printf("dir=%d \n", rule.dir);
-return;
+printf("dir=%d \n", static_cast<unsigned>(rule.dir));
 }
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)
