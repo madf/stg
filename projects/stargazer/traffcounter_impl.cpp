@@ -899,7 +899,7 @@ switch (rule.proto)
         printf("ALL     ");
         break;
     }
-printf("dir=%d \n", static_cast<unsigned>(rule.dir));
+printf("dir=%u \n", static_cast<unsigned>(rule.dir));
 }
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)
