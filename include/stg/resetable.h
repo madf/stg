@@ -58,6 +58,10 @@ private:
 };
 
 template <typename T>
+std::ostream & operator<<(std::ostream & o, const RESETABLE<T> & v);
+
+template <typename T>
+inline
 std::ostream & operator<<(std::ostream & o, const RESETABLE<T> & v)
 {
     return o << v.const_data();
