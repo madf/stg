@@ -31,9 +31,6 @@
  *          1 - down - считается по download
  *          2 - max - считается по максимальному среди upload/download
  *          3 - up+down - считается по сумме upload и download
- *        Как альтернативу этому полю можно сделать еще одну таблицу - типов
- *        подсчета трафика. И в этом поле хранить ссылку на эту таблицу.
- *        Вопрос только "А надо ли это?"
  *
  *      * dm_ip. IP адресс в виде четырех байтового целого числа со знаком.
  *        Выполнять приведение к знаковуму целому при занесении IP в БД!!!
@@ -99,15 +96,15 @@ CREATE DOMAIN dm_phone AS VARCHAR(256) DEFAULT '';
 CREATE DOMAIN dm_user_name AS VARCHAR(256) DEFAULT '';
 CREATE DOMAIN dm_service_comment AS VARCHAR(256) DEFAULT '';
 CREATE DOMAIN dm_service_name AS VARCHAR(32) DEFAULT '';
-/* TODO: why 0-31? Which is default? */
+
 CREATE DOMAIN dm_pay_day AS SMALLINT NOT NULL
     CHECK ( VALUE BETWEEN 0 AND 31 );
 CREATE DOMAIN dm_period AS INTEGER NOT NULL;
 CREATE DOMAIN dm_counter AS SMALLINT NOT NULL;
-/* Is it needded? */
+
 CREATE DOMAIN dm_message_ver AS INTEGER NOT NULL;
 CREATE DOMAIN dm_message_type AS INTEGER NOT NULL;
-/*----------------*/
+
 CREATE DOMAIN dm_message AS VARCHAR(256) NOT NULL;
 CREATE DOMAIN dm_user_data AS VARCHAR(256) NOT NULL;
 CREATE DOMAIN dm_session_event_type AS CHAR(1) NOT NULL
@@ -278,7 +275,7 @@ CREATE TABLE tb_users_data
 (
     pk_user_data dm_id PRIMARY KEY,
     fk_user dm_id,
-    num dm_num, /* data_id dm_id renamed */
+    num dm_num,
     data dm_user_data,
 
     FOREIGN KEY (fk_user) REFERENCES tb_users (pk_user)
@@ -407,16 +404,6 @@ BEGIN
 END !!
 SET TERM ; !!
 
-/*set term !! ;
-create trigger tr_tariff_bi for tb_tariffs active
-before insert position 0
-as
-begin
-    if (new.pk_tariff is null)
-    then new.pk_tariff = gen_id(gn_pk_tariff, 1);
-end !!
-set term ; !!*/
-
 set term !! ;
 create trigger tr_tariff_param_bi for tb_tariffs_params active
 before insert position 0
@@ -436,16 +423,6 @@ begin
     then new.pk_corporation = gen_id(gn_pk_corporation, 1);
 end !!
 set term ; !!
-
-/*set term !! ;
-create trigger tr_user_bi for tb_users active
-before insert position 0
-as
-begin
-    if (new.pk_user is null)
-    then new.pk_user = gen_id(gn_pk_user, 1);
-end !!
-set term ; !!*/
 
 set term !! ;
 create trigger tr_detail_stat_bi for tb_detail_stats active
@@ -477,26 +454,6 @@ begin
 end !!
 set term ; !!
 
-/*set term !! ;
-create trigger tr_message_bi for tb_messages active
-before insert position 0
-as
-begin
-    if (new.pk_message is null)
-    then new.pk_message = gen_id(gn_pk_message, 1);
-end !!
-set term ; !!*/
-
-/*set term !! ;
-create trigger tr_stat_bi for tb_stats active
-before insert position 0
-as
-begin
-    if (new.pk_stat is null)
-    then new.pk_stat = gen_id(gn_pk_stat, 1);
-end !!
-set term ; !!*/
-
 set term !! ;
 create trigger tr_stat_traffic_bi for tb_stats_traffic active
 before insert position 0
@@ -526,16 +483,6 @@ begin
     then new.pk_allowed_ip = gen_id(gn_pk_allowed_ip, 1);
 end !!
 set term ; !!
-
-/*set term !! ;
-create trigger tr_session_log_bi for tb_sessions_log active
-before insert position 0
-as
-begin
-    if (new.pk_session_log is null)
-    then new.pk_session_log = gen_id(gn_pk_session_log, 1);
-end !!
-set term ; !!*/
 
 set term !! ;
 create trigger tr_session_data_bi for tb_sessions_data active
@@ -728,4 +675,3 @@ set term ; !!
 insert into tb_admins values(0, 'admin', 'geahonjehjfofnhammefahbbbfbmpkmkmmefahbbbfbmpkmkmmefahbbbfbmpkmk', 1, 1, 1, 1, 1, 1, 1, 1, 1);
 
 /* EOF */
-
