@@ -58,7 +58,7 @@ deps:	$(SRCS) ../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
 	  echo "$$file" | grep ".c$$" > /dev/null;\
-	  if [ $$? == 0 ];\
+	  if [ $$? -eq 0 ];\
 	  then\
 	    echo "`$(CC) $(CFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
 	    echo -e '\t$$(CC) $(CFLAGS) -c $$<' >> deps ;\

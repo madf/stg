@@ -43,7 +43,7 @@ deps:	$(SRCS) ../../../../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
 	  echo "$$file" | grep ".c$$" > /dev/null;\
-	  if [ $$? == 0 ];\
+	  if [ $$? -eq 0 ];\
 	  then\
 	    echo "`$(CC) $(CFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
 	    echo -e '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
