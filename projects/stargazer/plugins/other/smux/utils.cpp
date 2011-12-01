@@ -79,7 +79,9 @@ memset(&msg, 0, sizeof(msg));
 
 msg.present = OpenPDU_PR_simple;
 asn_long2INTEGER(&msg.choice.simple.version, SimpleOpen__version_version_1);
-if (!String2OI(PEN_PREFIX, &msg.choice.simple.identity))
+std::string pen(PEN_PREFIX);
+pen += ".1";
+if (!String2OI(pen.c_str(), &msg.choice.simple.identity))
     {
     printfd(__FILE__,
             "SendOpenPDU() - failed to convert string to OBJECT_IDENTIFIER\n");
