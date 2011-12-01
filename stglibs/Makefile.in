@@ -61,9 +61,9 @@ deps:	$(SRCS) ../../Makefile.conf
 	  if [ $$? -eq 0 ];\
 	  then\
 	    echo "`$(CC) $(CFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	    echo -e '\t$$(CC) $(CFLAGS) -c $$<' >> deps ;\
+	    printf '\t$$(CC) $(CFLAGS) -c $$<\n' >> deps ;\
 	  else\
 	    echo "`$(CXX) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	    echo -e '\t$$(CXX) $(CXXFLAGS) -c $$<' >> deps ;\
+	    printf '\t$$(CXX) $(CXXFLAGS) -c $$<\n' >> deps ;\
 	  fi;\
 	done

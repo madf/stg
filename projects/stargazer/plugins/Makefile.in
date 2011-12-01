@@ -46,9 +46,9 @@ deps:	$(SRCS) ../../../../../Makefile.conf
 	  if [ $$? -eq 0 ];\
 	  then\
 	    echo "`$(CC) $(CFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
-	    echo -e '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	    printf '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)\n' >> deps ;\
 	  else\
 	    echo "`$(CXX) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
-	    echo -e '\t$$(CXX) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	    printf '\t$$(CXX) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)\n' >> deps ;\
 	  fi;\
 	done

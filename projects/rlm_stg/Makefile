@@ -77,5 +77,5 @@ deps:	$(SRCS) ../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
 	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
+	  printf '\t$$(CC) -c $$< $(CXXFLAGS)\n' >> deps ;\
 	done
