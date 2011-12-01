@@ -90,5 +90,5 @@ deps:	$(SRCS) ../../Makefile.conf sgauth.css
 	./make_css.sh
 	for file in $(SRCS); do\
 	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
-	  printf '\t$$(CC) -c $$< $(CXXFLAGS)\n' >> deps ;\
+	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
