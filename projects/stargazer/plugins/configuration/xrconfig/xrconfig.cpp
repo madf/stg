@@ -2,35 +2,23 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "stg/plugin_creator.h"
 #include "xrconfig.h"
 #include "../../../tariff2.h"
 #include "../../../admins.h"
 #include "../../../users.h"
 
-class XR_CONFIG_CREATOR
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+PLUGIN_CREATOR<XR_CONFIG> xrc;
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+BASE_PLUGIN * GetPlugin()
 {
-private:
-    XR_CONFIG * xrconfig;
-
-public:
-    XR_CONFIG_CREATOR()
-        : xrconfig(new XR_CONFIG())
-        {
-        };
-    ~XR_CONFIG_CREATOR()
-        {
-        delete xrconfig;
-        };
-
-    XR_CONFIG * GetPlugin()
-        {
-        return xrconfig;
-        };
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-XRCONFIG_CREATOR xrc;
+return xrc.GetPlugin();
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -44,41 +32,8 @@ const string & XR_CONFIG_SETTINGS::GetStrError() const
 return errorStr;
 }
 //-----------------------------------------------------------------------------
-int XR_CONFIG_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (strtoi2(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
 int XR_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-/*int p;
-PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
-
-pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
-    {
-    errorStr = "Parameter \'Port\' not found.";
-    return -1;
-    }
-
-if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
-    {
-    errorStr = "Cannot parse parameter \'Port\': " + errorStr;
-    return -1;
-    }
-port = p;*/
 
 return 0;
 }
@@ -86,13 +41,6 @@ return 0;
 uint16_t XR_CONFIG_SETTINGS::GetPort()
 {
 return port;
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
-{
-return xrc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

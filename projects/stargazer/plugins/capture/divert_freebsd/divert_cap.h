@@ -48,12 +48,7 @@ public:
     DIVERT_CAP();
     virtual ~DIVERT_CAP() {}
 
-    void                SetUsers(USERS *) {}
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
     void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
@@ -68,6 +63,9 @@ public:
     uint16_t            GetStopPosition() const { return 10; }
 
 private:
+    DIVERT_CAP(const DIVERT_CAP & rvalue);
+    DIVERT_CAP & operator=(const DIVERT_CAP & rvalue);
+
     static void *       Run(void *);
 
     int                 DivertCapOpen();
@@ -75,8 +73,6 @@ private:
     int                 DivertCapRead(char * buffer, int blen, char ** iface);
     int                 DivertCapRead(char * buffer, int blen, char ** iface, int n);
     int                 DivertCapClose();
-
-    int                 ParseIntInRange(const std::string & str, int min, int max, int * val);
 
     MODULE_SETTINGS     settings;
 

@@ -18,7 +18,7 @@ ACTIONS_LIST::ACTIONS_LIST()
     : mutex()
 {
 pthread_mutex_init(&mutex, NULL);
-};
+}
 
 // Delete all actions before deleting list
 inline
@@ -36,56 +36,56 @@ ACTIONS_LIST::~ACTIONS_LIST()
     }
 
 pthread_mutex_destroy(&mutex);
-};
+}
 
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::begin()
 { 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::begin();
-};
+}
 
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::end()
 { 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::end();
-};
+}
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::begin() const
 { 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::begin();
-};
+}
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::end() const
 { 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::end();
-};
+}
 
 inline
 bool ACTIONS_LIST::empty() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::empty();
-};
+}
 
 inline
 size_t ACTIONS_LIST::size() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return parent::size();
-};
+}
 
 inline
 void ACTIONS_LIST::swap(ACTIONS_LIST & list)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 parent::swap(list);
-};
+}
 
 template <class ACTIVE_CLASS, typename DATA_TYPE>
 inline
@@ -106,6 +106,6 @@ std::for_each(
         parent::end(),
         std::mem_fun(&BASE_ACTION::Invoke)
 );
-};
+}
 
 #endif

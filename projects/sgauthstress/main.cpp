@@ -157,7 +157,8 @@ std::cout << "Successfully loaded " << proto.UserCount() << " users" << std::end
 running = true;
 while (running)
     {
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 
 proto.Stop();

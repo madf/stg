@@ -25,6 +25,7 @@
 
 class SETTINGS {
 public:
+    virtual ~SETTINGS() {}
     virtual const std::string & GetDirName(size_t num) const = 0;
     virtual const std::string & GetScriptsDir() const = 0;
     virtual unsigned            GetDetailStatWritePeriod() const = 0;

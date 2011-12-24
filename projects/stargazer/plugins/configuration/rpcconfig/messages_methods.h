@@ -19,7 +19,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_MESSAGE_SEND(const METHOD_MESSAGE_SEND & rvalue);
+    METHOD_MESSAGE_SEND & operator=(const METHOD_MESSAGE_SEND & rvalue);
+
     RPC_CONFIG * config;
     USERS * users;
 };

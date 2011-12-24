@@ -21,8 +21,13 @@ class TEST_USERS : public USERS {
         { return 0; }
         void Del(const std::string & /*login*/, const ADMIN * /*admin*/) {}
 
+        bool Authorize(const std::string &, uint32_t, uint32_t, const AUTH *)
+        { return false; }
+        bool Unauthorize(const std::string &, const AUTH *)
+        { return false; }
+
         int  ReadUsers() { return 0; }
-        int  GetUserNum() const { return 0; }
+        virtual size_t Count() const { return 0; };
 
         int  FindByIPIdx(uint32_t /*ip*/, USER_PTR * /*user*/) const
         { return -1; }

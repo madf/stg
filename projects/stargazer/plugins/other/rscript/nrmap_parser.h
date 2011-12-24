@@ -34,20 +34,39 @@
 
 struct NET_ROUTER
 {
-uint32_t              subnetIP;
-uint32_t              subnetMask;
-std::vector<uint32_t> routers;
+    NET_ROUTER() : subnetIP(0), subnetMask(0), routers() {}
+    NET_ROUTER(const NET_ROUTER & rvalue)
+        : subnetIP(rvalue.subnetIP),
+          subnetMask(rvalue.subnetMask),
+          routers(rvalue.routers)
+    {}
+
+    uint32_t              subnetIP;
+    uint32_t              subnetMask;
+    std::vector<uint32_t> routers;
+
+    NET_ROUTER & operator=(const NET_ROUTER & rvalue)
+    {
+    subnetIP = rvalue.subnetIP;
+    subnetMask = rvalue.subnetMask;
+    routers = rvalue.routers;
+    return *this;
+    }
 };
 
 class NRMapParser {
 public:
-    NRMapParser();
-    ~NRMapParser();
+    NRMapParser() : nrmap(), errorStr() {}
+    ~NRMapParser() {}
 
     bool ReadFile(const std::string & fileName);
     const std::vector<NET_ROUTER> & GetMap() const { return nrmap; };
     const std::string & GetErrorStr() const { return errorStr; };
+
 private:
+    NRMapParser(const NRMapParser & rvalue);
+    NRMapParser & operator=(const NRMapParser & rvalue);
+
     std::vector<NET_ROUTER> nrmap;
     mutable std::string errorStr;
 

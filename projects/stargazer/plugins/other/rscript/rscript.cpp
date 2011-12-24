@@ -35,6 +35,7 @@
 #include "stg/common.h"
 #include "stg/locker.h"
 #include "stg/user_property.h"
+#include "stg/plugin_creator.h"
 #include "rscript.h"
 #include "ur_functor.h"
 #include "send_functor.h"
@@ -46,30 +47,7 @@ extern volatile const time_t stgTime;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class RS_CREATOR
-{
-private:
-    REMOTE_SCRIPT * rs;
-
-public:
-    RS_CREATOR()
-        : rs(new REMOTE_SCRIPT())
-        {
-        };
-    ~RS_CREATOR()
-        {
-        delete rs;
-        };
-
-    REMOTE_SCRIPT * GetPlugin()
-        {
-        return rs;
-        };
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-RS_CREATOR rsc;
+PLUGIN_CREATOR<REMOTE_SCRIPT> rsc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -80,40 +58,24 @@ return rsc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RS_USER::RS_USER()
-    : lastSentTime(0),
-      user(NULL),
-      shortPacketsCount(0)
+RS_USER & RS_USER::operator=(const RS_USER & rvalue)
 {
-}
-//-----------------------------------------------------------------------------
-RS_USER::RS_USER(const std::vector<uint32_t> & r, USER_PTR it)
-    : lastSentTime(0),
-      user(it),
-      routers(r),
-      shortPacketsCount(0)
-{
+lastSentTime = rvalue.lastSentTime;
+user = rvalue.user;
+routers = rvalue.routers;
+shortPacketsCount = rvalue.shortPacketsCount;
+return *this;
 }
 //-----------------------------------------------------------------------------
 RS_SETTINGS::RS_SETTINGS()
     : sendPeriod(0),
-      port(0)
+      port(0),
+      errorStr(),
+      netRouters(),
+      userParams(),
+      password(),
+      subnetFile()
 {
-}
-//-----------------------------------------------------------------------------
-int RS_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
 }
 //-----------------------------------------------------------------------------
 int RS_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
@@ -208,11 +170,20 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 REMOTE_SCRIPT::REMOTE_SCRIPT()
-    : sendPeriod(15),
+    : ctx(),
+      afterChgIPNotifierList(),
+      authorizedUsers(),
+      errorStr(),
+      rsSettings(),
+      settings(),
+      sendPeriod(15),
       halfPeriod(8),
       nonstop(false),
       isRunning(false),
       users(NULL),
+      netRouters(),
+      thread(),
+      mutex(),
       sock(0),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this)
@@ -227,6 +198,10 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 void * REMOTE_SCRIPT::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 REMOTE_SCRIPT * rs = static_cast<REMOTE_SCRIPT *>(d);
 
 rs->isRunning = true;
@@ -311,24 +286,16 @@ if (isRunning)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && isRunning; i++)
         {
-        usleep(200000);
-        }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunning)
-        {
-        if (pthread_kill(thread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            printfd(__FILE__, "Cannot kill thread\n");
-            return -1;
-            }
-        printfd(__FILE__, "REMOTE_SCRIPT killed Run\n");
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     }
 
 users->DelNotifierUserDel(&onDelUserNotifier);
 users->DelNotifierUserAdd(&onAddUserNotifier);
+
+if (isRunning)
+    return -1;
 
 return 0;
 }
@@ -394,7 +361,11 @@ while (it != authorizedUsers.end())
     }
 }
 //-----------------------------------------------------------------------------
+#ifdef NDEBUG
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+#else
 bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+#endif
 {
 RS_PACKET_HEADER packetHead;
 

@@ -20,7 +20,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalPtr);
+
 private:
+    METHOD_TARIFF_GET(const METHOD_TARIFF_GET & rvalue);
+    METHOD_TARIFF_GET & operator=(const METHOD_TARIFF_GET & rvalue);
+
     RPC_CONFIG * config;
     TARIFFS * tariffs;
 };
@@ -38,7 +42,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalPtr);
+
 private:
+    METHOD_TARIFF_CHG(const METHOD_TARIFF_CHG & rvalue);
+    METHOD_TARIFF_CHG & operator=(const METHOD_TARIFF_CHG & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
@@ -55,7 +63,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalPtr);
+
 private:
+    METHOD_TARIFFS_GET(const METHOD_TARIFFS_GET & rvalue);
+    METHOD_TARIFFS_GET & operator=(const METHOD_TARIFFS_GET & rvalue);
+
     RPC_CONFIG * config;
     TARIFFS * tariffs;
 };
@@ -73,7 +85,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_TARIFF_ADD(const METHOD_TARIFF_ADD & rvalue);
+    METHOD_TARIFF_ADD & operator=(const METHOD_TARIFF_ADD & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;
@@ -94,7 +110,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_TARIFF_DEL(const METHOD_TARIFF_DEL & rvalue);
+    METHOD_TARIFF_DEL & operator=(const METHOD_TARIFF_DEL & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
     TARIFFS * tariffs;

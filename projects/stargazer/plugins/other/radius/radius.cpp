@@ -34,6 +34,7 @@
 #include "stg/common.h"
 #include "stg/user_conf.h"
 #include "stg/user_property.h"
+#include "stg/plugin_creator.h"
 #include "radius.h"
 
 extern volatile const time_t stgTime;
@@ -45,29 +46,7 @@ void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class RAD_CREATOR {
-private:
-    RADIUS * rad;
-
-public:
-    RAD_CREATOR()
-        : rad(new RADIUS())
-        {
-        }
-    ~RAD_CREATOR()
-        {
-        delete rad;
-        }
-
-    RADIUS * GetPlugin()
-        {
-        return rad;
-        }
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-RAD_CREATOR radc;
+PLUGIN_CREATOR<RADIUS> radc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -77,21 +56,6 @@ return radc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-int RAD_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
 //-----------------------------------------------------------------------------
 int RAD_SETTINGS::ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst)
 {
@@ -157,34 +121,24 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 RADIUS::RADIUS()
-    : nonstop(false),
+    : ctx(),
+      errorStr(),
+      radSettings(),
+      settings(),
+      authServices(),
+      acctServices(),
+      sessions(),
+      nonstop(false),
       isRunning(false),
       users(NULL),
       stgSettings(NULL),
       store(NULL),
-      sock(-1)
+      thread(),
+      mutex(),
+      sock(-1),
+      packet()
 {
 InitEncrypt(&ctx, "");
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetStgSettings(const SETTINGS * s)
-{
-stgSettings = s;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::SetStore(STORE * s)
-{
-store = s;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ParseSettings()
@@ -193,27 +147,6 @@ int ret = radSettings.ParseSettings(settings);
 if (ret)
     errorStr = radSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-bool RADIUS::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
-const std::string RADIUS::GetVersion() const
-{
-return "RADIUS data access plugin v 0.6";
-}
-//-----------------------------------------------------------------------------
-uint16_t RADIUS::GetStartPosition() const
-{
-// Start before any authorizers!!!
-return 20;
-}
-//-----------------------------------------------------------------------------
-uint16_t RADIUS::GetStopPosition() const
-{
-return 20;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::PrepareNet()
@@ -291,7 +224,7 @@ for (it = sessions.begin(); it != sessions.end(); ++it)
     USER_PTR ui;
     if (users->FindByName(it->second.userName, &ui))
         {
-        ui->Unauthorize(this);
+        users->Unauthorize(ui->GetLogin(), this);
         }
     }
 sessions.erase(sessions.begin(), sessions.end());
@@ -303,27 +236,23 @@ if (isRunning)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && isRunning; i++)
         {
-        usleep(200000);
-        }
-
-    //after 5 seconds waiting thread still running. now killing it
-    if (isRunning)
-        {
-        if (pthread_kill(thread, SIGINT))
-            {
-            errorStr = "Cannot kill thread.";
-            printfd(__FILE__, "Cannot kill thread\n");
-            return -1;
-            }
-        printfd(__FILE__, "RADIUS::Stop killed Run\n");
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     }
+
+if (isRunning)
+    return -1;
 
 return 0;
 }
 //-----------------------------------------------------------------------------
 void * RADIUS::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RADIUS * rad = (RADIUS *)d;
 RAD_PACKET packet;
 
@@ -331,7 +260,7 @@ rad->isRunning = true;
 
 while (rad->nonstop)
     {
-    if (!rad->WaitPackets(rad->sock))
+    if (!WaitPackets(rad->sock))
         {
         continue;
         }
@@ -534,7 +463,7 @@ if (CanAcctService((char *)packet->service))
         return -1;
         }
     USER_IPS ips = ui->GetProperty().ips;
-    if (ui->Authorize(ips[0].ip, 0xffFFffFF, this))
+    if (!users->Authorize(ui->GetLogin(), ips[0].ip, 0xffFFffFF, this))
         {
         printfd(__FILE__, "RADIUS::ProcessAcctStartPacket cannot authorize user '%s'\n", packet->login);
         packet->packetType = RAD_REJECT_PACKET;
@@ -575,7 +504,7 @@ if (!FindUser(&ui, sid->second.userName))
 
 sessions.erase(sid);
 
-ui->Unauthorize(this);
+users->Unauthorize(ui->GetLogin(), this);
 
 packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
@@ -622,34 +551,6 @@ return find(acctServices.begin(), acctServices.end(), svc) != acctServices.end()
 bool RADIUS::IsAllowedService(const std::string & svc) const
 {
 return CanAuthService(svc) || CanAcctService(svc);
-}
-//-----------------------------------------------------------------------------
-bool RADIUS::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }
 //-----------------------------------------------------------------------------
 inline

@@ -72,7 +72,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin = NULL;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -116,7 +116,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -208,7 +208,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -261,7 +261,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -311,7 +311,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -359,7 +359,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ADMIN * admin;
 
-if (admins->FindAdmin(adminInfo.admin, &admin))
+if (admins->Find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -394,6 +394,7 @@ if (tariffs->FindByName(tariff))
                                             login,
                                             store))
             {
+            u->ResetNextTariff();
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
             return;

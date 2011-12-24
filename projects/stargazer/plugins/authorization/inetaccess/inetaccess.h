@@ -118,41 +118,72 @@ private:
 //-----------------------------------------------------------------------------
 struct IA_USER {
     IA_USER()
-        : user(NULL),
+        : login(),
+          user(NULL),
+          phase(),
           lastSendAlive(0),
           rnd(random()),
           port(0),
+          ctx(),
+          messagesToSend(),
           protoVer(0),
           password("NO PASSWORD")
     {
-        // +++ Preparing CTX +++
-        unsigned char keyL[PASSWD_LEN];
-        memset(keyL, 0, PASSWD_LEN);
-        strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-        Blowfish_Init(&ctx, keyL, PASSWD_LEN);
-        // --- Preparing CTX ---
-        #ifdef IA_DEBUG
-        aliveSent = false;
-        #endif
+    unsigned char keyL[PASSWD_LEN];
+    memset(keyL, 0, PASSWD_LEN);
+    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    Blowfish_Init(&ctx, keyL, PASSWD_LEN);
+
+    #ifdef IA_DEBUG
+    aliveSent = false;
+    #endif
     };
 
     IA_USER(const IA_USER & u)
-        : user(u.user),
+        : login(u.login),
+          user(u.user),
           phase(u.phase),
           lastSendAlive(u.lastSendAlive),
           rnd(u.rnd),
           port(u.port),
+          ctx(),
           messagesToSend(u.messagesToSend),
           protoVer(u.protoVer),
           password(u.password)
     {
-        #ifdef IA_DEBUG
-        aliveSent  = u.aliveSent;
-        #endif
-        memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
+    #ifdef IA_DEBUG
+    aliveSent  = u.aliveSent;
+    #endif
+    memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
     };
 
-    USER_PTR        user;
+    IA_USER(const std::string & l,
+            CONST_USER_PTR u,
+            uint16_t p,
+            int ver)
+        : login(l),
+          user(u),
+          phase(),
+          lastSendAlive(0),
+          rnd(random()),
+          port(p),
+          ctx(),
+          messagesToSend(),
+          protoVer(ver),
+          password(user->GetProperty().password.Get())
+    {
+    unsigned char keyL[PASSWD_LEN];
+    memset(keyL, 0, PASSWD_LEN);
+    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    Blowfish_Init(&ctx, keyL, PASSWD_LEN);
+
+    #ifdef IA_DEBUG
+    aliveSent = false;
+    #endif
+    }
+
+    std::string     login;
+    CONST_USER_PTR  user;
     IA_PHASE        phase;
     UTIME           lastSendAlive;
     uint32_t        rnd;
@@ -164,6 +195,9 @@ struct IA_USER {
     #ifdef IA_DEBUG
     bool            aliveSent;
     #endif
+
+private:
+    IA_USER & operator=(const IA_USER & rvalue);
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA_SETTINGS {
@@ -178,7 +212,6 @@ public:
     FREEMB          GetFreeMbShowType() const { return freeMbShowType; };
 
 private:
-    int             ParseIntInRange(const std::string & str, int min, int max, int * val);
     int             userDelay;
     int             userTimeout;
     uint16_t        port;
@@ -195,6 +228,9 @@ public:
 
     void Notify(const USER_PTR & user);
 private:
+    DEL_USER_NOTIFIER(const DEL_USER_NOTIFIER & rvalue);
+    DEL_USER_NOTIFIER & operator=(const DEL_USER_NOTIFIER & rvalue);
+
     AUTH_IA & auth;
 };
 //-----------------------------------------------------------------------------
@@ -205,10 +241,6 @@ public:
     virtual             ~AUTH_IA();
 
     void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE *) {}
     void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
@@ -226,6 +258,9 @@ public:
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
+    AUTH_IA(const AUTH_IA & rvalue);
+    AUTH_IA & operator=(const AUTH_IA & rvalue);
+
     static void *       Run(void *);
     static void *       RunTimeouter(void * d);
     int                 PrepareNet();
@@ -233,7 +268,7 @@ private:
     void                DelUser(USER_PTR u);
     int                 RecvData(char * buffer, int bufferSize);
     int                 CheckHeader(const char * buffer, int * protoVer);
-    int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR * user);
+    int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
 
     int                 Process_CONN_SYN_6(CONN_SYN_6 * connSyn, IA_USER * iaUser, uint32_t sip);
     int                 Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, uint32_t sip);
@@ -288,8 +323,6 @@ private:
     int                 RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user);
 
-    bool                WaitPackets(int sd) const;
-
     BLOWFISH_CTX        ctxS;        //for loginS
 
     mutable std::string errorStr;
@@ -331,17 +364,21 @@ private:
 
     DEL_USER_NOTIFIER   onDelUserNotifier;
 
-    class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
-        public:
-            UnauthorizeUser(AUTH_IA * a) : auth(a) {}
-            void operator()(const std::pair<uint32_t, IA_USER> & p)
-            {
-                p.second.user->Unauthorize(auth);
-            }
-        private:
-            AUTH_IA * auth;
-    };
+    friend class UnauthorizeUser;
+};
+//-----------------------------------------------------------------------------
+class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
+    public:
+        UnauthorizeUser(AUTH_IA * a) : auth(a) {}
+        UnauthorizeUser(const UnauthorizeUser & rvalue) : auth(rvalue.auth) {}
+        void operator()(const std::pair<uint32_t, IA_USER> & p)
+        {
+            auth->users->Unauthorize(p.second.user->GetLogin(), auth);
+        }
+    private:
+        UnauthorizeUser & operator=(const UnauthorizeUser & rvalue);
 
+        AUTH_IA * auth;
 };
 //-----------------------------------------------------------------------------
 inline

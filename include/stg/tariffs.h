@@ -24,21 +24,31 @@
 #include <string>
 #include <list>
 
+#include "notifer.h"
+
 class ADMIN;
 class TARIFF;
 struct TARIFF_DATA;
 
 class TARIFFS {
 public:
-    virtual int            ReadTariffs () = 0;
+    virtual ~TARIFFS() {}
+    virtual int ReadTariffs () = 0;
     virtual const TARIFF * FindByName(const std::string & name) const = 0;
     virtual const TARIFF * GetNoTariff() const = 0;
-    virtual int            GetTariffsNum() const = 0;
-    virtual int            Del(const std::string & name, const ADMIN * admin) = 0;
-    virtual int            Add(const std::string & name, const ADMIN * admin) = 0;
-    virtual int            Chg(const TARIFF_DATA & td, const ADMIN * admin) = 0;
+    virtual int Del(const std::string & name, const ADMIN * admin) = 0;
+    virtual int Add(const std::string & name, const ADMIN * admin) = 0;
+    virtual int Chg(const TARIFF_DATA & td, const ADMIN * admin) = 0;
 
-    virtual void           GetTariffsData(std::list<TARIFF_DATA> * tdl) = 0;
+    virtual void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+    virtual void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+
+    virtual void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+    virtual void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+
+    virtual void GetTariffsData(std::list<TARIFF_DATA> * tdl) = 0;
+
+    virtual size_t Count() const = 0;
 
     virtual const std::string & GetStrError() const = 0;
 };

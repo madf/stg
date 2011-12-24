@@ -27,6 +27,7 @@ $Author: faust $
 #include <unistd.h>
 
 #include <csignal>
+#include <cassert>
 #include <algorithm> // for_each
 #include <functional> // mem_fun_ref
 
@@ -34,32 +35,20 @@ $Author: faust $
 #include "stg/users.h"
 #include "stg/user_property.h"
 #include "stg/common.h"
+#include "stg/plugin_creator.h"
 #include "ao.h"
 
-class AO_CREATOR
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+PLUGIN_CREATOR<AUTH_AO> aoc;
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+PLUGIN * GetPlugin()
 {
-private:
-    AUTH_AO * ao;
-
-public:
-    AO_CREATOR()
-        : ao(new AUTH_AO())
-        {
-        };
-    ~AO_CREATOR()
-        {
-        delete ao;
-        };
-
-    AUTH_AO * GetPlugin()
-        {
-        return ao;
-        };
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-AO_CREATOR aoc;
+return aoc.GetPlugin();
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -75,21 +64,21 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
-{
-return aoc.GetPlugin();
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 const string AUTH_AO::GetVersion() const
 {
 return "Always Online authorizator v.1.0";
 }
 //-----------------------------------------------------------------------------
 AUTH_AO::AUTH_AO()
-    : users(NULL),
+    : errorStr(),
+      users(NULL),
+      usersList(),
       isRunning(false),
+      settings(),
+      BeforeChgAONotifierList(),
+      AfterChgAONotifierList(),
+      BeforeChgIPNotifierList(),
+      AfterChgIPNotifierList(),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this)
 {
@@ -123,7 +112,8 @@ list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
-    Unauthorize(*users_iter);
+    if ((*users_iter)->IsAuthorizedBy(this))
+        users->Unauthorize((*users_iter)->GetLogin(), this);
     UnSetUserNotifiers(*users_iter);
     ++users_iter;
     }
@@ -219,11 +209,7 @@ void AUTH_AO::GetUsers()
 {
 USER_PTR u;
 int h = users->OpenSearch();
-if (!h)
-    {
-    printfd(__FILE__, "users->OpenSearch() error\n");
-    return;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 while (!users->SearchNext(h, &u))
     {
@@ -234,21 +220,14 @@ while (!users->SearchNext(h, &u))
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::Unauthorize(USER_PTR u) const
-{
-u->Unauthorize(this);
-}
-//-----------------------------------------------------------------------------
-void AUTH_AO::UpdateUserAuthorization(USER_PTR u) const
+void AUTH_AO::UpdateUserAuthorization(CONST_USER_PTR u) const
 {
 if (u->GetProperty().alwaysOnline)
     {
     USER_IPS ips = u->GetProperty().ips;
     if (ips.OnlyOneIP())
         {
-        if (u->Authorize(ips[0].ip, 0xFFffFFff, this) == 0)
-            {
-            }
+        users->Authorize(u->GetLogin(), ips[0].ip, 0xFFffFFff, this);
         }
     }
 }
@@ -262,7 +241,7 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
-Unauthorize(u);
+users->Unauthorize(u->GetLogin(), this);
 UnSetUserNotifiers(u);
 usersList.remove(u);
 }
@@ -277,7 +256,8 @@ template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::Notify(const varParamType &, const varParamType &)
 {
 //EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
-auth.Unauthorize(user);
+if (user->IsAuthorizedBy(&auth))
+    auth.users->Unauthorize(user->GetLogin(), &auth);
 }
 //-----------------------------------------------------------------------------
 template <typename varParamType>

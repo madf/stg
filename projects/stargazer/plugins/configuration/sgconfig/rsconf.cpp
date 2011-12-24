@@ -26,7 +26,7 @@
 *
 *******************************************************************/
 
-#include <unistd.h> // cloase, usleep
+#include <unistd.h> // close
 
 #include <cerrno>
 #include <csignal>
@@ -129,113 +129,98 @@ close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-// Функция общения с конфигуратором
-void * CONFIGPROTO::Run(void * a)
+void CONFIGPROTO::Run()
 {
-/*
- * Function Name:ReciveSendConf
- * Parameters: void * a указатель на экземпляр класса CONFIGPROTO
- * Description: Эта функция обеспечивает сетевое взаимодействие
- *  с Менеджером Клиентов. В ее задачи входит: прием запросов по TCP/IP
- *  их расшифровка, передача принятых данных анализатору и отправка ответа назад.
- * Returns: возвращает NULL
- */
+state = confHdr;
 
-CONFIGPROTO * cp = (CONFIGPROTO*)a;
-cp->state = confHdr;
-
-while (cp->nonstop)
+while (nonstop)
     {
-    cp->state = confHdr;
+    state = confHdr;
     struct sockaddr_in outerAddr;
     socklen_t outerAddrLen(sizeof(outerAddr));
-    int outerSocket = accept(cp->listenSocket,
+    int outerSocket = accept(listenSocket,
                              (struct sockaddr*)(&outerAddr),
                              &outerAddrLen);
 
-    if (!cp->nonstop)
+    if (!nonstop)
         {
-        continue;
+        break;
         }
 
     if (outerSocket == -1)
         {
         printfd(__FILE__, "accept failed\n");
-        usleep(100000);
         continue;
         }
 
-    cp->adminIP = *(unsigned int*)&(outerAddr.sin_addr);
+    adminIP = *(unsigned int*)&(outerAddr.sin_addr);
 
     printfd(__FILE__, "Connection accepted from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
 
-    if (cp->state == confHdr)
+    if (state == confHdr)
         {
-        if (cp->RecvHdr(outerSocket) < 0)
+        if (RecvHdr(outerSocket) < 0)
             {
             close(outerSocket);
             continue;
             }
-        if (cp->state == confLogin)
+        if (state == confLogin)
             {
-            if (cp->SendHdrAnswer(outerSocket, ans_ok) < 0)
+            if (SendHdrAnswer(outerSocket, ans_ok) < 0)
                 {
                 close(outerSocket);
                 continue;
                 }
-
-            if (cp->RecvLogin(outerSocket) < 0)
+            if (RecvLogin(outerSocket) < 0)
                 {
                 close(outerSocket);
                 continue;
                 }
-
-            if (cp->state == confLoginCipher)
+            if (state == confLoginCipher)
                 {
-                if (cp->SendLoginAnswer(outerSocket, ans_ok) < 0)
+                if (SendLoginAnswer(outerSocket) < 0)
                     {
                     close(outerSocket);
                     continue;
                     }
-                if (cp->RecvLoginS(outerSocket) < 0)
+                if (RecvLoginS(outerSocket) < 0)
                     {
                     close(outerSocket);
                     continue;
                     }
-
-                if (cp->state == confData)
+                if (state == confData)
                     {
-                    if (cp->SendLoginSAnswer(outerSocket, ans_ok) < 0)
+                    if (SendLoginSAnswer(outerSocket, ans_ok) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    if (cp->RecvData(outerSocket) < 0)
+                    if (RecvData(outerSocket) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    cp->state = confHdr;
+                    state = confHdr;
                     }
                 else
                     {
-                    if (cp->SendLoginSAnswer(outerSocket, ans_err) < 0)
+                    if (SendLoginSAnswer(outerSocket, ans_err) < 0)
                         {
                         close(outerSocket);
                         continue;
                         }
-                    cp->WriteLogAccessFailed(cp->adminIP);
+                    WriteLogAccessFailed(adminIP);
                     }
                 }
             else
                 {
-                cp->WriteLogAccessFailed(cp->adminIP);
+                WriteLogAccessFailed(adminIP);
                 }
             }
         else
             {
-            cp->WriteLogAccessFailed(cp->adminIP);
-            if (cp->SendHdrAnswer(outerSocket, ans_err) < 0)
+            WriteLogAccessFailed(adminIP);
+            if (SendHdrAnswer(outerSocket, ans_err) < 0)
                 {
                 close(outerSocket);
                 continue;
@@ -244,28 +229,33 @@ while (cp->nonstop)
         }
     else
         {
-        cp->WriteLogAccessFailed(cp->adminIP);
+        WriteLogAccessFailed(adminIP);
         }
     close(outerSocket);
     }
-
-return NULL;
 }
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvHdr(int sock)
 {
 char buf[sizeof(STG_HEADER)];
 memset(buf, 0, sizeof(STG_HEADER));
-int ret;
-int stgHdrLen = strlen(STG_HEADER);
-for (int i = 0; i < stgHdrLen; i++)
+size_t stgHdrLen = sizeof(STG_HEADER) - 1; // Without 0-char
+size_t pos = 0;
+while (pos < stgHdrLen)
     {
-    ret = recv(sock, &buf[i], 1, 0);
-    if (ret <= 0)
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        SendError("Bad request");
+        return -1;
+        }
+    int ret = recv(sock, &buf[pos], stgHdrLen - pos, 0);
+    if (ret < 0)
         {
         state = confHdr;
         return -1;
         }
+    pos += ret;
     }
 
 if (0 == strncmp(buf, STG_HEADER, strlen(STG_HEADER)))
@@ -284,12 +274,9 @@ return -1;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::SendHdrAnswer(int sock, int err)
 {
-int ret;
-
 if (err)
     {
-    ret = send(sock, ERR_HEADER, sizeof(ERR_HEADER)-1, 0);
-    if (ret < 0)
+    if (send(sock, ERR_HEADER, sizeof(ERR_HEADER) - 1, 0) < 0)
         {
         WriteServLog("send ERR_HEADER error in SendHdrAnswer.");
         return -1;
@@ -297,8 +284,7 @@ if (err)
     }
 else
     {
-    ret = send(sock, OK_HEADER, sizeof(OK_HEADER)-1, 0);
-    if (ret < 0)
+    if (send(sock, OK_HEADER, sizeof(OK_HEADER) - 1, 0) < 0)
         {
         WriteServLog("send OK_HEADER error in SendHdrAnswer.");
         return -1;
@@ -310,48 +296,46 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvLogin(int sock)
 {
-char login[ADM_LOGIN_LEN+1];
-int ret;
+char login[ADM_LOGIN_LEN + 1];
 
 memset(login, 0, ADM_LOGIN_LEN + 1);
 
-ret = recv(sock, login, ADM_LOGIN_LEN, 0);
+size_t pos = 0;
+while (pos < ADM_LOGIN_LEN) {
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        return ENODATA;
+        }
 
-if (ret < 0)
-    {
-    // Error in network
-    close(sock);
-    state = confHdr;
-    return ENODATA;
-    }
+    int ret = recv(sock, &login[pos], ADM_LOGIN_LEN - pos, 0);
 
-if (ret < ADM_LOGIN_LEN)
-    {
-    // Error in protocol
-    close(sock);
-    state = confHdr;
-    return ENODATA;
-    }
+    if (ret < 0)
+        {
+        // Error in network
+        state = confHdr;
+        return ENODATA;
+        }
 
-if (admins->FindAdmin(login, &currAdmin))
+    pos += ret;
+}
+
+if (admins->Find(login, &currAdmin))
     {
     // Admin not found
-    close(sock);
     state = confHdr;
     return ENODATA;
     }
+
 currAdmin->SetIP(adminIP);
 adminLogin = login;
 state = confLoginCipher;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int CONFIGPROTO::SendLoginAnswer(int sock, int)
+int CONFIGPROTO::SendLoginAnswer(int sock)
 {
-int ret;
-
-ret = send(sock, OK_LOGIN, sizeof(OK_LOGIN)-1, 0);
-if (ret < 0)
+if (send(sock, OK_LOGIN, sizeof(OK_LOGIN) - 1, 0) < 0)
     {
     WriteServLog("Send OK_LOGIN error in SendLoginAnswer.");
     return -1;
@@ -362,40 +346,43 @@ return 0;
 int CONFIGPROTO::RecvLoginS(int sock)
 {
 char loginS[ADM_LOGIN_LEN + 1];
-char login[ADM_LOGIN_LEN + 1];
-int ret;
-BLOWFISH_CTX ctx;
 memset(loginS, 0, ADM_LOGIN_LEN + 1);
 
-int total = 0;
-
-while (total < ADM_LOGIN_LEN)
+size_t pos = 0;
+while (pos < ADM_LOGIN_LEN)
     {
-    ret = recv(sock, &loginS[total], ADM_LOGIN_LEN - total, 0);
+    if (!WaitPackets(sock))
+        {
+        state = confHdr;
+        return ENODATA;
+        }
+
+    int ret = recv(sock, &loginS[pos], ADM_LOGIN_LEN - pos, 0);
 
     if (ret < 0)
         {
         // Network error
         printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
-        close(sock);
         state = confHdr;
         return ENODATA;
         }
 
-    total += ret;
+    pos += ret;
     }
 
-if (currAdmin->GetLogin() == "")
+if (currAdmin->GetLogin().empty())
     {
     state = confHdr;
     return ENODATA;
     }
 
+BLOWFISH_CTX ctx;
 EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
-for (int i = 0; i < ADM_LOGIN_LEN/8; i++)
+char login[ADM_LOGIN_LEN + 1];
+for (size_t i = 0; i < ADM_LOGIN_LEN / 8; i++)
     {
-    DecodeString(login + i*8, loginS + i*8, &ctx);
+    DecodeString(login + i * 8, loginS + i * 8, &ctx);
     }
 
 if (currAdmin == admins->GetNoAdmin())
@@ -417,12 +404,9 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::SendLoginSAnswer(int sock, int err)
 {
-int ret;
-
 if (err)
     {
-    ret = send(sock, ERR_LOGINS, sizeof(ERR_LOGINS)-1, 0);
-    if (ret < 0)
+    if (send(sock, ERR_LOGINS, sizeof(ERR_LOGINS) - 1, 0) < 0)
         {
         WriteServLog("send ERR_LOGIN error in SendLoginAnswer.");
         return -1;
@@ -430,8 +414,7 @@ if (err)
     }
 else
     {
-    ret = send(sock, OK_LOGINS, sizeof(OK_LOGINS)-1, 0);
-    if (ret < 0)
+    if (send(sock, OK_LOGINS, sizeof(OK_LOGINS) - 1, 0) < 0)
         {
         WriteServLog("send OK_LOGINS error in SendLoginSAnswer.");
         return -1;
@@ -442,12 +425,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::RecvData(int sock)
 {
-int ret;
-char bufferS[8];
-char buffer[9];
-
-buffer[8] = 0;
-
 requestList.clear();
 BLOWFISH_CTX ctx;
 
@@ -455,36 +432,43 @@ EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (1)
     {
-    int total = 0;
     bool done = false;
-    while (total < 8)
+    char bufferS[8];
+    size_t pos = 0;
+    while (pos < sizeof(bufferS))
         {
-        ret = recv(sock, &bufferS[total], 8 - total, 0);
+        if (!WaitPackets(sock))
+            {
+            done = true;
+            break;
+            }
+
+        int ret = recv(sock, &bufferS[pos], sizeof(bufferS) - pos, 0);
         if (ret < 0)
             {
             // Network error
-            close(sock);
-            return 0;
+            printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
+            return -1;
             }
 
-        if (ret < 8)
+        if (ret == 0)
             {
-            if (memchr(buffer, 0, ret) != NULL)
-                {
-                done = true;
-                break;
-                }
+            done = true;
+            break;
             }
 
-        total += ret;
+        pos += ret;
         }
 
-    DecodeString(buffer, bufferS, &ctx);
-    requestList.push_back(std::string(buffer, total));
+    char buffer[8];
+    buffer[7] = 0;
 
-    if (done || memchr(buffer, 0, total) != NULL)
+    DecodeString(buffer, bufferS, &ctx);
+    requestList.push_back(std::string(buffer, pos));
+
+    if (done || memchr(buffer, 0, pos) != NULL)
         {
-        // Конец посылки
+        // End of data
         if (ParseCommand())
             {
             SendError("Bad command");
@@ -506,7 +490,6 @@ char buff[8];
 char buffS[8];
 int n = 0;
 int k = 0;
-int ret = 0;
 
 EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
@@ -514,14 +497,14 @@ while (li != answerList.end())
     {
     while ((*li).c_str()[k])
         {
-        buff[n%8] = (*li).c_str()[k];
+        buff[n % 8] = (*li).c_str()[k];
         n++;
         k++;
 
-        if (n%8 == 0)
+        if (n % 8 == 0)
             {
             EncodeString(buffS, buff, &ctx);
-            ret = send(sock, buffS, 8, 0);
+            int ret = send(sock, buffS, 8, 0);
             if (ret < 0)
                 {
                 return -1;
@@ -536,7 +519,7 @@ if (answerList.empty()) {
     return 0;
 }
 
-buff[n%8] = 0;
+buff[n % 8] = 0;
 EncodeString(buffS, buff, &ctx);
 
 answerList.clear();

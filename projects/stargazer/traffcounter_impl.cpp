@@ -59,12 +59,21 @@ tcp = 0, udp, icmp, tcp_udp, all
 //-----------------------------------------------------------------------------
 TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
     : TRAFFCOUNTER(),
+      rules(),
+      packets(),
+      ip2packets(),
+      dirName(),
       WriteServLog(GetStgLogger()),
       rulesFileName(fn),
+      monitorDir(),
       monitoring(false),
       users(u),
       running(false),
       stopped(true),
+      mutex(),
+      thread(),
+      ipBeforeNotifiers(),
+      ipAfterNotifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this)
 {
@@ -100,13 +109,8 @@ if (ReadRules())
 
 printfd(__FILE__, "TRAFFCOUNTER::Start()\n");
 int h = users->OpenSearch();
+assert(h && "USERS::OpenSearch is always correct");
 USER_IMPL * u;
-if (!h)
-    {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot get users\n");
-    WriteServLog("TRAFFCOUNTER: Cannot get users.");
-    return -1;
-    }
 
 while (users->SearchNext(h, &u) == 0)
     {
@@ -132,11 +136,7 @@ if (stopped)
 running = false;
 
 int h = users->OpenSearch();
-if (!h)
-    {
-    WriteServLog("TRAFFCOUNTER: Fatal error: Cannot get users.");
-    return -1;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 USER_IMPL * u;
 while (users->SearchNext(h, &u) == 0)
@@ -152,16 +152,9 @@ for (int i = 0; i < 25 && !stopped; i++)
     nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now kill it
 if (!stopped)
-    {
-    printfd(__FILE__, "kill TRAFFCOUNTER thread.\n");
-    if (pthread_kill(thread, SIGINT))
-        {
-        return -1;
-        }
-    printfd(__FILE__, "TRAFFCOUNTER killed\n");
-    }
+    return -1;
+
 printfd(__FILE__, "TRAFFCOUNTER::Stop()\n");
 
 return 0;
@@ -169,6 +162,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * TRAFFCOUNTER_IMPL::Run(void * data)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 TRAFFCOUNTER_IMPL * tc = static_cast<TRAFFCOUNTER_IMPL *>(data);
 tc->stopped = false;
 int c = 0;
@@ -628,9 +625,7 @@ if (!foundU)
 
 if (!foundD)
     *dirD = DIR_NUM;
-
-return;
-};
+}
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetRulesFile(const std::string & fn)
 {
@@ -678,13 +673,13 @@ while (fgets(str, 1023, f))
     rul.proto = 0xff;
     rul.dir = 0xff;
 
-    for (int i = 0; i < PROTOMAX; i++)
+    for (size_t i = 0; i < PROTOMAX; i++)
         {
         if (strcasecmp(tp, protoName[i]) == 0)
             rul.proto = i;
         }
 
-    for (int i = 0; i < DIR_NUM + 1; i++)
+    for (size_t i = 0; i < DIR_NUM + 1; i++)
         {
         if (td == dirName[i])
             rul.dir = i;
@@ -830,8 +825,8 @@ else
     }
 
 // Convert strings to mask, ports and IP
-int prt1, prt2, msk;
-unsigned ip;
+uint16_t prt1, prt2, msk;
+struct in_addr ipaddr;
 char *res;
 
 msk = strtol(mask, &res, 10);
@@ -846,16 +841,16 @@ prt2 = strtol(port2, &res, 10);
 if (*res != 0)
     return true;
 
-int r = inet_aton(addr, (struct in_addr*)&ip);
+int r = inet_aton(addr, &ipaddr);
 if (r == 0)
     return true;
 
-rule->ip = ip;
+rule->ip = ipaddr.s_addr;
 rule->mask = CalcMask(msk);
 //msk = 1;
 //printfd(__FILE__, "msk=%d mask=%08X   mask=%08X\n", msk, rule->mask, (0xFFffFFff << (32 - msk)));
 
-if ((ip & rule->mask) != ip)
+if ((ipaddr.s_addr & rule->mask) != ipaddr.s_addr)
     {
     printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - Address does'n match mask.\n");
     WriteServLog("Address does'n match mask.");
@@ -904,8 +899,7 @@ switch (rule.proto)
         printf("ALL     ");
         break;
     }
-printf("dir=%d \n", rule.dir);
-return;
+printf("dir=%u \n", static_cast<unsigned>(rule.dir));
 }
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)

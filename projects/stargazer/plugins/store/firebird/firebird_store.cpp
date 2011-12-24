@@ -30,48 +30,35 @@
 #include <vector>
 #include <algorithm>
 
+#include "stg/ibpp.h"
+#include "stg/plugin_creator.h"
+#include "firebird_store.h"
+
 using namespace std;
 
-#include "firebird_store.h"
-#include "stg/ibpp.h"
-
-class FIREBIRD_STORE_CREATOR
-{
-public:
-    FIREBIRD_STORE_CREATOR()
-        : frb(new FIREBIRD_STORE())
-        {
-        };
-    ~FIREBIRD_STORE_CREATOR()
-        {
-        delete frb;
-        };
-    FIREBIRD_STORE * GetStore() { return frb; };
-private:
-    FIREBIRD_STORE * frb;
-} frsc;
-
+PLUGIN_CREATOR<FIREBIRD_STORE> frsc;
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return frsc.GetStore();
+return frsc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::FIREBIRD_STORE()
+    : version("firebird_store v.1.4"),
+      strError(),
+      db_server("localhost"),
+      db_database("/var/stg/stargazer.fdb"),
+      db_user("stg"),
+      db_password("123456"),
+      settings(),
+      db(),
+      mutex(),
+      til(IBPP::ilConcurrency),
+      tlr(IBPP::lrWait)
 {
-db_server = "localhost";
-db_database = "/var/stg/stargazer.fdb";
-db_user = "stg";
-db_password = "123456";
-version = "firebird_store v.1.4";
 pthread_mutex_init(&mutex, NULL);
-
-// Advanced settings defaults
-
-til = IBPP::ilConcurrency;
-tlr = IBPP::lrWait;
 }
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::~FIREBIRD_STORE()

@@ -121,6 +121,9 @@ public:
     inline const string & GetStrError() const { return strError; };
     inline const string & GetVersion() const { return versionString; };
 private:
+    POSTGRESQL_STORE(const POSTGRESQL_STORE & rvalue);
+    POSTGRESQL_STORE & operator=(const POSTGRESQL_STORE & rvalue);
+
     int StartTransaction() const;
     int CommitTransaction() const;
     int RollbackTransaction() const;

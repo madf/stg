@@ -92,12 +92,7 @@ public:
     NF_CAP();
     ~NF_CAP();
 
-    void            SetUsers(USERS *) {}
-    void            SetTariffs(TARIFFS *) {}
-    void            SetAdmins(ADMINS *) {}
     void            SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
-    void            SetStore(STORE *) {}
-    void            SetStgSettings(const SETTINGS *) {}
     void            SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int             ParseSettings();
 
@@ -111,6 +106,9 @@ public:
     uint16_t        GetStopPosition() const { return STOP_POS; }
 
 private:
+    NF_CAP(const NF_CAP & rvalue);
+    NF_CAP & operator=(const NF_CAP & rvalue);
+
     TRAFFCOUNTER * traffCnt;
     MODULE_SETTINGS settings;
     pthread_t tidTCP;
@@ -133,8 +131,6 @@ private:
     bool OpenUDP();
     void CloseTCP() { close(sockTCP); }
     void CloseUDP() { close(sockUDP); }
-
-    bool WaitPackets(int sd) const;
 };
 
 extern "C" PLUGIN * GetPlugin();

@@ -8,14 +8,18 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
 LN = ln
 
-CXXFLAGS += -fPIC
-LDFLAGS += -shared -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg
+STGLIBS_INCS = $(addprefix -I ../../../../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-vpath %.so $(DIR_LIB)
+LIBS += $(addprefix -lstg,$(STGLIBS))
+
+CXXFLAGS += -fPIC $(STGLIBS_INCS)
+CFLAGS += -fPIC $(STGLIBS_INCS)
+LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg $(STGLIBS_LIBS)
 
 all: $(PROG)
 
-$(PROG): $(OBJS) $(STGLIBS)
+$(PROG): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
@@ -38,6 +42,13 @@ endif
 deps:	$(SRCS) ../../../../../Makefile.conf
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "$$file" | grep ".c$$" > /dev/null;\
+	  if [ $$? -eq 0 ];\
+	  then\
+	    echo "`$(CC) $(CFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
+	    printf '%b\n' '\t$$(CC) -c $$< $(CFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  else\
+	    echo "`$(CXX) $(CXXFLAGS) $(DEFS) $(SEARCH_DIRS) -MM $$file` Makefile ../../../../../Makefile.conf" >> deps ;\
+	    printf '%b\n' '\t$$(CXX) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  fi;\
 	done

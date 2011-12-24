@@ -4,33 +4,13 @@
 #include <functional>
 #include <algorithm>
 
+#include "stg/plugin_creator.h"
 #include "stgconfig.h"
 #include "../../../tariffs.h"
 #include "../../../admins.h"
 #include "../../../users.h"
 
-class STGCONFIG_CREATOR
-{
-private:
-    STG_CONFIG * stgconfig;
-
-public:
-    STGCONFIG_CREATOR()
-        : stgconfig(new STG_CONFIG())
-        {
-        };
-    ~STGCONFIG_CREATOR()
-        {
-        delete stgconfig;
-        };
-
-    STG_CONFIG * GetPlugin()
-        {
-        return stgconfig;
-        };
-};
-
-STGCONFIG_CREATOR stgc;
+PLUGIN_CREATOR<STG_CONFIG> stgc;
 
 BASE_PLUGIN * GetPlugin()
 {
@@ -45,21 +25,6 @@ STG_CONFIG_SETTINGS::STG_CONFIG_SETTINGS()
 const string& STG_CONFIG_SETTINGS::GetStrError() const
 {
 return errorStr;
-}
-
-int STG_CONFIG_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
 }
 
 int STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)

@@ -45,6 +45,7 @@ $Date: 2010/09/10 06:43:03 $
 
 #include "stg/common.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
 #include "divert_cap.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
@@ -60,35 +61,15 @@ char iface[10];
 pollfd pollddiv;
 DIVERT_DATA cddiv;  //capture data
 //-----------------------------------------------------------------------------
-class DIVERT_CAP_CREATOR {
-private:
-    DIVERT_CAP * divc;
-
-public:
-    DIVERT_CAP_CREATOR()
-        : divc(new DIVERT_CAP())
-        {
-        }
-    ~DIVERT_CAP_CREATOR()
-        {
-        delete divc;
-        }
-
-    DIVERT_CAP * GetCapturer()
-    {
-    return divc;
-    }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-DIVERT_CAP_CREATOR dcc;
+PLUGIN_CREATOR<DIVERT_CAP> dcc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return dcc.GetCapturer();
+return dcc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -99,7 +80,10 @@ return "Divert_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 DIVERT_CAP::DIVERT_CAP()
-    : port(0),
+    : settings(),
+      port(0),
+      errorStr(),
+      thread(),
       nonstop(false),
       isRunning(false),
       traffCnt(NULL)
@@ -146,7 +130,8 @@ for (i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now killing it
@@ -165,7 +150,11 @@ return 0;
 //-----------------------------------------------------------------------------
 void * DIVERT_CAP::Run(void * d)
 {
-DIVERT_CAP * dc = (DIVERT_CAP *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
 dc->isRunning = true;
 
 char buffer[64];
@@ -177,7 +166,7 @@ while (dc->nonstop)
     if (buffer[12] != 0x8)
         continue;
 
-    memcpy(rp.pckt, &buffer[14], pcktSize);
+    memcpy(rp.rawPacket.pckt, &buffer[14], pcktSize);
 
     dc->traffCnt->Process(rp);
     }
@@ -297,21 +286,6 @@ if (ParseIntInRange(pvi->value[0], 1, 65535, &p))
 
 port = p;
 
-return 0;
-}
-//-----------------------------------------------------------------------------
-int DIVERT_CAP::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
 return 0;
 }
 //-----------------------------------------------------------------------------

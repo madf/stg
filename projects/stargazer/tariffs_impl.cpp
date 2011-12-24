@@ -46,8 +46,11 @@ TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
       tariffs(),
       store(st),
       WriteServLog(GetStgLogger()),
+      mutex(),
       strError(),
-      noTariff(NO_TARIFF_NAME)
+      noTariff(NO_TARIFF_NAME),
+      onAddNotifiers(),
+      onDelNotifiers()
 {
 pthread_mutex_init(&mutex, NULL);
 ReadTariffs();
@@ -86,7 +89,7 @@ for (int i = 0; i < tariffsNum; i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::GetTariffsNum() const
+size_t TARIFFS_IMPL::Count() const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 return tariffs.size();
@@ -160,26 +163,39 @@ if (!priv->tariffChg)
     return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+TARIFF_DATA td;
 
-list<TARIFF_IMPL>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
-
-if (ti == tariffs.end())
     {
-    strError = "Tariff \'" + name + "\' cannot be deleted. Tariff does not exist.";
-    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
-    return -1;
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+    list<TARIFF_IMPL>::iterator ti;
+    ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+
+    if (ti == tariffs.end())
+        {
+        strError = "Tariff \'" + name + "\' cannot be deleted. Tariff does not exist.";
+        WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
+        return -1;
+        }
+
+    if (store->DelTariff(name))
+        {
+        WriteServLog("Cannot delete tariff %s.", name.c_str());
+        WriteServLog("%s", store->GetStrError().c_str());
+        return -1;
+        }
+    
+    td = ti->GetTariffData();
+
+    tariffs.erase(ti);
     }
 
-if (store->DelTariff(name))
+std::set<NOTIFIER_BASE<TARIFF_DATA> *>::iterator ni = onDelNotifiers.begin();
+while (ni != onDelNotifiers.end())
     {
-    WriteServLog("Cannot delete tariff %s.", name.c_str());
-    WriteServLog("%s", store->GetStrError().c_str());
-    return -1;
+    (*ni)->Notify(td);
+    ++ni;
     }
-
-tariffs.erase(ti);
 
 WriteServLog("%s Tariff \'%s\' deleted.",
              admin->GetLogStr().c_str(),
@@ -200,25 +216,35 @@ if (!priv->tariffChg)
     return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-list<TARIFF_IMPL>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
-
-if (ti != tariffs.end())
     {
-    strError = "Tariff \'" + name + "\' cannot be added. Tariff already exist.";
-    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
-    return -1;
-    }
+    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-tariffs.push_back(TARIFF_IMPL(name));
+    list<TARIFF_IMPL>::iterator ti;
+    ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+
+    if (ti != tariffs.end())
+        {
+        strError = "Tariff \'" + name + "\' cannot be added. Tariff already exist.";
+        WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
+        return -1;
+        }
+
+    tariffs.push_back(TARIFF_IMPL(name));
+    }
 
 if (store->AddTariff(name) < 0)
     {
     strError = "Tariff " + name + " adding error. " + store->GetStrError();
     WriteServLog(strError.c_str());
     return -1;
+    }
+
+// Fire all "on add" notifiers
+std::set<NOTIFIER_BASE<TARIFF_DATA> *>::iterator ni = onAddNotifiers.begin();
+while (ni != onAddNotifiers.end())
+    {
+    (*ni)->Notify(tariffs.back().GetTariffData());
+    ++ni;
     }
 
 WriteServLog("%s Tariff \'%s\' added.",
@@ -237,5 +263,29 @@ for (; it != tariffs.end(); ++it)
     {
     tdl->push_back(it->GetTariffData());
     }
+}
+//-----------------------------------------------------------------------------
+void TARIFFS_IMPL::AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onAddNotifiers.insert(n);
+}
+//-----------------------------------------------------------------------------
+void TARIFFS_IMPL::DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onAddNotifiers.erase(n);
+}
+//-----------------------------------------------------------------------------
+void TARIFFS_IMPL::AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onDelNotifiers.insert(n);
+}
+//-----------------------------------------------------------------------------
+void TARIFFS_IMPL::DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * n)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------

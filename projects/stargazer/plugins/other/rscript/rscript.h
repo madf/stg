@@ -60,44 +60,75 @@ class SETTINGS;
 //-----------------------------------------------------------------------------
 class RS_ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    RS_ADD_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    RS_ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
+        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~RS_ADD_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
 
 private:
+    RS_ADD_USER_NONIFIER(const RS_ADD_USER_NONIFIER & rvalue);
+    RS_ADD_USER_NONIFIER & operator=(const RS_ADD_USER_NONIFIER);
+
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 class RS_DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    RS_DEL_USER_NONIFIER(REMOTE_SCRIPT & r) : rs(r) {}
+    RS_DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
+        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~RS_DEL_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
 
 private:
+    RS_DEL_USER_NONIFIER(const RS_DEL_USER_NONIFIER & rvalue);
+    RS_DEL_USER_NONIFIER & operator=(const RS_DEL_USER_NONIFIER);
+
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-class RS_CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
+template <typename T>
+class RS_CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<T> {
 public:
-    RS_CHG_AFTER_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u) : user(u), rs(r) {}
-    void Notify(const varParamType & oldValue, const varParamType & newValue);
-    USER_PTR GetUser() {return user; }
+    RS_CHG_AFTER_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
+        : PROPERTY_NOTIFIER_BASE<T>(), user(u), rs(r) {}
+    RS_CHG_AFTER_NOTIFIER(const RS_CHG_AFTER_NOTIFIER<T> & rvalue)
+        : PROPERTY_NOTIFIER_BASE<T>(), user(rvalue.user), rs(rvalue.rs) {}
+    void Notify(const T & oldValue, const T & newValue);
+    USER_PTR GetUser() { return user; }
 
 private:
+    RS_CHG_AFTER_NOTIFIER<T> & operator=(const RS_CHG_AFTER_NOTIFIER<T> & rvalue);
+
     USER_PTR user;
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 struct RS_USER {
-RS_USER();
-RS_USER(const std::vector<uint32_t> & r, USER_PTR it);
+    RS_USER()
+        : lastSentTime(0),
+          user(NULL),
+          routers(),
+          shortPacketsCount(0)
+    {}
+    RS_USER(const std::vector<uint32_t> & r, USER_PTR it)
+        : lastSentTime(0),
+          user(it),
+          routers(r),
+          shortPacketsCount(0)
+    {}
+    RS_USER(const RS_USER & rvalue)
+        : lastSentTime(rvalue.lastSentTime),
+          user(rvalue.user),
+          routers(rvalue.routers),
+          shortPacketsCount(rvalue.shortPacketsCount)
+    {}
 
-time_t lastSentTime;
-USER_PTR user;
-std::vector<uint32_t> routers;
-int shortPacketsCount;
+    RS_USER & operator=(const RS_USER & rvalue);
+
+    time_t lastSentTime;
+    USER_PTR user;
+    std::vector<uint32_t> routers;
+    int shortPacketsCount;
 };
 //-----------------------------------------------------------------------------
 class RS_SETTINGS {
@@ -114,7 +145,6 @@ public:
     const std::string & GetMapFileName() const { return subnetFile; }
 
 private:
-    int                 ParseIntInRange(const std::string & str, int min, int max, int * val);
     int                 sendPeriod;
     uint16_t            port;
     string              errorStr;
@@ -130,11 +160,6 @@ public:
     virtual             ~REMOTE_SCRIPT();
 
     void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
@@ -154,6 +179,9 @@ public:
     void                ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP);
 
 private:
+    REMOTE_SCRIPT(const REMOTE_SCRIPT & rvalue);
+    REMOTE_SCRIPT & operator=(const REMOTE_SCRIPT & rvalue);
+
     static void *       Run(void *);
     bool                PrepareNet();
     bool                FinalizeNet();
@@ -216,13 +244,11 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, RS_U
 //-----------------------------------------------------------------------------
 inline void RS_ADD_USER_NONIFIER::Notify(const USER_PTR & user)
 {
-printfd(__FILE__, "ADD_USER_NONIFIER\n");
 rs.AddUser(user);
 }
 //-----------------------------------------------------------------------------
 inline void RS_DEL_USER_NONIFIER::Notify(const USER_PTR & user)
 {
-printfd(__FILE__, "DEL_USER_NONIFIER\n");
 rs.DelUser(user);
 }
 //-----------------------------------------------------------------------------

@@ -15,13 +15,12 @@ class STG_CONFIG;
 
 class STG_CONFIG_SETTINGS {
 public:
-                    STG_CONFIG_SETTINGS();
+                    STG_CONFIG_SETTINGS() : errorStr(), port(0) {}
     virtual         ~STG_CONFIG_SETTINGS() {}
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t        GetPort() const;
+    uint16_t        GetPort() const { return port; }
 private:
-    int     ParseIntInRange(const std::string & str, int min, int max, int * val);
     std::string errorStr;
     int     port;
 };
@@ -31,27 +30,30 @@ public:
     STG_CONFIG();
     virtual ~STG_CONFIG(){};
 
-    void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS * t);
-    void                SetAdmins(ADMINS * a);
-    void                SetStore(STORE * s);
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStgSettings(const SETTINGS * s);
-    void                SetSettings(const MODULE_SETTINGS & s);
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetTariffs(TARIFFS * t) { tariffs = t; }
+    void                SetAdmins(ADMINS * a) { admins = a; }
+    void                SetStore(STORE * s) { store = s; }
+    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
-    bool                IsRunning();
+    bool                IsRunning() { return isRunning; }
 
-    const std::string & GetStrError() const;
+    const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const;
-    uint16_t            GetStopPosition() const;
+    uint16_t            GetStartPosition() const { return 220; }
+    uint16_t            GetStopPosition() const { return 220; }
 
 private:
+    STG_CONFIG(const STG_CONFIG & rvalue);
+    STG_CONFIG & operator=(const STG_CONFIG & rvalue);
+
     static void *       Run(void *);
+
     mutable std::string errorStr;
     STG_CONFIG_SETTINGS stgConfigSettings;
     pthread_t           thread;

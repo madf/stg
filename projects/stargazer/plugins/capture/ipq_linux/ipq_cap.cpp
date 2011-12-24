@@ -18,13 +18,17 @@
 * Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
 */
 
-#include <signal.h>
-#include <cerrno>
 #include <netinet/in.h>
 #include <linux/netfilter.h>
 
+#include <csignal>
+#include <cerrno>
+
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
+#include "stg/common.h"
+
 #include "ipq_cap.h"
 
 extern "C"
@@ -32,35 +36,16 @@ extern "C"
 #include "libipq.h"
 }
 
-class IPQ_CAP_CREATOR {
-private:
-    IPQ_CAP * ic;
-
-public:
-    IPQ_CAP_CREATOR()
-        : ic(new IPQ_CAP())
-        {
-        }
-    ~IPQ_CAP_CREATOR()
-        {
-        delete ic;
-        }
-
-    IPQ_CAP * GetCapturer()
-        {
-        return ic;
-        }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IPQ_CAP_CREATOR icc;
+PLUGIN_CREATOR<IPQ_CAP> icc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return icc.GetCapturer();
+return icc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -72,10 +57,13 @@ return "ipq_cap v.1.2";
 //-----------------------------------------------------------------------------
 IPQ_CAP::IPQ_CAP()
     : ipq_h(NULL),
+      errorStr(),
+      thread(),
       nonstop(false),
       isRunning(false),
       capSock(-1),
-      traffCnt(NULL)
+      traffCnt(NULL),
+      buf()
 {
 memset(buf, 0, BUFSIZE);
 }
@@ -110,7 +98,8 @@ for (int i = 0; i < 25; i++)
     {
     if (!isRunning)
         break;
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
@@ -122,7 +111,8 @@ if (isRunning)
         }
     for (int i = 0; i < 25 && isRunning; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (isRunning)
         {
@@ -139,9 +129,13 @@ return 0;
 //-----------------------------------------------------------------------------
 void * IPQ_CAP::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RAW_PACKET raw_packet;
 
-IPQ_CAP * dc = (IPQ_CAP *)d;
+IPQ_CAP * dc = static_cast<IPQ_CAP *>(d);
 dc->isRunning = true;
 memset(&raw_packet, 0, sizeof(raw_packet));
 raw_packet.dataLen = -1;

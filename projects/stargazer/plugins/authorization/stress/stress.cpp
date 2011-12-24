@@ -33,35 +33,14 @@
 #include "stg/user.h"
 #include "stg/common.h"
 #include "stg/user_property.h"
+#include "stg/plugin_creator.h"
 
 #include "stress.h"
 
-class STRESS_CREATOR
-{
-private:
-    AUTH_STRESS * dc;
-
-public:
-    STRESS_CREATOR()
-        {
-        printfd(__FILE__, "constructor STRESS_CREATOR\n");
-        dc = new AUTH_STRESS();
-        };
-    ~STRESS_CREATOR()
-        {
-        printfd(__FILE__, "destructor STRESS_CREATOR\n");
-        delete dc;
-        };
-
-    PLUGIN * GetPlugin()
-    {
-        return dc;
-    };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STRESS_CREATOR stressc;
+PLUGIN_CREATOR<AUTH_STRESS> stressc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -89,21 +68,6 @@ return stressc.GetPlugin();
 AUTH_STRESS_SETTINGS::AUTH_STRESS_SETTINGS()
     : averageOnlineTime(0)
 {
-}
-//-----------------------------------------------------------------------------
-int AUTH_STRESS_SETTINGS::ParseIntInRange(const string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
 }
 //-----------------------------------------------------------------------------
 int AUTH_STRESS_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
@@ -212,7 +176,8 @@ if (isRunning)
         {
         if (!isRunning)
             break;
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it

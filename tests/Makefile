@@ -1,42 +1,55 @@
-CXXFLAGS+=-g3 -Wall -W -Wextra -DLINUX -I../include -I../projects/stargazer -I../stglibs/stgconffiles.lib -I. -DUSE_ABSTRACT_SETTINGS
-LIBS=-lpthread
-PROG=tests
+INCS = -I . \
+       -I ../include \
+       -I ../stglibs/common.lib/include \
+       -I ../stglibs/conffiles.lib/include \
+       -I ../stglibs/logger.lib/include \
+       -I ../stglibs/locker.lib/include \
+       -I ../stglibs/scriptexecuter.lib/include \
+       -I ../projects/stargazer
+DEFS = -DLINUX \
+       -DUSE_ABSTRACT_SETTINGS
+CFLAGS += -g3 -Wall -W -Wextra $(INCS) $(DEFS)
+CXXFLAGS = $(CFLAGS)
+LIBS = -lpthread
+PROG = tests
 
-SOURCES=main.cpp \
-	test_raw_ip.cpp \
-	test_admin_conf.cpp \
-	test_tariff.cpp \
-	test_conffiles.cpp \
-	test_fee_charge_rules.cpp \
-	test_reconnect_on_tariff_change.cpp \
-	../projects/stargazer/tariff_impl.cpp \
-	../projects/stargazer/user_impl.cpp \
-	../projects/stargazer/user_property.cpp \
-	../stglibs/conffiles.lib/conffiles.cpp \
-	../stglibs/common.lib/common.cpp \
-	../stglibs/logger.lib/logger.cpp \
-	../stglibs/scriptexecuter.lib/scriptexecuter.cpp
+SOURCES = main.cpp \
+	  test_raw_ip.cpp \
+  	  test_admin_conf.cpp \
+	  test_tariff.cpp \
+	  test_conffiles.cpp \
+	  test_fee_charge_rules.cpp \
+	  test_reconnect_on_tariff_change.cpp \
+	  ../projects/stargazer/tariff_impl.cpp \
+	  ../projects/stargazer/user_impl.cpp \
+	  ../projects/stargazer/user_property.cpp \
+	  ../stglibs/conffiles.lib/conffiles.cpp \
+	  ../stglibs/common.lib/common.cpp \
+	  ../stglibs/logger.lib/logger.cpp \
+	  ../stglibs/scriptexecuter.lib/scriptexecuter.cpp
 
-.PHONY: all includes clean
+.PHONY: all clean
 
-all: includes $(PROG)
+all: $(PROG)
 
-includes:
-	make -C ../stglibs includes
-
-$(PROG): $(subst .cpp,.o,$(SOURCES))
+$(PROG): $(addsuffix .o,$(basename $(SOURCES)))
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
 clean:
-	rm -f *.o *.d $(PROG)
+	rm -f $(addsuffix .o,$(basename $(SOURCES))) $(addsuffix .d,$(SOURCES)) $(PROG)
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)
--include $(subst .cpp,.d,$(SOURCES))
+-include $(addsuffix .d,$(SOURCES))
 endif
 endif
 
-%.d: %.cpp
-	@$(CC) -MM $(CXXFLAGS) $< > $@.$$$$; \
+%.cpp.d: %.cpp
+	@$(CXX) -MM $(CXXFLAGS) $< > $@.$$$$; \
+	sed 's,\($*\).o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+%.c.d: %.c
+	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\).o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$

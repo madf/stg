@@ -31,7 +31,7 @@
 #ifndef __INTERNAL_IBPP_H__
 #define __INTERNAL_IBPP_H__
 
-#include "ibpp.h"
+#include "stg/ibpp.h"
 
 #if defined(__BCPLUSPLUS__) || defined(_MSC_VER) || defined(__DMC__)
 #define HAS_HDRSTOP

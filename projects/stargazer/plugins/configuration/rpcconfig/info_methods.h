@@ -30,7 +30,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_INFO(const METHOD_INFO & rvalue);
+    METHOD_INFO & operator=(const METHOD_INFO & rvalue);
+
     TARIFFS * tariffs;
     USERS * users;
     size_t dayFee;
@@ -47,7 +51,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_LOGIN(const METHOD_LOGIN & rvalue);
+    METHOD_LOGIN & operator=(const METHOD_LOGIN & rvalue);
+
     RPC_CONFIG * config;
 };
 
@@ -61,7 +69,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value *   const   retvalP);
+
 private:
+    METHOD_LOGOUT(const METHOD_LOGOUT & rvalue);
+    METHOD_LOGOUT & operator=(const METHOD_LOGOUT & rvalue);
+
     RPC_CONFIG * config;
 };
 

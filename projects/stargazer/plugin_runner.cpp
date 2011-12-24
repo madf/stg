@@ -34,6 +34,8 @@
 #include "admins_impl.h"
 #include "tariffs_impl.h"
 #include "users_impl.h"
+#include "services_impl.h"
+#include "corps_impl.h"
 
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
@@ -41,6 +43,8 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
                              ADMINS_IMPL * a,
                              TARIFFS_IMPL * t,
                              USERS_IMPL * u,
+                             SERVICES_IMPL * svc,
+                             CORPORATIONS_IMPL * crp,
                              TRAFFCOUNTER * tc,
                              STORE * st,
                              const SETTINGS_IMPL * s)
@@ -54,6 +58,8 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
       admins(a),
       tariffs(t),
       users(u),
+      services(svc),
+      corps(crp),
       store(st),
       traffCnt(tc),
       stgSettings(s),
@@ -72,6 +78,8 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue)
       admins(rvalue.admins),
       tariffs(rvalue.tariffs),
       users(rvalue.users),
+      services(rvalue.services),
+      corps(rvalue.corps),
       store(rvalue.store),
       traffCnt(rvalue.traffCnt),
       stgSettings(rvalue.stgSettings),
@@ -91,6 +99,8 @@ isRunning = rvalue.isRunning;
 admins = rvalue.admins;
 tariffs = rvalue.tariffs;
 users = rvalue.users;
+services = rvalue.services;
+corps = rvalue.corps;
 store = rvalue.store;
 traffCnt = rvalue.traffCnt;
 stgSettings = rvalue.stgSettings;
@@ -137,6 +147,8 @@ if (!plugin)
 plugin->SetTariffs(tariffs);
 plugin->SetAdmins(admins);
 plugin->SetUsers(users);
+plugin->SetServices(services);
+plugin->SetCorporations(corps);
 plugin->SetTraffcounter(traffCnt);
 plugin->SetStore(store);
 plugin->SetStgSettings(stgSettings);
@@ -166,9 +178,7 @@ if (!plugin)
     return -1;
     }
 
-plugin->Stop();
-
-return 0;
+return plugin->Stop();
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Reload()

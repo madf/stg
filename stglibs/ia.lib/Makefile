@@ -8,8 +8,11 @@ SRCS = ia.cpp
 
 INCS = ia.h
 
-STGLIBS = -lstgcommon \
-	  -lstgcrypto
+STGLIBS = -lstgcrypto
+
 LIBS = $(LIB_THREAD)
+
+LIB_INCS = -I ../crypto.lib/include \
+	   -I ../common.lib/include
 
 include ../Makefile.in

@@ -9,22 +9,23 @@ PROG = sgconf
 SRCS = ./main.cpp \
        ./common_sg.cpp
 
-STGLIBS =  -lstgconffiles \
-           -lstgcommon \
-	   -lstgcrypto \
-           -lstgsrvconf
+STGLIBS = conffiles \
+          srvconf \
+	  crypto \
+          common
 
-LIBS += -lexpat \
-	$(LIB_THREAD)
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+
+LIBS += $(addprefix -lstg,$(STGLIBS)) -lexpat $(LIB_THREAD)
 
 ifeq ($(OS),linux)
-LIBS += -ldl
 else
 LIBS += -lc \
 	-liconv
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 ifeq ($(OS),bsd)
 SEARCH_DIRS += -I/usr/local/include
@@ -38,10 +39,9 @@ endif
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CXXFLAGS += -Wall
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
-
-vpath %.so $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs install uninstall install-bin install-data uninstall-bin uninstall-data
 all: libs $(PROG) ../../Makefile.conf
@@ -49,8 +49,8 @@ all: libs $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-$(PROG): $(OBJS) $(STGLIBS)
-	$(CC) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+$(PROG): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
@@ -84,11 +84,9 @@ endif
 endif
 
 deps:	$(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
-
-

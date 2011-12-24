@@ -8,11 +8,13 @@ PROG = stargazer
 
 SRCS = ./admin_impl.cpp \
        ./admins_impl.cpp \
+       ./corps_impl.cpp \
        ./eventloop.cpp \
        ./main.cpp \
        ./pidfile.cpp \
        ./plugin_runner.cpp \
        ./settings_impl.cpp \
+       ./services_impl.cpp \
        ./stg_timer.cpp \
        ./store_loader.cpp \
        ./tariff_impl.cpp \
@@ -22,28 +24,30 @@ SRCS = ./admin_impl.cpp \
        ./user_property.cpp \
        ./users_impl.cpp
 
-STGLIBS =  -lstglogger \
-    	   -lstglocker \
-           -lstgcommon \
-           -lstgscriptexecuter \
-           -ldotconfpp
+STGLIBS = scriptexecuter \
+          dotconfpp \
+	  locker \
+	  logger \
+	  common
 
-LIBS += -lexpat
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
-LIBS += $(LIB_THREAD) \
-        -ldl
+LIBS += -ldl
 else
-LIBS += $(LIB_THREAD) \
-        -lc
+LIBS += -lc -liconv
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB) 
-vpath %.so $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins install uninstall install-bin install-data
 all: libs plugins $(PROG)
@@ -54,8 +58,8 @@ libs:
 plugins: libs 
 	$(MAKE) -C $(DIR_PLUGINS)
 
-$(PROG): $(OBJS) libs
-	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) $(STGLIBS) -o $(PROG)
+$(PROG): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
@@ -85,15 +89,15 @@ install-data:
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer/conf-enabled.d
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/stargazer.conf $(PREFIX)/etc/stargazer/stargazer.conf
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/conf-available.d/*.conf $(PREFIX)/etc/stargazer/conf-available.d
-	ln -s ../conf-available.d/mod_ao.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ao.conf
-	ln -s ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
-	ln -s ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
-	ln -s ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
+	ln -sf ../conf-available.d/mod_ao.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ao.conf
+	ln -sf ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
+	ln -sf ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
+	ln -sf ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
 
 ifeq ($(OS),linux)
-	ln -s ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
+	ln -sf ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
 else
-	ln -s ../conf-available.d/mod_cap_bpf.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_bpf.conf
+	ln -sf ../conf-available.d/mod_cap_bpf.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_bpf.conf
 endif
 
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/rules $(PREFIX)/etc/stargazer/rules
@@ -107,19 +111,6 @@ endif
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/tariffs/tariff.tf $(PREFIX)/var/stargazer/tariffs/tariff.tf
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/users/test/conf $(PREFIX)/var/stargazer/users/test/conf
 	install -m $(DATA_MODE) -o $(OWNER) $(VAR_DIR)/users/test/stat $(PREFIX)/var/stargazer/users/test/stat
-	
-ifeq ($(CHECK_FBCLIENT),yes)
-	# Install firebird db
-	mkdir -p $(PREFIX)/var/stargazer
-	chown $(OWNER):$(FIREBIRD_GROUP) $(PREFIX)/var/stargazer
-	chmod g+rw $(PREFIX)/var/stargazer
-	echo "connect '$(DB_ADDRESS)' user '$(DB_USER)' password '$(DB_PASSWORD)';" > .db.sql
-	echo "drop database;" >> .db.sql
-	echo "create database '$(DB_ADDRESS)' user '$(DB_USER)' password '$(DB_PASSWORD)' default character set win1251;" >> .db.sql
-	cat $(VAR_DIR)/../00-base-00.sql >> .db.sql
-	$(FIREBIRD_ISQL) -i .db.sql
-	rm -f .db.sql
-endif
 
 uninstall: uninstall-bin uninstall-data
 
@@ -144,9 +135,9 @@ endif
 endif
 
 deps: $(SRCS) ../../Makefile.conf
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
+	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done

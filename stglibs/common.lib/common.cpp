@@ -28,35 +28,13 @@
  $Author: faust $
  */
 
-
-/*#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <iconv.h>
-
-
-#include <stdarg.h>
-
-
+// For old and dub systems
+// Like FreeBSD4
 #include <sys/types.h>
-#include <math.h>
-
-#ifdef WIN32
-#include <sysutils.hpp>
-#else
+#include <sys/time.h>
 #include <unistd.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#endif*/
 
-#ifdef FREE_BSD
-#include <sys/types.h>
-#endif
+#include <sys/select.h>
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -64,6 +42,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/select.h>
 #endif
 
 #include <iconv.h>
@@ -75,7 +54,7 @@
 #include <cerrno>
 #include <cassert>
 
-#include "common.h"
+#include "stg/common.h"
 
 #ifndef INET_ADDRSTRLEN
 #   define INET_ADDRSTRLEN 16
@@ -978,4 +957,81 @@ delete[] inBuf;
 
 return dst;
 }
-//---------------------------------------------------------------------------
+
+int ParseYesNo(const std::string & str, bool * val)
+{
+if (0 == strncasecmp(str.c_str(), "yes", 3))
+    {
+    *val = true;
+    return 0;
+    }
+
+if (0 == strncasecmp(str.c_str(), "no", 2))
+    {
+    *val = false;
+    return 0;
+    }
+
+return -1;
+}
+
+int ParseInt(const std::string & str, int * val)
+{
+if (str2x<int>(str, *val))
+    return -1;
+return 0;
+}
+
+int ParseUnsigned(const string & str, unsigned * val)
+{
+if (str2x<unsigned>(str, *val))
+    return -1;
+return 0;
+}
+
+int ParseIntInRange(const string & str, int min, int max, int * val)
+{
+if (ParseInt(str, val) != 0)
+    return -1;
+
+if (*val < min || *val > max)
+    return -1;
+
+return 0;
+}
+
+int ParseUnsignedInRange(const string & str, unsigned min,
+                         unsigned max, unsigned * val)
+{
+if (ParseUnsigned(str, val) != 0)
+    return -1;
+
+if (*val < min || *val > max)
+    return -1;
+
+return 0;
+}
+
+bool WaitPackets(int sd)
+{
+fd_set rfds;
+FD_ZERO(&rfds);
+FD_SET(sd, &rfds);
+
+struct timeval tv;
+tv.tv_sec = 0;
+tv.tv_usec = 500000;
+
+int res = select(sd + 1, &rfds, NULL, NULL, &tv);
+if (res == -1) // Error
+    {
+    if (errno != EINTR)
+        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
+    return false;
+    }
+
+if (res == 0) // Timeout
+    return false;
+
+return true;
+}

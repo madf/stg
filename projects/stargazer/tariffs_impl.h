@@ -1,8 +1,3 @@
- /*
- $Revision: 1.7 $
- $Date: 2010/10/07 18:43:21 $
- */
-
 /*
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -27,12 +22,6 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.7 $
- $Date: 2010/10/07 18:43:21 $
- $Author: faust $
- */
-
 #ifndef TARIFFS_IMPL_H
 #define TARIFFS_IMPL_H
 
@@ -40,6 +29,7 @@
 
 #include <string>
 #include <list>
+#include <set>
 
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
@@ -60,21 +50,34 @@ public:
     int     ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;
     const TARIFF * GetNoTariff() const { return &noTariff; };
-    int     GetTariffsNum() const;
+    size_t  Count() const;
     int     Del(const std::string & name, const ADMIN * admin);
     int     Add(const std::string & name, const ADMIN * admin);
     int     Chg(const TARIFF_DATA & td, const ADMIN * admin);
 
+    void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+    void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+
+    void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+    void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+
     void    GetTariffsData(std::list<TARIFF_DATA> * tdl);
 
     const std::string & GetStrError() const { return strError; }
+
 private:
+    TARIFFS_IMPL(const TARIFFS_IMPL & rvalue);
+    TARIFFS_IMPL & operator=(const TARIFFS_IMPL & rvalue);
+
     std::list<TARIFF_IMPL>  tariffs;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
     mutable pthread_mutex_t mutex;
     std::string             strError;
     TARIFF_IMPL             noTariff;
+
+    std::set<NOTIFIER_BASE<TARIFF_DATA>*> onAddNotifiers;
+    std::set<NOTIFIER_BASE<TARIFF_DATA>*> onDelNotifiers;
 };
 
 #endif

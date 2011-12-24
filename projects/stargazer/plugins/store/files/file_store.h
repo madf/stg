@@ -44,33 +44,35 @@ extern "C" STORE * GetStore();
 class FILES_STORE_SETTINGS {
 public:
     FILES_STORE_SETTINGS();
-    virtual ~FILES_STORE_SETTINGS();
-    virtual int ParseSettings(const MODULE_SETTINGS & s);
-    virtual const std::string & GetStrError() const;
+    int ParseSettings(const MODULE_SETTINGS & s);
+    const std::string & GetStrError() const;
 
-    std::string  GetWorkDir() const;
-    std::string  GetUsersDir() const;
-    std::string  GetAdminsDir() const;
-    std::string  GetTariffsDir() const;
+    std::string  GetWorkDir() const { return workDir; }
+    std::string  GetUsersDir() const { return usersDir; }
+    std::string  GetAdminsDir() const { return adminsDir; }
+    std::string  GetTariffsDir() const { return tariffsDir; }
 
-    mode_t  GetStatMode() const;
+    mode_t  GetStatMode() const { return statMode; }
     mode_t  GetStatModeDir() const;
-    uid_t   GetStatUID() const;
-    gid_t   GetStatGID() const;
+    uid_t   GetStatUID() const { return statUID; }
+    gid_t   GetStatGID() const { return statGID; }
 
-    mode_t  GetConfMode() const;
+    mode_t  GetConfMode() const { return confMode; }
     mode_t  GetConfModeDir() const;
-    uid_t   GetConfUID() const;
-    gid_t   GetConfGID() const;
+    uid_t   GetConfUID() const { return confUID; }
+    gid_t   GetConfGID() const { return confGID; }
 
-    mode_t  GetLogMode() const;
-    uid_t   GetLogUID() const;
-    gid_t   GetLogGID() const;
+    mode_t  GetLogMode() const { return userLogMode; }
+    uid_t   GetLogUID() const { return userLogUID; }
+    gid_t   GetLogGID() const { return userLogGID; }
 
-    bool    GetRemoveBak() const;
-    bool    GetReadBak() const;
+    bool    GetRemoveBak() const { return removeBak; }
+    bool    GetReadBak() const { return readBak; }
 
 private:
+    FILES_STORE_SETTINGS(const FILES_STORE_SETTINGS & rvalue);
+    FILES_STORE_SETTINGS & operator=(const FILES_STORE_SETTINGS & rvalue);
+
     const MODULE_SETTINGS * settings;
 
     int     User2UID(const char * user, uid_t * uid);
@@ -107,8 +109,8 @@ private:
 class FILES_STORE: public STORE {
 public:
     FILES_STORE();
-    virtual ~FILES_STORE();
-    virtual const std::string & GetStrError() const;
+    virtual ~FILES_STORE() {}
+    virtual const std::string & GetStrError() const { return errorStr; }
 
     //User
     virtual int GetUsersList(std::vector<std::string> * usersList) const;
@@ -180,11 +182,14 @@ public:
     virtual int AddService(const std::string &) const { return 0; }
     virtual int DelService(const std::string &) const { return 0; }
 
-    virtual void SetSettings(const MODULE_SETTINGS & s);
+    virtual void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     virtual int ParseSettings();
-    virtual const std::string & GetVersion() const;
+    virtual const std::string & GetVersion() const { return version; }
 
 private:
+    FILES_STORE(const FILES_STORE & rvalue);
+    FILES_STORE & operator=(const FILES_STORE & rvalue);
+
     virtual int RestoreUserStat(USER_STAT * stat, const std::string & login, const std::string & fileName) const;
     virtual int RestoreUserConf(USER_CONF * conf, const std::string & login, const std::string & fileName) const;
 

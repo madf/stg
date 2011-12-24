@@ -73,17 +73,17 @@ inline DIR_TRAFF & DIR_TRAFF::operator=(const DIR_TRAFF & ts)
 {
 traff = ts.traff;
 return *this;
-};
+}
 //-----------------------------------------------------------------------------
 inline uint64_t & DIR_TRAFF::operator[](int idx)
 {
 return traff[idx];
-};
+}
 //-----------------------------------------------------------------------------
 inline uint64_t DIR_TRAFF::operator[](int idx) const
 {
 return traff[idx];
-};
+}
 //-----------------------------------------------------------------------------
 inline DIR_TRAFF DIR_TRAFF::operator+(const DIR_TRAFF & ts)
 {
@@ -92,7 +92,7 @@ for (int i = 0; i < DIR_NUM; i++)
     traff[i] = traff[i] + ts.traff[i];
     }
 return *this;
-};
+}
 //-----------------------------------------------------------------------------
 inline std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
 {

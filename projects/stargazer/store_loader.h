@@ -50,7 +50,11 @@ public:
     STORE * GetStore() { return plugin; }
 
     const std::string & GetStrError() const { return errorStr; }
+
 private:
+    STORE_LOADER(const STORE_LOADER & rvalue);
+    STORE_LOADER & operator=(const STORE_LOADER & rvalue);
+
     bool isLoaded;
     void * handle;
     STORE * plugin;

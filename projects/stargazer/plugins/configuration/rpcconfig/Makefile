@@ -24,7 +24,10 @@ ifneq ($(OS),linux)
 LIBS += -liconv
 endif
 
-STGLIBS = -lstgcommon -lstglogger
+STGLIBS = common \
+	  locker \
+	  logger \
+	  scriptexecuter
 
 include ../../Makefile.in
 

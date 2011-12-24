@@ -43,26 +43,38 @@ extern "C" PLUGIN * GetPlugin();
 class AUTH_AO;
 class USERS;
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
+template <typename T>
+class CHG_BEFORE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
-                CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
+                CHG_BEFORE_NOTIFIER(AUTH_AO & a, USER_PTR u)
+                    : PROPERTY_NOTIFIER_BASE<T>(), user(u), auth(a) {}
+                CHG_BEFORE_NOTIFIER(const CHG_BEFORE_NOTIFIER<T> & rvalue)
+                    : PROPERTY_NOTIFIER_BASE<T>(),
+                      user(rvalue.user), auth(rvalue.auth) {}
+    void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 
 private:
+    CHG_BEFORE_NOTIFIER<T> & operator=(const CHG_BEFORE_NOTIFIER<T> & rvalue);
+
     USER_PTR        user;
     const AUTH_AO & auth;
 };
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<varParamType> {
+template <typename T>
+class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<T> {
 public:
-                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u) : user(u), auth(a) {}
-    void        Notify(const varParamType & oldValue, const varParamType & newValue);
+                CHG_AFTER_NOTIFIER(AUTH_AO & a, USER_PTR u)
+                    : PROPERTY_NOTIFIER_BASE<T>(), user(u), auth(a) {}
+                CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER<T> & rvalue)
+                    : PROPERTY_NOTIFIER_BASE<T>(),
+                      user(rvalue.user), auth(rvalue.auth) {}
+    void        Notify(const T & oldValue, const T & newValue);
     USER_PTR    GetUser() const { return user; }
 
 private:
+    CHG_AFTER_NOTIFIER<T> & operator=(const CHG_AFTER_NOTIFIER<T> & rvalue);
+
     USER_PTR        user;
     const AUTH_AO & auth;
 };
@@ -73,11 +85,6 @@ public:
     virtual ~AUTH_AO(){};
 
     void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
 
     int                 Start();
     int                 Stop();
@@ -93,15 +100,16 @@ public:
     void                AddUser(USER_PTR u);
     void                DelUser(USER_PTR u);
 
-    void                UpdateUserAuthorization(USER_PTR u) const;
-    void                Unauthorize(USER_PTR u) const;
-
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
+    AUTH_AO(const AUTH_AO & rvalue);
+    AUTH_AO & operator=(const AUTH_AO & rvalue);
+
     void                GetUsers();
     void                SetUserNotifiers(USER_PTR u);
     void                UnSetUserNotifiers(USER_PTR u);
+    void                UpdateUserAuthorization(CONST_USER_PTR u) const;
 
     mutable std::string errorStr;
     USERS *             users;
@@ -119,13 +127,12 @@ private:
     public:
         ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~ADD_USER_NONIFIER() {}
-
-        void Notify(const USER_PTR & user)
-            {
-            auth.AddUser(user);
-            }
+        void Notify(const USER_PTR & user) { auth.AddUser(user); }
 
     private:
+        ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
+        ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER & rvalue);
+
         AUTH_AO & auth;
     } onAddUserNotifier;
 
@@ -133,15 +140,19 @@ private:
     public:
         DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~DEL_USER_NONIFIER() {}
-
-        void Notify(const USER_PTR & user)
-            {
-            auth.DelUser(user);
-            }
+        void Notify(const USER_PTR & user) { auth.DelUser(user); }
 
     private:
+        DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
+        DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER & rvalue);
+
         AUTH_AO & auth;
     } onDelUserNotifier;
+
+    friend class CHG_BEFORE_NOTIFIER<int>;
+    friend class CHG_AFTER_NOTIFIER<int>;
+    friend class CHG_BEFORE_NOTIFIER<USER_IPS>;
+    friend class CHG_AFTER_NOTIFIER<USER_IPS>;
 
 };
 //-----------------------------------------------------------------------------

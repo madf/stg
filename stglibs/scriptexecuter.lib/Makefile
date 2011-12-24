@@ -4,7 +4,7 @@
 
 LIB_NAME = stgscriptexecuter
 
-SRCS = scriptexecuter.cpp
+SRCS = scriptexecuter.c
 
 INCS = scriptexecuter.h
 

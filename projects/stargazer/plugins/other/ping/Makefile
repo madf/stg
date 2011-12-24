@@ -10,7 +10,11 @@ PROG = mod_ping.so
 
 SRCS = ./ping.cpp
 
-STGLIBS = -lstgpinger -lstgcommon
+STGLIBS = pinger \
+	  common \
+	  locker \
+	  logger \
+	  scriptexecuter
 
 include ../../Makefile.in
 

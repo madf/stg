@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <syslog.h>
 
-#include "logger.h"
+#include "stg/logger.h"
 
 #ifdef STG_TIME
 extern const volatile time_t stgTime;
@@ -15,7 +15,8 @@ return logger;
 }
 //-----------------------------------------------------------------------------
 STG_LOGGER::STG_LOGGER()
-    : fileName()
+    : fileName(),
+      mutex()
 {
 pthread_mutex_init(&mutex, NULL);
 }

@@ -23,20 +23,24 @@ struct PRIV
           userPasswd(0),
           userAddDel(0),
           adminChg(0),
-          tariffChg(0)
-    {};
-    PRIV(uint16_t p)
-        : userStat((p & 0x0003) >> 0x00),
-          userConf((p & 0x000C) >> 0x02),
-          userCash((p & 0x0030) >> 0x04),
-          userPasswd((p & 0x00C0) >> 0x06),
-          userAddDel((p & 0x0300) >> 0x08),
-          adminChg((p & 0x0C00) >> 0x0A),
-          tariffChg((p & 0x3000) >> 0x0C)
+          tariffChg(0),
+          serviceChg(0),
+          corpChg(0)
+    {}
+    PRIV(uint32_t p)
+        : userStat((p & 0x00000003) >> 0x00),
+          userConf((p & 0x0000000C) >> 0x02),
+          userCash((p & 0x00000030) >> 0x04),
+          userPasswd((p & 0x000000C0) >> 0x06),
+          userAddDel((p & 0x00000300) >> 0x08),
+          adminChg((p & 0x00000C00) >> 0x0A),
+          tariffChg((p & 0x00003000) >> 0x0C),
+          serviceChg((p & 0x0000C000) >> 0x0E),
+          corpChg((p & 0x00030000) >> 0x10)
     {}
 
-    uint16_t ToInt() const;
-    void FromInt(uint16_t p);
+    uint32_t ToInt() const;
+    void FromInt(uint32_t p);
 
     uint16_t userStat;
     uint16_t userConf;
@@ -45,6 +49,8 @@ struct PRIV
     uint16_t userAddDel;
     uint16_t adminChg;
     uint16_t tariffChg;
+    uint16_t serviceChg;
+    uint16_t corpChg;
 };
 //-----------------------------------------------------------------------------
 struct ADMIN_CONF

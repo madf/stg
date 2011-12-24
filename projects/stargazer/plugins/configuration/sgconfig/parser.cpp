@@ -63,13 +63,13 @@ answerList->push_back("<ServerInfo>");
 sprintf(s, "<version value=\"%s\"/>", SERVER_VERSION);
 answerList->push_back(s);
 
-sprintf(s, "<tariff_num value=\"%d\"/>", tariffs->GetTariffsNum());
+sprintf(s, "<tariff_num value=\"%llu\"/>", (unsigned long long)tariffs->Count());
 answerList->push_back(s);
 
 sprintf(s, "<tariff value=\"%d\"/>", 2);
 answerList->push_back(s);
 
-sprintf(s, "<users_num value=\"%d\"/>", users->GetUserNum());
+sprintf(s, "<users_num value=\"%llu\"/>", (unsigned long long)users->Count());
 answerList->push_back(s);
 
 sprintf(s, "<uname value=\"%s\"/>", un);
@@ -93,11 +93,6 @@ answerList->push_back("</ServerInfo>");
 }
 //-----------------------------------------------------------------------------
 //  GET USER
-//-----------------------------------------------------------------------------
-PARSER_GET_USER::PARSER_GET_USER()
-{
-
-}
 //-----------------------------------------------------------------------------
 int PARSER_GET_USER::ParseStart(void *, const char *el, const char **attr)
 {
@@ -295,12 +290,6 @@ answerList->push_back(s);
 }
 //-----------------------------------------------------------------------------
 //  GET USERS
-//-----------------------------------------------------------------------------
-PARSER_GET_USERS::PARSER_GET_USERS()
-    : lastUserUpdateTime(0),
-      lastUpdateFound(false)
-{
-}
 //-----------------------------------------------------------------------------
 int PARSER_GET_USERS::ParseStart(void *, const char *el, const char ** attr)
 {
@@ -643,11 +632,6 @@ answerList->push_back("</Users>");
 //-----------------------------------------------------------------------------
 //  ADD USER
 //-----------------------------------------------------------------------------
-PARSER_ADD_USER::PARSER_ADD_USER()
-{
-depth = 0;
-}
-//-----------------------------------------------------------------------------
 int PARSER_ADD_USER::ParseStart(void *, const char *el, const char **attr)
 {
 depth++;
@@ -720,10 +704,13 @@ return -1;
 //  PARSER CHG USER
 //-----------------------------------------------------------------------------
 PARSER_CHG_USER::PARSER_CHG_USER()
-    : usr(NULL),
+    : BASE_PARSER(),
+      usr(NULL),
       ucr(NULL),
       upr(NULL),
       downr(NULL),
+      cashMsg(),
+      login(),
       cashMustBeAdded(false),
       res(0)
 {

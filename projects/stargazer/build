@@ -25,30 +25,6 @@ DIR_MODE=0755
 
 OWNER=root
 
-# Name of the firebird's group
-# Need for chown directory with firebird db
-
-FIREBIRD_GROUP=firebird
-
-# Database address
-# Firebird must have priviledges to read/write for specified path
-
-DB_ADDRESS="localhost:/var/stargazer/stargazer.fdb"
-
-# Database user
-# This user must have priviledges to create database
-
-DB_USER="stg"
-
-# Database password
-
-DB_PASSWORD="123456"
-
-# Full path to isql utility
-# Note: Debian users have to specify path to isql-fb utility
-
-FIREBIRD_ISQL="/opt/firebird/bin/isql"
-
 OS=unknown
 sys=`uname -s`
 release=`uname -r | cut -b1`
@@ -68,7 +44,7 @@ else
     then
         DEFS="$DEFS -DDEBUG"
         MAKEOPTS="-j1"
-        CXXFLAGS="$CXXFLAGS -g3 -W -Wall"
+        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
     else
         DEFS="$DEFS -DNDEBUG"
         MAKEOPTS="-j1"
@@ -119,7 +95,8 @@ STG_LIBS="logger.lib
 	  scriptexecuter.lib 
 	  conffiles.lib
 	  pinger.lib 
-	  dotconfpp.lib"
+	  dotconfpp.lib
+          smux.lib"
 
 PLUGINS="authorization/ao
          authorization/inetaccess
@@ -127,6 +104,7 @@ PLUGINS="authorization/ao
          other/ping
          other/rscript
          other/radius
+         other/smux
          store/files
          capture/cap_nf"
 
@@ -136,7 +114,6 @@ then
     PLUGINS="$PLUGINS
              capture/ether_linux
              capture/ipq_linux"
-    SHELL="/bin/bash"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
@@ -155,7 +132,6 @@ else
     PLUGINS="$PLUGINS
              capture/ether_freebsd
              capture/divert_freebsd"
-    SHELL="/usr/local/bin/bash"
 fi
 
 if [ -z "$CC" ]
@@ -189,7 +165,7 @@ echo "found"
 
 echo -n "Checking endianess... "
 echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
-$CC $CXXFLAGS $LDFLAGS build_check.c -o fake
+$CC $CFLAGS $LDFLAGS build_check.c -o fake
 if [ $? != 0 ]
 then
     echo "FAIL!"
@@ -201,10 +177,12 @@ else
     then
         ARCH=le
         CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        CFLAGS="$CFLAGS -DARCH_LE"
         echo "Little Endian"
     else
         ARCH=be
         CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        CFLAGS="$CFLAGS -DARCH_BE"
         echo "Big Endian"
     fi
 fi
@@ -212,7 +190,7 @@ rm -f fake
 
 echo -n "Checking for -lexpat... "
 echo "int main() { return 0; }" > build_check.c
-$CC $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_EXPAT=no
@@ -224,7 +202,7 @@ fi
 rm -f fake
 
 echo -n "Checking for -lfbclient... "
-$CC $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -241,7 +219,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lmysqlclient... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
@@ -260,7 +238,6 @@ else
         CHECK_MYSQLCLIENT=no
         echo "no"
     else
-        #CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
         echo "[$MYSQL_CFLAGS]"
         echo -n "Checking for mysql_config --libs_r... "
         MYSQL_LDFLAGS=`mysql_config --libs_r 2> /dev/null`
@@ -270,7 +247,6 @@ else
             echo "no"
         else
             CHECK_MYSQLCLIENT=yes
-            #LDFLAGS="$LDFLAGS $MYSQL_LDFLAGS"
             echo "[$MYSQL_LDFLAGS]"
         fi
     fi
@@ -282,7 +258,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lpq... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -321,7 +297,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lxmlrpc... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_XMLRPC=no
@@ -419,8 +395,8 @@ do
     echo -n "$plugin " >> $CONFFILE
 done
 echo "" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
+echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
 echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
 echo "PREFIX=$PREFIX" >> $CONFFILE
@@ -430,11 +406,6 @@ echo "DIR_MODE=$DIR_MODE" >> $CONFFILE
 echo "OWNER=$OWNER" >> $CONFFILE
 echo "VAR_DIR=$VAR_DIR" >> $CONFFILE
 echo "ETC_DIR=$ETC_DIR" >> $CONFFILE
-echo "DB_ADDRESS=$DB_ADDRESS" >> $CONFFILE
-echo "DB_USER=$DB_USER" >> $CONFFILE
-echo "DB_PASSWORD=$DB_PASSWORD" >> $CONFFILE
-echo "FIREBIRD_ISQL=$FIREBIRD_ISQL" >> $CONFFILE
-echo "FIREBIRD_GROUP=$FIREBIRD_GROUP" >> $CONFFILE
 
 mkdir -p modules
 

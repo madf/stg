@@ -1,3 +1,4 @@
+#include <csignal>
 #include <cerrno>
 #include <cstring>
 
@@ -6,7 +7,12 @@
 #include "eventloop.h"
 
 EVENT_LOOP::EVENT_LOOP()
-    : ACTIONS_LIST()
+    : ACTIONS_LIST(),
+      _running(false),
+      _stopped(true),
+      _tid(),
+      _mutex(),
+      _condition()
 {
 pthread_mutex_init(&_mutex, NULL);
 pthread_cond_init(&_condition, NULL);
@@ -48,6 +54,10 @@ return NULL;
 
 void EVENT_LOOP::Runner()
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 _stopped = false;
 printfd(__FILE__, "EVENT_LOOP::Runner - Before start\n");
 while (_running)

@@ -22,7 +22,6 @@ public:
     int             ParseSettings(const MODULE_SETTINGS & s);
     uint16_t        GetPort();
 private:
-    int     ParseIntInRange(const string & str, int min, int max, int * val);
     string  errorStr;
     int     port;
 };
@@ -36,7 +35,6 @@ public:
     void                SetTariffs(TARIFFS * t) { tariffs = t; }
     void                SetAdmins(ADMINS * a) { admins = a; }
     void                SetStore(STORE * s) { store = s; }
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
     void                SetStgSettings(const SETTINGS * s) { stgConfigSettings = s; }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();

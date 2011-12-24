@@ -1,9 +1,7 @@
 #include <string>
 #include <pthread.h>
 #include "base_plugin.h"
-//#include "common_settings.h"
 #include "common.h"
-//#include "configproto.h"
 
 using namespace std;
 
@@ -22,7 +20,6 @@ public:
     uint16_t        GetPort();
 
 private:
-    int     ParseIntInRange(const string & str, int min, int max, int * val);
     string  errorStr;
     int     port;
 };
@@ -37,7 +34,6 @@ public:
     void                SetTariffs(TARIFFS * t);
     void                SetAdmins(ADMINS * a);
     void                SetStore(BASE_STORE * s);
-    void                SetTraffcounter(TRAFFCOUNTER * tc){};
     void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();

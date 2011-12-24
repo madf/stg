@@ -35,14 +35,6 @@
 #include "stg/common.h"
 #include "nrmap_parser.h"
 
-NRMapParser::NRMapParser()
-{
-}
-
-NRMapParser::~NRMapParser()
-{
-}
-
 bool NRMapParser::ReadFile(const std::string & fileName)
 {
 std::ifstream source(fileName.c_str());

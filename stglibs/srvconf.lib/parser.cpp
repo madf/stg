@@ -35,7 +35,7 @@
 
 #include "stg/common.h"
 #include "stg/const.h"
-#include "servconf.h"
+#include "stg/servconf.h"
 
 using namespace std;
 

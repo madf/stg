@@ -8,9 +8,9 @@ PROG = mod_cap_bpf.so
 
 SRCS = ./ether_cap.cpp 
 
-STGLIBS = -lstgcommon
-
 LIBS += $(LIB_THREAD)
+
+STGLIBS = common
 
 include ../../Makefile.in
 

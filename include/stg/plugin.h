@@ -35,6 +35,8 @@
 #include "admins.h"
 #include "users.h"
 #include "tariffs.h"
+#include "services.h"
+#include "corporations.h"
 
 class TRAFFCOUNTER;
 class SETTINGS;
@@ -43,13 +45,16 @@ struct MODULE_SETTINGS;
 
 class PLUGIN : private NONCOPYABLE {
 public:
-    virtual void                SetUsers(USERS * u) = 0;
-    virtual void                SetTariffs(TARIFFS * t) = 0;
-    virtual void                SetAdmins(ADMINS * a) = 0;
-    virtual void                SetTraffcounter(TRAFFCOUNTER * tc) = 0;
-    virtual void                SetStore(STORE * st) = 0;
-    virtual void                SetStgSettings(const SETTINGS * s) = 0;
-    virtual void                SetSettings(const MODULE_SETTINGS & s) = 0;
+    virtual ~PLUGIN() {}
+    virtual void                SetUsers(USERS *) {}
+    virtual void                SetTariffs(TARIFFS *) {}
+    virtual void                SetAdmins(ADMINS *) {}
+    virtual void                SetServices(SERVICES *) {}
+    virtual void                SetCorporations(CORPORATIONS *) {}
+    virtual void                SetTraffcounter(TRAFFCOUNTER *) {}
+    virtual void                SetStore(STORE *) {}
+    virtual void                SetStgSettings(const SETTINGS *) {}
+    virtual void                SetSettings(const MODULE_SETTINGS &) {}
     virtual int                 ParseSettings() = 0;
 
     virtual int                 Start() = 0;

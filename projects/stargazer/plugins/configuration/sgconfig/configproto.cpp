@@ -46,7 +46,7 @@ if (cp->currParser)
     }
 else
     {
-    for (unsigned int i = 0; i < cp->dataParser.size(); i++)
+    for (size_t i = 0; i < cp->dataParser.size(); i++)
         {
         cp->dataParser[i]->SetAnswerList(&cp->answerList);
         cp->dataParser[i]->SetCurrAdmin(*cp->currAdmin);
@@ -76,7 +76,7 @@ if (cp->currParser)
     }
 else
     {
-    for (unsigned int i = 0; i < cp->dataParser.size(); i++)
+    for (size_t i = 0; i < cp->dataParser.size(); i++)
         {
         if (cp->dataParser[i]->ParseEnd(data, el) == 0)
             {
@@ -87,15 +87,38 @@ else
 }
 //-----------------------------------------------------------------------------
 CONFIGPROTO::CONFIGPROTO()
-    : adminIP(0),
+    : answerList(),
+      requestList(),
+      adminIP(0),
+      adminLogin(),
       port(0),
-      nonstop(1),
+      thrReciveSendConf(),
+      nonstop(true),
       state(0),
-      currAdmin(),
+      currAdmin(NULL),
       WriteServLog(GetStgLogger()),
-      listenSocket(0),
+      listenSocket(-1),
+      parserGetServInfo(),
+      parserGetUsers(),
+      parserGetUser(),
+      parserChgUser(),
+      parserAddUser(),
+      parserDelUser(),
+      parserCheckUser(),
+      parserSendMessage(),
+      parserGetAdmins(),
+      parserAddAdmin(),
+      parserDelAdmin(),
+      parserChgAdmin(),
+      parserGetTariffs(),
+      parserAddTariff(),
+      parserDelTariff(),
+      parserChgTariff(),
       admins(NULL),
-      currParser(NULL)
+      currParser(NULL),
+      dataParser(),
+      xmlParser(),
+      errorStr()
 {
 dataParser.push_back(&parserGetServInfo);
 
@@ -195,7 +218,7 @@ port = p;
 void CONFIGPROTO::SetAdmins(ADMINS * a)
 {
 admins = a;
-for (unsigned int i = 0; i < dataParser.size(); i++)
+for (size_t i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetAdmins(a);
     }
@@ -204,7 +227,7 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetUsers(USERS * u)
 {
-for (unsigned int i = 0; i < dataParser.size(); i++)
+for (size_t i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetUsers(u);
     }
@@ -213,7 +236,7 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetTariffs(TARIFFS * t)
 {
-for (unsigned int i = 0; i < dataParser.size(); i++)
+for (size_t i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetTariffs(t);
     }
@@ -221,7 +244,7 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStore(STORE * s)
 {
-for (unsigned int i = 0; i < dataParser.size(); i++)
+for (size_t i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetStore(s);
     }
@@ -229,19 +252,9 @@ for (unsigned int i = 0; i < dataParser.size(); i++)
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStgSettings(const SETTINGS * s)
 {
-for (unsigned int i = 0; i < dataParser.size(); i++)
+for (size_t i = 0; i < dataParser.size(); i++)
     {
     dataParser[i]->SetStgSettings(s);
     }
-}
-//-----------------------------------------------------------------------------
-const string & CONFIGPROTO::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-uint32_t CONFIGPROTO::GetAdminIP() const
-{
-return adminIP;
 }
 //-----------------------------------------------------------------------------

@@ -23,16 +23,19 @@ class MYSQL_STORE_SETTINGS
 {
 public:
     MYSQL_STORE_SETTINGS();
-    virtual ~MYSQL_STORE_SETTINGS();
+    virtual ~MYSQL_STORE_SETTINGS() {}
     virtual int ParseSettings(const MODULE_SETTINGS & s);
-    virtual const string & GetStrError() const;
+    virtual const string & GetStrError() const { return errorStr; }
 
-    string  GetDBUser() const;
-    string  GetDBPassword() const;
-    string  GetDBHost() const;
-    string  GetDBName() const;
+    const string & GetDBUser() const { return dbUser; }
+    const string & GetDBPassword() const { return dbPass; }
+    const string & GetDBHost() const { return dbHost; }
+    const string & GetDBName() const { return dbName; }
 
 private:
+    MYSQL_STORE_SETTINGS(const MYSQL_STORE_SETTINGS & rvalue);
+    MYSQL_STORE_SETTINGS & operator=(const MYSQL_STORE_SETTINGS & rvalue);
+
     const MODULE_SETTINGS * settings;
 
     int     ParseParam(const vector<PARAM_VALUE> & moduleParams, 
@@ -50,8 +53,8 @@ class MYSQL_STORE: public STORE
 {
 public:
     MYSQL_STORE();
-    virtual ~MYSQL_STORE();
-    virtual const string & GetStrError() const;
+    virtual ~MYSQL_STORE() {}
+    virtual const string & GetStrError() const { return errorStr; }
 
     //User
     virtual int GetUsersList(vector<string> * usersList) const;
@@ -118,18 +121,19 @@ public:
     virtual int AddService(const string &) const {return 0;};
     virtual int DelService(const string &) const {return 0;};
 
-    //virtual BASE_SETTINGS * GetStoreSettings();
-    virtual void            SetSettings(const MODULE_SETTINGS & s);
+    virtual void            SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     virtual int             ParseSettings();
-    virtual const string &  GetVersion() const;
+    virtual const string &  GetVersion() const { return version; }
 
 private:
+    MYSQL_STORE(const MYSQL_STORE & rvalue);
+    MYSQL_STORE & operator=(const MYSQL_STORE & rvalue);
+
     virtual int WriteLogString(const string & str, const string & login) const;
     int GetAllParams(vector<string> * ParamList, const string & table, const string & name) const;
     int CheckAllTables(MYSQL * sock);
     bool IsTablePresent(const string & str,MYSQL * sock);
     mutable string          errorStr;
-//    int                        Reconnect();
     int                        MysqlQuery(const char* sQuery,MYSQL * sock) const;
     int                     MysqlGetQuery(const char * Query,MYSQL * & sock) const;
     int                     MysqlSetQuery(const char * Query) const;
@@ -137,8 +141,6 @@ private:
     string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
     MODULE_SETTINGS         settings;
-    //mutable MYSQL                    mysql;
-    //mutable MYSQL*                    sock;
 };
 //-----------------------------------------------------------------------------
 

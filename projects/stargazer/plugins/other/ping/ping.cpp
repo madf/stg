@@ -1,38 +1,23 @@
-#include <stdio.h>
-#include <signal.h>
-
+#include <cstdio>
+#include <cassert>
+#include <csignal>
 #include <ctime>
 #include <algorithm>
 
 #include "stg/user.h"
 #include "stg/locker.h"
 #include "stg/user_property.h"
+#include "stg/plugin_creator.h"
 #include "ping.h"
 
-class PING_CREATOR
+PLUGIN_CREATOR<PING> pc;
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+PLUGIN * GetPlugin()
 {
-private:
-    PING * ping;
-
-public:
-    PING_CREATOR()
-        : ping(new PING())
-        {
-        };
-    ~PING_CREATOR()
-        {
-        delete ping;
-        };
-
-    PING * GetPlugin()
-        {
-        return ping;
-        };
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PING_CREATOR pc;
+return pc.GetPlugin();
+}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -51,18 +36,6 @@ private:
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
-{
-return pc.GetPlugin();
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PING_SETTINGS::PING_SETTINGS()
-    : pingDelay(0)
-{
-}
 //-----------------------------------------------------------------------------
 int PING_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
@@ -87,25 +60,19 @@ if (ParseIntInRange(pvi->value[0], 5, 3600, &pingDelay))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int PING_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
 PING::PING()
-    : users(NULL),
+    : errorStr(),
+      pingSettings(),
+      settings(),
+      users(NULL),
+      usersList(),
+      thread(),
+      mutex(),
       nonstop(false),
       isRunning(false),
+      pinger(),
+      ChgCurrIPNotifierList(),
+      ChgIPNotifierList(),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this)
 {
@@ -117,32 +84,12 @@ PING::~PING()
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-const std::string PING::GetVersion() const
-{
-return "Pinger v.1.01";
-}
-//-----------------------------------------------------------------------------
-void PING::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
-//-----------------------------------------------------------------------------
 int PING::ParseSettings()
 {
 int ret = pingSettings.ParseSettings(settings);
 if (ret)
     errorStr = pingSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-void PING::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-const std::string & PING::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int PING::Start()
@@ -186,19 +133,6 @@ for (int i = 0; i < 25; i++)
     nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now kill it
-if (isRunning)
-    {
-    printfd(__FILE__, "kill PING thread.\n");
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill PING thread.";
-        printfd(__FILE__, "Cannot kill PING thread.\n");
-        return -1;
-        }
-    printfd(__FILE__, "PING killed\n");
-    }
-
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
@@ -210,6 +144,9 @@ while (users_iter != usersList.end())
     ++users_iter;
     }
 
+if (isRunning)
+    return -1;
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -220,7 +157,11 @@ return isRunning;
 //-----------------------------------------------------------------------------
 void * PING::Run(void * d)
 {
-PING * ping = (PING *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+PING * ping = static_cast<PING *>(d);
 ping->isRunning = true;
 
 long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
@@ -270,16 +211,6 @@ while (ping->nonstop)
 
 ping->isRunning = false;
 return NULL;
-}
-//-----------------------------------------------------------------------------
-uint16_t PING::GetStartPosition() const
-{
-return 100;
-}
-//-----------------------------------------------------------------------------
-uint16_t PING::GetStopPosition() const
-{
-return 100;
 }
 //-----------------------------------------------------------------------------
 void PING::SetUserNotifiers(USER_PTR u)
@@ -333,11 +264,7 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 USER_PTR u;
 int h = users->OpenSearch();
-if (!h)
-    {
-    printfd(__FILE__, "users->OpenSearch() error\n");
-    return;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 while (users->SearchNext(h, &u) == 0)
     {

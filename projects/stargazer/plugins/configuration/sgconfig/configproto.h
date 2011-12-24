@@ -61,16 +61,19 @@ public:
     void            SetTariffs(TARIFFS * t);
     void            SetStore(STORE * s);
     void            SetStgSettings(const SETTINGS * s);
-    uint32_t        GetAdminIP() const;
+    uint32_t        GetAdminIP() const { return adminIP; }
     int             Prepare();
     int             Stop();
-    const std::string & GetStrError() const;
-    static void *   Run(void * a);
+    const std::string & GetStrError() const { return errorStr; }
+    void            Run();
 
 private:
+    CONFIGPROTO(const CONFIGPROTO & rvalue);
+    CONFIGPROTO & operator=(const CONFIGPROTO & rvalue);
+
     int             RecvHdr(int sock);
     int             RecvLogin(int sock);
-    int             SendLoginAnswer(int sock, int err);
+    int             SendLoginAnswer(int sock);
     int             SendHdrAnswer(int sock, int err);
     int             RecvLoginS(int sock);
     int             SendLoginSAnswer(int sock, int err);

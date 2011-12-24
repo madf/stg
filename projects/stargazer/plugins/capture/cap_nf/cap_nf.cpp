@@ -42,34 +42,21 @@ $Author: faust $
 #include "stg/common.h" 
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
 #include "cap_nf.h"
 
-class CAP_NF_CREATOR {
-public:
-    CAP_NF_CREATOR()
-        : nf(new NF_CAP())
-        {
-        }
-
-    ~CAP_NF_CREATOR()
-        {
-        delete nf;
-        }
-
-    NF_CAP * GetCapturer() { return nf; }
-private:
-    NF_CAP * nf;
-} cnc;
+PLUGIN_CREATOR<NF_CAP> cnc;
 
 PLUGIN * GetPlugin()
 {
-return cnc.GetCapturer();
+return cnc.GetPlugin();
 }
 
 NF_CAP::NF_CAP()
     : traffCnt(NULL),
-      tidTCP(0),
-      tidUDP(0),
+      settings(),
+      tidTCP(),
+      tidUDP(),
       runningTCP(false),
       runningUDP(false),
       stoppedTCP(true),
@@ -77,7 +64,8 @@ NF_CAP::NF_CAP()
       portT(0),
       portU(0),
       sockTCP(-1),
-      sockUDP(-1)
+      sockUDP(-1),
+      errorStr()
 {
 }
 
@@ -160,7 +148,8 @@ if (portU && !stoppedUDP)
     CloseUDP();
     for (int i = 0; i < 25 && !stoppedUDP; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (stoppedUDP)
         {
@@ -182,7 +171,8 @@ if (portT && !stoppedTCP)
     CloseTCP();
     for (int i = 0; i < 25 && !stoppedTCP; ++i)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
     if (stoppedTCP)
         {
@@ -254,6 +244,10 @@ return false;
 
 void * NF_CAP::RunUDP(void * c)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 NF_CAP * cap = static_cast<NF_CAP *>(c);
 uint8_t buf[BUF_SIZE];
 int res;
@@ -262,7 +256,7 @@ socklen_t slen;
 cap->stoppedUDP = false;
 while (cap->runningUDP)
     {
-    if (!cap->WaitPackets(cap->sockUDP))
+    if (!WaitPackets(cap->sockUDP))
         {
         continue;
         }
@@ -296,6 +290,10 @@ return NULL;
 
 void * NF_CAP::RunTCP(void * c)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 NF_CAP * cap = static_cast<NF_CAP *>(c);
 uint8_t buf[BUF_SIZE];
 int res;
@@ -305,7 +303,7 @@ socklen_t slen;
 cap->stoppedTCP = false;
 while (cap->runningTCP)
     {
-    if (!cap->WaitPackets(cap->sockTCP))
+    if (!WaitPackets(cap->sockTCP))
         {
         continue;
         }
@@ -326,7 +324,7 @@ while (cap->runningTCP)
         continue;
         }
 
-    if (!cap->WaitPackets(sd))
+    if (!WaitPackets(sd))
         {
         close(sd);
         continue;
@@ -387,43 +385,15 @@ for (int i = 0; i < packets; ++i)
     {
     NF_DATA * data = reinterpret_cast<NF_DATA *>(buf + 24 + i * 48);
 
-    ip.header.ipHeader.ip_v = 4;
-    ip.header.ipHeader.ip_hl = 5;
-    ip.header.ipHeader.ip_p = data->proto;
+    ip.rawPacket.header.ipHeader.ip_v = 4;
+    ip.rawPacket.header.ipHeader.ip_hl = 5;
+    ip.rawPacket.header.ipHeader.ip_p = data->proto;
     ip.dataLen = ntohl(data->octets);
-    ip.header.ipHeader.ip_src.s_addr = data->srcAddr;
-    ip.header.ipHeader.ip_dst.s_addr = data->dstAddr;
-    ip.header.sPort = data->srcPort;
-    ip.header.dPort = data->dstPort;
+    ip.rawPacket.header.ipHeader.ip_src.s_addr = data->srcAddr;
+    ip.rawPacket.header.ipHeader.ip_dst.s_addr = data->dstAddr;
+    ip.rawPacket.header.sPort = data->srcPort;
+    ip.rawPacket.header.dPort = data->dstPort;
 
     traffCnt->Process(ip);
     }
-}
-
-bool NF_CAP::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }

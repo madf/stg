@@ -46,14 +46,14 @@
 #include "stg/plugin.h"
 #include "stg/logger.h"
 #include "stg/scriptexecuter.h"
-#include "stg/conffiles.h"
 #include "stg/version.h"
-#include "stg/pinger.h"
 #include "stg_timer.h"
 #include "settings_impl.h"
 #include "users_impl.h"
 #include "admins_impl.h"
 #include "tariffs_impl.h"
+#include "services_impl.h"
+#include "corps_impl.h"
 #include "traffcounter_impl.h"
 #include "plugin_runner.h"
 #include "store_loader.h"
@@ -61,7 +61,6 @@
 #include "eventloop.h"
 
 using namespace std;
-uint32_t        eip;
 
 #ifdef DEBUG
     #define MAIN_DEBUG (1)
@@ -70,12 +69,7 @@ uint32_t        eip;
 
 #define START_FILE "/._ST_ART_ED_"
 
-static bool needRulesReloading = false;
-static bool childExited = false;
-//static pid_t executerPid;
 set<pid_t> executersPid;
-static pid_t stgChildPid;
-
 
 //-----------------------------------------------------------------------------
 bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
@@ -87,28 +81,6 @@ bool StopModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
 {
 return lhs.GetStopPosition() > rhs.GetStopPosition();
 }
-//-----------------------------------------------------------------------------
-class STG_STOPPER
-{
-public:
-    STG_STOPPER() { nonstop = true; }
-    bool    GetStatus() const { return nonstop; };
-    #ifdef NO_DAEMON
-    void    Stop(const char * __file__, int __line__)
-    #else
-    void    Stop(const char *, int)
-    #endif
-        {
-        #ifdef NO_DAEMON
-        printfd(__FILE__, "Stg stopped at %s:%d\n", __file__, __line__);
-        #endif
-        nonstop = false;
-        }
-private:
-    bool nonstop;
-};
-//-----------------------------------------------------------------------------
-STG_STOPPER nonstop;
 //-----------------------------------------------------------------------------
 static void StartTimer()
 {
@@ -127,186 +99,11 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void CatchUSR1(int)
-{
-
-}
-//-----------------------------------------------------------------------------
-void CatchTERM(int sig)
-{
-/*
- *Function Name:CatchINT
- *Parameters: sig_num - номер сигнала
- *Description: Обработчик сигнала INT
- *Returns: Ничего
- */
-STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog("Shutting down... %d", sig);
-
-//nonstop = false;
-nonstop.Stop(__FILE__, __LINE__);
-
-struct sigaction newsa, oldsa;
-sigset_t sigmask;
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGTERM);
-newsa.sa_handler = SIG_IGN;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGTERM, &newsa, &oldsa);
-
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGINT);
-newsa.sa_handler = SIG_IGN;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGINT, &newsa, &oldsa);
-}
-//-----------------------------------------------------------------------------
-void CatchPIPE(int)
-{
-STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog("Broken pipe!");
-}
-//-----------------------------------------------------------------------------
-void CatchHUP(int)
-{
-needRulesReloading = true;
-}
-//-----------------------------------------------------------------------------
-void CatchCHLD(int)
-{
-int status;
-pid_t childPid;
-childPid = waitpid(-1, &status, WNOHANG);
-
-set<pid_t>::iterator pid;
-pid = executersPid.find(childPid);
-if (pid != executersPid.end())
-    {
-    executersPid.erase(pid);
-    if (executersPid.empty() && nonstop.GetStatus())
-        {
-        nonstop.Stop(__FILE__, __LINE__);
-        }
-    }
-if (childPid == stgChildPid)
-    {
-    childExited = true;
-    }
-}
-/*//-----------------------------------------------------------------------------
-void CatchSEGV(int, siginfo_t *, void *)
-{
-char fileName[50];
-sprintf(fileName, "/tmp/stg_segv.%d", getpid());
-FILE * f = fopen(fileName, "wt");
-if (f)
-    {
-    fprintf(f, "\nSignal info:\n~~~~~~~~~~~~\n");
-    fprintf(f, "numb:\t %d (%d)\n", sinfo->si_signo, sig);
-    fprintf(f, "errn:\t %d\n", sinfo->si_errno);
-    fprintf(f, "code:\t %d ", sinfo->si_code);
-
-    switch (sinfo->si_code)
-        {
-        case SEGV_MAPERR:
-            fprintf(f, "(SEGV_MAPERR - address not mapped to object)\n");
-            break;
-
-        case SEGV_ACCERR:
-            fprintf(f, "(SEGV_ACCERR - invalid permissions for mapped object)\n");
-            break;
-
-        default:
-            fprintf(f, "???\n");
-        }
-
-    fprintf(f, "addr:\t 0x%.8X\n",
-        (unsigned int)sinfo->si_addr);
-
-    Dl_info dlinfo;
-    //asm("movl %eip, eip");
-    if (dladdr((void*)CatchCHLD, &dlinfo))
-        {
-        fprintf(f, "SEGV point: %s %s\n", dlinfo.dli_fname, dlinfo.dli_sname);
-        }
-    else
-        {
-        fprintf(f, "Cannot find SEGV point\n");
-        }
-
-    fclose(f);
-    }
-
-struct sigaction segv_action, segv_action_old;
-
-segv_action.sa_handler = SIG_DFL;
-segv_action.sa_sigaction = NULL;
-segv_action.sa_flags = SA_SIGINFO;
-segv_action.sa_restorer = NULL;
-
-sigaction(SIGSEGV, &segv_action, &segv_action_old);
-}*/
-//-----------------------------------------------------------------------------
-static void SetSignalHandlers()
-{
-struct sigaction newsa, oldsa;
-sigset_t sigmask;
-///////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGTERM);
-newsa.sa_handler = CatchTERM;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGTERM, &newsa, &oldsa);
-///////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGUSR1);
-newsa.sa_handler = CatchUSR1;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGUSR1, &newsa, &oldsa);
-///////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGINT);
-newsa.sa_handler = CatchTERM;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGINT, &newsa, &oldsa);
-//////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGPIPE);
-newsa.sa_handler = CatchPIPE;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGPIPE, &newsa, &oldsa);
-//////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGHUP);
-newsa.sa_handler = CatchHUP;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGHUP, &newsa, &oldsa);
-//////
-sigemptyset(&sigmask);
-sigaddset(&sigmask, SIGCHLD);
-newsa.sa_handler = CatchCHLD;
-newsa.sa_mask = sigmask;
-newsa.sa_flags = 0;
-sigaction(SIGCHLD, &newsa, &oldsa);
-
-/*newsa.sa_handler = NULL;
-newsa.sa_sigaction = CatchSEGV;
-newsa.sa_flags = SA_SIGINFO;
-newsa.sa_restorer = NULL;
-sigaction(SIGSEGV, &newsa, &oldsa);*/
-
-return;
-}
-//-----------------------------------------------------------------------------
+#ifdef LINUX
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+#else
+int StartScriptExecuter(char *, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+#endif
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
 
@@ -347,12 +144,20 @@ switch (executerPid)
 
     case 0:
         delete settings;
-        Executer(msgKey, *msgID, executerPid, procName);
+#ifdef LINUX
+        Executer(*msgID, executerPid, procName);
+#else
+        Executer(*msgID, executerPid);
+#endif
         return 1;
 
     default:
         if (executersPid.empty()) {
-            Executer(msgKey, *msgID, executerPid, NULL);
+#ifdef LINUX
+            Executer(*msgID, executerPid, NULL);
+#else
+            Executer(*msgID, executerPid);
+#endif
         }
         executersPid.insert(executerPid);
     }
@@ -366,11 +171,11 @@ int ForkAndWait(const string &)
 #endif
 {
 #ifndef NO_DAEMON
-stgChildPid = fork();
+pid_t childPid = fork();
 string startFile = confDir + START_FILE;
 unlink(startFile.c_str());
 
-switch (stgChildPid)
+switch (childPid)
     {
     case -1:
         return -1;
@@ -392,11 +197,6 @@ switch (stgChildPid)
                 exit(0);
                 }
 
-            if (childExited)
-                {
-                unlink(startFile.c_str());
-                exit(1);
-                }
             nanosleep(&ts, NULL);
             }
         unlink(startFile.c_str());
@@ -421,31 +221,14 @@ while (pid != executersPid.end())
 //-----------------------------------------------------------------------------
 int main(int argc, char * argv[])
 {
-
-/*
-  Initialization order:
-  - Logger
-  - Stg timer
-  - Settings
-  - Plugins
-  - Plugins settings
-  - Read Admins
-  - Read Tariffs
-  - Read Users
-  - Start Users
-  - Start Traffcounter
-  - Start Plugins
-  - Start pinger
-  - Set signal nandlers
-  - Fork and exit
- * */
-
 SETTINGS_IMPL * settings = NULL;
 STORE * dataStore = NULL;
 TARIFFS_IMPL * tariffs = NULL;
 ADMINS_IMPL * admins = NULL;
 USERS_IMPL * users = NULL;
 TRAFFCOUNTER_IMPL * traffCnt = NULL;
+SERVICES_IMPL * services = NULL;
+CORPORATIONS_IMPL * corps = NULL;
 int msgID = -11;
 
     {
@@ -513,6 +296,10 @@ for (size_t i = 0; i < settings->GetExecutersNum(); i++)
 
 PIDFile pidFile(settings->GetPIDFileName());
 
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 StartTimer();
 WaitTimer();
 if (!IsStgTimerRunning())
@@ -543,6 +330,8 @@ tariffs = new TARIFFS_IMPL(dataStore);
 admins = new ADMINS_IMPL(dataStore);
 users = new USERS_IMPL(settings, dataStore, tariffs, admins->GetSysAdmin());
 traffCnt = new TRAFFCOUNTER_IMPL(users, settings->GetRulesFileName());
+services = new SERVICES_IMPL(dataStore);
+corps = new CORPORATIONS_IMPL(dataStore);
 traffCnt->SetMonitorDir(settings->GetMonitorDir());
 
 modSettings = settings->GetModulesSettings();
@@ -560,6 +349,8 @@ for (size_t i = 0; i < modSettings.size(); i++)
                       admins,
                       tariffs,
                       users,
+                      services,
+                      corps,
                       traffCnt,
                       dataStore,
                       settings)
@@ -570,7 +361,6 @@ modIter = modules.begin();
 
 while (modIter != modules.end())
     {
-    //Loading modules
     if (modIter->Load())
         {
         WriteServLog("Error: %s",
@@ -580,7 +370,6 @@ while (modIter != modules.end())
     ++modIter;
     }
 
-//Start section
 if (users->Start())
     {
     goto exitLblNotStarted;
@@ -603,29 +392,13 @@ while (modIter != modules.end())
         {
         WriteServLog("Error: %s",
                      modIter->GetStrError().c_str());
-        //printfd(__FILE__, "Error: %s\n", capRunner.GetStrError().c_str());
         goto exitLbl;
         }
     WriteServLog("Module: '%s'. Start successfull.", modIter->GetPlugin()->GetVersion().c_str());
     ++modIter;
     }
-SetSignalHandlers();
 
 srandom(stgTime);
-
-/*
- * Note that an implementation in which nice returns the new nice value
- * can legitimately return -1.   To  reliably  detect  an  error,  set
- * errno to 0 before the call, and check its value when nice returns -1.
- *
- *
- * (c) man 2 nice
- */
-/*errno = 0;
-if (nice(-19) && errno) {
-    printfd(__FILE__, "nice failed: '%s'\n", strerror(errno));
-    WriteServLog("nice failed: '%s'", strerror(errno));
-}*/
 
 WriteServLog("Stg started successfully.");
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
@@ -634,26 +407,57 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 creat(startFile.c_str(), S_IRUSR);
 #endif
 
-while (nonstop.GetStatus())
+while (true)
     {
-    if (needRulesReloading)
+    sigfillset(&signalSet);
+    int sig = 0;
+    sigwait(&signalSet, &sig);
+    bool stop = false;
+    int status;
+    pid_t childPid;
+    set<pid_t>::iterator it;
+    switch (sig)
         {
-        needRulesReloading = false;
-        traffCnt->Reload();
-
-        modIter = modules.begin();
-        for (; modIter != modules.end(); ++modIter)
-            {
-            if (modIter->Reload())
+        case SIGHUP:
+            traffCnt->Reload();
+            modIter = modules.begin();
+            for (; modIter != modules.end(); ++modIter)
                 {
-                WriteServLog("Error reloading %s ('%s')", modIter->GetPlugin()->GetVersion().c_str(),
-                                                          modIter->GetStrError().c_str());
-                printfd(__FILE__, "Error reloading %s ('%s')\n", modIter->GetPlugin()->GetVersion().c_str(),
-                                                                 modIter->GetStrError().c_str());
+                if (modIter->Reload())
+                    {
+                    WriteServLog("Error reloading %s ('%s')", modIter->GetPlugin()->GetVersion().c_str(),
+                                                              modIter->GetStrError().c_str());
+                    printfd(__FILE__, "Error reloading %s ('%s')\n", modIter->GetPlugin()->GetVersion().c_str(),
+                                                                     modIter->GetStrError().c_str());
+                    }
                 }
-            }
+            break;
+        case SIGTERM:
+            stop = true;
+            break;
+        case SIGINT:
+            stop = true;
+            break;
+        case SIGPIPE:
+            WriteServLog("Broken pipe!");
+            break;
+        case SIGCHLD:
+            childPid = waitpid(-1, &status, WNOHANG);
+
+            it = executersPid.find(childPid);
+            if (it != executersPid.end())
+                {
+                executersPid.erase(it);
+                if (executersPid.empty())
+                    stop = true;
+                }
+            break;
+        default:
+            WriteServLog("Ignore signel %d", sig);
+            break;
         }
-    stgUsleep(100000);
+    if (stop)
+        break;
     }
 
 exitLbl:
@@ -673,10 +477,11 @@ while (modIter != modules.end())
                      modIter->GetPlugin()->GetVersion().c_str(),
                      modIter->GetStrError().c_str());
         printfd(__FILE__, "Failed to stop module '%s'\n", name.c_str());
-        //printfd(__FILE__, "Error: %s\n", capRunner.GetStrError().c_str());
-        //goto exitLbl;
         }
-    WriteServLog("Module: \'%s\'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
+    else
+        {
+        WriteServLog("Module: \'%s\'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
+        }
     ++modIter;
     }
 
@@ -691,13 +496,20 @@ modIter = modules.begin();
 while (modIter != modules.end())
     {
     std::string name = modIter->GetFileName();
-    printfd(__FILE__, "Unloading module '%s'\n", name.c_str());
-    if (modIter->Unload())
+    if (modIter->IsRunning())
         {
-        WriteServLog("Module \'%s\': Error: %s",
-                     name.c_str(),
-                     modIter->GetStrError().c_str());
-        printfd(__FILE__, "Failed to unload module '%s'\n", name.c_str());
+        printfd(__FILE__, "Passing module '%s' `cause it's still running\n", name.c_str());
+        }
+    else
+        {
+        printfd(__FILE__, "Unloading module '%s'\n", name.c_str());
+        if (modIter->Unload())
+            {
+            WriteServLog("Module \'%s\': Error: %s",
+                         name.c_str(),
+                         modIter->GetStrError().c_str());
+            printfd(__FILE__, "Failed to unload module '%s'\n", name.c_str());
+            }
         }
     ++modIter;
     }
@@ -726,6 +538,8 @@ KillExecuters();
 StopStgTimer();
 WriteServLog("StgTimer: Stop successfull.");
 
+delete corps;
+delete services;
 delete traffCnt;
 delete users;
 delete admins;

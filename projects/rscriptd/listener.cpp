@@ -102,14 +102,16 @@ running = false;
 
 printfd(__FILE__, "LISTENER::Stop()\n");
 
-usleep(500000);
+struct timespec ts = {0, 500000000};
+nanosleep(&ts, NULL);
 
 if (!processorStopped)
     {
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && !processorStopped; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -130,7 +132,8 @@ if (!receiverStopped)
     //5 seconds to thread stops itself
     for (int i = 0; i < 25 && !receiverStopped; i++)
         {
-        usleep(200000);
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
         }
 
     //after 5 seconds waiting thread still running. now killing it
@@ -162,6 +165,10 @@ return false;
 //-----------------------------------------------------------------------------
 void * LISTENER::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 LISTENER * listener = static_cast<LISTENER *>(d);
 
 listener->Runner();
@@ -183,6 +190,10 @@ receiverStopped = true;
 //-----------------------------------------------------------------------------
 void * LISTENER::RunProcessor(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 LISTENER * listener = static_cast<LISTENER *>(d);
 
 listener->ProcessorRunner();
@@ -196,7 +207,8 @@ processorStopped = false;
 
 while (running)
     {
-    usleep(500000);
+    struct timespec ts = {0, 500000000};
+    nanosleep(&ts, NULL);
     if (!pending.empty())
         ProcessPending();
     ProcessTimeouts();
@@ -410,7 +422,7 @@ bool LISTENER::Connect(const UserData & data) const
 printfd(__FILE__, "Connect %s\n", data.login.c_str());
 if (access(scriptOnConnect.c_str(), X_OK) == 0)
     {
-    if (ScriptExec(scriptOnConnect + " " + data.params))
+    if (ScriptExec((scriptOnConnect + " " + data.params).c_str()))
         {
         WriteServLog("Script %s cannot be executed for an unknown reason.", scriptOnConnect.c_str());
         return true;
@@ -429,7 +441,7 @@ bool LISTENER::Disconnect(const UserData & data) const
 printfd(__FILE__, "Disconnect %s\n", data.login.c_str());
 if (access(scriptOnDisconnect.c_str(), X_OK) == 0)
     {
-    if (ScriptExec(scriptOnDisconnect + " " + data.params))
+    if (ScriptExec((scriptOnDisconnect + " " + data.params).c_str()))
         {
         WriteServLog("Script %s cannot be executed for an unknown reson.", scriptOnDisconnect.c_str());
         return true;
@@ -454,34 +466,6 @@ if (strncmp((char *)header.protoVer, "02", RS_PROTO_VER_LEN))
     return true;
     }
 return false;
-}
-//-----------------------------------------------------------------------------
-bool LISTENER::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }
 //-----------------------------------------------------------------------------
 inline

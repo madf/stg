@@ -80,7 +80,7 @@ try
          where name = ?");
     st->Set(1, sc.comment);
     st->Set(2, sc.cost);
-    st->Set(3, sc.payDay);
+    st->Set(3, static_cast<int16_t>(sc.payDay));
     st->Set(4, sc.name);
     st->Execute();
     tr->Commit();
@@ -115,7 +115,9 @@ try
         {
         st->Get(3, sc->comment);
         st->Get(4, sc->cost);
-        st->Get(5, sc->payDay);
+        int16_t pd;
+        st->Get(5, pd);
+        sc->payDay = pd;
         }
     else
         {

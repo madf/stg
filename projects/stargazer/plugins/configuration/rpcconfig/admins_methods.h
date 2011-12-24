@@ -20,7 +20,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_ADMIN_GET(const METHOD_ADMIN_GET & rvalue);
+    METHOD_ADMIN_GET & operator=(const METHOD_ADMIN_GET & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
 };
@@ -36,7 +40,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_ADMIN_ADD(const METHOD_ADMIN_ADD & rvalue);
+    METHOD_ADMIN_ADD & operator=(const METHOD_ADMIN_ADD & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
 };
@@ -52,7 +60,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_ADMIN_DEL(const METHOD_ADMIN_DEL & rvalue);
+    METHOD_ADMIN_DEL & operator=(const METHOD_ADMIN_DEL & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
 };
@@ -68,7 +80,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_ADMIN_CHG(const METHOD_ADMIN_CHG & rvalue);
+    METHOD_ADMIN_CHG & operator=(const METHOD_ADMIN_CHG & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
 };
@@ -84,7 +100,11 @@ public:
 
     void execute(xmlrpc_c::paramList const & paramList,
                  xmlrpc_c::value * const retvalPtr);
+
 private:
+    METHOD_ADMINS_GET(const METHOD_ADMINS_GET & rvalue);
+    METHOD_ADMINS_GET & operator=(const METHOD_ADMINS_GET & rvalue);
+
     RPC_CONFIG * config;
     ADMINS * admins;
 };

@@ -43,6 +43,7 @@
 //-----------------------------------------------------------------------------
 class STORE {
 public:
+    virtual ~STORE() {}
     virtual int GetUsersList(std::vector<std::string> * usersList) const = 0;
     virtual int AddUser(const std::string & login) const = 0;
     virtual int DelUser(const std::string & login) const = 0;

@@ -4,8 +4,8 @@
 
 LIB_NAME = stgcrypto
 
-SRCS = ag_md5.cpp \
-	blowfish.cpp
+SRCS = ag_md5.c \
+	blowfish.c
 
 INCS = ag_md5.h \
 	blowfish.h

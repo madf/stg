@@ -24,13 +24,11 @@
  $Author: nobunaga $
 */
 
-
+#ifdef DEBUG_LOCKER
 
 #include <pthread.h>
 
-#include "locker.h"
-
-#ifdef DEBUG_LOCKER
+#include "stg/locker.h"
 
 long long STG_LOCKER::id = 0;
 pthread_mutex_t STG_LOCKER::lockerMutex = PTHREAD_MUTEX_INITIALIZER;

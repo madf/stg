@@ -32,55 +32,37 @@ $Date: 2009/12/13 13:45:13 $
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
-#include <signal.h>
-
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include "ether_cap.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <csignal>
+
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
+
+#include "ether_cap.h"
 
 //#define CAP_DEBUG 1
 
 //-----------------------------------------------------------------------------
-class ETHER_CAP_CREATOR {
-private:
-    ETHER_CAP * ec;
-
-public:
-    ETHER_CAP_CREATOR()
-        : ec(new ETHER_CAP())
-        {
-        }
-    ~ETHER_CAP_CREATOR()
-        {
-        delete ec;
-        }
-
-    ETHER_CAP * GetCapturer()
-        {
-        return ec;
-        }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-ETHER_CAP_CREATOR ecc;
+PLUGIN_CREATOR<ETHER_CAP> ecc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return ecc.GetCapturer();
+return ecc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -91,7 +73,9 @@ return "Ether_cap v.1.2";
 }
 //-----------------------------------------------------------------------------
 ETHER_CAP::ETHER_CAP()
-    : nonstop(false),
+    : errorStr(),
+      thread(),
+      nonstop(false),
       isRunning(false),
       capSock(-1),
       traffCnt(NULL)
@@ -132,7 +116,8 @@ nonstop = false;
 //5 seconds to thread stops itself
 for (int i = 0; i < 25 && isRunning; i++)
     {
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
@@ -143,7 +128,10 @@ if (isRunning)
         return -1;
         }
     for (int i = 0; i < 25 && isRunning; ++i)
-        usleep(200000);
+        {
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
+        }
     if (isRunning)
         {
         errorStr = "ETHER_CAP not stopped.";
@@ -162,6 +150,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * ETHER_CAP::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 ETHER_CAP * dc = (ETHER_CAP *)d;
 dc->isRunning = true;
 
@@ -237,32 +229,4 @@ if (-1 == res)
     }
 
 return 0;
-}
-//-----------------------------------------------------------------------------
-bool ETHER_CAP::WaitPackets(int sd) const
-{
-fd_set rfds;
-FD_ZERO(&rfds);
-FD_SET(sd, &rfds);
-
-struct timeval tv;
-tv.tv_sec = 0;
-tv.tv_usec = 500000;
-
-int res = select(sd + 1, &rfds, NULL, NULL, &tv);
-if (res == -1) // Error
-    {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on select: '%s'\n", strerror(errno));
-        }
-    return false;
-    }
-
-if (res == 0) // Timeout
-    {
-    return false;
-    }
-
-return true;
 }

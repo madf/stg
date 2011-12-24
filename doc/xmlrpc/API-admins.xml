@@ -354,6 +354,12 @@
                                     </listitem>
                                 </varlistentry>
                                 <varlistentry>
+                                    <term>string <parameter>password</parameter></term>
+                                    <listitem>
+                                        <para>Пароль администратора</para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
                                     <term>boolean <parameter>user_stat</parameter></term>
                                     <listitem>
                                         <para>Право на изменение статистики пользователя (включая состояние счета)</para>

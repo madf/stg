@@ -30,16 +30,13 @@ class RPC_CONFIG_SETTINGS
 {
 public:
                          RPC_CONFIG_SETTINGS();
-    virtual              ~RPC_CONFIG_SETTINGS() {};
-    const std::string &  GetStrError() const { return errorStr; };
+    virtual              ~RPC_CONFIG_SETTINGS() {}
+    const std::string &  GetStrError() const { return errorStr; }
     int                  ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t             GetPort() const { return port; };
-    double               GetCookieTimeout() const { return cookieTimeout; };
+    uint16_t             GetPort() const { return port; }
+    double               GetCookieTimeout() const { return cookieTimeout; }
+
 private:
-    int     ParseIntInRange(const std::string & str,
-                            int min,
-                            int max,
-                            int * val);
     std::string  errorStr;
     int          port;
     double       cookieTimeout;
@@ -47,6 +44,12 @@ private:
 
 struct ADMIN_INFO
 {
+    ADMIN_INFO()
+        : admin(),
+          accessTime(0),
+          priviledges()
+    {}
+
     std::string admin;
     time_t      accessTime;
     PRIV        priviledges;
@@ -62,7 +65,6 @@ public:
     void                SetTariffs(TARIFFS * t) { tariffs = t; }
     void                SetAdmins(ADMINS * a) { admins = a; }
     void                SetStore(STORE * s) { store = s; }
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
     void                SetStgSettings(const SETTINGS * s);
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
@@ -85,6 +87,9 @@ public:
     bool                LogoutAdmin(const std::string & cookie);
 
 private:
+    RPC_CONFIG(const RPC_CONFIG & rvalue);
+    RPC_CONFIG & operator=(const RPC_CONFIG & rvalue);
+
     static void *           Run(void *);
     std::string             GetCookie() const;
     void                    InitiateRegistry();
@@ -96,6 +101,7 @@ private:
     TARIFFS *               tariffs;
     STORE *                 store;
     MODULE_SETTINGS         settings;
+    int                     fd;
     xmlrpc_c::registry      rpcRegistry;
     xmlrpc_c::serverAbyss * rpcServer;
     bool                    running;

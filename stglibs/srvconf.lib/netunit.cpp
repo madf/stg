@@ -32,7 +32,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "netunit.h"
+#include "stg/netunit.h"
 #include "stg/common.h"
 
 //---------------------------------------------------------------------------

@@ -39,53 +39,34 @@ $Author: faust $
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <signal.h>
 #include <unistd.h>
 
-#include "ether_cap.h"
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <csignal>
+
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
+#include "stg/plugin_creator.h"
+
+#include "ether_cap.h"
 
 //#define CAP_DEBUG 1
-//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-class BPF_CAP_CREATOR {
-private:
-    BPF_CAP * bpfc;
-
-public:
-    BPF_CAP_CREATOR()
-        : bpfc(new BPF_CAP())
-        {
-        }
-    ~BPF_CAP_CREATOR()
-        {
-        delete bpfc;
-        }
-
-    BPF_CAP * GetCapturer()
-    {
-    return bpfc;
-    }
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-BPF_CAP_CREATOR bcc;
+PLUGIN_CREATOR<BPF_CAP> bcc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
 {
-return bcc.GetCapturer();
+return bcc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -137,9 +118,15 @@ return "bpf_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
-    : nonstop(false),
+    : capSettings(),
+      errorStr(),
+      bpfData(),
+      polld(),
+      thread(),
+      nonstop(false),
       isRunning(false),
       capSock(-1),
+      settings(),
       traffCnt(NULL)
 {
 }
@@ -194,7 +181,8 @@ for (i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 
 //after 5 seconds waiting thread still running. now killing it
@@ -214,7 +202,11 @@ return 0;
 //-----------------------------------------------------------------------------
 void * BPF_CAP::Run(void * d)
 {
-BPF_CAP * dc = (BPF_CAP *)d;
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+BPF_CAP * dc = static_cast<BPF_CAP *>(d);
 dc->isRunning = true;
 
 uint8_t hdr[96]; //68 + 14 + 4(size) + 9(SYS_IFACE) + 1(align to 4) = 96
@@ -227,12 +219,11 @@ char * iface;
 
 while (dc->nonstop)
     {
-    dc->BPFCapRead((char*)&hdr, 68 + 14, &iface);
+    if (dc->BPFCapRead((char*)&hdr, 68 + 14, &iface))
+        continue;
 
     if (!(hdr[12] == 0x8 && hdr[13] == 0x0))
-    {
         continue;
-    }
 
     dc->traffCnt->Process(*rpp);
     }
@@ -327,12 +318,16 @@ for (unsigned int i = 0; i < polld.size(); i++)
     {
     if (polld[i].revents & POLLIN)
         {
-        BPFCapRead(buffer, blen, capIface, &bpfData[i]);
+        if (BPFCapRead(buffer, blen, capIface, &bpfData[i]))
+            {
+            polld[i].revents = 0;
+            continue;
+            }
         polld[i].revents = 0;
         return 0;
         }
     }
-return 0;
+return -1;
 }
 //-----------------------------------------------------------------------------
 int BPF_CAP::BPFCapRead(char * buffer, int blen, char **, BPF_DATA * bd)
@@ -342,8 +337,9 @@ if (bd->canRead)
     bd->r = read(bd->fd, bd->buffer, BUFF_LEN);
     if (bd->r < 0)
         {
-        //printfd(__FILE__, " error read\n");
-        usleep(20000);
+        struct timespec ts = {0, 20000000};
+        nanosleep(&ts, NULL);
+        return -1;
         }
 
     bd->p = bd->buffer;

@@ -102,33 +102,47 @@ class TRAFFCOUNTER_IMPL;
 //-----------------------------------------------------------------------------
 class TRF_IP_BEFORE: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_BEFORE(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
-                        : PROPERTY_NOTIFIER_BASE<uint32_t>(),
-                          traffCnt(t),
-                          user(u)
-                    {}
-    void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(USER_IMPL * u) { user = u; }
-    USER_IMPL *     GetUser() const { return user; }
+                TRF_IP_BEFORE(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
+                    : PROPERTY_NOTIFIER_BASE<uint32_t>(),
+                      traffCnt(t),
+                      user(u)
+                {}
+                TRF_IP_BEFORE(const TRF_IP_BEFORE & rvalue)
+                    : PROPERTY_NOTIFIER_BASE<uint32_t>(),
+                      traffCnt(rvalue.traffCnt),
+                      user(rvalue.user)
+                {}
+    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
+    void        SetUser(USER_IMPL * u) { user = u; }
+    USER_IMPL * GetUser() const { return user; }
 
 private:
+    TRF_IP_BEFORE & operator=(const TRF_IP_BEFORE & rvalue);
+
     TRAFFCOUNTER_IMPL & traffCnt;
-    USER_IMPL *         user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class TRF_IP_AFTER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
-                    TRF_IP_AFTER(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
-                        : PROPERTY_NOTIFIER_BASE<uint32_t>(),
-                          traffCnt(t),
-                          user(u)
-                    {}
-    void            Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    void            SetUser(USER_IMPL * u) { user = u; }
-    USER_IMPL *     GetUser() const { return user; }
+                TRF_IP_AFTER(TRAFFCOUNTER_IMPL & t, USER_IMPL * u)
+                    : PROPERTY_NOTIFIER_BASE<uint32_t>(),
+                      traffCnt(t),
+                      user(u)
+                {}
+                TRF_IP_AFTER(const TRF_IP_AFTER & rvalue)
+                    : PROPERTY_NOTIFIER_BASE<uint32_t>(),
+                      traffCnt(rvalue.traffCnt),
+                      user(rvalue.user)
+                {}
+    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
+    void        SetUser(USER_IMPL * u) { user = u; }
+    USER_IMPL * GetUser() const { return user; }
 private:
+    TRF_IP_AFTER & operator=(const TRF_IP_AFTER & rvalue);
+
     TRAFFCOUNTER_IMPL & traffCnt;
-    USER_IMPL *         user;
+    USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_IMPL_PTR> {
@@ -139,7 +153,11 @@ public:
             {}
     virtual ~ADD_USER_NONIFIER() {}
     void    Notify(const USER_IMPL_PTR & user);
+
 private:
+    ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
+    ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER & rvalue);
+
     TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
@@ -151,7 +169,11 @@ public:
             {}
     virtual ~DEL_USER_NONIFIER() {}
     void    Notify(const USER_IMPL_PTR & user);
+
 private:
+    DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
+    DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER & rvalue);
+
     TRAFFCOUNTER_IMPL & traffCnt;
 };
 //-----------------------------------------------------------------------------
@@ -173,7 +195,12 @@ public:
     void        Process(const RAW_PACKET & rawPacket);
     void        SetMonitorDir(const std::string & monitorDir);
 
+    size_t      RulesCount() const { return rules.size(); }
+
 private:
+    TRAFFCOUNTER_IMPL(const TRAFFCOUNTER_IMPL & rvalue);
+    TRAFFCOUNTER_IMPL & operator=(const TRAFFCOUNTER_IMPL & rvalue);
+
     bool        ParseAddress(const char * ta, RULE * rule) const;
     uint32_t    CalcMask(uint32_t msk) const;
     void        FreeRules();

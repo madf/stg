@@ -2,7 +2,7 @@
 # $Id: Makefile,v 1.6 2009/03/03 15:50:15 faust Exp $
 ###############################################################################
 
-LIB_NAME = ibpp
+LIB_NAME = stgibpp
 
 SRCS = array.cpp \
        blob.cpp \
@@ -26,7 +26,7 @@ SRCS = array.cpp \
 
 INCS = ibpp.h 
 
-ADD_DEFS = -DIBPP_LINUX
+LIB_DEFS = -DIBPP_LINUX
 
 LIBS = -lfbclient
        

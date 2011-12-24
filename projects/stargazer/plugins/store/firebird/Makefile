@@ -17,7 +17,10 @@ SRCS =	./firebird_store.cpp \
 	./firebird_store_users.cpp \
 	./firebird_store_utils.cpp
 
-STGLIBS = -libpp -lstgcommon -lstglocker -lstgcrypto
+STGLIBS = ibpp \
+	  common \
+	  locker \
+	  crypto
 
 include ../../Makefile.in
 

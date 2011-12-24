@@ -18,7 +18,7 @@ OWNER=root
 VAR_DIR="./inst/var/stargazer"
 DEFS="-DDEBUG"
 MAKEOPTS="-j1"
-CXXFLAGS="$CXXFLAGS -g3 -W -Wall -I/usr/local/include"
+CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -I/usr/local/include"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 if [ "$sys" = "Linux" ]
@@ -65,7 +65,6 @@ PLUGINS="store/files"
 if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
-    SHELL="/bin/bash"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
@@ -81,7 +80,6 @@ else
             LIB_THREAD=-lc_r
         fi
     fi
-    SHELL="/usr/local/bin/bash"
 fi
 
 if [ -z "$CC" ]
@@ -115,7 +113,7 @@ echo "found"
 
 echo -n "Checking endianess... "
 echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
-$CC $CXXFLAGS $LDFLAGS -L/usr/lib/mysql -L/usr/local/lib/mysql build_check.c -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS -L/usr/lib/mysql -L/usr/local/lib/mysql build_check.c -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     echo "FAIL!"
@@ -127,17 +125,19 @@ else
     then
         ARCH=le
         CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        CFLAGS="$CFLAGS -DARCH_LE"
         echo "Little Endian"
     else
         ARCH=be
         CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        CFLAGS="$CFLAGS -DARCH_BE"
         echo "Big Endian"
     fi
 fi
 rm -f fake
 
 echo -n "Checking for -lfbclient... "
-$CC $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -154,7 +154,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lmysqlclient... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
@@ -173,7 +173,6 @@ else
         CHECK_MYSQLCLIENT=no
         echo "no"
     else
-        #CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
         echo "[$MYSQL_CFLAGS]"
         echo -n "Checking for mysql_config --libs_r... "
         MYSQL_LDFLAGS=`mysql_config --libs_r 2> /dev/null`
@@ -183,7 +182,6 @@ else
             echo "no"
         else
             CHECK_MYSQLCLIENT=yes
-            #LDFLAGS="$LDFLAGS $MYSQL_LDFLAGS"
             echo "[$MYSQL_LDFLAGS]"
         fi
     fi
@@ -195,7 +193,7 @@ if [ $? != 0 ]
 then
     echo "no";
     echo -n "Checking for -lpq... "
-    $CC $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -273,8 +271,8 @@ do
     echo -n "$plugin " >> $CONFFILE
 done
 echo "" >> $CONFFILE
-echo "SHELL=$SHELL" >> $CONFFILE
 echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
+echo "CFLAGS=$CFLAGS" >> $CONFFILE
 echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
 echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
 echo "PREFIX=$PREFIX" >> $CONFFILE

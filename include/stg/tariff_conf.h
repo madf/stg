@@ -57,36 +57,50 @@ struct DIRPRICE_DATA
           singlePrice(0),
           noDiscount(0)
         {}
-    int     hDay;
-    int     mDay;
-    int     hNight;
-    int     mNight;
-    double  priceDayA;
-    double  priceNightA;
-    double  priceDayB;
-    double  priceNightB;
-    int     threshold;
-    int     singlePrice; // Do not use day/night division
-    int     noDiscount; // Do not use threshold
+    int    hDay;
+    int    mDay;
+    int    hNight;
+    int    mNight;
+    double priceDayA;
+    double priceNightA;
+    double priceDayB;
+    double priceNightB;
+    int    threshold;
+    int    singlePrice; // Do not use day/night division
+    int    noDiscount; // Do not use threshold
 };
 //-----------------------------------------------------------------------------
 struct DIRPRICE_DATA_RES
 {
-    DIRPRICE_DATA_RES & operator= (const DIRPRICE_DATA & dpd)
+    DIRPRICE_DATA_RES()
+        : hDay(),
+          mDay(),
+          hNight(),
+          mNight(),
+          priceDayA(),
+          priceNightA(),
+          priceDayB(),
+          priceNightB(),
+          threshold(),
+          singlePrice(),
+          noDiscount()
+        {}
+
+    DIRPRICE_DATA_RES & operator= (const DIRPRICE_DATA & rvalue)
         {
-        hDay        = dpd.hDay;
-        mDay        = dpd.mDay;
-        hNight      = dpd.hNight;
-        mNight      = dpd.mNight;
-        priceDayA   = dpd.priceDayA;
-        priceNightA = dpd.priceNightA;
-        priceDayB   = dpd.priceDayB;
-        priceNightB = dpd.priceNightB;
-        threshold   = dpd.threshold;
-        singlePrice = dpd.singlePrice;
-        noDiscount  = dpd.noDiscount;
+        hDay        = rvalue.hDay;
+        mDay        = rvalue.mDay;
+        hNight      = rvalue.hNight;
+        mNight      = rvalue.mNight;
+        priceDayA   = rvalue.priceDayA;
+        priceNightA = rvalue.priceNightA;
+        priceDayB   = rvalue.priceDayB;
+        priceNightB = rvalue.priceNightB;
+        threshold   = rvalue.threshold;
+        singlePrice = rvalue.singlePrice;
+        noDiscount  = rvalue.noDiscount;
         return *this;
-        };
+        }
 
     DIRPRICE_DATA GetData()
         {
@@ -106,46 +120,54 @@ struct DIRPRICE_DATA_RES
         return dd;
         }
 
-    RESETABLE<int>     hDay;
-    RESETABLE<int>     mDay;
-    RESETABLE<int>     hNight;
-    RESETABLE<int>     mNight;
-    RESETABLE<double>  priceDayA;
-    RESETABLE<double>  priceNightA;
-    RESETABLE<double>  priceDayB;
-    RESETABLE<double>  priceNightB;
-    RESETABLE<int>     threshold;
-    RESETABLE<int>     singlePrice;
-    RESETABLE<int>     noDiscount;
+    RESETABLE<int>    hDay;
+    RESETABLE<int>    mDay;
+    RESETABLE<int>    hNight;
+    RESETABLE<int>    mNight;
+    RESETABLE<double> priceDayA;
+    RESETABLE<double> priceNightA;
+    RESETABLE<double> priceDayB;
+    RESETABLE<double> priceNightB;
+    RESETABLE<int>    threshold;
+    RESETABLE<int>    singlePrice;
+    RESETABLE<int>    noDiscount;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_CONF
 {
-    double      fee;                 // Величина абонплаты
-    double      free;                // На какую сумму денег юзер качает бесплатно
-    int         traffType;           // UP, DOWN, UP+DOWN, MAX
-    double      passiveCost;         // Стоимость заморозки
+    double      fee;
+    double      free;
+    int         traffType;
+    double      passiveCost;
     std::string name;
 
     TARIFF_CONF()
         : fee(0),
           free(0),
-          traffType(TRAFF_UP_DOWN),              // UP-DOWN
+          traffType(TRAFF_UP_DOWN),
           passiveCost(0),
           name()
-        {};
+        {}
 
     TARIFF_CONF(const std::string & n)
         : fee(0),
           free(0),
-          traffType(TRAFF_UP_DOWN),              // UP-DOWN
+          traffType(TRAFF_UP_DOWN),
           passiveCost(0),
           name(n)
-        {};
+        {}
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_CONF_RES
 {
+    TARIFF_CONF_RES()
+        : fee(),
+          free(),
+          traffType(),
+          passiveCost(),
+          name()
+        {}
+
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
         {
         fee         = tc.fee;
@@ -154,7 +176,7 @@ struct TARIFF_CONF_RES
         passiveCost = tc.passiveCost;
         name        = tc.name;
         return *this;
-        };
+        }
 
     TARIFF_CONF GetData()
         {
@@ -167,17 +189,17 @@ struct TARIFF_CONF_RES
         return tc;
         }
 
-    RESETABLE<double>       fee;
-    RESETABLE<double>       free;
-    RESETABLE<int>          traffType;
-    RESETABLE<double>       passiveCost;
-    RESETABLE<std::string>  name;
+    RESETABLE<double>      fee;
+    RESETABLE<double>      free;
+    RESETABLE<int>         traffType;
+    RESETABLE<double>      passiveCost;
+    RESETABLE<std::string> name;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
 {
-    TARIFF_CONF                 tariffConf;
-    std::vector<DIRPRICE_DATA>  dirPrice;
+    TARIFF_CONF                tariffConf;
+    std::vector<DIRPRICE_DATA> dirPrice;
 
     TARIFF_DATA()
         : tariffConf(),
@@ -199,12 +221,12 @@ struct TARIFF_DATA
         tariffConf = td.tariffConf;
         dirPrice = td.dirPrice;
         return *this;
-        };
+        }
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA_RES
 {
-    TARIFF_CONF_RES     tariffConf;
+    TARIFF_CONF_RES                tariffConf;
     std::vector<DIRPRICE_DATA_RES> dirPrice;
 
     TARIFF_DATA_RES()
@@ -216,7 +238,7 @@ struct TARIFF_DATA_RES
         {
         TARIFF_DATA td;
         td.tariffConf = tariffConf.GetData();
-        for (int i = 0; i < DIR_NUM; i++)
+        for (size_t i = 0; i < DIR_NUM; i++)
             td.dirPrice[i] = dirPrice[i].GetData();
         return td;
         }

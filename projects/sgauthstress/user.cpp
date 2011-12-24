@@ -1,5 +1,7 @@
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h> // close
 
 #include <cstring>
 #include <cerrno>
@@ -51,7 +53,7 @@ if (sock > 0)
     close(sock);
 }
 
-const USER & USER::operator=(const USER & rvalue)
+USER & USER::operator=(const USER & rvalue)
 {
 login = rvalue.login;
 password = rvalue.password;

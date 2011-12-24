@@ -29,7 +29,6 @@ public:
     void                SetTariffs(TARIFFS * t) { tariffs = t; }
     void                SetAdmins(ADMINS * a) { admins = a; }
     void                SetStore(STORE * s) { store = s; }
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
     void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
     void                SetSettings(const MODULE_SETTINGS & s) { modSettings = s; }
     int                 ParseSettings();

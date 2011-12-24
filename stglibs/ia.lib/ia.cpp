@@ -29,25 +29,26 @@
 
 //---------------------------------------------------------------------------
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#include <winbase.h>
+#include <winnt.h>
+#else
+#include <fcntl.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <csignal>
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
 
-#ifdef WIN32
-    #include <winsock2.h>
-    #include <windows.h>
-    #include <winbase.h>
-    #include <winnt.h>
-#else
-    #include <fcntl.h>
-    #include <netdb.h>
-    #include <arpa/inet.h>
-    #include <unistd.h>
-#endif
-
 #include "stg/common.h"
-#include "ia.h"
+#include "stg/ia.h"
 
 #define IA_NONE            (0)
 #define IA_CONNECT         (1)
@@ -61,15 +62,25 @@
 //---------------------------------------------------------------------------
 #ifndef WIN32
 #include <sys/time.h>
+void Sleep(int ms)
+{
+long long res = ms * 1000000;
+struct timespec ts = {res / 1000000000, res % 1000000000};
+nanosleep(&ts, NULL);
+}
+//---------------------------------------------------------------------------
 void * RunL(void * data)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 IA_CLIENT_PROT * c = (IA_CLIENT_PROT *)data;
 static int a = 0;
 
 if (a == 0)
     {
-    usleep(50000);
+    Sleep(50);
     a = 1;
     }
 
@@ -78,11 +89,6 @@ while (c->GetNonstop())
     c->Run();
     }
 return NULL;
-}
-//---------------------------------------------------------------------------
-void Sleep(int ms)
-{
-usleep(ms * 1000);
 }
 //---------------------------------------------------------------------------
 long GetTickCount()

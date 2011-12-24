@@ -33,6 +33,7 @@
 #endif
 
 #include <pthread.h>
+
 #include <csignal>
 #include <cassert>
 #include <algorithm>
@@ -56,8 +57,8 @@ USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st, TARIFFS * t, const ADMIN *
     : USERS(),
       users(),
       usersToDelete(),
-      userIPNotifiersBefore(),
-      userIPNotifiersAfter(),
+      /*userIPNotifiersBefore(),
+      userIPNotifiersAfter(),*/
       ipIndex(),
       loginIndex(),
       settings(s),
@@ -180,7 +181,6 @@ u.OnAdd();
 users.push_front(u);
 
 AddUserIntoIndexes(users.begin());
-SetUserNotifiers(users.begin());
 
     {
     // Fire all "on add" notifiers
@@ -228,6 +228,8 @@ if (!priv->userAddDel)
                      login.c_str());
         return;
         }
+
+    u->SetDeleted();
     }
 
     {
@@ -252,20 +254,70 @@ if (!priv->userAddDel)
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
     u->OnDelete();
-    u->SetDeleted();
 
     USER_TO_DEL utd;
     utd.iter = u;
     utd.delTime = stgTime;
     usersToDelete.push_back(utd);
 
-    UnSetUserNotifiers(u);
     DelUserFromIndexes(u);
 
     WriteServLog("%s User \'%s\' deleted.",
              admin->GetLogStr().c_str(), login.c_str());
 
     }
+}
+//-----------------------------------------------------------------------------
+bool USERS_IMPL::Authorize(const std::string & login, uint32_t ip,
+                           uint32_t enabledDirs, const AUTH * auth)
+{
+user_iter iter;
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+if (FindByNameNonLock(login, &iter))
+    {
+    WriteServLog("Attempt to authorize non-existant user '%s'", login.c_str());
+    return false;
+    }
+
+if (FindByIPIdx(ip, iter))
+    {
+    if (iter->GetLogin() != login)
+        {
+        WriteServLog("Attempt to authorize user '%s' from ip %s which already occupied by '%s'",
+                     login.c_str(), inet_ntostring(ip).c_str(),
+                     iter->GetLogin().c_str());
+        return false;
+        }
+    if (iter->Authorize(ip, enabledDirs, auth))
+        return false;
+    return true;
+    }
+
+if (iter->Authorize(ip, enabledDirs, auth))
+    return false;
+
+AddToIPIdx(iter);
+return true;
+}
+//-----------------------------------------------------------------------------
+bool USERS_IMPL::Unauthorize(const std::string & login, const AUTH * auth)
+{
+user_iter iter;
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+if (FindByNameNonLock(login, &iter))
+    {
+    WriteServLog("Attempt to unauthorize non-existant user '%s'", login.c_str());
+    return false;
+    }
+
+uint32_t ip = iter->GetCurrIP();
+
+iter->Unauthorize(auth);
+
+if (!iter->GetAuthorized())
+    DelFromIPIdx(ip);
+
+return true;
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::ReadUsers()
@@ -289,7 +341,6 @@ for (unsigned int i = 0; i < usersList.size(); i++)
     ui = users.begin();
 
     AddUserIntoIndexes(ui);
-    SetUserNotifiers(ui);
 
     if (ui->ReadConf() < 0)
         return -1;
@@ -303,6 +354,10 @@ return 0;
 //-----------------------------------------------------------------------------
 void * USERS_IMPL::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 USERS_IMPL * us = (USERS_IMPL*) d;
 
@@ -360,7 +415,6 @@ while (us->nonstop)
 user_iter ui = us->users.begin();
 while (ui != us->users.end())
     {
-    us->UnSetUserNotifiers(ui);
     us->DelUserFromIndexes(ui);
     ++ui;
     }
@@ -561,11 +615,6 @@ while (iter != usersToDelete.end())
 return;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::GetUserNum() const
-{
-return users.size();
-}
-//-----------------------------------------------------------------------------
 void USERS_IMPL::AddToIPIdx(user_iter user)
 {
 printfd(__FILE__, "USERS: Add IP Idx\n");
@@ -596,45 +645,54 @@ const map<uint32_t, user_iter>::iterator it(
         ipIndex.find(ip)
 );
 
-//assert(it != ipIndex.end() && "User is in index");
 if (it == ipIndex.end())
-    return; // User has not been added
+    return;
 
 ipIndex.erase(it);
 }
 //-----------------------------------------------------------------------------
+bool USERS_IMPL::FindByIPIdx(uint32_t ip, user_iter & iter) const
+{
+map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
+if (it == ipIndex.end())
+    return false;
+iter = it->second;
+return true;
+}
+//-----------------------------------------------------------------------------
 int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_PTR * usr) const
 {
-    USER_IMPL * ptr = NULL;
-    if (FindByIPIdx(ip, &ptr))
-        return -1;
-    *usr = ptr;
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+user_iter iter;
+if (FindByIPIdx(ip, iter))
+    {
+    *usr = &(*iter);
     return 0;
+    }
+
+return -1;
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_IMPL ** usr) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, user_iter>::const_iterator it;
-it = ipIndex.find(ip);
-
-if (it == ipIndex.end())
+user_iter iter;
+if (FindByIPIdx(ip, iter))
     {
-    //printfd(__FILE__, "User NOT found in IP_Index!!!\n");
-    return -1;
+    *usr = &(*iter);
+    return 0;
     }
-*usr = &(*it->second);
-//printfd(__FILE__, "User found in IP_Index\n");
-return 0;
+
+return -1;
 }
 //-----------------------------------------------------------------------------
 bool USERS_IMPL::IsIPInIndex(uint32_t ip) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, user_iter>::const_iterator it;
-it = ipIndex.find(ip);
+map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 
 return it != ipIndex.end();
 }
@@ -744,54 +802,6 @@ if (searchDescriptors.find(h) != searchDescriptors.end())
 
 WriteServLog("USERS. Incorrect search handle.");
 return -1;
-}
-//-----------------------------------------------------------------------------
-void USERS_IMPL::SetUserNotifiers(user_iter user)
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-PROPERTY_NOTIFER_IP_BEFORE nb(*this, user);
-PROPERTY_NOTIFER_IP_AFTER  na(*this, user);
-
-userIPNotifiersBefore.push_front(nb);
-userIPNotifiersAfter.push_front(na);
-
-user->AddCurrIPBeforeNotifier(&(*userIPNotifiersBefore.begin()));
-user->AddCurrIPAfterNotifier(&(*userIPNotifiersAfter.begin()));
-}
-//-----------------------------------------------------------------------------
-void USERS_IMPL::UnSetUserNotifiers(user_iter user)
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-
-list<PROPERTY_NOTIFER_IP_BEFORE>::iterator  bi;
-list<PROPERTY_NOTIFER_IP_AFTER>::iterator   ai;
-
-bi = userIPNotifiersBefore.begin();
-while (bi != userIPNotifiersBefore.end())
-    {
-    if (bi->GetUser() == user)
-        {
-        bi->GetUser()->DelCurrIPBeforeNotifier(&(*bi));
-        userIPNotifiersBefore.erase(bi);
-        //printfd(__FILE__, "Notifier Before removed. User %s\n", bi->GetUser()->GetLogin().c_str());
-        break;
-        }
-    ++bi;
-    }
-
-ai = userIPNotifiersAfter.begin();
-while (ai != userIPNotifiersAfter.end())
-    {
-    if (ai->GetUser() == user)
-        {
-        ai->GetUser()->DelCurrIPAfterNotifier(&(*ai));
-        userIPNotifiersAfter.erase(ai);
-        //printfd(__FILE__, "Notifier After removed. User %s\n", ai->GetUser()->GetLogin().c_str());
-        break;
-        }
-    ++ai;
-    }
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddUserIntoIndexes(user_iter user)

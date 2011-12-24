@@ -32,8 +32,6 @@
 #include <cassert>
 #include <algorithm>
 
-#include "stg/admins.h"
-#include "stg/admin.h"
 #include "stg/common.h"
 #include "admins_impl.h"
 #include "admin_impl.h"
@@ -49,10 +47,12 @@ ADMINS_IMPL::ADMINS_IMPL(STORE * st)
       store(st),
       WriteServLog(GetStgLogger()),
       searchDescriptors(),
-      handle(0)
+      handle(0),
+      mutex(),
+      strError()
 {
 pthread_mutex_init(&mutex, NULL);
-ReadAdmins();
+Read();
 }
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::Add(const string & login, const ADMIN * admin)
@@ -176,7 +176,7 @@ WriteServLog("%s Administrator \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::ReadAdmins()
+int ADMINS_IMPL::Read()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 vector<string> adminsList;
@@ -212,7 +212,7 @@ while (ai != data.end())
     }
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::FindAdmin(const string & l, ADMIN ** admin)
+bool ADMINS_IMPL::Find(const string & l, ADMIN ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");
 
@@ -236,7 +236,7 @@ if (ai != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::AdminExists(const string & login) const
+bool ADMINS_IMPL::Exists(const string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
@@ -254,7 +254,7 @@ if (ai != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::AdminCorrect(const string & login, const std::string & password, ADMIN ** admin)
+bool ADMINS_IMPL::Correct(const string & login, const std::string & password, ADMIN ** admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())

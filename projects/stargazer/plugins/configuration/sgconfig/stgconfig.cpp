@@ -1,65 +1,20 @@
-#include <stdio.h>
 #include <unistd.h>
-#include <signal.h>
 
+#include <csignal>
 #include <algorithm>
 
 #include "stg/tariffs.h"
 #include "stg/admins.h"
 #include "stg/users.h"
+#include "stg/plugin_creator.h"
 #include "stgconfig.h"
 
-class STGCONFIG_CREATOR
-{
-private:
-    STG_CONFIG * stgconfig;
-
-public:
-    STGCONFIG_CREATOR()
-        : stgconfig(new STG_CONFIG())
-        {
-        };
-    ~STGCONFIG_CREATOR()
-        {
-        delete stgconfig;
-        };
-
-    STG_CONFIG * GetPlugin()
-        {
-        return stgconfig;
-        };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-STGCONFIG_CREATOR stgc;
+PLUGIN_CREATOR<STG_CONFIG> stgc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-STG_CONFIG_SETTINGS::STG_CONFIG_SETTINGS()
-    : port(0)
-{
-}
-//-----------------------------------------------------------------------------
-const std::string & STG_CONFIG_SETTINGS::GetStrError() const
-{
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-int STG_CONFIG_SETTINGS::ParseIntInRange(const std::string & str, int min, int max, int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
-}
 //-----------------------------------------------------------------------------
 int STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
@@ -86,11 +41,6 @@ port = p;
 return 0;
 }
 //-----------------------------------------------------------------------------
-uint16_t STG_CONFIG_SETTINGS::GetPort() const
-{
-return port;
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 PLUGIN * GetPlugin()
@@ -106,44 +56,19 @@ return "Stg configurator v.0.08";
 }
 //-----------------------------------------------------------------------------
 STG_CONFIG::STG_CONFIG()
-    : nonstop(false),
+    : errorStr(),
+      stgConfigSettings(),
+      thread(),
+      nonstop(false),
       isRunning(false),
+      config(),
       users(NULL),
       admins(NULL),
       tariffs(NULL),
       store(NULL),
+      settings(),
       stgSettings(NULL)
 {
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetUsers(USERS * u)
-{
-users = u;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetTariffs(TARIFFS * t)
-{
-tariffs = t;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetAdmins(ADMINS * a)
-{
-admins = a;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetStore(STORE * s)
-{
-store = s;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetStgSettings(const SETTINGS * s)
-{
-stgSettings = s;
-}
-//-----------------------------------------------------------------------------
-void STG_CONFIG::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
 }
 //-----------------------------------------------------------------------------
 int STG_CONFIG::ParseSettings()
@@ -152,11 +77,6 @@ int ret = stgConfigSettings.ParseSettings(settings);
 if (ret)
     errorStr = stgConfigSettings.GetStrError();
 return ret;
-}
-//-----------------------------------------------------------------------------
-const std::string & STG_CONFIG::GetStrError() const
-{
-return errorStr;
 }
 //-----------------------------------------------------------------------------
 int STG_CONFIG::Start()
@@ -203,50 +123,28 @@ for (i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    usleep(200000);
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
     }
 
-//after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    //TODO pthread_cancel()
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill thread.";
-        printfd(__FILE__, "Cannot kill thread\n");
-        return -1;
-        }
-    printfd(__FILE__, "STG_CONFIG killed\n");
-    }
+    return -1;
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool STG_CONFIG::IsRunning()
-{
-return isRunning;
-}
-//-----------------------------------------------------------------------------
 void * STG_CONFIG::Run(void * d)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 STG_CONFIG * stgConf = (STG_CONFIG *)d;
 stgConf->isRunning = true;
 
-stgConf->config.Run(&stgConf->config);
+stgConf->config.Run();
 
 stgConf->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-uint16_t STG_CONFIG::GetStartPosition() const
-{
-return 220;
-}
-//-----------------------------------------------------------------------------
-uint16_t STG_CONFIG::GetStopPosition() const
-{
-return 220;
-}
-//-----------------------------------------------------------------------------
-
-

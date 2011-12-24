@@ -1,8 +1,12 @@
-#include <unistd.h> // TODO: usleep
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <cstdlib>
 #include <csignal>
-
+#include <cerrno>
+#include <cstring>
 #include <vector>
 #include <algorithm>
 
@@ -10,6 +14,7 @@
 #include "stg/admin.h"
 #include "stg/module_settings.h"
 #include "stg/settings.h"
+#include "stg/plugin_creator.h"
 
 #include "rpcconfig.h"
 #include "info_methods.h"
@@ -18,51 +23,13 @@
 #include "admins_methods.h"
 #include "messages_methods.h"
 
-class RPC_CONFIG_CREATOR {
-private:
-    RPC_CONFIG * rpcconfig;
-
-public:
-    RPC_CONFIG_CREATOR()
-        : rpcconfig(new RPC_CONFIG())
-        {
-        }
-    ~RPC_CONFIG_CREATOR()
-        {
-        delete rpcconfig;
-        }
-
-    RPC_CONFIG * GetPlugin()
-        {
-        return rpcconfig;
-        }
-};
-
-RPC_CONFIG_CREATOR rpcc;
+PLUGIN_CREATOR<RPC_CONFIG> rpcc;
 
 RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
     : errorStr(),
       port(0),
       cookieTimeout(0)
 {
-}
-
-int RPC_CONFIG_SETTINGS::ParseIntInRange(const std::string & str,
-                                         int min,
-                                         int max,
-                                         int * val)
-{
-if (str2x(str.c_str(), *val))
-    {
-    errorStr = "Incorrect value \'" + str + "\'.";
-    return -1;
-    }
-if (*val < min || *val > max)
-    {
-    errorStr = "Value \'" + str + "\' out of range.";
-    return -1;
-    }
-return 0;
 }
 
 int RPC_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
@@ -112,14 +79,22 @@ return rpcc.GetPlugin();
 }
 
 RPC_CONFIG::RPC_CONFIG()
-    : users(NULL),
+    : errorStr(),
+      rpcConfigSettings(),
+      users(NULL),
       admins(NULL),
       tariffs(NULL),
       store(NULL),
+      settings(),
+      fd(-1),
+      rpcRegistry(),
       rpcServer(NULL),
       running(false),
       stopped(true),
-      dayFee(0)
+      tid(),
+      cookies(),
+      dayFee(0),
+      dirNames()
 {
 }
 
@@ -152,17 +127,57 @@ int RPC_CONFIG::Start()
 {
 InitiateRegistry();
 running = true;
+
+fd = socket(AF_INET, SOCK_STREAM, 0);
+if (fd < 0)
+    {
+    errorStr = "Failed to create socket";
+    printfd(__FILE__, "Failed to create listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
+int flag = 1;
+
+if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)))
+    {
+    errorStr = "Setsockopt failed.";
+    printfd(__FILE__, "Setsockopt failed: %s\n", strerror(errno));
+    return -1;
+    }
+
+struct sockaddr_in addr;
+addr.sin_family = AF_INET;
+addr.sin_port = htons(rpcConfigSettings.GetPort());
+addr.sin_addr.s_addr = inet_addr("0.0.0.0");
+
+if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
+    {
+    errorStr = "Failed to bind socket";
+    printfd(__FILE__, "Failed to bind listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
+if (listen(fd, 10))
+    {
+    errorStr = "Failed to listen socket";
+    printfd(__FILE__, "Failed to listen listening socket: %s\n", strerror(errno));
+    return -1;
+    }
+
 rpcServer = new xmlrpc_c::serverAbyss(
-        rpcRegistry,
-        rpcConfigSettings.GetPort(),
-        "/var/log/stargazer_rpc.log"
+        xmlrpc_c::serverAbyss::constrOpt()
+        .registryP(&rpcRegistry)
+        .logFileName("/var/log/stargazer_rpc.log")
+        .socketFd(fd)
         );
+
 if (pthread_create(&tid, NULL, Run, this))
     {
     errorStr = "Failed to create RPC thread";
     printfd(__FILE__, "Failed to crate RPC thread\n");
     return -1;
     }
+
 return 0;
 }
 
@@ -170,39 +185,41 @@ int RPC_CONFIG::Stop()
 {
 running = false;
 for (int i = 0; i < 5 && !stopped; ++i)
-    usleep(200000);
-//rpcServer->terminate();
+    {
+    struct timespec ts = {0, 200000000};
+    nanosleep(&ts, NULL);
+    }
+
 if (!stopped)
     {
-    if (pthread_kill(tid, SIGTERM))
-        {
-        errorStr = "Failed to kill thread";
-        printfd(__FILE__, "Failed to kill thread\n");
-        }
-    for (int i = 0; i < 25 && !stopped; ++i)
-        usleep(200000);
-    if (!stopped)
-        {
-        printfd(__FILE__, "Failed to stop RPC thread\n");
-        errorStr = "Failed to stop RPC thread";
-        return -1;
-        }
-    else
-        {
-        pthread_join(tid, NULL);
-        }
+    running = true;
+    printfd(__FILE__, "Failed to stop RPC thread\n");
+    errorStr = "Failed to stop RPC thread";
+    return -1;
     }
+else
+    {
+    pthread_join(tid, NULL);
+    }
+
+close(fd);
+
 return 0;
 }
 
 void * RPC_CONFIG::Run(void * rc)
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 RPC_CONFIG * config = static_cast<RPC_CONFIG *>(rc);
 
 config->stopped = false;
 while (config->running)
     {
-    config->rpcServer->runOnce();
+    if (WaitPackets(config->fd))
+        config->rpcServer->runOnce();
     }
 config->stopped = true;
 
@@ -241,7 +258,7 @@ bool RPC_CONFIG::CheckAdmin(const std::string & login,
 {
 ADMIN * admin = NULL;
 
-if (!admins->AdminCorrect(login, password, &admin))
+if (!admins->Correct(login, password, &admin))
     {
     return true;
     }

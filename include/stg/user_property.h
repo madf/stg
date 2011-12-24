@@ -15,12 +15,13 @@ $Author: faust $
 #include <sstream>
 #include <iostream>
 
+#include "stg/logger.h"
+#include "stg/locker.h"
+#include "stg/scriptexecuter.h"
+
 #include "store.h"
 #include "admin.h"
 #include "notifer.h"
-#include "logger.h"
-#include "locker.h"
-#include "scriptexecuter.h"
 #include "noncopyable.h"
 
 extern const volatile time_t stgTime;
@@ -173,7 +174,10 @@ template <typename varT>
 inline
 USER_PROPERTY<varT>::USER_PROPERTY(varT & val)
     : value(val),
-      modificationTime(stgTime)
+      modificationTime(stgTime),
+      beforeNotifiers(),
+      afterNotifiers(),
+      mutex()
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -363,7 +367,7 @@ std::string filePath = scriptsDir + "/OnChange";
 if (access(filePath.c_str(), X_OK) == 0)
     {
     std::string execString("\"" + filePath + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin->GetLogin() + "\" \"" + admin->GetIPStr() + "\"");
-    ScriptExec(execString);
+    ScriptExec(execString.c_str());
     }
 else
     {

@@ -36,15 +36,15 @@
 #include "stg_timer.h"
 
 //-----------------------------------------------------------------------------
-TARIFF & TARIFF_IMPL::operator=(const TARIFF_DATA & td)
+TARIFF_IMPL & TARIFF_IMPL::operator=(const TARIFF_DATA & td)
 {
 tariffData = td;
 return *this;
 }
 //-----------------------------------------------------------------------------
-TARIFF & TARIFF_IMPL::operator=(const TARIFF & t)
+TARIFF_IMPL & TARIFF_IMPL::operator=(const TARIFF_IMPL & t)
 {
-tariffData = t.GetTariffData();
+tariffData = t.tariffData;
 return *this;
 }
 //-----------------------------------------------------------------------------

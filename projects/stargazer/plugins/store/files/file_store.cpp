@@ -51,6 +51,7 @@
 #include "stg/blowfish.h"
 #include "stg/logger.h"
 #include "stg/locker.h"
+#include "stg/plugin_creator.h"
 #include "file_store.h"
 
 #define DELETED_USERS_DIR   "deleted_users"
@@ -63,88 +64,35 @@ int GetFileList(vector<string> * fileList, const string & directory, mode_t mode
 
 const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
-class BAK_FILE
-{
-public:
-
-    //-------------------------------------------------------------------------
-    BAK_FILE(const string & fileName, bool removeBak)
-            : f(NULL),
-              removeBak(false)
-        {
-        bakSuccessed = false;
-        BAK_FILE::removeBak = removeBak;
-        fileNameBak = fileName + ".bak";
-        if (rename(fileName.c_str(), fileNameBak.c_str()))
-            {
-            printfd(__FILE__, "BAK_FILE::BAK_FILE - rename failed. Message: '%s'\n", strerror(errno));
-            }
-        else
-            {
-            bakSuccessed = true;
-            }
-
-        }
-    //-------------------------------------------------------------------------
-    ~BAK_FILE()
-        {
-        if(bakSuccessed && removeBak)
-            {
-            if (unlink(fileNameBak.c_str()))
-                {
-                printfd(__FILE__, "BAK_FILE::~BAK_FILE - unlink failed. Message: '%s'\n", strerror(errno));
-                }
-            }
-        }
-    //-------------------------------------------------------------------------
-
-private:
-    FILE * f;
-    bool bakSuccessed;
-    string fileNameBak;
-    bool removeBak;
-};
-//-----------------------------------------------------------------------------
-class FILES_STORE_CREATOR
-{
-private:
-    FILES_STORE * fs;
-
-public:
-    FILES_STORE_CREATOR()
-        : fs(new FILES_STORE())
-        {
-        };
-    ~FILES_STORE_CREATOR()
-        {
-        delete fs;
-        };
-
-    FILES_STORE * GetStore()
-    {
-        return fs;
-    };
-};
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-FILES_STORE_CREATOR fsc;
+PLUGIN_CREATOR<FILES_STORE> fsc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return fsc.GetStore();
+return fsc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
     : settings(NULL),
+      errorStr(),
+      workDir(),
+      usersDir(),
+      adminsDir(),
+      tariffsDir(),
+      statMode(0),
+      statUID(0),
+      statGID(0),
+      confMode(0),
+      confUID(0),
+      confGID(0),
+      userLogMode(0),
+      userLogUID(0),
+      userLogGID(0),
       removeBak(true),
       readBak(true)
-{
-}
-//-----------------------------------------------------------------------------
-FILES_STORE_SETTINGS::~FILES_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
@@ -368,31 +316,6 @@ c = str[2] - '0';
 return 0;
 }
 //-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetWorkDir() const
-{
-return workDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetUsersDir() const
-{
-return usersDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetAdminsDir() const
-{
-return adminsDir;
-}
-//-----------------------------------------------------------------------------
-string FILES_STORE_SETTINGS::GetTariffsDir() const
-{
-return tariffsDir;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetStatMode() const
-{
-return statMode;
-}
-//-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetStatModeDir() const
 {
 mode_t mode = statMode;
@@ -400,21 +323,6 @@ if (statMode & S_IRUSR) mode |= S_IXUSR;
 if (statMode & S_IRGRP) mode |= S_IXGRP;
 if (statMode & S_IROTH) mode |= S_IXOTH;
 return mode;
-}
-//-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetStatUID() const
-{
-return statUID;
-}
-//-----------------------------------------------------------------------------
-gid_t  FILES_STORE_SETTINGS::GetStatGID() const
-{
-return statGID;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetConfMode() const
-{
-return confMode;
 }
 //-----------------------------------------------------------------------------
 mode_t FILES_STORE_SETTINGS::GetConfModeDir() const
@@ -426,62 +334,20 @@ if (confMode & S_IROTH) mode |= S_IXOTH;
 return mode;
 }
 //-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetConfUID() const
-{
-return confUID;
-}
-//-----------------------------------------------------------------------------
-gid_t  FILES_STORE_SETTINGS::GetConfGID() const
-{
-return confGID;
-}
-//-----------------------------------------------------------------------------
-mode_t FILES_STORE_SETTINGS::GetLogMode() const
-{
-return userLogMode;
-}
-//-----------------------------------------------------------------------------
-uid_t  FILES_STORE_SETTINGS::GetLogUID() const
-{
-return userLogUID;
-}
-//-----------------------------------------------------------------------------
-gid_t FILES_STORE_SETTINGS::GetLogGID() const
-{
-return userLogGID;
-}
-//-----------------------------------------------------------------------------
-bool FILES_STORE_SETTINGS::GetRemoveBak() const
-{
-return removeBak;
-}
-//-----------------------------------------------------------------------------
-bool FILES_STORE_SETTINGS::GetReadBak() const
-{
-return readBak;
-}
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 FILES_STORE::FILES_STORE()
+    : errorStr(),
+      version("file_store v.1.04"),
+      storeSettings(),
+      settings(),
+      mutex()
 {
-version = "file_store v.1.04";
-
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 };
-//-----------------------------------------------------------------------------
-FILES_STORE::~FILES_STORE()
-{
-
-};
-//-----------------------------------------------------------------------------
-void FILES_STORE::SetSettings(const MODULE_SETTINGS & s)
-{
-settings = s;
-}
 //-----------------------------------------------------------------------------
 int FILES_STORE::ParseSettings()
 {
@@ -492,17 +358,6 @@ if (ret)
     errorStr = storeSettings.GetStrError();
     }
 return ret;
-}
-//-----------------------------------------------------------------------------
-const string & FILES_STORE::GetStrError() const
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-return errorStr;
-}
-//-----------------------------------------------------------------------------
-const string & FILES_STORE::GetVersion() const
-{
-return version;
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::GetUsersList(vector<string> * userList) const
@@ -594,6 +449,7 @@ while ((entry = readdir(d)))
             errorStr += strerror(errno);
             errorStr += "'";
             printfd(__FILE__, "FILES_STORE::RemoveDir() - unlink failed. Message: '%s'\n", strerror(errno));
+            closedir(d);
             return -1;
             }
         }
@@ -602,6 +458,7 @@ while ((entry = readdir(d)))
         {
         if (RemoveDir(str.c_str()))
             {
+            closedir(d);
             return -1;
             }
 
@@ -645,27 +502,6 @@ if (Touch(fileName))
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-/*f = fopen(fileName.c_str(), "wt");
-if (f)
-    {
-    if (fprintf(f, "\n") < 0)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "fprintf failed. Message: '";
-        errorStr += strerror(errno);
-        errorStr += "'";
-        printfd(__FILE__, "FILES_STORE::AddUser - fprintf failed. Message: '%s'\n", strerror(errno));
-        return -1;
-        }
-    fclose(f);
-    }
-else
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot create file \"" + fileName + "\'";
-    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
-    return -1;
-    }*/
 
 strprintf(&fileName, "%s%s/stat", storeSettings.GetUsersDir().c_str(), login.c_str());
 if (Touch(fileName))
@@ -675,27 +511,6 @@ if (Touch(fileName))
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
-/*f = fopen(fileName.c_str(), "wt");
-if (f)
-    {
-    if (fprintf(f, "\n") < 0)
-        {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "fprintf failed. Message: '";
-        errorStr += strerror(errno);
-        errorStr += "'";
-        printfd(__FILE__, "FILES_STORE::AddUser - fprintf failed. Message: '%s'\n", strerror(errno));
-        return -1;
-        }
-    fclose(f);
-    }
-else
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Cannot create file \"" + fileName + "\'";
-    printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
-    return -1;
-    }*/
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -978,8 +793,6 @@ int FILES_STORE::SaveUserConf(const USER_CONF & conf, const string & login) cons
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 
-//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
-
 CONFIGFILE cfstat(fileName, true);
 
 int e = cfstat.Error();
@@ -1036,8 +849,6 @@ int FILES_STORE::SaveUserStat(const USER_STAT & stat, const string & login) cons
 char s[22];
 string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
-
-//BAK_FILE bakFile(fileName, storeSettings.GetRemoveBak());
 
     {
     CONFIGFILE cfstat(fileName, true);
@@ -1245,10 +1056,10 @@ if (s2.Error())
 for (size_t i = 0; i < DIR_NUM; i++)
     {
     char dirName[3];
-    snprintf(dirName, 3, "U%d", i);
+    snprintf(dirName, 3, "U%llu", (unsigned long long)i);
     s.WriteInt(dirName, stat.up[i]); // Classic
     s2.WriteInt(dirName, stat.up[i]); // New
-    snprintf(dirName, 3, "D%d", i);
+    snprintf(dirName, 3, "D%llu", (unsigned long long)i);
     s.WriteInt(dirName, stat.down[i]); // Classic
     s2.WriteInt(dirName, stat.down[i]); // New
     }
@@ -1346,6 +1157,8 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
     cf.WriteInt("UsrAddDel",   ac.priv.userAddDel);
     cf.WriteInt("ChgTariff",   ac.priv.tariffChg);
     cf.WriteInt("ChgAdmin",    ac.priv.adminChg);
+    cf.WriteInt("ChgService",  ac.priv.serviceChg);
+    cf.WriteInt("ChgCorp",     ac.priv.corpChg);
     }
 
 return 0;
@@ -1472,6 +1285,16 @@ else
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgtariff read failed for admin '%s'\n", ac->login.c_str());
     return -1;
     }
+
+if (cf.ReadInt("ChgService", &a, 0) == 0)
+    ac->priv.serviceChg = a;
+else
+    ac->priv.serviceChg = 0;
+
+if (cf.ReadInt("ChgCorp", &a, 0) == 0)
+    ac->priv.corpChg = a;
+else
+    ac->priv.corpChg = 0;
 
 return 0;
 }
@@ -1930,10 +1753,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::AddMessage(STG_MSG * msg, const string & login) const
 {
-//Проверить есть ли директория для сообщений. Если нет - создать.
-//Затем положить сообщение с именем файла - временнOй меткой. Записать туда
-//текст и приоритет.
-
 string fn;
 string dn;
 struct timeval tv;
@@ -1974,10 +1793,6 @@ return EditMessage(*msg, login);
 //-----------------------------------------------------------------------------
 int FILES_STORE::EditMessage(const STG_MSG & msg, const string & login) const
 {
-//Проверить еслть ли директория для сообщений. Если нет - создать.
-//Затем положить сообщение с именем файла - временнOй меткой. Записать туда
-//текст и приоритет.
-
 string fileName;
 
 FILE * msgFile;
@@ -2058,8 +1873,6 @@ return unlink(fn.c_str());
 int FILES_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const string & login) const
 {
 string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
-
-//hdrsList->resize(messages.size());
 
 if (access(dn.c_str(), F_OK) != 0)
     {
@@ -2212,8 +2025,6 @@ return -1;
 //-----------------------------------------------------------------------------
 int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext)
 {
-// Функция просматривает содержимое директории
-
 DIR * d = opendir(directory.c_str());
 
 if (!d)

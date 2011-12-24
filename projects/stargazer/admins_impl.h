@@ -35,12 +35,14 @@
 
 #include <list>
 #include <map>
+#include <string>
 
 #include "stg/admins.h"
 #include "stg/admin.h"
 #include "stg/locker.h"
 #include "stg/store.h"
 #include "stg/noncopyable.h"
+#include "stg/logger.h"
 #include "admin_impl.h"
 
 class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
@@ -48,38 +50,43 @@ public:
     ADMINS_IMPL(STORE * st);
     virtual ~ADMINS_IMPL() {}
 
-    int           Add(const string & login, const ADMIN * admin);
-    int           Del(const string & login, const ADMIN * admin);
+    int           Add(const std::string & login, const ADMIN * admin);
+    int           Del(const std::string & login, const ADMIN * admin);
     int           Change(const ADMIN_CONF & ac, const ADMIN * admin);
     void          PrintAdmins() const;
     const ADMIN * GetSysAdmin() const { return &stg; }
     const ADMIN * GetNoAdmin() const { return &noAdmin; }
-    bool          FindAdmin(const std::string & l, ADMIN ** admin);
-    bool          AdminExists(const std::string & login) const;
-    bool          AdminCorrect(const std::string & login,
-                               const std::string & password,
-                               ADMIN ** admin);
+    bool          Find(const std::string & l, ADMIN ** admin);
+    bool          Exists(const std::string & login) const;
+    bool          Correct(const std::string & login,
+                          const std::string & password,
+                          ADMIN ** admin);
     const std::string & GetStrError() const { return strError; }
+
+    size_t        Count() const { return data.size(); }
 
     int OpenSearch() const;
     int SearchNext(int, ADMIN_CONF * ac) const;
     int CloseSearch(int) const;
 
 private:
+    ADMINS_IMPL(const ADMINS_IMPL & rvalue);
+    ADMINS_IMPL & operator=(const ADMINS_IMPL & rvalue);
+
     typedef list<ADMIN_IMPL>::iterator admin_iter;
     typedef list<ADMIN_IMPL>::const_iterator const_admin_iter;
 
-    int             ReadAdmins();
+    int             Read();
 
-    ADMIN_IMPL           stg;
-    ADMIN_IMPL           noAdmin;
-    list<ADMIN_IMPL>     data;
-    STORE *              store;
-    STG_LOGGER &         WriteServLog;
-    mutable map<int, const_admin_iter> searchDescriptors;
-    mutable unsigned int handle;
+    ADMIN_IMPL              stg;
+    ADMIN_IMPL              noAdmin;
+    std::list<ADMIN_IMPL>   data;
+    STORE *                 store;
+    STG_LOGGER &            WriteServLog;
+    mutable std::map<int, const_admin_iter> searchDescriptors;
+    mutable unsigned int    handle;
     mutable pthread_mutex_t mutex;
-    std::string          strError;
+    std::string             strError;
 };
 
 #endif

@@ -56,7 +56,10 @@ class RADIUS;
 //-----------------------------------------------------------------------------
 class RAD_SETTINGS {
 public:
-    RAD_SETTINGS() : port(0) {}
+    RAD_SETTINGS()
+        : port(0), errorStr(), password(),
+          authServices(), acctServices()
+    {}
     virtual ~RAD_SETTINGS() {}
     const string & GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
@@ -66,7 +69,6 @@ public:
     const std::list<string> & GetAcctServices() const { return acctServices; }
 
 private:
-    int ParseIntInRange(const std::string & str, int min, int max, int * val);
     int ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst);
 
     uint16_t port;
@@ -77,6 +79,7 @@ private:
 };
 //-----------------------------------------------------------------------------
 struct RAD_SESSION {
+    RAD_SESSION() : userName(), serviceType() {}
     std::string userName;
     std::string serviceType;
 };
@@ -84,30 +87,30 @@ struct RAD_SESSION {
 class RADIUS :public AUTH {
 public:
                         RADIUS();
-    virtual             ~RADIUS() {};
+    virtual             ~RADIUS() {}
 
-    void                SetUsers(USERS * u);
-    void                SetTariffs(TARIFFS *) {}
-    void                SetAdmins(ADMINS *) {}
-    void                SetTraffcounter(TRAFFCOUNTER *) {}
-    void                SetStore(STORE * );
-    void                SetStgSettings(const SETTINGS * s);
-    void                SetSettings(const MODULE_SETTINGS & s);
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetStore(STORE * s) { store = s; }
+    void                SetStgSettings(const SETTINGS *) {}
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
     int                 Start();
     int                 Stop();
     int                 Reload() { return 0; }
-    bool                IsRunning();
+    bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const;
-    uint16_t            GetStopPosition() const;
+    const std::string   GetVersion() const { return "RADIUS data access plugin v 0.6"; }
+    uint16_t            GetStartPosition() const { return 20; }
+    uint16_t            GetStopPosition() const { return 20; }
 
     int SendMessage(const STG_MSG &, uint32_t) const { return 0; }
 
 private:
+    RADIUS(const RADIUS & rvalue);
+    RADIUS & operator=(const RADIUS & rvalue);
+
     static void *       Run(void *);
     int                 PrepareNet();
     int                 FinalizeNet();
@@ -128,8 +131,6 @@ private:
     bool                CanAuthService(const std::string & svc) const;
     bool                CanAcctService(const std::string & svc) const;
     bool                IsAllowedService(const std::string & svc) const;
-
-    bool                WaitPackets(int sd) const;
 
     void                PrintServices(const std::list<std::string> & svcs);
 

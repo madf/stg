@@ -7,6 +7,7 @@ INCS = stg/admin_conf.h \
        stg/auth.h \
        stg/const.h \
        stg/corp_conf.h \
+       stg/corporations.h \
        stg/ia_packets.h \
        stg/message.h \
        stg/module_settings.h \
@@ -14,11 +15,13 @@ INCS = stg/admin_conf.h \
        stg/notifer.h \
        stg/os_int.h \
        stg/plugin.h \
+       stg/plugin_creator.h \
        stg/rad_packets.h \
        stg/raw_ip_packet.h \
        stg/resetable.h \
        stg/rs_packets.h \
        stg/service_conf.h \
+       stg/services.h \
        stg/settings.h \
        stg/store.h \
        stg/tariff_conf.h \

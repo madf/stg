@@ -30,6 +30,7 @@
 
 class TARIFF {
 public:
+    virtual ~TARIFF() {}
     virtual double  GetPriceWithTraffType(uint64_t up,
                                           uint64_t down,
                                           int dir,
@@ -46,11 +47,6 @@ public:
     virtual int64_t GetTraffByType(uint64_t up, uint64_t down) const = 0;
     virtual int     GetThreshold(int dir) const = 0;
     virtual const TARIFF_DATA & GetTariffData() const = 0;
-
-    virtual TARIFF & operator=(const TARIFF_DATA & td) = 0;
-    virtual TARIFF & operator=(const TARIFF & t) = 0;
-    virtual bool     operator==(const TARIFF & rhs) const = 0;
-    virtual bool     operator!=(const TARIFF & rhs) const = 0;
 };
 
 #endif

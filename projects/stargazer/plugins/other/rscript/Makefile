@@ -11,7 +11,11 @@ PROG = mod_remote_script.so
 SRCS = ./rscript.cpp \
        ./nrmap_parser.cpp
 
-STGLIBS = -lstgcommon -lstgcrypto
+STGLIBS = common \
+	  crypto \
+	  locker \
+	  logger \
+	  scriptexecuter
 
 include ../../Makefile.in
 

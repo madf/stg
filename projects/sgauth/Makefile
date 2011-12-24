@@ -10,27 +10,29 @@ SRCS = ./main.cpp \
        ./settings_impl.cpp \
        ./web.cpp
 
-STGLIBS =  -lstgconffiles \
-           -lstgcrypto \
-           -lstgcommon \
-           -lstgia
+STGLIBS =  conffiles \
+           ia \
+           crypto \
+           common
 
-LIBS += $(LIB_THREAD)
+STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
+STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-ifeq ($(OS),linux)
-else
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
+
+ifneq ($(OS),linux)
 LIBS += -lintl \
-        -lc
+        -lc \
+	-liconv
 endif
 
-SEARCH_DIRS = -I $(DIR_INCLUDE)
+SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
-CXXFLAGS += -Wall
-LDFLAGS += -Wl,-E -L$(DIR_LIB) -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-rpath-link,$(DIR_LIB)
-
-vpath %.so $(DIR_LIB)
+CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs install uninstall install-bin install-data uninstall-bin uninstall-data
 all: libs $(PROG) ../../Makefile.conf
@@ -38,8 +40,8 @@ all: libs $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-$(PROG): $(OBJS) $(STGLIBS) 
-	$(CC) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
+$(PROG): $(OBJS)
+	$(CXX) $^ $(LDFLAGS) -o $(PROG) $(LIBS)
 
 clean:
 	rm -f deps $(PROG) *.o tags *.*~ .OS
@@ -83,10 +85,10 @@ endif
 endif
 
 deps:	$(SRCS) ../../Makefile.conf sgauth.css
-	$(MAKE) -C $(DIR_LIBSRC) includes
+	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	./make_css.sh
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) $(SEARCH_DIRS) -MM $$file` Makefile" >> deps ;\
-	  echo -e '\t$$(CC) -c $$< $(CXXFLAGS) $(SEARCH_DIRS) $(DEFS)' >> deps ;\
+	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
 	done
