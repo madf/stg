@@ -160,7 +160,7 @@ class TariffChangeUsersSensor : public UsersSensor {
 
     private:
         bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().nextTariff.ConstData().empty(); }
+        { return !userPtr->GetProperty().nextTariff.ConstData().empty(); }
 };
 
 class TotalTariffsSensor : public Sensor {
