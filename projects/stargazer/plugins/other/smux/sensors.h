@@ -163,6 +163,15 @@ class TariffChangeUsersSensor : public UsersSensor {
         { return !userPtr->GetProperty().nextTariff.ConstData().empty(); }
 };
 
+class ActiveUsersSensor : public UsersSensor {
+    public:
+        ActiveUsersSensor(USERS & u) : UsersSensor(u) {}
+        virtual ~ActiveUsersSensor() {}
+
+    private:
+        bool UserPredicate(USER_PTR userPtr) const;
+};
+
 class TotalTariffsSensor : public Sensor {
     public:
         TotalTariffsSensor(const TARIFFS & t) : tariffs(t) {}

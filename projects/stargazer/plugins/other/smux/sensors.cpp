@@ -46,3 +46,16 @@ x2str(count, res);
 return res;
 }
 #endif
+
+bool ActiveUsersSensor::UserPredicate(USER_PTR userPtr) const
+{
+if (!userPtr->GetConnected())
+    return false;
+for (size_t i = 0; i < DIR_NUM; ++i)
+    {
+    if (userPtr->GetSessionUpload()[i] > 0 ||
+        userPtr->GetSessionDownload()[i] > 0)
+        return true;
+    }
+return false;
+}
