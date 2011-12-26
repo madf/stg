@@ -1,4 +1,65 @@
 <chapter xml:id="ch8">
-    <title>Описание работы с консольным конфигуратором</title>
-    <para>Консольный конфигуратор позволяет добавлять, удалять пользователей,  получать и устанавливать некоторые параметры пользователя и отправлять ему текстовые сообщения. Общий формат вызова для получения значения параметра:</para>
-</chapter>
+	<title>Описание работы с консольным конфигуратором</title>
+	<para>Консольный конфигуратор позволяет добавлять, удалять пользователей,  получать и устанавливать некоторые параметры пользователя и отправлять ему текстовые сообщения. Общий формат вызова для получения значения параметра:</para>
+<programlisting linenumbering="unnumbered">
+sgconf get -s &lt;server&gt; -p &lt;port&gt; -a &lt;admin&gt; -w &lt;admin_password&gt; -u &lt;user&gt; &lt;options&gt;			
+</programlisting>
+	<itemizedlist mark="none">
+		<listitem><para>server — адрес сервера;</para></listitem>
+		<listitem><para>port — порт конфигуратора на сервере;</para></listitem>
+		<listitem><para>admin — логин администратора на сервере;</para></listitem>
+		<listitem><para>admin_password — пароль администратора на сервере.</para></listitem>
+		<listitem><para>user — логин пользователя на сервере.</para></listitem>
+		</itemizedlist>
+	<para>Общий формат вызова для установки параметра, добавления или удаления пользователя:</para>
+<programlisting linenumbering="unnumbered">
+sgconf get -s &lt;server&gt; -p &lt;port&gt; -a &lt;admin&gt; -w &lt;admin_password&gt; -u &lt;user&gt; &lt;options&gt;			
+</programlisting>
+	<para>Параметры вызова — такие-же, что и при получении значения параметра.</para>
+	<itemizedlist mark="none">
+		<listitem><para>-c &lt;add_cash[:log_message]&gt; — добавление денег на счет пользователя. add_cash — добавляемая сумма, log_message — опциональный коментарий для записи в лог.</para></listitem>
+		<listitem><para>-v &lt;set_cash[:log_message]&gt; — установка денег на счету пользователя. set_cash — устанавливаемая сумма, log_message — опциональный коментарий для записи в лог.</para></listitem>
+		<listitem><para>-c — при использовании без параметра возвращает состояние счета пользователя.</para></listitem>
+		<listitem><para>-t &lt;tariff:now|delayed&gt; — смена тарифа пользователя. tariff — название тарифа, now — изменить немедленно, delayed — изменить в конце месяца.</para></listitem>
+		<listitem><para>-t — при использовании без параметра возвращает текущий тариф пользователя.</para></listitem>
+		<listitem><para>-r &lt;credit&gt; — предоставление пользователю кредита в размере credit.</para></listitem>
+		<listitem><para>-r — при использовании без параметров возвращает текущий кредит.</para></listitem>
+		<listitem><para>-E &lt;YYYY-MM-DD&gt; — указание срока истечения кредита пользователю.</para></listitem>
+		<listitem><para>-E — при использовании без параметров возвращает текущий срок истечения кредита пользователю.</para></listitem>
+		<listitem><para>-o &lt;new_password&gt; — установка пользователю пароля new_password.</para></listitem>
+		<listitem><para>-o — при использовании без параметра возвращает текущий пароль пользователя.</para></listitem>
+		<listitem><para>-e &lt;prepaid&gt; — установка количества предоплаченного трафика.</para></listitem>
+		<listitem><para>-e — при использовании без параметра возвращает количество оставшегося предоплаченного трафика.</para></listitem>
+		<listitem><para>-I &lt;*ip_addr[,ip_addr]&gt; — установка IP-адреса пользователя (одного, нескольких или произвольного).</para></listitem>
+		<listitem><para>-I — при использовании без параметра возвращает текущий IP-адрес пользователя.</para></listitem>
+		<listitem><para>-A &lt;name&gt; — установка реального имени пользователя.</para></listitem>
+		<listitem><para>-A — при использовании без параметра возвращает реальное имя пользователя.</para></listitem>
+		<listitem><para>-N &lt;note&gt; — установка коментария к пользователю.</para></listitem>
+		<listitem><para>-N — при использовании без параметров возвращает коментарий к пользователю.</para></listitem>
+		<listitem><para>-D &lt;address&gt; — установка реального адреса пользователя.</para></listitem>
+		<listitem><para>-D — при использовании без параметра возвращает адрес пользователя.</para></listitem>
+		<listitem><para>-L &lt;email&gt; — установка email-адреса пользователя.</para></listitem>
+		<listitem><para>-L — при использовании без параметра возвращает адрес Email пользователя.</para></listitem>
+		<listitem><para>-P &lt;phone&gt; — установка телефона пользователя.</para></listitem>
+		<listitem><para>-P — при использовании без параметров возвращает телефон пользователя.</para></listitem>
+		<listitem><para>-G &lt;group&gt; — установка группы пользователя.</para></listitem>
+		<listitem><para>-G — при использовании без параметра возвращает текущую группу пользователя.</para></listitem>
+		<listitem><para>-d &lt;1|0&gt; — включение/выключение пользователя.</para></listitem>
+		<listitem><para>-d — при использовании без параметров возвращает текущее состояние пользователя (включен/выключен, а не online/offline).</para></listitem>
+		<listitem><para>-i &lt;1|0&gt; — «заморозка»/«разморозка» пользователя.</para></listitem>
+		<listitem><para>-i — при использовании без параметра возвращает текущее состояние пользователя («заморожен»/«разморожен»).</para></listitem>
+		<listitem><para>--disable-stat &lt;1|0&gt; — включение/выключение ведения детальной статистики для пользователя.</para></listitem>
+		<listitem><para>--disable-stat — при использовании без параметра возвращает состояние флага ведения детальной статистики для пользователя.</para></listitem>
+		<listitem><para>--always-online &lt;1|0&gt; — включение/выключение режима Always Online для пользователя.</para></listitem>
+		<listitem><para>--always-online — при использовании без параметра возвращает режим пользователя.</para></listitem>
+		<listitem><para>--u0 &lt;traff&gt; [--u1 &lt;traff&gt; ...] — установка количества исходящего трафика за месяц по направлениям (0 — 9).</para></listitem>
+		<listitem><para>--u0 [--u1 ...] — при использовании без параметров возвращает количество исходящего трафика по направлениям.</para></listitem>
+		<listitem><para>--d0 &lt;traff&gt; [--d1 &lt;traff&gt; ...] — установка количества входящего трафика за месяц по направлениям (0 — 9).</para></listitem>
+		<listitem><para>--d0 [--d1 ...] — при использовании без параметров возвращает количество входящего трафика по направлениям.</para></listitem>
+		<listitem><para>--ud0 &lt;userdata&gt; [--ud1 &lt;userdata&gt; ...] — установка полей UserData&lt;0-9&gt;.</para></listitem>
+		<listitem><para>--ud0 [--ud1 ...] — при использовании без параметра возвращает поля UserData&lt;0-9&gt;.</para></listitem>
+		<listitem><para>-m &lt;message&gt; — отправляет пользователю сообщение.</para></listitem>
+		<listitem><para>-n — добавляет нового «пустого» пользователя.</para></listitem>
+		<listitem><para>-l — удаляет пользователя.</para></listitem>
+	</itemizedlist>
+	</chapter>

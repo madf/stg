@@ -1,4 +1,201 @@
 <chapter xml:id="ch12">
-    <title>Приложение В: описание процесса установки БД для СУБД MySQL</title>
-    <para>Для работы модуля необходимо завести учетную запись пользователя СУБД MySQL. Для этого можно использовать командный интерпретатор mysql:</para>
+    <title>Приложение В</title>
+	<simplesect>
+	<title>Описание процесса ручной установки БД для СУБД Firebird</title>
+	<para>Для работы модуля необходимо завести учетную запись пользователя СУБД Firebird. Для этого используется утилита управления учетными записями gsec. Пример создания пользователя (подробности: Server configuration and management):</para>
+<programlisting linenumbering="unnumbered">
+# gsec -user sysdba -password masterkey
+GSEC&gt; add stg -pw 123456
+</programlisting>
+	<para>Для корректной работы модуля пользователь должен иметь право на запись и чтение данных в таблицы БД.</para>
+	<para>Модуль для работы с СУБД Firebird требует наличия правильно созданной базы данных. SQL-скрипт для создания находится в каталоге projects/stargazer/inst/var/00-base-00.sql. В обычных условиях выполнение make install или make install-data автоматически создает базу данных, используя этот скрипт. Для того чтобы создать ее вручную необходимо в файле SQL-скрипта раскомментировать строки:
+<programlisting linenumbering="unnumbered">
+connect 'localhost:/var/stg/stargazer.fdb' user 'stg' password '123456';
+drop database;
+create database 'localhost:/var/stg/stargazer.fdb' user 'stg' password '123456' default character set win1251;
+</programlisting>
+	и заменить в них адрес сервера, путь к базу, имя пользователя БД и пароль. После этого выполнить команду isql -i &lt;файл_скрипта&gt;.</para>
+	<formalpara>
+		<title>Внимание!</title>
+		<para>Для пользователей Debian и, возможно, некоторых других дистрибутивов командный интерпретатор SQL для СУБД Firebird называется isql-fb.</para>
+	</formalpara>
+	</simplesect>
+	<simplesect>
+	<title>Описание структуры БД для СУБД Firebird</title>
+	<para>Таблица tb_admins (учетные записи администраторов системы):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_admin – уникальный идентификатор учетной записи администратора;</para></listitem>
+		<listitem><para>login – название учетной записи администратора;</para></listitem>
+		<listitem><para>passwd – пароль для учетной записи администратора (в зашифрованном виде);</para></listitem>
+		<listitem><para>chg_conf – флаг, позволяющий менять конфигурационные параметры пользователя;</para></listitem>
+		<listitem><para>chg_password – флаг, позволяющий менять пароль пользователя;</para></listitem>
+		<listitem><para>chg_stat – флаг, позволяющий менять статистические данные пользователя;</para></listitem>
+		<listitem><para>chg_cash – флаг, позволяющий менять количество денег на счету у пользователя;</para></listitem>
+		<listitem><para>usr_add_del – флаг, позволяющий удалять и добавлять пользователей;</para></listitem>
+		<listitem><para>chg_tariff – флаг, позволяющий управлять тарифами;</para></listitem>
+		<listitem><para>chg_admin – флаг, позволяющий управлять учетными записями администраторов системы;</para></listitem>
+		<listitem><para>chg_service – зарезервировано;</para></listitem>
+		<listitem><para>chg_corporation – зарезервировано.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_admin_bi, выполняющий автогенерацию идентификатора (первичного ключа) учетных записей администраторов системы.</para>
+	<para>Таблица tb_tariffs (описание тарифов):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_tariff – уникальный идентификатор тарифа;</para></listitem>
+		<listitem><para>name – название тарифа;</para></listitem>
+		<listitem><para>fee – абонплата;</para></listitem>
+		<listitem><para>free – количество бесплатных мегабайт трафика, входящих в абонплату;</para></listitem>
+		<listitem><para>passive_cost – стоимость «заморозки» пользователя;</para></listitem>
+		<listitem><para>traf_type – тип подсчета трафика (upload, download, upload+download, MAX(upload, download)).</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связана хранимая процедура sp_add_tariff, получающая в качестве параметров название тарифа и количество направлений. Возвращает сгенерированный идентификатор (первичный ключ) тарифа. При вызове создает запись в таблице tb_tariffs и указанное количество записей в таблице tb_tariffs_params, соответствующее количеству направлений. С таблицей так же связана хранимая процедура sp_delete_tariff, получающая на вход название тарифа и удаляющая его из таблицы tb_tariffs и связанные с ним данные из таблицы tb_tariffs_params.</para>
+	<para>Таблица tb_tariffs_params (параметры тарифов):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_tariff_param – уникальный идентификатор записи информации о направлении в тарифе;</para></listitem>
+		<listitem><para>fk_tariff – внешний ключ для связи с тарифом;</para></listitem>
+		<listitem><para>dir_num – номер направления;</para></listitem>
+		<listitem><para>price_day_a – стоимость 1 Мб трафика днем до превышения порога;</para></listitem>
+		<listitem><para>price_day_b – стоимость 1 Мб трафика днем после превышения порога;</para></listitem>
+		<listitem><para>price_night_a – стоимость 1 Мб трафика ночью до превышения порога;</para></listitem>
+		<listitem><para>price_night_b – стоимость 1 Мб трафика ночью после превышения порога;</para></listitem>
+		<listitem><para>threshold – порог по трафику;</para></listitem>
+		<listitem><para>time_day_begins – время начала дня;</para></listitem>
+		<listitem><para>time_day_ends – время конца дня.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_tariffs_params_bi, выполняющий автогенерацию идентификаторов записей (первичных ключей) в таблице.</para>
+	<para>Таблица tb_corporations – зарезервирована.</para>
+	<para>С таблицей связан триггер tr_corporations_bi, выполняющий автогенерацию первичных ключей.</para>
+	<para>Таблица tb_users (учетные записи пользователей системы):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_user – уникальный идентификатор пользователя;</para></listitem>
+		<listitem><para>fk_tariff – внешний ключ для связи с тарифом;</para></listitem>
+		<listitem><para>fk_tariff_change – внешний ключ для связи с тарифом (может быть пустым);</para></listitem>
+		<listitem><para>fk_corporation – зарезервировано;</para></listitem>
+		<listitem><para>address – адрес пользователя;</para></listitem>
+		<listitem><para>always_online – флаг «всегда on-line»;</para></listitem>
+		<listitem><para>credit – величина кредита в деньгах;</para></listitem>
+		<listitem><para>credit_expire – дата окончания действия кредита;</para></listitem>
+		<listitem><para>disabled_detail_stat — отключение детальной статистики пользователя;</para></listitem>
+		<listitem><para>disabled – флаг «отключен»;</para></listitem>
+		<listitem><para>email – email пользователя;</para></listitem>
+		<listitem><para>grp – название группы пользователя;</para></listitem>
+		<listitem><para>note – примечание;</para></listitem>
+		<listitem><para>passive – флаг «заморозки»;</para></listitem>
+		<listitem><para>passwd – пароль пользователя (в открытом виде);</para></listitem>
+		<listitem><para>phone – номер телефона пользователя;</para></listitem>
+		<listitem><para>name – название учетной записи пользователя (логин);</para></listitem>
+		<listitem><para>real_name – реальное имя пользователя.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связана хранимая процедура sp_add_user, принимающая на вход 2 параметра: название учетной записи пользователя и количество направлений. Возвращает сгенерированное значение первичного ключа. При вызове создает запись в таблице tb_users, соответствующую ей запись в таблице tb_stats и указанное количество записей в таблице tb_stats_traffic. Так же с таблицей связана хранимая процедура sp_delete_user, получающая в качестве входного параметра название учетной записи (логин) пользователя и удаляющая учетную запись и всю сопутствующую информацию (данные пользователя, IP-адреса, сообщения, журналы параметров, статистику и детальную статистику, журналы сессий) о пользователе из базы.</para>
+	<para>Таблица tb_detail_stats (детальная статистика по пользователям системы):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_detail_stat – уникальный идентификатор записи детальной статистики;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>dir_num – номер направления;</para></listitem>
+		<listitem><para>ip – удаленный IP-адрес (в формате 32-битного беззнакового целого);</para></listitem>
+		<listitem><para>download – количество принятых байт;</para></listitem>
+		<listitem><para>upload – количество отправленных байт;</para></listitem>
+		<listitem><para>cost – стоимость объема данных;</para></listitem>
+		<listitem><para>from_time – время начала сессии;</para></listitem>
+		<listitem><para>till_time – время завершения сеанса.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_detail_stats_bi, выполняющий автогенерацию уникальных идентификаторов записей детальной статистики (первичных ключей).</para>
+	<para>Таблица tb_services – зарезервирована. С ней связан триггер tr_services_bi, выполняющий автогенерацию первичных ключей. Так же с ней связана хранимая процедура sp_delete_service, удаляющая всю информацию связанную с записью в данной таблице.</para>
+	<para>Таблица tb_users_services – зарезервирована. С ней связан триггер tr_users_services_bi, выполняющий автогенерацию первичных ключей.</para>
+	<para>Таблица tb_messages (сообщения пользователям):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_message – уникальный идентификатор сообщения;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>ver – версия формата сообщения;</para></listitem>
+		<listitem><para>msg_type – тип сообщения;</para></listitem>
+		<listitem><para>last_send_time – время последней отсылки сообщения;</para></listitem>
+		<listitem><para>creation_time – время создания сообщения;</para></listitem>
+		<listitem><para>show_time – время показа сообщения;</para></listitem>
+		<listitem><para>repeat – количество повторений;</para></listitem>
+		<listitem><para>repeat_period – период повторения;</para></listitem>
+		<listitem><para>msg_text – текст сообщения.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связана хранимая процедура sp_add_message, которая получает на вход идентификатор, параметры и текст сообщения. В случае если идентификатор пустой – сообщение добавляется в таблицу. Если не пустой – параметры и текст сообщения обновляются. Процедура возвращает идентификатор сообщения.</para>
+	<para>Таблица tb_stats (статистика пользователя):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_stat – уникальный идентификатор записи статистики;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>cash – количество денег на счету;</para></listitem>
+		<listitem><para>free_mb – количество не истраченных бесплатных Мб;</para></listitem>
+		<listitem><para>last_activity_time – время последней активности пользователя;</para></listitem>
+		<listitem><para>last_cash_add – последнее пополнение счета;</para></listitem>
+		<listitem><para>last_cash_add_time – время последнего пополнения счета;</para></listitem>
+		<listitem><para>passive_time – время, проведенное пользователем в «замороженном» состоянии за месяц (используется для вычисления объема снимаемой абонплаты);</para></listitem>
+		<listitem><para>stats_date – дата записи статистики (месячной статистики).</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связана хранимая процедура sp_add_stat, получающая на вход набор данных статистики, добавляющая запись в таблицу и возвращающая сгенерированный первичный ключ записи.</para>
+	<para>Таблица tb_stats_traffic (статистика по направлениям):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_stat_traffic – уникальный идентификатор записи статистики;</para></listitem>
+		<listitem><para>fk_stat – внешний ключ для связи со статистикой пользователя (текущей или месячной);</para></listitem>
+		<listitem><para>dir_num – номер направления;</para></listitem>
+		<listitem><para>download – объем входящего трафика;</para></listitem>
+		<listitem><para>upload – объем исходящего трафика.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_stat_traffic_bi, служащий для автогенерации первичного ключа.</para>
+	<para>Таблица tb_users_data (данные пользователя):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_user_data – уникальный идентификатор записи;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>num – номер поля данных;</para></listitem>
+		<listitem><para>data – текст поля данных.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_user_data_bi, служащий для автогенерации первичного ключа.</para>
+	<para>Таблица tb_allowed_ip (IP-адреса пользователя):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_allowed_ip – уникальный идентификатор записи;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>ip – IP-адрес (в формате 32-битного беззнакового целого);</para></listitem>
+		<listitem><para>mask – маска (в формате 32-битного беззнакового целого).</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_allowed_ip_bi, служащий для автогенерации первичного ключа.</para>
+	<para>Таблица tb_sessions_log (журнал сессии):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_session_log – уникальный идентификатор записи в журнале;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>event_time – время события;</para></listitem>
+		<listitem><para>event_type – тип события (connect/disconnect);</para></listitem>
+		<listitem><para>ip – IP-адрес пользователя.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связана хранимая процедура sp_append_session_log, получающая в качестве параметров данные для записи в журнал сессии. Добавляет запись в журнал и возвращает сгенерированный первичный ключ.</para>
+	<para>Таблица tb_sessions_data (данные сессии):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_session_data – уникальный идентификатор записи данных;</para></listitem>
+		<listitem><para>fk_session_log – внешний ключ для связи с записью в журнале сессии;</para></listitem>
+		<listitem><para>dir_num – номер направления;</para></listitem>
+		<listitem><para>session_upload – объем исходящего трафика за сессию;</para></listitem>
+		<listitem><para>session_download – объем входящего трафика за сессию;</para></listitem>
+		<listitem><para>month_upload – объем исходящего трафика за месяц;</para></listitem>
+		<listitem><para>month_download – объем входящего трафика за месяц.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_session_data_bi, служащий для автогенерации первичного ключа.</para>
+	<para>Таблица tb_parameters (параметры пользователя):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_parameter – уникальный идентификатор параметра;</para></listitem>
+		<listitem><para>name – название параметра.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_parameter_bi, служащий для автогенерации первичного ключа.</para>
+	<para>Таблица tb_params_log (журнал изменений параметров пользователя):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>pk_param_log – уникальный идентификатор записи в журнале изменений параметров пользователя;</para></listitem>
+		<listitem><para>fk_user – внешний ключ для связи с пользователем;</para></listitem>
+		<listitem><para>fk_parameter – внешний ключ для связи с таблицей параметров;</para></listitem>
+		<listitem><para>event_time – время изменения;</para></listitem>
+		<listitem><para>from_val – старое значение (в виде строки);</para></listitem>
+		<listitem><para>to_val – новое значение (в виде строки);</para></listitem>
+		<listitem><para>comment – коментарий.</para></listitem>
+	</itemizedlist>
+	<para>С таблицей связан триггер tr_param_log_bi, служащий для автогенерации первичного ключа.</para>
+	 <para>
+	 <mediaobject>
+            <imageobject>
+                <imagedata fileref="images/firebird-erd.png" format="PNG"/>
+            </imageobject>
+        </mediaobject>
+	</para>	
+	</simplesect>
 </chapter>

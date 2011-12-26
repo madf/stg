@@ -1,0 +1,137 @@
+<chapter xml:id="ch13">
+	<title>Приложение Г</title>
+	<simplesect>
+	<title>Описание процесса установки БД для СУБД MySQL</title>
+	<para>Для работы модуля необходимо завести учетную запись пользователя СУБД MySQL. Для этого можно использовать командный интерпретатор mysql:</para>
+<programlisting linenumbering="unnumbered">
+$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9 to server version: 5.0.26-log
+
+Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
+
+mysql&gt; create user stg_user identified by '123456';
+Query OK, 0 rows affected (0.04 sec)
+</programlisting>
+	<para>Модуль для работы с MySQL автоматически создает БД и необходимые для его работы таблицы. Для этого у пользователя, указанного в настройках должны быть установлены соответствующие права (см. документацию по настройке MySQL: MySQL User Account Management). Модуль может корректно работать и с пользователем с ограниченными правами (полный доступ только к своей БД). Для этого необходимо сперва вручную создать БД, а затем дать пользователю права на доступ к ней. Например так:</para>
+<programlisting linenumbering="unnumbered">
+$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9 to server version: 5.0.26-log
+
+Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
+
+mysql&gt; create user stg_user identified by '123456';
+Query OK, 0 rows affected (0.04 sec)
+
+mysql&gt; create database stg_database;
+Query OK, 1 row affected (0.02 sec)
+
+mysql&gt; grant all on stg_database.* to stg_user;
+Query OK, 0 rows affected (0.06 sec)
+</programlisting>
+	<para>После этого модуль при первом запуске сам создаст необходимые таблицы.</para>
+	</simplesect>
+	<simplesect>
+	<title>Описание структуры БД для СУБД MySQL</title>
+	<para>Таблица admins (учетные записи администраторов системы):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>login – название учетной записи администратора системы;</para></listitem>
+		<listitem><para>password – пароль для учетной записи администратора системы;</para></listitem>
+		<listitem><para>ChgConf – флаг, разрешающий менять конфигурационные параметры пользователы;</para></listitem>
+		<listitem><para>ChgPassword – флаг, позволяющий менять пароль пользователя;</para></listitem>
+		<listitem><para>ChgStat – флаг, позволяющий менять статистические данные пользователя;</para></listitem>
+		<listitem><para>ChgCash – флаг, позволяющий менять количество денег на счету у пользователя;</para></listitem>
+		<listitem><para>UsrAddDel – флаг, позволяющий управлять учетными записями пользователей;</para></listitem>
+		<listitem><para>ChgTariff – флаг, позволяющий управлять тарифами;</para></listitem>
+		<listitem><para>ChgAdmin – флаг, позволяющий управлять учетными записями администраторов системы.</para></listitem>
+	</itemizedlist>
+	<para>Таблица tariffs (описание тарифов системы):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>name – название тарифа;</para></listitem>
+		<listitem><para>PriceDayA&lt;n&gt; - стоимость 1 Мб трафика по направлению &lt;n&gt; днем до превышения порога;</para></listitem>
+		<listitem><para>PriceDayB&lt;n&gt; - стоимость 1 Мб трафика по направлению &lt;n&gt; днем после превышения порога;</para></listitem>
+		<listitem><para>PriceNightA&lt;n&gt; - стоимость 1 Мб трафика по направлению &lt;n&gt; ночью до превышения порога;</para></listitem>
+		<listitem><para>PriceNightB&lt;n&gt; - стоимость 1 Мб трафика по направлению &lt;n&gt; ночью после превышения порога;</para></listitem>
+		<listitem><para>Threshold&lt;n&gt; - порог по трафику;</para></listitem>
+		<listitem><para>Time&lt;n&gt; - время дня;</para></listitem>
+		<listitem><para>NoDiscount&lt;n&gt; - флаг, указывающий, что трафик по направлению &lt;n&gt; считается без учета порогового значения;</para></listitem>
+		<listitem><para>SinglePrice&lt;n&gt; - флаг, указывающий, что трафик по направлению &lt;n&gt; считается без учета времени суток;</para></listitem>
+		<listitem><para>PassiveCost – стоимость «заморозки» учетной записи пользователя;</para></listitem>
+		<listitem><para>Fee – абонплата;</para></listitem>
+		<listitem><para>Free – количество бесплатных Мб трафика, входящих в абонплату;</para></listitem>
+		<listitem><para>TraffType – тип подсчета трафика (up, down, up+down, max).</para></listitem>
+	</itemizedlist>
+	<para>Таблица users (учетные записи пользователей системы и их статистика):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>login – название учетной записи пользователя;</para></listitem>
+		<listitem><para>Password – пароль для учетной записи пользователя;</para></listitem>
+		<listitem><para>Passive – флаг режима «Заморожен»;</para></listitem>
+		<listitem><para>Down – флаг режима «Отключен»;</para></listitem>
+		<listitem><para>AlwaysOnline – флаг режима «Всегда on-line»;</para></listitem>
+		<listitem><para>Tariff – название тарифа;</para></listitem>
+		<listitem><para>Address – адрес пользователя;</para></listitem>
+		<listitem><para>Phone – номер телефона пользователя;</para></listitem>
+		<listitem><para>Email – адрес электронной почты пользователя;</para></listitem>
+		<listitem><para>Note – примечания;</para></listitem>
+		<listitem><para>RealName – реальное имя пользователя;</para></listitem>
+		<listitem><para>StgGroup – название группы пользователя;</para></listitem>
+		<listitem><para>Credit – величина кредита в деньгах;</para></listitem>
+		<listitem><para>TariffChange – название тарифа, на который будет переведен пользователь в начале месяца;</para></listitem>
+		<listitem><para>Userdata&lt;n&gt; - поля дополнительных данных пользователя;</para></listitem>
+		<listitem><para>CreditExpire – дата окончания действия кредита пользователя;</para></listitem>
+		<listitem><para>DisabledDetailStat — отключение детальной статистики пользователя;</para></listitem>
+		<listitem><para>IP – список IP-адресов пользователя;</para></listitem>
+		<listitem><para>D&lt;n&gt; - объем входящего трафика по направлению &lt;n&gt;;</para></listitem>
+		<listitem><para>U&lt;n&gt; - объем исходящего трафика по направлению &lt;n&gt;;</para></listitem>
+		<listitem><para>Cash – количество денег на счету;</para></listitem>
+		<listitem><para>FreeMb – количество бесплатных мегабайт;</para></listitem>
+		<listitem><para>LastCashAdd – последнее пополнение счета;</para></listitem>
+		<listitem><para>LastCashAddTime – время последнего пополнения счета;</para></listitem>
+		<listitem><para>PassiveTime - время, проведенное пользователем в «замороженном» состоянии за месяц (используется для вычисления объема снимаемой абонплаты);</para></listitem>
+		<listitem><para>LastActivityTime – время последней активности пользователя;</para></listitem>
+		<listitem><para>NAS – используется совместно с модулем захвата трафика для NetFlow.</para></listitem>
+	</itemizedlist>
+	<para>Таблица messages (сообщения пользователю):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>login – название учетной записи пользователя, для которой предназначено сообщение;</para></listitem>
+		<listitem><para>id – уникальный иденетификатор сообщения;</para></listitem>
+		<listitem><para>type – тип сообщения;</para></listitem>
+		<listitem><para>lastSendTime – время последней отсылки сообщения;</para></listitem>
+		<listitem><para>creationTime – время создания сообщения;</para></listitem>
+		<listitem><para>showTime – время показа сообщения;</para></listitem>
+		<listitem><para>stgRepeat – количество повторений сообщения;</para></listitem>
+		<listitem><para>repeatPeriod – период повторения сообщения;</para></listitem>
+		<listitem><para>text – текст сообщения.</para></listitem>
+	</itemizedlist>
+	<para>Таблица stat (месячная статистика пользователей):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>login – название учетной записи пользователя, которой принадлежит запись в статистике;</para></listitem>
+		<listitem><para>month – месяц записи статистики;</para></listitem>
+		<listitem><para>year – год записи статистики;</para></listitem>
+		<listitem><para>U&lt;n&gt; - объем исходящего трафика за месяц по направлениям;</para></listitem>
+		<listitem><para>D&lt;n&gt; - объем входящего трафика за месяц по направлениям;</para></listitem>
+		<listitem><para>cash – количество денег на счету.</para></listitem>
+	</itemizedlist>
+	<para>Таблица logs_&lt;m&gt;_&lt;y&gt; (помесячный журнал сессий пользователя и изменений его параметров):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>unid – уникальный идентификатор записи;</para></listitem>
+		<listitem><para>login – название учетной записи пользователя;</para></listitem>
+		<listitem><para>text – текст записи в журнале.</para></listitem>
+	</itemizedlist>
+	<para>Таблица detailstat_&lt;m&gt;_&lt;y&gt; (помесячная детальная статистика пользователей):</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>login – название учетной записи пользователя;</para></listitem>
+		<listitem><para>day – порядковый номер дня в месяце;</para></listitem>
+		<listitem><para>startTime – время начала сессии;</para></listitem>
+		<listitem><para>endTime – время завершения сессии;</para></listitem>
+		<listitem><para>IP – удаленный IP-адрес;</para></listitem>
+		<listitem><para>dir – направление;</para></listitem>
+		<listitem><para>up – объем исходящего трафика;</para></listitem>
+		<listitem><para>down – объем входящего трафика;</para></listitem>
+		<listitem><para>cash – стоимость трафика.</para></listitem>
+	</itemizedlist>
+	</simplesect>
+</chapter>
