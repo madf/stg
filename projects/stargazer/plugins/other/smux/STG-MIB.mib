@@ -126,6 +126,15 @@ tariffChangeUsers OBJECT-TYPE
     DEFVAL { 0 }
     ::= { users 11 }
 
+activeUsers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number of online users with traffic during session"
+    DEFVAL {0}
+    ::= { users 12 }
+
 totalTariffs OBJECT-TYPE
     SYNTAX      Integer32
     MAX-ACCESS  read-only
