@@ -157,13 +157,6 @@ if (nrMapParser.ReadFile(subnetFile))
 
 netRouters = nrMapParser.GetMap();
 
-if (netRouters.empty())
-    {
-    errorStr = "Parameter(s) \'Subnet*\' not found.";
-    printfd(__FILE__, "Parameter(s) 'Subnet*' not found\n");
-    return -1;
-    }
-
 return 0;
 }
 //-----------------------------------------------------------------------------
