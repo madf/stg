@@ -299,14 +299,14 @@ if (!isNetPrepared)
 int db = sizeof(HDR_8);
 for (int i = 0; i < IA_LOGIN_LEN/8; i++)
     {
-    Blowfish_Encrypt(&ctxHdr, (uint32_t*)(buffer + db + i*8), (uint32_t*)(buffer + db + i*8 + 4));
+    EncodeString(buffer + db + i * 8, buffer + db + i * 8, &ctxHdr);
     }
 
 db += IA_LOGIN_LEN;
 int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN)/8;
 for (int i = 0; i < encLen; i++)
     {
-    Blowfish_Encrypt(&ctxPass, (uint32_t*)(buffer + db), (uint32_t*)(buffer + db + 4));
+    EncodeString(buffer + db, buffer + db, &ctxPass);
     db += 8;
     }
 
@@ -331,7 +331,7 @@ if (res == -1)
 if (strcmp(buffer + 4 + sizeof(HDR_8), "ERR"))
     {
     for (int i = 0; i < len/8; i++)
-        Blowfish_Decrypt(&ctxPass, (uint32_t*)(buffer + i*8), (uint32_t*)(buffer + i*8 + 4));
+        DecodeString(buffer + i * 8, buffer + i * 8, &ctxPass);
     }
 
 return 0;
