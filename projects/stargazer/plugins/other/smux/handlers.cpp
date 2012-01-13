@@ -44,15 +44,14 @@ bool SMUX::PDUsRequestHandler(const SMUX_PDUs_t * pdus)
 printfd(__FILE__, "SMUX::PDUsRequestHandler()\n");
 asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
 #endif
-PDUsHandlers::iterator it;
-it = pdusHandlers.find(pdus->choice.pdus.present);
+PDUsHandlers::iterator it(pdusHandlers.find(pdus->choice.pdus.present));
 if (it != pdusHandlers.end())
     {
     return (this->*(it->second))(&pdus->choice.pdus);
     }
+#ifdef SMUX_DEBUG
 else
     {
-#ifdef SMUX_DEBUG
     switch (pdus->present)
         {
         case PDUs_PR_NOTHING:
@@ -67,8 +66,8 @@ else
         default:
             printfd(__FILE__, "SMUX::PDUsRequestHandler() - undefined\n");
         }
-#endif
     }
+#endif
 return true;
 }
 
