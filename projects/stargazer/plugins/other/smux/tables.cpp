@@ -31,8 +31,7 @@ while (!users.SearchNext(handle, &user))
     if (user->GetDeleted())
         continue;
     std::string tariffName(user->GetProperty().tariffName.ConstData());
-    std::map<std::string, size_t>::iterator it;
-    it = data.lower_bound(tariffName);
+    std::map<std::string, size_t>::iterator it(data.lower_bound(tariffName));
     if (it == data.end() ||
         it->first != tariffName)
         {

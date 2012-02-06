@@ -299,14 +299,14 @@ if (!isNetPrepared)
 int db = sizeof(HDR_8);
 for (int i = 0; i < IA_LOGIN_LEN/8; i++)
     {
-    Blowfish_Encrypt(&ctxHdr, (uint32_t*)(buffer + db + i*8), (uint32_t*)(buffer + db + i*8 + 4));
+    EncodeString(buffer + db + i * 8, buffer + db + i * 8, &ctxHdr);
     }
 
 db += IA_LOGIN_LEN;
 int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN)/8;
 for (int i = 0; i < encLen; i++)
     {
-    Blowfish_Encrypt(&ctxPass, (uint32_t*)(buffer + db), (uint32_t*)(buffer + db + 4));
+    EncodeString(buffer + db, buffer + db, &ctxPass);
     db += 8;
     }
 
@@ -330,8 +330,8 @@ if (res == -1)
 
 if (strcmp(buffer + 4 + sizeof(HDR_8), "ERR"))
     {
-    for (int i = 0; i < len/8; i++)
-        Blowfish_Decrypt(&ctxPass, (uint32_t*)(buffer + i*8), (uint32_t*)(buffer + i*8 + 4));
+    for (int i = 0; i < len / 8; i++)
+        DecodeString(buffer + i * 8, buffer + i * 8, &ctxPass);
     }
 
 return 0;
@@ -720,13 +720,14 @@ int IA_CLIENT_PROT::Prepare_CONN_SYN_8(char * buffer)
 {
 connSyn8 = (CONN_SYN_8*)buffer;
 
+assert(sizeof(CONN_SYN_8) == Min8(sizeof(CONN_SYN_8)) && "CONN_SYN_8 is not aligned to 8 bytes");
+
+connSyn8->len = sizeof(CONN_SYN_8);
+
 #ifdef ARCH_BE
 SwapBytes(connSyn8->len);
 #endif
 
-assert(sizeof(CONN_SYN_8) == Min8(sizeof(CONN_SYN_8)) && "CONN_SYN_8 is not aligned to 8 bytes");
-
-connSyn8->len = sizeof(CONN_SYN_8);
 strncpy((char*)connSyn8->type, "CONN_SYN", IA_MAX_TYPE_LEN);
 strncpy((char*)connSyn8->login, login.c_str(), IA_LOGIN_LEN);
 connSyn8->dirs = 0;
@@ -734,17 +735,12 @@ for (int i = 0; i < DIR_NUM; i++)
     {
     connSyn8->dirs |= (selectedDirs[i] << i);
     }
-return connSyn8->len;
+return sizeof(CONN_SYN_8);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Prepare_CONN_ACK_8(char * buffer)
 {
 connAck8 = (CONN_ACK_8*)buffer;
-
-#ifdef ARCH_BE
-SwapBytes(connAck8->len);
-SwapBytes(connAck8->rnd);
-#endif
 
 assert(sizeof(CONN_ACK_8) == Min8(sizeof(CONN_ACK_8)) && "CONN_ACK_8 is not aligned to 8 bytes");
 
@@ -754,17 +750,17 @@ strncpy((char*)connAck8->type, "CONN_ACK", IA_MAX_TYPE_LEN);
 rnd++;
 connAck8->rnd = rnd;
 
-return connAck8->len;
+#ifdef ARCH_BE
+SwapBytes(connAck8->len);
+SwapBytes(connAck8->rnd);
+#endif
+
+return sizeof(CONN_ACK_8);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Prepare_ALIVE_ACK_8(char * buffer)
 {
 aliveAck8 = (ALIVE_ACK_8*)buffer;
-
-#ifdef ARCH_BE
-SwapBytes(aliveAck8->len);
-SwapBytes(aliveAck8->rnd);
-#endif
 
 assert(Min8(sizeof(ALIVE_ACK_8)) == sizeof(ALIVE_ACK_8) && "ALIVE_ACK_8 is not aligned to 8 bytes");
 
@@ -773,42 +769,50 @@ aliveAck8->len = sizeof(ALIVE_ACK_8);
 strncpy((char*)aliveAck8->loginS, login.c_str(), IA_LOGIN_LEN);
 strncpy((char*)aliveAck8->type, "ALIVE_ACK", IA_MAX_TYPE_LEN);
 aliveAck8->rnd = ++rnd;
-return aliveAck8->len;
+
+#ifdef ARCH_BE
+SwapBytes(aliveAck8->len);
+SwapBytes(aliveAck8->rnd);
+#endif
+
+return sizeof(ALIVE_ACK_8);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Prepare_DISCONN_SYN_8(char * buffer)
 {
 disconnSyn8 = (DISCONN_SYN_8*)buffer;
 
+assert(Min8(sizeof(DISCONN_SYN_8)) == sizeof(DISCONN_SYN_8) && "DISCONN_SYN_8 is not aligned to 8 bytes");
+
+disconnSyn8->len = sizeof(DISCONN_SYN_8);
+
 #ifdef ARCH_BE
 SwapBytes(disconnSyn8->len);
 #endif
 
-assert(Min8(sizeof(DISCONN_SYN_8)) == sizeof(DISCONN_SYN_8) && "DISCONN_SYN_8 is not aligned to 8 bytes");
-
-disconnSyn8->len = sizeof(DISCONN_SYN_8);
 strncpy((char*)disconnSyn8->loginS, login.c_str(), IA_LOGIN_LEN);
 strncpy((char*)disconnSyn8->type, "DISCONN_SYN", IA_MAX_TYPE_LEN);
 strncpy((char*)disconnSyn8->login, login.c_str(), IA_LOGIN_LEN);
-return disconnSyn8->len;
+return sizeof(DISCONN_SYN_8);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Prepare_DISCONN_ACK_8(char * buffer)
 {
 disconnAck8 = (DISCONN_ACK_8*)buffer;
 
+assert(Min8(sizeof(DISCONN_ACK_8)) == sizeof(DISCONN_ACK_8) && "DISCONN_ACK_8 is not aligned to 8 bytes");
+
+disconnAck8->len = Min8(sizeof(DISCONN_ACK_8));
+disconnAck8->rnd = rnd + 1;
+
 #ifdef ARCH_BE
 SwapBytes(disconnAck8->len);
 SwapBytes(disconnAck8->rnd);
 #endif
 
-assert(Min8(sizeof(DISCONN_ACK_8)) == sizeof(DISCONN_ACK_8) && "DISCONN_ACK_8 is not aligned to 8 bytes");
-
-disconnAck8->len = Min8(sizeof(DISCONN_ACK_8));
-disconnAck8->rnd = rnd + 1;
 strncpy((char*)disconnAck8->loginS, login.c_str(), IA_LOGIN_LEN);
 strncpy((char*)disconnAck8->type, "DISCONN_ACK", IA_MAX_TYPE_LEN);
-return disconnAck8->len;
+return Min8(sizeof(DISCONN_ACK_8));
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetStatusChangedCb(tpStatusChangedCb p, void * data)

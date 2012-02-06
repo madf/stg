@@ -250,7 +250,7 @@ while (pos < stgHdrLen)
         return -1;
         }
     int ret = recv(sock, &buf[pos], stgHdrLen - pos, 0);
-    if (ret < 0)
+    if (ret <= 0)
         {
         state = confHdr;
         return -1;
@@ -310,7 +310,7 @@ while (pos < ADM_LOGIN_LEN) {
 
     int ret = recv(sock, &login[pos], ADM_LOGIN_LEN - pos, 0);
 
-    if (ret < 0)
+    if (ret <= 0)
         {
         // Error in network
         state = confHdr;
@@ -359,7 +359,7 @@ while (pos < ADM_LOGIN_LEN)
 
     int ret = recv(sock, &loginS[pos], ADM_LOGIN_LEN - pos, 0);
 
-    if (ret < 0)
+    if (ret <= 0)
         {
         // Network error
         printfd(__FILE__, "recv error: '%s'\n", strerror(errno));

@@ -1,9 +1,9 @@
 <chapter xml:id="ch9">
-    <title>Лицензия, авторы, копирайты, благодарности</title>
-    <para>Система распространяется по лицензии GPL v2.</para>
-    <para>Авторами системы являются Борис Михайленко aka stg-34 stg34@stargazer.dp.ua, Максим Мороз, Максим Мамонтов aka madf faust@stargazer.dp.ua, Игорь Лысейко и другие.</para>
-    <para>Авторами файлов справки являются Георгий Филонов aka egor2fsys egor2fsys@gmail.com и Максим Мамонтов aka madf faust@stargazer.dp.ua.</para>
-    <para>В системе использована библиотека LibExpat (http://expat.sourceforge.net/).</para>
-    <para>Модуль БД на основе СУБД Firebird использует библиотеки fbclient (http://www.firebirdsql.org) и IBPP (http://www.ibpp.org). Модуль БД на основе СУБД MySQL использует библиотеку mysqlclient_r (http://dev.mysql.com). Модуль БД на основе СУБД PostgreSQL использует библиотеку pq (http://www.postgresql.org).</para>
-    <para>Авторы выражают благодарность всем администраторам и пользователям Stargazer за сообщения об ошибках и предложения новых возможностей системы. Также выражаем благодарность форумам «Локальные сети Украины» и «Домашние сети России».</para>
+	<title>Лицензия, авторы, копирайты, благодарности.</title>
+	<para>Система распространяется по лицензии GPL v2.</para>
+	<para>Авторами системы являются Борис Михайленко aka stg-34 stg34@stargazer.dp.ua, Максим Мороз, Максим Мамонтов aka madf faust@stargazer.dp.ua, Игорь Лысейко и другие.</para>
+	<para>Авторами файлов справки являются Георгий Филонов aka egor2fsys egor2fsys@gmail.com, Максим Мамонтов aka madf faust@stargazer.dp.ua и Елена Шевелева burmuar@gmail.com.</para>
+	<para>В системе использована библиотека LibExpat (http://expat.sourceforge.net/).</para>
+	<para>Модуль БД на основе СУБД Firebird использует библиотеки fbclient (http://www.firebirdsql.org) и IBPP (http://www.ibpp.org). Модуль БД на основе СУБД MySQL использует библиотеку mysqlclient_r (http://dev.mysql.com). Модуль БД на основе СУБД PostgreSQL использует библиотеку pq (http://www.postgresql.org).</para>
+	<para>Авторы выражают благодарность всем администраторам и пользователям Stargazer за сообщения об ошибках и предложения новых возможностей системы. Также выражаем благодарность форумам «Локальные сети Украины» и «Домашние сети России». </para>
 </chapter>

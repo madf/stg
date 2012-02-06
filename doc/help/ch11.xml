@@ -1,4 +1,94 @@
 <chapter xml:id="ch11">
-    <title>Приложение В: описание процесса ручной установки БД для СУБД Firebird</title>
-    <para>Для работы модуля необходимо завести учетную запись пользователя СУБД Firebird. Для этого используется утилита управления учетными записями gsec. Пример создания пользователя (подробности: Server configuration and management):</para>
-</chapter>
+    <title>Приложение Б</title>
+    <simplesect>
+	<title>Oписание формата файлов /var/stargazer/admins/*.adm.</title>
+	<para>В каталоге /var/stargazer/admins (путь может быть изменен в настройках плагина store_files) находятся файлы содержащие параметры администраторов системы. Имя файла имеет вид: &lt;login&gt;.adm, где &lt;login&gt; — логин администратора. Файл имеет формат «ключ-значение». Каждая строка файла содержит название параметра и его значение, разделенные знаком «=», или коментарий начинающийся с символа «#». Допустимы следующие параметры:</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>Password — пароль администратора в зашифрованном виде;</para></listitem>
+		<listitem><para>ChgStat — право на изменение статистики абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>ChgConf — право на изменение данных учетной записи абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>ChgCash — право на изменение состояния счета абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>ChgPassword — право на изменение пароля абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>UsrAddDel — право на добавление и удаление абонентов, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>ChgAdmin — право на изменение параметров администраторов системы а также их добавление и удаление, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>ChgTariff — право на добавление, удаление и изменение тарифов, может принимать значения 0 и 1.</para></listitem>
+	</itemizedlist>
+	</simplesect>
+	<simplesect>
+	<title>Описание формата файлов /var/stargazer/users/*/*.</title>
+	<para>Данные абонентов хранятся в каталогах вида /var/stargazer/users/&lt;login&gt;, где &lt;login&gt; — логин абонента. В каталогах содержатся файлы conf, stat, stat.&lt;YYYY&gt;.&lt;MM&gt;, stat2.&lt;YYYY&gt;.&lt;MM&gt;, log, log2 и подкаталоги messages и detail_stat. Файл conf содержит данные учетной записи абонента, файл stat содержит статистику абонента за последний месяц, файлы stat.&lt;YYYY&gt;.&lt;MM&gt; и stat2.&lt;YYYY&gt;.&lt;MM&gt; содержат статистику абонента за предыдущие месяцы. Они различаются только полнотой представления — файл stat2.&lt;YYYY&gt;.&lt;MM&gt; содержит больше информации. Файлы log и log2 содержат журнал изменений (в том числе подключений и отключений). Файл log2 идентичен файлу log за исключением того что при отключении абонента в него пишется причина отключения. Подкаталог messages содержит файлы с сообщениями абоненту. Имена файлов представляют собой метку времени создания сообщения в формате UNIX Timestamp. Подкаталог detail_stat содержит в себе детальную статистику абонента, разбитую по годам, месяцам и дням: &lt;YYYY&gt;/&lt;MM&gt;/&lt;DD&gt;. Файлы учетной записи, статистики и детальной статистики представлены в формате «ключ-значение». Каждая строка файла состоит из названия параметра и его значения разделенных символом «=», пустые строки и строки начинающиеся с символа «#» (комментарии) игнорируются.</para>
+	<para>Описание параметров файла conf:</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>Password — пароль абонента (в открытом виде);</para></listitem>
+		<listitem><para>IP — список IP-адресов, разделенных запятой, с которых разрешена авторизация абонента (может содержать * — авторизация разрешена с любого адреса);</para></listitem>
+		<listitem><para>Tariff — название текущего тарифного плана абонента;</para></listitem>
+		<listitem><para>TariffChange — название тарифного плана, который будет установлен в начале следующего месяца (может быть пустым);</para></listitem>
+		<listitem><para>Credit — величина кредита абоненту;</para></listitem>
+		<listitem><para>CreditExpire — дата истечения срока кредитования абонента в формате UNIX Timestamp (может содержать 0 — «вечный» кредит);</para></listitem>
+		<listitem><para>DisabledDetailStat — параметр, отключающий ведение детальной статистики для абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>Down — принудительное отключение абонента, может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>Passive — «заморозка» абонента (для таких абонентов запрещена авторизация и не снимается абонентская плата), может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>RealName — реальные ФИО абонента, текстовое поле;</para></listitem>
+		<listitem><para>Address — почтовый адрес абонента в произвольном формате, текстовое поле;</para></listitem>
+		<listitem><para>Phone — номера телефонов абонентов в произвольном формате, текстовое поле;</para></listitem>
+		<listitem><para>Note — примечание, текстовое поле;</para></listitem>
+		<listitem><para>Email — адрес электронной почты абонента, текстовое поле;</para></listitem>
+		<listitem><para>Group — группа в которую входит абонент, текстовое поле;</para></listitem>
+		<listitem><para>AlwaysOnline — включение доступа без авторизации, может принимать значение 0 или 1, для функционирования требует плагин auth_ao;</para></listitem>
+		<listitem><para>CreationTime — момент создания учетной записи абонента, UNIX Timestamp;</para></listitem>
+		<listitem><para>Userdata0 ... Userdata9 — дополнительные текстовые параметры которые могут содержать вспомогательную информацию.</para></listitem>
+	</itemizedlist>
+	<para>Описание параметров файла stat:</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>U0 … U9, D0 … D9 — текущие данные о трафике абонента в байтах по направлениям;</para></listitem>
+		<listitem><para>Cash — состояние счета абонента;</para></listitem>
+		<listitem><para>FreeMb — количество «бесплатных мегабайт» у абонента (в деньгах);</para></listitem>
+		<listitem><para>LastActivityTime — момент последней активности абонента, UNIX Timestamp;</para></listitem>
+		<listitem><para>LastCashAdd — последнее изменение счета абонента;</para></listitem>
+		<listitem><para>LastCashAddTime — момент последнего изменения счета абонента, UNIX Timestamp;</para></listitem>
+		<listitem><para>PassiveTime — количество секунд проведенное в состоянии «заморожен».</para></listitem>
+	</itemizedlist>
+	<para>Описание параметров файла stat.&lt;YYYY&gt;.&lt;MM&gt;</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>U0 … U9, D0 … D9 — данные о трафике абонента в байтах по направлениям на конец месяца;</para></listitem>
+		<listitem><para>Cash — состояние счета абонента на конец месяца;</para></listitem>
+	</itemizedlist>
+	<para>Описание параметров файла stat2.&lt;YYYY&gt;.&lt;MM&gt;</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>U0 … U9, D0 … D9 — данные о трафике абонента в байтах по направлениям на конец месяца;</para></listitem>
+		<listitem><para>Cash — состояние счета абонента на конец месяца;</para></listitem>
+		<listitem><para>FreeMb — количество «бесплатных мегабайт» у абонента (в деньгах) на конец месяца;</para></listitem>
+		<listitem><para>LastActivityTime — момент последней активности абонента, UNIX Timestamp;</para></listitem>
+		<listitem><para>LastCashAdd — последнее изменение счета абонента;</para></listitem>
+		<listitem><para>LastCashAddTime — момент последнего изменения счета абонента, UNIX Timestamp;</para></listitem>
+		<listitem><para>PassiveTime — количество секунд проведенное в состоянии «заморожен».</para></listitem>
+	</itemizedlist>
+	</simplesect>
+	<simplesect>
+	<title>Описание формата файлов /var/stargazer/tariff/*.tf.</title>
+	<para>Файлы /var/stargazer/tariffs/*.tf содержат информацию о тарифах. Имя файла имеет вид &lt;name&gt;.tf, где &lt;name&gt; — название тарифа. Файл имеет формат «ключ-значение». Каждая строка файла содержит название параметра и его значение разделенные символом «=», пустые строки и строки начинающиеся с символа «#» (коментарии) игнорируются.</para>
+	<para>Описание тарифа состоит из общих параметров и параметров специфичных для каждого направления. Параметры описывающие направления содержат в своем названии номер направления к которому они относятся.</para>
+	<para>Описание параметров файла тарифов:</para>
+	<itemizedlist mark="opencircle">
+		<listitem><para>Fee — величина абонентской платы;</para></listitem>
+		<listitem><para>Free — количество «бесплатных мегабайт» входящих в абонентскую плату (в деньгах);</para></listitem>
+		<listitem><para>PassiveCost — стоимость «заморозки» абонента;</para></listitem>
+		<listitem><para>TraffType — тип тарификации трафика:</para>
+			<itemizedlist mark="square">
+				<listitem><para>up+down — входящий и исходящий трафик тарифицируется суммарно;</para></listitem>
+				<listitem><para>up — тарифицируется только исходящий трафик;</para></listitem>
+				<listitem><para>down — тарифицируется только входящий трафик;</para></listitem>
+				<listitem><para>max — тарифицируется большее количество трафика;</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>PriceDayA0 … PriceDayA9 — цена трафика по соответствующему направлению в дневной период до превышения порога;</para></listitem>
+		<listitem><para>PriceDayB0 … PriceDayB9 — цена трафика по соответствующему направлению в дневной период после превышения порога;</para></listitem>
+		<listitem><para>PriceNightA0 … PriceNightA9 — цена трафика по соответствующему направлению в ночной период до превышения порога;</para></listitem>
+		<listitem><para>PriceNightB0 … PriceNightB9 — цена трафика по соответствующему направлению в ночной период после превышения порога;</para></listitem>
+		<listitem><para>Threshold0 … Threshold9 — величина порога по каждому из направлений в байтах;</para></listitem>
+		<listitem><para>Time0 ... Time9 — интервал времени считающийся «дневным» (остальное время считается «ночным») в формате HH1:MM1-HH2:MM2;</para></listitem>
+		<listitem><para>SinglePrice0 ... SinglePrice9 — отключает «пороговую» тарификацию (трафик при этом считается по допороговой цене), может принимать значения 0 и 1;</para></listitem>
+		<listitem><para>NoDiscount0 … NoDiscount9 — отключает тарификацию по времени (трафик при этом считается по «дневной» цене), может принимать значения 0 и 1.</para></listitem>
+	</itemizedlist>
+	</simplesect>
+	</chapter>

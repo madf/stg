@@ -337,15 +337,14 @@ return false;
 
 bool SMUX::DispatchPDUs(const SMUX_PDUs_t * pdus)
 {
-SMUXHandlers::iterator it;
-it = smuxHandlers.find(pdus->present);
+SMUXHandlers::iterator it(smuxHandlers.find(pdus->present));
 if (it != smuxHandlers.end())
     {
     return (this->*(it->second))(pdus);
     }
+#ifdef SMUX_DEBUG
 else
     {
-#ifdef SMUX_DEBUG
     switch (pdus->present)
         {
         case SMUX_PDUs_PR_NOTHING:
@@ -361,8 +360,8 @@ else
             printfd(__FILE__, "PDUs: undefined\n");
         }
     asn_fprint(stderr, &asn_DEF_SMUX_PDUs, pdus);
-#endif
     }
+#endif
 return false;
 }
 
@@ -468,15 +467,10 @@ tariffs->DelNotifierAdd(&addDelTariffNotifier);
 users->DelNotifierUserDel(&delUserNotifier);
 users->DelNotifierUserAdd(&addUserNotifier);
 
-std::list<CHG_AFTER_NOTIFIER>::iterator it = notifiers.begin();
+std::list<CHG_AFTER_NOTIFIER>::iterator it(notifiers.begin());
 while (it != notifiers.end())
     {
     it->GetUserPtr()->GetProperty().tariffName.DelAfterNotifier(&(*it));
     ++it;
     }
-}
-
-void CHG_AFTER_NOTIFIER::Notify(const std::string &, const std::string &)
-{
-smux.UpdateTables();
 }

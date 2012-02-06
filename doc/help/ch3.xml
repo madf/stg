@@ -22,7 +22,7 @@ make install
             <listitem><para>DIR_MODE — права доступа к каталогам системы (0755 по умолчанию);</para></listitem>
             <listitem><para>OWNER – владелец файлов системы (root по умолчанию);</para></listitem>
         </itemizedlist>
-        <para>Параметры указываются в формате &lt;ИМЯ_ПАРАМЕТРА&gt; = &lt;НАЧЕНИЕ_ПАРАМЕТРА&gt;. CFLAGS, CXXFLAGS и LDFLAGS можно передавать в скрипт build из окружения. Например так:</para>
+        <para>Параметры указываются в формате &lt;ИМЯ_ПАРАМЕТРА&gt; = &lt;ЗНАЧЕНИЕ_ПАРАМЕТРА&gt;. CFLAGS, CXXFLAGS и LDFLAGS можно передавать в скрипт build из окружения. Например так:</para>
 <programlisting linenumbering="unnumbered">
 CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS=-Wl,--as-needed ./build
 </programlisting>

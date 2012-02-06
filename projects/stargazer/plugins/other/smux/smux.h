@@ -183,6 +183,12 @@ private:
 //-----------------------------------------------------------------------------
 
 inline
+void CHG_AFTER_NOTIFIER::Notify(const std::string &, const std::string &)
+{
+smux.UpdateTables();
+}
+
+inline
 void ADD_DEL_TARIFF_NOTIFIER::Notify(const TARIFF_DATA &)
 {
 smux.UpdateTables();
