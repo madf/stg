@@ -330,7 +330,7 @@ if (res == -1)
 
 if (strcmp(buffer + 4 + sizeof(HDR_8), "ERR"))
     {
-    for (int i = 0; i < len/8; i++)
+    for (int i = 0; i < len / 8; i++)
         DecodeString(buffer + i * 8, buffer + i * 8, &ctxPass);
     }
 
