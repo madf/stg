@@ -359,7 +359,7 @@ sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
-USERS_IMPL * us = (USERS_IMPL*) d;
+USERS_IMPL * us = static_cast<USERS_IMPL *>(d);
 
 struct tm t;
 time_t tt = stgTime;
