@@ -93,6 +93,7 @@ install-data:
 	ln -sf ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
 	ln -sf ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
 	ln -sf ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
+	ln -sf ../conf-available.d/store_files.conf $(PREFIX)/etc/stargazer/conf-enabled.d/store_files.conf
 
 ifeq ($(OS),linux)
 	ln -sf ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
@@ -138,6 +139,13 @@ deps: $(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
+	  echo "$$file" | grep ".c$$" > /dev/null;\
+	  if [ $$? -eq 0 ];\
+	  then\
+	    echo "`$(CC) $(CFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CC) $(CFLAGS) -c $$<' >> deps ;\
+	  else\
+	    echo "`$(CXX) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CXX) $(CXXFLAGS) -c $$<' >> deps ;\
+	  fi;\
 	done

@@ -19,7 +19,6 @@ void METHOD_USER_GET::execute(xmlrpc_c::paramList const & paramList,
 {
 std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
-std::string enc;
 paramList.verifyEnd(2);
 
 std::map<std::string, xmlrpc_c::value> structVal;
@@ -59,7 +58,6 @@ void METHOD_USER_ADD::execute(xmlrpc_c::paramList const & paramList,
 {
 std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
-std::string enc;
 paramList.verifyEnd(2);
 
 ADMIN_INFO adminInfo;
@@ -103,7 +101,6 @@ void METHOD_USER_DEL::execute(xmlrpc_c::paramList const & paramList,
 {
 std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
-std::string enc;
 paramList.verifyEnd(2);
 
 ADMIN_INFO adminInfo;
@@ -141,7 +138,6 @@ void METHOD_USERS_GET::execute(xmlrpc_c::paramList const & paramList,
                                xmlrpc_c::value *   const   retvalPtr)
 {
 std::string cookie = paramList.getString(0);
-std::string enc;
 paramList.verifyEnd(1);
 
 std::map<std::string, xmlrpc_c::value> structVal;
@@ -195,7 +191,6 @@ void METHOD_USER_CHG::execute(xmlrpc_c::paramList const & paramList,
 std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
 xmlrpc_c::value_struct info(paramList.getStruct(2));
-std::string enc;
 paramList.verifyEnd(3);
 
 ADMIN_INFO adminInfo;
@@ -248,7 +243,6 @@ std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
 double amount = paramList.getDouble(2);
 std::string comment = IconvString(paramList.getString(3), "UTF-8", "KOI8-R");
-std::string enc;
 paramList.verifyEnd(4);
 
 ADMIN_INFO adminInfo;
@@ -298,7 +292,6 @@ std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
 double cash = paramList.getDouble(2);
 std::string comment = IconvString(paramList.getString(3), "UTF-8", "KOI8-R");
-std::string enc;
 paramList.verifyEnd(4);
 
 ADMIN_INFO adminInfo;
@@ -346,7 +339,6 @@ std::string login = paramList.getString(1);
 std::string tariff = paramList.getString(2);
 bool delayed = paramList.getBoolean(3);
 std::string comment = IconvString(paramList.getString(4), "UTF-8", "KOI8-R");
-std::string enc;
 paramList.verifyEnd(5);
 
 ADMIN_INFO adminInfo;
@@ -380,7 +372,8 @@ if (tariffs->FindByName(tariff))
         if (u->GetProperty().nextTariff.Set(tariff,
                                             admin,
                                             login,
-                                            store))
+                                            store,
+                                            comment))
             {
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
@@ -392,7 +385,8 @@ if (tariffs->FindByName(tariff))
         if (u->GetProperty().tariffName.Set(tariff,
                                             admin,
                                             login,
-                                            store))
+                                            store,
+                                            comment))
             {
             u->ResetNextTariff();
             u->WriteConf();

@@ -228,7 +228,8 @@
 					<listitem><para>passiveUsers (8) — параметр, описывающий количество «замороженных» абонентов;</para></listitem>
 					<listitem><para>creditUsers (9) — параметр, описывающий количество абонентов с положительным кредитом;</para></listitem>
 					<listitem><para>freeMbUsers (10) — параметр, описывающий количество абонентов с неизрасходованными «бесплатными мегабайтами»;</para></listitem>
-					<listitem><para>tariffChangeUsers (11) — параметр, описывающий количество абонентов у которых с началом месяца будет изменен тариф.</para></listitem>
+					<listitem><para>tariffChangeUsers (11) — параметр, описывающий количество абонентов у которых с началом месяца будет изменен тариф;</para></listitem>
+					<listitem><para>activeUsers (12) — параметр, описывающий количество абонентов у которых имеется посчитанный трафик за сессию.</para></listitem>
 				</itemizedlist>
 			</listitem>
 			<listitem><para>tariffs (2) — секция, содержащая параметры относящиеся к тарифам:</para>
@@ -276,6 +277,7 @@
    |  +-- -R-- Integer32 creditUsers(9)
    |  +-- -R-- Integer32 freeMbUsers(10)
    |  +-- -R-- Integer32 tariffChangeUsers(11)
+   |  +-- -R-- Integer32 activeUsers(12)
    |
    +--tariffs(2)
    |  |

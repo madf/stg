@@ -202,7 +202,6 @@ USER_IPS ips;
 char * paddr;
 IP_MASK im;
 std::vector<std::string> ipMask;
-std::string err;
 if (ipsStr.empty())
     {
     return ips;
@@ -236,7 +235,6 @@ for (unsigned int i = 0; i < ipMask.size(); i++)
     strIp = strtok(str, "/");
     if (strIp == NULL)
         {
-        err = "Incorrect IP address " + ipsStr;
         return ips;
         }
     strMask = strtok(NULL, "/");
@@ -244,7 +242,6 @@ for (unsigned int i = 0; i < ipMask.size(); i++)
     im.ip = inet_addr(strIp);
     if (im.ip == INADDR_NONE)
         {
-        err = "Incorrect IP address: " + std::string(strIp);
         return ips;
         }
 
@@ -254,20 +251,17 @@ for (unsigned int i = 0; i < ipMask.size(); i++)
         int m = 0;
         if (str2x(strMask, m) != 0)
             {
-            err = "Incorrect mask: " + std::string(strMask);
             return ips;
             }
         im.mask = m;
 
         if (im.mask > 32)
             {
-            err = "Incorrect mask: " + std::string(strMask);
             return ips;
             }
 
         if ((im.ip & ips.CalcMask(im.mask)) != im.ip)
             {
-            err = "Address does'n match mask: " + std::string(strIp) + "/" + std::string(strMask);
             return ips;
             }
         }

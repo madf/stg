@@ -163,11 +163,11 @@ MYSQL_STORE::MYSQL_STORE()
 //-----------------------------------------------------------------------------
 int    MYSQL_STORE::MysqlQuery(const char* sQuery,MYSQL * sock) const
 {
-    int ret,i;
+    int ret;
 
     if( (ret = mysql_query(sock,sQuery)) )
     {
-        for(i=0; i<RepitTimes; i++)
+        for(int i=0; i<RepitTimes; i++)
         {
             if( (ret = mysql_query(sock,sQuery)) )
                 ;//need to send error result

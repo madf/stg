@@ -70,6 +70,7 @@ then
         6) OS=bsd5;;
         7) OS=bsd7;;
         8) OS=bsd7;;
+        9) OS=bsd7;;
         *) OS=unknown;;
     esac
     ETC_DIR="./inst/freebsd/etc/stargazer"

@@ -125,7 +125,6 @@ void METHOD_TARIFF_ADD::execute(xmlrpc_c::paramList const & paramList,
 {
 std::string cookie = paramList.getString(0);
 std::string tariff = paramList.getString(1);
-std::string enc;
 paramList.verifyEnd(2);
 
 ADMIN_INFO adminInfo;

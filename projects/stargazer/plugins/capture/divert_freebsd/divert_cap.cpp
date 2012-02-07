@@ -54,7 +54,6 @@ $Date: 2010/09/10 06:43:03 $
 struct DIVERT_DATA {
 int sock;
 short int port;
-unsigned char buffer[BUFF_LEN];
 char iface[10];
 };
 //-----------------------------------------------------------------------------

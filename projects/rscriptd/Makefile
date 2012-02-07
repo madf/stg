@@ -62,8 +62,8 @@ install-bin:
 
 install-data:
 	# Install etc
-	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer
-	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/stargazer/rscriptd.conf
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/rscriptd
+	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/rscriptd/rscriptd.conf
 
 uninstall: uninstall-bin uninstall-data
 
@@ -72,7 +72,7 @@ uninstall-bin:
 
 uninstall-data:
 	# Uninstall etc
-	rm -f $(PREFIX)/etc/stragazer/rscriptd.conf
+	rm -f $(PREFIX)/etc/rscriptd/rscriptd.conf
 
 
 ifneq ($(MAKECMDGOALS),distclean)
@@ -87,6 +87,13 @@ deps:	$(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
-	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
+	  echo "$$file" | grep ".c$$" > /dev/null;\
+	  if [ $$? -eq 0 ];\
+	  then\
+	    echo "`$(CC) $(CFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CC) $(CFLAGS) -c $$<' >> deps ;\
+	  else\
+	    echo "`$(CXX) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CXX) $(CXXFLAGS) -c $$<' >> deps ;\
+	  fi;\
 	done
