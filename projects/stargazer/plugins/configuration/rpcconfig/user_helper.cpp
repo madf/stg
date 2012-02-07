@@ -12,8 +12,6 @@
 void USER_HELPER::GetUserInfo(xmlrpc_c::value * info,
                               bool hidePassword)
 {
-std::string enc;
-
 std::map<std::string, xmlrpc_c::value> structVal;
 
 structVal["result"] = xmlrpc_c::value_boolean(true);
