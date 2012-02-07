@@ -87,7 +87,7 @@ endif
 deps:	$(SRCS) ../../Makefile.conf sgauth.css
 	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
-	./make_css.sh
+	./make_css.sh ;\
 	for file in $(SRCS); do\
 	  echo "$$file" | grep ".c$$" > /dev/null;\
 	  if [ $$? -eq 0 ];\
