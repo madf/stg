@@ -111,8 +111,7 @@ while (n != ans->end())
 
     if (XML_Parse(parser, n->c_str(), len, done) == XML_STATUS_ERROR)
         {
-        char s[128];
-        printf(s, "Parse error at line %d:\n%s\n",
+        printf("Parse error at line %d:\n%s\n",
                XML_GetCurrentLineNumber(parser),
                XML_ErrorString(XML_GetErrorCode(parser)));
         exit(UNKNOWN_ERR_CODE);
