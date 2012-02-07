@@ -62,8 +62,8 @@ install-bin:
 
 install-data:
 	# Install etc
-	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/stargazer
-	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/stargazer/rscriptd.conf
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/rscriptd
+	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/rscriptd/rscriptd.conf
 
 uninstall: uninstall-bin uninstall-data
 
@@ -72,7 +72,7 @@ uninstall-bin:
 
 uninstall-data:
 	# Uninstall etc
-	rm -f $(PREFIX)/etc/stragazer/rscriptd.conf
+	rm -f $(PREFIX)/etc/rscriptd/rscriptd.conf
 
 
 ifneq ($(MAKECMDGOALS),distclean)
