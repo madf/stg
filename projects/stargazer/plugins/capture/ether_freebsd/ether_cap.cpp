@@ -73,8 +73,6 @@ return bcc.GetPlugin();
 //-----------------------------------------------------------------------------
 int BPF_CAP_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-std::string ifaces;
-
 iface.erase(iface.begin(), iface.end());
 
 if (s.moduleParams.empty())
