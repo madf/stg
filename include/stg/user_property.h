@@ -286,8 +286,6 @@ bool USER_PROPERTY_LOGGED<varT>::Set(const varT & val,
                                      const std::string & msg)
 {
 const PRIV * priv = admin->GetPriv();
-std::string adm_login = admin->GetLogin();
-std::string adm_ip = admin->GetIPStr();
 
 if ((priv->userConf && !isStat) ||
     (priv->userStat && isStat) ||
