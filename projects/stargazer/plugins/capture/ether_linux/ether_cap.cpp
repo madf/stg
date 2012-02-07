@@ -154,7 +154,7 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-ETHER_CAP * dc = (ETHER_CAP *)d;
+ETHER_CAP * dc = static_cast<ETHER_CAP *>(d);
 dc->isRunning = true;
 
 struct ETH_IP
