@@ -66,6 +66,13 @@ deps:	$(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\
-	  echo "`$(CC) $(CXXFLAGS) -MM $$file` Makefile ../../Makefile.conf" >> deps ;\
-	  printf '%b\n' '\t$$(CC) -c $$< $(CXXFLAGS)' >> deps ;\
+	  echo "$$file" | grep ".c$$" > /dev/null;\
+	  if [ $$? -eq 0 ];\
+	  then\
+	    echo "`$(CC) $(CFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CC) $(CFLAGS) -c $$<' >> deps ;\
+	  else\
+	    echo "`$(CXX) $(CXXFLAGS) -MM $$file` Makefile" >> deps ;\
+	    printf '%b\n' '\t$$(CXX) $(CXXFLAGS) -c $$<' >> deps ;\
+	  fi;\
 	done
