@@ -93,6 +93,7 @@ install-data:
 	ln -sf ../conf-available.d/mod_ia.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ia.conf
 	ln -sf ../conf-available.d/mod_ping.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_ping.conf
 	ln -sf ../conf-available.d/mod_sg.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_sg.conf
+	ln -sf ../conf-available.d/store_files.conf $(PREFIX)/etc/stargazer/conf-enabled.d/store_files.conf
 
 ifeq ($(OS),linux)
 	ln -sf ../conf-available.d/mod_cap_ether.conf $(PREFIX)/etc/stargazer/conf-enabled.d/mod_cap_ether.conf
