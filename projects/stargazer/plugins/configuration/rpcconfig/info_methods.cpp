@@ -1,5 +1,7 @@
 #include <sys/utsname.h>
 
+#include <ostream> // xmlrpc-c devs have missed something :)
+
 #include "stg/version.h"
 #include "stg/common.h"
 #include "info_methods.h"
