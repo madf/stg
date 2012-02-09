@@ -1,3 +1,5 @@
+#include <ostream> // xmlrpc-c devs have missed something :)
+
 #include "tariffs_methods.h"
 #include "rpcconfig.h"
 #include "tariff_helper.h"

@@ -122,8 +122,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string GetVersion() const { return "Stg SMUX Plugin 1.1"; }
-    uint16_t GetStartPosition() const { return 100; }
-    uint16_t GetStopPosition() const { return 100; }
+    uint16_t GetStartPosition() const { return 10; }
+    uint16_t GetStopPosition() const { return 10; }
 
     bool UpdateTables();
 

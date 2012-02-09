@@ -252,8 +252,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const { return "InetAccess authorization plugin v.1.4"; }
-    uint16_t            GetStartPosition() const { return 50; }
-    uint16_t            GetStopPosition() const { return 50; }
+    uint16_t            GetStartPosition() const { return 30; }
+    uint16_t            GetStopPosition() const { return 30; }
 
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 

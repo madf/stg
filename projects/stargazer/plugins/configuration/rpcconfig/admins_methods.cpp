@@ -1,3 +1,5 @@
+#include <ostream> // xmlrpc-c devs have missed something :)
+
 #include "stg/common.h"
 #include "admins_methods.h"
 #include "rpcconfig.h"

@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <cstdlib>
 #include <csignal>
@@ -9,6 +10,7 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <ostream> // xmlrpc-c devs have missed something :)
 
 #include "stg/common.h"
 #include "stg/admin.h"

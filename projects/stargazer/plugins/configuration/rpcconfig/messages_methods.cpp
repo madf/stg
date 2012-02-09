@@ -1,3 +1,5 @@
+#include <ostream> // xmlrpc-c devs have missed something :)
+
 #include "stg/message.h"
 #include "stg/common.h"
 #include "utils.h"

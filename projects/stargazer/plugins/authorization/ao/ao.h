@@ -94,8 +94,8 @@ public:
     int                 ParseSettings() { return 0; }
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const { return 70; }
-    uint16_t            GetStopPosition() const { return 70; }
+    uint16_t            GetStartPosition() const { return 30; }
+    uint16_t            GetStopPosition() const { return 30; }
 
     void                AddUser(USER_PTR u);
     void                DelUser(USER_PTR u);

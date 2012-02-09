@@ -205,12 +205,12 @@ return isRunning;
 //-----------------------------------------------------------------------------
 uint16_t AUTH_STRESS::GetStartPosition() const
 {
-return 70;
+return 30;
 }
 //-----------------------------------------------------------------------------
 uint16_t AUTH_STRESS::GetStopPosition() const
 {
-return 70;
+return 30;
 }
 //-----------------------------------------------------------------------------
 void AUTH_STRESS::SetUserNotifiers(USER_PTR u)

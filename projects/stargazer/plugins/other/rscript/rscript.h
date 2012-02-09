@@ -170,8 +170,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const { return "Remote script v 0.3"; }
-    uint16_t            GetStartPosition() const { return 20; }
-    uint16_t            GetStopPosition() const { return 20; }
+    uint16_t            GetStartPosition() const { return 10; }
+    uint16_t            GetStopPosition() const { return 10; }
 
     void                DelUser(USER_PTR u) { UnSetUserNotifier(u); }
     void                AddUser(USER_PTR u) { SetUserNotifier(u); }

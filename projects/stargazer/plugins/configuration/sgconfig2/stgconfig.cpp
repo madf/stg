@@ -155,12 +155,12 @@ return NULL;
 
 uint16_t STG_CONFIG::GetStartPosition() const
 {
-return 220;
+return 20;
 }
 
 uint16_t STG_CONFIG::GetStopPosition() const
 {
-return 220;
+return 20;
 }
 
 bool PrepareNetwork()

@@ -1,3 +1,5 @@
+#include <ostream> // xmlrpc-c devs have missed something :)
+
 #include "tariff_helper.h"
 
 void TARIFF_HELPER::GetTariffInfo(xmlrpc_c::value * info) const

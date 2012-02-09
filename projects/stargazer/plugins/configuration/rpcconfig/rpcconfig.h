@@ -76,8 +76,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const { return RPC_CONFIG_VERSION; }
-    uint16_t            GetStartPosition() const { return 220; }
-    uint16_t            GetStopPosition() const { return 220; }
+    uint16_t            GetStartPosition() const { return 20; }
+    uint16_t            GetStopPosition() const { return 20; }
 
     bool                GetAdminInfo(const std::string & cookie,
                                      ADMIN_INFO * info);
