@@ -107,8 +107,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const;
-    uint16_t            GetStartPosition() const { return 10; }
-    uint16_t            GetStopPosition() const { return 10; }
+    uint16_t            GetStartPosition() const { return 40; }
+    uint16_t            GetStopPosition() const { return 40; }
 
 private:
     BPF_CAP(const BPF_CAP & rvalue);

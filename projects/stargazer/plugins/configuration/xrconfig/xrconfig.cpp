@@ -180,12 +180,12 @@ return NULL;
 //-----------------------------------------------------------------------------
 uint16_t XR_CONFIG::GetStartPosition() const
 {
-return 221;
+return 20;
 }
 //-----------------------------------------------------------------------------
 uint16_t XR_CONFIG::GetStopPosition() const
 {
-return 221;
+return 20;
 }
 //-----------------------------------------------------------------------------
 int XR_CONFIG::SetUserCash(const string & admLogin, const string & usrLogin, double cash) const

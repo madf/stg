@@ -102,8 +102,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string   GetVersion() const { return "RADIUS data access plugin v 0.6"; }
-    uint16_t            GetStartPosition() const { return 20; }
-    uint16_t            GetStopPosition() const { return 20; }
+    uint16_t            GetStartPosition() const { return 30; }
+    uint16_t            GetStopPosition() const { return 30; }
 
     int SendMessage(const STG_MSG &, uint32_t) const { return 0; }
 

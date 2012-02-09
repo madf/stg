@@ -116,8 +116,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
     const std::string GetVersion() const { return "Pinger v.1.01"; }
-    uint16_t GetStartPosition() const { return 100; }
-    uint16_t GetStopPosition() const { return 100; }
+    uint16_t GetStartPosition() const { return 10; }
+    uint16_t GetStopPosition() const { return 10; }
 
     void AddUser(USER_PTR u);
     void DelUser(USER_PTR u);

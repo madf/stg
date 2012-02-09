@@ -39,8 +39,8 @@ $Author: faust $
 #include "stg/module_settings.h"
 
 #define VERSION "CAP_NF v. 0.4"
-#define START_POS 10
-#define STOP_POS 10
+#define START_POS 40
+#define STOP_POS 40
 
 class USERS;
 class USER;

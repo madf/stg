@@ -56,8 +56,8 @@ public:
     virtual bool IsRunning() { return isRunning; }
     virtual const string  & GetStrError() const { return errorStr; }
     virtual const string    GetVersion() const { return version; }
-    virtual uint16_t        GetStartPosition() const { return 0; }
-    virtual uint16_t        GetStopPosition() const { return 0; }
+    virtual uint16_t        GetStartPosition() const { return 10; }
+    virtual uint16_t        GetStopPosition() const { return 10; }
 
 private:
     struct IsDone : public unary_function<DataThread, bool>

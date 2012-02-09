@@ -434,12 +434,12 @@ return NULL;
 //-----------------------------------------------------------------------------
 uint16_t DEBUG_CAP::GetStartPosition() const
 {
-return 0;
+return 40;
 }
 //-----------------------------------------------------------------------------
 uint16_t DEBUG_CAP::GetStopPosition() const
 {
-return 0;
+return 40;
 }
 //-----------------------------------------------------------------------------
 RAW_PACKET MakeTCPPacket(const char * src,
