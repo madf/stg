@@ -473,4 +473,5 @@ while (it != notifiers.end())
     it->GetUserPtr()->GetProperty().tariffName.DelAfterNotifier(&(*it));
     ++it;
     }
+notifiers.clear();
 }
