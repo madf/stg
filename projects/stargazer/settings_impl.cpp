@@ -375,7 +375,7 @@ while (node)
 
     if (strcasecmp(node->getName(), "FeeChargeType") == 0)
         {
-        if (ParseUnsignedInRange(node->getValue(0), 0, 2, &feeChargeType) != 0)
+        if (ParseUnsignedInRange(node->getValue(0), 0, 3, &feeChargeType) != 0)
             {
             strError = "Incorrect FeeChargeType value: \'" + string(node->getValue(0)) + "\'";
             return -1;

@@ -1250,6 +1250,10 @@ switch (settings->GetFeeChargeType())
         if (c + credit >= fee)
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
         break;
+    case 3:
+        if (c >= 0)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
     }
 ResetPassiveTime();
 }
@@ -1307,6 +1311,13 @@ switch (settings->GetFeeChargeType())
         break;
     case 2:
         if (c + credit >= fee)
+            {
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            SetPrepaidTraff();
+            }
+        break;
+    case 3:
+        if (c >= 0)
             {
             property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
             SetPrepaidTraff();

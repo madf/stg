@@ -65,7 +65,7 @@ public:
                    smux(rvalue.smux), userPtr(rvalue.userPtr) {}
     void     Notify(const std::string &, const std::string &);
 
-    USER_PTR GetUserPtr() { return userPtr; }
+    USER_PTR GetUserPtr() const { return userPtr; }
 
 private:
     CHG_AFTER_NOTIFIER & operator=(const CHG_AFTER_NOTIFIER & rvalue);
