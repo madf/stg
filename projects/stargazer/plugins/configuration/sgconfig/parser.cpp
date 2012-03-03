@@ -13,6 +13,7 @@
 #include "stg/tariffs.h"
 #include "stg/user_property.h"
 #include "stg/settings.h"
+#include "stg/logger.h"
 #include "parser.h"
 
 #define  UNAME_LEN      (256)
@@ -996,6 +997,7 @@ switch (res)
 //-----------------------------------------------------------------------------
 int PARSER_CHG_USER::AplayChanges()
 {
+printfd(__FILE__, "PARSER_CHG_USER::AplayChanges()\n");
 USER_PTR u;
 
 res = 0;
@@ -1005,17 +1007,38 @@ if (users->FindByName(login, &u))
     return -1;
     }
 
+bool check = false;
+bool alwaysOnline = u->GetProperty().alwaysOnline;
+if (!ucr->alwaysOnline.res_empty())
+    {
+    check = true;
+    alwaysOnline = ucr->alwaysOnline.const_data();
+    }
+bool onlyOneIP = u->GetProperty().ips.ConstData().OnlyOneIP();
+if (!ucr->ips.res_empty())
+    {
+    check = true;
+    onlyOneIP = ucr->ips.const_data().OnlyOneIP();
+    }
+
+if (check && alwaysOnline && !onlyOneIP)
+    {
+    printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
+    GetStgLogger()("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", currAdmin->GetLogStr().c_str());
+    return -1;
+    }
+
 if (!ucr->ips.res_empty())
     if (!u->GetProperty().ips.Set(ucr->ips.const_data(), currAdmin, login, store))
-        res = -1;
-
-if (!ucr->address.res_empty())
-    if (!u->GetProperty().address.Set(ucr->address.const_data(), currAdmin, login, store))
         res = -1;
 
 if (!ucr->alwaysOnline.res_empty())
     if (!u->GetProperty().alwaysOnline.Set(ucr->alwaysOnline.const_data(),
                                       currAdmin, login, store))
+        res = -1;
+
+if (!ucr->address.res_empty())
+    if (!u->GetProperty().address.Set(ucr->address.const_data(), currAdmin, login, store))
         res = -1;
 
 if (!ucr->creditExpire.res_empty())

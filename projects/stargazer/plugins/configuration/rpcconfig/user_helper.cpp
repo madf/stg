@@ -136,15 +136,24 @@ std::map<std::string, xmlrpc_c::value> structVal(
 
 std::map<std::string, xmlrpc_c::value>::iterator it;
 
-if ((it = structVal.find("password")) != structVal.end())
+bool check = false;
+bool alwaysOnline = ptr->GetProperty().alwaysOnline;
+if ((it = structVal.find("aonline")) != structVal.end())
     {
-    std::string value(xmlrpc_c::value_string(it->second));
-    if (ptr->GetProperty().password.Get() != value)
-        if (!ptr->GetProperty().password.Set(value,
-                                         admin,
-                                         login,
-                                         &store))
-            return true;
+    check = true;
+    alwaysOnline = xmlrpc_c::value_boolean(it->second);
+    }
+bool onlyOneIP = ptr->GetProperty().ips.ConstData().OnlyOneIP();
+if ((it = structVal.find("ips")) != structVal.end())
+    {
+    check = true;
+    onlyOneIP = StrToIPS(xmlrpc_c::value_string(it->second)).OnlyOneIP();
+    }
+
+if (check && alwaysOnline && !onlyOneIP)
+    {
+    printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
+    return true;
     }
 
 if ((it = structVal.find("ips")) != structVal.end())
@@ -156,6 +165,28 @@ if ((it = structVal.find("ips")) != structVal.end())
                                 login,
                                 &store))
         return true;
+    }
+
+if ((it = structVal.find("aonline")) != structVal.end())
+    {
+    bool value(xmlrpc_c::value_boolean(it->second));
+    if (ptr->GetProperty().alwaysOnline.Get() != value)
+        if (!ptr->GetProperty().alwaysOnline.Set(value,
+                                             admin,
+                                             login,
+                                             &store))
+            return true;
+    }
+
+if ((it = structVal.find("password")) != structVal.end())
+    {
+    std::string value(xmlrpc_c::value_string(it->second));
+    if (ptr->GetProperty().password.Get() != value)
+        if (!ptr->GetProperty().password.Set(value,
+                                         admin,
+                                         login,
+                                         &store))
+            return true;
     }
 
 if ((it = structVal.find("address")) != structVal.end())
@@ -254,17 +285,6 @@ if ((it = structVal.find("passive")) != structVal.end())
                                         admin,
                                         login,
                                         &store))
-            return true;
-    }
-
-if ((it = structVal.find("aonline")) != structVal.end())
-    {
-    bool value(xmlrpc_c::value_boolean(it->second));
-    if (ptr->GetProperty().alwaysOnline.Get() != value)
-        if (!ptr->GetProperty().alwaysOnline.Set(value,
-                                             admin,
-                                             login,
-                                             &store))
             return true;
     }
 
