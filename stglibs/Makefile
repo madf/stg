@@ -7,9 +7,9 @@ include ../Makefile.conf
 .PHONY: all $(STG_LIBS)
 .PHONY: clean install uninstall includes
 all: $(STG_LIBS)
-
-$(STG_LIBS):
-	$(MAKE) $(MAKECMDGOALS) -C $@
+	for LIB in $(STG_LIBS); do\
+	    $(MAKE) $(MAKECMDGOALS) -C $$LIB;\
+	done
 
 includes: all
 
