@@ -36,6 +36,7 @@
 #include "stg/locker.h"
 #include "stg/user_property.h"
 #include "stg/plugin_creator.h"
+#include "stg/logger.h"
 #include "rscript.h"
 #include "ur_functor.h"
 #include "send_functor.h"
@@ -149,13 +150,14 @@ subnetFile = pvi->value[0];
 
 NRMapParser nrMapParser;
 
-if (nrMapParser.ReadFile(subnetFile))
+if (!nrMapParser.ReadFile(subnetFile))
     {
-    errorStr = nrMapParser.GetErrorStr();
-    return -1;
+    netRouters = nrMapParser.GetMap();
     }
-
-netRouters = nrMapParser.GetMap();
+else
+    {
+    GetStgLogger()("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
+    }
 
 return 0;
 }
