@@ -77,6 +77,7 @@ private:
     MODULE_SETTINGS     settings;
 
     int                 port;
+    bool                disableForwarding;
 
     mutable std::string errorStr;
 
