@@ -81,6 +81,7 @@ return "Divert_cap v.1.0";
 DIVERT_CAP::DIVERT_CAP()
     : settings(),
       port(0),
+      disableForwarding(false),
       errorStr(),
       thread(),
       nonstop(false),
@@ -250,7 +251,8 @@ if ((bytes = recvfrom (cddiv.sock, buf, BUFF_LEN,
     if (iface)
         *iface = cddiv.iface;
 
-    sendto(cddiv.sock, buf, bytes, 0, (struct sockaddr*)&divertaddr, divertaddrSize);
+    if (!disableForwarding)
+        sendto(cddiv.sock, buf, bytes, 0, (struct sockaddr*)&divertaddr, divertaddrSize);
     }
 
 return 0;
@@ -272,11 +274,9 @@ pv.param = "Port";
 pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
 if (pvi == settings.moduleParams.end())
     {
-    port = 15701;
-    return 0;
+    p = 15701;
     }
-
-if (ParseIntInRange(pvi->value[0], 1, 65535, &p))
+else if (ParseIntInRange(pvi->value[0], 1, 65535, &p))
     {
     errorStr = "Cannot parse parameter \'Port\': " + errorStr;
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
@@ -284,6 +284,22 @@ if (ParseIntInRange(pvi->value[0], 1, 65535, &p))
     }
 
 port = p;
+
+bool d = false;
+pv.param = "DisableForwarding";
+pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
+if (pvi == settings.moduleParams.end())
+    {
+    disableForwarding = false;
+    }
+else if (ParseYesNo(pvi->value[0], &d))
+    {
+    errorStr = "Cannot parse parameter \'DisableForwarding\': " + errorStr;
+    printfd(__FILE__, "Cannot parse parameter 'DisableForwarding'\n");
+    return -1;
+    }
+
+disableForwarding = d;
 
 return 0;
 }
