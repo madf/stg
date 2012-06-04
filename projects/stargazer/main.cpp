@@ -363,7 +363,8 @@ while (modIter != modules.end())
     {
     if (modIter->Load())
         {
-        WriteServLog("Error: %s",
+        WriteServLog("Error loading module '%s': %s",
+                     modIter->GetPlugin()->GetVersion().c_str(),
                      modIter->GetStrError().c_str());
         goto exitLblNotStarted;
         }
@@ -390,7 +391,8 @@ while (modIter != modules.end())
     {
     if (modIter->Start())
         {
-        WriteServLog("Error: %s",
+        WriteServLog("Error starting module '%s': %s",
+                     modIter->GetPlugin()->GetVersion().c_str(),
                      modIter->GetStrError().c_str());
         goto exitLbl;
         }
@@ -425,9 +427,9 @@ while (true)
                 {
                 if (modIter->Reload())
                     {
-                    WriteServLog("Error reloading %s ('%s')", modIter->GetPlugin()->GetVersion().c_str(),
+                    WriteServLog("Error reloading module '%s': '%s'", modIter->GetPlugin()->GetVersion().c_str(),
                                                               modIter->GetStrError().c_str());
-                    printfd(__FILE__, "Error reloading %s ('%s')\n", modIter->GetPlugin()->GetVersion().c_str(),
+                    printfd(__FILE__, "Error reloading module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(),
                                                                      modIter->GetStrError().c_str());
                     }
                 }
@@ -473,14 +475,14 @@ while (modIter != modules.end())
     printfd(__FILE__, "Stopping module '%s'\n", name.c_str());
     if (modIter->Stop())
         {
-        WriteServLog("Module \'%s\': Error: %s",
+        WriteServLog("Error stopping module '%s': %s",
                      modIter->GetPlugin()->GetVersion().c_str(),
                      modIter->GetStrError().c_str());
-        printfd(__FILE__, "Failed to stop module '%s'\n", name.c_str());
+        printfd(__FILE__, "Error stopping module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(), modIter->GetStrError().c_str());
         }
     else
         {
-        WriteServLog("Module: \'%s\'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
+        WriteServLog("Module: '%s'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
         }
     ++modIter;
     }
@@ -505,10 +507,10 @@ while (modIter != modules.end())
         printfd(__FILE__, "Unloading module '%s'\n", name.c_str());
         if (modIter->Unload())
             {
-            WriteServLog("Module \'%s\': Error: %s",
-                         name.c_str(),
+            WriteServLog("Error unloading module '%s': '%s'",
+                         modIter->GetPlugin()->GetVersion().c_str(),
                          modIter->GetStrError().c_str());
-            printfd(__FILE__, "Failed to unload module '%s'\n", name.c_str());
+            printfd(__FILE__, "Error unloading module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(), modIter->GetStrError().c_str());
             }
         }
     ++modIter;
