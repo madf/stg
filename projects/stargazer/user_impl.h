@@ -68,9 +68,16 @@ public:
     void Notify(const int & oldPassive, const int & newPassive);
 
 private:
-    CHG_PASSIVE_NOTIFIER(const CHG_PASSIVE_NOTIFIER & rvalue);
-    CHG_PASSIVE_NOTIFIER & operator=(const CHG_PASSIVE_NOTIFIER & rvalue);
+    USER_IMPL * user;
+};
+//-----------------------------------------------------------------------------
+class CHG_DISABLED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<int>,
+                             private NONCOPYABLE {
+public:
+    CHG_DISABLED_NOTIFIER(USER_IMPL * u) : user(u) {}
+    void Notify(const int & oldValue, const int & newValue);
 
+private:
     USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
@@ -81,9 +88,6 @@ public:
     void Notify(const std::string & oldTariff, const std::string & newTariff);
 
 private:
-    CHG_TARIFF_NOTIFIER(const CHG_TARIFF_NOTIFIER & rvalue);
-    CHG_TARIFF_NOTIFIER & operator=(const CHG_TARIFF_NOTIFIER & rvalue);
-
     USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
@@ -94,18 +98,12 @@ public:
     void Notify(const double & oldCash, const double & newCash);
 
 private:
-    CHG_CASH_NOTIFIER(const CHG_CASH_NOTIFIER & rvalue);
-    CHG_CASH_NOTIFIER & operator=(const CHG_CASH_NOTIFIER & rvalue);
-
     USER_IMPL * user;
 };
 //-----------------------------------------------------------------------------
 class CHG_IPS_NOTIFIER : public PROPERTY_NOTIFIER_BASE<USER_IPS>,
                          private NONCOPYABLE {
 public:
-    CHG_IPS_NOTIFIER(const CHG_IPS_NOTIFIER & rvalue);
-    CHG_IPS_NOTIFIER & operator=(const CHG_IPS_NOTIFIER & rvalue);
-
     CHG_IPS_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const USER_IPS & oldIPs, const USER_IPS & newIPs);
 
@@ -115,6 +113,7 @@ private:
 //-----------------------------------------------------------------------------
 class USER_IMPL : public USER {
 friend class CHG_PASSIVE_NOTIFIER;
+friend class CHG_DISABLED_NOTIFIER;
 friend class CHG_TARIFF_NOTIFIER;
 friend class CHG_CASH_NOTIFIER;
 friend class CHG_IPS_NOTIFIER;
@@ -317,6 +316,7 @@ private:
     DIR_TRAFF                sessionDownload;
 
     CHG_PASSIVE_NOTIFIER     passiveNotifier;
+    CHG_DISABLED_NOTIFIER    disabledNotifier;
     CHG_TARIFF_NOTIFIER      tariffNotifier;
     CHG_CASH_NOTIFIER        cashNotifier;
     CHG_IPS_NOTIFIER         ipNotifier;

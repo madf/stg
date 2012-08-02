@@ -132,6 +132,7 @@ lastWriteDetailedStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -210,6 +211,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       sessionUpload(),
       sessionDownload(),
       passiveNotifier(this),
+      disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
       ipNotifier(this),
@@ -224,6 +226,7 @@ lastWriteDetailedStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -299,6 +302,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       sessionUpload(),
       sessionDownload(),
       passiveNotifier(this),
+      disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
       ipNotifier(this),
@@ -310,6 +314,7 @@ if (&u == this)
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -323,8 +328,10 @@ pthread_mutex_init(&mutex, &attr);
 //-----------------------------------------------------------------------------
 USER_IMPL::~USER_IMPL()
 {
-property.passive.DelBeforeNotifier(&passiveNotifier);
 property.tariffName.DelBeforeNotifier(&tariffNotifier);
+property.passive.DelBeforeNotifier(&passiveNotifier);
+property.disabled.DelAfterNotifier(&disabledNotifier);
+property.cash.DelBeforeNotifier(&cashNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
@@ -1458,6 +1465,19 @@ if (newPassive && !oldPassive && user->tariff != NULL)
                             user->login,
                             user->store,
                             "Freeze");
+}
+//-----------------------------------------------------------------------------
+void CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
+{
+if (oldValue && !newValue && user->GetConnected())
+    {
+    user->Disconnect(false, "disabled");
+    }
+else if (!oldValue && newValue && user->IsInetable())
+    {
+    user->Connect(false);
+    }
+
 }
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const string &, const string & newTariff)
