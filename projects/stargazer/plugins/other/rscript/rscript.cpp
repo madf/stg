@@ -181,7 +181,8 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
       mutex(),
       sock(0),
       onAddUserNotifier(*this),
-      onDelUserNotifier(*this)
+      onDelUserNotifier(*this),
+      logger(GetPluginLogger(GetStgLogger(), "rscript"))
 {
 pthread_mutex_init(&mutex, NULL);
 }

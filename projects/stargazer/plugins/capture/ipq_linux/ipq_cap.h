@@ -26,6 +26,7 @@
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/os_int.h"
+#include "stg/logger.h"
 
 #define BUFSIZE     (256)
 #define PAYLOAD_LEN (96)
@@ -76,6 +77,8 @@ private:
 
     TRAFFCOUNTER * traffCnt;
     unsigned char buf[BUFSIZE];
+
+    PLUGIN_LOGGER logger;
 };
 
 #endif

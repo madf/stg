@@ -7,6 +7,7 @@
 
 #include "stg/plugin.h"
 #include "stg/store.h"
+#include "stg/logger.h"
 #include "configproto.h"
 
 extern "C" PLUGIN * GetPlugin();
@@ -59,6 +60,7 @@ private:
     pthread_t           thread;
     bool                nonstop;
     bool                isRunning;
+    PLUGIN_LOGGER       logger;
     CONFIGPROTO         config;
     USERS *             users;
     ADMINS *            admins;

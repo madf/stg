@@ -14,6 +14,7 @@
 #include "stg/module_settings.h"
 #include "stg/store.h"
 #include "stg/user_traff.h"
+#include "stg/logger.h"
 
 using namespace std;
 //-----------------------------------------------------------------------------
@@ -141,6 +142,8 @@ private:
     string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
     MODULE_SETTINGS         settings;
+
+    PLUGIN_LOGGER           logger;
 };
 //-----------------------------------------------------------------------------
 

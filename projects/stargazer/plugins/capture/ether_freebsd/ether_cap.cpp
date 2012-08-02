@@ -125,7 +125,8 @@ BPF_CAP::BPF_CAP()
       isRunning(false),
       capSock(-1),
       settings(),
-      traffCnt(NULL)
+      traffCnt(NULL),
+      logger(GetPluginLogger(GetStgLogger(), "cap_ether"))
 {
 }
 //-----------------------------------------------------------------------------

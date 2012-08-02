@@ -65,7 +65,8 @@ NF_CAP::NF_CAP()
       portU(0),
       sockTCP(-1),
       sockUDP(-1),
-      errorStr()
+      errorStr(),
+      logger(GetPluginLogger(GetStgLogger(), "cap_nf"))
 {
 }
 

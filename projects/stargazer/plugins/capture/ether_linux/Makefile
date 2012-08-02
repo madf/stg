@@ -10,7 +10,8 @@ SRCS = ./ether_cap.cpp
 
 LIBS += $(LIB_THREAD)
 
-STGLIBS = common
+STGLIBS = common \
+          logger
 
 include ../../Makefile.in
 

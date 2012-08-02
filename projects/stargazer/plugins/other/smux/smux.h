@@ -15,6 +15,7 @@
 #include "stg/module_settings.h"
 #include "stg/notifer.h"
 #include "stg/noncopyable.h"
+#include "stg/logger.h"
 
 #include "sensors.h"
 #include "tables.h"
@@ -179,6 +180,8 @@ private:
     ADD_USER_NOTIFIER addUserNotifier;
     DEL_USER_NOTIFIER delUserNotifier;
     ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
+
+    PLUGIN_LOGGER logger;
 };
 //-----------------------------------------------------------------------------
 

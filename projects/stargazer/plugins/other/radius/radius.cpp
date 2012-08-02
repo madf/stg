@@ -136,7 +136,8 @@ RADIUS::RADIUS()
       thread(),
       mutex(),
       sock(-1),
-      packet()
+      packet(),
+      logger(GetPluginLogger(GetStgLogger(), "radius"))
 {
 InitEncrypt(&ctx, "");
 }

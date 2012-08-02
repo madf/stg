@@ -19,6 +19,7 @@
 #include "stg/user_ips.h"
 #include "stg/pinger.h"
 #include "stg/users.h"
+#include "stg/logger.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -148,6 +149,8 @@ private:
 
     ADD_USER_NONIFIER_PING onAddUserNotifier;
     DEL_USER_NONIFIER_PING onDelUserNotifier;
+
+    PLUGIN_LOGGER logger;
 };
 //-----------------------------------------------------------------------------
 

@@ -37,6 +37,7 @@
 #include "stg/notifer.h"
 #include "stg/user_ips.h"
 #include "stg/user.h"
+#include "stg/logger.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -148,6 +149,7 @@ private:
 
         AUTH_AO & auth;
     } onDelUserNotifier;
+    PLUGIN_LOGGER logger;
 
     friend class CHG_BEFORE_NOTIFIER<int>;
     friend class CHG_AFTER_NOTIFIER<int>;

@@ -56,7 +56,8 @@ FIREBIRD_STORE::FIREBIRD_STORE()
       db(),
       mutex(),
       til(IBPP::ilConcurrency),
-      tlr(IBPP::lrWait)
+      tlr(IBPP::lrWait),
+      logger(GetPluginLogger(GetStgLogger(), "store_firebird"))
 {
 pthread_mutex_init(&mutex, NULL);
 }

@@ -32,6 +32,7 @@
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/logger.h"
 
 class USERS;
 class TARIFFS;
@@ -79,6 +80,8 @@ private:
     int                 capSock;
 
     TRAFFCOUNTER *      traffCnt;
+
+    PLUGIN_LOGGER       logger;
 };
 //-----------------------------------------------------------------------------
 

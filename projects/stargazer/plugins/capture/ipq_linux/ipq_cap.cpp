@@ -63,7 +63,8 @@ IPQ_CAP::IPQ_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      buf()
+      buf(),
+      logger(GetPluginLogger(GetStgLogger(), "cap_ipq"))
 {
 memset(buf, 0, BUFSIZE);
 }

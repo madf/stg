@@ -78,7 +78,8 @@ ETHER_CAP::ETHER_CAP()
       nonstop(false),
       isRunning(false),
       capSock(-1),
-      traffCnt(NULL)
+      traffCnt(NULL),
+      logger(GetPluginLogger(GetStgLogger(), "cap_ether"))
 {
 }
 //-----------------------------------------------------------------------------

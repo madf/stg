@@ -278,7 +278,7 @@ if (err)
     {
     if (send(sock, ERR_HEADER, sizeof(ERR_HEADER) - 1, 0) < 0)
         {
-        WriteServLog("send ERR_HEADER error in SendHdrAnswer.");
+        logger("send ERR_HEADER error in SendHdrAnswer.");
         return -1;
         }
     }
@@ -286,7 +286,7 @@ else
     {
     if (send(sock, OK_HEADER, sizeof(OK_HEADER) - 1, 0) < 0)
         {
-        WriteServLog("send OK_HEADER error in SendHdrAnswer.");
+        logger("send OK_HEADER error in SendHdrAnswer.");
         return -1;
         }
     }
@@ -337,7 +337,7 @@ int CONFIGPROTO::SendLoginAnswer(int sock)
 {
 if (send(sock, OK_LOGIN, sizeof(OK_LOGIN) - 1, 0) < 0)
     {
-    WriteServLog("Send OK_LOGIN error in SendLoginAnswer.");
+    logger("Send OK_LOGIN error in SendLoginAnswer.");
     return -1;
     }
 return 0;
@@ -408,7 +408,7 @@ if (err)
     {
     if (send(sock, ERR_LOGINS, sizeof(ERR_LOGINS) - 1, 0) < 0)
         {
-        WriteServLog("send ERR_LOGIN error in SendLoginAnswer.");
+        logger("send ERR_LOGIN error in SendLoginAnswer.");
         return -1;
         }
     }
@@ -416,7 +416,7 @@ else
     {
     if (send(sock, OK_LOGINS, sizeof(OK_LOGINS) - 1, 0) < 0)
         {
-        WriteServLog("send OK_LOGINS error in SendLoginSAnswer.");
+        logger("send OK_LOGINS error in SendLoginSAnswer.");
         return -1;
         }
     }
@@ -537,6 +537,6 @@ answerList.push_back(s);
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
 {
-WriteServLog("Admin's connect failed. IP %s", inet_ntostring(ip).c_str());
+logger("Admin's connect failed. IP %s", inet_ntostring(ip).c_str());
 }
 //-----------------------------------------------------------------------------

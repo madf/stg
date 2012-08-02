@@ -74,7 +74,8 @@ PING::PING()
       ChgCurrIPNotifierList(),
       ChgIPNotifierList(),
       onAddUserNotifier(*this),
-      onDelUserNotifier(*this)
+      onDelUserNotifier(*this),
+      logger(GetPluginLogger(GetStgLogger(), "ping"))
 {
 pthread_mutex_init(&mutex, NULL);
 }

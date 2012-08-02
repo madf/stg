@@ -111,7 +111,8 @@ SMUX::SMUX()
       notifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this),
-      addDelTariffNotifier(*this)
+      addDelTariffNotifier(*this),
+      logger(GetPluginLogger(GetStgLogger(), "smux"))
 {
 pthread_mutex_init(&mutex, NULL);
 

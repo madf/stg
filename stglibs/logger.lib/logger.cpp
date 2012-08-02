@@ -93,3 +93,34 @@ snprintf(s, 32, "%d-%s%d-%s%d %s%d:%s%d:%s%d",
 return s;
 }
 //-----------------------------------------------------------------------------
+PLUGIN_LOGGER::PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn)
+    : STG_LOGGER(),
+      pluginName(pn)
+{
+    SetLogFileName(logger.fileName);
+}
+//-----------------------------------------------------------------------------
+PLUGIN_LOGGER::PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs)
+    : STG_LOGGER(),
+      pluginName(rhs.pluginName)
+{
+    SetLogFileName(fileName);
+}
+//-----------------------------------------------------------------------------
+void PLUGIN_LOGGER::operator()(const char * fmt, ...)
+{
+char buff[2029];
+
+va_list vl;
+va_start(vl, fmt);
+vsnprintf(buff, sizeof(buff), fmt, vl);
+va_end(vl);
+
+STG_LOGGER::operator()("[%s] %s", pluginName.c_str(), buff);
+}
+//-----------------------------------------------------------------------------
+PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName)
+{
+return PLUGIN_LOGGER(logger, pluginName);
+}
+//-----------------------------------------------------------------------------

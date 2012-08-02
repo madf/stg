@@ -47,6 +47,7 @@
 #include "stg/users.h"
 #include "stg/blowfish.h"
 #include "stg/rs_packets.h"
+#include "stg/logger.h"
 #include "nrmap_parser.h"
 
 extern "C" PLUGIN * GetPlugin();
@@ -226,6 +227,8 @@ private:
 
     RS_ADD_USER_NONIFIER onAddUserNotifier;
     RS_DEL_USER_NONIFIER onDelUserNotifier;
+
+    PLUGIN_LOGGER       logger;
 
     friend class UpdateRouter;
     friend class DisconnectUser;

@@ -36,6 +36,7 @@
 #include <map>
 
 #include "stg/store.h"
+#include "stg/logger.h"
 
 // Minimal DB version is 5
 // Recommended DB version is 6 (support FreeMb logging on disconnects)
@@ -158,6 +159,8 @@ private:
     int retries;
 
     PGconn * connection;
+
+    PLUGIN_LOGGER logger;
 };
 
 extern const volatile time_t stgTime;

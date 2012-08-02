@@ -96,7 +96,8 @@ RPC_CONFIG::RPC_CONFIG()
       tid(),
       cookies(),
       dayFee(0),
-      dirNames()
+      dirNames(),
+      logger(GetPluginLogger(GetStgLogger(), "conf_rpc"))
 {
 }
 

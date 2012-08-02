@@ -70,7 +70,8 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       mutex(),
       version(0),
       retries(3),
-      connection(NULL)
+      connection(NULL),
+      logger(GetPluginLogger(GetStgLogger(), "store_postgresql"))
 {
 pthread_mutex_init(&mutex, NULL);
 }

@@ -17,7 +17,8 @@ SRCS =	./postgresql_store.cpp \
 
 STGLIBS = common \
 	  crypto \
-	  locker
+	  locker \
+	  logger
 
 PG_CFLAGS = $(shell pg_config --includedir)
 PG_LDFLAGS = $(shell pg_config --libdir)

@@ -86,7 +86,8 @@ DIVERT_CAP::DIVERT_CAP()
       thread(),
       nonstop(false),
       isRunning(false),
-      traffCnt(NULL)
+      traffCnt(NULL),
+      logger(GetPluginLogger(GetStgLogger(), "cap_divert"))
 {
 }
 //-----------------------------------------------------------------------------

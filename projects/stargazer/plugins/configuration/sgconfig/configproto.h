@@ -52,7 +52,7 @@
 //-----------------------------------------------------------------------------
 class CONFIGPROTO {
 public:
-    CONFIGPROTO();
+    CONFIGPROTO(PLUGIN_LOGGER & l);
     ~CONFIGPROTO();
 
     void            SetPort(uint16_t port);
@@ -93,7 +93,7 @@ private:
     bool                        nonstop;
     int                         state;
     ADMIN *                     currAdmin;
-    STG_LOGGER &                WriteServLog;
+    PLUGIN_LOGGER &             logger;
 
     int                         listenSocket;
 

@@ -35,6 +35,7 @@
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/logger.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -135,6 +136,8 @@ private:
     MODULE_SETTINGS       settings;
 
     TRAFFCOUNTER *        traffCnt;
+
+    PLUGIN_LOGGER         logger;
 };
 //-----------------------------------------------------------------------------
 

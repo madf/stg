@@ -47,6 +47,7 @@
 #include "stg/users.h"
 #include "stg/blowfish.h"
 #include "stg/rad_packets.h"
+#include "stg/logger.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -172,6 +173,7 @@ private:
 
     RAD_PACKET          packet;
 
+    PLUGIN_LOGGER       logger;
 };
 //-----------------------------------------------------------------------------
 
