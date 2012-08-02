@@ -205,6 +205,7 @@ if (!running)
     if (pthread_create(&thread, NULL, Runner, this))
         {
         errorStr = "Cannot create thread.";
+	logger("Cannot create thread.");
         printfd(__FILE__, "Cannot create thread\n");
         return -1;
         }
@@ -316,6 +317,7 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 if (sock < 0)
     {
     errorStr = "Cannot create socket.";
+    logger("Cannot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot create socket\n");
     return true;
     }
@@ -329,6 +331,7 @@ addr.sin_addr.s_addr = smuxSettings.GetIP();
 if (connect(sock, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)))
     {
     errorStr = "Cannot connect.";
+    logger("Cannot connect the socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot connect. Message: '%s'\n", strerror(errno));
     return true;
     }

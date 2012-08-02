@@ -30,6 +30,8 @@
 #include <csignal>
 #include <cassert>
 #include <cstdlib>
+#include <cerrno>
+#include <cstring>
 #include <algorithm>
 
 #include "stg/common.h"
@@ -253,6 +255,7 @@ if (!isRunning)
     if (pthread_create(&thread, NULL, Run, this))
         {
         errorStr = "Cannot create thread.";
+	logger("Cannot create thread.");
         printfd(__FILE__, "Cannot create thread\n");
         return -1;
         }
@@ -291,7 +294,10 @@ users->DelNotifierUserDel(&onDelUserNotifier);
 users->DelNotifierUserAdd(&onAddUserNotifier);
 
 if (isRunning)
+    {
+    logger("Cannot stop thread.");
     return -1;
+    }
 
 return 0;
 }
@@ -303,6 +309,7 @@ NRMapParser nrMapParser;
 if (nrMapParser.ReadFile(rsSettings.GetMapFileName()))
     {
     errorStr = nrMapParser.GetErrorStr();
+    logger("Map file reading error: %s", errorStr.c_str());
     return -1;
     }
 
@@ -328,6 +335,7 @@ sock = socket(AF_INET, SOCK_DGRAM, 0);
 if (sock < 0)
     {
     errorStr = "Cannot create socket.";
+    logger("Canot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot create socket\n");
     return true;
     }
@@ -465,6 +473,9 @@ sendAddr.sin_addr.s_addr = routerIP;
 
 int res = sendto(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&sendAddr, sizeof(sendAddr));
 
+if (res < 0)
+    logger("sendto error: %s", strerror(errno));
+
 return (res != sizeof(buffer));
 }
 //-----------------------------------------------------------------------------
@@ -473,12 +484,7 @@ bool REMOTE_SCRIPT::GetUsers()
 USER_PTR u;
 
 int h = users->OpenSearch();
-if (!h)
-    {
-    errorStr = "users->OpenSearch() error.";
-    printfd(__FILE__, "OpenSearch() error\n");
-    return true;
-    }
+assert(h && "USERS::OpenSearch is always correct");
 
 while (!users->SearchNext(h, &u))
     {

@@ -32,7 +32,7 @@ STG_LOGGER_LOCKER lock(&mutex);
 fileName = fn;
 }
 //-----------------------------------------------------------------------------
-void STG_LOGGER::operator()(const char * fmt, ...)
+void STG_LOGGER::operator()(const char * fmt, ...) const
 {
 STG_LOGGER_LOCKER lock(&mutex);
 
@@ -74,7 +74,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-const char * STG_LOGGER::LogDate(time_t t)
+const char * STG_LOGGER::LogDate(time_t t) const
 {
 static char s[32];
 if (t == 0)
@@ -107,7 +107,7 @@ PLUGIN_LOGGER::PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs)
     SetLogFileName(fileName);
 }
 //-----------------------------------------------------------------------------
-void PLUGIN_LOGGER::operator()(const char * fmt, ...)
+void PLUGIN_LOGGER::operator()(const char * fmt, ...) const
 {
 char buff[2029];
 

@@ -393,6 +393,7 @@ if (!isRunningRun)
         {
         errorStr = "Cannot create thread.";
         printfd(__FILE__, "Cannot create recv thread\n");
+        logger("Cannot create recv thread.");
         return -1;
         }
     }
@@ -403,6 +404,7 @@ if (!isRunningRunTimeouter)
         {
         errorStr = "Cannot create thread.";
         printfd(__FILE__, "Cannot create timeouter thread\n");
+        logger("Cannot create timeouter thread.");
         return -1;
         }
     }
@@ -528,6 +530,7 @@ listenSocket = socket(AF_INET, SOCK_DGRAM, 0);
 if (listenSocket < 0)
     {
     errorStr = "Cannot create socket.";
+    logger("Cannot create a socket: %s", strerror(errno));
     return -1;
     }
 
@@ -538,6 +541,7 @@ listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
 if (bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr)) < 0)
     {
     errorStr = "AUTH_IA: Bind failed.";
+    logger("Cannot bind the socket: %s", strerror(errno));
     return -1;
     }
 
@@ -571,6 +575,7 @@ if (dataLen <= 0) // Error
     if (errno != EINTR)
         {
         printfd(__FILE__, "recvfrom res=%d, error: '%s'\n", dataLen, strerror(errno));
+        logger("recvfrom error: %s", strerror(errno));
         return -1;
         }
     return 0;
@@ -606,12 +611,14 @@ printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
 
 if (user->GetProperty().disabled.Get())
     {
+    logger("Cannont authorize '%s', user is disabled.", login);
     SendError(sip, sport, protoVer, "Учетная запись заблокирована");
     return 0;
     }
 
 if (user->GetProperty().passive.Get())
     {
+    logger("Cannont authorize '%s', user is passive.", login);
     SendError(sip, sport, protoVer, "Учетная запись заморожена");
     return 0;
     }
@@ -758,7 +765,7 @@ if (it == ip2user.end())
                     userPtr->GetLogin().c_str(),
                     inet_ntostring(sip).c_str(),
                    login.c_str());
-            logger("IP address already in use by user '%s'. IP %s, login: '%s'",
+            logger("IP address is already in use by user '%s'. IP %s, login: '%s'",
                    userPtr->GetLogin().c_str(),
                    inet_ntostring(sip).c_str(),
                    login.c_str());
@@ -783,7 +790,7 @@ else if (user->GetID() != it->second.user->GetID())
             it->second.user->GetLogin().c_str(),
             inet_ntostring(sip).c_str(),
             user->GetLogin().c_str());
-    logger("IP address already in use by user '%s'. IP %s, login: '%s'",
+    logger("IP address is already in use by user '%s'. IP %s, login: '%s'",
            it->second.user->GetLogin().c_str(),
            inet_ntostring(sip).c_str(),
            user->GetLogin().c_str());
@@ -823,7 +830,7 @@ if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
     printfd(__FILE__, "Login %s already in use from ip %s. IP %s\n",
             login.c_str(), inet_ntostring(user->GetCurrIP()).c_str(),
             inet_ntostring(sip).c_str());
-    logger("Login %s already in use from ip %s. IP %s",
+    logger("Login '%s' is already in use from ip %s. IP %s",
            login.c_str(),
            inet_ntostring(user->GetCurrIP()).c_str(),
            inet_ntostring(sip).c_str());

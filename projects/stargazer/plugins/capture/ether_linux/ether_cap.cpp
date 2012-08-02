@@ -99,12 +99,13 @@ nonstop = true;
 
 if (pthread_create(&thread, NULL, Run, this) == 0)
     {
-    return 0;
+    errorStr = "Cannot create thread.";
+    logger("Cannot create thread.");
+    printfd(__FILE__, "Cannot create thread\n");
+    return -1;
     }
 
-errorStr = "Cannot create thread.";
-printfd(__FILE__, "Cannot create thread\n");
-return -1;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int ETHER_CAP::Stop()
@@ -126,6 +127,7 @@ if (isRunning)
     if (pthread_kill(thread, SIGUSR1))
         {
         errorStr = "Cannot kill thread.";
+	logger("Cannot send signal to thread.");
         return -1;
         }
     for (int i = 0; i < 25 && isRunning; ++i)
@@ -136,6 +138,7 @@ if (isRunning)
     if (isRunning)
         {
         errorStr = "ETHER_CAP not stopped.";
+	logger("Cannot stop thread.");
         printfd(__FILE__, "Cannot stop thread\n");
         return -1;
         }
@@ -197,6 +200,8 @@ return NULL;
 int ETHER_CAP::EthCapOpen()
 {
 capSock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+if (capSock < 0)
+    logger("Cannot create socket: %s", strerror(errno));
 return capSock;
 }
 //-----------------------------------------------------------------------------
@@ -220,12 +225,9 @@ addrLen = sizeof(addr);
 
 res = recvfrom(capSock, ((char*)buffer) + 2, blen, 0, (struct sockaddr *)&addr, (socklen_t*)&addrLen);
 
-if (-1 == res)
+if (res < 0)
     {
-    if (errno != EINTR)
-        {
-        printfd(__FILE__, "Error on recvfrom: '%s'\n", strerror(errno));
-        }
+    logger("recvfrom error: %s", strerror(errno));
     return ENODATA;
     }
 

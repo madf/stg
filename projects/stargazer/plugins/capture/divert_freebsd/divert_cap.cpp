@@ -105,14 +105,15 @@ if (DivertCapOpen() < 0)
 
 nonstop = true;
 
-if (pthread_create(&thread, NULL, Run, this) == 0)
+if (pthread_create(&thread, NULL, Run, this))
     {
-    return 0;
+    errorStr = "Cannot create thread.";
+    logger("Cannot create thread.");
+    printfd(__FILE__, "Cannot create thread\n");
+    return -1;
     }
 
-errorStr = "Cannot create thread.";
-printfd(__FILE__, "Cannot create thread\n");
-return -1;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int DIVERT_CAP::Stop()
@@ -141,6 +142,7 @@ if (isRunning)
     if (pthread_kill(thread, SIGINT))
         {
         errorStr = "Cannot kill thread.";
+	logger("Cannot send signal to thread.");
         printfd(__FILE__, "Cannot kill thread\n");
         return -1;
         }
@@ -198,6 +200,7 @@ cddiv.sock = socket(PF_INET, SOCK_RAW, IPPROTO_DIVERT);
 if (cddiv.sock < 0)
     {
     errorStr = "Create divert socket error.";
+    logger("Cannot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot create divert socket\n");
     return -1;
     }
@@ -215,6 +218,7 @@ ret = bind(cddiv.sock, (struct sockaddr *)&divAddr, sizeof(divAddr));
 if (ret < 0)
     {
     errorStr = "Bind divert socket error.";
+    logger("Cannot bind the scoket: %s", strerror(errno));
     printfd(__FILE__, "Cannot bind divert socket\n");
     return -1;
     }
@@ -253,7 +257,15 @@ if ((bytes = recvfrom (cddiv.sock, buf, BUFF_LEN,
         *iface = cddiv.iface;
 
     if (!disableForwarding)
-        sendto(cddiv.sock, buf, bytes, 0, (struct sockaddr*)&divertaddr, divertaddrSize);
+    	{
+        if (sendto(cddiv.sock, buf, bytes, 0, (struct sockaddr*)&divertaddr, divertaddrSize) < 0)
+	    logger("sendto error: %s", strerror(errno));
+	}
+    }
+else
+    {
+    if (bytes < 0)
+        logger("recvfrom error: %s", strerror(errno));
     }
 
 return 0;

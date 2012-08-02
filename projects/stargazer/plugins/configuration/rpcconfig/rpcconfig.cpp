@@ -135,6 +135,7 @@ fd = socket(AF_INET, SOCK_STREAM, 0);
 if (fd < 0)
     {
     errorStr = "Failed to create socket";
+    logger("Cannot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Failed to create listening socket: %s\n", strerror(errno));
     return -1;
     }
@@ -144,6 +145,7 @@ int flag = 1;
 if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)))
     {
     errorStr = "Setsockopt failed.";
+    logger("setsockopt error: %s", strerror(errno));
     printfd(__FILE__, "Setsockopt failed: %s\n", strerror(errno));
     return -1;
     }
@@ -155,6 +157,7 @@ addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
 if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
     {
+    logger("Cannot bind the socket: %s", strerror(errno));
     errorStr = "Failed to bind socket";
     printfd(__FILE__, "Failed to bind listening socket: %s\n", strerror(errno));
     return -1;
@@ -162,6 +165,7 @@ if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
 
 if (listen(fd, 10))
     {
+    logger("Cannot listen the socket: %s", strerror(errno));
     errorStr = "Failed to listen socket";
     printfd(__FILE__, "Failed to listen listening socket: %s\n", strerror(errno));
     return -1;
@@ -177,6 +181,7 @@ rpcServer = new xmlrpc_c::serverAbyss(
 if (pthread_create(&tid, NULL, Run, this))
     {
     errorStr = "Failed to create RPC thread";
+    logger("Cannot create RPC thread.");
     printfd(__FILE__, "Failed to crate RPC thread\n");
     return -1;
     }
@@ -196,6 +201,7 @@ for (int i = 0; i < 5 && !stopped; ++i)
 if (!stopped)
     {
     running = true;
+    logger("Cannot stop RPC thread.");
     printfd(__FILE__, "Failed to stop RPC thread\n");
     errorStr = "Failed to stop RPC thread";
     return -1;
@@ -263,6 +269,7 @@ ADMIN * admin = NULL;
 
 if (!admins->Correct(login, password, &admin))
     {
+    logger("Attempt to connect with invalid credentials. Login: %s", login.c_str());
     return true;
     }
 

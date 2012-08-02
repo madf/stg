@@ -31,17 +31,17 @@ friend class PLUGIN_LOGGER;
 public:
     ~STG_LOGGER();
     void SetLogFileName(const std::string & fn);
-    void operator()(const char * fmt, ...);
+    void operator()(const char * fmt, ...) const;
 
 private:
     STG_LOGGER();
     STG_LOGGER(const STG_LOGGER & rvalue);
     STG_LOGGER & operator=(const STG_LOGGER & rvalue);
 
-    const char * LogDate(time_t t);
+    const char * LogDate(time_t t) const;
 
     std::string fileName;
-    pthread_mutex_t mutex;
+    mutable pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
 class PLUGIN_LOGGER : private STG_LOGGER
@@ -50,7 +50,7 @@ friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::strin
 
 public:
     PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs);
-    void operator()(const char * fmt, ...);
+    void operator()(const char * fmt, ...) const;
 
 private:
     PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn);

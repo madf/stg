@@ -160,6 +160,7 @@ ipq_h = ipq_create_handle(0, PF_INET);
 if (ipq_h == NULL)
     {
     ipq_destroy_handle(ipq_h);
+    logger("Cannot create IPQ handle.");
     errorStr = "Cannot create ipq handle!";
     return -1;
     }
@@ -167,6 +168,7 @@ int status = ipq_set_mode(ipq_h, IPQ_COPY_PACKET, PAYLOAD_LEN);
 if (status < 0)
     {
     ipq_destroy_handle(ipq_h);
+    logger("Cannot set IPQ_COPY_PACKET mode.");
     errorStr = "Cannot set IPQ_COPY_PACKET mode!";
     return -1;
     }

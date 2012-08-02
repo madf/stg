@@ -108,6 +108,7 @@ pinger.Start();
 if (pthread_create(&thread, NULL, Run, this))
     {
     errorStr = "Cannot start thread.";
+    logger("Cannot create thread.");
     printfd(__FILE__, "Cannot start thread\n");
     return -1;
     }

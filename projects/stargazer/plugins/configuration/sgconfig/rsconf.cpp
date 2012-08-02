@@ -74,6 +74,7 @@ listenSocket = socket(PF_INET, SOCK_STREAM, 0);
 if (listenSocket < 0)
     {
     errorStr = "Create NET_CONFIGURATOR socket failed.";
+    logger("Cannot create a socket: %s", strerror(errno));
     return -1;
     }
 
@@ -86,6 +87,7 @@ int lng = 1;
 if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
     {
     errorStr = "Setsockopt failed. " + string(strerror(errno));
+    logger("setsockopt error: %s", strerror(errno));
     return -1;
     }
 
@@ -94,6 +96,7 @@ res = bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr));
 if (res == -1)
     {
     errorStr = "Bind admin socket failed";
+    logger("Cannot bind the socket: %s", strerror(errno));
     return -1;
     }
 
@@ -101,6 +104,7 @@ res = listen(listenSocket, 0);
 if (res == -1)
     {
     errorStr = "Listen admin socket failed";
+    logger("Cannot listen the socket: %s", strerror(errno));
     return -1;
     }
 
@@ -147,15 +151,14 @@ while (nonstop)
         break;
         }
 
-    if (outerSocket == -1)
+    if (outerSocket < 0)
         {
+	logger("accept error: %s", strerror(errno));
         printfd(__FILE__, "accept failed\n");
         continue;
         }
 
     adminIP = *(unsigned int*)&(outerAddr.sin_addr);
-
-    printfd(__FILE__, "Connection accepted from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
 
     if (state == confHdr)
         {
@@ -231,6 +234,7 @@ while (nonstop)
         {
         WriteLogAccessFailed(adminIP);
         }
+    printfd(__FILE__, "Successfull connection from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
     close(outerSocket);
     }
 }
@@ -252,6 +256,8 @@ while (pos < stgHdrLen)
     int ret = recv(sock, &buf[pos], stgHdrLen - pos, 0);
     if (ret <= 0)
         {
+	if (ret < 0)
+	    logger("recv error: %s", strerror(errno));
         state = confHdr;
         return -1;
         }
@@ -278,7 +284,7 @@ if (err)
     {
     if (send(sock, ERR_HEADER, sizeof(ERR_HEADER) - 1, 0) < 0)
         {
-        logger("send ERR_HEADER error in SendHdrAnswer.");
+        logger("send error: %s", strerror(errno));
         return -1;
         }
     }
@@ -286,7 +292,7 @@ else
     {
     if (send(sock, OK_HEADER, sizeof(OK_HEADER) - 1, 0) < 0)
         {
-        logger("send OK_HEADER error in SendHdrAnswer.");
+        logger("send error: %s", strerror(errno));
         return -1;
         }
     }
@@ -313,6 +319,7 @@ while (pos < ADM_LOGIN_LEN) {
     if (ret <= 0)
         {
         // Error in network
+	logger("recv error: %s", strerror(errno));
         state = confHdr;
         return ENODATA;
         }
@@ -363,6 +370,7 @@ while (pos < ADM_LOGIN_LEN)
         {
         // Network error
         printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
+	logger("recv error: %s", strerror(errno));
         state = confHdr;
         return ENODATA;
         }
@@ -408,7 +416,7 @@ if (err)
     {
     if (send(sock, ERR_LOGINS, sizeof(ERR_LOGINS) - 1, 0) < 0)
         {
-        logger("send ERR_LOGIN error in SendLoginAnswer.");
+        logger("send error: %s", strerror(errno));
         return -1;
         }
     }
@@ -416,7 +424,7 @@ else
     {
     if (send(sock, OK_LOGINS, sizeof(OK_LOGINS) - 1, 0) < 0)
         {
-        logger("send OK_LOGINS error in SendLoginSAnswer.");
+        logger("send error: %s", strerror(errno));
         return -1;
         }
     }
@@ -447,6 +455,7 @@ while (1)
         if (ret < 0)
             {
             // Network error
+	    logger("recv error: %s", strerror(errno));
             printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
             return -1;
             }
@@ -537,6 +546,6 @@ answerList.push_back(s);
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
 {
-logger("Admin's connect failed. IP %s", inet_ntostring(ip).c_str());
+logger("Admin's connection failed. IP %s", inet_ntostring(ip).c_str());
 }
 //-----------------------------------------------------------------------------
