@@ -8,7 +8,8 @@ LIB_NAME = rlm_stg
 
 PROG = $(LIB_NAME).so
 
-SRCS = ./rlm_stg.cpp \
+SRCS = ./rlm_stg.c \
+       ./iface.cpp \
        ./stg_client.cpp
 
 STGLIBS = crypto \

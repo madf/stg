@@ -32,26 +32,22 @@
 
 #include <cerrno>
 #include <cstring>
+#include <vector>
+#include <utility>
 
 #include <stdexcept>
 
 #include "stg_client.h"
 
-using namespace std;
-
-void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+typedef std::vector<std::pair<std::string, std::string> > PAIRS;
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 STG_CLIENT::STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass)
-    : localPort(lp),
-      password(pass),
+    : password(pass),
       framedIP(0)
 {
-sock = socket(AF_INET, SOCK_DGRAM, 0);
+/*sock = socket(AF_INET, SOCK_DGRAM, 0);
 if (sock == -1)
     {
     std::string message = strerror(errno);
@@ -72,45 +68,22 @@ outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
 
 InitEncrypt(&ctx, password);
 
-PrepareNet();
+PrepareNet();*/
 }
-//-----------------------------------------------------------------------------
+
 STG_CLIENT::~STG_CLIENT()
 {
-close(sock);
+/*close(sock);*/
 }
-//-----------------------------------------------------------------------------
-uint32_t STG_CLIENT::GetFramedIP() const
-{
-return framedIP;
-}
-//-----------------------------------------------------------------------------
+
 int STG_CLIENT::PrepareNet()
 {
-if (localPort != 0)
-    {
-    struct sockaddr_in localAddr;
-    localAddr.sin_family = AF_INET;
-    localAddr.sin_port = htons(localPort);
-    localAddr.sin_addr.s_addr = inet_addr("0.0.0.0");;
-
-    if (bind(sock, (struct sockaddr *)&localAddr, sizeof(localAddr)))
-        {
-        errorStr = "Bind failed";
-        return -1;
-        }
-    }
 return 0;
 }
-//-----------------------------------------------------------------------------
-string STG_CLIENT::GetUserPassword() const
-{
-return userPassword;
-}
-//-----------------------------------------------------------------------------
+
 int STG_CLIENT::Send(const RAD_PACKET & packet)
 {
-char buf[RAD_MAX_PACKET_LEN];
+/*char buf[RAD_MAX_PACKET_LEN];
     
 Encrypt(&ctx, buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
 
@@ -119,12 +92,12 @@ int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr
 if (res == -1)
     errorStr = "Error sending data";
 
-return res;
+return res;*/
 }
-//-----------------------------------------------------------------------------
+
 int STG_CLIENT::RecvData(RAD_PACKET * packet)
 {
-char buf[RAD_MAX_PACKET_LEN];
+/*char buf[RAD_MAX_PACKET_LEN];
 int res;
 
 struct sockaddr_in addr;
@@ -139,12 +112,12 @@ if (res == -1)
 
 Decrypt(&ctx, (char *)packet, buf, res / 8);
 
-return 0;
+return 0;*/
 }
-//-----------------------------------------------------------------------------
+
 int STG_CLIENT::Request(RAD_PACKET * packet, const std::string & login, const std::string & svc, uint8_t packetType)
 {
-int res;
+/*int res;
 
 memcpy((void *)&packet->magic, (void *)RAD_ID, RAD_MAGIC_LEN);
 packet->protoVer[0] = '0';
@@ -172,12 +145,14 @@ if (strncmp((char *)packet->magic, RAD_ID, RAD_MAGIC_LEN))
     return -1;
     }
 
-return 0;
+return 0;*/
 }
+
 //-----------------------------------------------------------------------------
-int STG_CLIENT::Authorize(const string & login, const string & svc)
+
+const STG_PAIRS * STG_CLIENT::Authorize(const std::string & login, const std::string & svc)
 {
-RAD_PACKET packet;
+/*RAD_PACKET packet;
 
 userPassword = "";
 
@@ -187,14 +162,17 @@ if (Request(&packet, login, svc, RAD_AUTZ_PACKET))
 if (packet.packetType != RAD_ACCEPT_PACKET)
     return -1;
 
-userPassword = (char *)packet.password;
+userPassword = (char *)packet.password;*/
 
-return 0;
+PAIRS pairs;
+pairs.push_back(std::make_pair("Cleartext-Password", userPassword));
+
+return ToSTGPairs(pairs);
 }
-//-----------------------------------------------------------------------------
-int STG_CLIENT::Authenticate(const string & login, const string & svc)
+
+const STG_PAIRS * STG_CLIENT::Authenticate(const std::string & login, const std::string & svc)
 {
-RAD_PACKET packet;
+/*RAD_PACKET packet;
 
 userPassword = "";
 
@@ -202,14 +180,16 @@ if (Request(&packet, login, svc, RAD_AUTH_PACKET))
     return -1;
 
 if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
+    return -1;*/
 
-return 0;
+PAIRS pairs;
+
+return ToSTGPairs(pairs);
 }
-//-----------------------------------------------------------------------------
-int STG_CLIENT::PostAuthenticate(const string & login, const string & svc)
+
+const STG_PAIRS * STG_CLIENT::PostAuth(const std::string & login, const std::string & svc)
 {
-RAD_PACKET packet;
+/*RAD_PACKET packet;
 
 userPassword = "";
 
@@ -222,14 +202,24 @@ if (packet.packetType != RAD_ACCEPT_PACKET)
 if (svc == "Framed-User")
     framedIP = packet.ip;
 else
-    framedIP = 0;
+    framedIP = 0;*/
 
-return 0;
+PAIRS pairs;
+pairs.push_back(std::make_pair("Framed-IP-Address", inet_ntostring(framedIP)));
+
+return ToSTGPairs(pairs);
 }
-//-----------------------------------------------------------------------------
-int STG_CLIENT::Account(const std::string & type, const string & login, const string & svc, const string & sessid)
+
+const STG_PAIRS * STG_CLIENT::PreAcct(const std::string & login, const std::String & service)
 {
-RAD_PACKET packet;
+PAIRS pairs;
+
+return ToSTGPairs(pairs);
+}
+
+const STG_PAIRS * STG_CLIENT::Account(const std::string & type, const std::string & login, const std::string & svc, const std::string & sessid)
+{
+/*RAD_PACKET packet;
 
 userPassword = "";
 strncpy((char *)packet.sessid, sessid.c_str(), RAD_SESSID_LEN);
@@ -256,39 +246,50 @@ else
     }
 
 if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
+    return -1;*/
 
-return 0;
-}
-//-----------------------------------------------------------------------------
-inline
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)         
-{
-// len8 - длина в 8-ми байтовых блоках                                                   
-if (dst != src) 
-    memcpy(dst, src, len8 * 8);                                                          
-    
-for (int i = 0; i < len8; i++)
-    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
-}
-//-----------------------------------------------------------------------------
-inline
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
-{
-// len8 - длина в 8-ми байтовых блоках
-if (dst != src)
-    memcpy(dst, src, len8 * 8);
+PAIRS pairs;
 
-for (int i = 0; i < len8; i++)
-    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+return ToSTGPairs(pairs);
 }
+
 //-----------------------------------------------------------------------------
-inline
-void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
+
+std::string STG_CLIENT_ST::m_host;
+uint16_t STG_CLIENT_ST::m_port(6666);
+std::string STG_CLIENT_ST::m_password;
+
+//-----------------------------------------------------------------------------
+
+STG_CLIENT * STG_CLIENT_ST::Get()
 {
-unsigned char keyL[RAD_PASSWORD_LEN];
-memset(keyL, 0, RAD_PASSWORD_LEN);
-strncpy((char *)keyL, password.c_str(), RAD_PASSWORD_LEN);
-Blowfish_Init(ctx, keyL, RAD_PASSWORD_LEN);
+    static STG_CLIENT * stgClient = NULL;
+    if ( stgClient == NULL )
+        stgClient = new STG_CLIENT(m_host, m_port, m_password);
+    return stgClient;
 }
+
+void STG_CLIENT_ST::Configure(const std::string & host, uint16_t port, const std::string & password)
+{
+    m_host = host;
+    m_port = port;
+    m_password = password;
+}
+
 //-----------------------------------------------------------------------------
+
+const STG_PAIR * ToSTGPairs(const PAIRS & source)
+{
+    STG_PAIR * pairs = new STG_PAIR[source.size() + 1];
+    for (size_t pos = 0; pos < source.size(); ++pos) {
+        bzero(pairs[pos].key, sizeof(STG_PAIR::key));
+        bzero(pairs[pos].value, sizeof(STG_PAIR::value));
+        strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(STG_PAIR::key));
+        strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(STG_PAIR::value));
+        ++pos;
+    }
+    bzero(pairs[sources.size()].key, sizeof(STG_PAIR::key));
+    bzero(pairs[sources.size()].value, sizeof(STG_PAIR::value));
+
+    return pairs;
+}
