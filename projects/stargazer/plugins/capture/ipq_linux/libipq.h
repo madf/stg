@@ -35,10 +35,7 @@
 #include "ip_queue_64.h"
 typedef u_int64_t ipq_id_t;
 #else
-#ifdef HAS_IP_QUEUE_H
 #include <linux/netfilter_ipv4/ip_queue.h>
-#else
-#include "ip_queue.h"
 #endif
 typedef unsigned long ipq_id_t;
 #endif
@@ -86,8 +83,8 @@ int ipq_set_verdict(const struct ipq_handle *h,
 
 int ipq_ctl(const struct ipq_handle *h, int request, ...);
 
-/*char *ipq_errstr(void);
-void ipq_perror(const char *s);*/
+char *ipq_errstr(void);
+//void ipq_perror(const char *s);
 
 #endif	/* _LIBIPQ_H */
 

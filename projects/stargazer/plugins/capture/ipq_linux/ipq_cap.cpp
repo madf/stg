@@ -23,6 +23,7 @@
 
 #include <csignal>
 #include <cerrno>
+#include <cstring>
 
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
@@ -160,7 +161,7 @@ ipq_h = ipq_create_handle(0, PF_INET);
 if (ipq_h == NULL)
     {
     ipq_destroy_handle(ipq_h);
-    logger("Cannot create IPQ handle.");
+    logger("Cannot create IPQ handle. Error: '%s', '%s'", ipq_errstr(), strerror(errno));
     errorStr = "Cannot create ipq handle!";
     return -1;
     }
