@@ -336,7 +336,9 @@ else
 fi
 
 echo -n "Checking for linux/netfilter_ipv4/ip_queue.h... "
-echo "#include <linux/netfilter_ipv4/ip_queue.h> int main() { return 0; }" > build_check.c
+echo "#include <linux/types.h>" > build_check.c
+echo "#include <linux/netfilter_ipv4/ip_queue.h>" >> build_check.c
+echo "int main() { return 0; }" >> build_check.c
 $CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
