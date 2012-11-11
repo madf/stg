@@ -97,7 +97,7 @@ if (EthCapOpen() < 0)
 
 nonstop = true;
 
-if (pthread_create(&thread, NULL, Run, this) == 0)
+if (pthread_create(&thread, NULL, Run, this))
     {
     errorStr = "Cannot create thread.";
     logger("Cannot create thread.");
