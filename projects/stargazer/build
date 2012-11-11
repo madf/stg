@@ -335,6 +335,20 @@ else
     fi
 fi
 
+echo -n "Checking for linux/netfilter_ipv4/ip_queue.h... "
+echo "#include <linux/netfilter_ipv4/ip_queue.h> int main() { return 0; }" > build_check.c
+$CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_IP_QUEUE_H=no
+    echo "no"
+else
+    CHECK_IP_QUEUE_H=yes
+    DEFS="$DEFS HAS_IP_QUEUE_H"
+    echo "yes"
+fi
+rm -f fake
+
 rm -f build_check.c
 
 if [ "$CHECK_EXPAT" != "yes" ]
