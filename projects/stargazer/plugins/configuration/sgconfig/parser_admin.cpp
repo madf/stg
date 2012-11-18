@@ -212,49 +212,44 @@ void PARSER_CHG_ADMIN::CreateAnswer()
 {
 answerList->erase(answerList->begin(), answerList->end());
 
-ADMIN_CONF conf;
-conf.login = login;
+
 if (!login.res_empty())
     {
-    string s;
-    //if (admins->FindAdmin(login.data()) != NULL)
-    //    {
-        if (!password.res_empty())
-            conf.password = password.data();
+    ADMIN * origAdmin = NULL;
 
-        if (!privAsString.res_empty())
-            {
-            int p = 0;
-            if (str2x(privAsString.data().c_str(), p) < 0)
-                {
-                strprintf(&s, "<ChgAdmin Result = \"Incorrect parameter Priv.\"/>" );
-                answerList->push_back(s);
-                return;
-                }
-            //memcpy(&conf.priv, &p, sizeof(conf.priv));
-            conf.priv.userStat      = (p & 0x0003) >> 0x00; // 1+2
-            conf.priv.userConf      = (p & 0x000C) >> 0x02; // 4+8
-            conf.priv.userCash      = (p & 0x0030) >> 0x04; // 10+20
-            conf.priv.userPasswd    = (p & 0x00C0) >> 0x06; // 40+80
-            conf.priv.userAddDel    = (p & 0x0300) >> 0x08; // 100+200
-            conf.priv.adminChg      = (p & 0x0C00) >> 0x0A; // 400+800
-            conf.priv.tariffChg     = (p & 0x3000) >> 0x0C; // 1000+2000
-            }
-
-        if (admins->Change(conf, currAdmin) != 0)
-            {
-            strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
-            answerList->push_back(s);
-            }
-        else
-            {
-            answerList->push_back("<ChgAdmin Result = \"Ok\"/>");
-            }
+    if (admins->Find(login, &origAdmin))
+        {
+        answerList->push_back(std::string("<ChgAdmin Result = \"Admin '") + login.data() + "' is not found.\"/>");
         return;
-    //    }
-    //strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
-    //answerList->push_back(s);
-    //return;
+        }
+
+    ADMIN_CONF conf(origAdmin->GetConf());
+
+    if (!password.res_empty())
+        conf.password = password.data();
+
+    if (!privAsString.res_empty())
+        {
+        int p = 0;
+        if (str2x(privAsString.data().c_str(), p) < 0)
+            {
+            answerList->push_back("<ChgAdmin Result = \"Incorrect parameter Priv.\"/>");
+            return;
+            }
+
+        conf.priv.FromInt(p);
+        }
+
+    if (admins->Change(conf, currAdmin) != 0)
+        {
+        string s;
+        strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
+        answerList->push_back(s);
+        }
+    else
+        {
+        answerList->push_back("<ChgAdmin Result = \"Ok\"/>");
+        }
     }
 else
     {
