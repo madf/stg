@@ -407,6 +407,7 @@ if (strncmp(currAdmin->GetLogin().c_str(), login, ADM_LOGIN_LEN) != 0)
     }
 
 state = confData;
+adminPassword = currAdmin->GetPassword();
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -500,7 +501,7 @@ char buffS[8];
 int n = 0;
 int k = 0;
 
-EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+EnDecodeInit(adminPassword.c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (li != answerList.end())
     {

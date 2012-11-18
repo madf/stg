@@ -91,6 +91,7 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       requestList(),
       adminIP(0),
       adminLogin(),
+      adminPassword(),
       port(0),
       thrReciveSendConf(),
       nonstop(true),

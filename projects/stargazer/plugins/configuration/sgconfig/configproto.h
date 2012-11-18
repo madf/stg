@@ -88,6 +88,7 @@ private:
     std::list<std::string>      requestList;
     uint32_t                    adminIP;
     std::string                 adminLogin;
+    std::string                 adminPassword;
     uint16_t                    port;
     pthread_t                   thrReciveSendConf;
     bool                        nonstop;
