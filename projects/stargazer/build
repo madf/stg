@@ -347,7 +347,7 @@ then
         echo "no"
     else
         CHECK_IP_QUEUE_H=yes
-        DEFS="$DEFS HAS_IP_QUEUE_H"
+        DEFS="$DEFS -DHAS_IP_QUEUE_H"
         PLUGINS="$PLUGINS
                  capture/ipq_linux"
         echo "yes"
