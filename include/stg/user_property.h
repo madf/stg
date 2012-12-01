@@ -43,10 +43,10 @@ public:
     operator const varT&() const throw() { return value; }
 
     void    AddBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
-    void    DelBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
+    void    DelBeforeNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n);
 
     void    AddAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
-    void    DelAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n);
+    void    DelAfterNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n);
 
     time_t  ModificationTime() const throw() { return modificationTime; }
     void    ModifyTime() throw();
@@ -236,10 +236,10 @@ beforeNotifiers.insert(n);
 //-----------------------------------------------------------------------------
 template <typename varT>
 inline
-void USER_PROPERTY<varT>::DelBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
+void USER_PROPERTY<varT>::DelBeforeNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
-beforeNotifiers.erase(n);
+beforeNotifiers.erase(const_cast<PROPERTY_NOTIFIER_BASE<varT> *>(n));
 }
 //-----------------------------------------------------------------------------
 template <typename varT>
@@ -252,10 +252,10 @@ afterNotifiers.insert(n);
 //-----------------------------------------------------------------------------
 template <typename varT>
 inline
-void USER_PROPERTY<varT>::DelAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
+void USER_PROPERTY<varT>::DelAfterNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n)
 {
 STG_LOCKER locker(&mutex, __FILE__, __LINE__);
-afterNotifiers.erase(n);
+afterNotifiers.erase(const_cast<PROPERTY_NOTIFIER_BASE<varT> *>(n));
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

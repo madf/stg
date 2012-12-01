@@ -146,17 +146,17 @@ public:
     uint32_t        GetCurrIP() const { return currIP; }
     time_t          GetCurrIPModificationTime() const { return currIP.ModificationTime(); }
 
-    void            AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
-    void            DelCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
+    void            AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier);
+    void            DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier);
 
-    void            AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
-    void            DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> *);
+    void            AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier);
+    void            DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier);
 
-    void            AddConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
-    void            DelConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+    void            AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier);
+    void            DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier);
 
-    void            AddConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
-    void            DelConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> *);
+    void            AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier);
+    void            DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier);
 
     int             GetID() const { return id; }
 

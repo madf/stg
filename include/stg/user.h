@@ -33,6 +33,9 @@
 class USER_PROPERTIES;
 class AUTH;
 
+typedef PROPERTY_NOTIFIER_BASE<uint32_t> CURR_IP_NOTIFIER;
+typedef PROPERTY_NOTIFIER_BASE<bool> CONNECTED_NOTIFIER;
+
 class USER {
 public:
     virtual ~USER() {}
@@ -44,17 +47,17 @@ public:
     virtual uint32_t            GetCurrIP() const = 0;
     virtual time_t              GetCurrIPModificationTime() const = 0;
 
-    virtual void                AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * notifier) = 0;
-    virtual void                DelCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * notifier) = 0;
+    virtual void                AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier) = 0;
+    virtual void                DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier) = 0;
 
-    virtual void                AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * notifier) = 0;
-    virtual void                DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * notifier) = 0;
+    virtual void                AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier) = 0;
+    virtual void                DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier) = 0;
 
-    virtual void                AddConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * notifier) = 0;
-    virtual void                DelConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * notifier) = 0;
+    virtual void                AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier) = 0;
+    virtual void                DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier) = 0;
 
-    virtual void                AddConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * notifier) = 0;
-    virtual void                DelConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * notifier) = 0;
+    virtual void                AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier) = 0;
+    virtual void                DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier) = 0;
 
     virtual int                 GetID() const = 0;
 
