@@ -19,12 +19,6 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.33 $
- $Date: 2010/04/16 12:30:37 $
- $Author: faust $
-*/
-
 #include <sys/time.h>
 
 #include <csignal>
@@ -36,6 +30,7 @@
 
 #include "stg/common.h"
 #include "stg/locker.h"
+#include "stg/users.h"
 #include "stg/user_property.h"
 #include "stg/plugin_creator.h"
 #include "stg/logger.h"
@@ -46,6 +41,8 @@
 extern volatile const time_t stgTime;
 
 #define RS_MAX_ROUTERS  (100)
+
+using RS::REMOTE_SCRIPT;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -61,16 +58,35 @@ return rsc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-RS_USER & RS_USER::operator=(const RS_USER & rvalue)
+RS::USER::USER(const std::vector<uint32_t> & r, USER_PTR it, REMOTE_SCRIPT & rs)
+    : lastSentTime(0),
+      user(it),
+      routers(r),
+      shortPacketsCount(0),
+      ip(user->GetCurrIP()),
+      notifier(rs, *this)
 {
-lastSentTime = rvalue.lastSentTime;
-user = rvalue.user;
-routers = rvalue.routers;
-shortPacketsCount = rvalue.shortPacketsCount;
-return *this;
+    user->AddConnectedAfterNotifier(&notifier);
 }
 //-----------------------------------------------------------------------------
-RS_SETTINGS::RS_SETTINGS()
+RS::USER::USER(const RS::USER & rhs)
+    : lastSentTime(rhs.lastSentTime),
+      user(rhs.user),
+      routers(rhs.routers),
+      shortPacketsCount(rhs.shortPacketsCount),
+      ip(rhs.ip),
+      notifier(rhs.notifier)
+{
+    user->DelConnectedAfterNotifier(&rhs.notifier);
+    user->AddConnectedAfterNotifier(&notifier);
+}
+//-----------------------------------------------------------------------------
+RS::USER::~USER()
+{
+    user->DelConnectedAfterNotifier(&notifier);
+}
+//-----------------------------------------------------------------------------
+RS::SETTINGS::SETTINGS()
     : sendPeriod(0),
       port(0),
       errorStr(),
@@ -81,7 +97,7 @@ RS_SETTINGS::RS_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int RS_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int RS::SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
@@ -168,7 +184,7 @@ return 0;
 //-----------------------------------------------------------------------------
 REMOTE_SCRIPT::REMOTE_SCRIPT()
     : ctx(),
-      afterChgIPNotifierList(),
+      ipNotifierList(),
       authorizedUsers(),
       errorStr(),
       rsSettings(),
@@ -231,9 +247,6 @@ int REMOTE_SCRIPT::Start()
 netRouters = rsSettings.GetSubnetsMap();
 
 InitEncrypt(&ctx, rsSettings.GetPassword());
-
-//onAddUserNotifier.SetRemoteScript(this);
-//onDelUserNotifier.SetRemoteScript(this);
 
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
@@ -353,11 +366,10 @@ void REMOTE_SCRIPT::PeriodicSend()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, RS_USER>::iterator it(authorizedUsers.begin());
+map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
     {
     if (difftime(stgTime, it->second.lastSentTime) - (rand() % halfPeriod) > sendPeriod)
-    //if (stgTime - it->second.lastSentTime > sendPeriod)
         {
         Send(it->first, it->second);
         }
@@ -366,12 +378,12 @@ while (it != authorizedUsers.end())
 }
 //-----------------------------------------------------------------------------
 #ifdef NDEBUG
-bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
 #else
-bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
 #endif
 {
-RS_PACKET_HEADER packetHead;
+RS::PACKET_HEADER packetHead;
 
 memset(packetHead.padding, 0, sizeof(packetHead.padding));
 strcpy((char*)packetHead.magic, RS_ID);
@@ -409,7 +421,7 @@ if (packetHead.packetType == RS_ALIVE_PACKET)
     return false;
     }
 
-RS_PACKET_TAIL packetTail;
+RS::PACKET_TAIL packetTail;
 
 memset(packetTail.padding, 0, sizeof(packetTail.padding));
 strcpy((char*)packetTail.magic, RS_ID);
@@ -434,7 +446,7 @@ Encrypt(&ctx, buf + sizeof(packetHead), (char *)&packetTail, sizeof(packetTail) 
 return false;
 }
 //-----------------------------------------------------------------------------
-bool REMOTE_SCRIPT::Send(uint32_t ip, RS_USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::Send(uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
 {
 char buffer[RS_MAX_PACKET_LEN];
 
@@ -455,7 +467,7 @@ std::for_each(
 return false;
 }
 //-----------------------------------------------------------------------------
-bool REMOTE_SCRIPT::SendDirect(uint32_t ip, RS_USER & rsu, uint32_t routerIP, bool forceDisconnect) const
+bool REMOTE_SCRIPT::SendDirect(uint32_t ip, RS::USER & rsu, uint32_t routerIP, bool forceDisconnect) const
 {
 char buffer[RS_MAX_PACKET_LEN];
 
@@ -504,16 +516,16 @@ void REMOTE_SCRIPT::ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP)
  */
 if (newIP)
     {
-    RS_USER rsu(IP2Routers(newIP), u);
+    RS::USER rsu(IP2Routers(newIP), u, *this);
     Send(newIP, rsu);
 
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    authorizedUsers[newIP] = rsu;
+    authorizedUsers.insert(std::make_pair(newIP, rsu));
     }
 else
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    const map<uint32_t, RS_USER>::iterator it(
+    const map<uint32_t, RS::USER>::iterator it(
             authorizedUsers.find(oldIP)
             );
     if (it != authorizedUsers.end())
@@ -619,19 +631,17 @@ return value;
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::SetUserNotifier(USER_PTR u)
 {
-RS_CHG_AFTER_NOTIFIER<uint32_t> afterChgIPNotifier(*this, u);
+ipNotifierList.push_front(RS::IP_NOTIFIER(*this, u));
 
-afterChgIPNotifierList.push_front(afterChgIPNotifier);
-
-u->AddCurrIPAfterNotifier(&(*afterChgIPNotifierList.begin()));
+u->AddCurrIPAfterNotifier(&(*ipNotifierList.begin()));
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::UnSetUserNotifier(USER_PTR u)
 {
-list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator  ipAIter;
-std::list<list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator> toErase;
+list<RS::IP_NOTIFIER>::iterator  ipAIter;
+std::list<list<RS::IP_NOTIFIER>::iterator> toErase;
 
-for (ipAIter = afterChgIPNotifierList.begin(); ipAIter != afterChgIPNotifierList.end(); ++ipAIter)
+for (ipAIter = ipNotifierList.begin(); ipAIter != ipNotifierList.end(); ++ipAIter)
     {
     if (ipAIter->GetUser() == u)
         {
@@ -640,18 +650,23 @@ for (ipAIter = afterChgIPNotifierList.begin(); ipAIter != afterChgIPNotifierList
         }
     }
 
-std::list<list<RS_CHG_AFTER_NOTIFIER<uint32_t> >::iterator>::iterator eIter;
+std::list<list<RS::IP_NOTIFIER>::iterator>::iterator eIter;
 
 for (eIter = toErase.begin(); eIter != toErase.end(); ++eIter)
     {
-    afterChgIPNotifierList.erase(*eIter);
+    ipNotifierList.erase(*eIter);
     }
 }
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-void RS_CHG_AFTER_NOTIFIER<varParamType>::Notify(const varParamType & oldValue, const varParamType & newValue)
+void RS::IP_NOTIFIER::Notify(const uint32_t & oldValue, const uint32_t & newValue)
 {
 rs.ChangedIP(user, oldValue, newValue);
+}
+//-----------------------------------------------------------------------------
+void RS::CONNECTED_NOTIFIER::Notify(const bool & /*oldValue*/, const bool & newValue)
+{
+if (!newValue)
+    rs.Send(user.ip, user, true);
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const
