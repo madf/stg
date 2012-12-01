@@ -255,7 +255,7 @@ bool LISTENER::RecvPacket()
 struct iovec iov[2];
 
 char buffer[RS_MAX_PACKET_LEN];
-RS_PACKET_HEADER packetHead;
+RS::PACKET_HEADER packetHead;
 
 iov[0].iov_base = reinterpret_cast<char *>(&packetHead);
 iov[0].iov_len = sizeof(packetHead);
@@ -320,7 +320,7 @@ return false;
 //-----------------------------------------------------------------------------
 bool LISTENER::GetParams(char * buffer, UserData & data)
 {
-RS_PACKET_TAIL packetTail;
+RS::PACKET_TAIL packetTail;
 
 Decrypt(&ctxS, (char *)&packetTail, buffer, sizeof(packetTail) / 8);
 
@@ -330,7 +330,7 @@ if (strncmp((char *)packetTail.magic, RS_ID, RS_MAGIC_LEN))
     return true;
     }
 
-std::stringstream params;
+std::ostringstream params;
 params << "\"" << data.login << "\" "
        << inet_ntostring(data.ip) << " "
        << data.id << " "
@@ -455,7 +455,7 @@ else
 return false;
 }
 //-----------------------------------------------------------------------------
-bool LISTENER::CheckHeader(const RS_PACKET_HEADER & header) const
+bool LISTENER::CheckHeader(const RS::PACKET_HEADER & header) const
 {
 if (strncmp((char *)header.magic, RS_ID, RS_MAGIC_LEN))
     {

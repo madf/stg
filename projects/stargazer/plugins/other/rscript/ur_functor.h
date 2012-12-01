@@ -18,12 +18,6 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.3 $
- $Date: 2010/03/04 12:07:03 $
- $Author: faust $
-*/
-
 #ifndef __UR_FUNCTOR_H__
 #define __UR_FUNCTOR_H__
 
@@ -36,13 +30,16 @@
 
 #include "rscript.h"
 
-class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS_USER>, void>
+namespace RS
+{
+
+class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS::USER>, void>
 {
 public:
     UpdateRouter(REMOTE_SCRIPT & t)
         : obj(t) {};
 
-    void operator() (std::pair<const uint32_t, RS_USER> & val)
+    void operator() (std::pair<const uint32_t, USER> & val)
         {
         std::vector<uint32_t> newRouters = obj.IP2Routers(val.first);
         std::vector<uint32_t>::const_iterator oldIt(val.second.routers.begin());
@@ -61,11 +58,8 @@ public:
                 }
             else if (newIt == newRouters.end())
                 {
-                //if (oldIt != newRouters.end())
-                    //{ // Already checked it
-                    obj.SendDirect(val.first, val.second, *oldIt, true); // Disconnect on old router
-                    ++oldIt;
-                    //}
+                obj.SendDirect(val.first, val.second, *oldIt, true); // Disconnect on old router
+                ++oldIt;
                 } 
             else if (*oldIt < *newIt)
                 {
@@ -86,16 +80,11 @@ public:
                 }
             }
         val.second.routers = newRouters;
-        /*if (val.second.souters != newRouters)
-            {
-            obj.Send(val.first, val.second, true); // Disconnect on old router
-            val.second.routerIP = obj.IP2Router(val.first); // Change router
-            val.second.shortPacketsCount = 0; // Reset packets count (to prevent alive send)
-            obj.Send(val.first, val.second); // Connect on new router
-            }*/
         }
 private:
     REMOTE_SCRIPT & obj;
 };
+
+} // namespace RS
 
 #endif

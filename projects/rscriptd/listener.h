@@ -96,7 +96,7 @@ private:
     bool                FinalizeNet();
     bool                RecvPacket();
     // Parsing stuff
-    bool                CheckHeader(const RS_PACKET_HEADER & header) const;
+    bool                CheckHeader(const RS::PACKET_HEADER & header) const;
     bool                GetParams(char * buffer, UserData & data);
     // Processing stuff
     void                ProcessPending();
