@@ -138,6 +138,7 @@ private:
     static void * Runner(void * d);
     void Run();
     bool PrepareNet();
+    bool Reconnect();
 
     bool DispatchPDUs(const SMUX_PDUs_t * pdus);
 
@@ -168,6 +169,10 @@ private:
     pthread_mutex_t mutex;
     bool running;
     bool stopped;
+    bool needReconnect;
+
+    time_t lastReconnectTry;
+    unsigned reconnectTimeout;
 
     int sock;
 
