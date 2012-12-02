@@ -356,35 +356,58 @@ while (it != pending.end() && count < 256)
             );
     if (it->type == PendingData::CONNECT)
         {
+        printfd(__FILE__, "Connect packet\n");
         if (uit == users.end() || uit->login != it->login)
             {
+            printfd(__FILE__, "Connect new user '%s'\n", it->login.c_str());
             // Add new user
             Connect(*it);
             users.insert(uit, AliveData(static_cast<UserData>(*it)));
             }
         else if (uit->login == it->login)
             {
+            printfd(__FILE__, "Update existing user '%s'\n", it->login.c_str());
             // Update already existing user
             time(&uit->lastAlive);
             uit->params = it->params;
             }
+        else
+            {
+            printfd(__FILE__, "Hmmm... Strange connect for '%s'\n", it->login.c_str());
+            }
         }
     else if (it->type == PendingData::ALIVE)
         {
+        printfd(__FILE__, "Alive packet\n");
         if (uit != users.end() && uit->login == it->login)
             {
+            printfd(__FILE__, "Alive user '%s'\n", it->login.c_str());
             // Update existing user
             time(&uit->lastAlive);
+            }
+        else
+            {
+            printfd(__FILE__, "Alive user '%s' is not found\n", it->login.c_str());
             }
         }
     else if (it->type == PendingData::DISCONNECT)
         {
+        printfd(__FILE__, "Disconnect packet\n");
         if (uit != users.end() && uit->login == it->login.c_str())
             {
+            printfd(__FILE__, "Disconnect user '%s'\n", it->login.c_str());
             // Disconnect existing user
             Disconnect(*uit);
             users.erase(uit);
             }
+        else
+            {
+            printfd(__FILE__, "Cannot find user '%s' for disconnect\n", it->login.c_str());
+            }
+        }
+    else
+        {
+        printfd(__FILE__, "Unknown packet type\n");
         }
     ++it;
     ++count;
