@@ -37,6 +37,7 @@
 #include "stg/store.h"
 #include "stg/conffiles.h"
 #include "stg/user_traff.h"
+#include "stg/logger.h"
 
 //-----------------------------------------------------------------------------
 extern "C" STORE * GetStore();
@@ -203,6 +204,8 @@ private:
     FILES_STORE_SETTINGS storeSettings;
     MODULE_SETTINGS settings;
     mutable pthread_mutex_t mutex;
+
+    PLUGIN_LOGGER logger;
 };
 //-----------------------------------------------------------------------------
 

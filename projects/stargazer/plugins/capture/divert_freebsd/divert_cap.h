@@ -33,6 +33,7 @@ $Date: 2009/06/23 11:32:27 $
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/logger.h"
 
 class USERS;
 class TARIFFS;
@@ -87,6 +88,8 @@ private:
     bool                isRunning;
 
     TRAFFCOUNTER *      traffCnt;
+
+    PLUGIN_LOGGER       logger;
 };
 //-----------------------------------------------------------------------------
 

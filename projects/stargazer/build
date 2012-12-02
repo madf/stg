@@ -113,8 +113,7 @@ if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
     PLUGINS="$PLUGINS
-             capture/ether_linux
-             capture/ipq_linux"
+             capture/ether_linux"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
@@ -333,6 +332,27 @@ else
             echo "[$XMLRPC_LDFLAGS]"
         fi
     fi
+fi
+
+if [ "$OS" = "linux" ]
+then
+    echo -n "Checking for linux/netfilter_ipv4/ip_queue.h... "
+    echo "#include <linux/types.h>" > build_check.c
+    echo "#include <linux/netfilter_ipv4/ip_queue.h>" >> build_check.c
+    echo "int main() { return 0; }" >> build_check.c
+    $CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_IP_QUEUE_H=no
+        echo "no"
+    else
+        CHECK_IP_QUEUE_H=yes
+        DEFS="$DEFS -DHAS_IP_QUEUE_H"
+        PLUGINS="$PLUGINS
+                 capture/ipq_linux"
+        echo "yes"
+    fi
+    rm -f fake
 fi
 
 rm -f build_check.c

@@ -132,6 +132,7 @@ lastWriteDetailedStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -210,6 +211,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       sessionUpload(),
       sessionDownload(),
       passiveNotifier(this),
+      disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
       ipNotifier(this),
@@ -224,6 +226,7 @@ lastWriteDetailedStat = stgTime;
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -299,6 +302,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       sessionUpload(),
       sessionDownload(),
       passiveNotifier(this),
+      disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
       ipNotifier(this),
@@ -310,6 +314,7 @@ if (&u == this)
 
 property.tariffName.AddBeforeNotifier(&tariffNotifier);
 property.passive.AddBeforeNotifier(&passiveNotifier);
+property.disabled.AddAfterNotifier(&disabledNotifier);
 property.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
@@ -323,8 +328,10 @@ pthread_mutex_init(&mutex, &attr);
 //-----------------------------------------------------------------------------
 USER_IMPL::~USER_IMPL()
 {
-property.passive.DelBeforeNotifier(&passiveNotifier);
 property.tariffName.DelBeforeNotifier(&tariffNotifier);
+property.passive.DelBeforeNotifier(&passiveNotifier);
+property.disabled.DelAfterNotifier(&disabledNotifier);
+property.cash.DelBeforeNotifier(&cashNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
@@ -993,52 +1000,52 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-currIP.AddBeforeNotifier(n);
+currIP.AddBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelCurrIPBeforeNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-currIP.DelBeforeNotifier(n);
+currIP.DelBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-currIP.AddAfterNotifier(n);
+currIP.AddAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelCurrIPAfterNotifier(PROPERTY_NOTIFIER_BASE<uint32_t> * n)
+void USER_IMPL::DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-currIP.DelAfterNotifier(n);
+currIP.DelAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+void USER_IMPL::AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-connected.AddBeforeNotifier(n);
+connected.AddBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelConnectedBeforeNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+void USER_IMPL::DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-connected.DelBeforeNotifier(n);
+connected.DelBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+void USER_IMPL::AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-connected.AddAfterNotifier(n);
+connected.AddAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelConnectedAfterNotifier(PROPERTY_NOTIFIER_BASE<bool> * n)
+void USER_IMPL::DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-connected.DelAfterNotifier(n);
+connected.DelAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::OnAdd()
@@ -1458,6 +1465,19 @@ if (newPassive && !oldPassive && user->tariff != NULL)
                             user->login,
                             user->store,
                             "Freeze");
+}
+//-----------------------------------------------------------------------------
+void CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
+{
+if (oldValue && !newValue && user->GetConnected())
+    {
+    user->Disconnect(false, "disabled");
+    }
+else if (!oldValue && newValue && user->IsInetable())
+    {
+    user->Connect(false);
+    }
+
 }
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const string &, const string & newTariff)

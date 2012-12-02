@@ -52,7 +52,7 @@
 //-----------------------------------------------------------------------------
 class CONFIGPROTO {
 public:
-    CONFIGPROTO();
+    CONFIGPROTO(PLUGIN_LOGGER & l);
     ~CONFIGPROTO();
 
     void            SetPort(uint16_t port);
@@ -88,12 +88,13 @@ private:
     std::list<std::string>      requestList;
     uint32_t                    adminIP;
     std::string                 adminLogin;
+    std::string                 adminPassword;
     uint16_t                    port;
     pthread_t                   thrReciveSendConf;
     bool                        nonstop;
     int                         state;
     ADMIN *                     currAdmin;
-    STG_LOGGER &                WriteServLog;
+    PLUGIN_LOGGER &             logger;
 
     int                         listenSocket;
 

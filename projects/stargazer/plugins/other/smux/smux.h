@@ -15,6 +15,7 @@
 #include "stg/module_settings.h"
 #include "stg/notifer.h"
 #include "stg/noncopyable.h"
+#include "stg/logger.h"
 
 #include "sensors.h"
 #include "tables.h"
@@ -137,6 +138,7 @@ private:
     static void * Runner(void * d);
     void Run();
     bool PrepareNet();
+    bool Reconnect();
 
     bool DispatchPDUs(const SMUX_PDUs_t * pdus);
 
@@ -167,6 +169,10 @@ private:
     pthread_mutex_t mutex;
     bool running;
     bool stopped;
+    bool needReconnect;
+
+    time_t lastReconnectTry;
+    unsigned reconnectTimeout;
 
     int sock;
 
@@ -179,6 +185,8 @@ private:
     ADD_USER_NOTIFIER addUserNotifier;
     DEL_USER_NOTIFIER delUserNotifier;
     ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
+
+    PLUGIN_LOGGER logger;
 };
 //-----------------------------------------------------------------------------
 

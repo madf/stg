@@ -136,7 +136,8 @@ RADIUS::RADIUS()
       thread(),
       mutex(),
       sock(-1),
-      packet()
+      packet(),
+      logger(GetPluginLogger(GetStgLogger(), "radius"))
 {
 InitEncrypt(&ctx, "");
 }
@@ -156,6 +157,7 @@ sock = socket(AF_INET, SOCK_DGRAM, 0);
 if (sock < 0)
     {
     errorStr = "Cannot create socket.";
+    logger("Cannot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot create socket\n");
     return -1;
     }
@@ -168,6 +170,7 @@ inAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
 if (bind(sock, (struct sockaddr*)&inAddr, sizeof(inAddr)) < 0)
     {
     errorStr = "RADIUS: Bind failed.";
+    logger("Cannot bind the socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot bind socket\n");
     return -1;
     }
@@ -202,6 +205,7 @@ if (!isRunning)
     if (pthread_create(&thread, NULL, Run, this))
         {
         errorStr = "Cannot create thread.";
+	logger("Cannot create thread.");
         printfd(__FILE__, "Cannot create thread\n");
         return -1;
         }
@@ -289,14 +293,22 @@ int RADIUS::RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr)
     int8_t buf[RAD_MAX_PACKET_LEN];
     socklen_t outerAddrLen = sizeof(struct sockaddr_in);
     int dataLen = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(outerAddr), &outerAddrLen);
-    if (dataLen > 0) {
-        Decrypt(&ctx, (char *)packet, (const char *)buf, dataLen / 8);
-    }
+    if (dataLen < 0)
+    	{
+	logger("recvfrom error: %s", strerror(errno));
+	return -1;
+	}
+    if (dataLen == 0)
+    	return -1;
+
+    Decrypt(&ctx, (char *)packet, (const char *)buf, dataLen / 8);
+
     if (strncmp((char *)packet->magic, RAD_ID, RAD_MAGIC_LEN))
         {
         printfd(__FILE__, "RADIUS::RecvData Error magic. Wanted: '%s', got: '%s'\n", RAD_ID, packet->magic);
         return -1;
         }
+
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -306,7 +318,10 @@ size_t len = sizeof(RAD_PACKET);
 char buf[1032];
 
 Encrypt(&ctx, buf, (char *)&packet, len / 8);
-return sendto(sock, buf, len, 0, reinterpret_cast<struct sockaddr *>(outerAddr), sizeof(struct sockaddr_in));
+int res = sendto(sock, buf, len, 0, reinterpret_cast<struct sockaddr *>(outerAddr), sizeof(struct sockaddr_in));
+if (res < 0)
+    logger("sendto error: %s", strerror(errno));
+return res;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessData(RAD_PACKET * packet)

@@ -341,7 +341,8 @@ FILES_STORE::FILES_STORE()
       version("file_store v.1.04"),
       storeSettings(),
       settings(),
-      mutex()
+      mutex(),
+      logger(GetPluginLogger(GetStgLogger(), "store_files"))
 {
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);

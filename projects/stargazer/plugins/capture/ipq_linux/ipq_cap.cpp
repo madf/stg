@@ -23,6 +23,7 @@
 
 #include <csignal>
 #include <cerrno>
+#include <cstring>
 
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
@@ -63,7 +64,8 @@ IPQ_CAP::IPQ_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      buf()
+      buf(),
+      logger(GetPluginLogger(GetStgLogger(), "cap_ipq"))
 {
 memset(buf, 0, BUFSIZE);
 }
@@ -159,6 +161,7 @@ ipq_h = ipq_create_handle(0, PF_INET);
 if (ipq_h == NULL)
     {
     ipq_destroy_handle(ipq_h);
+    logger("Cannot create IPQ handle. Error: '%s', '%s'", ipq_errstr(), strerror(errno));
     errorStr = "Cannot create ipq handle!";
     return -1;
     }
@@ -166,6 +169,7 @@ int status = ipq_set_mode(ipq_h, IPQ_COPY_PACKET, PAYLOAD_LEN);
 if (status < 0)
     {
     ipq_destroy_handle(ipq_h);
+    logger("Cannot set IPQ_COPY_PACKET mode.");
     errorStr = "Cannot set IPQ_COPY_PACKET mode!";
     return -1;
     }

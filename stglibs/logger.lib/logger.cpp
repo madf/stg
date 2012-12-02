@@ -32,7 +32,7 @@ STG_LOGGER_LOCKER lock(&mutex);
 fileName = fn;
 }
 //-----------------------------------------------------------------------------
-void STG_LOGGER::operator()(const char * fmt, ...)
+void STG_LOGGER::operator()(const char * fmt, ...) const
 {
 STG_LOGGER_LOCKER lock(&mutex);
 
@@ -74,7 +74,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-const char * STG_LOGGER::LogDate(time_t t)
+const char * STG_LOGGER::LogDate(time_t t) const
 {
 static char s[32];
 if (t == 0)
@@ -91,5 +91,36 @@ snprintf(s, 32, "%d-%s%d-%s%d %s%d:%s%d:%s%d",
          tt->tm_sec     < 10 ? "0" : "", tt->tm_sec);
 
 return s;
+}
+//-----------------------------------------------------------------------------
+PLUGIN_LOGGER::PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn)
+    : STG_LOGGER(),
+      pluginName(pn)
+{
+    SetLogFileName(logger.fileName);
+}
+//-----------------------------------------------------------------------------
+PLUGIN_LOGGER::PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs)
+    : STG_LOGGER(),
+      pluginName(rhs.pluginName)
+{
+    SetLogFileName(fileName);
+}
+//-----------------------------------------------------------------------------
+void PLUGIN_LOGGER::operator()(const char * fmt, ...) const
+{
+char buff[2029];
+
+va_list vl;
+va_start(vl, fmt);
+vsnprintf(buff, sizeof(buff), fmt, vl);
+va_end(vl);
+
+STG_LOGGER::operator()("[%s] %s", pluginName.c_str(), buff);
+}
+//-----------------------------------------------------------------------------
+PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName)
+{
+return PLUGIN_LOGGER(logger, pluginName);
 }
 //-----------------------------------------------------------------------------

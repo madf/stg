@@ -37,6 +37,7 @@
 #include "stg/store.h"
 #include "stg/locker.h"
 #include "stg/ibpp.h"
+#include "stg/logger.h"
 
 struct ToLower {
     char operator() (char c) const  { return std::tolower(c); }
@@ -121,12 +122,13 @@ private:
 
     std::string version;
     mutable std::string strError;
-    mutable std::string db_server, db_database, db_user, db_password;
+    std::string db_server, db_database, db_user, db_password;
     MODULE_SETTINGS settings;
     mutable IBPP::Database db;
     mutable pthread_mutex_t mutex;
-    mutable IBPP::TIL til;
-    mutable IBPP::TLR tlr;
+    IBPP::TIL til;
+    IBPP::TLR tlr;
+    PLUGIN_LOGGER logger;
 
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
 };

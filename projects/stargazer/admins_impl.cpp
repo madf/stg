@@ -219,7 +219,7 @@ assert(admin != NULL && "Pointer to admin is not null");
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())
     {
-    printfd(__FILE__, "no admin in system!\n");
+    printfd(__FILE__, "No admin in system!\n");
     *admin = &noAdmin;
     return false;
     }

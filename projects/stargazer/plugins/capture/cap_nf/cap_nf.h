@@ -37,6 +37,7 @@ $Author: faust $
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/logger.h"
 
 #define VERSION "CAP_NF v. 0.4"
 #define START_POS 40
@@ -122,6 +123,7 @@ private:
     int sockTCP;
     int sockUDP;
     mutable std::string errorStr;
+    PLUGIN_LOGGER logger;
 
     static void * RunUDP(void *);
     static void * RunTCP(void *);

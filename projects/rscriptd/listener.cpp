@@ -255,7 +255,7 @@ bool LISTENER::RecvPacket()
 struct iovec iov[2];
 
 char buffer[RS_MAX_PACKET_LEN];
-RS_PACKET_HEADER packetHead;
+RS::PACKET_HEADER packetHead;
 
 iov[0].iov_base = reinterpret_cast<char *>(&packetHead);
 iov[0].iov_len = sizeof(packetHead);
@@ -320,7 +320,7 @@ return false;
 //-----------------------------------------------------------------------------
 bool LISTENER::GetParams(char * buffer, UserData & data)
 {
-RS_PACKET_TAIL packetTail;
+RS::PACKET_TAIL packetTail;
 
 Decrypt(&ctxS, (char *)&packetTail, buffer, sizeof(packetTail) / 8);
 
@@ -330,7 +330,7 @@ if (strncmp((char *)packetTail.magic, RS_ID, RS_MAGIC_LEN))
     return true;
     }
 
-std::stringstream params;
+std::ostringstream params;
 params << "\"" << data.login << "\" "
        << inet_ntostring(data.ip) << " "
        << data.id << " "
@@ -356,35 +356,58 @@ while (it != pending.end() && count < 256)
             );
     if (it->type == PendingData::CONNECT)
         {
+        printfd(__FILE__, "Connect packet\n");
         if (uit == users.end() || uit->login != it->login)
             {
+            printfd(__FILE__, "Connect new user '%s'\n", it->login.c_str());
             // Add new user
             Connect(*it);
             users.insert(uit, AliveData(static_cast<UserData>(*it)));
             }
         else if (uit->login == it->login)
             {
+            printfd(__FILE__, "Update existing user '%s'\n", it->login.c_str());
             // Update already existing user
             time(&uit->lastAlive);
             uit->params = it->params;
             }
+        else
+            {
+            printfd(__FILE__, "Hmmm... Strange connect for '%s'\n", it->login.c_str());
+            }
         }
     else if (it->type == PendingData::ALIVE)
         {
+        printfd(__FILE__, "Alive packet\n");
         if (uit != users.end() && uit->login == it->login)
             {
+            printfd(__FILE__, "Alive user '%s'\n", it->login.c_str());
             // Update existing user
             time(&uit->lastAlive);
+            }
+        else
+            {
+            printfd(__FILE__, "Alive user '%s' is not found\n", it->login.c_str());
             }
         }
     else if (it->type == PendingData::DISCONNECT)
         {
+        printfd(__FILE__, "Disconnect packet\n");
         if (uit != users.end() && uit->login == it->login.c_str())
             {
+            printfd(__FILE__, "Disconnect user '%s'\n", it->login.c_str());
             // Disconnect existing user
             Disconnect(*uit);
             users.erase(uit);
             }
+        else
+            {
+            printfd(__FILE__, "Cannot find user '%s' for disconnect\n", it->login.c_str());
+            }
+        }
+    else
+        {
+        printfd(__FILE__, "Unknown packet type\n");
         }
     ++it;
     ++count;
@@ -455,7 +478,7 @@ else
 return false;
 }
 //-----------------------------------------------------------------------------
-bool LISTENER::CheckHeader(const RS_PACKET_HEADER & header) const
+bool LISTENER::CheckHeader(const RS::PACKET_HEADER & header) const
 {
 if (strncmp((char *)header.magic, RS_ID, RS_MAGIC_LEN))
     {

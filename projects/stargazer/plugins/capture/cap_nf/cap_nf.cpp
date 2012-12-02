@@ -65,7 +65,8 @@ NF_CAP::NF_CAP()
       portU(0),
       sockTCP(-1),
       sockUDP(-1),
-      errorStr()
+      errorStr(),
+      logger(GetPluginLogger(GetStgLogger(), "cap_nf"))
 {
 }
 
@@ -117,6 +118,7 @@ if (portU > 0)
         runningUDP = false;
         CloseUDP();
         errorStr = "Cannot create UDP thread";
+	logger("Cannot create UDP thread.");
         printfd(__FILE__, "Error: Cannot create UDP thread\n");
         return -1;
         }
@@ -132,6 +134,7 @@ if (portT > 0)
         {
         runningTCP = false;
         CloseTCP();
+	logger("Cannot create TCP thread.");
         errorStr = "Cannot create TCP thread";
         printfd(__FILE__, "Error: Cannot create TCP thread\n");
         return -1;
@@ -160,10 +163,12 @@ if (portU && !stoppedUDP)
         if (pthread_kill(tidUDP, SIGUSR1))
             {
             errorStr = "Error sending signal to UDP thread";
+	    logger("Error sending sugnal to UDP thread.");
             printfd(__FILE__, "Error: Error sending signal to UDP thread\n");
             return -1;
             }
         printfd(__FILE__, "UDP thread NOT stopped\n");
+        logger("Cannot stop UDP thread.");
         }
     }
 if (portT && !stoppedTCP)
@@ -183,10 +188,12 @@ if (portT && !stoppedTCP)
         if (pthread_kill(tidTCP, SIGUSR1))
             {
             errorStr = "Error sending signal to TCP thread";
+	    logger("Error sending signal to TCP thread.");
             printfd(__FILE__, "Error: Error sending signal to TCP thread\n");
             return -1;
             }
         printfd(__FILE__, "TCP thread NOT stopped\n");
+	logger("Cannot stop TCP thread.");
         }
     }
 return 0;
@@ -199,6 +206,7 @@ sockUDP = socket(PF_INET, SOCK_DGRAM, 0);
 if (sockUDP <= 0)
     {
     errorStr = "Error opening UDP socket";
+    logger("Cannot create UDP socket: %s", strerror(errno));
     printfd(__FILE__, "Error: Error opening UDP socket\n");
     return true;
     }
@@ -208,6 +216,7 @@ sin.sin_addr.s_addr = inet_addr("0.0.0.0");
 if (bind(sockUDP, (struct sockaddr *)&sin, sizeof(sin)))
     {
     errorStr = "Error binding UDP socket";
+    logger("Cannot bind UDP socket: %s", strerror(errno));
     printfd(__FILE__, "Error: Error binding UDP socket\n");
     return true;
     }
@@ -221,6 +230,7 @@ sockTCP = socket(PF_INET, SOCK_STREAM, 0);
 if (sockTCP <= 0)
     {
     errorStr = "Error opening TCP socket";
+    logger("Cannot create TCP socket: %s", strerror(errno));
     printfd(__FILE__, "Error: Error opening TCP socket\n");
     return true;
     }
@@ -230,12 +240,14 @@ sin.sin_addr.s_addr = inet_addr("0.0.0.0");
 if (bind(sockTCP, (struct sockaddr *)&sin, sizeof(sin)))
     {
     errorStr = "Error binding TCP socket";
+    logger("Cannot bind TCP socket: %s", strerror(errno));
     printfd(__FILE__, "Error: Error binding TCP socket\n");
     return true;
     }
 if (listen(sockTCP, 1))
     {
     errorStr = "Error listening on TCP socket";
+    logger("Cannot listen on TCP socket: %s", strerror(errno));
     printfd(__FILE__, "Error: Error listening TCP socket\n");
     return true;
     }
@@ -266,6 +278,12 @@ while (cap->runningUDP)
     res = recvfrom(cap->sockUDP, buf, BUF_SIZE, 0, reinterpret_cast<struct sockaddr *>(&sin), &slen);
     if (!cap->runningUDP)
         break;
+
+    if (res < 0)
+    	{
+	cap->logger("recvfrom error: %s", strerror(errno));
+	continue;
+	}
 
     if (res == 0) // EOF
         {
@@ -316,11 +334,8 @@ while (cap->runningTCP)
 
     if (sd <= 0)
         {
-        if (errno != EINTR)
-            {
-            cap->errorStr = "Error accepting connection";
-            printfd(__FILE__, "Error: Error accepting connection\n");
-            }
+        if (sd < 0)
+	    cap->logger("accept error: %s", strerror(errno));
         continue;
         }
 
@@ -331,6 +346,10 @@ while (cap->runningTCP)
         }
 
     res = recv(sd, buf, BUF_SIZE, MSG_WAITALL);
+
+    if (res < 0)
+        cap->logger("recv error: %s", strerror(errno));
+
     close(sd);
 
     if (!cap->runningTCP)
@@ -345,11 +364,6 @@ while (cap->runningTCP)
     // Need to check actual data length and wait all data to receive
     if (res < 24)
         {
-        if (errno != EINTR)
-            {
-            cap->errorStr = "Invalid data received";
-            printfd(__FILE__, "Error: Invalid data received through TCP\n");
-            }
         continue;
         }
 

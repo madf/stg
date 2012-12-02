@@ -26,54 +26,32 @@
  *
  */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#ifndef NDEBUG
+#define NDEBUG
+#include <freeradius/ident.h>
+#include <freeradius/radiusd.h>
+#include <freeradius/modules.h>
+#undef NDEBUG
+#endif
 
-#include <exception>
+#include "stgpair.h"
+#include "iface.h"
 
-extern "C" {
-#include "radius.h"
-#include "modules.h"
-}
-
-#include "stg_client.h"
-#include "stg/common.h"
-
-STG_CLIENT * cli;
-volatile time_t stgTime;
-
-/*
- *    Define a structure for our module configuration.
- *
- *    These variables do not need to be in a structure, but it's
- *    a lot cleaner to do so, and a pointer to the structure can
- *    be used as the instance handle.
- */
 typedef struct rlm_stg_t {
     char * server;
+    uint16_t port;
     char * password;
-    uint32_t port;
-    uint32_t localPort;
 } rlm_stg_t;
 
-/*
- *    A mapping of configuration file names to internal variables.
- *
- *    Note that the string is dynamically allocated, so it MUST
- *    be freed.  When the configuration file parse re-reads the string,
- *    it free's the old one, and strdup's the new one, placing the pointer
- *    to the strdup'd string into 'config.string'.  This gets around
- *    buffer over-flows.
- */
-static CONF_PARSER module_config[] = {
-  { "password",  PW_TYPE_STRING_PTR, offsetof(rlm_stg_t,password), NULL,  NULL},
-  { "server",  PW_TYPE_STRING_PTR, offsetof(rlm_stg_t,server), NULL,  NULL},
-  { "port",  PW_TYPE_INTEGER,     offsetof(rlm_stg_t,port), NULL,  "5555" },
-  { "local_port", PW_TYPE_INTEGER,    offsetof(rlm_stg_t,localPort), NULL,   "0" },
+static const CONF_PARSER module_config[] = {
+  { "server",  PW_TYPE_STRING_PTR, offsetof(rlm_stg_t,server), NULL,  "localhost"},
+  { "port",  PW_TYPE_INTEGER,     offsetof(rlm_stg_t,port), NULL,  "9091" },
+  { "password",  PW_TYPE_STRING_PTR, offsetof(rlm_stg_t,password), NULL,  "123456"},
 
   { NULL, -1, 0, NULL, NULL }        /* end the list */
 };
+
+int emptyPair(const STG_PAIR * pair);
 
 /*
  *    Do any per-module initialization that is separate to each
@@ -92,12 +70,11 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
     /*
      *    Set up a storage area for instance data
      */
-    DEBUG("rlm_stg: stg_instantiate()");
-    data = (rlm_stg_t *)rad_malloc(sizeof(rlm_stg_t));
+    data = rad_malloc(sizeof(*data));
     if (!data) {
         return -1;
     }
-    memset(data, 0, sizeof(rlm_stg_t));
+    memset(data, 0, sizeof(*data));
 
     /*
      *    If the configuration parameters can't be parsed, then
@@ -108,11 +85,8 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
         return -1;
     }
 
-    try {
-        cli = new STG_CLIENT(data->server, data->port, data->localPort, data->password);
-    }
-    catch (std::exception & ex) {
-        DEBUG("rlm_stg: stg_instantiate() error: '%s'", ex.what());
+    if (!stgInstantiateImpl(data->server, data->port)) {
+        free(data);
         return -1;
     }
 
@@ -129,18 +103,16 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
  */
 static int stg_authorize(void *, REQUEST *request)
 {
-    VALUE_PAIR *uname;
-    VALUE_PAIR *pwd;
-    VALUE_PAIR *svc;
+    VALUE_PAIR * pwd;
+    VALUE_PAIR * svc;
+    const STG_PAIR * pairs;
+    const STG_PAIR * pair;
+    size_t count = 0;
+
+    instance = instance;
+
     DEBUG("rlm_stg: stg_authorize()");
 
-    uname = pairfind(request->packet->vps, PW_USER_NAME);
-    if (uname) {
-        DEBUG("rlm_stg: stg_authorize() user name defined as '%s'", uname->vp_strvalue);
-    } else {
-        DEBUG("rlm_stg: stg_authorize() user name undefined");
-        return RLM_MODULE_FAIL;
-    }
     if (request->username) {
         DEBUG("rlm_stg: stg_authorize() request username field: '%s'", request->username->vp_strvalue);
     }
@@ -151,22 +123,30 @@ static int stg_authorize(void *, REQUEST *request)
     svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     if (svc) {
         DEBUG("rlm_stg: stg_authorize() Service-Type defined as '%s'", svc->vp_strvalue);
-        if (cli->Authorize((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue)) {
-            DEBUG("rlm_stg: stg_authorize() stg status: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_REJECT;
-        }
+        pairs = stgAuthorizeImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
     } else {
         DEBUG("rlm_stg: stg_authorize() Service-Type undefined");
-        if (cli->Authorize((const char *)request->username->vp_strvalue, "")) {
-            DEBUG("rlm_stg: stg_authorize() stg status: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_REJECT;
-        }
+        pairs = stgAuthorizeImpl((const char *)request->username->vp_strvalue, "");
     }
-    pwd = pairmake("Cleartext-Password", cli->GetUserPassword().c_str(), T_OP_SET);
-    pairadd(&request->config_items, pwd);
-    //pairadd(&request->reply->vps, uname);
+    if (!pairs) {
+        DEBUG("rlm_stg: stg_authorize() failed.");
+        return RLM_MODULE_REJECT;
+    }
 
-    return RLM_MODULE_UPDATED;
+    pair = pairs;
+    while (!emptyPair(pair)) {
+        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->config_items, pwd);
+        DEBUG("Adding pair '%s': '%s'", pair->key, pair->value);
+        ++pair;
+        ++count;
+    }
+    deletePairs(pairs);
+
+    if (count)
+        return RLM_MODULE_UPDATED;
+
+    return RLM_MODULE_NOOP;
 }
 
 /*
@@ -174,25 +154,40 @@ static int stg_authorize(void *, REQUEST *request)
  */
 static int stg_authenticate(void *, REQUEST *request)
 {
-    /* quiet the compiler */
-    VALUE_PAIR *svc;
+    VALUE_PAIR * svc;
+    VALUE_PAIR * pwd;
+    const STG_PAIR * pairs;
+    const STG_PAIR * pair;
+    size_t count = 0;
+
+    instance = instance;
 
     DEBUG("rlm_stg: stg_authenticate()");
 
     svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     if (svc) {
         DEBUG("rlm_stg: stg_authenticate() Service-Type defined as '%s'", svc->vp_strvalue);
-        if (cli->Authenticate((char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue)) {
-            DEBUG("rlm_stg: stg_authenticate() stg status: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_REJECT;
-        }
+        pairs = stgAuthenticateImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
     } else {
         DEBUG("rlm_stg: stg_authenticate() Service-Type undefined");
-        if (cli->Authenticate((char *)request->username->vp_strvalue, "")) {
-            DEBUG("rlm_stg: stg_authenticate() stg status: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_REJECT;
-        }
+        pairs = stgAuthenticateImpl((const char *)request->username->vp_strvalue, "");
     }
+    if (!pairs) {
+        DEBUG("rlm_stg: stg_authenticate() failed.");
+        return RLM_MODULE_REJECT;
+    }
+
+    pair = pairs;
+    while (!emptyPair(pair)) {
+        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->reply->vps, pwd);
+        ++pair;
+        ++count;
+    }
+    deletePairs(pairs);
+
+    if (count)
+        return RLM_MODULE_UPDATED;
 
     return RLM_MODULE_NOOP;
 }
@@ -204,6 +199,8 @@ static int stg_preacct(void *, REQUEST *)
 {
     DEBUG("rlm_stg: stg_preacct()");
 
+    instance = instance;
+
     return RLM_MODULE_OK;
 }
 
@@ -212,38 +209,56 @@ static int stg_preacct(void *, REQUEST *)
  */
 static int stg_accounting(void *, REQUEST * request)
 {
-    /* quiet the compiler */
     VALUE_PAIR * sttype;
     VALUE_PAIR * svc;
     VALUE_PAIR * sessid;
-    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR * pwd;
+    const STG_PAIR * pairs;
+    const STG_PAIR * pair;
+    size_t count = 0;
+
+    instance = instance;
 
     DEBUG("rlm_stg: stg_accounting()");
 
+    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
+    sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
+
     if (!sessid) {
         DEBUG("rlm_stg: stg_accounting() Acct-Session-ID undefined");
         return RLM_MODULE_FAIL;
     }
-    sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
+
     if (sttype) {
         DEBUG("Acct-Status-Type := %s", sttype->vp_strvalue);
         if (svc) {
             DEBUG("rlm_stg: stg_accounting() Service-Type defined as '%s'", svc->vp_strvalue);
-            if (cli->Account((const char *)sttype->vp_strvalue, (const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sessid->vp_strvalue)) {
-                DEBUG("rlm_stg: stg_accounting error: '%s'", cli->GetError().c_str());
-                return RLM_MODULE_FAIL;
-            }
+            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
         } else {
             DEBUG("rlm_stg: stg_accounting() Service-Type undefined");
-            if (cli->Account((const char *)sttype->vp_strvalue, (const char *)request->username->vp_strvalue, "", (const char *)sessid->vp_strvalue)) {
-                DEBUG("rlm_stg: stg_accounting error: '%s'", cli->GetError().c_str());
-                return RLM_MODULE_FAIL;
-            }
+            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
         }
     } else {
-        DEBUG("Acct-Status-Type := NULL");
+        DEBUG("rlm_stg: stg_accounting() Acct-Status-Type := NULL");
+        return RLM_MODULE_OK;
     }
+    if (!pairs) {
+        DEBUG("rlm_stg: stg_accounting() failed.");
+        return RLM_MODULE_REJECT;
+    }
+
+    pair = pairs;
+    while (!emptyPair(pair)) {
+        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->reply->vps, pwd);
+        ++pair;
+        ++count;
+    }
+    deletePairs(pairs);
+
+    if (count)
+        return RLM_MODULE_UPDATED;
 
     return RLM_MODULE_OK;
 }
@@ -262,6 +277,8 @@ static int stg_checksimul(void *, REQUEST *request)
 {
     DEBUG("rlm_stg: stg_checksimul()");
 
+    instance = instance;
+
     request->simul_count=0;
 
     return RLM_MODULE_OK;
@@ -269,40 +286,48 @@ static int stg_checksimul(void *, REQUEST *request)
 
 static int stg_postauth(void *, REQUEST *request)
 {
-    VALUE_PAIR *fia;
-    VALUE_PAIR *svc;
-    struct in_addr fip;
+    VALUE_PAIR * svc;
+    VALUE_PAIR * pwd;
+    const STG_PAIR * pairs;
+    const STG_PAIR * pair;
+    size_t count = 0;
+
+    instance = instance;
+
     DEBUG("rlm_stg: stg_postauth()");
+
     svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+
     if (svc) {
         DEBUG("rlm_stg: stg_postauth() Service-Type defined as '%s'", svc->vp_strvalue);
-        if (cli->PostAuthenticate((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue)) {
-            DEBUG("rlm_stg: stg_postauth() error: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_FAIL;
-        }
+        pairs = stgPostAuthImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
     } else {
         DEBUG("rlm_stg: stg_postauth() Service-Type undefined");
-        if (cli->PostAuthenticate((const char *)request->username->vp_strvalue, "")) {
-            DEBUG("rlm_stg: stg_postauth() error: '%s'", cli->GetError().c_str());
-            return RLM_MODULE_FAIL;
-        }
+        pairs = stgPostAuthImpl((const char *)request->username->vp_strvalue, "");
     }
-    if (strncmp((const char *)svc->vp_strvalue, "Framed-User", 11) == 0) {
-        fip.s_addr = cli->GetFramedIP();
-        DEBUG("rlm_stg: stg_postauth() ip = '%s'", inet_ntostring(fip.s_addr).c_str());
-        fia = pairmake("Framed-IP-Address", inet_ntostring(fip.s_addr).c_str(), T_OP_SET);
-        pairadd(&request->reply->vps, fia);
+    if (!pairs) {
+        DEBUG("rlm_stg: stg_postauth() failed.");
+        return RLM_MODULE_REJECT;
     }
 
-    return RLM_MODULE_UPDATED;
+    pair = pairs;
+    while (!emptyPair(pair)) {
+        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->reply->vps, pwd);
+        ++pair;
+        ++count;
+    }
+    deletePairs(pairs);
+
+    if (count)
+        return RLM_MODULE_UPDATED;
+
+    return RLM_MODULE_NOOP;
 }
 
 static int stg_detach(void *instance)
 {
-    DEBUG("rlm_stg: stg_detach()");
-    delete cli;
     free(((struct rlm_stg_t *)instance)->server);
-    free(((struct rlm_stg_t *)instance)->password);
     free(instance);
     return 0;
 }

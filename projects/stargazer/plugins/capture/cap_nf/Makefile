@@ -10,7 +10,8 @@ SRCS = ./cap_nf.cpp
 
 LIBS += $(LIB_THREAD)
 
-STGLIBS = common
+STGLIBS = common \
+          logger
 
 include ../../Makefile.in
 

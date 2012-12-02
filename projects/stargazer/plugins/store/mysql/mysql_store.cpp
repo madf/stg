@@ -157,7 +157,8 @@ MYSQL_STORE::MYSQL_STORE()
     : errorStr(),
       version("mysql_store v.0.67"),
       storeSettings(),
-      settings()
+      settings(),
+      logger(GetPluginLogger(GetStgLogger(), "store_mysql"))
 {
 };
 //-----------------------------------------------------------------------------

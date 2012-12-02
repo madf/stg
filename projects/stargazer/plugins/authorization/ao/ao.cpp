@@ -80,7 +80,8 @@ AUTH_AO::AUTH_AO()
       BeforeChgIPNotifierList(),
       AfterChgIPNotifierList(),
       onAddUserNotifier(*this),
-      onDelUserNotifier(*this)
+      onDelUserNotifier(*this),
+      logger(GetPluginLogger(GetStgLogger(), "auth_ao"))
 {
 }
 //-----------------------------------------------------------------------------

@@ -61,7 +61,7 @@ enum
     };
 #define IPQ_MAXERR IPQ_ERR_PROTOCOL
 
-/*struct ipq_errmap_t
+struct ipq_errmap_t
     {
     int errcode;
     char *message;
@@ -83,7 +83,7 @@ enum
     { IPQ_ERR_RECVBUF, "Receive buffer size invalid"},
     { IPQ_ERR_TIMEOUT, "Timeout"},
     { IPQ_ERR_PROTOCOL, "Invalid protocol specified"}
-};*/
+};
 
 static int ipq_errno = IPQ_ERR_NONE;
 
@@ -205,12 +205,12 @@ static ssize_t ipq_netlink_recvfrom(const struct ipq_handle *h,
     return status;
 }
 //-----------------------------------------------------------------------------
-/*static char *ipq_strerror(int errcode)
+static char *ipq_strerror(int errcode)
 {
     if (errcode < 0 || errcode > IPQ_MAXERR)
         errcode = IPQ_ERR_IMPL;
     return ipq_errmap[errcode].message;
-}*/
+}
 
 /****************************************************************************
  *
@@ -386,10 +386,10 @@ int ipq_ctl(const struct ipq_handle __attribute__((unused)) * handle, int __attr
     return 1;
 }
 //-----------------------------------------------------------------------------
-/*char *ipq_errstr(void)
+char *ipq_errstr(void)
 {
     return ipq_strerror(ipq_errno);
-}*/
+}
 //-----------------------------------------------------------------------------
 /*void ipq_perror(const char *s)
 {

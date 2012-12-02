@@ -61,7 +61,8 @@ STG_CONFIG::STG_CONFIG()
       thread(),
       nonstop(false),
       isRunning(false),
-      config(),
+      logger(GetPluginLogger(GetStgLogger(), "conf_sg")),
+      config(logger),
       users(NULL),
       admins(NULL),
       tariffs(NULL),
@@ -103,6 +104,7 @@ if (pthread_create(&thread, NULL, Run, this))
     {
     errorStr = "Cannot create thread.";
     printfd(__FILE__, "Cannot create thread\n");
+    logger("Cannot create thread.");
     return -1;
     }
 errorStr = "";

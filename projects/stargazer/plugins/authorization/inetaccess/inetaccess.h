@@ -49,6 +49,7 @@
 #include "stg/blowfish.h"
 #include "stg/logger.h"
 #include "stg/utime.h"
+#include "stg/logger.h"
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -358,11 +359,11 @@ private:
 
     std::map<std::string, int> packetTypes;
 
-    STG_LOGGER &        WriteServLog;
-
     uint32_t            enabledDirs;
 
     DEL_USER_NOTIFIER   onDelUserNotifier;
+
+    PLUGIN_LOGGER       logger;
 
     friend class UnauthorizeUser;
 };

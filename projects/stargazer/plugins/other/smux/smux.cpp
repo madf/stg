@@ -103,6 +103,9 @@ SMUX::SMUX()
       mutex(),
       running(false),
       stopped(true),
+      needReconnect(false),
+      lastReconnectTry(0),
+      reconnectTimeout(1),
       sock(-1),
       smuxHandlers(),
       pdusHandlers(),
@@ -111,7 +114,8 @@ SMUX::SMUX()
       notifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this),
-      addDelTariffNotifier(*this)
+      addDelTariffNotifier(*this),
+      logger(GetPluginLogger(GetStgLogger(), "smux"))
 {
 pthread_mutex_init(&mutex, NULL);
 
@@ -156,7 +160,7 @@ assert(corporations != NULL && "corporations must not be NULL");
 assert(traffcounter != NULL && "traffcounter must not be NULL");
 
 if (PrepareNet())
-    return -1;
+    needReconnect = true;
 
 // Users
 sensors[OID(".1.3.6.1.4.1.38313.1.1.1")] = new TotalUsersSensor(*users);
@@ -204,6 +208,7 @@ if (!running)
     if (pthread_create(&thread, NULL, Runner, this))
         {
         errorStr = "Cannot create thread.";
+	logger("Cannot create thread.");
         printfd(__FILE__, "Cannot create thread\n");
         return -1;
         }
@@ -284,15 +289,15 @@ void SMUX::Run()
 {
 stopped = true;
 if (!SendOpenPDU(sock))
-    return;
+    needReconnect = true;
 if (!SendRReqPDU(sock))
-    return;
+    needReconnect = true;
 running = true;
 stopped = false;
 
 while(running)
     {
-    if (WaitPackets(sock))
+    if (WaitPackets(sock) && !needReconnect)
         {
         SMUX_PDUs_t * pdus = RecvSMUXPDUs(sock);
         if (pdus)
@@ -300,7 +305,11 @@ while(running)
             DispatchPDUs(pdus);
             ASN_STRUCT_FREE(asn_DEF_SMUX_PDUs, pdus);
             }
+        else if (running)
+            Reconnect();
         }
+    else if (running && needReconnect)
+        Reconnect();
     if (!running)
         break;
     }
@@ -315,6 +324,7 @@ sock = socket(AF_INET, SOCK_STREAM, 0);
 if (sock < 0)
     {
     errorStr = "Cannot create socket.";
+    logger("Cannot create a socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot create socket\n");
     return true;
     }
@@ -328,11 +338,39 @@ addr.sin_addr.s_addr = smuxSettings.GetIP();
 if (connect(sock, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)))
     {
     errorStr = "Cannot connect.";
+    logger("Cannot connect the socket: %s", strerror(errno));
     printfd(__FILE__, "Cannot connect. Message: '%s'\n", strerror(errno));
     return true;
     }
 
 return false;
+}
+
+bool SMUX::Reconnect()
+{
+if (needReconnect && difftime(time(NULL), lastReconnectTry) < reconnectTimeout)
+    return true;
+
+time(&lastReconnectTry);
+SendClosePDU(sock);
+close(sock);
+if (!PrepareNet())
+    if (SendOpenPDU(sock))
+        if (SendRReqPDU(sock))
+            {
+            reconnectTimeout = 1;
+            needReconnect = false;
+            logger("Connected successfully");
+            printfd(__FILE__, "Connected successfully\n");
+            return false;
+            }
+
+if (needReconnect)
+    if (reconnectTimeout < 60)
+        reconnectTimeout *= 2;
+
+needReconnect = true;
+return true;
 }
 
 bool SMUX::DispatchPDUs(const SMUX_PDUs_t * pdus)

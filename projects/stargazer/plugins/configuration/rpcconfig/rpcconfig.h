@@ -16,6 +16,7 @@
 #include "stg/plugin.h"
 #include "stg/admin_conf.h"
 #include "stg/module_settings.h"
+#include "stg/logger.h"
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
@@ -55,7 +56,7 @@ struct ADMIN_INFO
     PRIV        priviledges;
 };
 
-class RPC_CONFIG :public PLUGIN
+class RPC_CONFIG : public PLUGIN
 {
 public:
     RPC_CONFIG();
@@ -111,6 +112,7 @@ private:
              ADMIN_INFO>    cookies;
     size_t                  dayFee;
     std::vector<std::string> dirNames;
+    PLUGIN_LOGGER           logger;
 };
 
 #endif

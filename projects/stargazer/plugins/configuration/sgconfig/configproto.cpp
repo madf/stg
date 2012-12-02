@@ -86,17 +86,18 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-CONFIGPROTO::CONFIGPROTO()
+CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
     : answerList(),
       requestList(),
       adminIP(0),
       adminLogin(),
+      adminPassword(),
       port(0),
       thrReciveSendConf(),
       nonstop(true),
       state(0),
       currAdmin(NULL),
-      WriteServLog(GetStgLogger()),
+      logger(l),
       listenSocket(-1),
       parserGetServInfo(),
       parserGetUsers(),
@@ -144,7 +145,7 @@ xmlParser = XML_ParserCreate(NULL);
 
 if (!xmlParser)
     {
-    WriteServLog("Couldn't allocate memory for parser.");
+    logger("Couldn't allocate memory for parser.");
     exit(1);
     }
 
@@ -187,7 +188,7 @@ while(nonstop)
 
     if (XML_Parse(xmlParser, (*n).c_str(), len, done) == XML_STATUS_ERROR)
         {
-        WriteServLog("Invalid configuration request");
+        logger("Invalid configuration request");
         printfd(__FILE__, "Parse error at line %d:\n%s\n",
            XML_GetCurrentLineNumber(xmlParser),
            XML_ErrorString(XML_GetErrorCode(xmlParser)));
