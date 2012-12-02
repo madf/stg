@@ -44,6 +44,19 @@ extern volatile const time_t stgTime;
 
 using RS::REMOTE_SCRIPT;
 
+namespace {
+
+template<typename T>
+struct USER_IS
+{
+    USER_IS(USER_PTR u) : user(u) {}
+    bool operator()(const T & notifier) { return notifier.GetUser() == user; }
+
+    USER_PTR user;
+};
+
+} // namespace anonymous
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -57,34 +70,6 @@ return rsc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-RS::USER::USER(const std::vector<uint32_t> & r, USER_PTR it, REMOTE_SCRIPT & rs)
-    : lastSentTime(0),
-      user(it),
-      routers(r),
-      shortPacketsCount(0),
-      ip(user->GetCurrIP()),
-      notifier(rs, *this)
-{
-    user->AddConnectedAfterNotifier(&notifier);
-}
-//-----------------------------------------------------------------------------
-RS::USER::USER(const RS::USER & rhs)
-    : lastSentTime(rhs.lastSentTime),
-      user(rhs.user),
-      routers(rhs.routers),
-      shortPacketsCount(rhs.shortPacketsCount),
-      ip(rhs.ip),
-      notifier(rhs.notifier)
-{
-    user->DelConnectedAfterNotifier(&rhs.notifier);
-    user->AddConnectedAfterNotifier(&notifier);
-}
-//-----------------------------------------------------------------------------
-RS::USER::~USER()
-{
-    user->DelConnectedAfterNotifier(&notifier);
-}
 //-----------------------------------------------------------------------------
 RS::SETTINGS::SETTINGS()
     : sendPeriod(0),
@@ -185,6 +170,7 @@ return 0;
 REMOTE_SCRIPT::REMOTE_SCRIPT()
     : ctx(),
       ipNotifierList(),
+      connNotifierList(),
       authorizedUsers(),
       errorStr(),
       rsSettings(),
@@ -371,16 +357,16 @@ while (it != authorizedUsers.end())
     {
     if (difftime(stgTime, it->second.lastSentTime) - (rand() % halfPeriod) > sendPeriod)
         {
-        Send(it->first, it->second);
+        Send(it->second);
         }
     ++it;
     }
 }
 //-----------------------------------------------------------------------------
 #ifdef NDEBUG
-bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t, RS::USER & rsu, bool forceDisconnect) const
 #else
-bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, RS::USER & rsu, bool forceDisconnect) const
 #endif
 {
 RS::PACKET_HEADER packetHead;
@@ -392,6 +378,7 @@ packetHead.protoVer[1] = '2';
 if (forceDisconnect)
     {
     packetHead.packetType = RS_DISCONNECT_PACKET;
+    printfd(__FILE__, "RSCRIPT: force disconnect for '%s'\n", rsu.user->GetLogin().c_str());
     }
 else
     {
@@ -399,17 +386,25 @@ else
         {
         //SendLong
         packetHead.packetType = rsu.user->IsInetable() ? RS_CONNECT_PACKET : RS_DISCONNECT_PACKET;
+        if (rsu.user->IsInetable())
+            printfd(__FILE__, "RSCRIPT: connect for '%s'\n", rsu.user->GetLogin().c_str());
+        else
+            printfd(__FILE__, "RSCRIPT: disconnect for '%s'\n", rsu.user->GetLogin().c_str());
         }
     else
         {
         //SendShort
         packetHead.packetType = rsu.user->IsInetable() ? RS_ALIVE_PACKET : RS_DISCONNECT_PACKET;
+        if (rsu.user->IsInetable())
+            printfd(__FILE__, "RSCRIPT: alive for '%s'\n", rsu.user->GetLogin().c_str());
+        else
+            printfd(__FILE__, "RSCRIPT: disconnect for '%s'\n", rsu.user->GetLogin().c_str());
         }
     }
 rsu.shortPacketsCount++;
 rsu.lastSentTime = stgTime;
 
-packetHead.ip = htonl(ip);
+packetHead.ip = htonl(rsu.ip);
 packetHead.id = htonl(rsu.user->GetID());
 strncpy((char*)packetHead.login, rsu.user->GetLogin().c_str(), RS_LOGIN_LEN);
 packetHead.login[RS_LOGIN_LEN - 1] = 0;
@@ -446,13 +441,13 @@ Encrypt(&ctx, buf + sizeof(packetHead), (char *)&packetTail, sizeof(packetTail) 
 return false;
 }
 //-----------------------------------------------------------------------------
-bool REMOTE_SCRIPT::Send(uint32_t ip, RS::USER & rsu, bool forceDisconnect) const
+bool REMOTE_SCRIPT::Send(RS::USER & rsu, bool forceDisconnect) const
 {
 char buffer[RS_MAX_PACKET_LEN];
 
 memset(buffer, 0, sizeof(buffer));
 
-if (PreparePacket(buffer, sizeof(buffer), ip, rsu, forceDisconnect))
+if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
     {
     printfd(__FILE__, "REMOTE_SCRIPT::Send() - Invalid packet length!\n");
     return true;
@@ -467,11 +462,11 @@ std::for_each(
 return false;
 }
 //-----------------------------------------------------------------------------
-bool REMOTE_SCRIPT::SendDirect(uint32_t ip, RS::USER & rsu, uint32_t routerIP, bool forceDisconnect) const
+bool REMOTE_SCRIPT::SendDirect(RS::USER & rsu, uint32_t routerIP, bool forceDisconnect) const
 {
 char buffer[RS_MAX_PACKET_LEN];
 
-if (PreparePacket(buffer, sizeof(buffer), ip, rsu, forceDisconnect))
+if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
     {
     printfd(__FILE__, "REMOTE_SCRIPT::SendDirect() - Invalid packet length!\n");
     return true;
@@ -500,7 +495,7 @@ assert(h && "USERS::OpenSearch is always correct");
 
 while (!users->SearchNext(h, &u))
     {
-    SetUserNotifier(u);
+    SetUserNotifiers(u);
     }
 
 users->CloseSearch(h);
@@ -516,8 +511,8 @@ void REMOTE_SCRIPT::ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP)
  */
 if (newIP)
     {
-    RS::USER rsu(IP2Routers(newIP), u, *this);
-    Send(newIP, rsu);
+    RS::USER rsu(IP2Routers(newIP), u);
+    Send(rsu);
 
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     authorizedUsers.insert(std::make_pair(newIP, rsu));
@@ -530,7 +525,7 @@ else
             );
     if (it != authorizedUsers.end())
         {
-        Send(oldIP, it->second, true);
+        Send(it->second, true);
         authorizedUsers.erase(it);
         }
     }
@@ -629,44 +624,62 @@ else
 return value;
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::SetUserNotifier(USER_PTR u)
+void REMOTE_SCRIPT::SetUserNotifiers(USER_PTR u)
 {
 ipNotifierList.push_front(RS::IP_NOTIFIER(*this, u));
-
-u->AddCurrIPAfterNotifier(&(*ipNotifierList.begin()));
+connNotifierList.push_front(RS::CONNECTED_NOTIFIER(*this, u));
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::UnSetUserNotifier(USER_PTR u)
+void REMOTE_SCRIPT::UnSetUserNotifiers(USER_PTR u)
 {
-list<RS::IP_NOTIFIER>::iterator  ipAIter;
-std::list<list<RS::IP_NOTIFIER>::iterator> toErase;
+ipNotifierList.erase(std::remove_if(ipNotifierList.begin(),
+                                    ipNotifierList.end(),
+                                    USER_IS<IP_NOTIFIER>(u)),
+                     ipNotifierList.end());
+connNotifierList.erase(std::remove_if(connNotifierList.begin(),
+                                      connNotifierList.end(),
+                                      USER_IS<CONNECTED_NOTIFIER>(u)),
+                       connNotifierList.end());
 
-for (ipAIter = ipNotifierList.begin(); ipAIter != ipNotifierList.end(); ++ipAIter)
+}
+//-----------------------------------------------------------------------------
+void REMOTE_SCRIPT::AddRSU(USER_PTR user)
+{
+RS::USER rsu(IP2Routers(user->GetCurrIP()), user);
+Send(rsu);
+
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
+}
+//-----------------------------------------------------------------------------
+void REMOTE_SCRIPT::DelRSU(USER_PTR user)
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+const map<uint32_t, RS::USER>::iterator it(
+        authorizedUsers.find(user->GetCurrIP())
+        );
+if (it != authorizedUsers.end())
     {
-    if (ipAIter->GetUser() == u)
-        {
-        u->DelCurrIPAfterNotifier(&(*ipAIter));
-        toErase.push_back(ipAIter);
-        }
-    }
-
-std::list<list<RS::IP_NOTIFIER>::iterator>::iterator eIter;
-
-for (eIter = toErase.begin(); eIter != toErase.end(); ++eIter)
-    {
-    ipNotifierList.erase(*eIter);
+    Send(it->second, true);
+    authorizedUsers.erase(it);
     }
 }
 //-----------------------------------------------------------------------------
-void RS::IP_NOTIFIER::Notify(const uint32_t & oldValue, const uint32_t & newValue)
+void RS::IP_NOTIFIER::Notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
 {
-rs.ChangedIP(user, oldValue, newValue);
+//rs.ChangedIP(user, oldValue, newValue);
+if (newValue)
+    rs.AddRSU(user);
+else
+    rs.DelRSU(user);
 }
 //-----------------------------------------------------------------------------
 void RS::CONNECTED_NOTIFIER::Notify(const bool & /*oldValue*/, const bool & newValue)
 {
-if (!newValue)
-    rs.Send(user.ip, user, true);
+if (newValue)
+    rs.AddRSU(user);
+else
+    rs.DelRSU(user);
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const

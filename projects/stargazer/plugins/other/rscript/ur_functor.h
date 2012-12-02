@@ -41,7 +41,7 @@ public:
 
     void operator() (std::pair<const uint32_t, USER> & val)
         {
-        std::vector<uint32_t> newRouters = obj.IP2Routers(val.first);
+        std::vector<uint32_t> newRouters = obj.IP2Routers(val.second.ip);
         std::vector<uint32_t>::const_iterator oldIt(val.second.routers.begin());
         std::vector<uint32_t>::const_iterator newIt(newRouters.begin());
         val.second.shortPacketsCount = 0;
@@ -52,23 +52,23 @@ public:
                 {
                 if (newIt != newRouters.end())
                     {
-                    obj.SendDirect(val.first, val.second, *newIt); // Connect on new router
+                    obj.SendDirect(val.second, *newIt); // Connect on new router
                     ++newIt;
                     }
                 }
             else if (newIt == newRouters.end())
                 {
-                obj.SendDirect(val.first, val.second, *oldIt, true); // Disconnect on old router
+                obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
                 ++oldIt;
                 } 
             else if (*oldIt < *newIt)
                 {
-                obj.SendDirect(val.first, val.second, *oldIt, true); // Disconnect on old router
+                obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
                 ++oldIt;
                 }
             else if (*oldIt > *newIt)
                 {
-                obj.SendDirect(val.first, val.second, *newIt); // Connect on new router
+                obj.SendDirect(val.second, *newIt); // Connect on new router
                 ++newIt;
                 }
             else

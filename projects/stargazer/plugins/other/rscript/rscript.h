@@ -89,47 +89,65 @@ private:
 class IP_NOTIFIER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
 public:
     IP_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
-        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(u), rs(r) {}
+        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(u), rs(r) { user->AddCurrIPAfterNotifier(this); }
     IP_NOTIFIER(const IP_NOTIFIER & rhs)
-        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(rhs.user), rs(rhs.rs) {}
+        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(rhs.user), rs(rhs.rs) { user->AddCurrIPAfterNotifier(this); }
+    ~IP_NOTIFIER() { user->DelCurrIPAfterNotifier(this); }
+
+    IP_NOTIFIER & operator=(const IP_NOTIFIER & rhs)
+    {
+        user->DelCurrIPAfterNotifier(this);
+        user = rhs.user;
+        user->AddCurrIPAfterNotifier(this);
+        return *this;
+    }
+
     void Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    USER_PTR GetUser() { return user; }
+    USER_PTR GetUser() const { return user; }
 
 private:
-    IP_NOTIFIER & operator=(const IP_NOTIFIER & rhs);
 
     USER_PTR user;
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
-class USER;
-//-----------------------------------------------------------------------------
 class CONNECTED_NOTIFIER: public PROPERTY_NOTIFIER_BASE<bool> {
 public:
-    CONNECTED_NOTIFIER(REMOTE_SCRIPT & r, USER & u)
-        : PROPERTY_NOTIFIER_BASE<bool>(), user(u), rs(r) {}
+    CONNECTED_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
+        : PROPERTY_NOTIFIER_BASE<bool>(), user(u), rs(r) { user->AddConnectedAfterNotifier(this); }
     CONNECTED_NOTIFIER(const CONNECTED_NOTIFIER & rhs)
-        : PROPERTY_NOTIFIER_BASE<bool>(), user(rhs.user), rs(rhs.rs) {}
+        : PROPERTY_NOTIFIER_BASE<bool>(), user(rhs.user), rs(rhs.rs) { user->AddConnectedAfterNotifier(this); }
+    ~CONNECTED_NOTIFIER() { user->DelConnectedAfterNotifier(this); }
+
+    CONNECTED_NOTIFIER & operator=(const CONNECTED_NOTIFIER & rhs)
+    {
+        user->DelConnectedAfterNotifier(this);
+        user = rhs.user;
+        user->AddConnectedAfterNotifier(this);
+        return *this;
+    }
+
     void Notify(const bool & oldValue, const bool & newValue);
+    USER_PTR GetUser() const { return user; }
 
 private:
-    CONNECTED_NOTIFIER & operator=(const CONNECTED_NOTIFIER & rhs);
 
-    USER & user;
+    USER_PTR user;
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 struct USER {
-    USER(const std::vector<uint32_t> & r, USER_PTR it, REMOTE_SCRIPT & rs);
-    USER(const USER & rhs);
-    ~USER();
+    USER(const std::vector<uint32_t> & r, USER_PTR it)
+        : user(it),
+          routers(r),
+          ip(user->GetCurrIP())
+    {}
 
     time_t lastSentTime;
     USER_PTR user;
     std::vector<uint32_t> routers;
     int shortPacketsCount;
     uint32_t ip;
-    CONNECTED_NOTIFIER notifier;
 };
 //-----------------------------------------------------------------------------
 class SETTINGS {
@@ -174,10 +192,12 @@ public:
     uint16_t            GetStartPosition() const { return 10; }
     uint16_t            GetStopPosition() const { return 10; }
 
-    void                DelUser(USER_PTR u) { UnSetUserNotifier(u); }
-    void                AddUser(USER_PTR u) { SetUserNotifier(u); }
+    void                DelUser(USER_PTR u) { UnSetUserNotifiers(u); }
+    void                AddUser(USER_PTR u) { SetUserNotifiers(u); }
 
     void                ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP);
+    void                AddRSU(USER_PTR user);
+    void                DelRSU(USER_PTR user);
 
 private:
     REMOTE_SCRIPT(const REMOTE_SCRIPT & rhs);
@@ -187,17 +207,17 @@ private:
     bool                PrepareNet();
     bool                FinalizeNet();
 
-    bool                Send(uint32_t ip, USER & rsu, bool forceDisconnect = false) const;
-    bool                SendDirect(uint32_t ip, USER & rsu, uint32_t routerIP, bool forceDisconnect = false) const;
-    bool                PreparePacket(char * buf, size_t bufSize, uint32_t ip, USER &rsu, bool forceDisconnect = false) const;
+    bool                Send(USER & rsu, bool forceDisconnect = false) const;
+    bool                SendDirect(USER & rsu, uint32_t routerIP, bool forceDisconnect = false) const;
+    bool                PreparePacket(char * buf, size_t bufSize, USER &rsu, bool forceDisconnect = false) const;
     void                PeriodicSend();
 
     std::vector<uint32_t> IP2Routers(uint32_t ip);
     bool                GetUsers();
     std::string         GetUserParam(USER_PTR u, const std::string & paramName) const;
 
-    void                SetUserNotifier(USER_PTR u);
-    void                UnSetUserNotifier(USER_PTR u);
+    void                SetUserNotifiers(USER_PTR u);
+    void                UnSetUserNotifiers(USER_PTR u);
 
     void                InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const;
     void                Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, size_t len8) const;
@@ -205,6 +225,7 @@ private:
     mutable BLOWFISH_CTX ctx;
 
     std::list<IP_NOTIFIER> ipNotifierList;
+    std::list<CONNECTED_NOTIFIER> connNotifierList;
     std::map<uint32_t, USER> authorizedUsers;
 
     mutable std::string errorStr;
@@ -240,7 +261,7 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, USER
         DisconnectUser(REMOTE_SCRIPT & rs) : rscript(rs) {}
         void operator()(std::pair<const uint32_t, USER> & p)
         {
-            rscript.Send(p.first, p.second, true);
+            rscript.Send(p.second, true);
         }
     private:
         REMOTE_SCRIPT & rscript;
