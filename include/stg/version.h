@@ -27,6 +27,6 @@
 #define __VERSION_H__
 
 // Stargazer version
-#define SERVER_VERSION "2.408" 
+#define SERVER_VERSION "2.409-alpha" 
 
 #endif
