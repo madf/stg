@@ -502,35 +502,6 @@ users->CloseSearch(h);
 return false;
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP)
-{
-/*
- * When ip changes process looks like:
- * old => 0, 0 => new
- *
- */
-if (newIP)
-    {
-    RS::USER rsu(IP2Routers(newIP), u);
-    Send(rsu);
-
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    authorizedUsers.insert(std::make_pair(newIP, rsu));
-    }
-else
-    {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    const map<uint32_t, RS::USER>::iterator it(
-            authorizedUsers.find(oldIP)
-            );
-    if (it != authorizedUsers.end())
-        {
-        Send(it->second, true);
-        authorizedUsers.erase(it);
-        }
-    }
-}
-//-----------------------------------------------------------------------------
 std::vector<uint32_t> REMOTE_SCRIPT::IP2Routers(uint32_t ip)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -667,7 +638,6 @@ if (it != authorizedUsers.end())
 //-----------------------------------------------------------------------------
 void RS::IP_NOTIFIER::Notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
 {
-//rs.ChangedIP(user, oldValue, newValue);
 if (newValue)
     rs.AddRSU(user);
 else

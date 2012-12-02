@@ -195,7 +195,6 @@ public:
     void                DelUser(USER_PTR u) { UnSetUserNotifiers(u); }
     void                AddUser(USER_PTR u) { SetUserNotifiers(u); }
 
-    void                ChangedIP(USER_PTR u, uint32_t oldIP, uint32_t newIP);
     void                AddRSU(USER_PTR user);
     void                DelRSU(USER_PTR user);
 
