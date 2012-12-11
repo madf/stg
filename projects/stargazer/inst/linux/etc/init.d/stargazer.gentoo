@@ -1,6 +1,6 @@
 #!/sbin/runscript
 
-opts="reload"
+extra_commands="reload"
 
 DAEMON=/usr/sbin/stargazer
 STARGAZER_OPTS=""
