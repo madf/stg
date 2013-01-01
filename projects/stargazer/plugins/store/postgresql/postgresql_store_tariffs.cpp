@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cmath>
 
 #include <libpq-fe.h>
 
@@ -543,8 +544,8 @@ for (int i = 0; i < std::min(tuples, DIR_NUM); ++i)
     tuple >> td->dirPrice[dir].hNight;
     tuple >> td->dirPrice[dir].mNight;
 
-    if (td->dirPrice[dir].priceDayA == td->dirPrice[dir].priceNightA &&
-        td->dirPrice[dir].priceDayB == td->dirPrice[dir].priceNightB)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) > 1.0e-3 &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) > 1.0e-3)
         {
         td->dirPrice[dir].singlePrice = true;
         }

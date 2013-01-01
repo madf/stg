@@ -26,6 +26,8 @@
  *
  */
 
+#include <cmath>
+
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 
@@ -284,8 +286,8 @@ try
     st->Get(7, td->dirPrice[dir].priceNightB);
     td->dirPrice[dir].priceNightB /= 1024*1024;
     st->Get(8, td->dirPrice[dir].threshold);
-    if (td->dirPrice[dir].priceDayA == td->dirPrice[dir].priceNightA &&
-        td->dirPrice[dir].priceDayB == td->dirPrice[dir].priceNightB)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3)
         {
         td->dirPrice[dir].singlePrice = true;
         }

@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <cstdio> // snprintf
 #include <cerrno>
+#include <cmath>
 #include <algorithm>
 
 #include "stg/common.h"
@@ -1433,8 +1434,8 @@ if (dn < DIR_NUM)
                                          aliveSyn6.md[dn],
                                          dn,
                                          stgTime);
-    p *= (1024 * 1024);
-    if (p == 0)
+    p *= 1024 * 1024;
+    if (std::fabs(p) < 1.0e-3)
         {
         snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "---");
         }
@@ -1523,8 +1524,8 @@ if (dn < DIR_NUM)
                                          aliveSyn8.md[dn],
                                          dn,
                                          stgTime);
-    p *= (1024 * 1024);
-    if (p == 0)
+    p *= 1024 * 1024;
+    if (std::fabs(p) < 1.0e-3)
         {
         snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "---");
         }

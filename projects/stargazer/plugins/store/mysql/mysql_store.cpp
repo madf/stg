@@ -1070,8 +1070,8 @@ int MYSQL_STORE::WriteUserDisconnect(const string & login,
                                      const DIR_TRAFF & sessionUp,
                                      const DIR_TRAFF & sessionDown,
                                      double cash,
-                                     double freeMb,
-                                     const std::string & reason) const
+                                     double /*freeMb*/,
+                                     const std::string & /*reason*/) const
 {
 string logStr = "Disconnect, ";
 stringstream sssu;

@@ -37,6 +37,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 
 #include "stg/users.h"
 #include "stg/common.h"
@@ -592,7 +593,7 @@ if (!fakeConnect)
                 scriptOnConnect.c_str(),
                 login.c_str(),
                 inet_ntostring(currIP).c_str(),
-                (double)cash,
+                cash.ConstData(),
                 id,
                 dirsStr);
 
@@ -649,7 +650,7 @@ if (!fakeDisconnect)
                 scriptOnDisonnect.c_str(),
                 login.c_str(),
                 inet_ntostring(lastIPForDisconnect).c_str(),
-                (double)cash,
+                cash.ConstData(),
                 id,
                 dirsStr);
 
@@ -1175,9 +1176,10 @@ time_t t = stgTime;
 struct tm tm;
 localtime_r(&t, &tm);
 int daysCurrMon = DaysInCurrentMonth();
-double pt = (tm.tm_mday - 1) / (double)daysCurrMon;
+double pt = tm.tm_mday - 1;
+pt /= daysCurrMon;
 
-passiveTime = (time_t)(pt * 24 * 3600 * daysCurrMon);
+passiveTime = static_cast<time_t>(pt * 24 * 3600 * daysCurrMon);
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::MidnightResetSessionStat()
@@ -1240,7 +1242,7 @@ if (passive.ConstData() || tariff == NULL)
 
 double fee = tariff->GetFee() / DaysInCurrentMonth();
 
-if (fee == 0.0)
+if (std::fabs(fee) < 1.0e-3)
     return;
 
 double c = cash;
@@ -1289,7 +1291,7 @@ double fee = tariff->GetFee() * passiveTimePart;
 
 ResetPassiveTime();
 
-if (fee == 0.0)
+if (std::fabs(fee) < 1.0e-3)
     {
     SetPrepaidTraff();
     return;

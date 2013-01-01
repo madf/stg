@@ -2,7 +2,6 @@
 
 #include "stg/message.h"
 #include "stg/common.h"
-#include "utils.h"
 #include "messages_methods.h"
 #include "rpcconfig.h"
 

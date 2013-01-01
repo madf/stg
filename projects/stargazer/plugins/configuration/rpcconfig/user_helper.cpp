@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "stg/tariffs.h"
 #include "stg/admin.h"
 #include "stg/store.h"
@@ -5,7 +7,6 @@
 #include "stg/common.h"
 #include "stg/user_property.h"
 #include "user_helper.h"
-#include "utils.h"
 
 //------------------------------------------------------------------------------
 
@@ -225,7 +226,7 @@ if ((it = structVal.find("email")) != structVal.end())
 if ((it = structVal.find("cash")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().cash.Get() != value)
+    if (std::fabs(ptr->GetProperty().cash.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().cash.Set(value,
                                      admin,
                                      login,
@@ -247,7 +248,7 @@ if ((it = structVal.find("creditexpire")) != structVal.end())
 if ((it = structVal.find("credit")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().credit.Get() != value)
+    if (std::fabs(ptr->GetProperty().credit.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().credit.Set(value,
                                        admin,
                                        login,
@@ -258,7 +259,7 @@ if ((it = structVal.find("credit")) != structVal.end())
 if ((it = structVal.find("freemb")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().freeMb.Get() != value)
+    if (std::fabs(ptr->GetProperty().freeMb.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().freeMb.Set(value,
                                        admin,
                                        login,

@@ -10,7 +10,6 @@
 #include "users_methods.h"
 #include "rpcconfig.h"
 #include "user_helper.h"
-#include "utils.h"
 
 //------------------------------------------------------------------------------
 

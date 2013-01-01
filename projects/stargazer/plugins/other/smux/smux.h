@@ -21,8 +21,6 @@
 #include "tables.h"
 #include "types.h"
 
-extern "C" PLUGIN * GetPlugin();
-
 class USER;
 class SETTINGS;
 class SMUX;
@@ -215,7 +213,5 @@ void DEL_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
 smux.UnsetNotifier(userPtr);
 smux.UpdateTables();
 }
-
-extern "C" PLUGIN * GetPlugin();
 
 #endif
