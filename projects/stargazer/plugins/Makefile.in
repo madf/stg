@@ -15,12 +15,12 @@ LIBS += $(addprefix -lstg,$(STGLIBS))
 
 CXXFLAGS += -fPIC $(STGLIBS_INCS)
 CFLAGS += -fPIC $(STGLIBS_INCS)
-LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg $(STGLIBS_LIBS)
+LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
 
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
+	$(CXX) $^ $(STGLIBS_LIBS) $(LIBS) $(LDFLAGS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
 clean:
