@@ -19,14 +19,17 @@ OWNER=root
 if [ -z $1 ]
 then
     MAKEOPTS="-j1"
+    DEBUG="no"
 else
     if [ "$1" = "debug" ]
     then
         DEFS="-DDEBUG"
         MAKEOPTS="-j1"
         CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
+        DEBUG="yes"
     else
         MAKEOPTS="-j1"
+        DEBUG="no"
     fi
 fi
 
@@ -148,6 +151,7 @@ rm -f build_check.c
 
 echo "OS=$OS" > $CONFFILE
 echo "STG_TIME=yes" >> $CONFFILE
+echo "DEBUG=$DEBUG" >> $CONFFILE
 echo "DIR_BUILD=$BUILD_DIR" >> $CONFFILE
 echo "DIR_LIB=\$(DIR_BUILD)/../../lib" >> $CONFFILE
 echo "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs" >> $CONFFILE

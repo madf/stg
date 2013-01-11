@@ -39,15 +39,18 @@ if [ -z "$1" ]
 then
     DEFS="$DEFS -DNDEBUG"
     MAKEOPTS="-j1"
+    DEBUG="no"
 else
     if [ "$1" = "debug" ]
     then
         DEFS="$DEFS -DDEBUG"
         MAKEOPTS="-j1"
         CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
+        DEBUG="yes"
     else
         DEFS="$DEFS -DNDEBUG"
         MAKEOPTS="-j1"
+        DEBUG="no"
     fi
 fi
 
@@ -391,6 +394,7 @@ fi
 
 echo "OS=$OS" > $CONFFILE
 echo "STG_TIME=yes" >> $CONFFILE
+echo "DEBUG=$DEBUG" >> $CONFFILE
 echo "DIR_BUILD=$BUILD_DIR" >> $CONFFILE
 echo "DIR_LIB=\$(DIR_BUILD)/../../lib" >> $CONFFILE
 echo "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs" >> $CONFFILE

@@ -77,7 +77,11 @@ distclean: clean
 install: install-bin install-data
 
 install-bin: $(PROG)
-	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+ifeq ($(DEBUG), yes)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+endif
 	$(MAKE) -C $(DIR_INCLUDE) install
 	$(MAKE) -C $(DIR_LIBSRC) install
 	$(MAKE) -C $(DIR_PLUGINS) install

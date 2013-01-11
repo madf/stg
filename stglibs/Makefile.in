@@ -35,8 +35,11 @@ clean:
 	rm -f deps $(PROG) *.o *.a *.so tags *.*~ 
 
 install: $(PROG)
-	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/stg
-	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+ifeq ($(DEBUG), yes)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+endif
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/include/stg
 	install -m $(DATA_MODE) -o $(OWNER) $(addprefix include/stg/,$(INCS)) $(PREFIX)/usr/include/stg/
 

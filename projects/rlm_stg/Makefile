@@ -57,7 +57,11 @@ distclean: clean
 install: install-bin
 
 install-bin:
-	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+ifeq ($(DEBUG), yes)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 uninstall: uninstall-bin
