@@ -58,16 +58,16 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 uninstall: uninstall-bin
 
 uninstall-bin:
-	rm -f $(PREFIX)/usr/lib/$(PROG)
+	rm -f $(PREFIX)/usr/lib/freeradius/$(PROG)
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)
