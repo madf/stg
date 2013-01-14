@@ -1,8 +1,20 @@
 #! /bin/sh
 
-login=$1
-param=$2
-oldValue=$3
-newValue=$4
+# About: This script is called when user account is changed.
+# Common Task: Notify about various events.
+# Priority: optional
 
-#echo "User: '$login'. Parameter $param changed from '$oldValue' to '$newValue'" >> /var/stargazer/users.chg.log
+# User login
+LOGIN=$1
+
+# User parameter
+PARAMETER=$2
+
+# User parameter old value
+OLDVALUE=$3
+
+# User parameter new value
+NEWVALUE=$4
+
+# Usage examples:
+#echo "User: '$LOGIN'. Parameter $PARAMETER changed from '$OLDVALUE' to '$NEWVALUE'" >> /var/stargazer/user.change.log

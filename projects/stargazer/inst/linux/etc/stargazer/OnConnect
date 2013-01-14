@@ -1,24 +1,23 @@
 #! /bin/sh
 
-#Этот скрипт вызывается в момент, когда пользователь
-#успешно прошел авторизацию на сервере. Задача скрипта - перестроить 
-#файрвол так, что бы пользователь получил доступ в интернет
+# About: This script is called when the user successfully authenticated on the server.
+# Common Task: Rebuild firewall to allow user to access the Internet.
+# Priority: required
 
-# Login
+# User login
 LOGIN=$1
 
-#user IP
+# User IP
 IP=$2
 
-#cash
+# User cash
 CASH=$3
 
-#user ID
+# User ID
 ID=$4
 
-#Selected dirs to connect
+# Selected DIRs (from rules file) to connect
 DIRS=$5
 
-
-#echo "C `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
-
+# Usage examples:
+#echo "Connected `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log

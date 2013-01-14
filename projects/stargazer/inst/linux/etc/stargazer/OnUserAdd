@@ -1,14 +1,12 @@
 #! /bin/sh
 
-# Использование (неиспользование) этого скрипта дело вкуса.
-# Он не выполняет критических функций. Его задача автматизировать
-# действия характерные при добавлении пользователя сети, например добавлекние 
-# пользователю почты
+# About: This script is called when the user is added to the Stargazer.
+# Common task: Automate typical actions on adding user to the network,
+#              such as creating email or IM account.
+# Priority: optional
 
-# Login
-login=$1
+# User login
+LOGIN=$1
 
-#echo "added user $login" >> /var/stargazer/add_del.log
-
-
-
+# Usage examples:
+#echo "Added user $login" >> /var/stargazer/add_del.log
