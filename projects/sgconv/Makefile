@@ -4,7 +4,7 @@
 
 include ../../Makefile.conf
 
-PROG = convertor
+PROG = sgconv
 
 SRCS = ./main.cpp \
        ./settings_impl.cpp
