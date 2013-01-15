@@ -51,13 +51,11 @@
 #define IA_PROTO_VER            (8)
 #define IA_PROTO_PROXY_VER      (101)
 
-using namespace std;
-
 typedef void (*tpStatusChangedCb)(int status, void * data);
 typedef void (*tpStatChangedCb)(const LOADSTAT & stat, void * data);
-typedef void (*tpCallBackInfoFn)(const string & message, int infoType, int showTime, int sendTime, void * data);
-typedef void (*tpCallBackErrorFn)(const string & message, int netError, void * data);
-typedef void (*tpCallBackDirNameFn)(const vector<string> & dirName, void * data);
+typedef void (*tpCallBackInfoFn)(const std::string & message, int infoType, int showTime, int sendTime, void * data);
+typedef void (*tpCallBackErrorFn)(const std::string & message, int netError, void * data);
+typedef void (*tpCallBackDirNameFn)(const std::vector<std::string> & dirName, void * data);
 
 //---------------------------------------------------------------------------
 class IA_CLIENT_PROT
@@ -69,16 +67,16 @@ friend void * RunL(void * data);
 #endif
 
 public:
-    IA_CLIENT_PROT(const string & sn, uint16_t p, uint16_t localPort = 0);
+    IA_CLIENT_PROT(const std::string & sn, uint16_t p, const std::string & localName = "", uint16_t localPort = 0);
     ~IA_CLIENT_PROT();
 
     void        Start();
     void        Stop();
     void        GetStat(LOADSTAT * ls);
 
-    void        SetServer(const string & sn, unsigned short port);
-    void        SetLogin(const string & login);
-    void        SetPassword(const string & password);
+    void        SetServer(const std::string & sn, unsigned short port);
+    void        SetLogin(const std::string & login);
+    void        SetPassword(const std::string & password);
     void        SetEnabledDirs(const bool * selectedDirs);
 
     void        SetStatusChangedCb(tpStatusChangedCb p, void * data);
@@ -95,9 +93,9 @@ public:
     int         GetReconnect() const { return reconnect; };
     void        SetReconnect(int r) { reconnect = r; };
     char        GetProtoVer() const { return proxyMode ? IA_PROTO_PROXY_VER : IA_PROTO_VER; };
-    void        GetMessageText(string * text) const { *text = messageText; };
-    void        GetInfoText(string * text) const { *text = infoText; };
-    int         GetStrError(string * error) const;
+    void        GetMessageText(std::string * text) const { *text = messageText; };
+    void        GetInfoText(std::string * text) const { *text = infoText; };
+    int         GetStrError(std::string * error) const;
 
     void        SetProxyMode(bool on) { proxyMode = on; };
     bool        GetProxyMode() const { return proxyMode; };
@@ -134,9 +132,9 @@ private:
     int             action;
     int             phase;
     int             phaseTime;
-    string          messageText;
-    string          infoText;
-    mutable string  strError;
+    std::string     messageText;
+    std::string     infoText;
+    mutable std::string strError;
     mutable int     codeError;
     bool            nonstop;
     bool            isNetPrepared;
@@ -147,8 +145,8 @@ private:
 
     bool            selectedDirs[DIR_NUM];
 
-    string          password;
-    string          login;
+    std::string     password;
+    std::string     login;
 
     #ifdef WIN32
     WSADATA wsaData;
@@ -156,9 +154,11 @@ private:
     pthread_t thread;
     #endif
 
-    string          serverName;
+    std::string     serverName;
     uint16_t        port;
     uint32_t        ip;
+    std::string     localName;
+    uint32_t        localIP;
     uint32_t        localPort;
 
     struct sockaddr_in  servAddr;
@@ -183,7 +183,7 @@ private:
     void              * errorCbData;
     void              * dirNameCbData;
 
-    map<string, int>    packetTypes;
+    std::map<std::string, int> packetTypes;
 
     CONN_SYN_8        * connSyn8;
     CONN_SYN_ACK_8    * connSynAck8;

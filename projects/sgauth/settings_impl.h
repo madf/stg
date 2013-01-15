@@ -37,6 +37,7 @@ public:
 
     const std::string & GetServerName() const { return serverName; }
     uint16_t            GetServerPort() const { return port; }
+    const std::string & GetLocalName() const { return localName; }
     uint16_t            GetLocalPort() const { return localPort; }
 
     const std::string & GetLogin() const { return login; }
@@ -56,6 +57,7 @@ private:
     std::string password;
     std::string serverName;
     int         port;
+    std::string localName;
     int         localPort;
     uint32_t    listenWebIP;
     int         refreshPeriod;

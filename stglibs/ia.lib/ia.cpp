@@ -108,10 +108,36 @@ return 0;
 }
 //---------------------------------------------------------------------------
 #endif
+
+namespace
+{
+
+bool HostNameToIP(const std::string & hostName, uint32_t & ip)
+{
+ip = inet_addr(hostName.c_str());
+if (ip == INADDR_NONE)
+    {
+    hostent * phe = gethostbyname(hostName.c_str());
+    if (phe)
+        {
+        ip = *((uint32_t *)phe->h_addr_list[0]);
+        }
+    else
+        {
+        return false;
+        }
+    }
+
+return true;
+}
+
+}
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IA_CLIENT_PROT::IA_CLIENT_PROT(const string & sn, unsigned short p, uint16_t localPort)
+IA_CLIENT_PROT::IA_CLIENT_PROT(const std::string & sn, unsigned short p,
+                               const std::string & ln, uint16_t lp)
     : action(IA_NONE),
       phase(1),
       phaseTime(0),
@@ -122,7 +148,8 @@ IA_CLIENT_PROT::IA_CLIENT_PROT(const string & sn, unsigned short p, uint16_t loc
       serverName(sn),
       port(p),
       ip(0),
-      localPort(localPort),
+      localName(ln),
+      localPort(lp),
       firstConnect(true),
       reconnect(0),
       sockr(0),
@@ -190,7 +217,7 @@ servAddr.sin_addr.s_addr = ip;
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::PrepareNet()
 {
-struct hostent * phe;
+/*struct hostent * phe;
 unsigned long ip;
 
 ip = inet_addr(serverName.c_str());
@@ -208,6 +235,16 @@ if (ip == INADDR_NONE)
         if (pErrorCb != NULL)
             pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
         }
+    }*/
+
+if (!HostNameToIP(serverName, ip))
+    {
+    ip = 0;
+    strError = std::string("Unknown host ") + "\'" + serverName + "\'";
+    codeError = IA_GETHOSTBYNAME_ERROR;
+    if (pErrorCb != NULL)
+        pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
+    return;
     }
 
 #ifndef WIN32
@@ -225,7 +262,24 @@ if (localPort)
     localAddrR.sin_port = htons(localPort);
 else
     localAddrR.sin_port = htons(port);
-localAddrR.sin_addr.s_addr = inet_addr("0.0.0.0");
+
+if (!localName.empty())
+    {
+    if (!HostNameToIP(localName, localIP))
+        {
+        strError = std::string("Unknown host ") + "\'" + serverName + "\'";
+        codeError = IA_GETHOSTBYNAME_ERROR;
+        if (pErrorCb != NULL)
+            pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
+        localIP = INADDR_ANY;
+        }
+    }
+else
+    {
+    localIP = INADDR_ANY;
+    }
+
+localAddrR.sin_addr.s_addr = localIP;
 
 servAddr.sin_family = AF_INET;
 servAddr.sin_port = htons(port);
@@ -268,7 +322,7 @@ WSACleanup();
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::DeterminatePacketType(const char * buffer)
 {
-map<string, int>::iterator pi;
+std::map<std::string, int>::iterator pi;
 pi = packetTypes.find(buffer);
 if (pi == packetTypes.end())
     {
@@ -543,19 +597,19 @@ void IA_CLIENT_PROT::GetStat(LOADSTAT * ls)
 memcpy(ls, &stat, sizeof(stat));
 }
 //---------------------------------------------------------------------------
-void IA_CLIENT_PROT::SetServer(const string & sn, unsigned short p)
+void IA_CLIENT_PROT::SetServer(const std::string & sn, unsigned short p)
 {
 serverName = sn;
 port = p;
 PrepareNet();
 }
 //---------------------------------------------------------------------------
-void IA_CLIENT_PROT::SetLogin(const string & l)
+void IA_CLIENT_PROT::SetLogin(const std::string & l)
 {
 login = l;
 }
 //---------------------------------------------------------------------------
-void IA_CLIENT_PROT::SetPassword(const string & p)
+void IA_CLIENT_PROT::SetPassword(const std::string & p)
 {
 password = p;
 
@@ -583,7 +637,7 @@ action = IA_DISCONNECT;
 return 0;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::GetStrError(string * error) const
+int IA_CLIENT_PROT::GetStrError(std::string * error) const
 {
 int ret = codeError;
 *error = strError;
@@ -594,7 +648,7 @@ return ret;
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Process_CONN_SYN_ACK_8(const char * buffer)
 {
-vector<string> dirNames;
+std::vector<std::string> dirNames;
 connSynAck8 = (CONN_SYN_ACK_8*)buffer;
 
 #ifdef ARCH_BE

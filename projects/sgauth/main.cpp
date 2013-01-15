@@ -200,7 +200,7 @@ if (settings.GetDaemon())
         }
     }
 
-clnp = new IA_CLIENT_PROT(settings.GetServerName(), settings.GetServerPort(), settings.GetLocalPort());
+clnp = new IA_CLIENT_PROT(settings.GetServerName(), settings.GetServerPort(), settings.GetLocalName(), settings.GetLocalPort());
 
 if (!settings.GetNoWeb())
     {

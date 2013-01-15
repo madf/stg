@@ -85,6 +85,8 @@ if (ParseIntInRange(temp, 1, 65535, &port))
     return -1;
     }
 
+cf.ReadString("LocalName", &localName, "");
+
 cf.ReadString("LocalPort", &temp, "0");
 if (ParseIntInRange(temp, 0, 65535, &localPort))
     {
