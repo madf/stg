@@ -35,23 +35,15 @@ MIN_XMLRPCC_VERSION="1.06.27"
 XMLRPC_FEATURES="c++2 abyss-server"
 
 
-if [ -z "$1" ]
+if [ "$1" = "debug" ]
 then
-    DEFS="$DEFS -DNDEBUG"
-    MAKEOPTS="-j1"
-    DEBUG="no"
+    DEFS="$DEFS -DDEBUG"
+    MAKEOPTS="$MAKEOPTS -j1"
+    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
+    DEBUG="yes"
 else
-    if [ "$1" = "debug" ]
-    then
-        DEFS="$DEFS -DDEBUG"
-        MAKEOPTS="-j1"
-        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
-        DEBUG="yes"
-    else
-        DEFS="$DEFS -DNDEBUG"
-        MAKEOPTS="-j1"
-        DEBUG="no"
-    fi
+    DEFS="$DEFS -DNDEBUG"
+    DEBUG="no"
 fi
 
 CXXFLAGS="$CXXFLAGS -I/usr/local/include"

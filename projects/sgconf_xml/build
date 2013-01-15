@@ -16,21 +16,15 @@ DATA_MODE=0644
 DIR_MODE=0755
 OWNER=root
 
-if [ -z $1 ]
+if [ "$1" = "debug" ]
 then
-    MAKEOPTS="-j1"
-    DEBUG="no"
+   DEFS="$DEFS -DDEBUG"
+   MAKEOPTS="$MAKEOPTS -j1"
+   CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
+   DEBUG="yes"
 else
-    if [ "$1" = "debug" ]
-    then
-        DEFS="-DDEBUG"
-        MAKEOPTS="-j1"
-        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
-        DEBUG="yes"
-    else
-        MAKEOPTS="-j1"
-        DEBUG="no"
-    fi
+   DEFS="$DEFS -DNDEBUG"
+   DEBUG="no"
 fi
 
 CXXFLAGS="$CXXFLAGS -I/usr/local/include"
