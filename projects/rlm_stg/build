@@ -17,7 +17,7 @@ DIR_MODE=0755
 OWNER=root
 
 if [ "$1" = "debug" ]
-then—
+then
    DEFS="$DEFS -DDEBUG"
    MAKEOPTS="$MAKEOPTS -j1"
    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
