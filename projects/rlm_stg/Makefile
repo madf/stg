@@ -76,7 +76,11 @@ endif
 uninstall: uninstall-bin
 
 uninstall-bin:
+ifeq ($(OS), linux)
 	rm -f $(PREFIX)/usr/lib/freeradius/$(PROG)
+else
+	rm -f $(PREFIX)/usr/lib/$(PROG)
+endif
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)
