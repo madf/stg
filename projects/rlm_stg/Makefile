@@ -58,9 +58,18 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
+ifeq ($(OS), linux)
 	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
+endif
+else
 	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+ifeq ($(OS), linux)
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+endif
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 
