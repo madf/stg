@@ -149,6 +149,7 @@ for (int i = 0; i < (int)strlen(login); i++)
     if (!(( login[i] >= 'a' && login[i] <= 'z')
         || (login[i] >= 'A' && login[i] <= 'Z')
         || (login[i] >= '0' && login[i] <= '9')
+        ||  login[i] == '.'
         ||  login[i] == '_'
         ||  login[i] == '-'))
         {
