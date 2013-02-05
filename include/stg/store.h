@@ -79,7 +79,7 @@ public:
     virtual int EditMessage(const STG_MSG & msg, const std::string & login) const = 0;
     virtual int GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const = 0;
     virtual int DelMessage(uint64_t id, const std::string & login) const = 0;
-    virtual int GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const std::string & login) const = 0;
+    virtual int GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const = 0;
 
     virtual int SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const = 0;
 

@@ -85,7 +85,7 @@ public:
     bool                GetFreeMbAllowInet() const { return freeMbAllowInet; }
     bool                GetDayFeeIsLastDay() const { return dayFeeIsLastDay; }
     bool                GetWriteFreeMbTraffCost() const
-        { return writeFreeMbTraffCost; };
+        { return writeFreeMbTraffCost; }
     bool                GetShowFeeInCash() const { return showFeeInCash; }
     const std::string & GetMonitorDir() const { return monitorDir; }
     bool                GetMonitoring() const { return monitoring; }

@@ -38,9 +38,7 @@
 #include "ur_functor.h"
 #include "send_functor.h"
 
-extern volatile const time_t stgTime;
-
-#define RS_MAX_ROUTERS  (100)
+extern volatile time_t stgTime;
 
 using RS::REMOTE_SCRIPT;
 
@@ -55,12 +53,14 @@ struct USER_IS
     USER_PTR user;
 };
 
+PLUGIN_CREATOR<REMOTE_SCRIPT> rsc;
+
 } // namespace anonymous
 
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PLUGIN_CREATOR<REMOTE_SCRIPT> rsc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ int RS::SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 netRouters.clear();
 ///////////////////////////
 pv.param = "Port";
@@ -103,7 +103,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 ///////////////////////////
 pv.param = "SendPeriod";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -352,7 +352,7 @@ void REMOTE_SCRIPT::PeriodicSend()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
+std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
     {
     if (difftime(stgTime, it->second.lastSentTime) - (rand() % halfPeriod) > sendPeriod)
@@ -420,7 +420,7 @@ RS::PACKET_TAIL packetTail;
 
 memset(packetTail.padding, 0, sizeof(packetTail.padding));
 strcpy((char*)packetTail.magic, RS_ID);
-vector<string>::const_iterator it;
+std::vector<std::string>::const_iterator it;
 std::string params;
 for(it = rsSettings.GetUserParams().begin();
     it != rsSettings.GetUserParams().end();
@@ -456,7 +456,7 @@ if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
 std::for_each(
         rsu.routers.begin(),
         rsu.routers.end(),
-        PacketSender(sock, buffer, sizeof(buffer), htons(rsSettings.GetPort()))
+        PacketSender(sock, buffer, sizeof(buffer), static_cast<uint16_t>(htons(rsSettings.GetPort())))
         );
 
 return false;
@@ -475,10 +475,10 @@ if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
 struct sockaddr_in sendAddr;
 
 sendAddr.sin_family = AF_INET;
-sendAddr.sin_port = htons(rsSettings.GetPort());
+sendAddr.sin_port = static_cast<uint16_t>(htons(rsSettings.GetPort()));
 sendAddr.sin_addr.s_addr = routerIP;
 
-int res = sendto(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&sendAddr, sizeof(sendAddr));
+ssize_t res = sendto(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&sendAddr, sizeof(sendAddr));
 
 if (res < 0)
     logger("sendto error: %s", strerror(errno));
@@ -515,9 +515,9 @@ for (size_t i = 0; i < netRouters.size(); ++i)
 return std::vector<uint32_t>();
 }
 //-----------------------------------------------------------------------------
-string REMOTE_SCRIPT::GetUserParam(USER_PTR u, const string & paramName) const
+std::string REMOTE_SCRIPT::GetUserParam(USER_PTR u, const std::string & paramName) const
 {
-string value = "";
+std::string value = "";
 if (strcasecmp(paramName.c_str(), "cash") == 0)
     strprintf(&value, "%f", u->GetProperty().cash.Get());
 else
@@ -626,7 +626,7 @@ authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 void REMOTE_SCRIPT::DelRSU(USER_PTR user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const map<uint32_t, RS::USER>::iterator it(
+const std::map<uint32_t, RS::USER>::iterator it(
         authorizedUsers.find(user->GetCurrIP())
         );
 if (it != authorizedUsers.end())
@@ -652,7 +652,7 @@ else
     rs.DelRSU(user);
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const
+void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password) const
 {
 unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
 memset(keyL, 0, PASSWD_LEN);
@@ -660,11 +660,11 @@ strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
 Blowfish_Init(ctx, keyL, PASSWD_LEN);
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, size_t len8) const
+void REMOTE_SCRIPT::Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8) const
 {
 if (dst != src)
     memcpy(dst, src, len8 * 8);
 for (size_t i = 0; i < len8; ++i)
-    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i * 8), (uint32_t *)(dst + i * 8 + 4));
+    Blowfish_Encrypt(ctx, static_cast<uint32_t *>(dst) + i * 2, static_cast<uint32_t *>(dst) + i * 2 + 1);
 }
 //-----------------------------------------------------------------------------

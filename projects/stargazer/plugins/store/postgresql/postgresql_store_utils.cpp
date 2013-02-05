@@ -34,6 +34,8 @@
 #include "stg/common.h"
 #include "postgresql_store.h"
 
+extern volatile time_t stgTime;
+
 int POSTGRESQL_STORE::StartTransaction() const
 {
 PGresult * result = PQexec(connection, "BEGIN");
@@ -110,24 +112,23 @@ delete[] buf;
 return 0;
 }
 
-std::string POSTGRESQL_STORE::Int2TS(uint32_t ts) const
+std::string POSTGRESQL_STORE::Int2TS(time_t ts) const
 {
 char buf[32];
 struct tm brokenTime;
-time_t tt = ts;
 
 brokenTime.tm_wday = 0;
 brokenTime.tm_yday = 0;
 brokenTime.tm_isdst = 0;
 
-gmtime_r(&tt, &brokenTime);
+gmtime_r(&ts, &brokenTime);
 
 strftime(buf, 32, "%Y-%m-%d %H:%M:%S", &brokenTime);
 
 return buf;
 }
 
-uint32_t POSTGRESQL_STORE::TS2Int(const std::string & ts) const
+time_t POSTGRESQL_STORE::TS2Int(const std::string & ts) const
 {
 struct tm brokenTime;
 

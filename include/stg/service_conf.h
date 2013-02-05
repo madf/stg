@@ -17,11 +17,11 @@ SERVICE_CONF(const std::string & n, double c)
     : name(n), comment(), cost(c), payDay(0)
 {}
 SERVICE_CONF(const std::string & n, double c, unsigned p)
-    : name(n), comment(), cost(c), payDay(p)
+    : name(n), comment(), cost(c), payDay(static_cast<uint8_t>(p))
 {}
 SERVICE_CONF(const std::string & n, double c,
              unsigned p, const std::string & com)
-    : name(n), comment(com), cost(c), payDay(p)
+    : name(n), comment(com), cost(c), payDay(static_cast<uint8_t>(p))
 {}
 
 std::string name;

@@ -465,7 +465,7 @@ struct GDS
 #ifdef IBPP_WINDOWS
 		mHandle = 0;
 #endif
-	};
+	}
 };
 
 extern GDS gds;

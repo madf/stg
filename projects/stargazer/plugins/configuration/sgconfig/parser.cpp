@@ -64,13 +64,13 @@ answerList->push_back("<ServerInfo>");
 sprintf(s, "<version value=\"%s\"/>", SERVER_VERSION);
 answerList->push_back(s);
 
-sprintf(s, "<tariff_num value=\"%llu\"/>", (unsigned long long)tariffs->Count());
+sprintf(s, "<tariff_num value=\"%llu\"/>", static_cast<unsigned long long>(tariffs->Count()));
 answerList->push_back(s);
 
 sprintf(s, "<tariff value=\"%d\"/>", 2);
 answerList->push_back(s);
 
-sprintf(s, "<users_num value=\"%llu\"/>", (unsigned long long)users->Count());
+sprintf(s, "<users_num value=\"%llu\"/>", static_cast<unsigned long long>(users->Count()));
 answerList->push_back(s);
 
 sprintf(s, "<uname value=\"%s\"/>", un);
@@ -84,7 +84,7 @@ answerList->push_back(s);
 
 for (int i = 0; i< DIR_NUM; i++)
     {
-    string dn2e;
+    std::string dn2e;
     Encode12str(dn2e, settings->GetDirName(i));
     sprintf(s, "<dir_name_%d value=\"%s\"/>", i, dn2e.c_str());
     answerList->push_back(s);
@@ -124,8 +124,8 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::CreateAnswer()
 {
-string s;
-string enc;
+std::string s;
+std::string enc;
 
 USER_PTR u;
 
@@ -190,7 +190,7 @@ s = "<email value=\"" + enc + "\" />";
 answerList->push_back(s);
 
 
-vector<USER_PROPERTY_LOGGED<string> *> userdata;
+std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
 userdata.push_back(u->GetProperty().userdata0.GetPointer());
 userdata.push_back(u->GetProperty().userdata1.GetPointer());
 userdata.push_back(u->GetProperty().userdata2.GetPointer());
@@ -202,7 +202,7 @@ userdata.push_back(u->GetProperty().userdata7.GetPointer());
 userdata.push_back(u->GetProperty().userdata8.GetPointer());
 userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
-string tmpI;
+std::string tmpI;
 for (unsigned i = 0; i < userdata.size(); i++)
     {
     Encode12str(enc, userdata[i]->Get());
@@ -230,7 +230,7 @@ answerList->push_back(s);
 strprintf(&s, "<PingTime value=\"%lu\" />", u->GetPingTime());
 answerList->push_back(s);
 
-stringstream sstr;
+std::ostringstream sstr;
 sstr << u->GetProperty().ips.Get();
 strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
 answerList->push_back(s);
@@ -246,7 +246,7 @@ upload = u->GetProperty().up.Get();
 
 for (int j = 0; j < DIR_NUM; j++)
     {
-    string s;
+    std::string s;
     x2str(upload[j], s);
     sprintf(st, " MU%d=\"%s\"", j, s.c_str());
     strcat(ss, st);
@@ -342,16 +342,16 @@ void PARSER_GET_USERS::CreateAnswer()
 {
 answerList->erase(answerList->begin(), answerList->end());
 
-string s;
-string userStart;
-string traffStart;
-string traffMiddle;
-string traffFinish;
-string middle;
-string userFinish;
+std::string s;
+std::string userStart;
+std::string traffStart;
+std::string traffMiddle;
+std::string traffFinish;
+std::string middle;
+std::string userFinish;
 
 
-string enc;
+std::string enc;
 
 USER_PTR u;
 
@@ -362,7 +362,7 @@ if (!h)
     users->CloseSearch(h);
     return;
     }
-string updateTime;
+std::string updateTime;
 x2str(time(NULL), updateTime);
 
 if (lastUpdateFound)
@@ -458,7 +458,7 @@ while (1)
         middle += s;
         }
 
-    vector<USER_PROPERTY_LOGGED<string> *> userdata;
+    std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
     userdata.push_back(u->GetProperty().userdata0.GetPointer());
     userdata.push_back(u->GetProperty().userdata1.GetPointer());
     userdata.push_back(u->GetProperty().userdata2.GetPointer());
@@ -470,7 +470,7 @@ while (1)
     userdata.push_back(u->GetProperty().userdata8.GetPointer());
     userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
-    string tmpI;
+    std::string tmpI;
     for (unsigned i = 0; i < userdata.size(); i++)
         {
         if (userdata[i]->ModificationTime() > lastUserUpdateTime)
@@ -522,7 +522,7 @@ while (1)
 
     if (u->GetProperty().ips.ModificationTime() > lastUserUpdateTime)
         {
-        stringstream sstr;
+        std::ostringstream sstr;
         sstr << u->GetProperty().ips.Get();
         strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
         middle += s;
@@ -540,7 +540,7 @@ while (1)
         {
         for (int j = 0; j < DIR_NUM; j++)
             {
-            string s;
+            std::string s;
             x2str(upload[j], s);
             sprintf(st, " MU%d=\"%s\" ", j, s.c_str());
             traffMiddle += st;
@@ -742,11 +742,11 @@ ucr = new USER_CONF_RES;
 
 upr = new RESETABLE<uint64_t>[DIR_NUM];
 downr = new RESETABLE<uint64_t>[DIR_NUM];
-};
+}
 //-----------------------------------------------------------------------------
-string PARSER_CHG_USER::EncChar2String(const char * strEnc)
+std::string PARSER_CHG_USER::EncChar2String(const char * strEnc)
 {
-string str;
+std::string str;
 Decode21str(str, strEnc);
 return str;
 }
@@ -917,7 +917,7 @@ else
         int dir;
         DIR_TRAFF dtu;
         DIR_TRAFF dtd;
-        unsigned long long t = 0;
+        uint64_t t = 0;
         while (attr[j])
             {
             dir = attr[j][2] - '0';
@@ -1074,7 +1074,7 @@ if (!ucr->note.res_empty())
     if (!u->GetProperty().note.Set(ucr->note.const_data(), currAdmin, login, store))
         res = -1;
 
-vector<USER_PROPERTY_LOGGED<string> *> userdata;
+std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
 userdata.push_back(u->GetProperty().userdata0.GetPointer());
 userdata.push_back(u->GetProperty().userdata1.GetPointer());
 userdata.push_back(u->GetProperty().userdata2.GetPointer());
@@ -1288,7 +1288,7 @@ if (strcasecmp(el, "Message") == 0)
             printfd(__FILE__, "User not found. %s\n", logins[i].c_str());
             continue;
             }
-        msg.header.creationTime = stgTime;
+        msg.header.creationTime = static_cast<unsigned int>(stgTime);
         u->AddMessage(&msg);
         result = res_ok;
         }

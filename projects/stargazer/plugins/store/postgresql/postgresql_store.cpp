@@ -49,12 +49,17 @@
 #include "postgresql_store_utils.h"
 #include "postgresql_store.h"
 
-PLUGIN_CREATOR<POSTGRESQL_STORE> pqStoreeCreator;
+namespace
+{
+PLUGIN_CREATOR<POSTGRESQL_STORE> pgsc;
+}
+
+extern "C" STORE * GetStore();
 
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
-return pqStoreeCreator.GetPlugin();
+return pgsc.GetPlugin();
 }
 
 //-----------------------------------------------------------------------------
@@ -88,7 +93,7 @@ pthread_mutex_destroy(&mutex);
 int POSTGRESQL_STORE::ParseSettings()
 {
 std::vector<PARAM_VALUE>::iterator i;
-string s;
+std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {

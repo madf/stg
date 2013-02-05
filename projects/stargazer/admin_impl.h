@@ -43,9 +43,9 @@ public:
       ADMIN_IMPL();
       ADMIN_IMPL(const ADMIN_CONF & ac);
       ADMIN_IMPL(const PRIV & priv,
-            const std::string & login,
-            const std::string & password);
-      virtual ~ADMIN_IMPL() {};
+                 const std::string & login,
+                 const std::string & password);
+      virtual ~ADMIN_IMPL() {}
 
       ADMIN_IMPL & operator=(const ADMIN_IMPL &);
       ADMIN_IMPL & operator=(const ADMIN_CONF &);
@@ -54,15 +54,15 @@ public:
       bool         operator<(const ADMIN_IMPL & rhs) const;
       bool         operator<=(const ADMIN_IMPL & rhs) const;
 
-      const std::string & GetPassword() const { return conf.password; };
-      const std::string & GetLogin() const { return conf.login; };
-      PRIV const *        GetPriv() const { return &conf.priv; };
-      uint16_t            GetPrivAsInt() const { return conf.priv.ToInt(); };
-      const ADMIN_CONF &  GetConf() const { return conf; };
+      const std::string & GetPassword() const { return conf.password; }
+      const std::string & GetLogin() const { return conf.login; }
+      PRIV const *        GetPriv() const { return &conf.priv; }
+      uint32_t            GetPrivAsInt() const { return conf.priv.ToInt(); }
+      const ADMIN_CONF &  GetConf() const { return conf; }
       void                Print() const;
-      uint32_t            GetIP() const { return ip; };
+      uint32_t            GetIP() const { return ip; }
       std::string         GetIPStr() const;
-      void                SetIP(uint32_t ip) { ADMIN_IMPL::ip = ip; };
+      void                SetIP(uint32_t v) { ip = v; }
       const std::string   GetLogStr() const;
 
 private:

@@ -34,9 +34,12 @@
 #include "stg/plugin_creator.h"
 #include "firebird_store.h"
 
-using namespace std;
-
+namespace
+{
 PLUGIN_CREATOR<FIREBIRD_STORE> frsc;
+}
+
+extern "C" STORE * GetStore();
 //-----------------------------------------------------------------------------
 STORE * GetStore()
 {
@@ -69,13 +72,13 @@ db->Disconnect();
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::ParseSettings()
 {
-vector<PARAM_VALUE>::iterator i;
-string s;
+std::vector<PARAM_VALUE>::iterator i;
+std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
     s = i->param;
-    transform(s.begin(), s.end(), s.begin(), ToLower());
+    std::transform(s.begin(), s.end(), s.begin(), ToLower());
     if (s == "server")
         {
         db_server = *(i->value.begin());

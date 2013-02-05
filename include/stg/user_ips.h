@@ -44,8 +44,6 @@
 #include "stg/common.h"
 #include "os_int.h"
 
-using namespace std;
-
 //-------------------------------------------------------------------------
 struct IP_MASK
 {
@@ -57,15 +55,18 @@ uint32_t mask;
 //-------------------------------------------------------------------------
 class USER_IPS
 {
-    friend std::ostream & operator<< (ostream & o, const USER_IPS & i);
+    friend std::ostream & operator<< (std::ostream & o, const USER_IPS & i);
     //friend stringstream & operator<< (stringstream & s, const USER_IPS & i);
-    friend const USER_IPS StrToIPS(const string & ipsStr) throw(string);
+    friend const USER_IPS StrToIPS(const std::string & ipsStr);
 
 public:
+    typedef std::vector<IP_MASK> ContainerType;
+    typedef ContainerType::size_type IndexType;
+
     USER_IPS();
     USER_IPS(const USER_IPS &);
     USER_IPS & operator=(const USER_IPS &);
-    const IP_MASK & operator[](int idx) const;
+    const IP_MASK & operator[](IndexType idx) const;
     std::string GetIpStr() const;
     bool IsIPInIPS(uint32_t ip) const;
     bool OnlyOneIP() const;
@@ -75,7 +76,7 @@ public:
 
 private:
     uint32_t CalcMask(unsigned int msk) const;
-    std::vector<IP_MASK> ips;
+    ContainerType ips;
 };
 //-------------------------------------------------------------------------
 
@@ -98,7 +99,7 @@ return *this;
 }
 //-----------------------------------------------------------------------------
 inline
-const IP_MASK & USER_IPS::operator[](int idx) const
+const IP_MASK & USER_IPS::operator[](IndexType idx) const
 {
 return ips[idx];
 }
@@ -116,8 +117,8 @@ if (ips[0].ip == 0)
     return "*";
     }
 
-std::vector<IP_MASK>::const_iterator it(ips.begin());
-std::stringstream s;
+ContainerType::const_iterator it(ips.begin());
+std::ostringstream s;
 s << inet_ntostring(it->ip);
 ++it;
 for (; it != ips.end(); ++it)
@@ -130,7 +131,7 @@ return s.str();
 inline
 int USER_IPS::Count() const
 {
-return ips.size();
+return static_cast<int>(ips.size());
 }
 //-----------------------------------------------------------------------------
 inline
@@ -152,7 +153,7 @@ if (ips.empty())
 if (ips.front().ip == 0)
     return true;
 
-for (std::vector<IP_MASK>::const_iterator it(ips.begin()); it != ips.end(); ++it)
+for (ContainerType::const_iterator it(ips.begin()); it != ips.end(); ++it)
     {
     uint32_t mask(CalcMask(it->mask));
     if ((ip & mask) == (it->ip & mask))
@@ -196,7 +197,7 @@ return s;
 }*/
 //-----------------------------------------------------------------------------
 inline
-const USER_IPS StrToIPS(const std::string & ipsStr) throw(std::string)
+const USER_IPS StrToIPS(const std::string & ipsStr)
 {
 USER_IPS ips;
 char * paddr;
@@ -215,18 +216,18 @@ if (ipsStr[0] == '*' && ipsStr.size() == 1)
     return ips;
     }
 
-char * str = new char[ipsStr.size() + 1];
-strcpy(str, ipsStr.c_str());
-char * pstr = str;
+char * tmp = new char[ipsStr.size() + 1];
+strcpy(tmp, ipsStr.c_str());
+char * pstr = tmp;
 while ((paddr = strtok(pstr, ",")))
     {
     pstr = NULL;
     ipMask.push_back(paddr);
     }
 
-delete[] str;
+delete[] tmp;
 
-for (unsigned int i = 0; i < ipMask.size(); i++)
+for (USER_IPS::IndexType i = 0; i < ipMask.size(); i++)
     {
     char str[128];
     char * strIp;

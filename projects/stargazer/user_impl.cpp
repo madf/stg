@@ -336,7 +336,7 @@ property.cash.DelBeforeNotifier(&cashNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::SetLogin(string const & l)
+void USER_IMPL::SetLogin(const std::string & l)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 assert(login.empty() && "Login is already set");
@@ -576,7 +576,7 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 if (!fakeConnect)
     {
-    string scriptOnConnect = settings->GetScriptsDir() + "/OnConnect";
+    std::string scriptOnConnect = settings->GetScriptsDir() + "/OnConnect";
 
     if (access(scriptOnConnect.c_str(), X_OK) == 0)
         {
@@ -587,7 +587,7 @@ if (!fakeConnect)
             dirsStr[i] = enabledDirs[i] ? '1' : '0';
             }
 
-        string scriptOnConnectParams;
+        std::string scriptOnConnectParams;
         strprintf(&scriptOnConnectParams,
                 "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
                 scriptOnConnect.c_str(),
@@ -633,7 +633,7 @@ if (!lastIPForDisconnect)
 
 if (!fakeDisconnect)
     {
-    string scriptOnDisonnect = settings->GetScriptsDir() + "/OnDisconnect";
+    std::string scriptOnDisonnect = settings->GetScriptsDir() + "/OnDisconnect";
 
     if (access(scriptOnDisonnect.c_str(), X_OK) == 0)
         {
@@ -644,7 +644,7 @@ if (!fakeDisconnect)
             dirsStr[i] = enabledDirs[i] ? '1' : '0';
             }
 
-        string scriptOnDisonnectParams;
+        std::string scriptOnDisonnectParams;
         strprintf(&scriptOnDisonnectParams,
                 "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
                 scriptOnDisonnect.c_str(),
@@ -683,37 +683,37 @@ void USER_IMPL::PrintUser() const
 {
 //return;
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-cout << "============================================================" << endl;
-cout << "id=" << id << endl;
-cout << "login=" << login << endl;
-cout << "password=" << password << endl;
-cout << "passive=" << passive << endl;
-cout << "disabled=" << disabled << endl;
-cout << "disabledDetailStat=" << disabledDetailStat << endl;
-cout << "alwaysOnline=" << alwaysOnline << endl;
-cout << "tariffName=" << tariffName << endl;
-cout << "address=" << address << endl;
-cout << "phone=" << phone << endl;
-cout << "email=" << email << endl;
-cout << "note=" << note << endl;
-cout << "realName=" <<realName << endl;
-cout << "group=" << group << endl;
-cout << "credit=" << credit << endl;
-cout << "nextTariff=" << nextTariff << endl;
-cout << "userdata0" << userdata0 << endl;
-cout << "userdata1" << userdata1 << endl;
-cout << "creditExpire=" << creditExpire << endl;
-cout << "ips=" << ips << endl;
-cout << "------------------------" << endl;
-cout << "up=" << up << endl;
-cout << "down=" << down << endl;
-cout << "cash=" << cash << endl;
-cout << "freeMb=" << freeMb << endl;
-cout << "lastCashAdd=" << lastCashAdd << endl;
-cout << "lastCashAddTime=" << lastCashAddTime << endl;
-cout << "passiveTime=" << passiveTime << endl;
-cout << "lastActivityTime=" << lastActivityTime << endl;
-cout << "============================================================" << endl;
+std::cout << "============================================================" << std::endl;
+std::cout << "id=" << id << std::endl;
+std::cout << "login=" << login << std::endl;
+std::cout << "password=" << password << std::endl;
+std::cout << "passive=" << passive << std::endl;
+std::cout << "disabled=" << disabled << std::endl;
+std::cout << "disabledDetailStat=" << disabledDetailStat << std::endl;
+std::cout << "alwaysOnline=" << alwaysOnline << std::endl;
+std::cout << "tariffName=" << tariffName << std::endl;
+std::cout << "address=" << address << std::endl;
+std::cout << "phone=" << phone << std::endl;
+std::cout << "email=" << email << std::endl;
+std::cout << "note=" << note << std::endl;
+std::cout << "realName=" <<realName << std::endl;
+std::cout << "group=" << group << std::endl;
+std::cout << "credit=" << credit << std::endl;
+std::cout << "nextTariff=" << nextTariff << std::endl;
+std::cout << "userdata0" << userdata0 << std::endl;
+std::cout << "userdata1" << userdata1 << std::endl;
+std::cout << "creditExpire=" << creditExpire << std::endl;
+std::cout << "ips=" << ips << std::endl;
+std::cout << "------------------------" << std::endl;
+std::cout << "up=" << up << std::endl;
+std::cout << "down=" << down << std::endl;
+std::cout << "cash=" << cash << std::endl;
+std::cout << "freeMb=" << freeMb << std::endl;
+std::cout << "lastCashAdd=" << lastCashAdd << std::endl;
+std::cout << "lastCashAddTime=" << lastCashAddTime << std::endl;
+std::cout << "passiveTime=" << passiveTime << std::endl;
+std::cout << "lastActivityTime=" << lastActivityTime << std::endl;
+std::cout << "============================================================" << std::endl;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::Run()
@@ -808,11 +808,11 @@ if (settings->GetShowFeeInCash() || tariff == NULL)
 return (cash - tariff->GetFee() >= -credit);
 }
 //-----------------------------------------------------------------------------
-string USER_IMPL::GetEnabledDirs()
+std::string USER_IMPL::GetEnabledDirs()
 {
 //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-string dirs = "";
+std::string dirs = "";
 for(int i = 0; i < DIR_NUM; i++)
     dirs += enabledDirs[i] ? "1" : "0";
 return dirs;
@@ -895,13 +895,13 @@ IP_DIR_PAIR idp(ip, dir, port);
 IP_DIR_PAIR idp(ip, dir);
 #endif
 
-map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
+std::map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
 lb = traffStat.lower_bound(idp);
 if (lb == traffStat.end() || lb->first != idp)
     {
     traffStat.insert(lb,
-                     pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                  STAT_NODE(len, 0, cost)));
+                     std::make_pair(idp,
+                                    STAT_NODE(len, 0, cost)));
     }
 else
     {
@@ -986,13 +986,13 @@ IP_DIR_PAIR idp(ip, dir, port);
 IP_DIR_PAIR idp(ip, dir);
 #endif
 
-map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
+std::map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
 lb = traffStat.lower_bound(idp);
 if (lb == traffStat.end() || lb->first != idp)
     {
     traffStat.insert(lb,
-                     pair<IP_DIR_PAIR, STAT_NODE>(idp,
-                                                  STAT_NODE(0, len, cost)));
+                     std::make_pair(idp,
+                                    STAT_NODE(0, len, cost)));
     }
 else
     {
@@ -1053,11 +1053,11 @@ void USER_IMPL::OnAdd()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-string scriptOnAdd = settings->GetScriptsDir() + "/OnUserAdd";
+std::string scriptOnAdd = settings->GetScriptsDir() + "/OnUserAdd";
 
 if (access(scriptOnAdd.c_str(), X_OK) == 0)
     {
-    string scriptOnAddParams;
+    std::string scriptOnAddParams;
     strprintf(&scriptOnAddParams,
             "%s \"%s\"",
             scriptOnAdd.c_str(),
@@ -1075,11 +1075,11 @@ void USER_IMPL::OnDelete()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-string scriptOnDel = settings->GetScriptsDir() + "/OnUserDel";
+std::string scriptOnDel = settings->GetScriptsDir() + "/OnUserDel";
 
 if (access(scriptOnDel.c_str(), X_OK) == 0)
     {
-    string scriptOnDelParams;
+    std::string scriptOnDelParams;
     strprintf(&scriptOnDelParams,
             "%s \"%s\"",
             scriptOnDel.c_str(),
@@ -1160,12 +1160,12 @@ if (tms.tm_year % 4 == 0 && tms.tm_mon == 1)
     secMonth += 24 * 3600;
     }
 
-int dt = secMonth - passiveTime;
+time_t dt = secMonth - passiveTime;
 
 if (dt < 0)
     dt = 0;
 
-return double(dt) / (secMonth);
+return static_cast<double>(dt) / secMonth;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPassiveTimeAsNewUser()
@@ -1363,9 +1363,9 @@ else
         msg->header.repeat--;
         #ifndef DEBUG
         //TODO: gcc v. 4.x generate ICE on x86_64
-        msg->header.lastSendTime = time(NULL);
+        msg->header.lastSendTime = static_cast<int>(time(NULL));
         #else
-        msg->header.lastSendTime = stgTime;
+        msg->header.lastSendTime = static_cast<int>(stgTime);
         #endif
         if (store->AddMessage(msg, login))
             {
@@ -1384,7 +1384,7 @@ int USER_IMPL::SendMessage(STG_MSG & msg) const
 {
 // No lock `cause we are already locked from caller
 int ret = -1;
-set<const AUTH*>::iterator it(authorizedBy.begin());
+std::set<const AUTH*>::iterator it(authorizedBy.begin());
 while (it != authorizedBy.end())
     {
     if (!(*it++)->SendMessage(msg, currIP))
@@ -1394,9 +1394,9 @@ if (!ret)
     {
 #ifndef DEBUG
     //TODO: gcc v. 4.x generate ICE on x86_64
-    msg.header.lastSendTime = time(NULL);
+    msg.header.lastSendTime = static_cast<int>(time(NULL));
 #else
-    msg.header.lastSendTime = stgTime;
+    msg.header.lastSendTime = static_cast<int>(stgTime);
 #endif
     msg.header.repeat--;
     }
@@ -1482,7 +1482,7 @@ else if (!oldValue && newValue && user->IsInetable())
 
 }
 //-----------------------------------------------------------------------------
-void CHG_TARIFF_NOTIFIER::Notify(const string &, const string & newTariff)
+void CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
 {
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
     user->Disconnect(false, "Change tariff");

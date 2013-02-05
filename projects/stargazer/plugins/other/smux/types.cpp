@@ -5,6 +5,13 @@
 
 #include "types.h"
 
+namespace
+{
+
+bool ParseArcs(const char * str, ptrdiff_t length, unsigned * a, size_t * pos);
+bool StringToArcs(const char * str, size_t length, std::vector<unsigned> & arcs);
+bool AppendToArcs(const char * str, size_t length, std::vector<unsigned> & arcs);
+
 bool ParseArcs(const char * str, ptrdiff_t length, unsigned * a, size_t * pos)
 {
 if (length == 0)
@@ -16,7 +23,7 @@ size_t arcPos = 0;
 while ((left - str) < length)
     {
     char * pos = NULL;
-    unsigned arc = strtoul(left, &pos, 10);
+    unsigned arc = static_cast<unsigned int>(strtoul(left, &pos, 10));
     if (pos == left)
         return false;
     a[arcPos++] = arc;
@@ -50,6 +57,8 @@ if (!ParseArcs(str, length, a, &pos))
 
 std::copy(&a[0], &a[pos], std::back_inserter(arcs));
 return true;
+}
+
 }
 
 OID::OID(const std::string & str)
@@ -182,7 +191,7 @@ return stream.str();
 
 void OID::ToOID(OBJECT_IDENTIFIER_t * oid) const
 {
-OBJECT_IDENTIFIER_set_arcs(oid, &arcs.front(), sizeof(unsigned), arcs.size());
+OBJECT_IDENTIFIER_set_arcs(oid, &arcs.front(), sizeof(unsigned), static_cast<unsigned int>(arcs.size()));
 }
 
 OID & OID::operator=(const OID & rvalue)

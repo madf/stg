@@ -121,7 +121,7 @@ private:
     ADMINS *                    admins;
 
     BASE_PARSER *               currParser;
-    vector<BASE_PARSER *>       dataParser;
+    std::vector<BASE_PARSER *>  dataParser;
 
     XML_Parser                  xmlParser;
 

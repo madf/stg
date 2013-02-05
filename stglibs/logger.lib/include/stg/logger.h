@@ -11,8 +11,8 @@ STG_LOGGER & GetStgLogger();
 class STG_LOGGER_LOCKER
 {
 public:
-    STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); };
-    ~STG_LOGGER_LOCKER() { pthread_mutex_unlock(mutex); };
+    STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); }
+    ~STG_LOGGER_LOCKER() { pthread_mutex_unlock(mutex); }
 
 private:
     STG_LOGGER_LOCKER(const STG_LOGGER_LOCKER & rvalue);

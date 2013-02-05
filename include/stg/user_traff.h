@@ -40,17 +40,20 @@ class DIR_TRAFF
     friend std::ostream & operator<< (std::ostream & o, const DIR_TRAFF & traff);
 
 public:
+    typedef std::vector<uint64_t> ContainerType;
+    typedef ContainerType::size_type IndexType;
+
     //-------------------------------------------------------------------------
     DIR_TRAFF();
     DIR_TRAFF(const DIR_TRAFF & ts);
     DIR_TRAFF & operator=(const DIR_TRAFF & ts);
     ~DIR_TRAFF();
-    uint64_t operator[](int idx) const;
-    uint64_t & operator[](int idx);
+    uint64_t operator[](IndexType idx) const;
+    uint64_t & operator[](IndexType idx);
     DIR_TRAFF operator+(const DIR_TRAFF & ts);
 
 private:
-    std::vector<uint64_t> traff;
+    ContainerType traff;
 };
 //-----------------------------------------------------------------------------
 
@@ -75,19 +78,19 @@ traff = ts.traff;
 return *this;
 }
 //-----------------------------------------------------------------------------
-inline uint64_t & DIR_TRAFF::operator[](int idx)
+inline uint64_t & DIR_TRAFF::operator[](IndexType idx)
 {
 return traff[idx];
 }
 //-----------------------------------------------------------------------------
-inline uint64_t DIR_TRAFF::operator[](int idx) const
+inline uint64_t DIR_TRAFF::operator[](IndexType idx) const
 {
 return traff[idx];
 }
 //-----------------------------------------------------------------------------
 inline DIR_TRAFF DIR_TRAFF::operator+(const DIR_TRAFF & ts)
 {
-for (int i = 0; i < DIR_NUM; i++)
+for (IndexType i = 0; i < DIR_NUM; i++)
     {
     traff[i] = traff[i] + ts.traff[i];
     }
@@ -97,7 +100,7 @@ return *this;
 inline std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
 {
 bool first = true;
-for (size_t i = 0; i < DIR_NUM; ++i)
+for (DIR_TRAFF::IndexType i = 0; i < DIR_NUM; ++i)
     {
     if (first)
         first = false;

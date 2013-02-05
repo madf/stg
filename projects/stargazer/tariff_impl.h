@@ -48,20 +48,20 @@ public:
     TARIFF_IMPL()
         : TARIFF(),
           tariffData()
-    {};
+    {}
     TARIFF_IMPL(const std::string & name)
         : TARIFF(),
           tariffData(name)
-    {};
+    {}
     TARIFF_IMPL(const TARIFF_DATA & td)
         : TARIFF(),
           tariffData(td)
-    {};
+    {}
     TARIFF_IMPL(const TARIFF_IMPL & t)
         : TARIFF(),
           tariffData(t.tariffData)
-    {};
-    virtual ~TARIFF_IMPL() {};
+    {}
+    virtual ~TARIFF_IMPL() {}
 
     double  GetPriceWithTraffType(uint64_t up,
                                   uint64_t down,
@@ -90,7 +90,7 @@ public:
 private:
     TARIFF_DATA     tariffData;
 
-    double  GetPriceWithoutFreeMb(int dir, int mb, time_t t) const;
+    double  GetPriceWithoutFreeMb(int dir, int64_t mb, time_t t) const;
     int     Interval(int dir, time_t t) const;
 };
 

@@ -45,15 +45,17 @@ class ADMIN;
 
 class TARIFFS_IMPL : public TARIFFS {
 public:
+    typedef std::list<TARIFF_IMPL> Tariffs;
+
     TARIFFS_IMPL(STORE * store);
     virtual ~TARIFFS_IMPL();
-    int     ReadTariffs ();
+    int ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;
-    const TARIFF * GetNoTariff() const { return &noTariff; };
-    size_t  Count() const;
-    int     Del(const std::string & name, const ADMIN * admin);
-    int     Add(const std::string & name, const ADMIN * admin);
-    int     Chg(const TARIFF_DATA & td, const ADMIN * admin);
+    const TARIFF * GetNoTariff() const { return &noTariff; }
+    size_t Count() const;
+    int Del(const std::string & name, const ADMIN * admin);
+    int Add(const std::string & name, const ADMIN * admin);
+    int Chg(const TARIFF_DATA & td, const ADMIN * admin);
 
     void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
     void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
@@ -61,7 +63,7 @@ public:
     void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
     void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
 
-    void    GetTariffsData(std::list<TARIFF_DATA> * tdl);
+    void GetTariffsData(std::list<TARIFF_DATA> * tdl);
 
     const std::string & GetStrError() const { return strError; }
 
@@ -69,7 +71,7 @@ private:
     TARIFFS_IMPL(const TARIFFS_IMPL & rvalue);
     TARIFFS_IMPL & operator=(const TARIFFS_IMPL & rvalue);
 
-    std::list<TARIFF_IMPL>  tariffs;
+    Tariffs                 tariffs;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
     mutable pthread_mutex_t mutex;

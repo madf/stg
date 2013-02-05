@@ -37,7 +37,7 @@ class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS::US
 {
 public:
     UpdateRouter(REMOTE_SCRIPT & t)
-        : obj(t) {};
+        : obj(t) {}
 
     void operator() (std::pair<const uint32_t, USER> & val)
         {

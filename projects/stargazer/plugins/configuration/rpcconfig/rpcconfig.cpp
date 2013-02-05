@@ -25,7 +25,12 @@
 #include "admins_methods.h"
 #include "messages_methods.h"
 
+namespace
+{
 PLUGIN_CREATOR<RPC_CONFIG> rpcc;
+}
+
+extern "C" PLUGIN * GetPlugin();
 
 RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
     : errorStr(),
@@ -36,11 +41,9 @@ RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
 
 int RPC_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
-int p;
 PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
-
 pv.param = "Port";
+std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end())
     {
@@ -48,13 +51,14 @@ if (pvi == s.moduleParams.end())
     printfd(__FILE__, "Parameter 'Port' not found\n");
     return -1;
     }
+int p;
 if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     {
     errorStr = "Cannot parse parameter \'Port\': " + errorStr;
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 
 pv.param = "CookieTimeout";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -117,12 +121,12 @@ if (ret)
 return ret;
 }
 
-void RPC_CONFIG::SetStgSettings(const SETTINGS * settings)
+void RPC_CONFIG::SetStgSettings(const SETTINGS * s)
 {
-    dayFee = settings->GetDayFee();
+    dayFee = s->GetDayFee();
     dirNames.erase(dirNames.begin(), dirNames.end());
     for (size_t i = 0; i < DIR_NUM; ++i) {
-        dirNames.push_back(settings->GetDirName(i));
+        dirNames.push_back(s->GetDirName(i));
     }
 }
 

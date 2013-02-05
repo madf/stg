@@ -60,8 +60,8 @@ public:
     ~NRMapParser() {}
 
     bool ReadFile(const std::string & fileName);
-    const std::vector<NET_ROUTER> & GetMap() const { return nrmap; };
-    const std::string & GetErrorStr() const { return errorStr; };
+    const std::vector<NET_ROUTER> & GetMap() const { return nrmap; }
+    const std::string & GetErrorStr() const { return errorStr; }
 
 private:
     NRMapParser(const NRMapParser & rvalue);

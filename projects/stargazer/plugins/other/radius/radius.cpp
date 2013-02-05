@@ -37,16 +37,20 @@
 #include "stg/plugin_creator.h"
 #include "radius.h"
 
-extern volatile const time_t stgTime;
+extern volatile time_t stgTime;
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+namespace
+{
+PLUGIN_CREATOR<RADIUS> radc;
 
 void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN_CREATOR<RADIUS> radc;
+void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, unsigned long len8);
+void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, unsigned long len8);
+}
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -89,7 +93,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 ///////////////////////////
 pv.param = "Password";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -292,7 +296,7 @@ int RADIUS::RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr)
 {
     int8_t buf[RAD_MAX_PACKET_LEN];
     socklen_t outerAddrLen = sizeof(struct sockaddr_in);
-    int dataLen = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(outerAddr), &outerAddrLen);
+    ssize_t dataLen = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(outerAddr), &outerAddrLen);
     if (dataLen < 0)
     	{
 	logger("recvfrom error: %s", strerror(errno));
@@ -312,13 +316,13 @@ int RADIUS::RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr)
     return 0;
 }
 //-----------------------------------------------------------------------------
-int RADIUS::Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr)
+ssize_t RADIUS::Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr)
 {
 size_t len = sizeof(RAD_PACKET);
 char buf[1032];
 
 Encrypt(&ctx, buf, (char *)&packet, len / 8);
-int res = sendto(sock, buf, len, 0, reinterpret_cast<struct sockaddr *>(outerAddr), sizeof(struct sockaddr_in));
+ssize_t res = sendto(sock, buf, len, 0, reinterpret_cast<struct sockaddr *>(outerAddr), sizeof(struct sockaddr_in));
 if (res < 0)
     logger("sendto error: %s", strerror(errno));
 return res;
@@ -351,7 +355,6 @@ switch (packet->packetType)
         printfd(__FILE__, "RADIUS::ProcessData Unsupported packet type: %d\n", packet->packetType);
         return -1;
     };
-return 0;
 }
 //-----------------------------------------------------------------------------
 int RADIUS::ProcessAutzPacket(RAD_PACKET * packet)
@@ -568,6 +571,9 @@ bool RADIUS::IsAllowedService(const std::string & svc) const
 return CanAuthService(svc) || CanAcctService(svc);
 }
 //-----------------------------------------------------------------------------
+namespace
+{
+
 inline
 void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
 {
@@ -578,23 +584,25 @@ Blowfish_Init(ctx, keyL, RAD_PASSWORD_LEN);
 }
 //-----------------------------------------------------------------------------
 inline
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, unsigned long len8)
 {
 // len8 - длина в 8-ми байтовых блоках
 if (dst != src)
     memcpy(dst, src, len8 * 8);
 
-for (int i = 0; i < len8; i++)
-    Blowfish_Encrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+for (size_t i = 0; i < len8; i++)
+    Blowfish_Encrypt(ctx, static_cast<uint32_t *>(dst) + i * 2, static_cast<uint32_t *>(dst) + i * 2 + 1);
 }
 //-----------------------------------------------------------------------------
 inline
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, unsigned long len8)
 {
 // len8 - длина в 8-ми байтовых блоках
 if (dst != src)
     memcpy(dst, src, len8 * 8);
 
-for (int i = 0; i < len8; i++)
-    Blowfish_Decrypt(ctx, (uint32_t *)(dst + i*8), (uint32_t *)(dst + i*8 + 4));
+for (size_t i = 0; i < len8; i++)
+    Blowfish_Decrypt(ctx, static_cast<uint32_t *>(dst) + i * 2, static_cast<uint32_t *>(dst) + i * 2 + 1);
 }
+
+} // namespace anonymous

@@ -110,7 +110,7 @@ public:
     DOTCONFDocument(CaseSensitive caseSensitivity = CASESENSITIVE);
     virtual ~DOTCONFDocument();
 
-    void setErrorCallback(DOTCONFCallback _callback, void * _data) { errorCallback = _callback; errorCallbackData = _data; };
+    void setErrorCallback(DOTCONFCallback _callback, void * _data) { errorCallback = _callback; errorCallbackData = _data; }
 
     int setContent(const char * _fileName);
 

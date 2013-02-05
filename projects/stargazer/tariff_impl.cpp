@@ -119,7 +119,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-double TARIFF_IMPL::GetPriceWithoutFreeMb(int dir, int mb, time_t t) const
+double TARIFF_IMPL::GetPriceWithoutFreeMb(int dir, int64_t mb, time_t t) const
 {
 int interval = Interval(dir, t);
 
@@ -143,45 +143,5 @@ else if (!sp && th)
     return tariffData.dirPrice[dir].priceNightA;
 else
     return tariffData.dirPrice[dir].priceDayA;
-
-/*if (tariffData.dirPrice[dir].noDiscount && tariffData.dirPrice[dir].singlePrice)
-    {
-    return tariffData.dirPrice[dir].priceDayA;
-    }
-else
-    {
-    if (tariffData.dirPrice[dir].noDiscount)
-        {
-        // Without threshold
-        if (interval == TARIFF_DAY)
-            return tariffData.dirPrice[dir].priceDayA;
-        else
-            return tariffData.dirPrice[dir].priceNightA;
-        }
-
-    if (tariffData.dirPrice[dir].singlePrice)
-        {
-        // Without day/night
-        if (mb < tariffData.dirPrice[dir].threshold)
-            return tariffData.dirPrice[dir].priceDayA;
-        else
-            return tariffData.dirPrice[dir].priceDayB;
-        }
-
-    if (mb < tariffData.dirPrice[dir].threshold)
-        {
-        if (interval == TARIFF_DAY)
-            return tariffData.dirPrice[dir].priceDayA;
-        else
-            return tariffData.dirPrice[dir].priceNightA;
-        }
-    else
-        {
-        if (interval == TARIFF_DAY)
-            return tariffData.dirPrice[dir].priceDayB;
-        else
-            return tariffData.dirPrice[dir].priceNightB;
-        }
-    }*/
 }
 //-----------------------------------------------------------------------------

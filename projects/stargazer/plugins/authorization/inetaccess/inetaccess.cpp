@@ -47,16 +47,21 @@
 #include "stg/plugin_creator.h"
 #include "inetaccess.h"
 
-extern volatile const time_t stgTime;
-
-void InitEncrypt(BLOWFISH_CTX * ctx, const string & password);
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
+extern volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+namespace
+{
 PLUGIN_CREATOR<AUTH_IA> iac;
+
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
+void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8);
+void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8);
+}
+
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -80,7 +85,7 @@ int AUTH_IA_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -96,7 +101,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 ///////////////////////////
 pv.param = "UserDelay";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -130,7 +135,7 @@ if (ParseIntInRange(pvi->value[0], 15, 1200, &userTimeout))
     return -1;
     }
 /////////////////////////////////////////////////////////////
-string freeMbType;
+std::string freeMbType;
 int n = 0;
 pv.param = "FreeMb";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -477,7 +482,7 @@ while (ia->nonstop)
     if ((touchTime + MONITOR_TIME_DELAY_SEC <= stgTime) && ia->stgSettings->GetMonitoring())
         {
         touchTime = stgTime;
-        string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_r";
+        std::string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_r";
         TouchFile(monFile.c_str());
         }
     }
@@ -497,7 +502,7 @@ AUTH_IA * ia = static_cast<AUTH_IA *>(d);
 ia->isRunningRunTimeouter = true;
 
 int a = -1;
-string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_t";
+std::string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_t";
 while (ia->nonstop)
     {
     struct timespec ts = {0, 20000000};
@@ -536,7 +541,7 @@ if (listenSocket < 0)
     }
 
 listenAddr.sin_family = AF_INET;
-listenAddr.sin_port = htons(iaSettings.GetUserPort());
+listenAddr.sin_port = htons(static_cast<uint16_t>(iaSettings.GetUserPort()));
 listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
 if (bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr)) < 0)
@@ -564,7 +569,7 @@ if (!WaitPackets(listenSocket)) // Timeout
 
 struct sockaddr_in outerAddr;
 socklen_t outerAddrLen(sizeof(outerAddr));
-int dataLen = recvfrom(listenSocket, buffer, bufferSize, 0, (struct sockaddr *)&outerAddr, &outerAddrLen);
+ssize_t dataLen = recvfrom(listenSocket, buffer, bufferSize, 0, (struct sockaddr *)&outerAddr, &outerAddrLen);
 
 if (!dataLen) // EOF
     {
@@ -672,7 +677,7 @@ int AUTH_IA::Timeouter()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-map<uint32_t, IA_USER>::iterator it;
+std::map<uint32_t, IA_USER>::iterator it;
 it = ip2user.begin();
 uint32_t sip;
 
@@ -747,13 +752,13 @@ while (it != ip2user.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user)
+int AUTH_IA::PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user)
 {
 std::string login(user->GetLogin());
-const int offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
+const size_t offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
+std::map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
 if (it == ip2user.end())
     {
@@ -807,14 +812,13 @@ if (iaUser->password != user->GetProperty().password.Get())
     iaUser->password = user->GetProperty().password.Get();
     }
 
-buff += offset;
-Decrypt(&iaUser->ctx, buff, buff, (dataLen - offset) / 8);
+Decrypt(&iaUser->ctx, static_cast<char *>(buff) + offset, static_cast<char *>(buff) + offset, (dataLen - offset) / 8);
 
 char packetName[IA_MAX_TYPE_LEN];
-strncpy(packetName,  buff + 4, IA_MAX_TYPE_LEN);
+strncpy(packetName,  static_cast<char *>(buff) + offset + 4, IA_MAX_TYPE_LEN);
 packetName[IA_MAX_TYPE_LEN - 1] = 0;
 
-map<string, int>::iterator pi(packetTypes.find(packetName));
+std::map<std::string, int>::iterator pi(packetTypes.find(packetName));
 if (pi == packetTypes.end())
     {
     SendError(sip, sport, protoVer, "Неправильный логин или пароль!");
@@ -846,15 +850,15 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                if (Process_CONN_SYN_6((CONN_SYN_6 *)(buff - offset), &(it->second), sip))
+                if (Process_CONN_SYN_6(static_cast<CONN_SYN_6 *>(buff), &(it->second), sip))
                     return -1;
                 return Send_CONN_SYN_ACK_6(iaUser, sip);
             case 7:
-                if (Process_CONN_SYN_7((CONN_SYN_7 *)(buff - offset), &(it->second), sip))
+                if (Process_CONN_SYN_7(static_cast<CONN_SYN_7 *>(buff), &(it->second), sip))
                     return -1;
                 return Send_CONN_SYN_ACK_7(iaUser, sip);
             case 8:
-                if (Process_CONN_SYN_8((CONN_SYN_8 *)(buff - offset), &(it->second), sip))
+                if (Process_CONN_SYN_8(static_cast<CONN_SYN_8 *>(buff), &(it->second), sip))
                     return -1;
                 return Send_CONN_SYN_ACK_8(iaUser, sip);
             }
@@ -864,15 +868,15 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                if (Process_CONN_ACK_6((CONN_ACK_6 *)(buff - offset), iaUser, sip))
+                if (Process_CONN_ACK_6(static_cast<CONN_ACK_6 *>(buff), iaUser, sip))
                     return -1;
                 return Send_ALIVE_SYN_6(iaUser, sip);
             case 7:
-                if (Process_CONN_ACK_7((CONN_ACK_6 *)(buff - offset), iaUser, sip))
+                if (Process_CONN_ACK_7(static_cast<CONN_ACK_6 *>(buff), iaUser, sip))
                     return -1;
                 return Send_ALIVE_SYN_7(iaUser, sip);
             case 8:
-                if (Process_CONN_ACK_8((CONN_ACK_8 *)(buff - offset), iaUser, sip))
+                if (Process_CONN_ACK_8(static_cast<CONN_ACK_8 *>(buff), iaUser, sip))
                     return -1;
                 return Send_ALIVE_SYN_8(iaUser, sip);
             }
@@ -882,11 +886,11 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                return Process_ALIVE_ACK_6((ALIVE_ACK_6 *)(buff - offset), iaUser, sip);
+                return Process_ALIVE_ACK_6(static_cast<ALIVE_ACK_6 *>(buff), iaUser, sip);
             case 7:
-                return Process_ALIVE_ACK_7((ALIVE_ACK_6 *)(buff - offset), iaUser, sip);
+                return Process_ALIVE_ACK_7(static_cast<ALIVE_ACK_6 *>(buff), iaUser, sip);
             case 8:
-                return Process_ALIVE_ACK_8((ALIVE_ACK_8 *)(buff - offset), iaUser, sip);
+                return Process_ALIVE_ACK_8(static_cast<ALIVE_ACK_8 *>(buff), iaUser, sip);
             }
         break;
 
@@ -894,15 +898,15 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                if (Process_DISCONN_SYN_6((DISCONN_SYN_6 *)(buff - offset), iaUser, sip))
+                if (Process_DISCONN_SYN_6(static_cast<DISCONN_SYN_6 *>(buff), iaUser, sip))
                     return -1;
                 return Send_DISCONN_SYN_ACK_6(iaUser, sip);
             case 7:
-                if (Process_DISCONN_SYN_7((DISCONN_SYN_6 *)(buff - offset), iaUser, sip))
+                if (Process_DISCONN_SYN_7(static_cast<DISCONN_SYN_6 *>(buff), iaUser, sip))
                     return -1;
                 return Send_DISCONN_SYN_ACK_7(iaUser, sip);
             case 8:
-                if (Process_DISCONN_SYN_8((DISCONN_SYN_8 *)(buff - offset), iaUser, sip))
+                if (Process_DISCONN_SYN_8(static_cast<DISCONN_SYN_8 *>(buff), iaUser, sip))
                     return -1;
                 return Send_DISCONN_SYN_ACK_8(iaUser, sip);
             }
@@ -912,15 +916,15 @@ switch (pi->second)
         switch (protoVer)
             {
             case 6:
-                if (Process_DISCONN_ACK_6((DISCONN_ACK_6 *)(buff - offset), iaUser, sip, it))
+                if (Process_DISCONN_ACK_6(static_cast<DISCONN_ACK_6 *>(buff), iaUser, sip, it))
                     return -1;
                 return Send_FIN_6(iaUser, sip, it);
             case 7:
-                if (Process_DISCONN_ACK_7((DISCONN_ACK_6 *)(buff - offset), iaUser, sip, it))
+                if (Process_DISCONN_ACK_7(static_cast<DISCONN_ACK_6 *>(buff), iaUser, sip, it))
                     return -1;
                 return Send_FIN_7(iaUser, sip, it);
             case 8:
-                if (Process_DISCONN_ACK_8((DISCONN_ACK_8 *)(buff - offset), iaUser, sip, it))
+                if (Process_DISCONN_ACK_8(static_cast<DISCONN_ACK_8 *>(buff), iaUser, sip, it))
                     return -1;
                 return Send_FIN_8(iaUser, sip, it);
             }
@@ -938,7 +942,7 @@ uint32_t ip = u->GetCurrIP();
 if (!ip)
     return;
 
-map<uint32_t, IA_USER>::iterator it;
+std::map<uint32_t, IA_USER>::iterator it;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 it = ip2user.find(ip);
@@ -957,12 +961,12 @@ if (it->second.user == u)
     }
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::SendError(uint32_t ip, uint16_t port, int protoVer, const string & text)
+int AUTH_IA::SendError(uint32_t ip, uint16_t port, int protoVer, const std::string & text)
 {
 struct sockaddr_in sendAddr;
+ssize_t res;
 switch (protoVer)
     {
-    int res;
     case 6:
     case 7:
         ERR err;
@@ -1008,7 +1012,7 @@ switch (protoVer)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send(uint32_t ip, uint16_t port, const char * buffer, int len)
+int AUTH_IA::Send(uint32_t ip, uint16_t port, const char * buffer, size_t len)
 {
 struct sockaddr_in sendAddr;
 
@@ -1016,9 +1020,7 @@ sendAddr.sin_family = AF_INET;
 sendAddr.sin_port = htons(port);
 sendAddr.sin_addr.s_addr = ip;
 
-int res = sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
-
-if (res == len)
+if (sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr)) == static_cast<ssize_t>(len))
     return 0;
 
 return -1;
@@ -1028,7 +1030,7 @@ int AUTH_IA::SendMessage(const STG_MSG & msg, uint32_t ip) const
 {
 printfd(__FILE__, "SendMessage userIP=%s\n", inet_ntostring(ip).c_str());
 
-map<uint32_t, IA_USER>::iterator it;
+std::map<uint32_t, IA_USER>::iterator it;
 
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 it = ip2user.find(ip);
@@ -1074,8 +1076,8 @@ memset(&info, 0, sizeof(INFO_7));
 
 info.len = 264;
 strncpy((char*)info.type, "INFO_7", 16);
-info.infoType = msg.header.type;
-info.showTime = msg.header.showTime;
+info.infoType = static_cast<int8_t>(msg.header.type);
+info.showTime = static_cast<int8_t>(msg.header.showTime);
 info.sendTime = msg.header.creationTime;
 
 size_t len = info.len;
@@ -1103,8 +1105,8 @@ memset(&info, 0, sizeof(INFO_8));
 
 info.len = 1056;
 strncpy((char*)info.type, "INFO_8", 16);
-info.infoType = msg.header.type;
-info.showTime = msg.header.showTime;
+info.infoType = static_cast<int8_t>(msg.header.type);
+info.showTime = static_cast<int8_t>(msg.header.showTime);
 info.sendTime = msg.header.creationTime;
 
 strncpy((char*)info.text, msg.text.c_str(), IA_MAX_MSG_LEN_8 - 1);
@@ -1296,7 +1298,7 @@ return 0;
 int AUTH_IA::Process_DISCONN_ACK_6(DISCONN_ACK_6 * disconnAck,
                                    IA_USER * iaUser,
                                    uint32_t,
-                                   map<uint32_t, IA_USER>::iterator)
+                                   std::map<uint32_t, IA_USER>::iterator)
 {
 #ifdef ARCH_BE
 SwapBytes(disconnAck->len);
@@ -1312,12 +1314,12 @@ if (!((iaUser->phase.GetPhase() == 4) && (disconnAck->rnd == iaUser->rnd + 1)))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnAck, IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
+int AUTH_IA::Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnAck, IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
 return Process_DISCONN_ACK_6(disconnAck, iaUser, sip, it);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, uint32_t, map<uint32_t, IA_USER>::iterator)
+int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, uint32_t, std::map<uint32_t, IA_USER>::iterator)
 {
 #ifdef ARCH_BE
 SwapBytes(disconnAck->len);
@@ -1349,7 +1351,7 @@ for (int j = 0; j < DIR_NUM; j++)
     }
 //--- Fill static data in connSynAck ---
 
-iaUser->rnd = random();
+iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck6.rnd = iaUser->rnd;
 
 connSynAck6.userTimeOut = iaSettings.GetUserTimeout();
@@ -1391,7 +1393,7 @@ for (int j = 0; j < DIR_NUM; j++)
     }
 //--- Fill static data in connSynAck ---
 
-iaUser->rnd = random();
+iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck8.rnd = iaUser->rnd;
 
 connSynAck8.userTimeOut = iaSettings.GetUserTimeout();
@@ -1411,7 +1413,7 @@ return Send(sip, iaUser->port, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8))
 int AUTH_IA::Send_ALIVE_SYN_6(IA_USER * iaUser, uint32_t sip)
 {
 aliveSyn6.len = Min8(sizeof(ALIVE_SYN_6));
-aliveSyn6.rnd = iaUser->rnd = random();
+aliveSyn6.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 strcpy((char*)aliveSyn6.type, "ALIVE_SYN");
 
@@ -1501,7 +1503,7 @@ aliveSyn8.hdr.protoVer[0] = 0;
 aliveSyn8.hdr.protoVer[1] = 8;
 
 aliveSyn8.len = Min8(sizeof(ALIVE_SYN_8));
-aliveSyn8.rnd = iaUser->rnd = random();
+aliveSyn8.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 strcpy((char*)aliveSyn8.type, "ALIVE_SYN");
 
@@ -1586,7 +1588,7 @@ int AUTH_IA::Send_DISCONN_SYN_ACK_6(IA_USER * iaUser, uint32_t sip)
 {
 disconnSynAck6.len = Min8(sizeof(DISCONN_SYN_ACK_6));
 strcpy((char*)disconnSynAck6.type, "DISCONN_SYN_ACK");
-disconnSynAck6.rnd = iaUser->rnd = random();
+disconnSynAck6.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 #ifdef ARCH_BE
 SwapBytes(disconnSynAck6.len);
@@ -1610,7 +1612,7 @@ disconnSynAck8.hdr.protoVer[1] = 8;
 
 disconnSynAck8.len = Min8(sizeof(DISCONN_SYN_ACK_8));
 strcpy((char*)disconnSynAck8.type, "DISCONN_SYN_ACK");
-disconnSynAck8.rnd = iaUser->rnd = random();
+disconnSynAck8.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 #ifdef ARCH_BE
 SwapBytes(disconnSynAck8.len);
@@ -1621,7 +1623,7 @@ Encrypt(&iaUser->ctx, (char*)&disconnSynAck8, (char*)&disconnSynAck8, Min8(sizeo
 return Send(sip, iaUser->port, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8)));
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_FIN_6(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
+int AUTH_IA::Send_FIN_6(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
 fin6.len = Min8(sizeof(FIN_6));
 strcpy((char*)fin6.type, "FIN");
@@ -1642,12 +1644,12 @@ ip2user.erase(it);
 return res;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_FIN_7(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
+int AUTH_IA::Send_FIN_7(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
 return Send_FIN_6(iaUser, sip, it);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send_FIN_8(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it)
+int AUTH_IA::Send_FIN_8(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
 strcpy((char*)fin8.hdr.magic, IA_ID);
 fin8.hdr.protoVer[0] = 0;
@@ -1671,9 +1673,11 @@ ip2user.erase(it);
 
 return res;
 }
+namespace
+{
 //-----------------------------------------------------------------------------
 inline
-void InitEncrypt(BLOWFISH_CTX * ctx, const string & password)
+void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
 {
 unsigned char keyL[PASSWD_LEN];
 memset(keyL, 0, PASSWD_LEN);
@@ -1682,15 +1686,17 @@ Blowfish_Init(ctx, keyL, PASSWD_LEN);
 }
 //-----------------------------------------------------------------------------
 inline
-void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8)
 {
-for (int i = 0; i < len8; i++)
-    DecodeString(dst + i * 8, src + i * 8, ctx);
+for (size_t i = 0; i < len8; i++)
+    DecodeString(static_cast<char *>(dst) + i * 8, static_cast<const char *>(src) + i * 8, ctx);
 }
 //-----------------------------------------------------------------------------
 inline
-void Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8)
+void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8)
 {
-for (int i = 0; i < len8; i++)
-    EncodeString(dst + i * 8, src + i * 8, ctx);
+for (size_t i = 0; i < len8; i++)
+    EncodeString(static_cast<char *>(dst) + i * 8, static_cast<const char *>(src) + i * 8, ctx);
+}
+//-----------------------------------------------------------------------------
 }

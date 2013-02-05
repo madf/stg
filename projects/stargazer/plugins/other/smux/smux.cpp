@@ -20,17 +20,26 @@
 #include "smux.h"
 #include "utils.h"
 
+namespace
+{
 PLUGIN_CREATOR<SMUX> smc;
 
-PLUGIN * GetPlugin()
-{
-return smc.GetPlugin();
-}
+bool SPrefixLess(const Sensors::value_type & a,
+                 const Sensors::value_type & b);
 
 bool SPrefixLess(const Sensors::value_type & a,
                  const Sensors::value_type & b)
 {
 return a.first.PrefixLess(b.first);
+}
+
+}
+
+extern "C" PLUGIN * GetPlugin();
+
+PLUGIN * GetPlugin()
+{
+return smc.GetPlugin();
 }
 
 SMUX_SETTINGS::SMUX_SETTINGS()
@@ -60,7 +69,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 
 pv.param = "Password";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);

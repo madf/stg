@@ -83,7 +83,7 @@ private:
 class AUTH_AO : public AUTH {
 public:
     AUTH_AO();
-    virtual ~AUTH_AO(){};
+    virtual ~AUTH_AO(){}
 
     void                SetUsers(USERS * u) { users = u; }
 
@@ -94,7 +94,7 @@ public:
     void                SetSettings(const MODULE_SETTINGS &) {}
     int                 ParseSettings() { return 0; }
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const;
+    std::string         GetVersion() const;
     uint16_t            GetStartPosition() const { return 30; }
     uint16_t            GetStopPosition() const { return 30; }
 
@@ -118,11 +118,11 @@ private:
     bool                isRunning;
     MODULE_SETTINGS     settings;
 
-    list<CHG_BEFORE_NOTIFIER<int> >      BeforeChgAONotifierList;
-    list<CHG_AFTER_NOTIFIER<int> >       AfterChgAONotifierList;
+    std::list<CHG_BEFORE_NOTIFIER<int> >      BeforeChgAONotifierList;
+    std::list<CHG_AFTER_NOTIFIER<int> >       AfterChgAONotifierList;
 
-    list<CHG_BEFORE_NOTIFIER<USER_IPS> > BeforeChgIPNotifierList;
-    list<CHG_AFTER_NOTIFIER<USER_IPS> >  AfterChgIPNotifierList;
+    std::list<CHG_BEFORE_NOTIFIER<USER_IPS> > BeforeChgIPNotifierList;
+    std::list<CHG_AFTER_NOTIFIER<USER_IPS> >  AfterChgIPNotifierList;
 
     class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:

@@ -6,6 +6,10 @@
 
 #include "stg/common.h"
 
+#include "stg_timer.h"
+
+void * StgTimer(void *);
+
 static int nonstop;
 static pthread_t thrStgTimer;
 static bool isTimerRunning = false;
@@ -88,7 +92,7 @@ static int a = 0;
 isTimerRunning = false;
 
 if (a == 0)
-    if (pthread_create(&thrStgTimer, NULL, StgTimer, NULL))
+    if (pthread_create(&thrStgTimer, NULL, &StgTimer, NULL))
         {
         isTimerRunning = false;
         return -1;
@@ -113,10 +117,10 @@ return isTimerRunning;
 int stgUsleep(unsigned long t)
 {
 #ifdef STG_TIMER_DEBUG
-struct timespec ts = {(t / TIME_SPEED) / 1000000, ((t / TIME_SPEED) % 1000000) * 1000};
+struct timespec ts = {static_cast<time_t>((t / TIME_SPEED) / 1000000), static_cast<long>(((t / TIME_SPEED) % 1000000) * 1000)};
 return nanosleep(&ts, NULL);
 #else
-struct timespec ts = {t / 1000000, (t % 1000000) * 1000};
+struct timespec ts = {static_cast<time_t>(t / 1000000), static_cast<long>((t % 1000000) * 1000)};
 return nanosleep(&ts, NULL);
 #endif
 }

@@ -37,7 +37,7 @@
 #include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::GetServicesList(vector<string> * servicesList) const
+int POSTGRESQL_STORE::GetServicesList(std::vector<std::string> * servicesList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -139,7 +139,7 @@ if (EscapeString(ecomment))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "UPDATE tb_services SET "
           << "comment = '" << ecomment << "', "
           << "cost = " << sc.cost << ", "
@@ -173,7 +173,7 @@ return 0;
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreService(SERVICE_CONF * sc,
-                                   const string & name) const
+                                   const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -208,7 +208,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT comment, cost, pay_day FROM tb_services WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
@@ -260,7 +260,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddService(const string & name) const
+int POSTGRESQL_STORE::AddService(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -295,7 +295,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "INSERT INTO tb_services \
               (name, comment, cost, pay_day) \
           VALUES \
@@ -327,7 +327,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::DelService(const string & name) const
+int POSTGRESQL_STORE::DelService(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -362,7 +362,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "DELETE FROM tb_services WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());

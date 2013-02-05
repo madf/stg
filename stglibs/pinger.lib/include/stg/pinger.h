@@ -84,6 +84,9 @@ struct PING_MESSAGE
 class STG_PINGER
 {
 public:
+    typedef std::multimap<uint32_t, time_t> PingIPs;
+    typedef PingIPs::size_type SizeType;
+
             STG_PINGER(time_t delay = 15);
             ~STG_PINGER();
 
@@ -91,7 +94,7 @@ public:
     int     Stop();
     void    AddIP(uint32_t ip);
     void    DelIP(uint32_t ip);
-    int     GetPingIPNum() const;
+    SizeType GetPingIPNum() const { return pingIP.size(); }
     void    PrintAllIP();
     int     GetIPTime(uint32_t ip, time_t * t) const;
     void    SetDelayTime(time_t d) { delay = d; }
@@ -108,7 +111,7 @@ private:
     static void * RunSendPing(void * d);
     static void * RunRecvPing(void * d);
 
-    int         delay;
+    time_t      delay;
     bool        nonstop;
     bool        isRunningRecver;
     bool        isRunningSender;

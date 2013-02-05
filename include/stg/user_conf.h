@@ -37,7 +37,7 @@ struct USER_CONF
           userdata(USERDATA_NUM),
           creditExpire(0),
           ips()
-    {};
+    {}
 
     std::string              password;
     int                      passive;
@@ -81,7 +81,7 @@ struct USER_CONF_RES
           creditExpire(),
           ips()
     {
-    };
+    }
 
     USER_CONF_RES & operator=(const USER_CONF & uc)
     {
@@ -107,7 +107,7 @@ struct USER_CONF_RES
         creditExpire = uc.creditExpire;
         ips          = uc.ips;
         return *this;
-    };
+    }
     operator USER_CONF() const
     {
         USER_CONF uc;

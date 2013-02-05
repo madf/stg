@@ -1,7 +1,5 @@
 #include "iface.h"
 
-#include "loki/Singleton.h"
-
 #include "thriftclient.h"
 
 int stgInstantiateImpl(const char * server, uint16_t port, const char * password)

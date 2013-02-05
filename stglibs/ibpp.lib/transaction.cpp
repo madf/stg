@@ -103,9 +103,9 @@ void TransactionImpl::AddReservation(IBPP::Database db,
 					tpb->Insert(table);
 					tpb->Insert(isc_tpb_protected);
 					break;
-			default :
+			/*default :
 					throw LogicExceptionImpl("Transaction::AddReservation",
-						_("Illegal TTR value detected."));
+						_("Illegal TTR value detected."));*/
 		}
 	}
 	else throw LogicExceptionImpl("Transaction::AddReservation",
@@ -306,7 +306,7 @@ void TransactionImpl::AttachDatabaseImpl(DatabaseImpl* dbi,
 						    	    	tpb->Insert(isc_tpb_rec_version); break;
 		case IBPP::ilReadCommitted :	tpb->Insert(isc_tpb_read_committed);
 										tpb->Insert(isc_tpb_no_rec_version); break;
-		default :						tpb->Insert(isc_tpb_concurrency); break;
+                case IBPP::ilConcurrency :						tpb->Insert(isc_tpb_concurrency); break;
 	}
 
     if (lr == IBPP::lrNoWait) tpb->Insert(isc_tpb_nowait);

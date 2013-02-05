@@ -52,7 +52,7 @@
 #define ST_MB   3
 
 //-----------------------------------------------------------------------------
-const char    * IntToKMG(long long a, int statType = ST_F);
+const char    * IntToKMG(int64_t a, int statType = ST_F);
 const char    * LogDate(time_t t);
 int             ParesTimeStat(const char * str);
 int             IsTimeStat(struct tm * t, int statTime);
@@ -236,18 +236,15 @@ const std::string & unsigned2str(varT x, std::string & s)
     return s;
 }
 //-----------------------------------------------------------------------------
-int str2x(const std::string & str, int & x);
-int str2x(const std::string & str, unsigned & x);
-int str2x(const std::string & str, long & x);
-int str2x(const std::string & str, unsigned long & x);
+int str2x(const std::string & str, int32_t & x);
+int str2x(const std::string & str, uint32_t & x);
 #ifndef WIN32
-int str2x(const std::string & str, long long & x);
-int str2x(const std::string & str, unsigned long long & x);
+int str2x(const std::string & str, int64_t & x);
+int str2x(const std::string & str, uint64_t & x);
 #endif
 //-----------------------------------------------------------------------------
-const std::string & x2str(unsigned x, std::string & s);
-const std::string & x2str(unsigned long x, std::string & s);
-const std::string & x2str(unsigned long long x, std::string & s);
+const std::string & x2str(uint32_t x, std::string & s);
+const std::string & x2str(uint64_t x, std::string & s);
 //-----------------------------------------------------------------------------
 char * stg_strptime(const char *, const char *, struct tm *);
 time_t stg_timegm(struct tm *);

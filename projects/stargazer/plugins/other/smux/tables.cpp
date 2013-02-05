@@ -51,8 +51,8 @@ OID prefixOid(prefix);
 std::map<std::string, size_t>::const_iterator it(data.begin());
 while (it != data.end())
     {
-    sensors[prefixOid.copyWithSuffix(2, idx)] = new ConstSensor<std::string>(it->first);
-    sensors[prefixOid.copyWithSuffix(3, idx)] = new ConstSensor<int>(it->second);
+    sensors[prefixOid.copyWithSuffix(2, static_cast<unsigned int>(idx))] = new ConstSensor<std::string>(it->first);
+    sensors[prefixOid.copyWithSuffix(3, static_cast<unsigned int>(idx))] = new ConstSensor<unsigned long>(it->second);
     ++idx;
     ++it;
     }

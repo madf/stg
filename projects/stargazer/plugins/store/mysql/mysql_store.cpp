@@ -2,7 +2,6 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
 #include <algorithm>
 
 #include <mysql.h>
@@ -16,20 +15,22 @@
 #include "mysql_store.h"
 
 #define adm_enc_passwd "cjeifY8m3"
+
+namespace
+{
 char qbuf[4096];
 
-using namespace std;
-
 const int pt_mega = 1024 * 1024;
-const string badSyms = "'`";
+const std::string badSyms = "'`";
 const char repSym = '\"';
 const int RepitTimes = 3;
 
-int GetInt(const string & str, int * val, int defaultVal)
+template <typename T>
+int GetInt(const std::string & str, T * val, T defaultVal = T())
 {
     char *res;
     
-    *val = strtol(str.c_str(), &res, 10);
+    *val = static_cast<T>(strtoll(str.c_str(), &res, 10));
     
     if (*res != 0) 
     {
@@ -40,7 +41,7 @@ int GetInt(const string & str, int * val, int defaultVal)
     return 0;
 }
 
-int GetDouble(const string & str, double * val, double defaultVal)
+int GetDouble(const std::string & str, double * val, double defaultVal)
 {
     char *res;
     
@@ -55,7 +56,7 @@ int GetDouble(const string & str, double * val, double defaultVal)
     return 0;
 }
 
-int GetTime(const string & str, time_t * val, time_t defaultVal)
+int GetTime(const std::string & str, time_t * val, time_t defaultVal)
 {
     char *res;
     
@@ -71,17 +72,17 @@ int GetTime(const string & str, time_t * val, time_t defaultVal)
 }
 
 //-----------------------------------------------------------------------------
-string ReplaceStr(string source, const string symlist, const char chgsym)
+std::string ReplaceStr(std::string source, const std::string symlist, const char chgsym)
 {
-    string::size_type pos=0;
+    std::string::size_type pos=0;
 
-    while( (pos = source.find_first_of(symlist,pos)) != string::npos)
+    while( (pos = source.find_first_of(symlist,pos)) != std::string::npos)
         source.replace(pos, 1,1, chgsym);
 
     return source;
 }
 
-int GetULongLongInt(const string & str, uint64_t * val, uint64_t defaultVal)
+int GetULongLongInt(const std::string & str, uint64_t * val, uint64_t defaultVal)
 {
     char *res;
     
@@ -97,6 +98,9 @@ int GetULongLongInt(const string & str, uint64_t * val, uint64_t defaultVal)
 } 
 
 PLUGIN_CREATOR<MYSQL_STORE> msc;
+}
+
+extern "C" STORE * GetStore();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -115,12 +119,12 @@ MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE_SETTINGS::ParseParam(const vector<PARAM_VALUE> & moduleParams, 
-                        const string & name, string & result)
+int MYSQL_STORE_SETTINGS::ParseParam(const std::vector<PARAM_VALUE> & moduleParams, 
+                        const std::string & name, std::string & result)
 {
 PARAM_VALUE pv;
 pv.param = name;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end())
     {
@@ -160,7 +164,7 @@ MYSQL_STORE::MYSQL_STORE()
       settings(),
       logger(GetPluginLogger(GetStgLogger(), "store_mysql"))
 {
-};
+}
 //-----------------------------------------------------------------------------
 int    MYSQL_STORE::MysqlQuery(const char* sQuery,MYSQL * sock) const
 {
@@ -211,7 +215,7 @@ else
     {
          if(mysql_select_db(sock, storeSettings.GetDBName().c_str()))
          {
-             string res = "CREATE DATABASE " + storeSettings.GetDBName();
+             std::string res = "CREATE DATABASE " + storeSettings.GetDBName();
             
             if(MysqlQuery(res.c_str(),sock))
             {
@@ -241,7 +245,7 @@ else
 return ret;
 }
 //-----------------------------------------------------------------------------
-bool MYSQL_STORE::IsTablePresent(const string & str,MYSQL * sock)
+bool MYSQL_STORE::IsTablePresent(const std::string & str,MYSQL * sock)
 {
 MYSQL_RES* result;
 
@@ -253,12 +257,12 @@ if (!(result=mysql_list_tables(sock,str.c_str() )))
     return -1;
 }
 
-unsigned int num_rows =  mysql_num_rows(result);
+my_ulonglong num_rows =  mysql_num_rows(result);
 
 if(result)
     mysql_free_result(result);
 
-return (num_rows == 1);
+return num_rows == 1;
 }
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::CheckAllTables(MYSQL * sock)
@@ -294,7 +298,7 @@ if(!IsTablePresent("admins",sock))
 }
 
 //tariffs-----------------------------------------------------------------------
-string param, res;
+std::string param, res;
 if(!IsTablePresent("tariffs",sock))
 {
     res = "CREATE TABLE tariffs (name VARCHAR(40) DEFAULT '' PRIMARY KEY,";
@@ -523,13 +527,13 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-int MYSQL_STORE::GetAllParams(vector<string> * ParamList, 
-                            const string & table, const string & name) const
+int MYSQL_STORE::GetAllParams(std::vector<std::string> * ParamList, 
+                            const std::string & table, const std::string & name) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock=NULL;
-unsigned int num,i;
+my_ulonglong num, i;
     
 ParamList->clear();
     
@@ -554,7 +558,7 @@ if (!(res=mysql_store_result(sock)))
 
 num = mysql_num_rows(res);
 
-for(i=0;i<num;i++)
+for(i = 0; i < num; i++)
 {
     row = mysql_fetch_row(res);    
     ParamList->push_back(row[0]);
@@ -567,7 +571,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetUsersList(vector<string> * usersList) const
+int MYSQL_STORE::GetUsersList(std::vector<std::string> * usersList) const
 {
 if(GetAllParams(usersList, "users", "login"))
     return -1;
@@ -575,7 +579,7 @@ if(GetAllParams(usersList, "users", "login"))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetAdminsList(vector<string> * adminsList) const
+int MYSQL_STORE::GetAdminsList(std::vector<std::string> * adminsList) const
 {
 if(GetAllParams(adminsList, "admins", "login"))
     return -1;
@@ -583,7 +587,7 @@ if(GetAllParams(adminsList, "admins", "login"))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetTariffsList(vector<string> * tariffsList) const
+int MYSQL_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
 if(GetAllParams(tariffsList, "tariffs", "name"))
     return -1;
@@ -591,7 +595,7 @@ if(GetAllParams(tariffsList, "tariffs", "name"))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::AddUser(const string & login) const
+int MYSQL_STORE::AddUser(const std::string & login) const
 {
 sprintf(qbuf,"INSERT INTO users SET login='%s'", login.c_str());
     
@@ -605,7 +609,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::DelUser(const string & login) const
+int MYSQL_STORE::DelUser(const std::string & login) const
 {
 sprintf(qbuf,"DELETE FROM users WHERE login='%s' LIMIT 1", login.c_str());
     
@@ -619,12 +623,12 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreUserConf(USER_CONF * conf, const string & login) const
+int MYSQL_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
-string query;
+std::string query;
 
 query = "SELECT login, Password, Passive, Down, DisabledDetailStat, \
          AlwaysOnline, Tariff, Address, Phone, Email, Note, \
@@ -666,7 +670,7 @@ if (mysql_num_rows(res) != 1)
 
 row = mysql_fetch_row(res);
 
-string param;
+std::string param;
 
 conf->password = row[1];
 
@@ -678,7 +682,7 @@ if (conf->password.empty())
     return -1;
     }
 
-if (GetInt(row[2],&conf->passive, 0) != 0)
+if (GetInt(row[2],&conf->passive) != 0)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter Passive.";
@@ -686,7 +690,7 @@ if (GetInt(row[2],&conf->passive, 0) != 0)
     return -1;
     }
 
-if (GetInt(row[3], &conf->disabled, 0) != 0)
+if (GetInt(row[3], &conf->disabled) != 0)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter Down.";
@@ -694,7 +698,7 @@ if (GetInt(row[3], &conf->disabled, 0) != 0)
     return -1;
     }
 
-if (GetInt(row[4], &conf->disabledDetailStat, 0) != 0)
+if (GetInt(row[4], &conf->disabledDetailStat) != 0)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter DisabledDetailStat.";
@@ -702,7 +706,7 @@ if (GetInt(row[4], &conf->disabledDetailStat, 0) != 0)
     return -1;
     }
 
-if (GetInt(row[5], &conf->alwaysOnline, 0) != 0)
+if (GetInt(row[5], &conf->alwaysOnline) != 0)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter AlwaysOnline.";
@@ -744,13 +748,13 @@ for (int i = 0; i < USERDATA_NUM; i++)
 
 GetTime(row[15+USERDATA_NUM], &conf->creditExpire, 0);
     
-string ipStr = row[16+USERDATA_NUM];
+std::string ipStr = row[16+USERDATA_NUM];
 USER_IPS i;
 try
     {
     i = StrToIPS(ipStr);
     }
-catch (const string & s)
+catch (const std::string & s)
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' data not read. Parameter IP address. " + s;
@@ -765,13 +769,13 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreUserStat(USER_STAT * stat, const string & login) const
+int MYSQL_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
 
-string query;
+std::string query;
 
 query = "SELECT ";
 
@@ -816,7 +820,7 @@ for (int i = 0; i < DIR_NUM; i++)
     if (GetULongLongInt(row[startPos+i*2], &traff, 0) != 0)
         {
         mysql_free_result(res);
-        errorStr = "User \'" + login + "\' stat not read. Parameter " + string(s);
+        errorStr = "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         mysql_close(sock);
         return -1;
         }
@@ -826,7 +830,7 @@ for (int i = 0; i < DIR_NUM; i++)
     if (GetULongLongInt(row[startPos+i*2+1], &traff, 0) != 0)
         {
         mysql_free_result(res);
-        errorStr =   "User \'" + login + "\' stat not read. Parameter " + string(s);
+        errorStr =   "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         mysql_close(sock);
         return -1;
         }
@@ -888,10 +892,10 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveUserConf(const USER_CONF & conf, const string & login) const
+int MYSQL_STORE::SaveUserConf(const USER_CONF & conf, const std::string & login) const
 {
-string param;
-string res;
+std::string param;
+std::string res;
 
 strprintf(&res,"UPDATE users SET Password='%s', Passive=%d, Down=%d, DisabledDetailStat = %d, "\
     "AlwaysOnline=%d, Tariff='%s', Address='%s', Phone='%s', Email='%s', "\
@@ -922,7 +926,7 @@ for (int i = 0; i < USERDATA_NUM; i++)
 strprintf(&param, " CreditExpire=%d,", conf.creditExpire);
 res += param;
 
-stringstream ipStr;
+std::ostringstream ipStr;
 ipStr << conf.ips;
 
 strprintf(&param, " IP='%s'", ipStr.str().c_str());
@@ -941,10 +945,10 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveUserStat(const USER_STAT & stat, const string & login) const
+int MYSQL_STORE::SaveUserStat(const USER_STAT & stat, const std::string & login) const
 {
-string param;
-string res;
+std::string param;
+std::string res;
 
 res = "UPDATE users SET";
 
@@ -981,9 +985,9 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteLogString(const string & str, const string & login) const
+int MYSQL_STORE::WriteLogString(const std::string & str, const std::string & login) const
 {
-string res, tempStr;
+std::string res, tempStr;
 time_t t;
 tm * lt;
 
@@ -1005,7 +1009,7 @@ if (!(result=mysql_list_tables(sock,tempStr.c_str() )))
     return -1;
 }
 
-unsigned int num_rows =  mysql_num_rows(result);
+my_ulonglong num_rows =  mysql_num_rows(result);
 
 mysql_free_result(result);
 
@@ -1025,7 +1029,7 @@ if (num_rows < 1)
 
 strprintf(&res, "%s -- %s",LogDate(t), str.c_str());
 
-string send;
+std::string send;
 
 strprintf(&send,"INSERT INTO logs_%02d_%4d SET login='%s', text='%s'",
         lt->tm_mon+1, lt->tm_year+1900,
@@ -1043,28 +1047,28 @@ return 0;
 
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteUserChgLog(const string & login,
-                                 const string & admLogin,
+int MYSQL_STORE::WriteUserChgLog(const std::string & login,
+                                 const std::string & admLogin,
                                  uint32_t       admIP,
-                                 const string & paramName,
-                                 const string & oldValue,
-                                 const string & newValue,
-                                 const string & message) const
+                                 const std::string & paramName,
+                                 const std::string & oldValue,
+                                 const std::string & newValue,
+                                 const std::string & message) const
 {
-string userLogMsg = "Admin \'" + admLogin + "\', " + inet_ntostring(admIP) + ": \'"
+std::string userLogMsg = "Admin \'" + admLogin + "\', " + inet_ntostring(admIP) + ": \'"
     + paramName + "\' parameter changed from \'" + oldValue +
     "\' to \'" + newValue + "\'. " + message;
 
 return WriteLogString(userLogMsg, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteUserConnect(const string & login, uint32_t ip) const
+int MYSQL_STORE::WriteUserConnect(const std::string & login, uint32_t ip) const
 {
-string logStr = "Connect, " + inet_ntostring(ip);
+std::string logStr = "Connect, " + inet_ntostring(ip);
 return WriteLogString(logStr, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteUserDisconnect(const string & login,
+int MYSQL_STORE::WriteUserDisconnect(const std::string & login,
                                      const DIR_TRAFF & up,
                                      const DIR_TRAFF & down,
                                      const DIR_TRAFF & sessionUp,
@@ -1073,12 +1077,12 @@ int MYSQL_STORE::WriteUserDisconnect(const string & login,
                                      double /*freeMb*/,
                                      const std::string & /*reason*/) const
 {
-string logStr = "Disconnect, ";
-stringstream sssu;
-stringstream sssd;
-stringstream ssmu;
-stringstream ssmd;
-stringstream sscash;
+std::string logStr = "Disconnect, ";
+std::ostringstream sssu;
+std::ostringstream sssd;
+std::ostringstream ssmu;
+std::ostringstream ssmd;
+std::ostringstream sscash;
 
 ssmu << up;
 ssmd << down;
@@ -1104,9 +1108,9 @@ return WriteLogString(logStr, login);
 }
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, 
-                                const string & login) const
+                                const std::string & login) const
 {
-string param, res;
+std::string param, res;
 
 strprintf(&res, "INSERT INTO stat SET login='%s', month=%d, year=%d,", 
     login.c_str(), month+1, year+1900);
@@ -1133,7 +1137,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int MYSQL_STORE::AddAdmin(const string & login) const
+int MYSQL_STORE::AddAdmin(const std::string & login) const
 {
 sprintf(qbuf,"INSERT INTO admins SET login='%s'", login.c_str());
     
@@ -1147,7 +1151,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int MYSQL_STORE::DelAdmin(const string & login) const
+int MYSQL_STORE::DelAdmin(const std::string & login) const
 {
 sprintf(qbuf,"DELETE FROM admins where login='%s' LIMIT 1", login.c_str());
     
@@ -1208,7 +1212,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const string & login) const
+int MYSQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
 {
 char pass[ADM_PASSWD_LEN + 1];
 char password[ADM_PASSWD_LEN + 1];
@@ -1219,7 +1223,7 @@ memset(pass, 0, sizeof(pass));
 memset(password, 0, sizeof(password));
 memset(passwordE, 0, sizeof(passwordE));
 
-string p;
+std::string p;
 MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
@@ -1252,7 +1256,6 @@ if ( mysql_num_rows(res) == 0)
 row = mysql_fetch_row(res);
 
 p = row[1];
-int a;
 
 if(p.length() == 0)
 {
@@ -1284,7 +1287,9 @@ else
 
 ac->password = password;
 
-if (GetInt(row[2], &a, 0) == 0) 
+uint16_t a;
+
+if (GetInt(row[2], &a) == 0) 
     ac->priv.userConf = a;
 else
     {
@@ -1294,7 +1299,7 @@ else
     return -1;
     }
 
-if (GetInt(row[3], &a, 0) == 0) 
+if (GetInt(row[3], &a) == 0) 
     ac->priv.userPasswd = a;
 else
     {
@@ -1304,7 +1309,7 @@ else
     return -1;
     }
 
-if (GetInt(row[4], &a, 0) == 0) 
+if (GetInt(row[4], &a) == 0) 
     ac->priv.userStat = a;
 else
     {
@@ -1314,7 +1319,7 @@ else
     return -1;
     }
 
-if (GetInt(row[5], &a, 0) == 0) 
+if (GetInt(row[5], &a) == 0) 
     ac->priv.userCash = a;
 else
     {
@@ -1324,7 +1329,7 @@ else
     return -1;
     }
 
-if (GetInt(row[6], &a, 0) == 0) 
+if (GetInt(row[6], &a) == 0) 
     ac->priv.userAddDel = a;
 else
     {
@@ -1334,7 +1339,7 @@ else
     return -1;
     }
 
-if (GetInt(row[7], &a, 0) == 0) 
+if (GetInt(row[7], &a) == 0) 
     ac->priv.tariffChg = a;
 else
     {
@@ -1344,7 +1349,7 @@ else
     return -1;
     }
 
-if (GetInt(row[8], &a, 0) == 0) 
+if (GetInt(row[8], &a) == 0) 
     ac->priv.adminChg = a;
 else
     {
@@ -1359,7 +1364,7 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::AddTariff(const string & name) const
+int MYSQL_STORE::AddTariff(const std::string & name) const
 {
 sprintf(qbuf,"INSERT INTO tariffs SET name='%s'", name.c_str());
     
@@ -1373,7 +1378,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::DelTariff(const string & name) const
+int MYSQL_STORE::DelTariff(const std::string & name) const
 {
 sprintf(qbuf,"DELETE FROM tariffs WHERE name='%s' LIMIT 1", name.c_str());
     
@@ -1387,7 +1392,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreTariff(TARIFF_DATA * td, const string & tariffName) const
+int MYSQL_STORE::RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -1410,12 +1415,12 @@ if (!(res=mysql_store_result(sock)))
     return -1;
 }
 
-string str;
+std::string str;
 td->tariffConf.name = tariffName;
 
 row = mysql_fetch_row(res);
 
-string param;
+std::string param;
 for (int i = 0; i<DIR_NUM; i++)
     {
     strprintf(&param, "Time%d", i);
@@ -1475,7 +1480,7 @@ for (int i = 0; i<DIR_NUM; i++)
     td->dirPrice[i].priceNightB /= (1024*1024);
 
     strprintf(&param, "Threshold%d", i);
-    if (GetInt(row[5+i*8], &td->dirPrice[i].threshold, 0) < 0)
+    if (GetInt(row[5+i*8], &td->dirPrice[i].threshold) < 0)
         {
         mysql_free_result(res);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
@@ -1484,7 +1489,7 @@ for (int i = 0; i<DIR_NUM; i++)
         }
 
     strprintf(&param, "SinglePrice%d", i);
-    if (GetInt(row[8+i*8], &td->dirPrice[i].singlePrice, 0) < 0)
+    if (GetInt(row[8+i*8], &td->dirPrice[i].singlePrice) < 0)
         {
         mysql_free_result(res);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
@@ -1493,7 +1498,7 @@ for (int i = 0; i<DIR_NUM; i++)
         }
 
     strprintf(&param, "NoDiscount%d", i);
-    if (GetInt(row[7+i*8], &td->dirPrice[i].noDiscount, 0) < 0)
+    if (GetInt(row[7+i*8], &td->dirPrice[i].noDiscount) < 0)
         {
         mysql_free_result(res);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
@@ -1561,11 +1566,11 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveTariff(const TARIFF_DATA & td, const string & tariffName) const
+int MYSQL_STORE::SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const
 {
-string param;
+std::string param;
 
-string res="UPDATE tariffs SET";
+std::string res="UPDATE tariffs SET";
 
 for (int i = 0; i < DIR_NUM; i++)
     {
@@ -1589,7 +1594,7 @@ for (int i = 0; i < DIR_NUM; i++)
         td.dirPrice[i].threshold);
     res += param;
 
-    string s;
+    std::string s;
     strprintf(&param, " Time%d", i);
 
     strprintf(&s, "%0d:%0d-%0d:%0d", 
@@ -1646,11 +1651,11 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree, 
+int MYSQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree, 
                                    time_t lastStat, 
-                                   const string & login) const
+                                   const std::string & login) const
 {
-string res, stTime, endTime, tempStr;
+std::string res, stTime, endTime, tempStr;
 time_t t;
 tm * lt;
 
@@ -1680,7 +1685,7 @@ if (!(result=mysql_list_tables(sock,tempStr.c_str() )))
     return -1;
 }
 
-unsigned int num_rows =  mysql_num_rows(result);
+my_ulonglong num_rows =  mysql_num_rows(result);
 
 mysql_free_result(result);
 
@@ -1731,7 +1736,7 @@ strprintf(&res,"INSERT INTO detailstat_%02d_%4d SET login='%s',"\
     endTime.c_str()
     );
 
-map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
+std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
 stIter = statTree.begin();
 
 while (stIter != statTree.end())
@@ -1762,17 +1767,17 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::AddMessage(STG_MSG * msg, const string & login) const
+int MYSQL_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
 {
 struct timeval tv;
 
 gettimeofday(&tv, NULL);
 
-msg->header.id = ((long long)tv.tv_sec) * 1000000 + ((long long)tv.tv_usec);
+msg->header.id = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
 
 sprintf(qbuf,"INSERT INTO messages SET login='%s', id=%lld", 
     login.c_str(),
-    (long long)msg->header.id
+    static_cast<long long>(msg->header.id)
     );
     
 if(MysqlSetQuery(qbuf))
@@ -1785,9 +1790,9 @@ if(MysqlSetQuery(qbuf))
 return EditMessage(*msg, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::EditMessage(const STG_MSG & msg, const string & login) const
+int MYSQL_STORE::EditMessage(const STG_MSG & msg, const std::string & login) const
 {
-string res;
+std::string res;
 
 strprintf(&res,"UPDATE messages SET type=%d, lastSendTime=%u, creationTime=%u, "\
     "showTime=%u, stgRepeat=%d, repeatPeriod=%u, text='%s' "\
@@ -1800,7 +1805,7 @@ strprintf(&res,"UPDATE messages SET type=%d, lastSendTime=%u, creationTime=%u, "
     msg.header.repeatPeriod,
     (ReplaceStr(msg.text,badSyms,repSym)).c_str(),
     login.c_str(),
-    (long long)msg.header.id
+    msg.header.id
     );
 
 if(MysqlSetQuery(res.c_str()))
@@ -1813,7 +1818,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetMessage(uint64_t id, STG_MSG * msg, const string & login) const
+int MYSQL_STORE::GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -1896,10 +1901,10 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::DelMessage(uint64_t id, const string & login) const
+int MYSQL_STORE::DelMessage(uint64_t id, const std::string & login) const
 {
 sprintf(qbuf,"DELETE FROM messages WHERE login='%s' AND id=%lld LIMIT 1", 
-    login.c_str(),(long long)id);
+        login.c_str(), static_cast<long long>(id));
     
 if(MysqlSetQuery(qbuf))
 {
@@ -1911,7 +1916,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const string & login) const
+int MYSQL_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -1934,10 +1939,11 @@ if (!(res=mysql_store_result(sock)))
     return -1;
 }
 
-unsigned int i, num_rows =  mysql_num_rows(res);
-long long int unsigned id = 0;
+unsigned int i;
+my_ulonglong num_rows = mysql_num_rows(res);
+uint64_t id = 0;
 
-for (i=0; i<num_rows; i++)
+for (i = 0; i < num_rows; i++)
 {
     row = mysql_fetch_row(res);
     if (str2x(row[1], id))

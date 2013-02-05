@@ -30,14 +30,14 @@
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetCorpsList(vector<string> * corpsList) const
+int FIREBIRD_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string name;
+std::string name;
 
 try
     {
@@ -90,7 +90,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreCorp(CORP_CONF * cc, const string & name) const
+int FIREBIRD_STORE::RestoreCorp(CORP_CONF * cc, const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -128,7 +128,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddCorp(const string & name) const
+int FIREBIRD_STORE::AddCorp(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -155,7 +155,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelCorp(const string & name) const
+int FIREBIRD_STORE::DelCorp(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 

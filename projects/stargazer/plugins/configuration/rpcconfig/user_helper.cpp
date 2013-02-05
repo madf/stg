@@ -74,7 +74,7 @@ structVal["group"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().group
 structVal["status"] = xmlrpc_c::value_boolean(ptr->GetConnected());
 structVal["aonline"] = xmlrpc_c::value_boolean(ptr->GetProperty().alwaysOnline.Get());
 structVal["currip"] = xmlrpc_c::value_string(inet_ntostring(ptr->GetCurrIP()));
-structVal["pingtime"] = xmlrpc_c::value_int(ptr->GetPingTime());
+structVal["pingtime"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetPingTime()));
 structVal["ips"] = xmlrpc_c::value_string(ptr->GetProperty().ips.Get().GetIpStr());
 
 std::map<std::string, xmlrpc_c::value> traffInfo;
@@ -116,9 +116,9 @@ structVal["down"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabled.Get());
 structVal["disableddetailstat"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabledDetailStat.Get());
 structVal["passive"] = xmlrpc_c::value_boolean(ptr->GetProperty().passive.Get());
 structVal["lastcash"] = xmlrpc_c::value_double(ptr->GetProperty().lastCashAdd.Get());
-structVal["lasttimecash"] = xmlrpc_c::value_int(ptr->GetProperty().lastCashAddTime.Get());
-structVal["lastactivitytime"] = xmlrpc_c::value_int(ptr->GetProperty().lastActivityTime.Get());
-structVal["creditexpire"] = xmlrpc_c::value_int(ptr->GetProperty().creditExpire.Get());
+structVal["lasttimecash"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().lastCashAddTime.Get()));
+structVal["lastactivitytime"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().lastActivityTime.Get()));
+structVal["creditexpire"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().creditExpire.Get()));
 
 *info = xmlrpc_c::value_struct(structVal);
 }
@@ -335,7 +335,7 @@ if ((it = structVal.find("note")) != structVal.end())
 
 if ((it = structVal.find("userdata")) != structVal.end())
     {
-    std::vector<USER_PROPERTY_LOGGED<string> *> userdata;
+    std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
     userdata.push_back(ptr->GetProperty().userdata0.GetPointer());
     userdata.push_back(ptr->GetProperty().userdata1.GetPointer());
     userdata.push_back(ptr->GetProperty().userdata2.GetPointer());

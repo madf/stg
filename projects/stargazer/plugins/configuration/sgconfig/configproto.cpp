@@ -158,10 +158,9 @@ XML_ParserFree(xmlParser);
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::ParseCommand()
 {
-list<string>::iterator n;
+std::list<std::string>::iterator n;
 int done = 0;
 char str[9];
-int len;
 
 if (requestList.empty())
     return 0;
@@ -179,14 +178,14 @@ while(nonstop)
     {
     strncpy(str, (*n).c_str(), 8);
     str[8] = 0;
-    len = strlen(str);
+    size_t len = strlen(str);
 
     ++n;
     if (n == requestList.end())
         done = 1;
     --n;
 
-    if (XML_Parse(xmlParser, (*n).c_str(), len, done) == XML_STATUS_ERROR)
+    if (XML_Parse(xmlParser, (*n).c_str(), static_cast<int>(len), done) == XML_STATUS_ERROR)
         {
         logger("Invalid configuration request");
         printfd(__FILE__, "Parse error at line %d:\n%s\n",

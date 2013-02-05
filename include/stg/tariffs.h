@@ -32,6 +32,8 @@ struct TARIFF_DATA;
 
 class TARIFFS {
 public:
+    typedef std::list<TARIFF> Tariffs;
+
     virtual ~TARIFFS() {}
     virtual int ReadTariffs () = 0;
     virtual const TARIFF * FindByName(const std::string & name) const = 0;

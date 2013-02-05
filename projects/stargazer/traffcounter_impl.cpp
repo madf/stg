@@ -202,11 +202,11 @@ void TRAFFCOUNTER_IMPL::Process(const RAW_PACKET & rawPacket)
 if (!running)
     return;
 
-static time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
+time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
 
 if (monitoring && (touchTime + MONITOR_TIME_DELAY_SEC <= stgTime))
     {
-    static std::string monFile = monitorDir + "/traffcounter_p";
+    std::string monFile = monitorDir + "/traffcounter_p";
     printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", monitoring, monFile.c_str());
     touchTime = stgTime;
     TouchFile(monFile.c_str());
@@ -292,12 +292,12 @@ void TRAFFCOUNTER_IMPL::FlushAndRemove()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-int oldPacketsSize = packets.size();
-int oldIp2packetsSize = ip2packets.size();
+Packets::size_type oldPacketsSize = packets.size();
+Index::size_type oldIp2packetsSize = ip2packets.size();
 
 pp_iter pi;
 pi = packets.begin();
-std::map<RAW_PACKET, PACKET_EXTRA_DATA> newPackets;
+Packets newPackets;
 ip2packets.erase(ip2packets.begin(), ip2packets.end());
 while (pi != packets.end())
     {
@@ -673,13 +673,13 @@ while (fgets(str, 1023, f))
     rul.proto = 0xff;
     rul.dir = 0xff;
 
-    for (size_t i = 0; i < PROTOMAX; i++)
+    for (uint8_t i = 0; i < PROTOMAX; i++)
         {
         if (strcasecmp(tp, protoName[i]) == 0)
             rul.proto = i;
         }
 
-    for (size_t i = 0; i < DIR_NUM + 1; i++)
+    for (uint32_t i = 0; i < DIR_NUM + 1; i++)
         {
         if (td == dirName[i])
             rul.dir = i;
@@ -747,9 +747,9 @@ bool TRAFFCOUNTER_IMPL::ParseAddress(const char * ta, RULE * rule) const
 {
 char addr[50], mask[20], port1[20], port2[20], ports[40];
 
-int len = strlen(ta);
+size_t len = strlen(ta);
 char n = 0;
-int i, p;
+size_t i, p;
 memset(addr, 0, sizeof(addr));
 for (i = 0; i < len; i++)
     {
@@ -829,15 +829,15 @@ uint16_t prt1, prt2, msk;
 struct in_addr ipaddr;
 char *res;
 
-msk = strtol(mask, &res, 10);
+msk = static_cast<uint16_t>(strtol(mask, &res, 10));
 if (*res != 0)
     return true;
 
-prt1 = strtol(port1, &res, 10);
+prt1 = static_cast<uint16_t>(strtol(port1, &res, 10));
 if (*res != 0)
     return true;
 
-prt2 = strtol(port2, &res, 10);
+prt2 = static_cast<uint16_t>(strtol(port2, &res, 10));
 if (*res != 0)
     return true;
 
@@ -902,9 +902,9 @@ switch (rule.proto)
 printf("dir=%u \n", static_cast<unsigned>(rule.dir));
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & monitorDir)
+void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & dir)
 {
-TRAFFCOUNTER_IMPL::monitorDir = monitorDir;
-monitoring = (monitorDir != "");
+monitorDir = dir;
+monitoring = !monitorDir.empty();
 }
 //-----------------------------------------------------------------------------

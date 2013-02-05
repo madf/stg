@@ -182,7 +182,7 @@ public:
 
     bool            GetConnected() const { return connected; }
     time_t          GetConnectedModificationTime() const { return connected.ModificationTime(); }
-    int             GetAuthorized() const { return authorizedBy.size(); }
+    int             GetAuthorized() const { return static_cast<int>(authorizedBy.size()); }
     int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
     void            Unauthorize(const AUTH * auth);
     bool            IsAuthorizedBy(const AUTH * auth) const;
@@ -197,8 +197,8 @@ public:
 
     const std::string & GetStrError() const { return errorStr; }
 
-    USER_PROPERTIES & GetProperty() { return property; };
-    const USER_PROPERTIES & GetProperty() const { return property; };
+    USER_PROPERTIES & GetProperty() { return property; }
+    const USER_PROPERTIES & GetProperty() const { return property; }
 
     void            SetDeleted() { deleted = true; }
     bool            GetDeleted() const { return deleted; }

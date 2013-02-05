@@ -5,7 +5,7 @@
 #include "messages_methods.h"
 #include "rpcconfig.h"
 
-extern const volatile time_t stgTime;
+extern volatile time_t stgTime;
 
 //------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ if ((it = msgInfo.find("text")) == msgInfo.end())
     }
 message.text = IconvString(xmlrpc_c::value_string(it->second), "UTF-8", "CP1251");
 
-message.header.creationTime = stgTime;
+message.header.creationTime = static_cast<int>(stgTime);
 message.header.lastSendTime = 0;
 
 std::vector<xmlrpc_c::value>::iterator lit;

@@ -404,14 +404,13 @@ void METHOD_GET_ONLINE_IPS::execute(xmlrpc_c::paramList const & paramList,
                                     xmlrpc_c::value *   const   retvalPtr)
 {
 std::string cookie = paramList.getString(0);
-std::vector<xmlrpc_c::value> subnetsStr = paramList.getArray(1);
+typedef std::vector<xmlrpc_c::value> ValueVector;
+ValueVector subnetsStr = paramList.getArray(1);
 paramList.verifyEnd(2);
 
 std::vector<IP_MASK> subnets;
 
-std::vector<xmlrpc_c::value>::iterator it;
-
-for (it = subnetsStr.begin(); it != subnetsStr.end(); ++it)
+for (ValueVector::const_iterator it(subnetsStr.begin()); it != subnetsStr.end(); ++it)
     {
     IP_MASK ipm;
     if (ParseNet(xmlrpc_c::value_string(*it), ipm))
@@ -434,7 +433,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-std::vector<xmlrpc_c::value> ips;
+ValueVector ips;
 
 USER_PTR u;
 
@@ -457,8 +456,7 @@ while (1)
         {
         uint32_t ip = u->GetCurrIP();
 
-        std::vector<IP_MASK>::iterator it;
-        for (it = subnets.begin(); it != subnets.end(); ++it)
+        for (std::vector<IP_MASK>::const_iterator it(subnets.begin()); it != subnets.end(); ++it)
             {
             if ((it->ip & it->mask) == (ip & it->mask))
                 {

@@ -36,9 +36,6 @@ $Author: faust $
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 
-using namespace std;
-extern "C" PLUGIN * GetPlugin();
-
 //-----------------------------------------------------------------------------
 struct iphdr_eth {
     uint8_t     ihl:4,
@@ -58,8 +55,8 @@ struct iphdr_eth {
 //-----------------------------------------------------------------------------
 class CAP_SETTINGS {
 public:
-    const string &  GetStrError() const { static string s; return s; }
-    int             ParseSettings(const MODULE_SETTINGS & s) { return 0; }
+    const std::string & GetStrError() const { static std::string s; return s; }
+    int                 ParseSettings(const MODULE_SETTINGS & s) { return 0; }
 };
 //-----------------------------------------------------------------------------
 class DEBUG_CAP :public PLUGIN
@@ -75,15 +72,15 @@ public:
     int                 Reload() { return 0; }
     int                 ParseSettings() { return 0; }
     bool                IsRunning();
-    const string &      GetStrError() const;
-    const string        GetVersion() const;
+    const std::string & GetStrError() const;
+    std::string         GetVersion() const;
     uint16_t            GetStartPosition() const;
     uint16_t            GetStopPosition() const;
 private:
     static void *       Run1(void *);
     static void *       Run2(void *);
     static void *       Run3(void *);
-    mutable string      errorStr;
+    mutable std::string errorStr;
     CAP_SETTINGS        capSettings;
     pthread_t           thread;
     bool                nonstop;

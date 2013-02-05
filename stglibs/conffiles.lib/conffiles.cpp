@@ -73,8 +73,9 @@ std::string Trim(std::string val)
 {
 return TrimR(TrimL(val));
 }
-//---------------------------------------------------------------------------
 }
+//---------------------------------------------------------------------------
+} // namespace anonymous
 
 //---------------------------------------------------------------------------
 bool StringCaseCmp(const std::string & str1, const std::string & str2)
@@ -114,8 +115,13 @@ while (getline(f, line))
         return;
         }
 
+<<<<<<< Updated upstream
     std::string parameter = Trim(line.substr(0, pos));
     std::string value = Trim(line.substr(pos + 1));
+=======
+    std::string parameter = line.substr(0, pos);
+    std::string value = line.substr(pos + 1);
+>>>>>>> Stashed changes
     param_val[parameter] = value;
     }
 }
@@ -184,7 +190,7 @@ const std::map<std::string, std::string>::const_iterator it(param_val.find(param
 if (it != param_val.end())
     {
     char *res;
-    *val = strtol(it->second.c_str(), &res, 10);
+    *val = static_cast<int>(strtol(it->second.c_str(), &res, 10));
     if (*res != 0)
         {
         *val = defaultVal; //Error!
@@ -204,7 +210,7 @@ const std::map<std::string, std::string>::const_iterator it(param_val.find(param
 if (it != param_val.end())
     {
     char *res;
-    *val = strtoul(it->second.c_str(), &res, 10);
+    *val = static_cast<unsigned int>(strtoul(it->second.c_str(), &res, 10));
     if (*res != 0)
         {
         *val = defaultVal; //Error!

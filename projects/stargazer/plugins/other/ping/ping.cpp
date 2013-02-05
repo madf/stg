@@ -10,7 +10,29 @@
 #include "stg/plugin_creator.h"
 #include "ping.h"
 
+namespace
+{
 PLUGIN_CREATOR<PING> pc;
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Класс для поиска юзера в списке нотификаторов
+template <typename varType>
+class IS_CONTAINS_USER: public std::binary_function<varType, USER_PTR, bool>
+{
+public:
+    IS_CONTAINS_USER(const USER_PTR & u) : user(u) {}
+    bool operator()(varType notifier) const
+        {
+        return notifier.GetUser() == user;
+        }
+private:
+    const USER_PTR & user;
+};
+}
+
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -21,26 +43,10 @@ return pc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-// Класс для поиска юзера в списке нотификаторов
-template <typename varType>
-class IS_CONTAINS_USER: public binary_function<varType, USER_PTR, bool>
-{
-public:
-    IS_CONTAINS_USER(const USER_PTR & u) : user(u) {}
-    bool operator()(varType notifier) const
-        {
-        return notifier.GetUser() == user;
-        };
-private:
-    const USER_PTR & user;
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 int PING_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "PingDelay";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -138,7 +144,7 @@ for (int i = 0; i < 25; i++)
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
-list<USER_PTR>::iterator users_iter;
+std::list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
@@ -170,7 +176,7 @@ long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
  
 while (ping->nonstop)
     {
-    list<USER_PTR>::iterator iter = ping->usersList.begin();
+    std::list<USER_PTR>::iterator iter = ping->usersList.begin();
         {
         STG_LOCKER lock(&ping->mutex, __FILE__, __LINE__);
         while (iter != ping->usersList.end())
@@ -233,8 +239,8 @@ void PING::UnSetUserNotifiers(USER_PTR u)
 IS_CONTAINS_USER<CHG_CURRIP_NOTIFIER_PING> IsContainsUserCurrIP(u);
 IS_CONTAINS_USER<CHG_IPS_NOTIFIER_PING> IsContainsUserIP(u);
 
-list<CHG_CURRIP_NOTIFIER_PING>::iterator currIPter;
-list<CHG_IPS_NOTIFIER_PING>::iterator IPIter;
+std::list<CHG_CURRIP_NOTIFIER_PING>::iterator currIPter;
+std::list<CHG_IPS_NOTIFIER_PING>::iterator IPIter;
 
 currIPter = find_if(ChgCurrIPNotifierList.begin(),
                     ChgCurrIPNotifierList.end(),
@@ -303,7 +309,7 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 UnSetUserNotifiers(u);
 
-list<USER_PTR>::iterator users_iter;
+std::list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 
 while (users_iter != usersList.end())

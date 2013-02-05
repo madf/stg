@@ -67,7 +67,7 @@ public:
         pthread_mutex_unlock(&lockerMutex);
         #endif
         pthread_mutex_lock(mutex);
-        };
+        }
 
     ~STG_LOCKER()
         {
@@ -77,7 +77,7 @@ public:
         std::cout << "Unlock: " << lockID << " " << file << ":" << line << " " << mutex << " " << pthread_self() << std::endl;
         pthread_mutex_unlock(&lockerMutex);
         #endif
-        };
+        }
 private:
     STG_LOCKER(const STG_LOCKER & rvalue);
     STG_LOCKER & operator=(const STG_LOCKER & rvalue);

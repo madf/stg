@@ -62,7 +62,7 @@ public:
     virtual int                 Reload() = 0;
     virtual bool                IsRunning() = 0;
     virtual const std::string & GetStrError() const = 0;
-    virtual const std::string   GetVersion() const = 0;
+    virtual std::string         GetVersion() const = 0;
     virtual uint16_t            GetStartPosition() const = 0;
     virtual uint16_t            GetStopPosition() const = 0;
 };

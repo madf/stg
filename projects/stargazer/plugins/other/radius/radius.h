@@ -62,12 +62,12 @@ public:
           authServices(), acctServices()
     {}
     virtual ~RAD_SETTINGS() {}
-    const string & GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const { return errorStr; }
     int ParseSettings(const MODULE_SETTINGS & s);
     uint16_t GetPort() const { return port; }
     const std::string & GetPassword() const { return password; }
-    const std::list<string> & GetAuthServices() const { return authServices; }
-    const std::list<string> & GetAcctServices() const { return acctServices; }
+    const std::list<std::string> & GetAuthServices() const { return authServices; }
+    const std::list<std::string> & GetAcctServices() const { return acctServices; }
 
 private:
     int ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst);
@@ -102,7 +102,7 @@ public:
     bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const { return "RADIUS data access plugin v 0.6"; }
+    std::string         GetVersion() const { return "RADIUS data access plugin v 0.6"; }
     uint16_t            GetStartPosition() const { return 30; }
     uint16_t            GetStopPosition() const { return 30; }
 
@@ -116,7 +116,7 @@ private:
     int                 PrepareNet();
     int                 FinalizeNet();
 
-    int                 Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr);
+    ssize_t             Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr);
     int                 RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr);
     int                 ProcessData(RAD_PACKET * packet);
 
@@ -135,19 +135,19 @@ private:
 
     void                PrintServices(const std::list<std::string> & svcs);
 
-    struct Printer : public unary_function<std::string, void>
+    struct Printer : public std::unary_function<std::string, void>
     { 
         void operator()(const std::string & line)
         { 
             printfd("radius.cpp", "'%s'\n", line.c_str()); 
-        }; 
+        } 
     };
-    struct SPrinter : public unary_function<std::pair<std::string, RAD_SESSION>, void>
+    struct SPrinter : public std::unary_function<std::pair<std::string, RAD_SESSION>, void>
     { 
         void operator()(const std::pair<std::string, RAD_SESSION> & it)
         { 
             printfd("radius.cpp", "%s - ('%s', '%s')\n", it.first.c_str(), it.second.userName.c_str(), it.second.serviceType.c_str()); 
-        }; 
+        } 
     };
 
     BLOWFISH_CTX        ctx;

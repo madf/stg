@@ -221,15 +221,18 @@ private:
     void        UnSetUserNotifiers(USER_IMPL * user);
 
     typedef std::list<RULE>::iterator rule_iter;
-    typedef std::map<RAW_PACKET, PACKET_EXTRA_DATA>::iterator pp_iter;
-    typedef std::multimap<uint32_t, pp_iter>::iterator ip2p_iter;
-    typedef std::multimap<uint32_t, pp_iter>::const_iterator ip2p_citer;
 
     std::list<RULE>          rules;
 
-    std::map<RAW_PACKET, PACKET_EXTRA_DATA> packets; // Packets tree
+    typedef std::map<RAW_PACKET, PACKET_EXTRA_DATA> Packets;
+    typedef Packets::iterator pp_iter;
+    typedef std::multimap<uint32_t, pp_iter> Index;
+    typedef Index::iterator ip2p_iter;
+    typedef Index::const_iterator ip2p_citer;
 
-    std::multimap<uint32_t, pp_iter> ip2packets; // IP-to-Packet index
+    Packets packets; // Packets tree
+
+    Index ip2packets; // IP-to-Packet index
 
     std::string              dirName[DIR_NUM + 1];
 

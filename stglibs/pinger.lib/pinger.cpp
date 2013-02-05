@@ -165,11 +165,6 @@ while (iter != ipToDel.end())
 ipToDel.erase(ipToDel.begin(), ipToDel.end());
 }
 //-----------------------------------------------------------------------------
-int STG_PINGER::GetPingIPNum() const
-{
-return pingIP.size();
-}
-//-----------------------------------------------------------------------------
 void STG_PINGER::PrintAllIP()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -202,20 +197,20 @@ return 0;
 //-----------------------------------------------------------------------------
 uint16_t STG_PINGER::PingCheckSum(void * data, int len)
 {
-unsigned short * buf = (unsigned short *)data;
-unsigned int sum = 0;
-unsigned short result;
+uint16_t * buf = static_cast<uint16_t *>(data);
+uint32_t sum = 0;
+uint32_t result;
 
 for ( sum = 0; len > 1; len -= 2 )
     sum += *buf++;
 
 if ( len == 1 )
-    sum += *(unsigned char*)buf;
+    sum += *reinterpret_cast<uint8_t*>(buf);
 
 sum = (sum >> 16) + (sum & 0xFFFF);
 sum += (sum >> 16);
 result = ~sum;
-return result;
+return static_cast<uint16_t>(result);
 }
 //-----------------------------------------------------------------------------
 int STG_PINGER::SendPing(uint32_t ip)
@@ -228,7 +223,7 @@ addr.sin_addr.s_addr = ip;
 
 memset(&pmSend, 0, sizeof(pmSend));
 pmSend.hdr.type = ICMP_ECHO;
-pmSend.hdr.un.echo.id = pid;
+pmSend.hdr.un.echo.id = static_cast<uint16_t>(pid);
 memcpy(pmSend.msg, &ip, sizeof(ip));
 
 pmSend.hdr.checksum = PingCheckSum(&pmSend, sizeof(pmSend));
@@ -250,19 +245,17 @@ uint32_t ipAddr = 0;
 
 char buf[128];
 memset(buf, 0, sizeof(buf));
-int bytes;
 socklen_t len = sizeof(addr);
 
-bytes = recvfrom(recvSocket, &buf, sizeof(buf), 0, (struct sockaddr*)&addr, &len);
-if (bytes > 0)
+if (recvfrom(recvSocket, &buf, sizeof(buf), 0, reinterpret_cast<struct sockaddr*>(&addr), &len))
     {
-    struct IP_HDR * ip = (struct IP_HDR *)buf;
-    struct ICMP_HDR *icmp = (struct ICMP_HDR *)(buf + ip->ihl * 4);
+    struct IP_HDR * ip = static_cast<struct IP_HDR *>(static_cast<void *>(buf));
+    struct ICMP_HDR *icmp = static_cast<struct ICMP_HDR *>(static_cast<void *>(buf + ip->ihl * 4));
 
     if (icmp->un.echo.id != pid)
         return 0;
 
-    ipAddr = *(uint32_t*)(buf + sizeof(ICMP_HDR) + ip->ihl * 4);
+    ipAddr = *static_cast<uint32_t*>(static_cast<void *>(buf + sizeof(ICMP_HDR) + ip->ihl * 4));
     }
 
 return ipAddr;

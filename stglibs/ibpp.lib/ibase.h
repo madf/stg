@@ -104,8 +104,10 @@ typedef unsigned __int64	ISC_UINT64;
 #ifdef  ISC_INT64_DEFINED
 #undef  ISC_INT64_DEFINED
 #else
-typedef long long int			ISC_INT64;
-typedef unsigned long long int	ISC_UINT64;
+//typedef long long int			ISC_INT64;
+//typedef unsigned long long int	ISC_UINT64;
+typedef int64_t	ISC_INT64;
+typedef uint64_t	ISC_UINT64;
 #endif
 
 // Nickolay: it is easier to assume that integer is at least 32-bit.
