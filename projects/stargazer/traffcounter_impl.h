@@ -241,6 +241,7 @@ private:
 
     std::string              monitorDir;
     bool                     monitoring;
+    time_t                   touchTimeP;
 
     USERS_IMPL *             users;
 

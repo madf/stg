@@ -68,6 +68,7 @@ TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
       rulesFileName(fn),
       monitorDir(),
       monitoring(false),
+      touchTimeP(stgTime - MONITOR_TIME_DELAY_SEC),
       users(u),
       running(false),
       stopped(true),
@@ -203,13 +204,11 @@ void TRAFFCOUNTER_IMPL::Process(const RAW_PACKET & rawPacket)
 if (!running)
     return;
 
-time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
-
-if (monitoring && (touchTime + MONITOR_TIME_DELAY_SEC <= stgTime))
+if (monitoring && (touchTimeP + MONITOR_TIME_DELAY_SEC <= stgTime))
     {
     std::string monFile = monitorDir + "/traffcounter_p";
     printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", monitoring, monFile.c_str());
-    touchTime = stgTime;
+    touchTimeP = stgTime;
     TouchFile(monFile.c_str());
     }
 
