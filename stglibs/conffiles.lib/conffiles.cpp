@@ -73,7 +73,6 @@ std::string Trim(std::string val)
 {
 return TrimR(TrimL(val));
 }
-}
 //---------------------------------------------------------------------------
 } // namespace anonymous
 
@@ -115,13 +114,8 @@ while (getline(f, line))
         return;
         }
 
-<<<<<<< Updated upstream
     std::string parameter = Trim(line.substr(0, pos));
     std::string value = Trim(line.substr(pos + 1));
-=======
-    std::string parameter = line.substr(0, pos);
-    std::string value = line.substr(pos + 1);
->>>>>>> Stashed changes
     param_val[parameter] = value;
     }
 }
