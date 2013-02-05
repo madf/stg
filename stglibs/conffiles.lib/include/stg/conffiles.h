@@ -64,6 +64,7 @@ public:
     int ReadDouble(const std::string & param, double * val, double defaultVal) const;
 
     void WriteString(const std::string & param, const char * val) { return WriteString(param, std::string(val)); }
+    void WriteString(const std::string & param, const std::string& val);
     void WriteInt(const std::string & param, int64_t val);
     void WriteDouble(const std::string & param, double val);
 
