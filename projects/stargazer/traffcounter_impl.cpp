@@ -41,6 +41,7 @@
 
 #include "stg/common.h"
 #include "stg/locker.h"
+#include "stg/const.h" // MONITOR_TIME_DELAY_SEC
 #include "traffcounter_impl.h"
 #include "stg_timer.h"
 #include "users_impl.h"
