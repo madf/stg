@@ -242,7 +242,8 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
-users->Unauthorize(u->GetLogin(), this);
+if (u->IsAuthorizedBy(this))
+    users->Unauthorize(u->GetLogin(), this);
 UnSetUserNotifiers(u);
 usersList.remove(u);
 }
