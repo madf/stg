@@ -264,14 +264,24 @@ else
 if (settings->ReadSettings())
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
-
     if (settings->GetLogFileName() != "")
         WriteServLog.SetLogFileName(settings->GetLogFileName());
 
     WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
     exit(1);
     }
-
+/*************************************************************************************************/
+//вывод scriptParams
+    printfd(__FILE__, "--- Script params dump ---\n");
+    std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
+    while (it != settings->GetScriptParams().end())
+    {
+        printfd(__FILE__, "%s\n", it->c_str());
+        it++;
+    }
+    printfd(__FILE__, "--- End dump ---\n"); 
+/*************************************************************************************************/
+    
 #ifndef NO_DAEMON
 std::string startFile(settings->GetConfDir() + START_FILE);
 #endif
