@@ -458,15 +458,12 @@ while (node)
         }
 
         if (strcasecmp(node->getName(), "ScriptParams") == 0)
-        {
-            int i;
-            i=0;
-            while (node->getValue(i)!=NULL)
             {
+            for (int i = 0; node->getValue(i) != NULL; ++i)
+                {
                 scriptParams.push_back(node->getValue(i));
-                i++;
+                }
             }
-        }
     node = node->getNextNode();
     }
 

@@ -99,7 +99,7 @@ public:
     const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
         { return modulesSettings; }
                 
-    const std::vector<std::string> & GetScriptParams() const {return scriptParams; }
+    const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
 
 private:
 
