@@ -243,7 +243,7 @@ while (node)
         {
         rules = node->getValue(0);
         }
-       
+
     if (strcasecmp(node->getName(), "DetailStatWritePeriod") == 0)
         {
         if (ParseDetailStatWritePeriod(node->getValue(0)) != 0)
@@ -457,13 +457,13 @@ while (node)
             }
         }
 
-        if (strcasecmp(node->getName(), "ScriptParams") == 0)
+    if (strcasecmp(node->getName(), "ScriptParams") == 0)
+        {
+        for (int i = 0; node->getValue(i) != NULL; ++i)
             {
-            for (int i = 0; node->getValue(i) != NULL; ++i)
-                {
-                scriptParams.push_back(node->getValue(i));
-                }
+            scriptParams.push_back(node->getValue(i));
             }
+        }
     node = node->getNextNode();
     }
 

@@ -264,8 +264,10 @@ else
 if (settings->ReadSettings())
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
+
     if (settings->GetLogFileName() != "")
         WriteServLog.SetLogFileName(settings->GetLogFileName());
+    
     WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
     exit(1);
     }
