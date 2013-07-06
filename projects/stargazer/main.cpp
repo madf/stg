@@ -106,7 +106,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
 #else
 int StartScriptExecuter(char *, int msgKey, int * msgID, SETTINGS_IMPL * settings)
@@ -151,7 +151,7 @@ switch (executerPid)
 
     case 0:
         delete settings;
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
         Executer(*msgID, executerPid, procName);
 #else
         Executer(*msgID, executerPid);
@@ -160,7 +160,7 @@ switch (executerPid)
 
     default:
         if (executersPid.empty()) {
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
             Executer(*msgID, executerPid, NULL);
 #else
             Executer(*msgID, executerPid);

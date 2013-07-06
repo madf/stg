@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 int ScriptExec(const char * str);
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 void Executer(int msgID, pid_t pid, char * procName);
 #else
 void Executer(int msgID, pid_t pid);

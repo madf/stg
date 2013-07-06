@@ -59,15 +59,15 @@ fi
 
 if [ "$OS" = "unknown" ]
 then 
-    echo "################################################################################"
-    echo "# Sorry, but sgauthstress currently supported by Linux, FreeBSD 4.x-8.x        #"
-    echo "################################################################################"
+    printf "################################################################################\n"
+    printf "# Sorry, but sgauthstress currently supported by Linux, FreeBSD 4.x-8.x        #\n"
+    printf "################################################################################\n"
     exit 1
 fi
 
-echo "#############################################################################"
-echo "       Building sgauthstress for $sys $release"
-echo "#############################################################################"
+printf "#############################################################################\n"
+printf "       Building sgauthstress for $sys $release\n"
+printf "#############################################################################\n"
 
 STG_LIBS="logger.lib
           locker.lib
@@ -108,32 +108,32 @@ then
     CXX=g++
 fi
 
-echo -n "Checking CC... "
+printf "Checking CC... "
 $CC --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
-    echo "FAIL!"
-    echo "$CC not found"
+    printf "FAIL!\n"
+    printf "$CC not found\n"
     exit;
 fi
-echo "found"
-echo -n "Checking CXX... "
+printf "found\n"
+printf "Checking CXX... "
 $CXX --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
-    echo "FAIL!"
-    echo "$CXX not found"
+    printf "FAIL!\n"
+    printf "$CXX not found\n"
     exit;
 fi
-echo "found"
+printf "found\n"
 
-echo -n "Checking endianess... "
-echo "int main() { int probe = 0x00000001; return *(char *)&probe; }" > build_check.c
+printf "Checking endianess... "
+printf "int main() { int probe = 0x00000001; return *(char *)&probe; }\n" > build_check.c
 $CC $CFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
-    echo "FAIL!"
-    echo "Endianess checking failed"
+    printf "FAIL!\n"
+    printf "Endianess checking failed\n"
     exit;
 else
     ./fake
@@ -142,103 +142,103 @@ else
         ARCH=le
         CXXFLAGS="$CXXFLAGS -DARCH_LE"
         CFLAGS="$CFLAGS -DARCH_LE"
-        echo "Little Endian"
+        printf "Little Endian\n"
     else
         ARCH=be
         CXXFLAGS="$CXXFLAGS -DARCH_BE"
         CFLAGS="$CFLAGS -DARCH_BE"
-        echo "Big Endian"
+        printf "Big Endian\n"
     fi
 fi
 rm -f fake
 rm -f build_check.c
 
-echo -n "Checking for -lfbclient... "
+printf "Checking for -lfbclient... "
 $CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
-    echo "no"
+    printf "no\n"
 else
     CHECK_FBCLIENT=yes
-    echo "yes"
+    printf "yes\n"
 fi
 rm -f fake
 
-echo -n "Checking for mysql_config... "
+printf "Checking for mysql_config... "
 MYSQL_VERSION=`mysql_config --version 2> /dev/null`
 if [ $? != 0 ]
 then
-    echo "no";
-    echo -n "Checking for -lmysqlclient... "
+    printf "no\n";
+    printf "Checking for -lmysqlclient... "
     $CC $CFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
-        echo "no"
+        printf "no\n"
     else
         CHECK_MYSQLCLIENT=yes
-        echo "yes"
+        printf "yes\n"
     fi
     rm -f fake
 else
-    echo "yes"
-    echo -n "Checking for mysql_config --cflags... "
+    printf "yes\n"
+    printf "Checking for mysql_config --cflags... "
     MYSQL_CFLAGS=`mysql_config --cflags 2> /dev/null`
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
-        echo "no"
+        printf "no\n"
     else
-        echo "[$MYSQL_CFLAGS]"
-        echo -n "Checking for mysql_config --libs_r... "
+        printf "[$MYSQL_CFLAGS]\n"
+        printf "Checking for mysql_config --libs_r... "
         MYSQL_LDFLAGS=`mysql_config --libs_r 2> /dev/null`
         if [ $? != 0 ]
         then
             CHECK_MYSQLCLIENT=no
-            echo "no"
+            printf "no\n"
         else
             CHECK_MYSQLCLIENT=yes
-            echo "[$MYSQL_LDFLAGS]"
+            printf "[$MYSQL_LDFLAGS]\n"
         fi
     fi
 fi
 
-echo -n "Checking for pg_config... "
+printf "Checking for pg_config... "
 PG_VERSION=`pg_config --version 2> /dev/null`
 if [ $? != 0 ]
 then
-    echo "no";
-    echo -n "Checking for -lpq... "
+    printf "no\n";
+    printf "Checking for -lpq... "
     $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
-        echo "no"
+        printf "no\n"
     else
         CHECK_PQ=yes
-        echo "yes"
+        printf "yes\n"
     fi
     rm -f fake
 else
-    echo "yes";
-    echo -n "Checking for pg_config --includedir... "
+    printf "yes\n";
+    printf "Checking for pg_config --includedir... "
     PG_CFLAGS=`pg_config --includedir 2> /dev/null`
     if [ $? != 0 ]
     then
         CHECK_PQ=no
-        echo "no"
+        printf "no\n"
     else
-        echo "[$PG_CFLAGS]"
-        echo -n "Checking for pg_config --libdir... "
+        printf "[$PG_CFLAGS]\n"
+        printf "Checking for pg_config --libdir... "
         PG_LDFLAGS=`pg_config --libdir 2> /dev/null`
         if [ $? != 0 ]
         then
             CHECK_PQ=no
-            echo "no"
+            printf "no\n"
         else
             CHECK_PQ=yes
-            echo "[$PG_LDFLAGS]"
+            printf "[$PG_LDFLAGS]\n"
         fi
     fi
 fi
@@ -265,36 +265,36 @@ then
          store/mysql"
 fi
 
-echo "OS=$OS" > $CONFFILE
-echo "STG_TIME=yes" >> $CONFFILE
-echo "DEBUG=$DEBUG" >> $CONFFILE
-echo "DIR_BUILD=$BUILD_DIR" >> $CONFFILE
-echo "DIR_LIB=\$(DIR_BUILD)/../../lib" >> $CONFFILE
-echo "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs" >> $CONFFILE
-echo "DIR_INCLUDE=\$(DIR_BUILD)/../../include" >> $CONFFILE
-echo "DIR_MOD=\$(DIR_BUILD)/../stargazer/modules" >> $CONFFILE
-echo "DIR_PLUGINS=\$(DIR_BUILD)/../stargazer/plugins" >> $CONFFILE
-echo "ARCH=$ARCH" >> $CONFFILE
-echo "DEFS=$DEFS" >> $CONFFILE
-echo -n "STG_LIBS=" >> $CONFFILE
+printf "OS=$OS\n" > $CONFFILE
+printf "STG_TIME=yes\n" >> $CONFFILE
+printf "DEBUG=$DEBUG\n" >> $CONFFILE
+printf "DIR_BUILD=$BUILD_DIR\n" >> $CONFFILE
+printf "DIR_LIB=\$(DIR_BUILD)/../../lib\n" >> $CONFFILE
+printf "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs\n" >> $CONFFILE
+printf "DIR_INCLUDE=\$(DIR_BUILD)/../../include\n" >> $CONFFILE
+printf "DIR_MOD=\$(DIR_BUILD)/../stargazer/modules\n" >> $CONFFILE
+printf "DIR_PLUGINS=\$(DIR_BUILD)/../stargazer/plugins\n" >> $CONFFILE
+printf "ARCH=$ARCH\n" >> $CONFFILE
+printf "DEFS=$DEFS\n" >> $CONFFILE
+printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS
 do
-    echo -n "$lib " >> $CONFFILE
+    printf "$lib " >> $CONFFILE
 done
-echo "" >> $CONFFILE
-echo -n "PLUGINS=" >> $CONFFILE
+printf "\n" >> $CONFFILE
+printf "PLUGINS=" >> $CONFFILE
 for plugin in $PLUGINS
 do
-    echo -n "$plugin " >> $CONFFILE
+    printf "$plugin " >> $CONFFILE
 done
-echo "" >> $CONFFILE
-echo "LIB_THREAD=$LIB_THREAD" >> $CONFFILE
-echo "CXXFLAGS=$CXXFLAGS" >> $CONFFILE
-echo "CFLAGS=$CFLAGS" >> $CONFFILE
-echo "LDFLAGS=$LDFLAGS" >> $CONFFILE
-echo "PREFIX=$PREFIX" >> $CONFFILE
-echo "BIN_MODE=$BIN_MODE" >> $CONFFILE
-echo "DATA_MODE=$DATA_MODE" >> $CONFFILE
-echo "DIR_MODE=$DIR_MODE" >> $CONFFILE
-echo "OWNER=$OWNER" >> $CONFFILE
+printf "\n" >> $CONFFILE
+printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
+printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
+printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
+printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
+printf "PREFIX=$PREFIX\n" >> $CONFFILE
+printf "BIN_MODE=$BIN_MODE\n" >> $CONFFILE
+printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
+printf "DIR_MODE=$DIR_MODE\n" >> $CONFFILE
+printf "OWNER=$OWNER\n" >> $CONFFILE
 $MAKE $MAKEOPTS

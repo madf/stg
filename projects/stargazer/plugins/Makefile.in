@@ -9,18 +9,23 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 LN = ln
 
 STGLIBS_INCS = $(addprefix -I ../../../../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
-STGLIBS_LIBS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
+STGLIBS_PATHS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(addprefix -lstg,$(STGLIBS))
+STGLIBS_LIBS = $(addprefix -lstg,$(STGLIBS))
 
 CXXFLAGS += -fPIC $(STGLIBS_INCS)
 CFLAGS += -fPIC $(STGLIBS_INCS)
+
+ifneq ($(OS),darwin)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
+else
+LDFLAGS += -dynamiclib -undefined suppress -flat_namespace -Wl,-rpath,$(PREFIX)/usr/lib/stg
+endif
 
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CXX) $^ $(STGLIBS_LIBS) $(LIBS) $(LDFLAGS) -o $(PROG)
+	$(CXX) $^ $(STGLIBS_PATHS) $(STGLIBS_LIBS) $(LIBS) $(LDFLAGS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
 clean:

@@ -47,7 +47,12 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
 CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+
+ifneq ($(OS),darwin)
 LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
+endif
+
+LDFLAGS += $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins install uninstall install-bin install-data
 all: libs plugins $(PROG)
