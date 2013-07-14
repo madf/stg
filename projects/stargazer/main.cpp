@@ -267,7 +267,7 @@ if (settings->ReadSettings())
 
     if (settings->GetLogFileName() != "")
         WriteServLog.SetLogFileName(settings->GetLogFileName());
-    
+
     WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
     exit(1);
     }
@@ -279,7 +279,7 @@ if (settings->ReadSettings())
         printfd(__FILE__, "%s\n", it->c_str());
         ++it;
         }
-    printfd(__FILE__, "--- End dump ---\n"); 
+    printfd(__FILE__, "--- End dump ---\n");
     /*************************************************************************************************/
 #ifndef NO_DAEMON
 std::string startFile(settings->GetConfDir() + START_FILE);

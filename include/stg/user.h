@@ -100,6 +100,8 @@ public:
 
     virtual void                OnAdd() = 0;
     virtual void                OnDelete() = 0;
+
+    virtual const std::string & GetParamValue(const std::string & name) const = 0;
 };
 
 typedef USER * USER_PTR;

@@ -1457,6 +1457,121 @@ while (it != messages.end())
     }
 }
 //-----------------------------------------------------------------------------
+const std::string & USER_IMPL::GetParamValue(const std::string & name) const
+    {
+    std::string value;
+
+    if (name=="cash")
+        {
+        value=property.cash;
+        }
+    if (name=="freeMb")
+        {
+        value=property.freeMb;
+        }
+    if (name=="passive")
+        {
+        value=property.passive;
+        }
+    if (name=="disabled")
+        {
+        value=property.disabled;
+        }
+    if (name=="alwaysOnline")
+        {
+        value=property.alwaysOnline;
+        }
+    if (name=="tariffName")
+        {
+        value=property.tariffName;
+        }
+    if (name=="nextTariff")
+        {
+        value=property.nextTariff;
+        }
+    if (name=="address")
+        {
+        value=property.address;
+        }
+    if (name=="note")
+        {
+        value=property.note;
+        }
+    if (name=="group")
+        {
+        value=property.group;
+        }
+    if (name=="email")
+        {
+        value=property.email;
+        }
+    if (name=="phone")
+        {
+        value=property.phone;
+        }
+    if (name=="realName")
+        {
+        value=property.realName;
+        }
+    if (name=="credit")
+        {
+        value=property.credit;
+        }
+    if (name=="userdata0")
+        {
+        value=property.userdata0;
+        }
+    if (name=="userdata1")
+        {
+        value=property.userdata1;
+        }
+    if (name=="userdata2")
+        {
+        value=property.userdata2;
+        }
+    if (name=="userdata3")
+        {
+        value=property.userdata3;
+        }
+    if (name=="userdata4")
+        {
+        value=property.userdata4;
+        }
+    if (name=="userdata5")
+        {
+        value=property.userdata5;
+        }
+    if (name=="userdata6")
+        {
+        value=property.userdata6;
+        }
+    if (name=="userdata7")
+        {
+        value=property.userdata7;
+        }
+    if (name=="userdata8")
+        {
+        value=property.userdata8;
+        }
+    if (name=="userdata9")
+        {
+        value=property.userdata9;
+        }
+    if (name=="id")
+        {
+        value=id;
+        }
+    if (name=="login")
+        {
+        value=login;
+        }
+    if (name=="ip")
+        {
+        value=currIP;
+        }
+    return value;
+    }
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 void CHG_PASSIVE_NOTIFIER::Notify(const int & oldPassive, const int & newPassive)
