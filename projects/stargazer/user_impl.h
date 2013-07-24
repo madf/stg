@@ -216,7 +216,7 @@ public:
     void            OnAdd();
     void            OnDelete();
 
-    virtual const std::string & GetParamValue(const std::string & name) const;
+    virtual std::string GetParamValue(const std::string & name) const;
 
 private:
     USER_IMPL & operator=(const USER_IMPL & rvalue);

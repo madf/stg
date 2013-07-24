@@ -588,14 +588,21 @@ if (!fakeConnect)
             }
 
         std::string scriptOnConnectParams;
-        strprintf(&scriptOnConnectParams,
-                "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
-                scriptOnConnect.c_str(),
-                login.c_str(),
-                inet_ntostring(currIP).c_str(),
-                cash.ConstData(),
-                id,
-                dirsStr);
+
+        std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
+        while (it != settings->GetScriptParams().end())
+            {
+            scriptOnConnectParams  += GetParamValue(it->c_str());
+            }
+
+//        strprintf(&scriptOnConnectParams,
+//                "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
+//                scriptOnConnect.c_str(),
+//                login.c_str(),
+//                inet_ntostring(currIP).c_str(),
+//                cash.ConstData(),
+//                id,
+//                dirsStr);
 
         ScriptExec(scriptOnConnectParams.c_str());
         }
@@ -1457,119 +1464,116 @@ while (it != messages.end())
     }
 }
 //-----------------------------------------------------------------------------
-const std::string & USER_IMPL::GetParamValue(const std::string & name) const
+std::string USER_IMPL::GetParamValue(const std::string & name) const
     {
-    std::string value;
-
-    if (name=="cash")
+    if (name == "cash")
         {
-        value=property.cash;
+        return static_cast<std::string>(property.cash);
         }
-    if (name=="freeMb")
+    if (name == "freeMb")
         {
-        value=property.freeMb;
+        return static_cast<std::string>(property.freeMb);
         }
-    if (name=="passive")
+    if (name == "passive")
         {
-        value=property.passive;
+        return static_cast<std::string>(property.passive);
         }
-    if (name=="disabled")
+    if (name == "disabled")
         {
-        value=property.disabled;
+        return static_cast<std::string>(property.disabled);
         }
-    if (name=="alwaysOnline")
+    if (name == "alwaysOnline")
         {
-        value=property.alwaysOnline;
+        return static_cast<std::string>(property.alwaysOnline);
         }
-    if (name=="tariffName")
+    if (name == "tariffName")
         {
-        value=property.tariffName;
+        return property.tariffName;
         }
-    if (name=="nextTariff")
+    if (name == "nextTariff")
         {
-        value=property.nextTariff;
+        return property.nextTariff;
         }
-    if (name=="address")
+    if (name == "address")
         {
-        value=property.address;
+        return property.address;
         }
-    if (name=="note")
+    if (name == "note")
         {
-        value=property.note;
+        return property.note;
         }
-    if (name=="group")
+    if (name == "group")
         {
-        value=property.group;
+        return property.group;
         }
-    if (name=="email")
+    if (name == "email")
         {
-        value=property.email;
+        return property.email;
         }
-    if (name=="phone")
+    if (name == "phone")
         {
-        value=property.phone;
+        return property.phone;
         }
-    if (name=="realName")
+    if (name == "realName")
         {
-        value=property.realName;
+        return property.realName;
         }
-    if (name=="credit")
+    if (name == "credit")
         {
-        value=property.credit;
+        return static_cast<std::string>(property.credit);
         }
-    if (name=="userdata0")
+    if (name == "userdata0")
         {
-        value=property.userdata0;
+        return property.userdata0;
         }
-    if (name=="userdata1")
+    if (name == "userdata1")
         {
-        value=property.userdata1;
+        return property.userdata1;
         }
-    if (name=="userdata2")
+    if (name == "userdata2")
         {
-        value=property.userdata2;
+        return property.userdata2;
         }
-    if (name=="userdata3")
+    if (name == "userdata3")
         {
-        value=property.userdata3;
+        return property.userdata3;
         }
-    if (name=="userdata4")
+    if (name == "userdata4")
         {
-        value=property.userdata4;
+        return property.userdata4;
         }
-    if (name=="userdata5")
+    if (name == "userdata5")
         {
-        value=property.userdata5;
+        return property.userdata5;
         }
-    if (name=="userdata6")
+    if (name == "userdata6")
         {
-        value=property.userdata6;
+        return property.userdata6;
         }
-    if (name=="userdata7")
+    if (name == "userdata7")
         {
-        value=property.userdata7;
+        return property.userdata7;
         }
-    if (name=="userdata8")
+    if (name == "userdata8")
         {
-        value=property.userdata8;
+        return property.userdata8;
         }
-    if (name=="userdata9")
+    if (name == "userdata9")
         {
-        value=property.userdata9;
+        return property.userdata9;
         }
-    if (name=="id")
+    if (name == "id")
         {
-        value=id;
+        return static_cast<std::string>(id);
         }
-    if (name=="login")
+    if (name == "login")
         {
-        value=login;
+        return login;
         }
-    if (name=="ip")
+    if (name == "ip")
         {
-        value=currIP;
+        return static_cast<std::string>(currIP);
         }
-    return value;
     }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
