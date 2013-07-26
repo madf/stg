@@ -57,13 +57,24 @@ distclean: clean
 install: install-bin install-data
 
 install-bin:
-	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+ifeq ($(DEBUG), yes)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 
 install-data:
 	# Install etc
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/rscriptd
 	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/rscriptd/rscriptd.conf
+ifeq ($(OS), linux)
+	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
+	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
+	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
+endif
 
 uninstall: uninstall-bin uninstall-data
 
@@ -73,7 +84,8 @@ uninstall-bin:
 uninstall-data:
 	# Uninstall etc
 	rm -f $(PREFIX)/etc/rscriptd/rscriptd.conf
-
+	rm -f $(PREFIX)/etc/rscriptd/OnConnect
+	rm -f $(PREFIX)/etc/rscriptd/OnDisconnect
 
 ifneq ($(MAKECMDGOALS),distclean)
 ifneq ($(MAKECMDGOALS),clean)

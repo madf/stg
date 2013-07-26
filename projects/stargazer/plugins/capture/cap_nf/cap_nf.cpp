@@ -45,7 +45,12 @@ $Author: faust $
 #include "stg/plugin_creator.h"
 #include "cap_nf.h"
 
+namespace
+{
 PLUGIN_CREATOR<NF_CAP> cnc;
+}
+
+extern "C" PLUGIN * GetPlugin();
 
 PLUGIN * GetPlugin()
 {
@@ -261,10 +266,6 @@ sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 NF_CAP * cap = static_cast<NF_CAP *>(c);
-uint8_t buf[BUF_SIZE];
-int res;
-struct sockaddr_in sin;
-socklen_t slen;
 cap->stoppedUDP = false;
 while (cap->runningUDP)
     {
@@ -274,8 +275,10 @@ while (cap->runningUDP)
         }
 
     // Data
-    slen = sizeof(sin);
-    res = recvfrom(cap->sockUDP, buf, BUF_SIZE, 0, reinterpret_cast<struct sockaddr *>(&sin), &slen);
+    struct sockaddr_in sin;
+    socklen_t slen = sizeof(sin);
+    uint8_t buf[BUF_SIZE];
+    ssize_t res = recvfrom(cap->sockUDP, buf, BUF_SIZE, 0, reinterpret_cast<struct sockaddr *>(&sin), &slen);
     if (!cap->runningUDP)
         break;
 
@@ -313,11 +316,6 @@ sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 NF_CAP * cap = static_cast<NF_CAP *>(c);
-uint8_t buf[BUF_SIZE];
-int res;
-int sd;
-struct sockaddr_in sin;
-socklen_t slen;
 cap->stoppedTCP = false;
 while (cap->runningTCP)
     {
@@ -327,8 +325,9 @@ while (cap->runningTCP)
         }
 
     // Data
-    slen = sizeof(sin);
-    sd = accept(cap->sockTCP, reinterpret_cast<struct sockaddr *>(&sin), &slen);
+    struct sockaddr_in sin;
+    socklen_t slen = sizeof(sin);
+    int sd = accept(cap->sockTCP, reinterpret_cast<struct sockaddr *>(&sin), &slen);
     if (!cap->runningTCP)
         break;
 
@@ -345,7 +344,8 @@ while (cap->runningTCP)
         continue;
         }
 
-    res = recv(sd, buf, BUF_SIZE, MSG_WAITALL);
+    uint8_t buf[BUF_SIZE];
+    ssize_t res = recv(sd, buf, BUF_SIZE, MSG_WAITALL);
 
     if (res < 0)
         cap->logger("recv error: %s", strerror(errno));
@@ -373,7 +373,7 @@ cap->stoppedTCP = true;
 return NULL;
 }
 
-void NF_CAP::ParseBuffer(uint8_t * buf, int size)
+void NF_CAP::ParseBuffer(uint8_t * buf, ssize_t size)
 {
 RAW_PACKET ip;
 NF_HEADER * hdr = reinterpret_cast<NF_HEADER *>(buf);

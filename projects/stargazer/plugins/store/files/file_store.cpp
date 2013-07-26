@@ -58,15 +58,18 @@
 
 #define adm_enc_passwd "cjeifY8m3"
 
-using namespace std;
-
-int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext);
+int GetFileList(std::vector<std::string> * fileList, const std::string & directory, mode_t mode, const std::string & ext);
 
 const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+namespace
+{
 PLUGIN_CREATOR<FILES_STORE> fsc;
+}
+
+extern "C" STORE * GetStore();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -96,11 +99,11 @@ FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseOwner(const vector<PARAM_VALUE> & moduleParams, const string & owner, uid_t * uid)
+int FILES_STORE_SETTINGS::ParseOwner(const std::vector<PARAM_VALUE> & moduleParams, const std::string & owner, uid_t * uid)
 {
 PARAM_VALUE pv;
 pv.param = owner;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end())
     {
@@ -117,11 +120,11 @@ if (User2UID(pvi->value[0].c_str(), uid) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseGroup(const vector<PARAM_VALUE> & moduleParams, const string & group, gid_t * gid)
+int FILES_STORE_SETTINGS::ParseGroup(const std::vector<PARAM_VALUE> & moduleParams, const std::string & group, gid_t * gid)
 {
 PARAM_VALUE pv;
 pv.param = group;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end())
     {
@@ -138,7 +141,7 @@ if (Group2GID(pvi->value[0].c_str(), gid) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseYesNo(const string & value, bool * val)
+int FILES_STORE_SETTINGS::ParseYesNo(const std::string & value, bool * val)
 {
 if (0 == strcasecmp(value.c_str(), "yes"))
     {
@@ -155,11 +158,11 @@ errorStr = "Incorrect value \'" + value + "\'.";
 return -1;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseMode(const vector<PARAM_VALUE> & moduleParams, const string & modeStr, mode_t * mode)
+int FILES_STORE_SETTINGS::ParseMode(const std::vector<PARAM_VALUE> & moduleParams, const std::string & modeStr, mode_t * mode)
 {
 PARAM_VALUE pv;
 pv.param = modeStr;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end())
     {
@@ -199,7 +202,7 @@ if (ParseGroup(s.moduleParams, "UserLogGroup", &userLogGID) < 0)
 if (ParseMode(s.moduleParams, "UserLogMode", &userLogMode) < 0)
     return -1;
 
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 PARAM_VALUE pv;
 pv.param = "RemoveBak";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -252,7 +255,7 @@ adminsDir = workDir + "/admins/";
 return 0;
 }
 //-----------------------------------------------------------------------------
-const string & FILES_STORE_SETTINGS::GetStrError() const
+const std::string & FILES_STORE_SETTINGS::GetStrError() const
 {
 return errorStr;
 }
@@ -263,7 +266,7 @@ struct passwd * pw;
 pw = getpwnam(user);
 if (!pw)
     {
-    errorStr = string("User \'") + string(user) + string("\' not found in system.");
+    errorStr = std::string("User \'") + std::string(user) + std::string("\' not found in system.");
     printfd(__FILE__, "%s\n", errorStr.c_str());
     return -1;
     }
@@ -278,7 +281,7 @@ struct group * grp;
 grp = getgrnam(gr);
 if (!grp)
     {
-    errorStr = string("Group \'") + string(gr) + string("\' not found in system.");
+    errorStr = std::string("Group \'") + std::string(gr) + std::string("\' not found in system.");
     printfd(__FILE__, "%s\n", errorStr.c_str());
     return -1;
     }
@@ -294,7 +297,7 @@ char b;
 char c;
 if (strlen(str) > 3)
     {
-    errorStr = string("Error parsing mode \'") + str + string("\'");
+    errorStr = std::string("Error parsing mode \'") + str + std::string("\'");
     printfd(__FILE__, "%s\n", errorStr.c_str());
     return -1;
     }
@@ -302,7 +305,7 @@ if (strlen(str) > 3)
 for (int i = 0; i < 3; i++)
     if (str[i] > '7' || str[i] < '0')
         {
-        errorStr = string("Error parsing mode \'") + str + string("\'");
+        errorStr = std::string("Error parsing mode \'") + str + std::string("\'");
         printfd(__FILE__, "%s\n", errorStr.c_str());
         return -1;
         }
@@ -348,7 +351,7 @@ pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
-};
+}
 //-----------------------------------------------------------------------------
 int FILES_STORE::ParseSettings()
 {
@@ -361,14 +364,14 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetUsersList(vector<string> * userList) const
+int FILES_STORE::GetUsersList(std::vector<std::string> * userList) const
 {
-vector<string> files;
+std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetUsersDir(), S_IFDIR, ""))
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Failed to open '" + storeSettings.GetUsersDir() + "': " + string(strerror(errno));
+    errorStr = "Failed to open '" + storeSettings.GetUsersDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
@@ -379,14 +382,14 @@ userList->swap(files);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetAdminsList(vector<string> * adminList) const
+int FILES_STORE::GetAdminsList(std::vector<std::string> * adminList) const
 {
-vector<string> files;
+std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetAdminsDir(), S_IFREG, ".adm"))
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Failed to open '" + storeSettings.GetAdminsDir() + "': " + string(strerror(errno));
+    errorStr = "Failed to open '" + storeSettings.GetAdminsDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
@@ -397,14 +400,14 @@ adminList->swap(files);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetTariffsList(vector<string> * tariffList) const
+int FILES_STORE::GetTariffsList(std::vector<std::string> * tariffList) const
 {
-vector<string> files;
+std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetTariffsDir(), S_IFREG, ".tf"))
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "Failed to open '" + storeSettings.GetTariffsDir() + "': " + string(strerror(errno));
+    errorStr = "Failed to open '" + storeSettings.GetTariffsDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
@@ -434,8 +437,8 @@ while ((entry = readdir(d)))
     if (!(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")))
         continue;
 
-    string str = path;
-    str += "/" + string(entry->d_name);
+    std::string str = path;
+    str += "/" + std::string(entry->d_name);
 
     struct stat st;
     if (stat(str.c_str(), &st))
@@ -481,16 +484,16 @@ if (rmdir(path))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::AddUser(const string & login) const
+int FILES_STORE::AddUser(const std::string & login) const
 {
-string fileName;
+std::string fileName;
 
 strprintf(&fileName, "%s%s", storeSettings.GetUsersDir().c_str(), login.c_str());
 
 if (mkdir(fileName.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == -1)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("mkdir failed. Message: '") + strerror(errno) + "'";
+    errorStr = std::string("mkdir failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::AddUser - mkdir failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
@@ -515,12 +518,12 @@ if (Touch(fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::DelUser(const string & login) const
+int FILES_STORE::DelUser(const std::string & login) const
 {
-string dirName;
-string dirName1;
+std::string dirName;
+std::string dirName1;
 
-strprintf(&dirName, "%s/"DELETED_USERS_DIR, storeSettings.GetWorkDir().c_str());
+strprintf(&dirName, "%s/%s", storeSettings.GetWorkDir().c_str(), DELETED_USERS_DIR);
 if (access(dirName.c_str(), F_OK) != 0)
     {
     if (mkdir(dirName.c_str(), 0700) != 0)
@@ -534,7 +537,7 @@ if (access(dirName.c_str(), F_OK) != 0)
 
 if (access(dirName.c_str(), F_OK) == 0)
     {
-    strprintf(&dirName, "%s/"DELETED_USERS_DIR"/%s.%lu", storeSettings.GetWorkDir().c_str(), login.c_str(), time(NULL));
+    strprintf(&dirName, "%s/%s/%s.%lu", storeSettings.GetWorkDir().c_str(), DELETED_USERS_DIR, login.c_str(), time(NULL));
     strprintf(&dirName1, "%s/%s", storeSettings.GetUsersDir().c_str(), login.c_str());
     if (rename(dirName1.c_str(), dirName.c_str()))
         {
@@ -555,9 +558,9 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserConf(USER_CONF * conf, const string & login) const
+int FILES_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login) const
 {
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 if (RestoreUserConf(conf, login, fileName))
     {
@@ -570,11 +573,11 @@ if (RestoreUserConf(conf, login, fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserConf(USER_CONF * conf, const string & login, const string & fileName) const
+int FILES_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login, const std::string & fileName) const
 {
 CONFIGFILE cf(fileName);
 int e = cf.Error();
-string str;
+std::string str;
 
 if (e)
     {
@@ -614,21 +617,21 @@ if (conf->tariffName.empty())
     return -1;
     }
 
-string ipStr;
+std::string ipStr;
 cf.ReadString("IP", &ipStr, "?");
-USER_IPS i;
+USER_IPS ips;
 try
     {
-    i = StrToIPS(ipStr);
+    ips = StrToIPS(ipStr);
     }
-catch (const string & s)
+catch (const std::string & s)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "User \'" + login + "\' data not read. Parameter IP address. " + s;
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - ip read failed for user '%s'\n", login.c_str());
     return -1;
     }
-conf->ips = i;
+conf->ips = ips;
 
 if (cf.ReadInt("alwaysOnline", &conf->alwaysOnline, 0) != 0)
     {
@@ -682,9 +685,9 @@ if (cf.ReadDouble("Credit", &conf->credit, 0) != 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserStat(USER_STAT * stat, const string & login) const
+int FILES_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login) const
 {
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
 if (RestoreUserStat(stat, login, fileName))
@@ -698,7 +701,7 @@ if (RestoreUserStat(stat, login, fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserStat(USER_STAT * stat, const string & login, const string & fileName) const
+int FILES_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login, const std::string & fileName) const
 {
 CONFIGFILE cf(fileName);
 
@@ -721,7 +724,7 @@ for (int i = 0; i < DIR_NUM; i++)
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "User \'" + login + "\' stat not read. Parameter " + string(s);
+        errorStr = "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - download stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
@@ -731,7 +734,7 @@ for (int i = 0; i < DIR_NUM; i++)
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr =   "User \'" + login + "\' stat not read. Parameter " + string(s);
+        errorStr =   "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - upload stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
@@ -789,9 +792,9 @@ if (cf.ReadTime("LastActivityTime", &stat->lastActivityTime, 0) != 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveUserConf(const USER_CONF & conf, const string & login) const
+int FILES_STORE::SaveUserConf(const USER_CONF & conf, const std::string & login) const
 {
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
 
 CONFIGFILE cfstat(fileName, true);
@@ -801,7 +804,7 @@ int e = cfstat.Error();
 if (e)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("User \'") + login + "\' conf not written\n";
+    errorStr = std::string("User \'") + login + "\' conf not written\n";
     printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
     return -1;
     }
@@ -838,17 +841,17 @@ for (int i = 0; i < USERDATA_NUM; i++)
     }
 cfstat.WriteInt("CreditExpire",    conf.creditExpire);
 
-stringstream ipStr;
+std::ostringstream ipStr;
 ipStr << conf.ips;
 cfstat.WriteString("IP", ipStr.str());
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveUserStat(const USER_STAT & stat, const string & login) const
+int FILES_STORE::SaveUserStat(const USER_STAT & stat, const std::string & login) const
 {
 char s[22];
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
     {
@@ -858,7 +861,7 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
     if (e)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = string("User \'") + login + "\' stat not written\n";
+        errorStr = std::string("User \'") + login + "\' stat not written\n";
         printfd(__FILE__, "FILES_STORE::SaveUserStat - stat write failed for user '%s'\n", login.c_str());
         return -1;
         }
@@ -891,11 +894,11 @@ if (e)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteLogString(const string & str, const string & login) const
+int FILES_STORE::WriteLogString(const std::string & str, const std::string & login) const
 {
 FILE * f;
 time_t tm = time(NULL);
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/log";
 f = fopen(fileName.c_str(), "at");
 
@@ -927,11 +930,11 @@ if (e)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteLog2String(const string & str, const string & login) const
+int FILES_STORE::WriteLog2String(const std::string & str, const std::string & login) const
 {
 FILE * f;
 time_t tm = time(NULL);
-string fileName;
+std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/log2";
 f = fopen(fileName.c_str(), "at");
 
@@ -963,30 +966,30 @@ if (e)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteUserChgLog(const string & login,
-                                 const string & admLogin,
+int FILES_STORE::WriteUserChgLog(const std::string & login,
+                                 const std::string & admLogin,
                                  uint32_t       admIP,
-                                 const string & paramName,
-                                 const string & oldValue,
-                                 const string & newValue,
-                                 const string & message) const
+                                 const std::string & paramName,
+                                 const std::string & oldValue,
+                                 const std::string & newValue,
+                                 const std::string & message) const
 {
-string userLogMsg = "Admin \'" + admLogin + "\', " + inet_ntostring(admIP) + ": \'"
+std::string userLogMsg = "Admin \'" + admLogin + "\', " + inet_ntostring(admIP) + ": \'"
     + paramName + "\' parameter changed from \'" + oldValue +
     "\' to \'" + newValue + "\'. " + message;
 
 return WriteLogString(userLogMsg, login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteUserConnect(const string & login, uint32_t ip) const
+int FILES_STORE::WriteUserConnect(const std::string & login, uint32_t ip) const
 {
-string logStr = "Connect, " + inet_ntostring(ip);
+std::string logStr = "Connect, " + inet_ntostring(ip);
 if (WriteLogString(logStr, login))
     return -1;
 return WriteLog2String(logStr, login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteUserDisconnect(const string & login,
+int FILES_STORE::WriteUserDisconnect(const std::string & login,
                                      const DIR_TRAFF & up,
                                      const DIR_TRAFF & down,
                                      const DIR_TRAFF & sessionUp,
@@ -995,7 +998,7 @@ int FILES_STORE::WriteUserDisconnect(const string & login,
                                      double freeMb,
                                      const std::string & reason) const
 {
-stringstream logStr;
+std::ostringstream logStr;
 logStr << "Disconnect, "
        << " session upload: \'"
        << sessionUp
@@ -1022,10 +1025,10 @@ logStr << " freeMb: \'"
 return WriteLog2String(logStr.str(), login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const string & login) const
+int FILES_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
 {
 // Classic stats
-string stat1;
+std::string stat1;
 strprintf(&stat1,"%s/%s/stat.%d.%02d",
         storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
@@ -1040,7 +1043,7 @@ if (s.Error())
     }
 
 // New stats
-string stat2;
+std::string stat2;
 strprintf(&stat2,"%s/%s/stat2.%d.%02d",
         storeSettings.GetUsersDir().c_str(), login.c_str(), year + 1900, month + 1);
 
@@ -1079,9 +1082,9 @@ s2.WriteInt("LastActivityTime", stat.lastActivityTime);
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int FILES_STORE::AddAdmin(const string & login) const
+int FILES_STORE::AddAdmin(const std::string & login) const
 {
-string fileName;
+std::string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
 
 if (Touch(fileName))
@@ -1095,9 +1098,9 @@ if (Touch(fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int FILES_STORE::DelAdmin(const string & login) const
+int FILES_STORE::DelAdmin(const std::string & login) const
 {
-string fileName;
+std::string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
 if (unlink(fileName.c_str()))
     {
@@ -1116,7 +1119,7 @@ char passwordE[2 * ADM_PASSWD_LEN + 2];
 char pass[ADM_PASSWD_LEN + 1];
 char adminPass[ADM_PASSWD_LEN + 1];
 
-string fileName;
+std::string fileName;
 
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login.c_str());
 
@@ -1165,9 +1168,9 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreAdmin(ADMIN_CONF * ac, const string & login) const
+int FILES_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
 {
-string fileName;
+std::string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
 CONFIGFILE cf(fileName);
 char pass[ADM_PASSWD_LEN + 1];
@@ -1175,7 +1178,7 @@ char password[ADM_PASSWD_LEN + 1];
 char passwordE[2 * ADM_PASSWD_LEN + 2];
 BLOWFISH_CTX ctx;
 
-string p;
+std::string p;
 
 if (cf.Error())
     {
@@ -1184,8 +1187,6 @@ if (cf.Error())
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - failed to restore admin '%s'\n", ac->login.c_str());
     return -1;
     }
-
-int a;
 
 if (cf.ReadString("password", &p, "*"))
     {
@@ -1217,7 +1218,9 @@ else
 
 ac->password = password;
 
-if (cf.ReadInt("ChgConf", &a, 0) == 0)
+uint16_t a;
+
+if (cf.ReadUShortInt("ChgConf", &a, 0) == 0)
     ac->priv.userConf = a;
 else
     {
@@ -1227,7 +1230,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgPassword", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgPassword", &a, 0) == 0)
     ac->priv.userPasswd = a;
 else
     {
@@ -1237,7 +1240,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgStat", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgStat", &a, 0) == 0)
     ac->priv.userStat = a;
 else
     {
@@ -1247,7 +1250,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgCash", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgCash", &a, 0) == 0)
     ac->priv.userCash = a;
 else
     {
@@ -1257,7 +1260,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("UsrAddDel", &a, 0) == 0)
+if (cf.ReadUShortInt("UsrAddDel", &a, 0) == 0)
     ac->priv.userAddDel = a;
 else
     {
@@ -1267,7 +1270,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgAdmin", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgAdmin", &a, 0) == 0)
     ac->priv.adminChg = a;
 else
     {
@@ -1277,7 +1280,7 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgTariff", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgTariff", &a, 0) == 0)
     ac->priv.tariffChg = a;
 else
     {
@@ -1287,12 +1290,12 @@ else
     return -1;
     }
 
-if (cf.ReadInt("ChgService", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgService", &a, 0) == 0)
     ac->priv.serviceChg = a;
 else
     ac->priv.serviceChg = 0;
 
-if (cf.ReadInt("ChgCorp", &a, 0) == 0)
+if (cf.ReadUShortInt("ChgCorp", &a, 0) == 0)
     ac->priv.corpChg = a;
 else
     ac->priv.corpChg = 0;
@@ -1300,9 +1303,9 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::AddTariff(const string & name) const
+int FILES_STORE::AddTariff(const std::string & name) const
 {
-string fileName;
+std::string fileName;
 strprintf(&fileName, "%s/%s.tf", storeSettings.GetTariffsDir().c_str(), name.c_str());
 if (Touch(fileName))
     {
@@ -1314,9 +1317,9 @@ if (Touch(fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::DelTariff(const string & name) const
+int FILES_STORE::DelTariff(const std::string & name) const
 {
-string fileName;
+std::string fileName;
 strprintf(&fileName, "%s/%s.tf", storeSettings.GetTariffsDir().c_str(), name.c_str());
 if (unlink(fileName.c_str()))
     {
@@ -1329,11 +1332,11 @@ if (unlink(fileName.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreTariff(TARIFF_DATA * td, const string & tariffName) const
+int FILES_STORE::RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const
 {
-string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
+std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 CONFIGFILE conf(fileName);
-string str;
+std::string str;
 td->tariffConf.name = tariffName;
 
 if (conf.Error() != 0)
@@ -1344,7 +1347,7 @@ if (conf.Error() != 0)
     return -1;
     }
 
-string param;
+std::string param;
 for (int i = 0; i<DIR_NUM; i++)
     {
     strprintf(&param, "Time%d", i);
@@ -1483,9 +1486,9 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveTariff(const TARIFF_DATA & td, const string & tariffName) const
+int FILES_STORE::SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const
 {
-string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
+std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 
     {
     CONFIGFILE cf(fileName, true);
@@ -1500,7 +1503,7 @@ string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
         return e;
         }
 
-    string param;
+    std::string param;
     for (int i = 0; i < DIR_NUM; i++)
         {
         strprintf(&param, "PriceDayA%d", i);
@@ -1518,7 +1521,7 @@ string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
         strprintf(&param, "Threshold%d", i);
         cf.WriteInt(param, td.dirPrice[i].threshold);
 
-        string s;
+        std::string s;
         strprintf(&param, "Time%d", i);
 
         strprintf(&s, "%0d:%0d-%0d:%0d",
@@ -1560,9 +1563,9 @@ string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
+int FILES_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                    time_t lastStat,
-                                   const string & login) const
+                                   const std::string & login) const
 {
 char fn[FN_STR_LEN];
 char dn[FN_STR_LEN];
@@ -1578,7 +1581,7 @@ if (access(dn, F_OK) != 0)
     if (mkdir(dn, 0700) != 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "Directory \'" + string(dn) + "\' cannot be created.";
+        errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
         }
@@ -1611,7 +1614,7 @@ if (access(dn, F_OK) != 0)
     if (mkdir(dn, 0700) != 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "Directory \'" + string(dn) + "\' cannot be created.";
+        errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
         }
@@ -1637,7 +1640,7 @@ if (access(dn, F_OK) != 0)
     if (mkdir(dn, 0700) != 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = "Directory \'" + string(dn) + "\' cannot be created.";
+        errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
         }
@@ -1659,7 +1662,7 @@ statFile = fopen (fn, "at");
 if (!statFile)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = "File \'" + string(fn) + "\' cannot be written.";
+    errorStr = "File \'" + std::string(fn) + "\' cannot be written.";
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
@@ -1686,18 +1689,18 @@ if (fprintf(statFile, "-> %02d.%02d.%02d - %02d.%02d.%02d\n",
             h1, m1, s1, h2, m2, s2) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("fprint failed. Message: '") + strerror(errno) + "'";
+    errorStr = std::string("fprint failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
     fclose(statFile);
     return -1;
     }
 
-map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
+std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
 stIter = statTree.begin();
 
 while (stIter != statTree.end())
     {
-    string u, d;
+    std::string u, d;
     x2str(stIter->second.up, u);
     x2str(stIter->second.down, d);
     #ifdef TRAFF_STAT_WITH_PORTS
@@ -1726,7 +1729,7 @@ while (stIter != statTree.end())
                 stIter->second.cash) < 0)
         {
         STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-        errorStr = string("fprint failed. Message: '");
+        errorStr = std::string("fprint failed. Message: '");
         errorStr += strerror(errno);
         errorStr += "'";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
@@ -1752,10 +1755,10 @@ if (e)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::AddMessage(STG_MSG * msg, const string & login) const
+int FILES_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
 {
-string fn;
-string dn;
+std::string fn;
+std::string dn;
 struct timeval tv;
 
 strprintf(&dn, "%s/%s/messages", storeSettings.GetUsersDir().c_str(), login.c_str());
@@ -1792,16 +1795,16 @@ if (Touch(fn))
 return EditMessage(*msg, login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::EditMessage(const STG_MSG & msg, const string & login) const
+int FILES_STORE::EditMessage(const STG_MSG & msg, const std::string & login) const
 {
-string fileName;
+std::string fileName;
 
 FILE * msgFile;
 strprintf(&fileName, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), msg.header.id);
 
 if (access(fileName.c_str(), F_OK) != 0)
     {
-    string idstr;
+    std::string idstr;
     x2str(msg.header.id, idstr);
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "Message for user \'";
@@ -1834,7 +1837,7 @@ res &= (fprintf(msgFile, "%s", msg.text.c_str()) >= 0);
 if (!res)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-    errorStr = string("fprintf failed. Message: '") + strerror(errno) + "'";
+    errorStr = std::string("fprintf failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::EditMessage - fprintf failed. Message: '%s'\n", strerror(errno));
     fclose(msgFile);
     return -1;
@@ -1855,32 +1858,32 @@ if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetMessage(uint64_t id, STG_MSG * msg, const string & login) const
+int FILES_STORE::GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const
 {
-string fn;
+std::string fn;
 strprintf(&fn, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), id);
 msg->header.id = id;
 return ReadMessage(fn, &msg->header, &msg->text);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::DelMessage(uint64_t id, const string & login) const
+int FILES_STORE::DelMessage(uint64_t id, const std::string & login) const
 {
-string fn;
+std::string fn;
 strprintf(&fn, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), id);
 
 return unlink(fn.c_str());
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList, const string & login) const
+int FILES_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const
 {
-string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
+std::string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
 
 if (access(dn.c_str(), F_OK) != 0)
     {
     return 0;
     }
 
-vector<string> messages;
+std::vector<std::string> messages;
 GetFileList(&messages, dn, S_IFREG, "");
 
 for (unsigned i = 0; i < messages.size(); i++)
@@ -1892,7 +1895,7 @@ for (unsigned i = 0; i < messages.size(); i++)
         if (unlink((dn + messages[i]).c_str()))
             {
             STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-            errorStr = string("unlink failed. Message: '") + strerror(errno) + "'";
+            errorStr = std::string("unlink failed. Message: '") + strerror(errno) + "'";
             printfd(__FILE__, "FILES_STORE::GetMessageHdrs - unlink failed. Message: '%s'\n", strerror(errno));
             return -1;
             }
@@ -1910,7 +1913,7 @@ for (unsigned i = 0; i < messages.size(); i++)
         if (unlink((dn + messages[i]).c_str()))
             {
             STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-            errorStr = string("unlink failed. Message: '") + strerror(errno) + "'";
+            errorStr = std::string("unlink failed. Message: '") + strerror(errno) + "'";
             printfd(__FILE__, "FILES_STORE::GetMessageHdrs - unlink failed. Message: '%s'\n", strerror(errno));
             return -1;
             }
@@ -1923,9 +1926,9 @@ for (unsigned i = 0; i < messages.size(); i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::ReadMessage(const string & fileName,
+int FILES_STORE::ReadMessage(const std::string & fileName,
                              STG_MSG_HDR * hdr,
-                             string * text) const
+                             std::string * text) const
 {
 FILE * msgFile;
 msgFile = fopen(fileName.c_str(), "rt");
@@ -2024,7 +2027,7 @@ if (f)
 return -1;
 }
 //-----------------------------------------------------------------------------
-int GetFileList(vector<string> * fileList, const string & directory, mode_t mode, const string & ext)
+int GetFileList(std::vector<std::string> * fileList, const std::string & directory, mode_t mode, const std::string & ext)
 {
 DIR * d = opendir(directory.c_str());
 
@@ -2040,7 +2043,7 @@ while ((entry = readdir(d)))
     if (!(strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")))
         continue;
 
-    string str = directory + "/" + string(entry->d_name);
+    std::string str = directory + "/" + std::string(entry->d_name);
 
     struct stat st;
     if (stat(str.c_str(), &st))

@@ -52,6 +52,12 @@ struct GetUserCbData
     void * data;
     bool * result;
 };
+//-----------------------------------------------------------------------------
+struct AuthByCbData
+{
+    void * data;
+    bool * result;
+};
 //---------------------------------------------------------------------------
 struct HelpParams
 {
@@ -122,6 +128,9 @@ printf("sgconf set -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --
 printf("To get userdata<0...9> use:\n");
 printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --ud0 [--ud1 ...]\n\n");
 
+printf("To get user's authorizers list use:\n");
+printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --authorized-by\n\n");
+
 printf("To send message use:\n");
 printf("sgconf set -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> -m <message>\n\n");
 
@@ -149,6 +158,7 @@ for (int i = 0; i < (int)strlen(login); i++)
     if (!(( login[i] >= 'a' && login[i] <= 'z')
         || (login[i] >= 'A' && login[i] <= 'Z')
         || (login[i] >= '0' && login[i] <= '9')
+        ||  login[i] == '.'
         ||  login[i] == '_'
         ||  login[i] == '-'))
         {
@@ -408,6 +418,22 @@ for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
 *result = true;
 }
 //-----------------------------------------------------------------------------
+void RecvAuthByData(const std::vector<std::string> & list, void * d)
+{
+AuthByCbData * abcbd;
+abcbd = (AuthByCbData *)d;
+
+bool * result = abcbd->result;
+
+REQUEST * req = (REQUEST *)abcbd->data;
+
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    cout << *it << "\n";
+cout << endl;
+
+*result = true;
+}
+//-----------------------------------------------------------------------------
 int ProcessSetUser(const std::string &server,
                    int port,
                    const std::string &admLogin,
@@ -481,6 +507,45 @@ gucbd.result = &result;
 
 sc.SetGetUserDataRecvCb(RecvUserData, &gucbd);
 sc.GetUser(login.c_str());
+
+if (result)
+    {
+    printf("Ok\n");
+    return 0;
+    }
+else
+    {
+    printf("Error\n");
+    return -1;
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
+int ProcessAuthBy(const std::string &server,
+                  int port,
+                  const std::string &admLogin,
+                  const std::string &admPasswd,
+                  const std::string &login,
+                  void * data)
+{
+SERVCONF sc;
+
+bool result = false;
+
+sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
+sc.SetPort(port);           // админский порт серверапорт
+sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
+sc.SetAdmPassword(admPasswd.c_str());
+
+// TODO Good variable name :)
+AuthByCbData abcbd;
+
+abcbd.data = data;
+abcbd.result = &result;
+
+sc.SetGetUserAuthByRecvCb(RecvAuthByData, &abcbd);
+sc.GetUserAuthBy(login.c_str());
 
 if (result)
     {

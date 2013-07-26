@@ -10,7 +10,6 @@
 #include "users_methods.h"
 #include "rpcconfig.h"
 #include "user_helper.h"
-#include "utils.h"
 
 //------------------------------------------------------------------------------
 
@@ -40,7 +39,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
@@ -173,7 +172,7 @@ while (1)
 
     xmlrpc_c::value info;
 
-    USER_HELPER uhelper(u);
+    USER_HELPER uhelper(u, *users);
 
     uhelper.GetUserInfo(&info, hidePassword);
 
@@ -217,7 +216,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
@@ -405,14 +404,13 @@ void METHOD_GET_ONLINE_IPS::execute(xmlrpc_c::paramList const & paramList,
                                     xmlrpc_c::value *   const   retvalPtr)
 {
 std::string cookie = paramList.getString(0);
-std::vector<xmlrpc_c::value> subnetsStr = paramList.getArray(1);
+typedef std::vector<xmlrpc_c::value> ValueVector;
+ValueVector subnetsStr = paramList.getArray(1);
 paramList.verifyEnd(2);
 
 std::vector<IP_MASK> subnets;
 
-std::vector<xmlrpc_c::value>::iterator it;
-
-for (it = subnetsStr.begin(); it != subnetsStr.end(); ++it)
+for (ValueVector::const_iterator it(subnetsStr.begin()); it != subnetsStr.end(); ++it)
     {
     IP_MASK ipm;
     if (ParseNet(xmlrpc_c::value_string(*it), ipm))
@@ -435,7 +433,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-std::vector<xmlrpc_c::value> ips;
+ValueVector ips;
 
 USER_PTR u;
 
@@ -458,8 +456,7 @@ while (1)
         {
         uint32_t ip = u->GetCurrIP();
 
-        std::vector<IP_MASK>::iterator it;
-        for (it = subnets.begin(); it != subnets.end(); ++it)
+        for (std::vector<IP_MASK>::const_iterator it(subnets.begin()); it != subnets.end(); ++it)
             {
             if ((it->ip & it->mask) == (ip & it->mask))
                 {
@@ -511,4 +508,37 @@ if (ipm.mask > 32)
 ipm.mask = htonl(0xffFFffFF << (32 - ipm.mask));
 
 return false;
+}
+
+void METHOD_GET_USER_AUTH_BY::execute(xmlrpc_c::paramList const & paramList,
+                                      xmlrpc_c::value *   const   retvalPtr)
+{
+std::string cookie = paramList.getString(0);
+std::string login = paramList.getString(1);
+paramList.verifyEnd(2);
+
+std::map<std::string, xmlrpc_c::value> structVal;
+ADMIN_INFO adminInfo;
+
+if (config->GetAdminInfo(cookie, &adminInfo))
+    {
+    structVal["result"] = xmlrpc_c::value_boolean(false);
+    *retvalPtr = xmlrpc_c::value_struct(structVal);
+    return;
+    }
+
+USER_PTR u;
+
+if (users->FindByName(login, &u))
+    {
+    structVal["result"] = xmlrpc_c::value_boolean(false);
+    *retvalPtr = xmlrpc_c::value_struct(structVal);
+    return;
+    }
+
+std::vector<std::string> list(u->GetAuthorizers());
+std::vector<xmlrpc_c::value> authList;
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    authList.push_back(xmlrpc_c::value_string(*it));
+*retvalPtr = xmlrpc_c::value_array(authList);
 }

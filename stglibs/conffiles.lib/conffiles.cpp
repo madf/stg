@@ -42,21 +42,53 @@
 
 #include "stg/conffiles.h"
 
-using namespace std;
+namespace
+{
+//---------------------------------------------------------------------------
+std::string TrimL(std::string val)
+{
+size_t pos = val.find_first_not_of(" \t");
+if (pos == std::string::npos)
+    {
+    val.erase(val.begin(), val.end());
+    }
+else
+    {
+    val.erase(0, pos);
+    }
+return val;
+}
+//---------------------------------------------------------------------------
+std::string TrimR(std::string val)
+{
+size_t pos = val.find_last_not_of(" \t");
+if (pos != std::string::npos)
+    {
+    val.erase(pos + 1);
+    }
+return val;
+}
+//---------------------------------------------------------------------------
+std::string Trim(std::string val)
+{
+return TrimR(TrimL(val));
+}
+//---------------------------------------------------------------------------
+} // namespace anonymous
 
 //---------------------------------------------------------------------------
-bool StringCaseCmp(const string & str1, const string & str2)
+bool StringCaseCmp(const std::string & str1, const std::string & str2)
 {
 return (strcasecmp(str1.c_str(), str2.c_str()) < 0);
 }
 //---------------------------------------------------------------------------
-CONFIGFILE::CONFIGFILE(const string & fn, bool nook)
+CONFIGFILE::CONFIGFILE(const std::string & fn, bool nook)
     : param_val(StringCaseCmp),
       fileName(fn),
       error(0),
       changed(false)
 {
-ifstream f(fileName.c_str());
+std::ifstream f(fileName.c_str());
 
 if (!f)
     {
@@ -65,25 +97,25 @@ if (!f)
     return;
     }
 
-string line;
+std::string line;
 while (getline(f, line))
     {
     size_t pos = line.find('#');
-    if (pos != string::npos)
+    if (pos != std::string::npos)
         line.resize(pos);
 
-    if (line.find_first_not_of(" \t\r") == string::npos)
+    if (line.find_first_not_of(" \t\r") == std::string::npos)
         continue;
 
     pos = line.find_first_of('=');
-    if (pos == string::npos)
+    if (pos == std::string::npos)
         {
         error = -1;
         return;
         }
 
-    string parameter = line.substr(0, pos);
-    string value = line.substr(pos + 1);
+    std::string parameter = Trim(line.substr(0, pos));
+    std::string value = Trim(line.substr(pos + 1));
     param_val[parameter] = value;
     }
 }
@@ -93,7 +125,7 @@ CONFIGFILE::~CONFIGFILE()
 Flush();
 }
 //---------------------------------------------------------------------------
-const string & CONFIGFILE::GetFileName() const
+const std::string & CONFIGFILE::GetFileName() const
 {
 return fileName;
 }
@@ -105,9 +137,9 @@ error = 0;
 return e;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadString(const string & param, string * val, const string & defaultVal) const
+int CONFIGFILE::ReadString(const std::string & param, std::string * val, const std::string & defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -119,15 +151,15 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-void CONFIGFILE::WriteString(const string & param, const string &val)
+void CONFIGFILE::WriteString(const std::string & param, const std::string &val)
 {
 param_val[param] = val;
 changed = true;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadTime(const string & param, time_t * val, time_t defaultVal) const
+int CONFIGFILE::ReadTime(const std::string & param, time_t * val, time_t defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -145,9 +177,49 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadInt(const string & param, int * val, int defaultVal) const
+int CONFIGFILE::ReadInt(const std::string & param, int * val, int defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+
+if (it != param_val.end())
+    {
+    char *res;
+    *val = static_cast<int>(strtol(it->second.c_str(), &res, 10));
+    if (*res != 0)
+        {
+        *val = defaultVal; //Error!
+        return EINVAL;
+        }
+    return 0;
+    }
+
+*val = defaultVal;
+return -1;
+}
+//---------------------------------------------------------------------------
+int CONFIGFILE::ReadUInt(const std::string & param, unsigned int * val, unsigned int defaultVal) const
+{
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+
+if (it != param_val.end())
+    {
+    char *res;
+    *val = static_cast<unsigned int>(strtoul(it->second.c_str(), &res, 10));
+    if (*res != 0)
+        {
+        *val = defaultVal; //Error!
+        return EINVAL;
+        }
+    return 0;
+    }
+
+*val = defaultVal;
+return -1;
+}
+//---------------------------------------------------------------------------
+int CONFIGFILE::ReadLongInt(const std::string & param, long int * val, long int defaultVal) const
+{
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -165,9 +237,9 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadUInt(const string & param, unsigned int * val, unsigned int defaultVal) const
+int CONFIGFILE::ReadULongInt(const std::string & param, unsigned long int * val, unsigned long int defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -185,49 +257,9 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadLongInt(const string & param, long int * val, long int defaultVal) const
+int CONFIGFILE::ReadLongLongInt(const std::string & param, int64_t * val, int64_t defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
-
-if (it != param_val.end())
-    {
-    char *res;
-    *val = strtol(it->second.c_str(), &res, 10);
-    if (*res != 0)
-        {
-        *val = defaultVal; //Error!
-        return EINVAL;
-        }
-    return 0;
-    }
-
-*val = defaultVal;
-return -1;
-}
-//---------------------------------------------------------------------------
-int CONFIGFILE::ReadULongInt(const string & param, unsigned long int * val, unsigned long int defaultVal) const
-{
-const map<string, string>::const_iterator it(param_val.find(param));
-
-if (it != param_val.end())
-    {
-    char *res;
-    *val = strtoul(it->second.c_str(), &res, 10);
-    if (*res != 0)
-        {
-        *val = defaultVal; //Error!
-        return EINVAL;
-        }
-    return 0;
-    }
-
-*val = defaultVal;
-return -1;
-}
-//---------------------------------------------------------------------------
-int CONFIGFILE::ReadLongLongInt(const string & param, int64_t * val, int64_t defaultVal) const
-{
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -245,9 +277,9 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadULongLongInt(const string & param, uint64_t * val, uint64_t defaultVal) const
+int CONFIGFILE::ReadULongLongInt(const std::string & param, uint64_t * val, uint64_t defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -265,9 +297,9 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadShortInt(const string & param, short int * val, short int defaultVal) const
+int CONFIGFILE::ReadShortInt(const std::string & param, short int * val, short int defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -285,9 +317,9 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadUShortInt(const string & param, unsigned short int * val, unsigned short int defaultVal) const
+int CONFIGFILE::ReadUShortInt(const std::string & param, unsigned short int * val, unsigned short int defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -305,7 +337,7 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-void CONFIGFILE::WriteInt(const string & param, int64_t val)
+void CONFIGFILE::WriteInt(const std::string & param, int64_t val)
 {
 char buf[32];
 snprintf(buf, sizeof(buf), "%lld", static_cast<long long int>(val));
@@ -313,9 +345,9 @@ param_val[param] = buf;
 changed = true;
 }
 //---------------------------------------------------------------------------
-int CONFIGFILE::ReadDouble(const string & param, double * val, double defaultVal) const
+int CONFIGFILE::ReadDouble(const std::string & param, double * val, double defaultVal) const
 {
-const map<string, string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -333,7 +365,7 @@ if (it != param_val.end())
 return -1;
 }
 //---------------------------------------------------------------------------
-void CONFIGFILE::WriteDouble(const string & param, double val)
+void CONFIGFILE::WriteDouble(const std::string & param, double val)
 {
 char s[30];
 snprintf(s, 30, "%f", val);
@@ -343,14 +375,14 @@ changed = true;
 //---------------------------------------------------------------------------
 int CONFIGFILE::Flush(const std::string & path) const
 {
-ofstream f(path.c_str());
+std::ofstream f(path.c_str());
 if (!f.is_open())
     {
     error = EIO;
     return EIO;
     }
 
-map<string, string>::const_iterator it = param_val.begin();
+std::map<std::string, std::string>::const_iterator it = param_val.begin();
 while (it != param_val.end())
     {
     f << it->first << "=" << it->second << "\n";

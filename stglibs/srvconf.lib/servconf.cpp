@@ -101,6 +101,7 @@ SERVCONF::SERVCONF()
       RecvCheckUserCb(NULL),
       RecvSendMessageCb(NULL),
       getUserDataDataCb(NULL),
+      getUserAuthByDataCb(NULL),
       getUsersDataDataCb(NULL),
       getServerInfoDataCb(NULL),
       chgUserDataCb(NULL),
@@ -138,6 +139,37 @@ int ret;
 
 currParser = &parserGetUser;
 ((PARSER_GET_USER*)currParser)->SetUserDataRecvCb(RecvGetUserDataCb, getUserDataDataCb);
+
+nt.Reset();
+nt.SetRxCallback(this, AnsRecv);
+
+if ((ret = nt.Connect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+if ((ret = nt.Transact(request)) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+if ((ret = nt.Disconnect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+
+return st_ok;
+}
+//-----------------------------------------------------------------------------
+int SERVCONF::GetUserAuthBy(const char * l)
+{
+char request[255];
+snprintf(request, 255, "<GetUserAuthBy login=\"%s\"/>", l);
+int ret;
+
+currParser = &parserAuthBy;
+((PARSER_AUTH_BY*)currParser)->SetRecvCb(RecvAuthByCb, getUserAuthByDataCb);
 
 nt.Reset();
 nt.SetRxCallback(this, AnsRecv);
@@ -366,6 +398,12 @@ void SERVCONF::SetGetUserDataRecvCb(RecvUserDataCb_t f, void * data)
 {
 RecvGetUserDataCb = f;            //GET_USER
 getUserDataDataCb = data;
+}
+//-----------------------------------------------------------------------------
+void SERVCONF::SetGetUserAuthByRecvCb(RecvAuthByDataCb_t f, void * data)
+{
+RecvAuthByCb = f;
+getUserAuthByDataCb = data;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetServerInfoRecvCb(RecvServerInfoDataCb_t f, void * data)

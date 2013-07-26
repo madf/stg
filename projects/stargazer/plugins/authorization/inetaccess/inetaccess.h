@@ -51,8 +51,6 @@
 #include "stg/utime.h"
 #include "stg/logger.h"
 
-extern "C" PLUGIN * GetPlugin();
-
 #define IA_PROTO_VER    (6)
 
 //#define IA_DEBUG (1)
@@ -123,7 +121,7 @@ struct IA_USER {
           user(NULL),
           phase(),
           lastSendAlive(0),
-          rnd(random()),
+          rnd(static_cast<uint32_t>(random())),
           port(0),
           ctx(),
           messagesToSend(),
@@ -138,7 +136,7 @@ struct IA_USER {
     #ifdef IA_DEBUG
     aliveSent = false;
     #endif
-    };
+    }
 
     IA_USER(const IA_USER & u)
         : login(u.login),
@@ -156,7 +154,7 @@ struct IA_USER {
     aliveSent  = u.aliveSent;
     #endif
     memcpy(&ctx, &u.ctx, sizeof(BLOWFISH_CTX));
-    };
+    }
 
     IA_USER(const std::string & l,
             CONST_USER_PTR u,
@@ -166,7 +164,7 @@ struct IA_USER {
           user(u),
           phase(),
           lastSendAlive(0),
-          rnd(random()),
+          rnd(static_cast<uint32_t>(random())),
           port(p),
           ctx(),
           messagesToSend(),
@@ -204,13 +202,13 @@ private:
 class AUTH_IA_SETTINGS {
 public:
                     AUTH_IA_SETTINGS();
-    virtual         ~AUTH_IA_SETTINGS() {};
-    const std::string & GetStrError() const { return errorStr; };
+    virtual         ~AUTH_IA_SETTINGS() {}
+    const std::string & GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
-    int             GetUserDelay() const { return userDelay; };
-    int             GetUserTimeout() const { return userTimeout; };
-    int             GetUserPort() const { return port; };
-    FREEMB          GetFreeMbShowType() const { return freeMbShowType; };
+    int             GetUserDelay() const { return userDelay; }
+    int             GetUserTimeout() const { return userTimeout; }
+    uint16_t        GetUserPort() const { return port; }
+    FREEMB          GetFreeMbShowType() const { return freeMbShowType; }
 
 private:
     int             userDelay;
@@ -252,7 +250,7 @@ public:
     bool                IsRunning() { return isRunningRunTimeouter || isRunningRun; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const { return "InetAccess authorization plugin v.1.4"; }
+    std::string         GetVersion() const { return "InetAccess authorization plugin v.1.4"; }
     uint16_t            GetStartPosition() const { return 30; }
     uint16_t            GetStopPosition() const { return 30; }
 
@@ -269,7 +267,7 @@ private:
     void                DelUser(USER_PTR u);
     int                 RecvData(char * buffer, int bufferSize);
     int                 CheckHeader(const char * buffer, int * protoVer);
-    int                 PacketProcessor(char * buff, int dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
+    int                 PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
 
     int                 Process_CONN_SYN_6(CONN_SYN_6 * connSyn, IA_USER * iaUser, uint32_t sip);
     int                 Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, uint32_t sip);
@@ -290,15 +288,15 @@ private:
     int                 Process_DISCONN_ACK_6(DISCONN_ACK_6 * disconnSyn,
                                               IA_USER * iaUser,
                                               uint32_t sip,
-                                              map<uint32_t, IA_USER>::iterator it);
+                                              std::map<uint32_t, IA_USER>::iterator it);
     int                 Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnSyn,
                                               IA_USER * iaUser,
                                               uint32_t sip,
-                                              map<uint32_t, IA_USER>::iterator it);
+                                              std::map<uint32_t, IA_USER>::iterator it);
     int                 Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnSyn,
                                               IA_USER * iaUser,
                                               uint32_t sip,
-                                              map<uint32_t, IA_USER>::iterator it);
+                                              std::map<uint32_t, IA_USER>::iterator it);
 
     int                 Send_CONN_SYN_ACK_6(IA_USER * iaUser, uint32_t sip);
     int                 Send_CONN_SYN_ACK_7(IA_USER * iaUser, uint32_t sip);
@@ -312,14 +310,14 @@ private:
     int                 Send_DISCONN_SYN_ACK_7(IA_USER * iaUser, uint32_t sip);
     int                 Send_DISCONN_SYN_ACK_8(IA_USER * iaUser, uint32_t sip);
 
-    int                 Send_FIN_6(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it);
-    int                 Send_FIN_7(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it);
-    int                 Send_FIN_8(IA_USER * iaUser, uint32_t sip, map<uint32_t, IA_USER>::iterator it);
+    int                 Send_FIN_6(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it);
+    int                 Send_FIN_7(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it);
+    int                 Send_FIN_8(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it);
 
     int                 Timeouter();
 
     int                 SendError(uint32_t ip, uint16_t port, int protoVer, const std::string & text);
-    int                 Send(uint32_t ip, uint16_t port, const char * buffer, int len);
+    int                 Send(uint32_t ip, uint16_t port, const char * buffer, size_t len);
     int                 RealSendMessage6(const STG_MSG & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user);

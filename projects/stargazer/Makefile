@@ -47,7 +47,12 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
 CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
+
+ifneq ($(OS),darwin)
 LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
+endif
+
+LDFLAGS += $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins install uninstall install-bin install-data
 all: libs plugins $(PROG)
@@ -77,7 +82,11 @@ distclean: clean
 install: install-bin install-data
 
 install-bin: $(PROG)
-	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+ifeq ($(DEBUG), yes)
+	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+else
+	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+endif
 	$(MAKE) -C $(DIR_INCLUDE) install
 	$(MAKE) -C $(DIR_LIBSRC) install
 	$(MAKE) -C $(DIR_PLUGINS) install

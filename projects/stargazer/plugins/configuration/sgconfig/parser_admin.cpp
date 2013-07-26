@@ -37,7 +37,7 @@ if (!priv->adminChg)
     return;
     }
 
-string s;
+std::string s;
 //answerList->clear();
 answerList->erase(answerList->begin(), answerList->end());
 
@@ -99,7 +99,7 @@ if (admins->Del(adminToDel, currAdmin) == 0)
     }
 else
     {
-    string s;
+    std::string s;
     strprintf(&s, "<DelAdmin Result=\"Error. %s\"/>", admins->GetStrError().c_str());
     answerList->push_back(s);
     }
@@ -155,7 +155,7 @@ if (admins->Add(adminToAdd, currAdmin) == 0)
     }
 else
     {
-    string s;
+    std::string s;
     strprintf(&s, "<AddAdmin Result=\"Error. %s\"/>", admins->GetStrError().c_str());
     answerList->push_back(s);
     }
@@ -242,7 +242,7 @@ if (!login.res_empty())
 
     if (admins->Change(conf, currAdmin) != 0)
         {
-        string s;
+        std::string s;
         strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
         answerList->push_back(s);
         }

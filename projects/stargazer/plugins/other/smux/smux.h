@@ -21,8 +21,6 @@
 #include "tables.h"
 #include "types.h"
 
-extern "C" PLUGIN * GetPlugin();
-
 class USER;
 class SETTINGS;
 class SMUX;
@@ -122,7 +120,7 @@ public:
     bool IsRunning() { return running && !stopped; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string GetVersion() const { return "Stg SMUX Plugin 1.1"; }
+    std::string GetVersion() const { return "Stg SMUX Plugin 1.1"; }
     uint16_t GetStartPosition() const { return 10; }
     uint16_t GetStopPosition() const { return 10; }
 
@@ -215,7 +213,5 @@ void DEL_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
 smux.UnsetNotifier(userPtr);
 smux.UpdateTables();
 }
-
-extern "C" PLUGIN * GetPlugin();
 
 #endif

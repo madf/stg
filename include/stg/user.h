@@ -24,6 +24,9 @@
 #include <ctime>
 #include <string>
 
+#include <vector>
+#include <string>
+
 #include "os_int.h"
 #include "notifer.h"
 #include "message.h"
@@ -77,6 +80,7 @@ public:
                                           const AUTH * auth) = 0;
     virtual void                Unauthorize(const AUTH * auth) = 0;*/
     virtual bool                IsAuthorizedBy(const AUTH * auth) const = 0;
+    virtual std::vector<std::string> GetAuthorizers() const = 0;
 
     virtual int                 AddMessage(STG_MSG * msg) = 0;
 

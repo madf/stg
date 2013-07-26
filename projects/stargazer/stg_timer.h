@@ -9,7 +9,7 @@
 
 #include <ctime>
 
-extern volatile const time_t stgTime;
+extern volatile time_t stgTime;
 int RunStgTimer();
 void StopStgTimer();
 void WaitTimer();

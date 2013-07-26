@@ -41,7 +41,7 @@ $Author: faust $
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PLUGIN_CREATOR<AUTH_AO> aoc;
+static PLUGIN_CREATOR<AUTH_AO> aoc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -53,18 +53,18 @@ return aoc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varType>
-class IS_CONTAINS_USER: public binary_function<varType, USER_PTR, bool>
+class IS_CONTAINS_USER: public std::binary_function<varType, USER_PTR, bool>
 {
 public:
     bool operator()(varType notifier, USER_PTR user) const
         {
         return notifier.GetUser() == user;
-        };
+        }
 };
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const string AUTH_AO::GetVersion() const
+std::string AUTH_AO::GetVersion() const
 {
 return "Always Online authorizator v.1.0";
 }
@@ -109,7 +109,7 @@ if (!isRunning)
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
-list<USER_PTR>::iterator users_iter;
+std::list<USER_PTR>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
@@ -153,8 +153,8 @@ void AUTH_AO::UnSetUserNotifiers(USER_PTR u)
 IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<int> > IsContainsUserAOB;
 IS_CONTAINS_USER<CHG_AFTER_NOTIFIER<int> > IsContainsUserAOA;
 
-list<CHG_BEFORE_NOTIFIER<int> >::iterator aoBIter;
-list<CHG_AFTER_NOTIFIER<int> >::iterator  aoAIter;
+std::list<CHG_BEFORE_NOTIFIER<int> >::iterator aoBIter;
+std::list<CHG_AFTER_NOTIFIER<int> >::iterator  aoAIter;
 
 aoBIter = find_if(BeforeChgAONotifierList.begin(),
                   BeforeChgAONotifierList.end(),
@@ -181,12 +181,12 @@ if (aoAIter != AfterChgAONotifierList.end())
 IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<USER_IPS> > IsContainsUserIPB;
 IS_CONTAINS_USER<CHG_AFTER_NOTIFIER<USER_IPS> >  IsContainsUserIPA;
 
-list<CHG_BEFORE_NOTIFIER<USER_IPS> >::iterator ipBIter;
-list<CHG_AFTER_NOTIFIER<USER_IPS> >::iterator  ipAIter;
+std::list<CHG_BEFORE_NOTIFIER<USER_IPS> >::iterator ipBIter;
+std::list<CHG_AFTER_NOTIFIER<USER_IPS> >::iterator  ipAIter;
 
-ipBIter = find_if(BeforeChgIPNotifierList.begin(),
-                  BeforeChgIPNotifierList.end(),
-                  bind2nd(IsContainsUserIPB, u));
+ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
+                       BeforeChgIPNotifierList.end(),
+                       bind2nd(IsContainsUserIPB, u));
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
@@ -242,7 +242,8 @@ UpdateUserAuthorization(u);
 //-----------------------------------------------------------------------------
 void AUTH_AO::DelUser(USER_PTR u)
 {
-users->Unauthorize(u->GetLogin(), this);
+if (u->IsAuthorizedBy(this))
+    users->Unauthorize(u->GetLogin(), this);
 UnSetUserNotifiers(u);
 usersList.remove(u);
 }

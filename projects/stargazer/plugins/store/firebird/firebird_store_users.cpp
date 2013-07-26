@@ -31,14 +31,14 @@
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetUsersList(vector<string> * usersList) const
+int FIREBIRD_STORE::GetUsersList(std::vector<std::string> * usersList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string name;
+std::string name;
 
 try
     {
@@ -63,7 +63,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddUser(const string & name) const
+int FIREBIRD_STORE::AddUser(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -91,7 +91,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelUser(const string & login) const
+int FIREBIRD_STORE::DelUser(const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -119,7 +119,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveUserStat(const USER_STAT & stat,
-                                 const string & login) const
+                                 const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -127,7 +127,7 @@ return SaveStat(stat, login);
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveStat(const USER_STAT & stat,
-                                 const string & login,
+                                 const std::string & login,
                                  int year,
                                  int month) const
 {
@@ -227,7 +227,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveUserConf(const USER_CONF & conf,
-                                 const string & login) const
+                                 const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -237,7 +237,7 @@ IBPP::Statement st = IBPP::StatementFactory(db, tr);
 int i;
 int32_t uid;
 IBPP::Timestamp creditExpire;
-vector<string>::const_iterator it;
+std::vector<std::string>::const_iterator it;
 
 try
     {
@@ -337,7 +337,7 @@ try
     st->Execute();
 
     st->Prepare("insert into tb_allowed_ip (fk_user, ip, mask) values (?, ?, ?)");
-    for(i = 0; i < conf.ips.Count(); i++)
+    for(size_t i = 0; i < conf.ips.Count(); i++)
         {
         st->Set(1, uid);
         st->Set(2, (int32_t)conf.ips[i].ip);
@@ -359,7 +359,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreUserStat(USER_STAT * stat,
-                                    const string & login) const
+                                    const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -444,7 +444,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreUserConf(USER_CONF * conf,
-                                    const string & login) const
+                                    const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -455,7 +455,7 @@ int32_t uid;
 int i;
 IBPP::Timestamp timestamp;
 IP_MASK im;
-string name;
+std::string name;
 bool test;
 
 try
@@ -566,13 +566,13 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::WriteUserChgLog(const string & login,
-                                    const string & admLogin,
+int FIREBIRD_STORE::WriteUserChgLog(const std::string & login,
+                                    const std::string & admLogin,
                                     uint32_t admIP,
-                                    const string & paramName,
-                                    const string & oldValue,
-                                    const string & newValue,
-                                    const string & message = "") const
+                                    const std::string & paramName,
+                                    const std::string & oldValue,
+                                    const std::string & newValue,
+                                    const std::string & message = "") const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -581,7 +581,7 @@ IBPP::Statement st = IBPP::StatementFactory(db, tr);
 IBPP::Timestamp now;
 now.Now();
 
-string temp = ""; // Composed message for log
+std::string temp = ""; // Composed message for log
 
 try
     {
@@ -632,7 +632,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::WriteUserConnect(const string & login, uint32_t ip) const
+int FIREBIRD_STORE::WriteUserConnect(const std::string & login, uint32_t ip) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -662,14 +662,14 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::WriteUserDisconnect(const string & login,
+int FIREBIRD_STORE::WriteUserDisconnect(const std::string & login,
                     const DIR_TRAFF & up,
                     const DIR_TRAFF & down,
                     const DIR_TRAFF & sessionUp,
                     const DIR_TRAFF & sessionDown,
-                    double cash,
-                    double freeMb,
-                    const std::string & reason) const
+                    double /*cash*/,
+                    double /*freeMb*/,
+                    const std::string & /*reason*/) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -717,9 +717,9 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::WriteDetailedStat(const map<IP_DIR_PAIR, STAT_NODE> & statTree,
+int FIREBIRD_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
                                       time_t lastStat,
-                                      const string & login) const
+                                      const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -734,7 +734,7 @@ time_t2ts(lastStat, &statTime);
 try
     {
     tr->Start();
-    map<IP_DIR_PAIR, STAT_NODE>::const_iterator it;
+    std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator it;
     it = statTree.begin();
     st->Prepare("insert into tb_detail_stats \
                     (till_time, from_time, fk_user, dir_num, \
@@ -769,7 +769,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const string & login) const
+int FIREBIRD_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 

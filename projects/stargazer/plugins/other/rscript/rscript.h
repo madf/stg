@@ -157,7 +157,7 @@ public:
     const std::string & GetStrError() const { return errorStr; }
     int                 ParseSettings(const MODULE_SETTINGS & s);
     int                 GetSendPeriod() const { return sendPeriod; }
-    int                 GetPort() const { return port; }
+    uint16_t            GetPort() const { return port; }
     const std::vector<NET_ROUTER> & GetSubnetsMap() const { return netRouters; }
     const std::vector<std::string> & GetUserParams() const { return userParams; }
     const std::string & GetPassword() const { return password; }
@@ -166,11 +166,11 @@ public:
 private:
     int                 sendPeriod;
     uint16_t            port;
-    string              errorStr;
+    std::string         errorStr;
     std::vector<NET_ROUTER> netRouters;
-    std::vector<string> userParams;
-    string              password;
-    string              subnetFile;
+    std::vector<std::string> userParams;
+    std::string         password;
+    std::string         subnetFile;
 };
 //-----------------------------------------------------------------------------
 class REMOTE_SCRIPT : public PLUGIN {
@@ -188,7 +188,7 @@ public:
     bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const { return "Remote script v 0.3"; }
+    std::string         GetVersion() const { return "Remote script v 0.3"; }
     uint16_t            GetStartPosition() const { return 10; }
     uint16_t            GetStopPosition() const { return 10; }
 
@@ -218,8 +218,8 @@ private:
     void                SetUserNotifiers(USER_PTR u);
     void                UnSetUserNotifiers(USER_PTR u);
 
-    void                InitEncrypt(BLOWFISH_CTX * ctx, const string & password) const;
-    void                Encrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, size_t len8) const;
+    void                InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password) const;
+    void                Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8) const;
 
     mutable BLOWFISH_CTX ctx;
 

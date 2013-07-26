@@ -52,6 +52,13 @@ int ProcessGetUser(const std::string &server,
                    const std::string &login,
                    void * data);
 
+int ProcessAuthBy(const std::string &server,
+                  int port,
+                  const std::string &admLogin,
+                  const std::string &admPasswd,
+                  const std::string &login,
+                  void * data);
+
 int ProcessSetUser(const std::string &server,
                    int port,
                    const std::string &admLogin,

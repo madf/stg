@@ -60,8 +60,6 @@
 #include "pidfile.h"
 #include "eventloop.h"
 
-using namespace std;
-
 #ifdef DEBUG
     #define MAIN_DEBUG (1)
     #define NO_DAEMON  (1)
@@ -69,7 +67,16 @@ using namespace std;
 
 #define START_FILE "/._ST_ART_ED_"
 
-set<pid_t> executersPid;
+namespace
+{
+std::set<pid_t> executersPid;
+
+bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs);
+bool StopModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs);
+void StartTimer();
+int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings);
+int ForkAndWait(const std::string & confDir);
+void KillExecuters();
 
 //-----------------------------------------------------------------------------
 bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
@@ -82,7 +89,7 @@ bool StopModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
 return lhs.GetStopPosition() > rhs.GetStopPosition();
 }
 //-----------------------------------------------------------------------------
-static void StartTimer()
+void StartTimer()
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
 
@@ -99,7 +106,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
 #else
 int StartScriptExecuter(char *, int msgKey, int * msgID, SETTINGS_IMPL * settings)
@@ -144,7 +151,7 @@ switch (executerPid)
 
     case 0:
         delete settings;
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
         Executer(*msgID, executerPid, procName);
 #else
         Executer(*msgID, executerPid);
@@ -153,7 +160,7 @@ switch (executerPid)
 
     default:
         if (executersPid.empty()) {
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
             Executer(*msgID, executerPid, NULL);
 #else
             Executer(*msgID, executerPid);
@@ -165,14 +172,14 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 #ifndef NO_DAEMON
-int ForkAndWait(const string & confDir)
+int ForkAndWait(const std::string & confDir)
 #else
-int ForkAndWait(const string &)
+int ForkAndWait(const std::string &)
 #endif
 {
 #ifndef NO_DAEMON
 pid_t childPid = fork();
-string startFile = confDir + START_FILE;
+std::string startFile = confDir + START_FILE;
 unlink(startFile.c_str());
 
 switch (childPid)
@@ -209,7 +216,7 @@ return 0;
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
-set<pid_t>::iterator pid;
+std::set<pid_t>::iterator pid;
 pid = executersPid.begin();
 while (pid != executersPid.end())
     {
@@ -218,6 +225,8 @@ while (pid != executersPid.end())
     ++pid;
     }
 }
+//-----------------------------------------------------------------------------
+} // namespace anonymous
 //-----------------------------------------------------------------------------
 int main(int argc, char * argv[])
 {
@@ -236,10 +245,10 @@ int msgID = -11;
     WriteServLog.SetLogFileName("/var/log/stargazer.log");
     }
 
-vector<MODULE_SETTINGS> modSettings;
-list<PLUGIN_RUNNER> modules;
+std::vector<MODULE_SETTINGS> modSettings;
+std::list<PLUGIN_RUNNER> modules;
 
-list<PLUGIN_RUNNER>::iterator modIter;
+std::list<PLUGIN_RUNNER>::iterator modIter;
 
 if (getuid())
     {
@@ -264,7 +273,7 @@ if (settings->ReadSettings())
     }
 
 #ifndef NO_DAEMON
-string startFile(settings->GetConfDir() + START_FILE);
+std::string startFile(settings->GetConfDir() + START_FILE);
 #endif
 
 if (ForkAndWait(settings->GetConfDir()) < 0)
@@ -338,7 +347,7 @@ modSettings = settings->GetModulesSettings();
 
 for (size_t i = 0; i < modSettings.size(); i++)
     {
-    string modulePath = settings->GetModulesPath();
+    std::string modulePath = settings->GetModulesPath();
     modulePath += "/mod_";
     modulePath += modSettings[i].moduleName;
     modulePath += ".so";
@@ -400,7 +409,7 @@ while (modIter != modules.end())
     ++modIter;
     }
 
-srandom(stgTime);
+srandom(static_cast<unsigned int>(stgTime));
 
 WriteServLog("Stg started successfully.");
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
@@ -417,7 +426,7 @@ while (true)
     bool stop = false;
     int status;
     pid_t childPid;
-    set<pid_t>::iterator it;
+    std::set<pid_t>::iterator it;
     switch (sig)
         {
         case SIGHUP:

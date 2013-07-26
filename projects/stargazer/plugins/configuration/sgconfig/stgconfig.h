@@ -23,13 +23,13 @@ public:
     uint16_t        GetPort() const { return port; }
 private:
     std::string errorStr;
-    int     port;
+    uint16_t    port;
 };
 //-----------------------------------------------------------------------------
 class STG_CONFIG :public PLUGIN {
 public:
     STG_CONFIG();
-    virtual ~STG_CONFIG(){};
+    virtual ~STG_CONFIG(){}
 
     void                SetUsers(USERS * u) { users = u; }
     void                SetTariffs(TARIFFS * t) { tariffs = t; }
@@ -45,7 +45,7 @@ public:
     bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const;
+    std::string         GetVersion() const;
     uint16_t            GetStartPosition() const { return 20; }
     uint16_t            GetStopPosition() const { return 20; }
 

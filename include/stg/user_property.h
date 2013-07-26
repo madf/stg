@@ -24,7 +24,7 @@ $Author: faust $
 #include "notifer.h"
 #include "noncopyable.h"
 
-extern const volatile time_t stgTime;
+extern volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 template<typename varT>
@@ -295,8 +295,8 @@ if ((priv->userConf && !isStat) ||
     std::stringstream oldVal;
     std::stringstream newVal;
 
-    oldVal.flags(oldVal.flags() | ios::fixed);
-    newVal.flags(newVal.flags() | ios::fixed);
+    oldVal.flags(oldVal.flags() | std::ios::fixed);
+    newVal.flags(newVal.flags() | std::ios::fixed);
 
     oldVal << USER_PROPERTY<varT>::ConstData();
     newVal << val;
@@ -377,7 +377,7 @@ else
 //-------------------------------------------------------------------------
 template<typename varT>
 inline
-ostream & operator<< (ostream & stream, const USER_PROPERTY<varT> & value)
+std::ostream & operator<< (std::ostream & stream, const USER_PROPERTY<varT> & value)
 {
 return stream << value.ConstData();
 }

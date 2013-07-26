@@ -32,7 +32,6 @@
 #include <ctime>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "stg/store.h"
 #include "stg/locker.h"
@@ -40,10 +39,8 @@
 #include "stg/logger.h"
 
 struct ToLower {
-    char operator() (char c) const  { return std::tolower(c); }
+    char operator() (char c) const  { return static_cast<char>(std::tolower(c)); }
 };
-
-extern "C" STORE * GetStore();
 
 class FIREBIRD_STORE : public STORE {
 public:
@@ -93,7 +90,7 @@ public:
 
     int GetTariffsList(std::vector<std::string> * tariffsList) const;
     int AddTariff(const std::string & name) const;
-    int DelTariff(const string & name) const;
+    int DelTariff(const std::string & name) const;
     int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
     int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
 
@@ -103,12 +100,12 @@ public:
     int AddCorp(const std::string & name) const;
     int DelCorp(const std::string & name) const;
 
-    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
 
-    inline const string & GetStrError() const { return strError; };
+    inline const std::string & GetStrError() const { return strError; }
 
-    inline const string & GetVersion() const { return version; };
+    inline const std::string & GetVersion() const { return version; }
 
     int GetServicesList(std::vector<std::string> * servicesList) const;
     int SaveService(const SERVICE_CONF & sc) const;

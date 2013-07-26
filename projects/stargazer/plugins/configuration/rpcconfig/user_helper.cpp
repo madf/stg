@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "stg/tariffs.h"
 #include "stg/admin.h"
 #include "stg/store.h"
@@ -5,7 +7,6 @@
 #include "stg/common.h"
 #include "stg/user_property.h"
 #include "user_helper.h"
-#include "utils.h"
 
 //------------------------------------------------------------------------------
 
@@ -73,7 +74,7 @@ structVal["group"] = xmlrpc_c::value_string(IconvString(ptr->GetProperty().group
 structVal["status"] = xmlrpc_c::value_boolean(ptr->GetConnected());
 structVal["aonline"] = xmlrpc_c::value_boolean(ptr->GetProperty().alwaysOnline.Get());
 structVal["currip"] = xmlrpc_c::value_string(inet_ntostring(ptr->GetCurrIP()));
-structVal["pingtime"] = xmlrpc_c::value_int(ptr->GetPingTime());
+structVal["pingtime"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetPingTime()));
 structVal["ips"] = xmlrpc_c::value_string(ptr->GetProperty().ips.Get().GetIpStr());
 
 std::map<std::string, xmlrpc_c::value> traffInfo;
@@ -115,9 +116,9 @@ structVal["down"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabled.Get());
 structVal["disableddetailstat"] = xmlrpc_c::value_boolean(ptr->GetProperty().disabledDetailStat.Get());
 structVal["passive"] = xmlrpc_c::value_boolean(ptr->GetProperty().passive.Get());
 structVal["lastcash"] = xmlrpc_c::value_double(ptr->GetProperty().lastCashAdd.Get());
-structVal["lasttimecash"] = xmlrpc_c::value_int(ptr->GetProperty().lastCashAddTime.Get());
-structVal["lastactivitytime"] = xmlrpc_c::value_int(ptr->GetProperty().lastActivityTime.Get());
-structVal["creditexpire"] = xmlrpc_c::value_int(ptr->GetProperty().creditExpire.Get());
+structVal["lasttimecash"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().lastCashAddTime.Get()));
+structVal["lastactivitytime"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().lastActivityTime.Get()));
+structVal["creditexpire"] = xmlrpc_c::value_int(static_cast<int>(ptr->GetProperty().creditExpire.Get()));
 
 *info = xmlrpc_c::value_struct(structVal);
 }
@@ -160,6 +161,18 @@ if ((it = structVal.find("ips")) != structVal.end())
     {
     USER_IPS ips;
     ips = StrToIPS(xmlrpc_c::value_string(it->second));
+
+    for (size_t i = 0; i < ips.Count(); ++i)
+        {
+        CONST_USER_PTR user;
+        uint32_t ip = ips[i].ip;
+        if (users.IsIPInUse(ip, login, &user))
+            {
+            printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+            return true;
+            }
+        }
+
     if (!ptr->GetProperty().ips.Set(ips,
                                 admin,
                                 login,
@@ -225,7 +238,7 @@ if ((it = structVal.find("email")) != structVal.end())
 if ((it = structVal.find("cash")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().cash.Get() != value)
+    if (std::fabs(ptr->GetProperty().cash.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().cash.Set(value,
                                      admin,
                                      login,
@@ -247,7 +260,7 @@ if ((it = structVal.find("creditexpire")) != structVal.end())
 if ((it = structVal.find("credit")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().credit.Get() != value)
+    if (std::fabs(ptr->GetProperty().credit.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().credit.Set(value,
                                        admin,
                                        login,
@@ -258,7 +271,7 @@ if ((it = structVal.find("credit")) != structVal.end())
 if ((it = structVal.find("freemb")) != structVal.end())
     {
     double value(xmlrpc_c::value_double(it->second));
-    if (ptr->GetProperty().freeMb.Get() != value)
+    if (std::fabs(ptr->GetProperty().freeMb.Get() - value) > 1.0e-3)
         if (!ptr->GetProperty().freeMb.Set(value,
                                        admin,
                                        login,
@@ -334,7 +347,7 @@ if ((it = structVal.find("note")) != structVal.end())
 
 if ((it = structVal.find("userdata")) != structVal.end())
     {
-    std::vector<USER_PROPERTY_LOGGED<string> *> userdata;
+    std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
     userdata.push_back(ptr->GetProperty().userdata0.GetPointer());
     userdata.push_back(ptr->GetProperty().userdata1.GetPointer());
     userdata.push_back(ptr->GetProperty().userdata2.GetPointer());

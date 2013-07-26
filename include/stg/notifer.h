@@ -12,7 +12,7 @@ template <typename varParamType>
 class PROPERTY_NOTIFIER_BASE
 {
 public:
-    virtual      ~PROPERTY_NOTIFIER_BASE(){};
+    virtual      ~PROPERTY_NOTIFIER_BASE(){}
     virtual void Notify(const varParamType & oldValue, const varParamType & newValue) = 0;
 };
 //-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ template <typename varParamType>
 class NOTIFIER_BASE
 {
 public:
-    virtual      ~NOTIFIER_BASE(){};
+    virtual      ~NOTIFIER_BASE(){}
     virtual void Notify(const varParamType & value) = 0;
 };
 //-----------------------------------------------------------------------------

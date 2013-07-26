@@ -31,14 +31,14 @@
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetServicesList(vector<string> * servicesList) const
+int FIREBIRD_STORE::GetServicesList(std::vector<std::string> * servicesList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string name;
+std::string name;
 
 try
     {
@@ -98,7 +98,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreService(SERVICE_CONF * sc,
-                                   const string & name) const
+                                   const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -117,7 +117,7 @@ try
         st->Get(4, sc->cost);
         int16_t pd;
         st->Get(5, pd);
-        sc->payDay = pd;
+        sc->payDay = static_cast<uint8_t>(pd);
         }
     else
         {
@@ -140,7 +140,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddService(const string & name) const
+int FIREBIRD_STORE::AddService(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -168,7 +168,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelService(const string & name) const
+int FIREBIRD_STORE::DelService(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 

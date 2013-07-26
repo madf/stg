@@ -1,24 +1,23 @@
 #! /bin/sh
 
-# Этот скрипт вызывается в момент, когда пользователь
-# желает отключится от интернета или вышел таймаут у пользователя
-# и сервер сам отключает пользователя
-# Задача скрипта подобна задаче скрипта OnConnect - перестроить 
-# файрвол так, что бы пользователю закрыть доступ в интернет
+# About: This script is called when the user wants to disconnect or authorization timeout has passed.
+# Common task: Rebuild firewall to disallow user to access the Internet.
+# Priority: required
 
-# Login
+# User login
 LOGIN=$1
 
-#user IP
+# User IP
 IP=$2
 
-#cash
+# User cash
 CASH=$3
 
-#user ID
+# User ID
 ID=$4
 
-#Selected dirs to disconnect
+# Selected DIRs (from rules file) to disconnect
 DIRS=$5
 
-#echo "D `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log
+# Usage examples:
+#echo "Disconnected `date +%Y.%m.%d-%H.%M.%S` $IP $CASH" >> /var/stargazer/users/$LOGIN/connect.log

@@ -31,12 +31,10 @@
 #include <asm/types.h>
 #include <linux/netlink.h>
 
+#include <linux/netfilter_ipv4/ip_queue.h>
 #ifdef KERNEL_64_USERSPACE_32
-#include "ip_queue_64.h"
 typedef u_int64_t ipq_id_t;
 #else
-#include <linux/netfilter_ipv4/ip_queue.h>
-#endif
 typedef unsigned long ipq_id_t;
 #endif
 

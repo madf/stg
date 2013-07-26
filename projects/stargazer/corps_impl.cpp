@@ -48,7 +48,7 @@ const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
-    string s = admin->GetLogStr() + " Add corporation \'" + corp.name + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Add corporation \'" + corp.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -79,14 +79,14 @@ WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::Del(const string & name, const ADMIN * admin)
+int CORPORATIONS_IMPL::Del(const std::string & name, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
-    string s = admin->GetLogStr() + " Delete corporation \'" + name + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Delete corporation \'" + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -101,7 +101,7 @@ if (si == data.end())
     return -1;
     }
 
-map<int, const_crp_iter>::iterator csi;
+std::map<int, const_crp_iter>::iterator csi;
 csi = searchDescriptors.begin();
 while (csi != searchDescriptors.end())
     {
@@ -130,7 +130,7 @@ const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
-    string s = admin->GetLogStr() + " Change corporation \'" + corp.name + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Change corporation \'" + corp.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -162,7 +162,7 @@ return 0;
 bool CORPORATIONS_IMPL::Read()
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-vector<string> corpsList;
+std::vector<std::string> corpsList;
 if (store->GetCorpsList(&corpsList) < 0)
     {
     WriteServLog(store->GetStrError().c_str());
@@ -184,7 +184,7 @@ for (size_t i = 0; i < corpsList.size(); i++)
 return false;
 }
 //-----------------------------------------------------------------------------
-bool CORPORATIONS_IMPL::Find(const string & name, CORP_CONF * corp)
+bool CORPORATIONS_IMPL::Find(const std::string & name, CORP_CONF * corp)
 {
 assert(corp != NULL && "Pointer to corporation is not null");
 
@@ -203,7 +203,7 @@ if (si != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool CORPORATIONS_IMPL::Exists(const string & name) const
+bool CORPORATIONS_IMPL::Exists(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (data.empty())

@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PLUGIN_CREATOR<STG_CONFIG> stgc;
+static PLUGIN_CREATOR<STG_CONFIG> stgc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -20,7 +20,7 @@ int STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 {
 int p;
 PARAM_VALUE pv;
-vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<PARAM_VALUE>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -36,7 +36,7 @@ if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
     printfd(__FILE__, "%s\n", errorStr.c_str());
     return -1;
     }
-port = p;
+port = static_cast<uint16_t>(p);
 
 return 0;
 }
@@ -50,7 +50,7 @@ return stgc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const std::string STG_CONFIG::GetVersion() const
+std::string STG_CONFIG::GetVersion() const
 {
 return "Stg configurator v.0.08";
 }

@@ -56,7 +56,12 @@ $Date: 2009/12/13 13:45:13 $
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+namespace
+{
 PLUGIN_CREATOR<ETHER_CAP> ecc;
+}
+
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -67,7 +72,7 @@ return ecc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------        
-const std::string ETHER_CAP::GetVersion() const
+std::string ETHER_CAP::GetVersion() const
 {
 return "Ether_cap v.1.2";
 }
@@ -169,13 +174,11 @@ char        padding[4];
 char        padding1[8];
 };
 
-ETH_IP * ethIP;
-
 char ethip[sizeof(ETH_IP)];
 
 memset(&ethip, 0, sizeof(ETH_IP));
 
-ethIP = (ETH_IP *)&ethip;
+ETH_IP * ethIP = static_cast<ETH_IP *>(static_cast<void *>(&ethip));
 ethIP->rp.dataLen = -1;
 
 char * iface = NULL;
@@ -214,7 +217,7 @@ return 0;
 int ETHER_CAP::EthCapRead(void * buffer, int blen, char **)
 {
 struct sockaddr_ll  addr;
-int addrLen, res;
+int addrLen;
 
 if (!WaitPackets(capSock))
     {
@@ -223,9 +226,7 @@ if (!WaitPackets(capSock))
 
 addrLen = sizeof(addr);
 
-res = recvfrom(capSock, ((char*)buffer) + 2, blen, 0, (struct sockaddr *)&addr, (socklen_t*)&addrLen);
-
-if (res < 0)
+if (recvfrom(capSock, ((char*)buffer) + 2, blen, 0, (struct sockaddr *)&addr, (socklen_t*)&addrLen) < 0)
     {
     logger("recvfrom error: %s", strerror(errno));
     return ENODATA;

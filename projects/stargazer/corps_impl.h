@@ -58,8 +58,8 @@ private:
     CORPORATIONS_IMPL(const CORPORATIONS_IMPL & rvalue);
     CORPORATIONS_IMPL & operator=(const CORPORATIONS_IMPL & rvalue);
 
-    typedef list<CORP_CONF>::iterator       crp_iter;
-    typedef list<CORP_CONF>::const_iterator const_crp_iter;
+    typedef std::list<CORP_CONF>::iterator       crp_iter;
+    typedef std::list<CORP_CONF>::const_iterator const_crp_iter;
 
     bool Read();
 

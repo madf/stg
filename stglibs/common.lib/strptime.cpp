@@ -10,6 +10,8 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 
+#include "stg/common.h"
+
 char * stg_strptime(const char * a, const char * b, struct tm * tm)
 {
 return strptime(a, b, tm);

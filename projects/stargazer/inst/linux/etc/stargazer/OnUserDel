@@ -1,7 +1,13 @@
 #! /bin/sh
 
-# Login
-login=$1
+# About: This script is called when the user is removed from the Stargazer.
+# Common task: Automate typical actions on removing user from the network,
+#              such as removing email or IM account.
+# Priority: optional
 
-#echo "deleted user $login" >> /var/stargazer/add_del.log
+# User login
+LOGIN=$1
+
+# Usage examples:
+#echo "Deleted user $LOGIN" >> /var/stargazer/add_del.log
 

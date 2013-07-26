@@ -44,7 +44,7 @@ if (left < str.length())
         }
     arcs[arcPos++] = arc;
     }
-OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), arcPos);
+OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), static_cast<unsigned int>(arcPos));
 return true;
 }
 

@@ -36,7 +36,7 @@
 #include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::GetCorpsList(vector<string> * corpsList) const
+int POSTGRESQL_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -127,7 +127,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "UPDATE tb_corporations SET "
           << "cash = " << cc.cash
       << "WHERE name = '" << ename << "'";
@@ -158,7 +158,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreCorp(CORP_CONF * cc, const string & name) const
+int POSTGRESQL_STORE::RestoreCorp(CORP_CONF * cc, const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -193,7 +193,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT cash FROM tb_corporations WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
@@ -241,7 +241,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddCorp(const string & name) const
+int POSTGRESQL_STORE::AddCorp(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -276,7 +276,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "INSERT INTO tb_corporations \
               (name, cash) \
           VALUES \
@@ -308,7 +308,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::DelCorp(const string & name) const
+int POSTGRESQL_STORE::DelCorp(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -343,7 +343,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "DELETE FROM tb_corporations WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());

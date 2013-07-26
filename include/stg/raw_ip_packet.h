@@ -23,13 +23,6 @@ struct RAW_PACKET
     memset(rawPacket.pckt, 0, pcktSize);
     }
 
-    RAW_PACKET(const RAW_PACKET & rp)
-        : rawPacket(),
-          dataLen(rp.dataLen)
-    {
-    memcpy(rawPacket.pckt, rp.rawPacket.pckt, pcktSize);
-    }
-
 uint16_t    GetIPVersion() const;
 uint8_t     GetHeaderLen() const;
 uint8_t     GetProto() const;
@@ -40,7 +33,7 @@ uint16_t    GetSrcPort() const;
 uint16_t    GetDstPort() const;
 
 bool        operator==(const RAW_PACKET & rvalue) const;
-bool        operator!=(const RAW_PACKET & rvalue) const { return !(*this == rvalue); };
+bool        operator!=(const RAW_PACKET & rvalue) const { return !(*this == rvalue); }
 bool        operator<(const RAW_PACKET & rvalue) const;
 
 union
@@ -52,7 +45,7 @@ union
         // Only for packets without options field
         uint16_t    sPort;
         uint16_t    dPort;
-        } header __attribute__ ((packed));
+        } header;
     } rawPacket;
 int32_t dataLen; // IP packet length. Set to -1 to use length field from the header
 };
@@ -93,14 +86,16 @@ inline uint16_t RAW_PACKET::GetSrcPort() const
 {
 if (rawPacket.header.ipHeader.ip_p == 1) // for icmp proto return port 0
     return 0;
-return ntohs(*((uint16_t*)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4)));
+const uint8_t * pos = rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4;
+return ntohs(*reinterpret_cast<const uint16_t *>(pos));
 }
 //-----------------------------------------------------------------------------
 inline uint16_t RAW_PACKET::GetDstPort() const
 {
 if (rawPacket.header.ipHeader.ip_p == 1) // for icmp proto return port 0
     return 0;
-return ntohs(*((uint16_t*)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4 + 2)));
+const uint8_t * pos = rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4 + 2;
+return ntohs(*reinterpret_cast<const uint16_t *>(pos));
 }
 //-----------------------------------------------------------------------------
 inline bool RAW_PACKET::operator==(const RAW_PACKET & rvalue) const
@@ -113,12 +108,14 @@ if (rawPacket.header.ipHeader.ip_dst.s_addr != rvalue.rawPacket.header.ipHeader.
 
 if (rawPacket.header.ipHeader.ip_p != 1 && rvalue.rawPacket.header.ipHeader.ip_p != 1)
     {
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4)) !=
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4)))
+    const uint8_t * pos = rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4;
+    const uint8_t * rpos = rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4;
+    if (*reinterpret_cast<const uint16_t *>(pos) != *reinterpret_cast<const uint16_t *>(rpos))
         return false;
 
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4 + 2)) !=
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4 + 2)))
+    pos += 2;
+    rpos += 2;
+    if (*reinterpret_cast<const uint16_t *>(pos) != *reinterpret_cast<const uint16_t *>(rpos))
         return false;
     }
 
@@ -142,18 +139,18 @@ if (rawPacket.header.ipHeader.ip_dst.s_addr > rvalue.rawPacket.header.ipHeader.i
 
 if (rawPacket.header.ipHeader.ip_p != 1 && rvalue.rawPacket.header.ipHeader.ip_p != 1)
     {
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4)) <
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4))) 
+    const uint8_t * pos = rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4;
+    const uint8_t * rpos = rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4;
+    if (*reinterpret_cast<const uint16_t *>(pos) < *reinterpret_cast<const uint16_t *>(rpos))
         return true;
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4)) >
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4))) 
+    if (*reinterpret_cast<const uint16_t *>(pos) > *reinterpret_cast<const uint16_t *>(rpos))
         return false;
 
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4 + 2)) <
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4 + 2))) 
+    pos += 2;
+    rpos += 2;
+    if (*reinterpret_cast<const uint16_t *>(pos) < *reinterpret_cast<const uint16_t *>(rpos))
         return true;
-    if (*((uint16_t *)(rawPacket.pckt + rawPacket.header.ipHeader.ip_hl * 4 + 2)) >
-        *((uint16_t *)(rvalue.rawPacket.pckt + rvalue.rawPacket.header.ipHeader.ip_hl * 4 + 2))) 
+    if (*reinterpret_cast<const uint16_t *>(pos) > *reinterpret_cast<const uint16_t *>(rpos))
         return false;
     }
 

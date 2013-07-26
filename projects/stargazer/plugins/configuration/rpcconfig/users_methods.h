@@ -229,4 +229,24 @@ private:
     bool ParseNet(const std::string & net, IP_MASK & ipm) const;
 };
 
+class METHOD_GET_USER_AUTH_BY : public xmlrpc_c::method {
+public:
+    METHOD_GET_USER_AUTH_BY(RPC_CONFIG * c,
+                            USERS * u)
+        : config(c),
+          users(u)
+    {
+    }
+
+    void execute(xmlrpc_c::paramList const & paramList,
+                 xmlrpc_c::value *   const   retvalP);
+
+private:
+    METHOD_GET_USER_AUTH_BY(const METHOD_GET_ONLINE_IPS & rvalue);
+    METHOD_GET_USER_AUTH_BY & operator=(const METHOD_GET_ONLINE_IPS & rvalue);
+
+    RPC_CONFIG * config;
+    USERS * users;
+};
+
 #endif

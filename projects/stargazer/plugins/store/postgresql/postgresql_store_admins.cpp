@@ -134,10 +134,10 @@ for (int i = 0; i < ADM_PASSWD_LEN / 8; i++)
 cryptedPass[ADM_PASSWD_LEN] = 0;
 Encode12(encodedPass, cryptedPass, ADM_PASSWD_LEN);
 
-std::string password = encodedPass;
+std::string pass = encodedPass;
 std::string login = ac.login;
 
-if (EscapeString(password))
+if (EscapeString(pass))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to escape password'\n");
     if (RollbackTransaction())
@@ -159,7 +159,7 @@ if (EscapeString(login))
 
 std::stringstream query;
 query << "UPDATE tb_admins SET "
-          << "passwd = '" << password << "', "
+          << "passwd = '" << pass << "', "
           << "chg_conf = " << ac.priv.userConf << ", "
           << "chg_password = " << ac.priv.userPasswd << ", "
           << "chg_stat = " << ac.priv.userStat << ", "
@@ -195,7 +195,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const string & login) const
+int POSTGRESQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -234,7 +234,7 @@ if (EscapeString(elogin))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT login, passwd, \
                  chg_conf, chg_password, chg_stat, \
                  chg_cash, usr_add_del, chg_tariff, \
@@ -316,7 +316,7 @@ ac->password = adminPass;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddAdmin(const string & login) const
+int POSTGRESQL_STORE::AddAdmin(const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -351,7 +351,7 @@ if (EscapeString(elogin))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "INSERT INTO tb_admins \
               (login, passwd, \
               chg_conf, chg_password, chg_stat, \
@@ -386,7 +386,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::DelAdmin(const string & login) const
+int POSTGRESQL_STORE::DelAdmin(const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -421,7 +421,7 @@ if (EscapeString(elogin))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "DELETE FROM tb_admins WHERE login = '" << elogin << "'";
 
 result = PQexec(connection, query.str().c_str());

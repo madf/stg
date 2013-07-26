@@ -123,7 +123,7 @@ struct USER_STAT
           lastCashAddTime(0),
           passiveTime(0),
           lastActivityTime(0)
-    {};
+    {}
 
     DIR_TRAFF   up;
     DIR_TRAFF   down;
@@ -161,7 +161,7 @@ struct USER_STAT_RES
         up = us.up;
         down = us.down;
         return * this;
-    };
+    }
     operator USER_STAT() const
     {
         USER_STAT us;
@@ -174,7 +174,7 @@ struct USER_STAT_RES
         us.up               = up;
         us.down             = down;
         return us;
-    };
+    }
 
     RESETABLE<double>      cash;
     RESETABLE<double>      freeMb;

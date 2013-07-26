@@ -223,7 +223,7 @@ namespace IBPP
 		int mDate;	// The date : 1 == 1 Jan 1900
 
 	public:
-		void Clear()	{ mDate = MinDate - 1; };
+		void Clear()	{ mDate = MinDate - 1; }
 		void Today();
 		void SetDate(int year, int month, int day);
 		void SetDate(int dt);
@@ -236,7 +236,7 @@ namespace IBPP
 		void StartOfMonth();
 		void EndOfMonth();
 	
-		Date()			{ Clear(); };
+		Date()			{ Clear(); }
 		Date(int dt)	{ SetDate(dt); }
 		Date(int year, int month, int day);
 		Date(const Date&);							// Copy Constructor
@@ -248,7 +248,7 @@ namespace IBPP
 		bool operator<(const Date& rv) const { return mDate < rv.GetDate(); }
 		bool operator>(const Date& rv) const { return mDate > rv.GetDate(); }
 
-		virtual ~Date() { };
+		virtual ~Date() { }
 	};
 
 	/* Class Time represent purely a Time. It is usefull in interactions
@@ -283,7 +283,7 @@ namespace IBPP
 		bool operator<(const Time& rv) const { return mTime < rv.GetTime(); }
 		bool operator>(const Time& rv) const { return mTime > rv.GetTime(); }
 
-		virtual ~Time() { };
+		virtual ~Time() { }
 	};
 
 	/* Class Timestamp represent a date AND a time. It is usefull in
@@ -386,7 +386,7 @@ namespace IBPP
 		User& operator=(const User& r)	{ copyfrom(r); return *this; }
 		User(const User& r)				{ copyfrom(r); }
 		User() : userid(0), groupid(0)	{ }
-		~User() { };
+		~User() { }
 	};
 
 	//	Interface Wrapper
@@ -480,7 +480,7 @@ namespace IBPP
 		virtual IBlob* AddRef() = 0;
 		virtual void Release() = 0;
 
-		virtual ~IBlob() { };
+		virtual ~IBlob() { }
 	};
 
 	/*	IArray is the interface to the array capabilities of IBPP. Array is the
@@ -506,7 +506,7 @@ namespace IBPP
 		virtual IArray* AddRef() = 0;
 		virtual void Release() = 0;
 
-		virtual ~IArray() { };
+		virtual ~IArray() { }
 	};
 
 	/* IService is the interface to the service capabilities of IBPP. Service is
@@ -551,7 +551,7 @@ namespace IBPP
 		virtual IService* AddRef() = 0;
 		virtual void Release() = 0;
 
-		virtual ~IService() { };
+		virtual ~IService() { }
 	};
 
 	/*	IDatabase is the interface to the database connections in IBPP. Database
@@ -591,7 +591,7 @@ namespace IBPP
 		virtual IDatabase* AddRef() = 0;
 		virtual void Release() = 0;
 
-	    virtual ~IDatabase() { };
+	    virtual ~IDatabase() { }
 	};
 
 	/* ITransaction is the interface to the transaction connections in IBPP.
@@ -621,7 +621,7 @@ namespace IBPP
 		virtual ITransaction* AddRef() = 0;
 		virtual void Release() = 0;
 
-	    virtual ~ITransaction() { };
+	    virtual ~ITransaction() { }
 	};
 
 	/*
@@ -700,7 +700,7 @@ namespace IBPP
 		virtual IRow* AddRef() = 0;
 		virtual void Release() = 0;
 
-	    virtual ~IRow() {};
+	    virtual ~IRow() {}
 	};
 
 	/* IStatement is the interface to the statements execution in IBPP.
@@ -799,7 +799,7 @@ namespace IBPP
 		virtual IStatement* AddRef() = 0;
 		virtual void Release() = 0;
 
-	    virtual ~IStatement() { };
+	    virtual ~IStatement() { }
 
 		// DEPRECATED METHODS (WON'T BE AVAILABLE IN VERSIONS 3.x)
 		virtual bool Get(int, char*) = 0;			  		// DEPRECATED
@@ -832,7 +832,7 @@ namespace IBPP
 		virtual IEvents* AddRef() = 0;
 		virtual void Release() = 0;
 
-	    virtual ~IEvents() { };
+	    virtual ~IEvents() { }
 	};
 	
 	/* Class EventInterface is merely a pure interface.
@@ -844,7 +844,7 @@ namespace IBPP
 	{
 	public:
 		virtual void ibppEventHandler(Events, const std::string&, int) = 0;
-		virtual ~EventInterface() { };
+		virtual ~EventInterface() { }
 	};
 
 	//	--- Factories ---

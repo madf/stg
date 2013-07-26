@@ -14,8 +14,9 @@ class TARIFFS;
 class USER_HELPER
 {
 public:
-    USER_HELPER(USER_PTR & p)
-        : ptr(p)
+    USER_HELPER(USER_PTR & p, USERS & us)
+        : ptr(p),
+          users(us)
     {
     }
 
@@ -28,6 +29,7 @@ public:
                      TARIFFS * tariffs);
 private:
     USER_PTR & ptr;
+    USERS & users;
 };
 
 #endif

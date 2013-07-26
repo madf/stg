@@ -40,8 +40,6 @@
 #include "stg/logger.h"
 
 //-----------------------------------------------------------------------------
-extern "C" STORE * GetStore();
-//-----------------------------------------------------------------------------
 class FILES_STORE_SETTINGS {
 public:
     FILES_STORE_SETTINGS();
@@ -199,7 +197,7 @@ private:
     int RemoveDir(const char * path) const;
     int Touch(const std::string & path) const;
 
-    mutable string errorStr;
+    mutable std::string errorStr;
     std::string version;
     FILES_STORE_SETTINGS storeSettings;
     MODULE_SETTINGS settings;

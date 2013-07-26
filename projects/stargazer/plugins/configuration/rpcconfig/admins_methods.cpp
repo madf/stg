@@ -223,14 +223,14 @@ void METHOD_ADMINS_GET::execute(xmlrpc_c::paramList const & paramList,
 std::string cookie = paramList.getString(0);
 paramList.verifyEnd(1);
 
-std::map<std::string, xmlrpc_c::value> structVal;
+std::map<std::string, xmlrpc_c::value> mainStructVal;
 std::vector<xmlrpc_c::value> retval;
 ADMIN_INFO adminInfo;
 
 if (config->GetAdminInfo(cookie, &adminInfo))
     {
-    structVal["result"] = xmlrpc_c::value_boolean(false);
-    *retvalPtr = xmlrpc_c::value_struct(structVal);
+    mainStructVal["result"] = xmlrpc_c::value_boolean(false);
+    *retvalPtr = xmlrpc_c::value_struct(mainStructVal);
     return;
     }
 

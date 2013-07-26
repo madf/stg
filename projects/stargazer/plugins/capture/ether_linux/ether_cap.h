@@ -40,8 +40,6 @@ class ADMINS;
 class TRAFFCOUNTER;
 class SETTINGS;
 
-extern "C" PLUGIN * GetPlugin();
-
 class TRAFFCOUNTER;
 
 //-----------------------------------------------------------------------------
@@ -59,7 +57,7 @@ public:
 
     int                 ParseSettings() { return 0; }
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const;
+    std::string         GetVersion() const;
     uint16_t            GetStartPosition() const { return 40; }
     uint16_t            GetStopPosition() const { return 40; }
 

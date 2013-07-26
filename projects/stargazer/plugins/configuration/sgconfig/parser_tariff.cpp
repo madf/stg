@@ -29,7 +29,7 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_TARIFFS::CreateAnswer()
 {
-string s;
+std::string s;
 char vs[100];
 int hd, hn, md, mn;
 
@@ -186,7 +186,7 @@ if (tariffs->Add(tariffToAdd, currAdmin) == 0)
     }
 else
     {
-    string s;
+    std::string s;
     strprintf(&s, "<AddTariff Result=\"Error. %s\"/>", tariffs->GetStrError().c_str());
     answerList->push_back(s);
     }
@@ -222,7 +222,7 @@ answerList->erase(answerList->begin(), answerList->end());
 
 if (users->TariffInUse(tariffToDel))
     {
-    string s;
+    std::string s;
     strprintf(&s, "<DelTariff Result=\"Error. Tariff \'%s\' cannot be deleted. Tariff in use.\"/>", tariffToDel.c_str());
     answerList->push_back(s);
     return;
@@ -234,7 +234,7 @@ if (tariffs->Del(tariffToDel, currAdmin) == 0)
     }
 else
     {
-    string s;
+    std::string s;
     strprintf(&s, "<DelTariff Result=\"Error. %s\"/>", tariffs->GetStrError().c_str());
     answerList->push_back(s);
     }
@@ -244,7 +244,7 @@ else
 //  CHG TARIFF
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int PARSER_CHG_TARIFF::ParseSlashedIntParams(int paramsNum, const string & s, int * params)
+int PARSER_CHG_TARIFF::ParseSlashedIntParams(int paramsNum, const std::string & s, int * params)
 {
 char * str = new char[s.size() + 1];
 char * p;
@@ -272,7 +272,7 @@ delete[] str;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int PARSER_CHG_TARIFF::ParseSlashedDoubleParams(int paramsNum, const string & s, double * params)
+int PARSER_CHG_TARIFF::ParseSlashedDoubleParams(int paramsNum, const std::string & s, double * params)
 {
 char * str = new char[s.size() + 1];
 char * p;
@@ -317,7 +317,7 @@ if (depth == 1)
     }
 else
     {
-    string s;
+    std::string s;
 
     if (strcasecmp(el, "PriceDayA") == 0)
         {
@@ -485,7 +485,7 @@ if (!td.tariffConf.name.data().empty())
         }
     else
         {
-        string s;
+        std::string s;
         strprintf(&s, "<SetTariff Result=\"Change tariff error! %s\"/>", tariffs->GetStrError().c_str());
         answerList->push_back(s);
         return;

@@ -56,7 +56,12 @@ fclose(f);
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+namespace
+{
 PLUGIN_CREATOR<DEBUG_CAP> cdc;
+}
+
+extern "C" BASE_PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -74,7 +79,7 @@ RAW_PACKET MakeTCPPacket(const char * src,
                          uint16_t sport,
                          uint16_t dport,
                          uint16_t len);
-const string DEBUG_CAP::GetVersion() const
+std::string DEBUG_CAP::GetVersion() const
 {
 return "Debug_cap v.0.01a";
 }
@@ -90,7 +95,7 @@ void DEBUG_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
 traffCnt = tc;
 }
 //-----------------------------------------------------------------------------
-const string & DEBUG_CAP::GetStrError() const
+const std::string & DEBUG_CAP::GetStrError() const
 {
 return errorStr;
 }

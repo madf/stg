@@ -41,6 +41,8 @@
 #include "stg/logger.h"
 #include "parser.h"
 
+#include "parser_auth_by.h"
+
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
 #define  ERR_HEADER     "ERHD"
@@ -107,6 +109,7 @@ private:
     PARSER_DEL_USER             parserDelUser;
     PARSER_CHECK_USER           parserCheckUser;
     PARSER_SEND_MESSAGE         parserSendMessage;
+    PARSER_AUTH_BY              parserAuthBy;
 
     PARSER_GET_ADMINS           parserGetAdmins;
     PARSER_ADD_ADMIN            parserAddAdmin;
@@ -121,7 +124,7 @@ private:
     ADMINS *                    admins;
 
     BASE_PARSER *               currParser;
-    vector<BASE_PARSER *>       dataParser;
+    std::vector<BASE_PARSER *>  dataParser;
 
     XML_Parser                  xmlParser;
 

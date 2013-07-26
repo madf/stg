@@ -38,7 +38,7 @@
 #include "stg/message.h"
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddMessage(STG_MSG * msg, const string & login) const
+int POSTGRESQL_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -84,7 +84,7 @@ if (EscapeString(etext))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT sp_add_message("
       << "'" << elogin << "', "
       << "CAST(1 AS SMALLINT), " // Here need to be a version, but, it's uninitiated actually
@@ -141,7 +141,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::EditMessage(const STG_MSG & msg,
-                                  const string & login) const
+                                  const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -187,7 +187,7 @@ if (EscapeString(etext))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "UPDATE tb_messages SET "
           << "fk_user = (SELECT pk_user FROM tb_users WHERE name = '" << elogin << "'), "
           << "ver = " << msg.header.ver << ", "
@@ -227,7 +227,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetMessage(uint64_t id,
                                STG_MSG * msg,
-                               const string &) const
+                               const std::string &) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -242,7 +242,7 @@ if (PQstatus(connection) != CONNECTION_OK)
         }
     }
 
-string login;
+std::string login;
 PGresult * result;
 
 if (StartTransaction())
@@ -251,7 +251,7 @@ if (StartTransaction())
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT ver, msg_type, last_send_time, \
                  creation_time, show_time, repeat, \
                  repeat_period, msg_text \
@@ -286,32 +286,16 @@ if (tuples != 1)
     return -1;
     }
 
-/*std::stringstream tuple;
-
-for (int i = 0; i < 8; ++i)
-    {
-    tuple << PQgetvalue(result, 0, i) << " ";
-    }*/
-
 str2x(PQgetvalue(result, 0, 0), msg->header.ver);
 str2x(PQgetvalue(result, 0, 1), msg->header.type);
-msg->header.lastSendTime = TS2Int(PQgetvalue(result, 0, 2));
-msg->header.creationTime = TS2Int(PQgetvalue(result, 0, 3));
+msg->header.lastSendTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, 0, 2)));
+msg->header.creationTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, 0, 3)));
 str2x(PQgetvalue(result, 0, 4), msg->header.showTime);
 str2x(PQgetvalue(result, 0, 5), msg->header.repeat);
 str2x(PQgetvalue(result, 0, 6), msg->header.repeatPeriod);
 msg->text = PQgetvalue(result, 0, 7);
 
 PQclear(result);
-
-/*tuple >> msg->header.ver;
-tuple >> msg->header.type;
-tuple >> msg->header.lastSendTime;
-tuple >> msg->header.creationTime;
-tuple >> msg->header.showTime;
-tuple >> msg->header.repeat;
-tuple >> msg->header.repeatPeriod;
-tuple >> msg->text;*/
 
 if (CommitTransaction())
     {
@@ -322,7 +306,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::DelMessage(uint64_t id, const string &) const
+int POSTGRESQL_STORE::DelMessage(uint64_t id, const std::string &) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -345,7 +329,7 @@ if (StartTransaction())
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "DELETE FROM tb_messages WHERE pk_message = " << id;
 
 result = PQexec(connection, query.str().c_str());
@@ -373,8 +357,8 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList,
-                                   const string & login) const
+int POSTGRESQL_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList,
+                                   const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -409,7 +393,7 @@ if (EscapeString(elogin))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT pk_message, ver, msg_type, \
                  last_send_time, creation_time, show_time, \
                  repeat, repeat_period \
@@ -441,8 +425,8 @@ for (int i = 0; i < tuples; ++i)
     tuple << PQgetvalue(result, i, 0) << " ";
     tuple << PQgetvalue(result, i, 1) << " ";
     tuple << PQgetvalue(result, i, 2) << " ";
-    header.lastSendTime = TS2Int(PQgetvalue(result, i, 3));
-    header.creationTime = TS2Int(PQgetvalue(result, i, 4));
+    header.lastSendTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, i, 3)));
+    header.creationTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, i, 4)));
     tuple << PQgetvalue(result, i, 5) << " ";
     tuple << PQgetvalue(result, i, 6) << " ";
     tuple << PQgetvalue(result, i, 7) << " ";

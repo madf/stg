@@ -30,6 +30,7 @@
 #include <expat.h>
 
 #include <list>
+#include <vector>
 #include <string>
 
 #include "stg/os_int.h"
@@ -101,6 +102,7 @@ typedef void(*RecvServerInfoDataCb_t)(SERVERINFO * si, void * data);
 typedef int(*RecvChgUserCb_t)(const char * asnwer, void * data);
 typedef int(*RecvCheckUserCb_t)(const char * answer, void * data);
 typedef int(*RecvSendMessageCb_t)(const char * answer, void * data);
+typedef void(*RecvAuthByDataCb_t)(const std::vector<std::string> & list, void * data);
 //-----------------------------------------------------------------------------
 struct ADMINDATA
 {
@@ -224,6 +226,23 @@ private:
     bool error;
 };
 //-----------------------------------------------------------------------------
+class PARSER_AUTH_BY: public PARSER
+{
+public:
+    PARSER_AUTH_BY();
+    int  ParseStart(const char *el, const char **attr);
+    void ParseEnd(const char *el);
+    void ParseServerInfo(const char *el, const char **attr);
+    bool GetError();
+    void SetRecvCb(RecvAuthByDataCb_t, void * data);
+private:
+    RecvAuthByDataCb_t RecvAuthByDataCb;
+    void * authByDataCb;
+    int depth;
+    bool error;
+    std::vector<std::string> list;
+};
+//-----------------------------------------------------------------------------
 class SERVCONF
 {
 public:
@@ -235,6 +254,7 @@ public:
     void SetAdmPassword(const char * password);
 
     void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
+    void SetGetUserAuthByRecvCb(RecvAuthByDataCb_t, void * data);
     void SetServerInfoRecvCb(RecvServerInfoDataCb_t, void * data);
     void SetChgUserCb(RecvChgUserCb_t, void * data);
     void SetCheckUserCb(RecvCheckUserCb_t, void * data);
@@ -244,6 +264,7 @@ public:
     int GetUsers();
     int GetUser(const char * login);
     int ChgUser(const char * request);
+    int GetUserAuthBy(const char * login);
     // TODO: Remove this shit!
     int MsgUser(const char * request);
     int SendMessage(const char * login, const char * message, int prio);
@@ -260,6 +281,7 @@ private:
 
     PARSER_GET_USERS parserGetUsers;
     PARSER_GET_USER parserGetUser;
+    PARSER_AUTH_BY parserAuthBy;
     PARSER_GET_SERVER_INFO  parserServerInfo;
     PARSER_CHG_USER parserChgUser;
     PARSER_CHECK_USER parserCheckUser;
@@ -274,12 +296,14 @@ private:
 
     RecvUserDataCb_t RecvUserDataCb;
     RecvUserDataCb_t RecvGetUserDataCb;
+    RecvAuthByDataCb_t RecvAuthByCb;
     RecvServerInfoDataCb_t RecvServerInfoDataCb;
     RecvChgUserCb_t RecvChgUserCb;
     RecvCheckUserCb_t RecvCheckUserCb;
     RecvSendMessageCb_t RecvSendMessageCb;
 
     void * getUserDataDataCb;
+    void * getUserAuthByDataCb;
     void * getUsersDataDataCb;
     void * getServerInfoDataCb;
     void * chgUserDataCb;

@@ -26,18 +26,20 @@
  *
  */
 
+#include <cmath>
+
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetTariffsList(vector<string> * tariffsList) const
+int FIREBIRD_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string name;
+std::string name;
 
 try
     {
@@ -62,7 +64,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddTariff(const string & name) const
+int FIREBIRD_STORE::AddTariff(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -90,7 +92,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelTariff(const string & name) const
+int FIREBIRD_STORE::DelTariff(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -118,7 +120,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveTariff(const TARIFF_DATA & td,
-                               const string & tariffName) const
+                               const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -226,7 +228,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreTariff(TARIFF_DATA * td,
-                                  const string & tariffName) const
+                                  const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -284,8 +286,8 @@ try
     st->Get(7, td->dirPrice[dir].priceNightB);
     td->dirPrice[dir].priceNightB /= 1024*1024;
     st->Get(8, td->dirPrice[dir].threshold);
-    if (td->dirPrice[dir].priceDayA == td->dirPrice[dir].priceNightA &&
-        td->dirPrice[dir].priceDayB == td->dirPrice[dir].priceNightB)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3)
         {
         td->dirPrice[dir].singlePrice = true;
         }

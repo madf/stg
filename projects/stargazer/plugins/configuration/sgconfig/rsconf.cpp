@@ -57,7 +57,7 @@ enum
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::Prepare()
 {
-list<string> ansList; //Сюда будет помещен ответ для менеджера клиентов
+std::list<std::string> ansList; //Сюда будет помещен ответ для менеджера клиентов
 int res;
 struct sockaddr_in listenAddr;
 
@@ -86,7 +86,7 @@ int lng = 1;
 
 if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
     {
-    errorStr = "Setsockopt failed. " + string(strerror(errno));
+    errorStr = "Setsockopt failed. " + std::string(strerror(errno));
     logger("setsockopt error: %s", strerror(errno));
     return -1;
     }
@@ -253,7 +253,7 @@ while (pos < stgHdrLen)
         SendError("Bad request");
         return -1;
         }
-    int ret = recv(sock, &buf[pos], stgHdrLen - pos, 0);
+    ssize_t ret = recv(sock, &buf[pos], static_cast<int>(stgHdrLen) - static_cast<int>(pos), 0);
     if (ret <= 0)
         {
 	if (ret < 0)
@@ -314,7 +314,7 @@ while (pos < ADM_LOGIN_LEN) {
         return ENODATA;
         }
 
-    int ret = recv(sock, &login[pos], ADM_LOGIN_LEN - pos, 0);
+    ssize_t ret = recv(sock, &login[pos], ADM_LOGIN_LEN - static_cast<int>(pos), 0);
 
     if (ret <= 0)
         {
@@ -364,7 +364,7 @@ while (pos < ADM_LOGIN_LEN)
         return ENODATA;
         }
 
-    int ret = recv(sock, &loginS[pos], ADM_LOGIN_LEN - pos, 0);
+    ssize_t ret = recv(sock, &loginS[pos], ADM_LOGIN_LEN - static_cast<int>(pos), 0);
 
     if (ret <= 0)
         {
@@ -452,7 +452,7 @@ while (1)
             break;
             }
 
-        int ret = recv(sock, &bufferS[pos], sizeof(bufferS) - pos, 0);
+        ssize_t ret = recv(sock, &bufferS[pos], sizeof(bufferS) - static_cast<int>(pos), 0);
         if (ret < 0)
             {
             // Network error
@@ -486,12 +486,12 @@ while (1)
         return SendDataAnswer(sock);
         }
     }
-return 0;
+//return 0;
 }
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::SendDataAnswer(int sock)
 {
-list<string>::iterator li;
+std::list<std::string>::iterator li;
 li = answerList.begin();
 
 BLOWFISH_CTX ctx;
@@ -514,7 +514,7 @@ while (li != answerList.end())
         if (n % 8 == 0)
             {
             EncodeString(buffS, buff, &ctx);
-            int ret = send(sock, buffS, 8, 0);
+            int ret = static_cast<int>(send(sock, buffS, 8, 0));
             if (ret < 0)
                 {
                 return -1;
@@ -534,7 +534,7 @@ EncodeString(buffS, buff, &ctx);
 
 answerList.clear();
 
-return send(sock, buffS, 8, 0);
+return static_cast<int>(send(sock, buffS, 8, 0));
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SendError(const char * text)

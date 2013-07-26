@@ -34,14 +34,14 @@
 
 #include "stg/os_int.h"
 
-class PacketSender : public std::unary_function<uint32_t, int> {
+class PacketSender : public std::unary_function<uint32_t, ssize_t> {
     public:
-        PacketSender(int s, char * b, int l, uint16_t p)
+        PacketSender(int s, char * b, size_t l, uint16_t p)
             : sock(s),
               buffer(b),
               length(l),
-              port(p) {};
-        int operator() (uint32_t ip)
+              port(p) {}
+        ssize_t operator() (uint32_t ip)
         {
         struct sockaddr_in sendAddr;
 
@@ -54,7 +54,7 @@ class PacketSender : public std::unary_function<uint32_t, int> {
     private:
         int sock;
         char * buffer;
-        int length;
+        size_t length;
         uint16_t port;
 };
 

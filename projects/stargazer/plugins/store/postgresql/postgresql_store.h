@@ -33,7 +33,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include "stg/store.h"
 #include "stg/logger.h"
@@ -41,8 +40,6 @@
 // Minimal DB version is 7
 // Recommended DB version is 7 (support full month stats)
 #define DB_MIN_VERSION 7
-
-extern "C" STORE * GetStore();
 
 class POSTGRESQL_STORE : public STORE {
 public:
@@ -97,7 +94,7 @@ public:
     // Tariffs
     int GetTariffsList(std::vector<std::string> * tariffsList) const;
     int AddTariff(const std::string & name) const;
-    int DelTariff(const string & name) const;
+    int DelTariff(const std::string & name) const;
     int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
     int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
 
@@ -116,11 +113,11 @@ public:
     int DelService(const std::string & name) const;
 
     // Settings
-    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; };
+    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int ParseSettings();
 
-    inline const string & GetStrError() const { return strError; };
-    inline const string & GetVersion() const { return versionString; };
+    inline const std::string & GetStrError() const { return strError; }
+    inline const std::string & GetVersion() const { return versionString; }
 private:
     POSTGRESQL_STORE(const POSTGRESQL_STORE & rvalue);
     POSTGRESQL_STORE & operator=(const POSTGRESQL_STORE & rvalue);
@@ -131,8 +128,8 @@ private:
 
     int EscapeString(std::string & value) const;
 
-    std::string Int2TS(uint32_t value) const;
-    uint32_t TS2Int(const std::string & value) const;
+    std::string Int2TS(time_t value) const;
+    time_t TS2Int(const std::string & value) const;
 
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
 
@@ -162,7 +159,5 @@ private:
 
     PLUGIN_LOGGER logger;
 };
-
-extern const volatile time_t stgTime;
 
 #endif //POSTGRESQL_STORE_H

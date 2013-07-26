@@ -57,7 +57,7 @@ bool ValueToOS<std::string>(const std::string & value, ObjectSyntax * objectSynt
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_string;
-OCTET_STRING_fromBuf(&simpleSyntax->choice.string, value.c_str(), value.length());
+OCTET_STRING_fromBuf(&simpleSyntax->choice.string, value.c_str(), static_cast<int>(value.length()));
 return true;
 }
 

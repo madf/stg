@@ -60,7 +60,12 @@ $Author: faust $
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+namespace
+{
 PLUGIN_CREATOR<BPF_CAP> bcc;
+}
+
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -110,7 +115,7 @@ return iface[num];
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const std::string BPF_CAP::GetVersion() const
+std::string BPF_CAP::GetVersion() const
 {
 return "bpf_cap v.1.0";
 }
@@ -274,7 +279,7 @@ do
 if (bd->fd < 0)
     {
     errorStr = "Can't capture packets. Open bpf device for " + bd->iface + " error.";
-    logger("Cannot open device for interface '%s': %s", bd->iface, strerror(errno));
+    logger("Cannot open device for interface '%s': %s", bd->iface.c_str(), strerror(errno));
     printfd(__FILE__, "Cannot open BPF device\n");
     return -1;
     }
@@ -284,7 +289,7 @@ strncpy(ifr.ifr_name, bd->iface.c_str(), sizeof(ifr.ifr_name));
 if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
     {
     errorStr = bd->iface + " BIOCSBLEN " + std::string(strerror(errno));
-    logger("ioctl (BIOCSBLEN) error for interface '%s': %s", db->iface, strerror(errno));
+    logger("ioctl (BIOCSBLEN) error for interface '%s': %s", bd->iface, strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }
@@ -292,7 +297,7 @@ if (ioctl(bd->fd, BIOCSBLEN, (caddr_t)&l) < 0)
 if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
     {
     errorStr = bd->iface + " BIOCSETIF " + std::string(strerror(errno));
-    logger("ioctl (BIOCSETIF) error for interface '%s': %s", db->iface, strerror(errno));
+    logger("ioctl (BIOCSETIF) error for interface '%s': %s", bd->iface, strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }
@@ -300,7 +305,7 @@ if (ioctl(bd->fd, BIOCSETIF, (caddr_t)&ifr) < 0)
 if (ioctl(bd->fd, BIOCIMMEDIATE, &im) < 0)
     {
     errorStr = bd->iface + " BIOCIMMEDIATE " + std::string(strerror(errno));
-    logger("ioctl (BIOCIMMEDIATE) error for interface '%s': %s", db->iface, strerror(errno));
+    logger("ioctl (BIOCIMMEDIATE) error for interface '%s': %s", bd->iface, strerror(errno));
     printfd(__FILE__, "ioctl failed: '%s'\n", errorStr.c_str());
     return -1;
     }

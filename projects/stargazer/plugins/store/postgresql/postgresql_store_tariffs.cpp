@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <cmath>
 
 #include <libpq-fe.h>
 
@@ -36,7 +37,7 @@
 #include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::GetTariffsList(vector<string> * tariffsList) const
+int POSTGRESQL_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -92,7 +93,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddTariff(const string & name) const
+int POSTGRESQL_STORE::AddTariff(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -127,7 +128,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT sp_add_tariff('" << ename << "', " << DIR_NUM << ")";
 
 result = PQexec(connection, query.str().c_str());
@@ -155,7 +156,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::DelTariff(const string & name) const
+int POSTGRESQL_STORE::DelTariff(const std::string & name) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -190,7 +191,7 @@ if (EscapeString(ename))
     return -1;
     }
 
-std::stringstream query;
+std::ostringstream query;
 query << "DELETE FROM tb_tariffs WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
@@ -219,7 +220,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveTariff(const TARIFF_DATA & td,
-                                 const string & tariffName) const
+                                 const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -258,10 +259,12 @@ int32_t id, i;
 double pda, pdb, pna, pnb;
 int threshold;
 
-std::stringstream query;
-query << "SELECT pk_tariff FROM tb_tariffs WHERE name = '" << ename << "'";
+    {
+    std::ostringstream query;
+    query << "SELECT pk_tariff FROM tb_tariffs WHERE name = '" << ename << "'";
 
-result = PQexec(connection, query.str().c_str());
+    result = PQexec(connection, query.str().c_str());
+    }
 
 if (PQresultStatus(result) != PGRES_TUPLES_OK)
     {
@@ -289,22 +292,26 @@ if (tuples != 1)
     return -1;
     }
 
-std::stringstream tuple;
-tuple << PQgetvalue(result, 0, 0);
+    {
+    std::stringstream tuple;
+    tuple << PQgetvalue(result, 0, 0);
 
-PQclear(result);
+    PQclear(result);
 
-tuple >> id;
+    tuple >> id;
+    }
 
-query.str("");
-query << "UPDATE tb_tariffs SET \
-              fee = " << td.tariffConf.fee << ", \
-              free = " << td.tariffConf.free << ", \
-              passive_cost = " << td.tariffConf.passiveCost << ", \
-              traff_type = " << td.tariffConf.traffType << " \
-          WHERE pk_tariff = " << id;
+    {
+    std::ostringstream query;
+    query << "UPDATE tb_tariffs SET \
+                  fee = " << td.tariffConf.fee << ", \
+                  free = " << td.tariffConf.free << ", \
+                  passive_cost = " << td.tariffConf.passiveCost << ", \
+                  traff_type = " << td.tariffConf.traffType << " \
+              WHERE pk_tariff = " << id;
 
-result = PQexec(connection, query.str().c_str());
+    result = PQexec(connection, query.str().c_str());
+    }
 
 if (PQresultStatus(result) != PGRES_COMMAND_OK)
     {
@@ -346,22 +353,24 @@ for(i = 0; i < DIR_NUM; i++)
         threshold = td.dirPrice[i].threshold;
         }
 
-    std::stringstream query;
-    query << "UPDATE tb_tariffs_params SET \
-                  price_day_a = " << pda << ", \
-                  price_day_b = " << pdb << ", \
-                  price_night_a = " << pna << ", \
-                  price_night_b = " << pnb << ", \
-                  threshold = " << threshold << ", \
-                  time_day_begins = CAST('" << td.dirPrice[i].hDay
-                                            << ":"
-                                            << td.dirPrice[i].mDay << "' AS TIME), \
-                  time_day_ends = CAST('" << td.dirPrice[i].hNight
-                                          << ":"
-                                          << td.dirPrice[i].mNight << "' AS TIME) \
-             WHERE fk_tariff = " << id << " AND dir_num = " << i;
+        {
+        std::ostringstream query;
+        query << "UPDATE tb_tariffs_params SET \
+                      price_day_a = " << pda << ", \
+                      price_day_b = " << pdb << ", \
+                      price_night_a = " << pna << ", \
+                      price_night_b = " << pnb << ", \
+                      threshold = " << threshold << ", \
+                      time_day_begins = CAST('" << td.dirPrice[i].hDay
+                                                << ":"
+                                                << td.dirPrice[i].mDay << "' AS TIME), \
+                      time_day_ends = CAST('" << td.dirPrice[i].hNight
+                                              << ":"
+                                              << td.dirPrice[i].mNight << "' AS TIME) \
+                 WHERE fk_tariff = " << id << " AND dir_num = " << i;
 
-    result = PQexec(connection, query.str().c_str());
+        result = PQexec(connection, query.str().c_str());
+        }
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
         {
@@ -388,7 +397,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreTariff(TARIFF_DATA * td,
-                                  const string & tariffName) const
+                                  const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -425,7 +434,7 @@ if (EscapeString(ename))
 
 td->tariffConf.name = tariffName;
 
-std::stringstream query;
+std::ostringstream query;
 query << "SELECT pk_tariff, \
                  fee, \
 		 free, \
@@ -461,19 +470,22 @@ if (tuples != 1)
     return -1;
     }
 
-std::stringstream tuple;
-tuple << PQgetvalue(result, 0, 0) << " ";
-tuple << PQgetvalue(result, 0, 1) << " ";
-tuple << PQgetvalue(result, 0, 2) << " ";
-tuple << PQgetvalue(result, 0, 3) << " ";
-tuple << PQgetvalue(result, 0, 4) << " ";
-
 int id;
-tuple >> id;
-tuple >> td->tariffConf.fee;
-tuple >> td->tariffConf.free;
-tuple >> td->tariffConf.passiveCost;
-tuple >> td->tariffConf.traffType;
+
+    {
+    std::stringstream tuple;
+    tuple << PQgetvalue(result, 0, 0) << " ";
+    tuple << PQgetvalue(result, 0, 1) << " ";
+    tuple << PQgetvalue(result, 0, 2) << " ";
+    tuple << PQgetvalue(result, 0, 3) << " ";
+    tuple << PQgetvalue(result, 0, 4) << " ";
+
+    tuple >> id;
+    tuple >> td->tariffConf.fee;
+    tuple >> td->tariffConf.free;
+    tuple >> td->tariffConf.passiveCost;
+    tuple >> td->tariffConf.traffType;
+    }
 
 PQclear(result);
 
@@ -514,37 +526,39 @@ if (tuples != DIR_NUM)
 
 for (int i = 0; i < std::min(tuples, DIR_NUM); ++i)
     {
-    std::stringstream tuple;
-    tuple << PQgetvalue(result, i, 0) << " ";
-    tuple << PQgetvalue(result, i, 1) << " ";
-    tuple << PQgetvalue(result, i, 2) << " ";
-    tuple << PQgetvalue(result, i, 3) << " ";
-    tuple << PQgetvalue(result, i, 4) << " ";
-    tuple << PQgetvalue(result, i, 5) << " ";
-    tuple << PQgetvalue(result, i, 6) << " ";
-    tuple << PQgetvalue(result, i, 7) << " ";
-    tuple << PQgetvalue(result, i, 8) << " ";
-    tuple << PQgetvalue(result, i, 9) << " ";
-
     int dir;
 
-    tuple >> dir;
-    tuple >> td->dirPrice[dir].priceDayA;
-    td->dirPrice[dir].priceDayA /= 1024 * 1024;
-    tuple >> td->dirPrice[dir].priceDayB;
-    td->dirPrice[dir].priceDayB /= 1024 * 1024;
-    tuple >> td->dirPrice[dir].priceNightA;
-    td->dirPrice[dir].priceNightA /= 1024 * 1024;
-    tuple >> td->dirPrice[dir].priceNightB;
-    td->dirPrice[dir].priceNightB /= 1024 * 1024;
-    tuple >> td->dirPrice[dir].threshold;
-    tuple >> td->dirPrice[dir].hDay;
-    tuple >> td->dirPrice[dir].mDay;
-    tuple >> td->dirPrice[dir].hNight;
-    tuple >> td->dirPrice[dir].mNight;
+        {
+        std::stringstream tuple;
+        tuple << PQgetvalue(result, i, 0) << " ";
+        tuple << PQgetvalue(result, i, 1) << " ";
+        tuple << PQgetvalue(result, i, 2) << " ";
+        tuple << PQgetvalue(result, i, 3) << " ";
+        tuple << PQgetvalue(result, i, 4) << " ";
+        tuple << PQgetvalue(result, i, 5) << " ";
+        tuple << PQgetvalue(result, i, 6) << " ";
+        tuple << PQgetvalue(result, i, 7) << " ";
+        tuple << PQgetvalue(result, i, 8) << " ";
+        tuple << PQgetvalue(result, i, 9) << " ";
 
-    if (td->dirPrice[dir].priceDayA == td->dirPrice[dir].priceNightA &&
-        td->dirPrice[dir].priceDayB == td->dirPrice[dir].priceNightB)
+        tuple >> dir;
+        tuple >> td->dirPrice[dir].priceDayA;
+        td->dirPrice[dir].priceDayA /= 1024 * 1024;
+        tuple >> td->dirPrice[dir].priceDayB;
+        td->dirPrice[dir].priceDayB /= 1024 * 1024;
+        tuple >> td->dirPrice[dir].priceNightA;
+        td->dirPrice[dir].priceNightA /= 1024 * 1024;
+        tuple >> td->dirPrice[dir].priceNightB;
+        td->dirPrice[dir].priceNightB /= 1024 * 1024;
+        tuple >> td->dirPrice[dir].threshold;
+        tuple >> td->dirPrice[dir].hDay;
+        tuple >> td->dirPrice[dir].mDay;
+        tuple >> td->dirPrice[dir].hNight;
+        tuple >> td->dirPrice[dir].mNight;
+        }
+
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) > 1.0e-3 &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) > 1.0e-3)
         {
         td->dirPrice[dir].singlePrice = true;
         }

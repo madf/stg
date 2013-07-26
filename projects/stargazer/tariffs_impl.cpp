@@ -72,9 +72,9 @@ if (store->GetTariffsList(&tariffsList))
     WriteServLog("%s", store->GetStrError().c_str());
     }
 
-int tariffsNum = tariffsList.size();
+Tariffs::size_type tariffsNum = tariffsList.size();
 
-for (int i = 0; i < tariffsNum; i++)
+for (Tariffs::size_type i = 0; i < tariffsNum; i++)
     {
     TARIFF_DATA td;
     if (store->RestoreTariff(&td, tariffsList[i]))
@@ -258,7 +258,7 @@ void TARIFFS_IMPL::GetTariffsData(std::list<TARIFF_DATA> * tdl)
 assert(tdl != NULL && "Tariffs data list is not null");
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
-std::list<TARIFF_IMPL>::const_iterator it = tariffs.begin();
+Tariffs::const_iterator it = tariffs.begin();
 for (; it != tariffs.end(); ++it)
     {
     tdl->push_back(it->GetTariffData());

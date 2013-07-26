@@ -20,8 +20,6 @@
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
-extern "C" PLUGIN * GetPlugin();
-
 class ADMINS;
 class TARIFFS;
 class USERS;
@@ -39,7 +37,7 @@ public:
 
 private:
     std::string  errorStr;
-    int          port;
+    uint16_t     port;
     double       cookieTimeout;
 };
 
@@ -76,7 +74,7 @@ public:
     bool                IsRunning() { return running && !stopped; }
 
     const std::string & GetStrError() const { return errorStr; }
-    const std::string   GetVersion() const { return RPC_CONFIG_VERSION; }
+    std::string         GetVersion() const { return RPC_CONFIG_VERSION; }
     uint16_t            GetStartPosition() const { return 20; }
     uint16_t            GetStopPosition() const { return 20; }
 

@@ -27,13 +27,11 @@
  *
  */
 
-#include <sstream>
-
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddMessage(STG_MSG * msg, const string & login) const
+int FIREBIRD_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -70,7 +68,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::EditMessage(const STG_MSG & msg,
-                                const string & login) const
+                                const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -108,7 +106,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetMessage(uint64_t id,
                                STG_MSG * msg,
-                               const string &) const
+                               const std::string &) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -154,7 +152,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelMessage(uint64_t id, const string &) const
+int FIREBIRD_STORE::DelMessage(uint64_t id, const std::string &) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -181,8 +179,8 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetMessageHdrs(vector<STG_MSG_HDR> * hdrsList,
-                                   const string & login) const
+int FIREBIRD_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList,
+                                   const std::string & login) const
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 

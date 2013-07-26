@@ -61,7 +61,7 @@ struct NF_HEADER {
     uint8_t  eType;     // Engine type
     uint8_t  eID;       // Engine ID
     uint16_t sInterval; // Sampling mode and interval
-} __attribute__ ((packed));
+};
 
 struct NF_DATA {
     uint32_t srcAddr;   // Flow source address
@@ -84,7 +84,7 @@ struct NF_DATA {
     uint8_t  srcMask;   // Source address mask in "slash" notation
     uint8_t  dstMask;   // Destination address mask in "slash" notation
     uint16_t pad2;      // 2-byte padding
-} __attribute__ ((packed));
+};
 
 #define BUF_SIZE (sizeof(NF_HEADER) + 30 * sizeof(NF_DATA))
 
@@ -102,7 +102,7 @@ public:
     int             Reload() { return 0; }
     bool            IsRunning() { return runningTCP || runningUDP; }
     const std::string & GetStrError() const { return errorStr; }
-    const std::string GetVersion() const { return VERSION; }
+    std::string     GetVersion() const { return VERSION; }
     uint16_t        GetStartPosition() const { return START_POS; }
     uint16_t        GetStopPosition() const { return STOP_POS; }
 
@@ -127,14 +127,12 @@ private:
 
     static void * RunUDP(void *);
     static void * RunTCP(void *);
-    void ParseBuffer(uint8_t *, int);
+    void ParseBuffer(uint8_t * buf, ssize_t size);
 
     bool OpenTCP();
     bool OpenUDP();
     void CloseTCP() { close(sockTCP); }
     void CloseUDP() { close(sockUDP); }
 };
-
-extern "C" PLUGIN * GetPlugin();
 
 #endif

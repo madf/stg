@@ -79,7 +79,7 @@ if (!handle)
 isLoaded = true;
 
 STORE * (*GetStore)();
-GetStore = (STORE * (*)())dlsym(handle, "GetStore");
+GetStore = reinterpret_cast<STORE * (*)()>(dlsym(handle, "GetStore"));
 if (!GetStore)
     {
     errorStr = std::string("GetStore() not found! ") + dlerror();

@@ -12,7 +12,7 @@ class EVENT_LOOP : private NONCOPYABLE,
     public:
         bool Start();
         bool Stop();
-        bool IsRunning() const { return _running; };
+        bool IsRunning() const { return _running; }
 
         template <class ACTIVE_CLASS, typename DATA_TYPE>
         void Enqueue(ACTIVE_CLASS & ac,
@@ -44,8 +44,8 @@ class EVENT_LOOP_SINGLETON : private NONCOPYABLE
         static EVENT_LOOP * _instance;
         static void CreateInstance();
 
-        EVENT_LOOP_SINGLETON() {};
-        ~EVENT_LOOP_SINGLETON() {};
+        EVENT_LOOP_SINGLETON() {}
+        ~EVENT_LOOP_SINGLETON() {}
 };
 
 template <class ACTIVE_CLASS, typename DATA_TYPE>

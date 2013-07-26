@@ -41,7 +41,7 @@ public:
     ACTION(ACTIVE_CLASS & ac,
            typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
            DATA_TYPE d)
-        : activeClass(ac), actor(a), data(d) {};
+        : activeClass(ac), actor(a), data(d) {}
     void Invoke();
 private:
     ACTION(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
