@@ -1525,7 +1525,7 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
 
 PQclear(result);
 
-for (int i = 0; i < ips.Count(); ++i)
+for (size_t i = 0; i < ips.Count(); ++i)
     {
     std::ostringstream query;
     query << "INSERT INTO tb_allowed_ip "

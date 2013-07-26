@@ -39,7 +39,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
@@ -172,7 +172,7 @@ while (1)
 
     xmlrpc_c::value info;
 
-    USER_HELPER uhelper(u);
+    USER_HELPER uhelper(u, *users);
 
     uhelper.GetUserInfo(&info, hidePassword);
 
@@ -216,7 +216,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {

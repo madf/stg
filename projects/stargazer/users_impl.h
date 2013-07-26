@@ -103,6 +103,7 @@ public:
     int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
     int             FindByIPIdx(uint32_t ip, USER_IMPL ** user) const;
     bool            IsIPInIndex(uint32_t ip) const;
+    bool            IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const;
 
     int             OpenSearch();
     int             SearchNext(int handler, USER_PTR * user);

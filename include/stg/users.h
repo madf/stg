@@ -53,6 +53,7 @@ public:
 
     virtual int  FindByIPIdx(uint32_t ip, USER_PTR * user) const = 0;
     virtual bool IsIPInIndex(uint32_t ip) const = 0;
+    virtual bool IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const = 0;
 
     virtual int  OpenSearch() = 0;
     virtual int  SearchNext(int handle, USER_PTR * u) = 0;

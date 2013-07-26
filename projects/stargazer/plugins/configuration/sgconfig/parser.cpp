@@ -1025,7 +1025,21 @@ if (check && alwaysOnline && !onlyOneIP)
     {
     printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
     GetStgLogger()("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", currAdmin->GetLogStr().c_str());
+    res = -1;
     return -1;
+    }
+
+for (size_t i = 0; i < ucr->ips.const_data().Count(); ++i)
+    {
+    CONST_USER_PTR user;
+    uint32_t ip = ucr->ips.const_data().operator[](i).ip;
+    if (users->IsIPInUse(ip, login, &user))
+        {
+        printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+        GetStgLogger()("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", currAdmin->GetLogStr().c_str(), inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+        res = -1;
+        return -1;
+        }
     }
 
 if (!ucr->ips.res_empty())

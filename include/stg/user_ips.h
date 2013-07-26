@@ -70,7 +70,7 @@ public:
     std::string GetIpStr() const;
     bool IsIPInIPS(uint32_t ip) const;
     bool OnlyOneIP() const;
-    int  Count() const;
+    size_t  Count() const;
     void Add(const IP_MASK &im);
     void Erase();
 
@@ -129,9 +129,9 @@ return s.str();
 }
 //-----------------------------------------------------------------------------
 inline
-int USER_IPS::Count() const
+size_t USER_IPS::Count() const
 {
-return static_cast<int>(ips.size());
+return ips.size();
 }
 //-----------------------------------------------------------------------------
 inline

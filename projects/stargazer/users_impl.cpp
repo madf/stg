@@ -695,6 +695,24 @@ std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 return it != ipIndex.end();
 }
 //-----------------------------------------------------------------------------
+bool USERS_IMPL::IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+std::list<USER_IMPL>::const_iterator iter;
+iter = users.begin();
+while (iter != users.end())
+    {
+    if (iter->GetLogin() != login && iter->GetProperty().ips.Get().IsIPInIPS(ip))
+        {
+        if (user != NULL)
+            *user = &(*iter);
+        return true;
+        }
+    ++iter;
+    }
+return false;
+}
+//-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
