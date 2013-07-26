@@ -38,6 +38,8 @@
 #include <cassert>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
+#include <functional>
 
 #include "stg/users.h"
 #include "stg/common.h"
@@ -564,6 +566,13 @@ bool USER_IMPL::IsAuthorizedBy(const AUTH * auth) const
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //  Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
+}
+//-----------------------------------------------------------------------------
+std::vector<std::string> USER_IMPL::GetAuthorizers() const
+{
+    std::vector<std::string> list;
+    std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), std::mem_fun(&AUTH::GetVersion));
+    return list;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::Connect(bool fakeConnect)

@@ -29,6 +29,7 @@
 
 #include <ctime>
 #include <list>
+#include <vector>
 #include <string>
 #include <set>
 
@@ -186,6 +187,7 @@ public:
     int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
     void            Unauthorize(const AUTH * auth);
     bool            IsAuthorizedBy(const AUTH * auth) const;
+    std::vector<std::string> GetAuthorizers() const;
 
     int             AddMessage(STG_MSG * msg);
 
