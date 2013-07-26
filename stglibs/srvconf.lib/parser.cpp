@@ -848,8 +848,8 @@ else
         {
         if (strcasecmp(el, "Auth") == 0)
             {
-            if (attr && attr[0])
-                list.push_back(attr[0]);
+            if (attr && attr[0] && attr[1])
+                list.push_back(attr[1]);
             return 0;
             }
         }
