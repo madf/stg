@@ -243,6 +243,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -481,6 +482,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -534,6 +536,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -732,6 +735,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -785,6 +789,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -852,6 +857,7 @@
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -919,6 +925,7 @@
                 <link linkend="stargazer.add_user_cash"><function>stargazer.add_user_cash</function></link>,
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -993,6 +1000,7 @@
                 <link linkend="stargazer.add_user_cash"><function>stargazer.add_user_cash</function></link>,
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>
                 <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
             </para>
         </refsect1>
     </refentry>
@@ -1060,6 +1068,75 @@
                 <link linkend="stargazer.add_user_cash"><function>stargazer.add_user_cash</function></link>,
                 <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>
                 <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
+                <link linkend="stargazer.get_user_auth_by"><function>stargazer.get_user_auth_by</function></link>
+            </para>
+        </refsect1>
+    </refentry>
+    <refentry id="stargazer.get_user_auth_by">
+        <refmeta>
+            <refentrytitle>stargazer.get_user_auth_by</refentrytitle>
+        </refmeta>
+        <refnamediv>
+            <refname>stargazer.get_user_auth_by</refname>
+            <refpurpose>Получение списка авторизаторов которыми авторизован пользователь</refpurpose>
+        </refnamediv>
+        <refsynopsisdiv>
+            <funcsynopsis>
+                <funcprototype>
+                    <funcdef><function>stargazer.get_user_auth_by</function></funcdef>
+                    <paramdef>string <parameter>cookie</parameter></paramdef>
+                    <paramdef>string <parameter>login</parameter></paramdef>
+                </funcprototype>
+            </funcsynopsis>
+        </refsynopsisdiv>
+        <refsect1>
+            <title>Description</title>
+            <para>Метод <function>stargazer.get_user_auth_by</function> позволяет получить список авторизаторов которыми в данный момент авторизован пользователь.</para>
+            <variablelist>
+                <varlistentry>
+                    <term>string <parameter>cookie</parameter></term>
+                    <listitem>
+                        <para>Авторизационный cookie. Для авторизации в системе используется метод <function><link linkend="stargazer.login">stargazer.login</link></function></para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>string <parameter>login</parameter></term>
+                    <listitem>
+                        <para>Логин пользователя</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+            <refsect2>
+                <title>Return Value</title>
+                <para>Возвращает структуру:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>bool <structfield>result</structfield></term>
+                        <listitem>
+                            <para>Результат операции. true - успешно, false - неудача (неправильный или устаревший cookie).</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>array of strings <structfield>auths</structfield></term>
+                        <listitem>
+                            <para>Список авторизаторов которыми авторизован пользователь.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </refsect2>
+        </refsect1>
+        <refsect1>
+            <title>See also</title>
+            <para>
+                <link linkend="stargazer.get_users"><function>stargazer.get_users</function></link>,
+                <link linkend="stargazer.get_user"><function>stargazer.get_user</function></link>,
+                <link linkend="stargazer.add_user"><function>stargazer.add_user</function></link>,
+                <link linkend="stargazer.chg_user"><function>stargazer.chg_user</function></link>,
+                <link linkend="stargazer.del_user"><function>stargazer.del_user</function></link>,
+                <link linkend="stargazer.add_user_cash"><function>stargazer.add_user_cash</function></link>,
+                <link linkend="stargazer.set_user_cash"><function>stargazer.set_user_cash</function></link>
+                <link linkend="stargazer.chg_user_tariff"><function>stargazer.chg_user_tariff</function></link>
+                <link linkend="stargazer.get_online_ips"><function>stargazer.get_online_ips</function></link>
             </para>
         </refsect1>
     </refentry>
