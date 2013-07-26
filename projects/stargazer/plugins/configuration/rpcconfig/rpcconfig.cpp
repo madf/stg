@@ -473,5 +473,11 @@ xmlrpc_c::methodPtr const methodGetOnlinIPsPtr(new METHOD_GET_ONLINE_IPS(
             users
             ));
 rpcRegistry.addMethod("stargazer.get_online_ips", methodGetOnlinIPsPtr);
+
+xmlrpc_c::methodPtr const methodGetUserAuthByPtr(new METHOD_GET_USER_AUTH_BY(
+            this,
+            users
+            ));
+rpcRegistry.addMethod("stargazer.get_user_auth_by", methodGetUserAuthByPtr);
 }
 
