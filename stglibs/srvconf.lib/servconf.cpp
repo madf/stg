@@ -379,6 +379,7 @@ return st_ok;
 //-----------------------------------------------------------------------------
 int SERVCONF::Start(const char *el, const char **attr)
 {
+printfd(__FILE__, "<%s>\n", el);
 currParser->ParseStart(el, attr);
 return 0;
 }
