@@ -129,7 +129,7 @@ printf("To get userdata<0...9> use:\n");
 printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --ud0 [--ud1 ...]\n\n");
 
 printf("To get user's authorizers list use:\n");
-printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --authorized-by\n");
+printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --authorized-by\n\n");
 
 printf("To send message use:\n");
 printf("sgconf set -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> -m <message>\n\n");
