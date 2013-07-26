@@ -849,6 +849,7 @@ while (1)
 
         case 800:
             req.authBy = true;
+            break;
 
         case '?':
         case ':':
