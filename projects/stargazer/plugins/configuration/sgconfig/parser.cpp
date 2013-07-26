@@ -286,6 +286,13 @@ answerList->push_back(s);
 strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
 answerList->push_back(s);
 
+s = "<AuthorizedBy>";
+std::vector<std::string> list(u->GetAuthorizers());
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    s += "<Auth name=\"" + *it + "\">";
+s += "</AuthorizedBy>";
+answerList->push_back(s);
+
 strprintf(&s, "</user>");
 answerList->push_back(s);
 }

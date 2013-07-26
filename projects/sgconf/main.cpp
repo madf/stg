@@ -108,7 +108,8 @@ struct option long_options_get[] = {
 {"email",       0, 0, 'L'},  //emaiL
 {"phone",       0, 0, 'P'},  //phone
 {"group",       0, 0, 'G'},  //Group
-{"ip",		0, 0, 'I'},  //IP-address of user
+{"ip",          0, 0, 'I'},  //IP-address of user
+{"authorized-by",0, 0, 800}, //always online
 
 {0, 0, 0, 0}};
 
@@ -846,6 +847,9 @@ while (1)
             req.ud[c - 700] = " ";
             break;
 
+        case 800:
+            req.authBy = true;
+
         case '?':
         case ':':
             //printf ("Unknown option \n");
@@ -873,7 +877,10 @@ if (missedOptionArg || !CheckParametersGet(&req))
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
+if (req.authBy)
+    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
+else
+    return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
 }
 //-----------------------------------------------------------------------------
 int mainSet(int argc, char **argv)

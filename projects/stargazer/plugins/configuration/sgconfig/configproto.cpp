@@ -107,6 +107,7 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       parserDelUser(),
       parserCheckUser(),
       parserSendMessage(),
+      parserAuthBy(),
       parserGetAdmins(),
       parserAddAdmin(),
       parserDelAdmin(),
@@ -130,6 +131,7 @@ dataParser.push_back(&parserAddUser);
 dataParser.push_back(&parserDelUser);
 dataParser.push_back(&parserCheckUser);
 dataParser.push_back(&parserSendMessage);
+dataParser.push_back(&parserAuthBy);
 
 dataParser.push_back(&parserGetTariffs);
 dataParser.push_back(&parserAddTariff);

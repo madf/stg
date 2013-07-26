@@ -49,7 +49,8 @@ struct REQUEST
 REQUEST()
     : chgTariff(false),
       createUser(false),
-      deleteUser(false)
+      deleteUser(false),
+      authBy(false)
 {
     for (int i = 0; i < DIR_NUM; i++)
         {
@@ -75,6 +76,7 @@ RESETABLE<double>   setCash;
 string              message;
 bool                createUser;
 bool                deleteUser;
+bool                authBy;
 
 RESETABLE<string>   usrMsg;
 RESETABLE<double>   credit;
