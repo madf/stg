@@ -51,6 +51,7 @@ public:
     time_t  ModificationTime() const throw() { return modificationTime; }
     void    ModifyTime() throw();
 
+    std::string ToString() const;
 private:
     varT & value;
     time_t modificationTime;
@@ -382,5 +383,12 @@ std::ostream & operator<< (std::ostream & stream, const USER_PROPERTY<varT> & va
 return stream << value.ConstData();
 }
 //-----------------------------------------------------------------------------
-
+template<typename varT>
+std::string USER_PROPERTY<varT>::ToString() const
+{
+std::stringstream stream;
+stream << value;
+std::string stringValue = stream.str();
+return stringValue;
+}
 #endif // USER_PROPERTY_H
