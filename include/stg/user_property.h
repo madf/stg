@@ -388,7 +388,6 @@ std::string USER_PROPERTY<varT>::ToString() const
 {
 std::stringstream stream;
 stream << value;
-std::string stringValue = stream.str();
-return stringValue;
+return stream.str();
 }
 #endif // USER_PROPERTY_H
