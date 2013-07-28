@@ -702,7 +702,9 @@ std::list<USER_IMPL>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
     {
-    if (iter->GetLogin() != login && iter->GetProperty().ips.Get().IsIPInIPS(ip))
+    if (iter->GetLogin() != login &&
+        !iter->GetProperty().ips.Get().IsAnyIP() &&
+        iter->GetProperty().ips.Get().IsIPInIPS(ip))
         {
         if (user != NULL)
             *user = &(*iter);

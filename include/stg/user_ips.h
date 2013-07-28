@@ -70,6 +70,7 @@ public:
     std::string GetIpStr() const;
     bool IsIPInIPS(uint32_t ip) const;
     bool OnlyOneIP() const;
+    bool IsAnyIP() const;
     size_t  Count() const;
     void Add(const IP_MASK &im);
     void Erase();
@@ -169,6 +170,12 @@ if (ips.size() == 1 && ips.front().mask == 32)
     return true;
 
 return false;
+}
+//-----------------------------------------------------------------------------
+inline
+bool USER_IPS::IsAnyIP() const
+{
+    return !ips.empty() && ips.front().ip == 0;
 }
 //-----------------------------------------------------------------------------
 inline
