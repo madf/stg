@@ -601,7 +601,9 @@ if (!fakeConnect)
         std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
         while (it != settings->GetScriptParams().end())
             {
-            scriptOnConnectParams  += GetParamValue(it->c_str());
+            scriptOnConnectParams += " \"";
+            scriptOnConnectParams += GetParamValue(it->c_str());
+            scriptOnConnectParams += "\"";
             }
 
         ScriptExec(scriptOnConnectParams.c_str());
@@ -664,7 +666,9 @@ if (!fakeDisconnect)
         std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
         while (it != settings->GetScriptParams().end())
             {
+            scriptOnDisonnectParams += " \"";
             scriptOnDisonnectParams += GetParamValue(it->c_str());
+            scriptOnDisonnectParams += "\"";
             }
 
         ScriptExec(scriptOnDisonnectParams.c_str());
