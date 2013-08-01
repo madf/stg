@@ -51,6 +51,13 @@ then
     MAKE="gmake"
 fi
 
+if [ "$sys" = "Darwin" ]
+then
+    OS=darwin
+    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
+fi
+
 if [ "$OS" = "unknown" ]
 then 
     printf "#############################################################################\n"
@@ -77,12 +84,18 @@ else
     then
         DEFS="$DEFS -DFREE_BSD"
     else
-        DEFS="$DEFS -DFREE_BSD5"
         if [ "$OS" = "bsd7" ]
         then
+            DEFS="$DEFS -DFREE_BSD5"
             LIB_THREAD=-lpthread
         else
-            LIB_THREAD=-lc_r
+            if [ "$OS" == "darwin" ]
+            then
+                DEFS="$DEFS -DDARWIN"
+                LIB_THREAD=-lpthread
+            else
+                LIB_THREAD=-lc_r
+            fi
         fi
     fi
 fi
