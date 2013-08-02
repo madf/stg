@@ -278,7 +278,11 @@ if (Stop())
     return -1;
 if (Start())
     return -1;
-logger("Reconnected successfully.");
+if (!needReconnect)
+    {
+    printfd(__FILE__, "SMUX reconnected succesfully.\n");
+    logger("Reconnected successfully.");
+    }
 return 0;
 }
 

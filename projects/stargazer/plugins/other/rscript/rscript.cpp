@@ -325,6 +325,7 @@ std::for_each(authorizedUsers.begin(),
               UpdateRouter(*this));
 
 logger("%s reloaded successfully.", rsSettings.GetMapFileName().c_str());
+printfd(__FILE__, "REMOTE_SCRIPT::Reload() %s reloaded successfully.\n");
 
 return 0;
 }
