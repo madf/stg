@@ -278,6 +278,7 @@ if (Stop())
     return -1;
 if (Start())
     return -1;
+logger("Reconnected successfully.");
 return 0;
 }
 

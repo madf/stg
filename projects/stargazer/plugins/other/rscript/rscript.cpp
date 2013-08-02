@@ -324,6 +324,8 @@ std::for_each(authorizedUsers.begin(),
               authorizedUsers.end(),
               UpdateRouter(*this));
 
+logger("%s reloaded successfully.", rsSettings.GetMapFileName().c_str());
+
 return 0;
 }
 //-----------------------------------------------------------------------------

@@ -738,8 +738,8 @@ if (ReadRules(true))
 
 FreeRules();
 ReadRules();
-printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() -  Reload rules successfull.\n");
-WriteServLog("TRAFFCOUNTER: Reload rules successfull.");
+printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() -  Reloaded rules successfully.\n");
+WriteServLog("TRAFFCOUNTER: Reloaded rules successfully.");
 return 0;
 }
 //-----------------------------------------------------------------------------
