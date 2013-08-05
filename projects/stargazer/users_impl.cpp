@@ -88,23 +88,39 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByNameNonLock(const std::string & login, user_iter * user)
 {
-std::map<std::string, user_iter>::iterator iter;
-iter = loginIndex.find(login);
-if (iter != loginIndex.end())
-    {
-    if (user)
-        *user = iter->second;
-    return 0;
-    }
-return -1;
+const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+if (iter == loginIndex.end())
+    return -1;
+if (user)
+    *user = iter->second;
+return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::FindByNameNonLock(const std::string & login, const_user_iter * user) const
+{
+const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+if (iter == loginIndex.end())
+    return -1;
+if (user)
+    *user = iter->second;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByName(const std::string & login, USER_PTR * user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 user_iter u;
-int res = FindByNameNonLock(login, &u);
-if (res)
+if (FindByNameNonLock(login, &u))
+    return -1;
+*user = &(*u);
+return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::FindByName(const std::string & login, CONST_USER_PTR * user) const
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+const_user_iter u;
+if (FindByNameNonLock(login, &u))
     return -1;
 *user = &(*u);
 return 0;

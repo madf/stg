@@ -75,6 +75,7 @@ public:
     virtual ~USERS_IMPL();
 
     int             FindByName(const std::string & login, USER_PTR * user);
+    int             FindByName(const std::string & login, CONST_USER_PTR * user) const;
 
     bool            TariffInUse(const std::string & tariffName) const;
 
@@ -122,6 +123,7 @@ private:
     bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
 
     int             FindByNameNonLock(const std::string & login, user_iter * user);
+    int             FindByNameNonLock(const std::string & login, const_user_iter * user) const;
 
     void            RealDelUser();
     void            ProcessActions();
