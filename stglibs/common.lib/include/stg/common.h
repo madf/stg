@@ -112,7 +112,11 @@ int str2x(const std::string & str, varT & x);
 template <typename varT>
 const std::string & x2str(varT x, std::string & s);
 template <typename varT>
+const std::string & x2str(varT x) { std::string s; return x2str(x, s); }
+template <typename varT>
 const std::string & unsigned2str(varT x, std::string & s);
+template <typename varT>
+const std::string & unsigned2str(varT x) { std::string s; return unsigned2str(x, s); }
 
 //-----------------------------------------------------------------------------
 template <typename varT>
