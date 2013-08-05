@@ -21,9 +21,9 @@
 #ifndef __STG_PARSER_USER_INFO_H__
 #define __STG_PARSER_USER_INFO_H__
 
-#include <string>
-
 #include "parser.h"
+
+#include <string>
 
 class PARSER_USER_INFO : public BASE_PARSER {
 public:
