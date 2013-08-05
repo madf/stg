@@ -32,14 +32,9 @@
 #define _GNU_SOURCE
 #endif
 
-#include <pthread.h>
-#include <unistd.h> // access
-
-#include <cassert>
-#include <cstdlib>
-#include <cmath>
-#include <algorithm>
-#include <functional>
+#include "user_impl.h"
+#include "settings_impl.h"
+#include "stg_timer.h"
 
 #include "stg/users.h"
 #include "stg/common.h"
@@ -47,9 +42,16 @@
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
 #include "stg/admin.h"
-#include "user_impl.h"
-#include "settings_impl.h"
-#include "stg_timer.h"
+
+#include <algorithm>
+#include <functional>
+
+#include <cassert>
+#include <cstdlib>
+#include <cmath>
+
+#include <pthread.h>
+#include <unistd.h> // access
 
 #ifdef USE_ABSTRACT_SETTINGS
 USER_IMPL::USER_IMPL(const SETTINGS * s,

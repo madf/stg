@@ -21,17 +21,16 @@
 #ifndef USER_H
 #define USER_H
 
-#include <ctime>
-#include <string>
-
-#include <vector>
-#include <string>
-
-#include "os_int.h"
 #include "notifer.h"
 #include "message.h"
 #include "tariff.h"
 #include "user_traff.h"
+#include "os_int.h"
+
+#include <vector>
+#include <string>
+
+#include <ctime>
 
 class USER_PROPERTIES;
 class AUTH;

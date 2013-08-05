@@ -27,15 +27,7 @@
 #ifndef USER_IMPL_H
 #define USER_IMPL_H
 
-#include <ctime>
-#include <list>
-#include <vector>
-#include <string>
-#include <set>
-
 #include "stg/user.h"
-#include "stg/os_int.h"
-#include "stg/const.h"
 #include "stg/user_stat.h"
 #include "stg/user_conf.h"
 #include "stg/user_ips.h"
@@ -43,6 +35,15 @@
 #include "stg/auth.h"
 #include "stg/message.h"
 #include "stg/noncopyable.h"
+#include "stg/os_int.h"
+#include "stg/const.h"
+
+#include <list>
+#include <vector>
+#include <string>
+#include <set>
+
+#include <ctime>
 
 //-----------------------------------------------------------------------------
 class TARIFF;
