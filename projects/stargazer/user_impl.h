@@ -183,7 +183,9 @@ public:
 
     bool            GetConnected() const { return connected; }
     time_t          GetConnectedModificationTime() const { return connected.ModificationTime(); }
+    const std::string & GetLastDisconnectReason() const { return lastDisconnectReason; }
     int             GetAuthorized() const { return static_cast<int>(authorizedBy.size()); }
+    time_t          GetAuthorizedModificationTime() const { return authorizedModificationTime; }
     int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
     void            Unauthorize(const AUTH * auth);
     bool            IsAuthorizedBy(const AUTH * auth) const;
@@ -240,6 +242,7 @@ private:
     int             id;
     bool            __connected;
     USER_PROPERTY<bool> connected;
+    std::string     lastDisconnectReason;
 
     bool            enabledDirs[DIR_NUM];
 
@@ -268,6 +271,7 @@ private:
 #endif
 
     std::set<const AUTH *> authorizedBy;
+    time_t          authorizedModificationTime;
 
     std::list<STG_MSG> messages;
 

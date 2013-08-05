@@ -62,12 +62,9 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
-      login(),
       id(0),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
-      userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -76,11 +73,8 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       store(st),
       tariffs(t),
       tariff(NULL),
-      traffStat(),
-      traffStatSaved(),
       settings(s),
-      authorizedBy(),
-      messages(),
+      authorizedModificationTime(0),
       deleted(false),
       lastWriteStat(0),
       lastWriteDetailedStat(0),
@@ -118,14 +112,10 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
-      sessionUpload(),
-      sessionDownload(),
       passiveNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
@@ -155,12 +145,9 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
-      login(),
       id(0),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
-      userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -169,11 +156,8 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       store(st),
       tariffs(t),
       tariff(NULL),
-      traffStat(),
-      traffStatSaved(),
       settings(s),
-      authorizedBy(),
-      messages(),
+      authorizedModificationTime(0),
       deleted(false),
       lastWriteStat(0),
       lastWriteDetailedStat(0),
@@ -211,15 +195,11 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
-      sessionUpload(),
-      sessionDownload(),
       passiveNotifier(this),
       disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
@@ -250,7 +230,6 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       id(u.id),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
       userIDGenerator(u.userIDGenerator),
       __currIP(u.__currIP),
       currIP(__currIP),
@@ -263,7 +242,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       traffStat(u.traffStat),
       traffStatSaved(u.traffStatSaved),
       settings(u.settings),
-      authorizedBy(),
+      authorizedModificationTime(u.authorizedModificationTime),
       messages(u.messages),
       deleted(u.deleted),
       lastWriteStat(u.lastWriteStat),
@@ -308,9 +287,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 if (&u == this)
     return;
@@ -537,6 +514,8 @@ else
         }
     }
 
+if (authorizedBy.empty())
+    authorizedModificationTime = stgTime;
 authorizedBy.insert(auth);
 
 ScanMessage();
@@ -555,6 +534,7 @@ if (!authorizedBy.erase(auth))
 
 if (authorizedBy.empty())
     {
+    authorizedModificationTime = stgTime;
     lastIPForDisconnect = currIP;
     currIP = 0; // DelUser in traffcounter
     return;
@@ -642,6 +622,7 @@ if (!lastIPForDisconnect)
 
 if (!fakeDisconnect)
     {
+    lastDisconnectReason = reason;
     std::string scriptOnDisonnect = settings->GetScriptsDir() + "/OnDisconnect";
 
     if (access(scriptOnDisonnect.c_str(), X_OK) == 0)
