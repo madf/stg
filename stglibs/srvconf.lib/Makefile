@@ -8,14 +8,15 @@ STGLIBS = -lstgcommon \
           -lstgcrypto
 LIBS = -lexpat
 
-SRCS = 	netunit.cpp \
+SRCS =  netunit.cpp \
         parser.cpp \
+        parser_auth_by.cpp \
         servconf.cpp
 
 INCS = servconf.h \
        netunit.h
 
 LIB_INCS = -I ../common.lib/include \
-	   -I ../crypto.lib/include
+           -I ../crypto.lib/include
 
 include ../Makefile.in

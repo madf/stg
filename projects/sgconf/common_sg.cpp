@@ -52,12 +52,6 @@ struct GetUserCbData
     void * data;
     bool * result;
 };
-//-----------------------------------------------------------------------------
-struct AuthByCbData
-{
-    void * data;
-    bool * result;
-};
 //---------------------------------------------------------------------------
 struct HelpParams
 {
@@ -418,20 +412,11 @@ for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
 *result = true;
 }
 //-----------------------------------------------------------------------------
-void RecvAuthByData(const std::vector<std::string> & list, void * d)
+void RecvAuthByData(const PARSER_AUTH_BY::INFO & list, void *)
 {
-AuthByCbData * abcbd;
-abcbd = (AuthByCbData *)d;
-
-bool * result = abcbd->result;
-
-REQUEST * req = (REQUEST *)abcbd->data;
-
 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
     cout << *it << "\n";
 cout << endl;
-
-*result = true;
 }
 //-----------------------------------------------------------------------------
 int ProcessSetUser(const std::string &server,
@@ -531,33 +516,21 @@ int ProcessAuthBy(const std::string &server,
 {
 SERVCONF sc;
 
-bool result = false;
-
-sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
-sc.SetPort(port);           // админский порт серверапорт
-sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
+sc.SetServer(server.c_str());
+sc.SetPort(port);
+sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
-// TODO Good variable name :)
-AuthByCbData abcbd;
+sc.SetAuthByCallback(RecvAuthByData, NULL);
+sc.AuthBy(login.c_str());
 
-abcbd.data = data;
-abcbd.result = &result;
-
-sc.SetGetUserAuthByRecvCb(RecvAuthByData, &abcbd);
-sc.GetUserAuthBy(login.c_str());
-
-if (result)
-    {
-    printf("Ok\n");
-    return 0;
-    }
-else
+if (sc.GetError())
     {
     printf("Error\n");
     return -1;
     }
 
+printf("Ok\n");
 return 0;
 }
 //-----------------------------------------------------------------------------

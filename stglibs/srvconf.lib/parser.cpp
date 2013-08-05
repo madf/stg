@@ -822,58 +822,6 @@ if (strcmp(attr[0], "value") == 0)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PARSER_AUTH_BY::PARSER_AUTH_BY()
-    : RecvAuthByDataCb(NULL),
-      authByDataCb(NULL),
-      depth(0),
-      error(false),
-      list()
-{
-}
-//-----------------------------------------------------------------------------
-int PARSER_AUTH_BY::ParseStart(const char *el, const char **attr)
-{
-depth++;
-if (depth == 1)
-    {
-    if (strcasecmp(el, "AuthorizedBy") != 0)
-        {
-        list.erase(list.begin(), list.end());
-        //printf("%s\n", el);
-        }
-    }
-else
-    {
-    if (depth == 2)
-        {
-        if (strcasecmp(el, "Auth") == 0)
-            {
-            if (attr && attr[0] && attr[1])
-                list.push_back(attr[1]);
-            return 0;
-            }
-        }
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::ParseEnd(const char *)
-{
-depth--;
-if (depth == 0)
-    {
-    RecvAuthByDataCb(list, authByDataCb);
-    }
-}
-//-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::SetRecvCb(RecvAuthByDataCb_t f, void * data)
-{
-RecvAuthByDataCb = f;
-authByDataCb = data;
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 PARSER_CHG_USER::PARSER_CHG_USER()
     : RecvChgUserCb(NULL),
       chgUserCbData(NULL),

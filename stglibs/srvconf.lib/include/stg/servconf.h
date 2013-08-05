@@ -27,15 +27,17 @@
 #ifndef SERVCONF_H
 #define SERVCONF_H
 
-#include <expat.h>
+#include "netunit.h"
+
+#include "stg/parser_auth_by.h"
+#include "stg/os_int.h"
+#include "stg/const.h"
 
 #include <list>
 #include <vector>
 #include <string>
 
-#include "stg/os_int.h"
-#include "stg/const.h"
-#include "netunit.h"
+#include <expat.h>
 
 void Start(void *data, const char *el, const char **attr);
 void End(void *data, const char *el);
@@ -102,20 +104,10 @@ typedef void(*RecvServerInfoDataCb_t)(SERVERINFO * si, void * data);
 typedef int(*RecvChgUserCb_t)(const char * asnwer, void * data);
 typedef int(*RecvCheckUserCb_t)(const char * answer, void * data);
 typedef int(*RecvSendMessageCb_t)(const char * answer, void * data);
-typedef void(*RecvAuthByDataCb_t)(const std::vector<std::string> & list, void * data);
 //-----------------------------------------------------------------------------
 struct ADMINDATA
 {
     char login[ADM_LOGIN_LEN];
-};
-//-----------------------------------------------------------------------------
-class PARSER
-{
-public:
-    PARSER() {}
-    virtual ~PARSER() {}
-    virtual int ParseStart(const char *el, const char **attr) = 0;
-    virtual void ParseEnd(const char *el) = 0;
 };
 //-----------------------------------------------------------------------------
 class PARSER_CHG_USER: public PARSER
@@ -226,23 +218,6 @@ private:
     bool error;
 };
 //-----------------------------------------------------------------------------
-class PARSER_AUTH_BY: public PARSER
-{
-public:
-    PARSER_AUTH_BY();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseServerInfo(const char *el, const char **attr);
-    bool GetError();
-    void SetRecvCb(RecvAuthByDataCb_t, void * data);
-private:
-    RecvAuthByDataCb_t RecvAuthByDataCb;
-    void * authByDataCb;
-    int depth;
-    bool error;
-    std::vector<std::string> list;
-};
-//-----------------------------------------------------------------------------
 class SERVCONF
 {
 public:
@@ -254,7 +229,7 @@ public:
     void SetAdmPassword(const char * password);
 
     void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
-    void SetGetUserAuthByRecvCb(RecvAuthByDataCb_t, void * data);
+    void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);
     void SetServerInfoRecvCb(RecvServerInfoDataCb_t, void * data);
     void SetChgUserCb(RecvChgUserCb_t, void * data);
     void SetCheckUserCb(RecvCheckUserCb_t, void * data);
@@ -264,7 +239,7 @@ public:
     int GetUsers();
     int GetUser(const char * login);
     int ChgUser(const char * request);
-    int GetUserAuthBy(const char * login);
+    int AuthBy(const char * login);
     // TODO: Remove this shit!
     int MsgUser(const char * request);
     int SendMessage(const char * login, const char * message, int prio);
@@ -296,14 +271,14 @@ private:
 
     RecvUserDataCb_t RecvUserDataCb;
     RecvUserDataCb_t RecvGetUserDataCb;
-    RecvAuthByDataCb_t RecvAuthByCb;
+    PARSER_AUTH_BY::CALLBACK authByCallback;
     RecvServerInfoDataCb_t RecvServerInfoDataCb;
     RecvChgUserCb_t RecvChgUserCb;
     RecvCheckUserCb_t RecvCheckUserCb;
     RecvSendMessageCb_t RecvSendMessageCb;
 
     void * getUserDataDataCb;
-    void * getUserAuthByDataCb;
+    void * authByData;
     void * getUsersDataDataCb;
     void * getServerInfoDataCb;
     void * chgUserDataCb;
