@@ -15,28 +15,41 @@
  */
 
 /*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
+#ifndef __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
+#define __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 
 #include "stg/parser.h"
 
-#include <vector>
+#include "stg/const.h"
+
 #include <string>
 
-class PARSER_AUTH_BY: public PARSER
+class PARSER_SERVER_INFO: public PARSER
 {
 public:
-    typedef std::vector<std::string> INFO;
+    struct INFO
+    {
+        std::string version;
+        int         tariffNum;
+        int         tariffType;
+        int         usersNum;
+        std::string uname;
+        int         dirNum;
+        std::string dirName[DIR_NUM];
+    };
     typedef void (* CALLBACK)(const INFO & info, void * data);
 
-    PARSER_AUTH_BY();
+    PARSER_SERVER_INFO();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
     void SetCallback(CALLBACK f, void * data);
 private:
+    void ParseDirName(const char **attr, int d);
+
     CALLBACK callback;
     void * data;
     int depth;

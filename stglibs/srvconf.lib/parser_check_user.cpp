@@ -15,51 +15,43 @@
  */
 
 /*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_auth_by.h"
+#include "stg/parser_check_user.h"
 
-#include <strings.h> // strcasecmp
+#include <strings.h>
 
-PARSER_AUTH_BY::PARSER_AUTH_BY()
+PARSER_CHECK_USER::PARSER_CHECK_USER()
     : callback(NULL),
       data(NULL),
       depth(0)
 {
 }
 //-----------------------------------------------------------------------------
-int PARSER_AUTH_BY::ParseStart(const char *el, const char **attr)
+int PARSER_CHECK_USER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
-    {
-    if (strcasecmp(el, "AuthorizedBy") != 0)
-        info.clear();
-    }
-else
-    {
-    if (depth == 2)
-        {
-        if (strcasecmp(el, "Auth") == 0)
-            {
-            if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "name") == 0)
-                info.push_back(attr[1]);
-            return 0;
-            }
-        }
-    }
+    if (strcasecmp(el, "CheckUser") == 0)
+        ParseAnswer(el, attr);
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::ParseEnd(const char * /*el*/)
+void PARSER_CHECK_USER::ParseEnd(const char *)
 {
 depth--;
-if (depth == 0 && callback)
-    callback(info, data);
 }
 //-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::SetCallback(CALLBACK f, void * d)
+void PARSER_CHECK_USER::ParseAnswer(const char *, const char **attr)
+{
+if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0)
+    if (callback)
+        callback(attr[1], data);
+}
+//-----------------------------------------------------------------------------
+void PARSER_CHECK_USER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;

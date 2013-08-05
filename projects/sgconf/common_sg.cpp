@@ -84,7 +84,7 @@ HelpParams hp[] =
     {"set credit expire",       "get credit expire",    "-E",   "<credit_expire_date>"},
     {"set password",            "get password",         "-o",   "<new_password>"},
     {"set prepaid traffic",     "get prepaid traffic",  "-e",   "<prepaid>"},
-    {"set IP-addresses",	"get IP-addresses",	"-I",	"<*|ip_addr[,ip_addr...]>"},
+    {"set IP-addresses",        "get IP-addresses",     "-I",   "<*|ip_addr[,ip_addr...]>"},
     {"set name",                "get name",             "-A",   "<name>"},
     {"set note",                "get note",             "-N",   "<note>"},
     {"set street address",      "get street address",   "-D",   "<address>"},
@@ -398,7 +398,7 @@ StringReqParams strReqParams[] =
     {"group",    req->group,       &ud->group},
     {"tariff",   req->tariff,      &ud->tariff},
     {"password", req->usrPasswd,   &ud->password},
-    {"ip",	 req->ips,	   &ud->ips}	// IP-address of user
+    {"ip",       req->ips,         &ud->ips} // IP-address of user
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {

@@ -97,16 +97,16 @@ SERVCONF::SERVCONF()
       RecvUserDataCb(NULL),
       RecvGetUserDataCb(NULL),
       authByCallback(NULL),
-      RecvServerInfoDataCb(NULL),
+      serverInfoCallback(NULL),
       RecvChgUserCb(NULL),
-      RecvCheckUserCb(NULL),
+      checkUserCallback(NULL),
       RecvSendMessageCb(NULL),
       getUserDataDataCb(NULL),
       authByData(NULL),
       getUsersDataDataCb(NULL),
-      getServerInfoDataCb(NULL),
+      serverInfoData(NULL),
       chgUserDataCb(NULL),
-      checkUserDataCb(NULL),
+      checkUserData(NULL),
       sendMessageDataCb(NULL)
 {
 parser = XML_ParserCreate(NULL);
@@ -257,13 +257,13 @@ if ((ret = nt.Disconnect()) != st_ok)
 return st_ok;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetServerInfo()
+int SERVCONF::ServerInfo()
 {
 char request[] = "<GetServerInfo/>";
 int ret;
 
 currParser = &parserServerInfo;
-((PARSER_GET_SERVER_INFO*)currParser)->SetServerInfoRecvCb(RecvServerInfoDataCb, getServerInfoDataCb);
+((PARSER_SERVER_INFO*)currParser)->SetCallback(serverInfoCallback, serverInfoData);
 
 nt.Reset();
 nt.SetRxCallback(this, AnsRecv);
@@ -354,7 +354,7 @@ snprintf(request, 255, "<CheckUser login=\"%s\" password=\"%s\"/>", login, passw
 int ret;
 
 currParser = &parserCheckUser;
-((PARSER_CHECK_USER*)currParser)->SetCheckUserRecvCb(RecvCheckUserCb, checkUserDataCb);
+((PARSER_CHECK_USER*)currParser)->SetCallback(checkUserCallback, checkUserData);
 
 nt.Reset();
 nt.SetRxCallback(this, AnsRecv);
@@ -407,10 +407,10 @@ authByCallback = f;
 authByData = data;
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetServerInfoRecvCb(RecvServerInfoDataCb_t f, void * data)
+void SERVCONF::SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data)
 {
-RecvServerInfoDataCb = f;
-getServerInfoDataCb = data;
+serverInfoCallback = f;
+serverInfoData = data;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetChgUserCb(RecvChgUserCb_t f, void * data)
@@ -419,10 +419,10 @@ RecvChgUserCb = f;
 chgUserDataCb = data;
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetCheckUserCb(RecvCheckUserCb_t f, void * data)
+void SERVCONF::SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data)
 {
-RecvCheckUserCb = f;
-checkUserDataCb = data;
+checkUserCallback = f;
+checkUserData = data;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetSendMessageCb(RecvSendMessageCb_t f, void * data)
