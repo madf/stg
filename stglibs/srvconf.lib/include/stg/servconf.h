@@ -32,6 +32,8 @@
 #include "stg/parser_auth_by.h"
 #include "stg/parser_server_info.h"
 #include "stg/parser_check_user.h"
+#include "stg/parser_get_user.h"
+#include "stg/parser_get_users.h"
 
 #include "stg/os_int.h"
 #include "stg/const.h"
