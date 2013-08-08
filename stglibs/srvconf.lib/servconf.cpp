@@ -139,7 +139,7 @@ snprintf(request, 255, "<GetUser login=\"%s\"/>", l);
 int ret;
 
 currParser = &parserGetUser;
-((PARSER_GET_USER*)currParser)->SetUserDataRecvCb(RecvGetUserDataCb, getUserDataDataCb);
+((PARSER_GET_USER*)currParser)->SetCallback(getUserCallback, getUserData);
 
 nt.Reset();
 nt.SetRxCallback(this, AnsRecv);
@@ -200,7 +200,7 @@ char request[] = "<GetUsers/>";
 int ret;
 
 currParser = &parserGetUsers;
-((PARSER_GET_USERS*)currParser)->SetUserDataRecvCb(RecvUserDataCb, getUsersDataDataCb);
+((PARSER_GET_USERS*)currParser)->SetCallback(getUsersCallback, getUsersData);
 
 nt.Reset();
 nt.SetRxCallback(this, AnsRecv);
@@ -389,10 +389,10 @@ void SERVCONF::End(const char *el)
 currParser->ParseEnd(el);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetUserDataRecvCb(RecvUserDataCb_t f, void * data)
+void SERVCONF::SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data)
 {
-RecvUserDataCb = f;
-getUsersDataDataCb = data;
+getUsersCallback = f;
+getUsersData = data;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data)

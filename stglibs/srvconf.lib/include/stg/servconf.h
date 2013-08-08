@@ -71,25 +71,6 @@ private:
     bool error;
 };
 //-----------------------------------------------------------------------------
-class PARSER_GET_USERS: public PARSER
-{
-public:
-    PARSER_GET_USERS();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseUsers(const char *el, const char **attr);
-    void ParseUser(const char *el, const char **attr);
-    void ParseUserParams(const char *el, const char **attr);
-    void ParseUserLoadStat(const char * el, const char ** attr);
-    void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
-private:
-    RecvUserDataCb_t RecvUserDataCb;
-    void * userDataCb;
-    USERDATA user;
-    int depth;
-    bool error;
-};
-//-----------------------------------------------------------------------------
 class PARSER_SEND_MESSAGE: public PARSER
 {
 public:
@@ -115,7 +96,7 @@ public:
     void SetAdmLogin(const char * login);
     void SetAdmPassword(const char * password);
 
-    void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
+    void SetGetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
     void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);
     void SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data);
     void SetChgUserCb(RecvChgUserCb_t, void * data);
@@ -156,7 +137,7 @@ private:
     int error;
     XML_Parser parser;
 
-    RecvUserDataCb_t RecvUserDataCb;
+    PARSER_GET_USERS::CALLBACK getUsersCallback;
     PARSER_GET_USER::CALLBACK getUserCallback;
     PARSER_AUTH_BY::CALLBACK authByCallback;
     PARSER_SERVER_INFO::CALLBACK serverInfoCallback;
@@ -166,7 +147,7 @@ private:
 
     void * getUserData;
     void * authByData;
-    void * getUsersDataDataCb;
+    void * getUsersData;
     void * serverInfoData;
     void * chgUserDataCb;
     void * checkUserData;
