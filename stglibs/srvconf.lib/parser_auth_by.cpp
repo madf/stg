@@ -20,6 +20,8 @@
 
 #include "stg/parser_auth_by.h"
 
+#include <cstddef>
+
 #include <strings.h> // strcasecmp
 
 PARSER_AUTH_BY::PARSER_AUTH_BY()

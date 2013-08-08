@@ -21,6 +21,8 @@
 
 #include "stg/parser_check_user.h"
 
+#include <cstddef>
+
 #include <strings.h>
 
 PARSER_CHECK_USER::PARSER_CHECK_USER()

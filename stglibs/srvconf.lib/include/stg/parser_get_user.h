@@ -25,6 +25,7 @@
 #include "stg/parser.h"
 
 #include "stg/os_int.h"
+#include "stg/const.h"
 
 #include <string>
 #include <map>

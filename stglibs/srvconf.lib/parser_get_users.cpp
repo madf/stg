@@ -21,6 +21,10 @@
 
 #include "stg/parser_get_users.h"
 
+#include <cstddef>
+
+#include <strings.h>
+
 PARSER_GET_USERS::PARSER_GET_USERS()
     : callabck(NULL),
       data(NULL),

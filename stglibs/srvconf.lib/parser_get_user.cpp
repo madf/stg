@@ -23,6 +23,10 @@
 
 #include "stg/common.h"
 
+#include <cstddef>
+
+#include <strings.h>
+
 namespace
 {
 

@@ -24,6 +24,7 @@
 #include "stg/common.h"
 
 #include <cstdio> // sprintf
+#include <cstddef>
 
 #include <strings.h>
 
