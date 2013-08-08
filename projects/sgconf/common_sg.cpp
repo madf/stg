@@ -369,17 +369,17 @@ if (!data->requst.prepaidTraff.res_empty())
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->requst.up[i].res_empty())
+    if (!data->requst.sessionUpload[i].res_empty())
         cout << "session upload for dir" << i << "=" << info.stat.su[i] << endl;
-    if (!data->requst.down[i].res_empty())
+    if (!data->requst.sessionDownload[i].res_empty())
         cout << "session download for dir" << i << "=" << info.stat.sd[i] << endl;
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->requst.monthUp[i].res_empty())
+    if (!data->requst.monthUpload[i].res_empty())
         cout << "month upload for dir" << i << "=" << info.stat.mu[i] << endl;
-    if (!data->requst.monthDown[i].res_empty())
+    if (!data->requst.monthDownload[i].res_empty())
         cout << "month download for dir" << i << "=" << info.stat.md[i] << endl;
     }
 

@@ -66,10 +66,10 @@ struct option long_options_get[] = {
 {"passive",     0, 0, 'i'},  //passive
 {"disable-stat",0, 0, 'S'},  //disable detail stat
 {"always-online",0, 0, 'O'}, //always online
-{"session-upload-dir",   1, 0, 500},  //SU0
-{"session-download-dir", 1, 0, 501},  //SD0
-{"month-upload-dir",     1, 0, 502},  //MU0
-{"month-download-dir",   1, 0, 503},  //MD0
+{"session-upload",   1, 0, 500},  //SU0
+{"session-download", 1, 0, 501},  //SD0
+{"month-upload",     1, 0, 502},  //MU0
+{"month-download",   1, 0, 503},  //MD0
 
 {"user-data",   1, 0, 700},  //UserData0
 
@@ -757,19 +757,19 @@ while (1)
 
         case 500: //U
             //printf("U%d\n", c - 500);
-            req.sessionUp[optarg] = 1;
+            req.sessionUpload[optarg] = 1;
             break;
         case 501:
             //printf("U%d\n", c - 500);
-            req.sessionDown[optarg] = 1;
+            req.sessionDownload[optarg] = 1;
             break;
         case 502:
             //printf("U%d\n", c - 500);
-            req.monthUp[optarg] = 1;
+            req.monthUpload[optarg] = 1;
             break;
         case 503:
             //printf("U%d\n", c - 500);
-            req.monthDown[optarg] = 1;
+            req.monthDownload[optarg] = 1;
             break;
 
         case 700: //UserData

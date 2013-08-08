@@ -90,11 +90,11 @@ RESETABLE<bool>     disableDetailStat;
 RESETABLE<bool>     alwaysOnline;
 RESETABLE<double>   prepaidTraff;
 
-RESETABLE<int64_t>  sessionUp[DIR_NUM];
-RESETABLE<int64_t>  sessionDown[DIR_NUM];
+RESETABLE<int64_t>  sessionUpload[DIR_NUM];
+RESETABLE<int64_t>  sessionDownload[DIR_NUM];
 
-RESETABLE<int64_t>  monthUp[DIR_NUM];
-RESETABLE<int64_t>  monthDown[DIR_NUM];
+RESETABLE<int64_t>  monthUpload[DIR_NUM];
+RESETABLE<int64_t>  monthDownload[DIR_NUM];
 
 RESETABLE<string>   userData[USERDATA_NUM];
 
