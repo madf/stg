@@ -35,7 +35,7 @@ class BASE_PROPERTY_PARSER
 {
     public:
         virtual bool Parse(const char ** attr) = 0;
-}
+};
 
 template <typename T>
 class PROPERTY_PARSER
