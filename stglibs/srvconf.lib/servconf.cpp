@@ -395,10 +395,10 @@ RecvUserDataCb = f;
 getUsersDataDataCb = data;
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetGetUserDataRecvCb(RecvUserDataCb_t f, void * data)
+void SERVCONF::SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data)
 {
-RecvGetUserDataCb = f;            //GET_USER
-getUserDataDataCb = data;
+getUserCallback = f;
+getUserData = data;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data)

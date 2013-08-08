@@ -819,6 +819,22 @@ std::string & Trim(std::string & val)
 return TrimR(TrimL(val));
 }
 //---------------------------------------------------------------------------
+std::string ToLower(const std::string & value)
+{
+    std::string res;
+    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
+        res += tolower(value[pos]);
+    return value;
+}
+//---------------------------------------------------------------------------
+std::string ToUpper(const std::string & value)
+{
+    std::string res;
+    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
+        res += toupper(value[pos]);
+    return value;
+}
+//---------------------------------------------------------------------------
 #ifdef WIN32
 static int is_leap(unsigned y)
 {

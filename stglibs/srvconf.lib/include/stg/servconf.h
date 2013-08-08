@@ -47,48 +47,7 @@ void End(void *data, const char *el);
 
 #define MAX_ERR_STR_LEN (64)
 #define IP_STRING_LEN   (255)
-
 //-----------------------------------------------------------------------------
-struct STAT
-{
-    long long   su[DIR_NUM];
-    long long   sd[DIR_NUM];
-    long long   mu[DIR_NUM];
-    long long   md[DIR_NUM];
-    double      freeMb;
-};
-//-----------------------------------------------------------------------------
-struct USERDATA
-{
-    std::string     login;
-    std::string     password;
-    double          cash;
-    double          credit;
-    time_t          creditExpire;
-    double          lastCash;
-    double          prepaidTraff;
-    int             down;
-    int             passive;
-    int             disableDetailStat;
-    int             connected;
-    int             alwaysOnline;
-    uint32_t        ip;
-    std::string     ips;
-    std::string     tariff;
-    std::string     iface;
-    std::string     group;
-    std::string     note;
-    std::string     email;
-    std::string     name;
-    std::string     address;
-    std::string     phone;
-    STAT            stat;
-    std::string     userData[USERDATA_NUM];
-
-    struct USERDATA * next;
-};
-//-----------------------------------------------------------------------------
-typedef void(*RecvUserDataCb_t)(USERDATA * ud, void * data);
 typedef int(*RecvChgUserCb_t)(const char * asnwer, void * data);
 typedef int(*RecvSendMessageCb_t)(const char * answer, void * data);
 //-----------------------------------------------------------------------------
@@ -116,25 +75,6 @@ class PARSER_GET_USERS: public PARSER
 {
 public:
     PARSER_GET_USERS();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseUsers(const char *el, const char **attr);
-    void ParseUser(const char *el, const char **attr);
-    void ParseUserParams(const char *el, const char **attr);
-    void ParseUserLoadStat(const char * el, const char ** attr);
-    void SetUserDataRecvCb(RecvUserDataCb_t, void * data);
-private:
-    RecvUserDataCb_t RecvUserDataCb;
-    void * userDataCb;
-    USERDATA user;
-    int depth;
-    bool error;
-};
-//-----------------------------------------------------------------------------
-class PARSER_GET_USER: public PARSER
-{
-public:
-    PARSER_GET_USER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
     void ParseUsers(const char *el, const char **attr);
@@ -180,7 +120,7 @@ public:
     void SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data);
     void SetChgUserCb(RecvChgUserCb_t, void * data);
     void SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data);
-    void SetGetUserDataRecvCb(RecvUserDataCb_t, void * data);
+    void SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data);
     void SetSendMessageCb(RecvSendMessageCb_t, void * data);
 
     int GetUsers();
@@ -217,14 +157,14 @@ private:
     XML_Parser parser;
 
     RecvUserDataCb_t RecvUserDataCb;
-    RecvUserDataCb_t RecvGetUserDataCb;
+    PARSER_GET_USER::CALLBACK getUserCallback;
     PARSER_AUTH_BY::CALLBACK authByCallback;
     PARSER_SERVER_INFO::CALLBACK serverInfoCallback;
     RecvChgUserCb_t RecvChgUserCb;
     PARSER_CHECK_USER::CALLBACK checkUserCallback;
     RecvSendMessageCb_t RecvSendMessageCb;
 
-    void * getUserDataDataCb;
+    void * getUserData;
     void * authByData;
     void * getUsersDataDataCb;
     void * serverInfoData;

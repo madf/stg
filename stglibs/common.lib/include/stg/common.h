@@ -96,6 +96,9 @@ std::string &   TrimL(std::string & val);
 std::string &   TrimR(std::string & val);
 std::string &   Trim(std::string & val);
 
+std::string     ToLower(const std::string & value);
+std::string     ToUpper(const std::string & value);
+
 std::string     IconvString(const std::string & source, const std::string & from, const std::string & to);
 
 int ParseInt(const std::string & str, int * val);
