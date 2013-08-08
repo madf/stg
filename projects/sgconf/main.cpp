@@ -66,37 +66,12 @@ struct option long_options_get[] = {
 {"passive",     0, 0, 'i'},  //passive
 {"disable-stat",0, 0, 'S'},  //disable detail stat
 {"always-online",0, 0, 'O'}, //always online
-{"u0",          0, 0, 500},  //U0
-{"u1",          0, 0, 501},  //U1
-{"u2",          0, 0, 502},  //U2
-{"u3",          0, 0, 503},  //U3
-{"u4",          0, 0, 504},  //U4
-{"u5",          0, 0, 505},  //U5
-{"u6",          0, 0, 506},  //U6
-{"u7",          0, 0, 507},  //U7
-{"u8",          0, 0, 508},  //U8
-{"u9",          0, 0, 509},  //U9
-{"d0",          0, 0, 600},  //D0
-{"d1",          0, 0, 601},  //D1
-{"d2",          0, 0, 602},  //D2
-{"d3",          0, 0, 603},  //D3
-{"d4",          0, 0, 604},  //D4
-{"d5",          0, 0, 605},  //D5
-{"d6",          0, 0, 606},  //D6
-{"d7",          0, 0, 607},  //D7
-{"d8",          0, 0, 608},  //D8
-{"d9",          0, 0, 609},  //D9
+{"session-upload-dir",   1, 0, 500},  //SU0
+{"session-download-dir", 1, 0, 501},  //SD0
+{"month-upload-dir",     1, 0, 502},  //MU0
+{"month-download-dir",   1, 0, 503},  //MD0
 
-{"ud0",         0, 0, 700},  //UserData0
-{"ud1",         0, 0, 701},  //UserData1
-{"ud2",         0, 0, 702},  //UserData2
-{"ud3",         0, 0, 703},  //UserData3
-{"ud4",         0, 0, 704},  //UserData4
-{"ud5",         0, 0, 705},  //UserData5
-{"ud6",         0, 0, 706},  //UserData6
-{"ud7",         0, 0, 707},  //UserData7
-{"ud8",         0, 0, 708},  //UserData8
-{"ud9",         0, 0, 709},  //UserData9
+{"user-data",   1, 0, 700},  //UserData0
 
 {"prepaid",     0, 0, 'e'},  //prepaid traff
 {"create",      0, 0, 'n'},  //create
@@ -129,37 +104,12 @@ struct option long_options_set[] = {
 {"passive",     1, 0, 'i'},  //passive
 {"disable-stat",1, 0, 'S'},  //disable detail stat
 {"always-online",1, 0, 'O'},  //always online
-{"u0",          1, 0, 500},  //U0
-{"u1",          1, 0, 501},  //U1
-{"u2",          1, 0, 502},  //U2
-{"u3",          1, 0, 503},  //U3
-{"u4",          1, 0, 504},  //U4
-{"u5",          1, 0, 505},  //U5
-{"u6",          1, 0, 506},  //U6
-{"u7",          1, 0, 507},  //U7
-{"u8",          1, 0, 508},  //U8
-{"u9",          1, 0, 509},  //U9
-{"d0",          1, 0, 600},  //D0
-{"d1",          1, 0, 601},  //D1
-{"d2",          1, 0, 602},  //D2
-{"d3",          1, 0, 603},  //D3
-{"d4",          1, 0, 604},  //D4
-{"d5",          1, 0, 605},  //D5
-{"d6",          1, 0, 606},  //D6
-{"d7",          1, 0, 607},  //D7
-{"d8",          1, 0, 608},  //D8
-{"d9",          1, 0, 609},  //D9
+{"session-upload",   1, 0, 500},  //U0
+{"session-download", 1, 0, 501},  //U1
+{"month-upload",     1, 0, 502},  //U2
+{"month-download",   1, 0, 503},  //U3
 
-{"ud0",         1, 0, 700},  //UserData
-{"ud1",         1, 0, 701},  //UserData1
-{"ud2",         1, 0, 702},  //UserData2
-{"ud3",         1, 0, 703},  //UserData3
-{"ud4",         1, 0, 704},  //UserData4
-{"ud5",         1, 0, 705},  //UserData5
-{"ud6",         1, 0, 706},  //UserData6
-{"ud7",         1, 0, 707},  //UserData7
-{"ud8",         1, 0, 708},  //UserData8
-{"ud9",         1, 0, 709},  //UserData9
+{"user-data",        1, 0, 700},  //UserData
 
 {"prepaid",     1, 0, 'e'},  //prepaid traff
 {"create",      1, 0, 'n'},  //create
@@ -792,7 +742,7 @@ while (1)
         case 'G': //Group
             req.group = " ";
             break;
-	
+
 	case 'I': //IP-address of user
 	    req.ips = " ";
 	    break;
@@ -806,45 +756,25 @@ while (1)
             break;
 
         case 500: //U
-        case 501:
-        case 502:
-        case 503:
-        case 504:
-        case 505:
-        case 506:
-        case 507:
-        case 508:
-        case 509:
             //printf("U%d\n", c - 500);
-            req.u[c - 500] = 1;
+            req.sessionUp[optarg] = 1;
             break;
-
-        case 600: //D
-        case 601:
-        case 602:
-        case 603:
-        case 604:
-        case 605:
-        case 606:
-        case 607:
-        case 608:
-        case 609:
-            //printf("D%d\n", c - 600);
-            req.d[c - 600] = 1;
+        case 501:
+            //printf("U%d\n", c - 500);
+            req.sessionDown[optarg] = 1;
+            break;
+        case 502:
+            //printf("U%d\n", c - 500);
+            req.monthUp[optarg] = 1;
+            break;
+        case 503:
+            //printf("U%d\n", c - 500);
+            req.monthDown[optarg] = 1;
             break;
 
         case 700: //UserData
-        case 701:
-        case 702:
-        case 703:
-        case 704:
-        case 705:
-        case 706:
-        case 707:
-        case 708:
-        case 709:
             //printf("UD%d\n", c - 700);
-            req.ud[c - 700] = " ";
+            req.ud[optarg] = " ";
             break;
 
         case 800:
@@ -879,9 +809,9 @@ if (missedOptionArg || !CheckParametersGet(&req))
     }
 
 if (req.authBy)
-    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
+    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
 else
-    return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
+    return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
 }
 //-----------------------------------------------------------------------------
 int mainSet(int argc, char **argv)
@@ -1025,46 +955,26 @@ while (1)
             break;
 
         case 500: //U
-        case 501:
-        case 502:
-        case 503:
-        case 504:
-        case 505:
-        case 506:
-        case 507:
-        case 508:
-        case 509:
             //printf("U%d\n", c - 500);
-            req.u[c - 500] = ParseTraff(optarg);
+            req.sesionUpload[optarg] = ParseTraff(argv[optind++]);
             break;
-
-        case 600: //D
-        case 601:
-        case 602:
-        case 603:
-        case 604:
-        case 605:
-        case 606:
-        case 607:
-        case 608:
-        case 609:
-            //printf("D%d\n", c - 600);
-            req.d[c - 600] = ParseTraff(optarg);
+        case 501:
+            //printf("U%d\n", c - 500);
+            req.sessionDownload[optarg] = ParseTraff(argv[optind++]);
+            break;
+        case 502:
+            //printf("U%d\n", c - 500);
+            req.monthUpload[optarg] = ParseTraff(argv[optind++]);
+            break;
+        case 503:
+            //printf("U%d\n", c - 500);
+            req.monthDownload[optarg] = ParseTraff(argv[optind++]);
             break;
 
         case 700: //UserData
-        case 701:
-        case 702:
-        case 703:
-        case 704:
-        case 705:
-        case 706:
-        case 707:
-        case 708:
-        case 709:
-            ParseAnyString(optarg, &str);
+            ParseAnyString(argv[optind++], &str);
             //printf("UD%d\n", c - 700);
-            req.ud[c - 700] = str;
+            req.userData[optarg] = str;
             break;
 
         case '?':

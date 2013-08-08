@@ -47,10 +47,10 @@ const int usageInfo = 1;
 const int TO_KOI8 = 0;
 const int FROM_KOI8 = 1;
 //-----------------------------------------------------------------------------
-struct GetUserCbData
+struct GetUserData
 {
-    void * data;
-    bool * result;
+    REQUEST & request;
+    bool result;
 };
 //---------------------------------------------------------------------------
 struct HelpParams
@@ -314,32 +314,29 @@ struct StringReqParams
     string * value;
 };
 //-----------------------------------------------------------------------------
-void RecvUserData(USERDATA * ud, void * d)
+void GetUserCallback(const PARSER_GET_USER::INFO & info, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
-
-bool * result = gucbd->result;
+GetUserData * data = static_cast<GetUserData *>(d);
 
 REQUEST * req = (REQUEST *)gucbd->data;
 
-if (ud->login == "")
+if (info.login == "")
     {
-    *result = false;
+    data->result = false;
     return;
     }
 
-if (!req->cash.res_empty())
-    cout << "cash=" << ud->cash << endl;
+if (!data->request.cash.res_empty())
+    cout << "cash=" << info.cash << endl;
 
-if (!req->credit.res_empty())
-    cout << "credit=" << ud->credit << endl;
+if (!data->requst.credit.res_empty())
+    cout << "credit=" << info.credit << endl;
 
-if (!req->creditExpire.res_empty())
+if (!data->requst.creditExpire.res_empty())
     {
     char buf[32];
     struct tm brokenTime;
-    time_t tt = ud->creditExpire;
+    time_t tt = info.creditExpire;
 
     brokenTime.tm_wday = 0;
     brokenTime.tm_yday = 0;
@@ -355,50 +352,58 @@ if (!req->creditExpire.res_empty())
     cout << "creditExpire=" << buf << endl;
     }
 
-if (!req->down.res_empty())
-    cout << "down=" << ud->down << endl;
+if (!data->requst.down.res_empty())
+    cout << "down=" << info.down << endl;
 
-if (!req->passive.res_empty())
-    cout << "passive=" << ud->passive << endl;
+if (!data->requst.passive.res_empty())
+    cout << "passive=" << info.passive << endl;
 
-if (!req->disableDetailStat.res_empty())
-    cout << "disableDetailStat=" << ud->disableDetailStat << endl;
+if (!data->requst.disableDetailStat.res_empty())
+    cout << "disableDetailStat=" << info.disableDetailStat << endl;
 
-if (!req->alwaysOnline.res_empty())
-    cout << "alwaysOnline=" << ud->alwaysOnline << endl;
+if (!data->requst.alwaysOnline.res_empty())
+    cout << "alwaysOnline=" << info.alwaysOnline << endl;
 
-if (!req->prepaidTraff.res_empty())
-    cout << "prepaidTraff=" << ud->prepaidTraff << endl;
+if (!data->requst.prepaidTraff.res_empty())
+    cout << "prepaidTraff=" << info.prepaidTraff << endl;
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->u[i].res_empty())
-        cout << "u" << i << "=" << ud->stat.mu[i] << endl;
-    if (!req->d[i].res_empty())
-        cout << "d" << i << "=" << ud->stat.md[i] << endl;
+    if (!data->requst.up[i].res_empty())
+        cout << "session upload for dir" << i << "=" << info.stat.su[i] << endl;
+    if (!data->requst.down[i].res_empty())
+        cout << "session download for dir" << i << "=" << info.stat.sd[i] << endl;
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (!data->requst.monthUp[i].res_empty())
+        cout << "month upload for dir" << i << "=" << info.stat.mu[i] << endl;
+    if (!data->requst.monthDown[i].res_empty())
+        cout << "month download for dir" << i << "=" << info.stat.md[i] << endl;
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->ud[i].res_empty())
+    if (!data->requst.ud[i].res_empty())
         {
         string str;
-        ConvertFromKOI8(ud->userData[i], &str);
+        ConvertFromKOI8(info.userData[i], &str);
         cout << "userdata" << i << "=" << str << endl;
         }
     }
 
 StringReqParams strReqParams[] =
 {
-    {"note",     req->note,        &ud->note},
-    {"name",     req->name,        &ud->name},
-    {"address",  req->address,     &ud->address},
-    {"email",    req->email,       &ud->email},
-    {"phone",    req->phone,       &ud->phone},
-    {"group",    req->group,       &ud->group},
-    {"tariff",   req->tariff,      &ud->tariff},
-    {"password", req->usrPasswd,   &ud->password},
-    {"ip",       req->ips,         &ud->ips} // IP-address of user
+    {"note",     data->requst.note,        &info.note},
+    {"name",     data->requst.name,        &info.name},
+    {"address",  data->requst.address,     &info.address},
+    {"email",    data->requst.email,       &info.email},
+    {"phone",    data->requst.phone,       &info.phone},
+    {"group",    data->requst.group,       &info.group},
+    {"tariff",   data->requst.tariff,      &info.tariff},
+    {"password", data->requst.usrPasswd,   &info.password},
+    {"ip",       data->requst.ips,         &info.ips} // IP-address of user
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
@@ -409,7 +414,7 @@ for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
         cout << strReqParams[i].name << "=" << str << endl;
         }
     }
-*result = true;
+data->result = true;
 }
 //-----------------------------------------------------------------------------
 void RecvAuthByData(const PARSER_AUTH_BY::INFO & list, void *)
@@ -432,9 +437,9 @@ SERVCONF sc;
 bool result = false;
 
 
-sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
-sc.SetPort(port);           // админский порт серверапорт
-sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
+sc.SetServer(server.c_str());
+sc.SetPort(port);
+sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
 // TODO Good variable name :)
@@ -473,24 +478,24 @@ int ProcessGetUser(const std::string &server,
                    const std::string &admLogin,
                    const std::string &admPasswd,
                    const std::string &login,
-                   void * data)
+                   REQUEST & request)
 {
 SERVCONF sc;
 
 bool result = false;
 
-sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
-sc.SetPort(port);           // админский порт серверапорт
-sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
+sc.SetServer(server.c_str());
+sc.SetPort(port);
+sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
 // TODO Good variable name :)
 GetUserCbData gucbd;
 
-gucbd.data = data;
+gucbd.data = &request;
 gucbd.result = &result;
 
-sc.SetGetUserDataRecvCb(RecvUserData, &gucbd);
+sc.SetGetUserCallback(GetUserCallback, &gucbd);
 sc.GetUser(login.c_str());
 
 if (result)
@@ -512,7 +517,7 @@ int ProcessAuthBy(const std::string &server,
                   const std::string &admLogin,
                   const std::string &admPasswd,
                   const std::string &login,
-                  void * data)
+                  REQUEST & request)
 {
 SERVCONF sc;
 

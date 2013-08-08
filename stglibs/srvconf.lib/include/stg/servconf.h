@@ -98,7 +98,7 @@ public:
     void SetAdmLogin(const char * login);
     void SetAdmPassword(const char * password);
 
-    void SetGetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
+    void SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data);
     void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);
     void SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data);
     void SetChgUserCb(RecvChgUserCb_t, void * data);
@@ -147,9 +147,9 @@ private:
     PARSER_CHECK_USER::CALLBACK checkUserCallback;
     RecvSendMessageCb_t RecvSendMessageCb;
 
+    void * getUsersData;
     void * getUserData;
     void * authByData;
-    void * getUsersData;
     void * serverInfoData;
     void * chgUserDataCb;
     void * checkUserData;

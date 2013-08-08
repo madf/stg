@@ -35,11 +35,12 @@
 class BASE_PROPERTY_PARSER
 {
     public:
-        virtual bool Parse(const char ** attr) = 0;
+        virtual ~BASE_PROPERTY_PARSER() {}
+        virtual void Parse(const char ** attr) = 0;
 };
 
 template <typename T>
-class PROPERTY_PARSER
+class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
 {
     public:
         typedef T (* FUNC)(const char **);

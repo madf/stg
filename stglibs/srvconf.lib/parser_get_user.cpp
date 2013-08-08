@@ -23,6 +23,7 @@
 
 #include "stg/common.h"
 
+#include <utility>
 #include <cstddef>
 
 #include <strings.h>
@@ -58,24 +59,24 @@ double getValue<double>(const char ** attr)
 {
 double value = 0;
 if (checkValue(attr))
-    if (strtodouble2(attr[1], value) == EINVAL)
+    if (strtodouble2(attr[1], value))
         return 0;
 return value;
 }
 
 template <>
-STAT getValue<STAT>(const char ** attr)
+PARSER_GET_USER::STAT getValue<PARSER_GET_USER::STAT>(const char ** attr)
 {
-STAT value;
+PARSER_GET_USER::STAT value;
 if (!attr)
     return value;
 std::map<std::string, long long &> props;
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
-    props.insert("su" + x2str(i), value.su[i]);
-    props.insert("sd" + x2str(i), value.sd[i]);
-    props.insert("mu" + x2str(i), value.mu[i]);
-    props.insert("md" + x2str(i), value.md[i]);
+    props.insert(std::pair<std::string, long long &>("su" + x2str(i), value.su[i]));
+    props.insert(std::pair<std::string, long long &>("sd" + x2str(i), value.sd[i]));
+    props.insert(std::pair<std::string, long long &>("mu" + x2str(i), value.mu[i]));
+    props.insert(std::pair<std::string, long long &>("md" + x2str(i), value.md[i]));
     }
 size_t pos = 0;
 while (attr[pos])
@@ -90,24 +91,28 @@ return value;
 
 std::string getEncodedValue(const char ** attr)
 {
+std::string value;
 if (checkValue(attr))
-    return Decode21str(attr[1]);
-return "";
+    Decode21str(value, attr[1]);
+return value;
 }
+
+template <typename T>
+void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, bool encoded = false);
 
 template <typename T>
 void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, bool /*encoded*/)
 {
-    parsers.insert(ToLower(name), new PROPERTY_PARSER(value, getValue<T>));
+    parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, getValue<T>)));
 }
 
 template <>
 void addParser<std::string>(PROPERTY_PARSERS & parsers, const std::string & name, std::string & value, bool encoded)
 {
     if (encoded)
-        parsers.insert(ToLower(name), new PROPERTY_PARSER(value, getEncodedValue));
+        parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<std::string>(value, getEncodedValue)));
     else
-        parsers.insert(ToLower(name), new PROPERTY_PARSER(value, getValue<T>));
+        parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<std::string>(value, getValue<std::string>)));
 }
 
 void tryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
@@ -182,7 +187,7 @@ void PARSER_GET_USER::ParseUser(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "user") == 0)
     if (strcasecmp(attr[1], "error") == 0)
-        user.login = "";
+        info.login = "";
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::ParseUserParams(const char * el, const char ** attr)

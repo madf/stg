@@ -54,12 +54,14 @@ REQUEST()
 {
     for (int i = 0; i < DIR_NUM; i++)
         {
-        u[i].reset();
-        d[i].reset();
+        sessionUp[i].reset();
+        sessionDown[i].reset();
+        monthUp[i].reset();
+        monthDown[i].reset();
         }
 
     for (int i = 0; i < USERDATA_NUM; i++)
-        ud[i].reset();
+        userData[i].reset();
 }
 
 RESETABLE<string>   server;
@@ -88,10 +90,13 @@ RESETABLE<bool>     disableDetailStat;
 RESETABLE<bool>     alwaysOnline;
 RESETABLE<double>   prepaidTraff;
 
-RESETABLE<int64_t>  u[DIR_NUM];
-RESETABLE<int64_t>  d[DIR_NUM];
+RESETABLE<int64_t>  sessionUp[DIR_NUM];
+RESETABLE<int64_t>  sessionDown[DIR_NUM];
 
-RESETABLE<string>   ud[USERDATA_NUM];
+RESETABLE<int64_t>  monthUp[DIR_NUM];
+RESETABLE<int64_t>  monthDown[DIR_NUM];
+
+RESETABLE<string>   userData[USERDATA_NUM];
 
 RESETABLE<string>   note;
 RESETABLE<string>   name;
