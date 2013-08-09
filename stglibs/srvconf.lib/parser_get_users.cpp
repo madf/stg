@@ -26,7 +26,7 @@
 #include <strings.h>
 
 PARSER_GET_USERS::PARSER_GET_USERS()
-    : callabck(NULL),
+    : callback(NULL),
       data(NULL),
       depth(0)
 {
@@ -53,7 +53,7 @@ if (depth > 0)
 
 if (depth == 0)
     if (callback)
-        callback(&info, data);
+        callback(info, data);
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USERS::ParseUsers(const char * el, const char ** /*attr*/)
@@ -70,7 +70,7 @@ info.push_back(userInfo);
 void PARSER_GET_USERS::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
-data = data;
+data = d;
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USERS::UserCallback(const PARSER_GET_USER::INFO & info, void * data)

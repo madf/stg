@@ -49,6 +49,7 @@ const int FROM_KOI8 = 1;
 //-----------------------------------------------------------------------------
 struct GetUserData
 {
+    GetUserData(REQUEST & req, bool res) : request(req), result(res) {}
     REQUEST & request;
     bool result;
 };
@@ -291,18 +292,9 @@ ConvertKOI8(src, dst, TO_KOI8);
 //-----------------------------------------------------------------------------
 int RecvSetUserAnswer(const char * ans, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
+GetUserData * data = static_cast<GetUserData *>(d);
 
-bool * result = gucbd->result;
-
-//REQUEST * req = (REQUEST *)gucbd->data;
-
-//printf("ans=%s\n", ans);
-if (strcasecmp("Ok", ans) == 0)
-    *result = true;
-else
-    *result = false;
+data->result = (strcasecmp("Ok", ans) == 0);
 
 return 0;
 }
@@ -311,14 +303,12 @@ struct StringReqParams
 {
     string name;
     RESETABLE<string> reqParam;
-    string * value;
+    const string * value;
 };
 //-----------------------------------------------------------------------------
 void GetUserCallback(const PARSER_GET_USER::INFO & info, void * d)
 {
 GetUserData * data = static_cast<GetUserData *>(d);
-
-REQUEST * req = (REQUEST *)gucbd->data;
 
 if (info.login == "")
     {
@@ -329,10 +319,10 @@ if (info.login == "")
 if (!data->request.cash.res_empty())
     cout << "cash=" << info.cash << endl;
 
-if (!data->requst.credit.res_empty())
+if (!data->request.credit.res_empty())
     cout << "credit=" << info.credit << endl;
 
-if (!data->requst.creditExpire.res_empty())
+if (!data->request.creditExpire.res_empty())
     {
     char buf[32];
     struct tm brokenTime;
@@ -352,40 +342,40 @@ if (!data->requst.creditExpire.res_empty())
     cout << "creditExpire=" << buf << endl;
     }
 
-if (!data->requst.down.res_empty())
+if (!data->request.down.res_empty())
     cout << "down=" << info.down << endl;
 
-if (!data->requst.passive.res_empty())
+if (!data->request.passive.res_empty())
     cout << "passive=" << info.passive << endl;
 
-if (!data->requst.disableDetailStat.res_empty())
+if (!data->request.disableDetailStat.res_empty())
     cout << "disableDetailStat=" << info.disableDetailStat << endl;
 
-if (!data->requst.alwaysOnline.res_empty())
+if (!data->request.alwaysOnline.res_empty())
     cout << "alwaysOnline=" << info.alwaysOnline << endl;
 
-if (!data->requst.prepaidTraff.res_empty())
+if (!data->request.prepaidTraff.res_empty())
     cout << "prepaidTraff=" << info.prepaidTraff << endl;
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->requst.sessionUpload[i].res_empty())
+    if (!data->request.sessionUpload[i].res_empty())
         cout << "session upload for dir" << i << "=" << info.stat.su[i] << endl;
-    if (!data->requst.sessionDownload[i].res_empty())
+    if (!data->request.sessionDownload[i].res_empty())
         cout << "session download for dir" << i << "=" << info.stat.sd[i] << endl;
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->requst.monthUpload[i].res_empty())
+    if (!data->request.monthUpload[i].res_empty())
         cout << "month upload for dir" << i << "=" << info.stat.mu[i] << endl;
-    if (!data->requst.monthDownload[i].res_empty())
+    if (!data->request.monthDownload[i].res_empty())
         cout << "month download for dir" << i << "=" << info.stat.md[i] << endl;
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!data->requst.ud[i].res_empty())
+    if (!data->request.userData[i].res_empty())
         {
         string str;
         ConvertFromKOI8(info.userData[i], &str);
@@ -395,15 +385,15 @@ for (int i = 0; i < USERDATA_NUM; i++)
 
 StringReqParams strReqParams[] =
 {
-    {"note",     data->requst.note,        &info.note},
-    {"name",     data->requst.name,        &info.name},
-    {"address",  data->requst.address,     &info.address},
-    {"email",    data->requst.email,       &info.email},
-    {"phone",    data->requst.phone,       &info.phone},
-    {"group",    data->requst.group,       &info.group},
-    {"tariff",   data->requst.tariff,      &info.tariff},
-    {"password", data->requst.usrPasswd,   &info.password},
-    {"ip",       data->requst.ips,         &info.ips} // IP-address of user
+    {"note",     data->request.note,        &info.note},
+    {"name",     data->request.name,        &info.name},
+    {"address",  data->request.address,     &info.address},
+    {"email",    data->request.email,       &info.email},
+    {"phone",    data->request.phone,       &info.phone},
+    {"group",    data->request.group,       &info.group},
+    {"tariff",   data->request.tariff,      &info.tariff},
+    {"password", data->request.usrPasswd,   &info.password},
+    {"ip",       data->request.ips,         &info.ips} // IP-address of user
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
@@ -436,26 +426,22 @@ SERVCONF sc;
 
 bool result = false;
 
-
 sc.SetServer(server.c_str());
 sc.SetPort(port);
 sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
-// TODO Good variable name :)
-GetUserCbData gucbd;
-
-gucbd.data = data;
-gucbd.result = &result;
+REQUEST request;
+GetUserData cbdata(request, false);
 
 if (isMessage)
     {
-    sc.SetSendMessageCb(RecvSetUserAnswer, &gucbd);
+    sc.SetSendMessageCb(RecvSetUserAnswer, &cbdata);
     sc.MsgUser(str.c_str());
     }
 else
     {
-    sc.SetChgUserCb(RecvSetUserAnswer, &gucbd);
+    sc.SetChgUserCb(RecvSetUserAnswer, &cbdata);
     sc.ChgUser(str.c_str());
     }
 
@@ -482,23 +468,18 @@ int ProcessGetUser(const std::string &server,
 {
 SERVCONF sc;
 
-bool result = false;
-
 sc.SetServer(server.c_str());
 sc.SetPort(port);
 sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
 // TODO Good variable name :)
-GetUserCbData gucbd;
+GetUserData data(request, false);
 
-gucbd.data = &request;
-gucbd.result = &result;
-
-sc.SetGetUserCallback(GetUserCallback, &gucbd);
+sc.SetGetUserCallback(GetUserCallback, &data);
 sc.GetUser(login.c_str());
 
-if (result)
+if (data.result)
     {
     printf("Ok\n");
     return 0;

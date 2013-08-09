@@ -43,7 +43,35 @@
 #include "common_sg.h"
 #include "sg_error_codes.h"
 
-using namespace std;
+namespace
+{
+
+template <typename T>
+struct ARRAY_TYPE;
+
+template <typename T>
+struct ARRAY_TYPE<T[]>
+{
+typedef T type;
+};
+
+template <typename T, size_t N>
+struct ARRAY_TYPE<T[N]>
+{
+typedef T type;
+};
+
+template <typename T>
+bool SetArrayItem(T & array, const char * index, const typename ARRAY_TYPE<T>::type & value)
+{
+size_t pos = 0;
+if (str2x(index, pos))
+    return false;
+array[pos] = value;
+return true;
+}
+
+} // namespace anonymous
 
 time_t stgTime;
 
@@ -455,7 +483,7 @@ int uPresent = false;
 int dPresent = false;
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->u[i].res_empty())
+    if (!req->monthUpload[i].res_empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -465,12 +493,12 @@ for (int i = 0; i < DIR_NUM; i++)
             }
 
         stringstream ss;
-        ss << req->u[i].const_data();
+        ss << req->monthUpload[i].const_data();
         //sprintf(str, "MU%d=\"%lld\" ", i, req->u[i].const_data());
         sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
-    if (!req->d[i].res_empty())
+    if (!req->monthDownload[i].res_empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -480,7 +508,36 @@ for (int i = 0; i < DIR_NUM; i++)
             }
 
         stringstream ss;
-        ss << req->d[i].const_data();
+        ss << req->monthDownload[i].const_data();
+        sprintf(str, "MD%d=\"%s\" ", i, ss.str().c_str());
+        strcat(r, str);
+        }
+    if (!req->sessionUpload[i].res_empty())
+        {
+        if (!uPresent && !dPresent)
+            {
+            sprintf(str, "<traff ");
+            strcat(r, str);
+            uPresent = true;
+            }
+
+        stringstream ss;
+        ss << req->sessionUpload[i].const_data();
+        //sprintf(str, "MU%d=\"%lld\" ", i, req->u[i].const_data());
+        sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
+        strcat(r, str);
+        }
+    if (!req->sessionDownload[i].res_empty())
+        {
+        if (!uPresent && !dPresent)
+            {
+            sprintf(str, "<traff ");
+            strcat(r, str);
+            dPresent = true;
+            }
+
+        stringstream ss;
+        ss << req->sessionDownload[i].const_data();
         sprintf(str, "MD%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
@@ -562,10 +619,10 @@ if (!req->group.res_empty())
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->ud[i].res_empty())
+    if (!req->userData[i].res_empty())
         {
         string ud;
-        Encode12str(ud, req->ud[i]);
+        Encode12str(ud, req->userData[i]);
         sprintf(str, "<userdata%d value=\"%s\"/>", i, ud.c_str());
         strcat(r, str);
         }
@@ -576,16 +633,18 @@ strcat(r, "</SetUser>\n");
 //-----------------------------------------------------------------------------
 int CheckParameters(REQUEST * req)
 {
-int u = false;
-int d = false;
-int ud = false;
-int a = !req->admLogin.res_empty()
+bool su = false;
+bool sd = false;
+bool mu = false;
+bool md = false;
+bool ud = false;
+bool a = !req->admLogin.res_empty()
     && !req->admPasswd.res_empty()
     && !req->server.res_empty()
     && !req->port.res_empty()
     && !req->login.res_empty();
 
-int b = !req->cash.res_empty()
+bool b = !req->cash.res_empty()
     || !req->setCash.res_empty()
     || !req->credit.res_empty()
     || !req->prepaidTraff.res_empty()
@@ -607,25 +666,43 @@ int b = !req->cash.res_empty()
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->u[i].res_empty())
+    if (req->sessionUpload[i].res_empty())
         {
-        u = true;
+        su = true;
         break;
         }
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->d[i].res_empty())
+    if (req->sessionDownload[i].res_empty())
         {
-        d = true;
+        sd = true;
         break;
         }
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->ud[i].res_empty())
+    if (req->monthUpload[i].res_empty())
+        {
+        mu = true;
+        break;
+        }
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (req->monthDownload[i].res_empty())
+        {
+        md = true;
+        break;
+        }
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (req->userData[i].res_empty())
         {
         ud = true;
         break;
@@ -634,7 +711,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 
 //printf("a=%d, b=%d, u=%d, d=%d ud=%d\n", a, b, u, d, ud);
-return a && (b || u || d || ud);
+return a && (b || su || sd || mu || md || ud);
 }
 //-----------------------------------------------------------------------------
 int CheckParametersGet(REQUEST * req)
@@ -743,9 +820,9 @@ while (1)
             req.group = " ";
             break;
 
-	case 'I': //IP-address of user
-	    req.ips = " ";
-	    break;
+        case 'I': //IP-address of user
+            req.ips = " ";
+            break;
 
         case 'S': //Detail stat status
             req.disableDetailStat = " ";
@@ -756,25 +833,25 @@ while (1)
             break;
 
         case 500: //U
-            //printf("U%d\n", c - 500);
-            req.sessionUpload[optarg] = 1;
+            SetArrayItem(req.sessionUpload, optarg, 1);
+            //req.sessionUpload[optarg] = 1;
             break;
         case 501:
-            //printf("U%d\n", c - 500);
-            req.sessionDownload[optarg] = 1;
+            SetArrayItem(req.sessionDownload, optarg, 1);
+            //req.sessionDownload[optarg] = 1;
             break;
         case 502:
-            //printf("U%d\n", c - 500);
-            req.monthUpload[optarg] = 1;
+            SetArrayItem(req.monthUpload, optarg, 1);
+            //req.monthUpload[optarg] = 1;
             break;
         case 503:
-            //printf("U%d\n", c - 500);
-            req.monthDownload[optarg] = 1;
+            SetArrayItem(req.monthDownload, optarg, 1);
+            //req.monthDownload[optarg] = 1;
             break;
 
         case 700: //UserData
-            //printf("UD%d\n", c - 700);
-            req.ud[optarg] = " ";
+            SetArrayItem(req.userData, optarg, std::string(" "));
+            //req.userData[optarg] = " ";
             break;
 
         case 800:
@@ -783,7 +860,6 @@ while (1)
 
         case '?':
         case ':':
-            //printf ("Unknown option \n");
             missedOptionArg = true;
             break;
 
@@ -955,35 +1031,33 @@ while (1)
             break;
 
         case 500: //U
-            //printf("U%d\n", c - 500);
-            req.sesionUpload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(req.sessionUpload, optarg, ParseTraff(argv[optind++]));
+            //req.sessionUpload[optarg] = ParseTraff(argv[optind++]);
             break;
         case 501:
-            //printf("U%d\n", c - 500);
-            req.sessionDownload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(req.sessionDownload, optarg, ParseTraff(argv[optind++]));
+            //req.sessionDownload[optarg] = ParseTraff(argv[optind++]);
             break;
         case 502:
-            //printf("U%d\n", c - 500);
-            req.monthUpload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(req.monthUpload, optarg, ParseTraff(argv[optind++]));
+            //req.monthUpload[optarg] = ParseTraff(argv[optind++]);
             break;
         case 503:
-            //printf("U%d\n", c - 500);
-            req.monthDownload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(req.monthDownload, optarg, ParseTraff(argv[optind++]));
+            //req.monthDownload[optarg] = ParseTraff(argv[optind++]);
             break;
 
         case 700: //UserData
             ParseAnyString(argv[optind++], &str);
-            //printf("UD%d\n", c - 700);
-            req.userData[optarg] = str;
+            SetArrayItem(req.userData, optarg, str);
+            //req.userData[optarg] = str;
             break;
 
         case '?':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 
         case ':':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 

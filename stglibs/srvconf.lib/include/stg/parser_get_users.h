@@ -25,6 +25,8 @@
 
 #include "stg/parser.h"
 
+#include "parser_get_user.h"
+
 #include <vector>
 
 class PARSER_GET_USERS: public PARSER

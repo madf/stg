@@ -54,10 +54,10 @@ REQUEST()
 {
     for (int i = 0; i < DIR_NUM; i++)
         {
-        sessionUp[i].reset();
-        sessionDown[i].reset();
-        monthUp[i].reset();
-        monthDown[i].reset();
+        sessionUpload[i].reset();
+        sessionDownload[i].reset();
+        monthUpload[i].reset();
+        monthDownload[i].reset();
         }
 
     for (int i = 0; i < USERDATA_NUM; i++)
