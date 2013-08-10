@@ -885,7 +885,7 @@ if (missedOptionArg || !CheckParametersGet(&req))
     }
 
 if (req.authBy)
-    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
+    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login);
 else
     return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
 }
@@ -1087,7 +1087,7 @@ char rstr[rLen];
 memset(rstr, 0, rLen);
 
 CreateRequestSet(&req, rstr);
-return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr, NULL, isMessage);
+return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr, isMessage);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)

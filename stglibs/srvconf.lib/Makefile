@@ -15,6 +15,7 @@ SRCS =  netunit.cpp \
         parser_check_user.cpp \
         parser_get_user.cpp \
         parser_get_users.cpp \
+        parser_chg_user.cpp \
         servconf.cpp
 
 INCS = servconf.h \

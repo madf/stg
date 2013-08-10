@@ -419,12 +419,9 @@ int ProcessSetUser(const std::string &server,
                    const std::string &admLogin,
                    const std::string &admPasswd,
                    const std::string &str,
-                   void * data,
                    bool isMessage)
 {
 SERVCONF sc;
-
-bool result = false;
 
 sc.SetServer(server.c_str());
 sc.SetPort(port);
@@ -434,18 +431,19 @@ sc.SetAdmPassword(admPasswd.c_str());
 REQUEST request;
 GetUserData cbdata(request, false);
 
+int res = 0;
 if (isMessage)
     {
     sc.SetSendMessageCb(RecvSetUserAnswer, &cbdata);
-    sc.MsgUser(str.c_str());
+    res = sc.MsgUser(str.c_str());
     }
 else
     {
-    sc.SetChgUserCb(RecvSetUserAnswer, &cbdata);
-    sc.ChgUser(str.c_str());
+    sc.SetChgUserCallback(RecvSetUserAnswer, &cbdata);
+    res = sc.ChgUser(str.c_str());
     }
 
-if (result)
+if (res && cbdata.result)
     {
     printf("Ok\n");
     return 0;
@@ -477,9 +475,9 @@ sc.SetAdmPassword(admPasswd.c_str());
 GetUserData data(request, false);
 
 sc.SetGetUserCallback(GetUserCallback, &data);
-sc.GetUser(login.c_str());
+bool res = (sc.GetUser(login.c_str()) == st_ok);
 
-if (data.result)
+if (res && data.result)
     {
     printf("Ok\n");
     return 0;
@@ -497,8 +495,7 @@ int ProcessAuthBy(const std::string &server,
                   int port,
                   const std::string &admLogin,
                   const std::string &admPasswd,
-                  const std::string &login,
-                  REQUEST & request)
+                  const std::string &login)
 {
 SERVCONF sc;
 
@@ -508,9 +505,9 @@ sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
 sc.SetAuthByCallback(RecvAuthByData, NULL);
-sc.AuthBy(login.c_str());
+bool res = (sc.AuthBy(login.c_str()) == st_ok);
 
-if (sc.GetError())
+if (!res)
     {
     printf("Error\n");
     return -1;

@@ -34,6 +34,7 @@
 #include "stg/parser_check_user.h"
 #include "stg/parser_get_user.h"
 #include "stg/parser_get_users.h"
+#include "stg/parser_chg_user.h"
 
 #include "stg/os_int.h"
 #include "stg/const.h"
@@ -44,14 +45,13 @@
 
 #include <expat.h>
 
-void Start(void *data, const char *el, const char **attr);
-void End(void *data, const char *el);
+void Start(void * data, const char * el, const char ** attr);
+void End(void * data, const char * el);
 
 #define MAX_ERR_STR_LEN (64)
 #define IP_STRING_LEN   (255)
 //-----------------------------------------------------------------------------
-typedef int(*RecvChgUserCb_t)(const char * asnwer, void * data);
-typedef int(*RecvSendMessageCb_t)(const char * answer, void * data);
+typedef int (* RecvSendMessageCb_t)(const char * answer, void * data);
 //-----------------------------------------------------------------------------
 struct ADMINDATA
 {
@@ -62,15 +62,14 @@ class PARSER_SEND_MESSAGE: public PARSER
 {
 public:
     PARSER_SEND_MESSAGE();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseAnswer(const char *el, const char **attr);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
+    void ParseAnswer(const char * el, const char ** attr);
     void SetSendMessageRecvCb(RecvSendMessageCb_t, void * data);
 private:
     RecvSendMessageCb_t RecvSendMessageCb;
     void * sendMessageCbData;
     int depth;
-    bool error;
 };
 //-----------------------------------------------------------------------------
 class SERVCONF
@@ -86,7 +85,7 @@ public:
     void SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data);
     void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);
     void SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data);
-    void SetChgUserCb(RecvChgUserCb_t, void * data);
+    void SetChgUserCallback(PARSER_CHG_USER::CALLBACK f, void * data);
     void SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data);
     void SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data);
     void SetSendMessageCb(RecvSendMessageCb_t, void * data);
@@ -102,9 +101,8 @@ public:
     int CheckUser(const char * login, const char * password);
 
     const std::string & GetStrError() const;
-    int GetError();
-    int Start(const char *el, const char **attr);
-    void End(const char *el);
+    int Start(const char * el, const char ** attr);
+    void End(const char * el);
 
 private:
     PARSER * currParser;
@@ -118,27 +116,15 @@ private:
     PARSER_SEND_MESSAGE parserSendMessage;
 
     NETTRANSACT nt;
-    int parseDepth;
 
     std::string errorMsg;
-    int error;
     XML_Parser parser;
 
-    PARSER_GET_USERS::CALLBACK getUsersCallback;
-    PARSER_GET_USER::CALLBACK getUserCallback;
-    PARSER_AUTH_BY::CALLBACK authByCallback;
-    PARSER_SERVER_INFO::CALLBACK serverInfoCallback;
-    RecvChgUserCb_t RecvChgUserCb;
-    PARSER_CHECK_USER::CALLBACK checkUserCallback;
     RecvSendMessageCb_t RecvSendMessageCb;
 
-    void * getUsersData;
-    void * getUserData;
-    void * authByData;
-    void * serverInfoData;
-    void * chgUserDataCb;
-    void * checkUserData;
     void * sendMessageDataCb;
+
+    int Exec(const char * request);
 
     friend int AnsRecv(void * data, std::list<std::string> * list);
 };

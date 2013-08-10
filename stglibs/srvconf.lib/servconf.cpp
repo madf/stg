@@ -24,11 +24,12 @@
  $Author: faust $
  */
 
-#include <cstdio>
-#include <cstring>
+#include "stg/servconf.h"
 
 #include "stg/common.h"
-#include "stg/servconf.h"
+
+#include <cstdio>
+#include <cstring>
 
 using namespace std;
 
@@ -85,24 +86,11 @@ sc->End(el);
 //-----------------------------------------------------------------------------
 SERVCONF::SERVCONF()
     : currParser(NULL),
-      parseDepth(0),
-      error(0),
-      getUsersCallback(NULL),
-      getUserCallback(NULL),
-      authByCallback(NULL),
-      serverInfoCallback(NULL),
-      RecvChgUserCb(NULL),
-      checkUserCallback(NULL),
       RecvSendMessageCb(NULL),
-      getUsersData(NULL),
-      getUserData(NULL),
-      authByData(NULL),
-      serverInfoData(NULL),
-      chgUserDataCb(NULL),
-      checkUserData(NULL),
       sendMessageDataCb(NULL)
 {
 parser = XML_ParserCreate(NULL);
+nt.SetRxCallback(this, AnsRecv);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetServer(const char * server)
@@ -129,31 +117,10 @@ int SERVCONF::GetUser(const char * l)
 {
 char request[255];
 snprintf(request, 255, "<GetUser login=\"%s\"/>", l);
-int ret;
 
 currParser = &parserGetUser;
-((PARSER_GET_USER*)currParser)->SetCallback(getUserCallback, getUserData);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::AuthBy(const char * l)
@@ -162,59 +129,17 @@ char request[255];
 snprintf(request, 255, "<GetUserAuthBy login=\"%s\"/>", l);
 
 currParser = &parserAuthBy;
-((PARSER_AUTH_BY*)currParser)->SetCallback(authByCallback, authByData);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-int ret;
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::GetUsers()
 {
 char request[] = "<GetUsers/>";
-int ret;
 
 currParser = &parserGetUsers;
-((PARSER_GET_USERS*)currParser)->SetCallback(getUsersCallback, getUsersData);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::SendMessage(const char * login, const char * message, int prio)
@@ -223,152 +148,47 @@ char request[1000];
 char msg[500];
 Encode12(msg, message, strlen(message));
 snprintf(request, 1000, "<Message login=\"%s\" priority=\"%d\" text=\"%s\"/>", login, prio, msg);
-int ret;
 
 currParser = &parserSendMessage;
 parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::ServerInfo()
 {
 char request[] = "<GetServerInfo/>";
-int ret;
 
 currParser = &parserServerInfo;
-((PARSER_SERVER_INFO*)currParser)->SetCallback(serverInfoCallback, serverInfoData);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::ChgUser(const char * request)
 {
-int ret;
-
 currParser = &parserChgUser;
-((PARSER_CHG_USER*)currParser)->SetChgUserRecvCb(RecvChgUserCb, chgUserDataCb);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 //  TODO: remove this shit!
 //-----------------------------------------------------------------------------
 int SERVCONF::MsgUser(const char * request)
 {
-int ret;
-
 currParser = &parserSendMessage;
 parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::CheckUser(const char * login, const char * password)
 {
 char request[255];
 snprintf(request, 255, "<CheckUser login=\"%s\" password=\"%s\"/>", login, password);
-int ret;
 
 currParser = &parserCheckUser;
-((PARSER_CHECK_USER*)currParser)->SetCallback(checkUserCallback, checkUserData);
 
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
+return Exec(request);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::Start(const char *el, const char **attr)
@@ -384,38 +204,32 @@ currParser->ParseEnd(el);
 //-----------------------------------------------------------------------------
 void SERVCONF::SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data)
 {
-getUsersCallback = f;
-getUsersData = data;
+parserGetUsers.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data)
 {
-getUserCallback = f;
-getUserData = data;
+parserGetUser.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data)
 {
-authByCallback = f;
-authByData = data;
+parserAuthBy.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data)
 {
-serverInfoCallback = f;
-serverInfoData = data;
+parserServerInfo.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetChgUserCb(RecvChgUserCb_t f, void * data)
+void SERVCONF::SetChgUserCallback(PARSER_CHG_USER::CALLBACK f, void * data)
 {
-RecvChgUserCb = f;
-chgUserDataCb = data;
+parserChgUser.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data)
 {
-checkUserCallback = f;
-checkUserData = data;
+parserCheckUser.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::SetSendMessageCb(RecvSendMessageCb_t f, void * data)
@@ -429,10 +243,26 @@ const std::string & SERVCONF::GetStrError() const
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetError()
+int SERVCONF::Exec(const char * request)
 {
-int e = error;
-error = 0;
-return e;
+nt.Reset();
+
+int ret = 0;
+if ((ret = nt.Connect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+if ((ret = nt.Transact(request)) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+if ((ret = nt.Disconnect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+
+return st_ok;
 }
-//-----------------------------------------------------------------------------

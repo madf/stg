@@ -42,61 +42,10 @@ using namespace std;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PARSER_CHG_USER::PARSER_CHG_USER()
-    : RecvChgUserCb(NULL),
-      chgUserCbData(NULL),
-      depth(0),
-      error(false)
-{
-}
-//-----------------------------------------------------------------------------
-int PARSER_CHG_USER::ParseStart(const char *el, const char **attr)
-{
-depth++;
-if (depth == 1)
-    {
-    if (strcasecmp(el, "SetUser") == 0)
-        {
-        ParseAnswer(el, attr);
-        }
-    else if (strcasecmp(el, "DelUser") == 0)
-        {
-        ParseAnswer(el, attr);
-        }
-    else if (strcasecmp(el, "AddUser") == 0)
-        {
-        ParseAnswer(el, attr);
-        }
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
-void PARSER_CHG_USER::ParseEnd(const char *)
-{
-depth--;
-}
-//-----------------------------------------------------------------------------
-void PARSER_CHG_USER::ParseAnswer(const char *, const char **attr)
-{
-if (RecvChgUserCb)
-    {
-    RecvChgUserCb(attr[1], chgUserCbData);
-    }
-}
-//-----------------------------------------------------------------------------
-void PARSER_CHG_USER::SetChgUserRecvCb(RecvChgUserCb_t f, void * data)
-{
-RecvChgUserCb = f;
-chgUserCbData = data;
-}
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 PARSER_SEND_MESSAGE::PARSER_SEND_MESSAGE()
     : RecvSendMessageCb(NULL),
       sendMessageCbData(NULL),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------

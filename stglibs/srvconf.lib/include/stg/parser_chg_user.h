@@ -27,16 +27,18 @@
 class PARSER_CHG_USER: public PARSER
 {
 public:
+    typedef int (* CALLBACK)(const char * asnwer, void * data);
+
     PARSER_CHG_USER();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseAnswer(const char *el, const char **attr);
-    void SetChgUserRecvCb(RecvChgUserCb_t, void * data);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
+    void SetCallback(CALLBACK f, void * data);
 private:
-    RecvChgUserCb_t RecvChgUserCb;
-    void * chgUserCbData;
+    CALLBACK callback;
+    void * data;
     int depth;
-    bool error;
+
+    void ParseAnswer(const char * el, const char ** attr);
 };
 
 #endif

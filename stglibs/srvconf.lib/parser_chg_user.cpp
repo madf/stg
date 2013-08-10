@@ -19,3 +19,48 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
+#include "stg/parser_chg_user.h"
+
+#include <cstddef>
+
+#include <strings.h>
+
+PARSER_CHG_USER::PARSER_CHG_USER()
+    : callback(NULL),
+      data(NULL),
+      depth(0)
+{
+}
+//-----------------------------------------------------------------------------
+int PARSER_CHG_USER::ParseStart(const char *el, const char **attr)
+{
+depth++;
+if (depth == 1)
+    {
+    if (strcasecmp(el, "SetUser") == 0)
+        ParseAnswer(el, attr);
+    else if (strcasecmp(el, "DelUser") == 0)
+        ParseAnswer(el, attr);
+    else if (strcasecmp(el, "AddUser") == 0)
+        ParseAnswer(el, attr);
+    }
+return 0;
+}
+//-----------------------------------------------------------------------------
+void PARSER_CHG_USER::ParseEnd(const char *)
+{
+depth--;
+}
+//-----------------------------------------------------------------------------
+void PARSER_CHG_USER::ParseAnswer(const char * /*el*/, const char ** attr)
+{
+if (attr && attr[0] && attr[1])
+    if (callback)
+        callback(attr[1], data);
+}
+//-----------------------------------------------------------------------------
+void PARSER_CHG_USER::SetCallback(CALLBACK f, void * d)
+{
+callback = f;
+data = d;
+}

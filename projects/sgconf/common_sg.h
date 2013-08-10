@@ -56,15 +56,13 @@ int ProcessAuthBy(const std::string &server,
                   int port,
                   const std::string &admLogin,
                   const std::string &admPasswd,
-                  const std::string &login,
-                  REQUEST & request);
+                  const std::string &login);
 
 int ProcessSetUser(const std::string &server,
                    int port,
                    const std::string &admLogin,
                    const std::string &admPasswd,
                    const std::string &str,
-                   void * data,
                    bool isMessage = false);
 
 #endif

@@ -27,14 +27,14 @@
 #ifndef NetUnitH
 #define NetUnitH
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include "stg/blowfish.h"
 
 #include <list>
 #include <string>
 
-#include "stg/blowfish.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
