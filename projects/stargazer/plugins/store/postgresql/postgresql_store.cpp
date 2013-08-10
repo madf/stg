@@ -96,15 +96,15 @@ std::vector<PARAM_VALUE>::iterator i;
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
     std::string param(ToLower(i->param));
-    if (s == "server")
+    if (param == "server")
         server = *(i->value.begin());
-    else if (s == "database")
+    else if (param == "database")
         database = *(i->value.begin());
-    else if (s == "user")
+    else if (param == "user")
         user = *(i->value.begin());
-    else if (s == "password")
+    else if (param == "password")
         password = *(i->value.begin());
-    else if (s == "retries")
+    else if (param == "retries")
         if (str2x(*(i->value.begin()), retries))
             {
             strError = "Invalid 'retries' value";
