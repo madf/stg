@@ -442,12 +442,15 @@ while (1)
         Decrypt(buffer, bufferS, &ctx);
         buffer[ENC_MSG_LEN] = 0;
 
+        printf("%s", buffer);
+
         answerList.push_back(buffer);
 
         for (int j = 0; j < ENC_MSG_LEN; j++)
             {
             if (buffer[j] == 0)
                 {
+                printf("\n");
                 if (RxCallBack)
                     if (st_ok != RxCallBack(dataRxCallBack, &answerList))
                         return st_xml_parse_error;

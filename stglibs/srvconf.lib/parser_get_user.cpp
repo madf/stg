@@ -97,22 +97,20 @@ if (checkValue(attr))
 return value;
 }
 
-template <typename T>
-void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, bool encoded = false);
-
-template <typename T>
-void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, bool /*encoded*/)
+uint32_t getIPValue(const char ** attr)
 {
-    parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, getValue<T>)));
+if (checkValue(attr))
+    return inet_strington(attr[1]);
+return 0;
 }
 
-template <>
-void addParser<std::string>(PROPERTY_PARSERS & parsers, const std::string & name, std::string & value, bool encoded)
+template <typename T>
+void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = getValue<T>);
+
+template <typename T>
+void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func)
 {
-    if (encoded)
-        parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<std::string>(value, getEncodedValue)));
-    else
-        parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<std::string>(value, getValue<std::string>)));
+    parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func)));
 }
 
 void tryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
@@ -141,19 +139,19 @@ PARSER_GET_USER::PARSER_GET_USER()
     addParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
     addParser(propertyParsers, "connected", info.connected);
     addParser(propertyParsers, "alwaysOnline", info.alwaysOnline);
-    addParser(propertyParsers, "ip", info.ip);
-    addParser(propertyParsers, "ips", info.ips);
+    addParser(propertyParsers, "currIP", info.ip, getIPValue);
+    addParser(propertyParsers, "ip", info.ips);
     addParser(propertyParsers, "tariff", info.tariff);
-    addParser(propertyParsers, "group", info.group, true);
-    addParser(propertyParsers, "note", info.note, true);
-    addParser(propertyParsers, "email", info.email, true);
-    addParser(propertyParsers, "name", info.name, true);
-    addParser(propertyParsers, "address", info.address, true);
-    addParser(propertyParsers, "phone", info.phone, true);
+    addParser(propertyParsers, "group", info.group, getEncodedValue);
+    addParser(propertyParsers, "note", info.note, getEncodedValue);
+    addParser(propertyParsers, "email", info.email, getEncodedValue);
+    addParser(propertyParsers, "name", info.name, getEncodedValue);
+    addParser(propertyParsers, "address", info.address, getEncodedValue);
+    addParser(propertyParsers, "phone", info.phone, getEncodedValue);
     addParser(propertyParsers, "traff", info.stat);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        addParser(propertyParsers, "userData" + x2str(i), info.userData[i], true);
+        addParser(propertyParsers, "userData" + x2str(i), info.userData[i], getEncodedValue);
 }
 //-----------------------------------------------------------------------------
 PARSER_GET_USER::~PARSER_GET_USER()
