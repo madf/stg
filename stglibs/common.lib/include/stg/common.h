@@ -155,7 +155,7 @@ int str2x(const std::string & str, varT & x)
         x += str[i] - '0';
     }
 
-    x*= minus;
+    x *= minus;
 
     return 0;
 }

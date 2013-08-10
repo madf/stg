@@ -824,7 +824,7 @@ std::string ToLower(const std::string & value)
     std::string res;
     for (std::string::size_type pos = 0; pos < value.length(); ++pos)
         res += tolower(value[pos]);
-    return value;
+    return res;
 }
 //---------------------------------------------------------------------------
 std::string ToUpper(const std::string & value)
@@ -832,7 +832,7 @@ std::string ToUpper(const std::string & value)
     std::string res;
     for (std::string::size_type pos = 0; pos < value.length(); ++pos)
         res += toupper(value[pos]);
-    return value;
+    return res;
 }
 //---------------------------------------------------------------------------
 #ifdef WIN32
