@@ -38,16 +38,15 @@
  *
  */
 
-#include <string>
-#include <vector>
-#include <algorithm>
-
-#include <libpq-fe.h>
+#include "postgresql_store.h"
 
 #include "stg/module_settings.h"
 #include "stg/plugin_creator.h"
-#include "postgresql_store_utils.h"
-#include "postgresql_store.h"
+
+#include <libpq-fe.h>
+
+#include <string>
+#include <vector>
 
 namespace
 {
@@ -93,37 +92,25 @@ pthread_mutex_destroy(&mutex);
 int POSTGRESQL_STORE::ParseSettings()
 {
 std::vector<PARAM_VALUE>::iterator i;
-std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
-    s = i->param;
-    std::transform(s.begin(), s.end(), s.begin(), ToLower());
+    std::string param(ToLower(i->param));
     if (s == "server")
-        {
         server = *(i->value.begin());
-        }
-    if (s == "database")
-        {
+    else if (s == "database")
         database = *(i->value.begin());
-        }
-    if (s == "user")
-        {
+    else if (s == "user")
         user = *(i->value.begin());
-        }
-    if (s == "password")
-        {
+    else if (s == "password")
         password = *(i->value.begin());
-        }
-    if (s == "retries")
-        {
+    else if (s == "retries")
         if (str2x(*(i->value.begin()), retries))
             {
             strError = "Invalid 'retries' value";
             printfd(__FILE__, "POSTGRESQL_STORE::ParseSettings(): '%s'\n", strError.c_str());
             return -1;
             }
-        }
     }
 
 clientEncoding = "KOI8";

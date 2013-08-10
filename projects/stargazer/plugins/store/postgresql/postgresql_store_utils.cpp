@@ -26,13 +26,14 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/common.h"
+
 #include <string>
 #include <ctime>
 
 #include <libpq-fe.h>
-
-#include "stg/common.h"
-#include "postgresql_store.h"
 
 extern volatile time_t stgTime;
 
@@ -93,10 +94,10 @@ int error = 0;
 char * buf = new char[(value.length() << 1) + 1];
 
 PQescapeStringConn(connection,
-	           buf,
-		   value.c_str(),
-		   value.length(),
-		   &error);
+                   buf,
+                   value.c_str(),
+                   value.length(),
+                   &error);
 
 if (error)
     {
@@ -114,7 +115,6 @@ return 0;
 
 std::string POSTGRESQL_STORE::Int2TS(time_t ts) const
 {
-char buf[32];
 struct tm brokenTime;
 
 brokenTime.tm_wday = 0;
@@ -123,6 +123,7 @@ brokenTime.tm_isdst = 0;
 
 gmtime_r(&ts, &brokenTime);
 
+char buf[32];
 strftime(buf, 32, "%Y-%m-%d %H:%M:%S", &brokenTime);
 
 return buf;
@@ -160,8 +161,6 @@ if (year)
 else
     {
     time_t curTime = stgTime;
-    /*time(&curTime);*/
-
     localtime_r(&curTime, &brokenTime);
     }
 
@@ -173,4 +172,3 @@ strftime(buf, 32, "%Y-%m-%d", &brokenTime);
 
 date = buf;
 }
-
