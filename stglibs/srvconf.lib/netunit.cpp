@@ -25,15 +25,17 @@
  */
 
 //---------------------------------------------------------------------------
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
-#include <cstdio>
-#include <cstring>
 
 #include "stg/netunit.h"
 #include "stg/common.h"
+
+#include <cstdio>
+#include <cerrno>
+#include <cstring>
+
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 //---------------------------------------------------------------------------
 
@@ -212,6 +214,7 @@ int ret;
 ret = recv(outerSocket, buffer, strlen(OK_HEADER), 0);
 if (ret <= 0)
     {
+    printf("Receive header answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_HEADER_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -261,6 +264,7 @@ int ret;
 ret = recv(outerSocket, buffer, strlen(OK_LOGIN), 0);
 if (ret <= 0)
     {
+    printf("Receive login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -318,6 +322,7 @@ int ret;
 ret = recv(outerSocket, buffer, strlen(OK_LOGINS), 0);
 if (ret <= 0)
     {
+    printf("Receive secret login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -425,6 +430,7 @@ while (1)
     ret = recv(outerSocket, &bufferS[n++], 1, 0);
     if (ret <= 0)
         {
+        printf("Receive data error: '%s'\n", strerror(errno));
         close(outerSocket);
         errorMsg = RECV_DATA_ANSWER_ERROR;
         return st_recv_fail;
@@ -444,9 +450,7 @@ while (1)
                 {
                 if (RxCallBack)
                     if (st_ok != RxCallBack(dataRxCallBack, &answerList))
-                        {
                         return st_xml_parse_error;
-                        }
                 return st_ok;
                 }
             }

@@ -35,31 +35,23 @@ using namespace std;
 //-----------------------------------------------------------------------------
 int AnsRecv(void * data, list<string> * list1)
 {
-//NODE * node;
-SERVCONF * sc;
-char ans[ENC_MSG_LEN + 1];
-int len, done = 0;
-
-sc = (SERVCONF*)data;
+SERVCONF * sc = static_cast<SERVCONF *>(data);
 
 XML_ParserReset(sc->parser, NULL);
 XML_SetElementHandler(sc->parser, Start, End);
 XML_SetUserData(sc->parser, data);
 
+char ans[ENC_MSG_LEN + 1];
+int len, done = 0;
+
 //loop parsing
 list<string>::iterator node;
 node = list1->begin();
-
-if (node == list1->end())
-    {
-    return st_ok;
-    }
 
 while (node != list1->end())
     {
     strncpy(ans, node->c_str(), ENC_MSG_LEN);
     ans[ENC_MSG_LEN] = 0;
-       //printf("---> %s\n", ans);
     len = strlen(ans);
 
     if (XML_Parse(sc->parser, ans, len, done) == XML_STATUS_ERROR)
@@ -67,13 +59,14 @@ while (node != list1->end())
         strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
                   static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
                   XML_ErrorString(XML_GetErrorCode(sc->parser)));
+        printf("%s\n", sc->errorMsg.c_str());
         return st_xml_parse_error;
         }
     ++node;
 
     }
 
-return 0;
+return st_ok;
 }
 //-----------------------------------------------------------------------------
 void Start(void *data, const char *el, const char **attr)

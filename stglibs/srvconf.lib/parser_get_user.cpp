@@ -70,21 +70,21 @@ PARSER_GET_USER::STAT getValue<PARSER_GET_USER::STAT>(const char ** attr)
 PARSER_GET_USER::STAT value;
 if (!attr)
     return value;
-std::map<std::string, long long &> props;
+std::map<std::string, long long *> props;
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
-    props.insert(std::pair<std::string, long long &>("su" + x2str(i), value.su[i]));
-    props.insert(std::pair<std::string, long long &>("sd" + x2str(i), value.sd[i]));
-    props.insert(std::pair<std::string, long long &>("mu" + x2str(i), value.mu[i]));
-    props.insert(std::pair<std::string, long long &>("md" + x2str(i), value.md[i]));
+    props.insert(std::pair<std::string, long long *>("su" + x2str(i), &value.su[i]));
+    props.insert(std::pair<std::string, long long *>("sd" + x2str(i), &value.sd[i]));
+    props.insert(std::pair<std::string, long long *>("mu" + x2str(i), &value.mu[i]));
+    props.insert(std::pair<std::string, long long *>("md" + x2str(i), &value.md[i]));
     }
 size_t pos = 0;
 while (attr[pos])
     {
         std::string name(ToLower(attr[pos++]));
-        std::map<std::string, long long &>::iterator it(props.find(name));
+        std::map<std::string, long long *>::iterator it(props.find(name));
         if (it != props.end())
-            str2x(attr[pos++], it->second);
+            str2x(attr[pos++], *it->second);
     }
 return value;
 }
