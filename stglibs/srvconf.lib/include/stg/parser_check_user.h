@@ -22,7 +22,7 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 
-#include "stg/parser.h"
+#include "parser.h"
 
 class PARSER_CHECK_USER: public PARSER
 {

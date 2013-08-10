@@ -22,7 +22,7 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 
-#include "stg/parser.h"
+#include "parser.h"
 
 #include "stg/os_int.h"
 #include "stg/const.h"

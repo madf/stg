@@ -58,21 +58,6 @@ struct ADMINDATA
     char login[ADM_LOGIN_LEN];
 };
 //-----------------------------------------------------------------------------
-class PARSER_CHG_USER: public PARSER
-{
-public:
-    PARSER_CHG_USER();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
-    void ParseAnswer(const char *el, const char **attr);
-    void SetChgUserRecvCb(RecvChgUserCb_t, void * data);
-private:
-    RecvChgUserCb_t RecvChgUserCb;
-    void * chgUserCbData;
-    int depth;
-    bool error;
-};
-//-----------------------------------------------------------------------------
 class PARSER_SEND_MESSAGE: public PARSER
 {
 public:
