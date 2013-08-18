@@ -28,10 +28,10 @@
 #ifndef COMMON_SG_H
 #define COMMON_SG_H
 
-#include <string>
-
 #include "stg/servconf.h"
 #include "request.h"
+
+#include <string>
 
 void UsageConf();
 void UsageInfo();
@@ -66,4 +66,3 @@ int ProcessSetUser(const std::string &server,
                    bool isMessage = false);
 
 #endif
-

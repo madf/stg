@@ -25,21 +25,23 @@
  */
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <locale.h>
-#include <langinfo.h>
-#include <iostream>
-#include <iconv.h>
-
-#include "stg/common.h"
 #include "sg_error_codes.h"
 #include "common_sg.h"
 #include "version_sg.h"
 
-using namespace std;
+#include "stg/common.h"
+
+#include <iostream>
+#include <vector>
+
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cerrno>
+#include <clocale>
+
+#include <langinfo.h>
+#include <iconv.h>
 
 const int usageConf = 0;
 const int usageInfo = 1;
@@ -56,10 +58,10 @@ struct GetUserData
 //---------------------------------------------------------------------------
 struct HelpParams
 {
-    string setActionName;
-    string getActionName;
-    string valueName;
-    string valueParam;
+    std::string setActionName;
+    std::string getActionName;
+    std::string valueName;
+    std::string valueParam;
 };
 //---------------------------------------------------------------------------
 void Usage(int usageType)
@@ -168,7 +170,7 @@ short int ParseServerPort(const char * p)
 int port;
 if (str2x(p, port) != 0)
     {
-    printf("Incorresct server port %s\n", p);
+    printf("Incorrect server port %s\n", p);
     exit(NETWORK_ERR_CODE);
     }
 return (short)port;
@@ -178,7 +180,7 @@ char * ParseAdminLogin(char * adm)
 {
 if (CheckLogin(adm))
     {
-    printf("Incorresct admin login %s\n", adm);
+    printf("Incorrect admin login %s\n", adm);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 return adm;
@@ -199,13 +201,13 @@ char * ParseUser(char * usr)
 {
 if (CheckLogin(usr))
     {
-    printf("Incorresct user login %s\n", usr);
+    printf("Incorrect user login %s\n", usr);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 return usr;
 }
 //-----------------------------------------------------------------------------
-void ConvertKOI8(const string & src, string * dst, int encType)
+void ConvertKOI8(const std::string & src, std::string * dst, int encType)
 {
 iconv_t cd;
 char * ob = new char[src.size() * 2 + 1];
@@ -280,19 +282,16 @@ delete[] ob;
 delete[] ib;
 }
 //-----------------------------------------------------------------------------
-void ConvertFromKOI8(const string & src, string * dst)
+void ConvertFromKOI8(const std::string & src, std::string * dst)
 {
 ConvertKOI8(src, dst, FROM_KOI8);
-}
-//-----------------------------------------------------------------------------
-void ConvertToKOI8(const string & src, string * dst)
-{
-ConvertKOI8(src, dst, TO_KOI8);
 }
 //-----------------------------------------------------------------------------
 int RecvSetUserAnswer(const char * ans, void * d)
 {
 GetUserData * data = static_cast<GetUserData *>(d);
+
+std::cout << ans << std::endl;
 
 data->result = (strcasecmp("Ok", ans) == 0);
 
@@ -301,9 +300,9 @@ return 0;
 //-----------------------------------------------------------------------------
 struct StringReqParams
 {
-    string name;
-    RESETABLE<string> reqParam;
-    const string * value;
+    std::string name;
+    RESETABLE<std::string> reqParam;
+    const std::string * value;
 };
 //-----------------------------------------------------------------------------
 void GetUserCallback(const PARSER_GET_USER::INFO & info, void * d)
@@ -377,7 +376,7 @@ for (int i = 0; i < USERDATA_NUM; i++)
     {
     if (!data->request.userData[i].res_empty())
         {
-        string str;
+        std::string str;
         ConvertFromKOI8(info.userData[i], &str);
         cout << "user data " << i << " = " << str << endl;
         }
@@ -443,7 +442,7 @@ else
     res = sc.ChgUser(str.c_str());
     }
 
-if (res && cbdata.result)
+if (res == st_ok && cbdata.result)
     {
     printf("Ok\n");
     return 0;
@@ -451,6 +450,8 @@ if (res && cbdata.result)
 else
     {
     printf("Error\n");
+    if (res != st_ok)
+        printf("%s\n", sc.GetStrError().c_str());
     return -1;
     }
 
@@ -471,7 +472,6 @@ sc.SetPort(port);
 sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
-// TODO Good variable name :)
 GetUserData data(request, false);
 
 sc.SetGetUserCallback(GetUserCallback, &data);
