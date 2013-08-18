@@ -18,12 +18,6 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.8 $
- $Date: 2010/08/04 00:40:38 $
- $Author: faust $
- */
-
 #include "stg/servconf.h"
 
 #include "stg/common.h"
@@ -31,10 +25,8 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace std;
-
 //-----------------------------------------------------------------------------
-int AnsRecv(void * data, list<string> * list1)
+int AnsRecv(void * data, std::list<std::string> * list1)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
 
@@ -46,7 +38,7 @@ char ans[ENC_MSG_LEN + 1];
 int len, done = 0;
 
 //loop parsing
-list<string>::iterator node;
+std::list<std::string>::iterator node;
 node = list1->begin();
 
 while (node != list1->end())
@@ -64,7 +56,6 @@ while (node != list1->end())
         return st_xml_parse_error;
         }
     ++node;
-
     }
 
 return st_ok;
@@ -72,22 +63,18 @@ return st_ok;
 //-----------------------------------------------------------------------------
 void Start(void *data, const char *el, const char **attr)
 {
-SERVCONF * sc;
-sc = (SERVCONF*)data;
+SERVCONF * sc = static_cast<SERVCONF *>(data);
 sc->Start(el, attr);
 }
 //-----------------------------------------------------------------------------
-void End(void *data, const char *el)
+void End(void * data, const char * el)
 {
-SERVCONF * sc;
-sc = (SERVCONF*)data;
+SERVCONF * sc = static_cast<SERVCONF *>(data);
 sc->End(el);
 }
 //-----------------------------------------------------------------------------
 SERVCONF::SERVCONF()
-    : currParser(NULL),
-      RecvSendMessageCb(NULL),
-      sendMessageDataCb(NULL)
+    : currParser(NULL)
 {
 parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);

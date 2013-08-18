@@ -434,8 +434,8 @@ GetUserData cbdata(request, false);
 int res = 0;
 if (isMessage)
     {
-    sc.SetSendMessageCb(RecvSetUserAnswer, &cbdata);
-    res = sc.MsgUser(str.c_str());
+    sc.SetSendMessageCallback(RecvSetUserAnswer, &cbdata);
+    res = sc.SendMessage(str.c_str());
     }
 else
     {
