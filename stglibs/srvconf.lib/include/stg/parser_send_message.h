@@ -16,26 +16,29 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.18 $
- $Date: 2010/08/04 00:40:00 $
- $Author: faust $
- */
+#ifndef __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
+#define __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <string>
+#include "parser.h"
 
-#include "stg/common.h"
-#include "stg/const.h"
-#include "stg/servconf.h"
+class PARSER_SEND_MESSAGE: public PARSER
+{
+public:
+    typedef int (* CALLBACK)(const char * answer, void * data);
 
-using namespace std;
+    PARSER_SEND_MESSAGE();
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
+    void SetCallback(CALLBACK f, void * data);
+private:
+    CALLBACK callback;
+    void * data;
+    int depth;
 
+    void ParseAnswer(const char * el, const char ** attr);
+};
+
+#endif

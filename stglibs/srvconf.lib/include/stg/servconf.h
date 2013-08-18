@@ -35,6 +35,7 @@
 #include "stg/parser_get_user.h"
 #include "stg/parser_get_users.h"
 #include "stg/parser_chg_user.h"
+#include "stg/parser_send_message.h"
 
 #include "stg/os_int.h"
 #include "stg/const.h"
@@ -50,26 +51,10 @@ void End(void * data, const char * el);
 
 #define MAX_ERR_STR_LEN (64)
 #define IP_STRING_LEN   (255)
-//-----------------------------------------------------------------------------
-typedef int (* RecvSendMessageCb_t)(const char * answer, void * data);
-//-----------------------------------------------------------------------------
+
 struct ADMINDATA
 {
     char login[ADM_LOGIN_LEN];
-};
-//-----------------------------------------------------------------------------
-class PARSER_SEND_MESSAGE: public PARSER
-{
-public:
-    PARSER_SEND_MESSAGE();
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void ParseAnswer(const char * el, const char ** attr);
-    void SetSendMessageRecvCb(RecvSendMessageCb_t, void * data);
-private:
-    RecvSendMessageCb_t RecvSendMessageCb;
-    void * sendMessageCbData;
-    int depth;
 };
 //-----------------------------------------------------------------------------
 class SERVCONF
@@ -88,15 +73,13 @@ public:
     void SetChgUserCallback(PARSER_CHG_USER::CALLBACK f, void * data);
     void SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data);
     void SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data);
-    void SetSendMessageCb(RecvSendMessageCb_t, void * data);
+    void SetSendMessageCallback(PARSER_SEND_MESSAGE::CALLBACK f, void * data);
 
     int GetUsers();
     int GetUser(const char * login);
     int ChgUser(const char * request);
     int AuthBy(const char * login);
-    // TODO: Remove this shit!
-    int MsgUser(const char * request);
-    int SendMessage(const char * login, const char * message, int prio);
+    int SendMessage(const char * request);
     int ServerInfo();
     int CheckUser(const char * login, const char * password);
 
@@ -119,10 +102,6 @@ private:
 
     std::string errorMsg;
     XML_Parser parser;
-
-    RecvSendMessageCb_t RecvSendMessageCb;
-
-    void * sendMessageDataCb;
 
     int Exec(const char * request);
 

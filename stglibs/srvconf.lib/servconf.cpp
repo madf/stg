@@ -142,19 +142,6 @@ currParser = &parserGetUsers;
 return Exec(request);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::SendMessage(const char * login, const char * message, int prio)
-{
-char request[1000];
-char msg[500];
-Encode12(msg, message, strlen(message));
-snprintf(request, 1000, "<Message login=\"%s\" priority=\"%d\" text=\"%s\"/>", login, prio, msg);
-
-currParser = &parserSendMessage;
-parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
-
-return Exec(request);
-}
-//-----------------------------------------------------------------------------
 int SERVCONF::ServerInfo()
 {
 char request[] = "<GetServerInfo/>";
@@ -171,12 +158,9 @@ currParser = &parserChgUser;
 return Exec(request);
 }
 //-----------------------------------------------------------------------------
-//  TODO: remove this shit!
-//-----------------------------------------------------------------------------
-int SERVCONF::MsgUser(const char * request)
+int SERVCONF::SendMessage(const char * request)
 {
 currParser = &parserSendMessage;
-parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
 
 return Exec(request);
 }
@@ -191,13 +175,13 @@ currParser = &parserCheckUser;
 return Exec(request);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::Start(const char *el, const char **attr)
+int SERVCONF::Start(const char * el, const char ** attr)
 {
 currParser->ParseStart(el, attr);
 return 0;
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::End(const char *el)
+void SERVCONF::End(const char * el)
 {
 currParser->ParseEnd(el);
 }
@@ -232,10 +216,9 @@ void SERVCONF::SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data)
 parserCheckUser.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetSendMessageCb(RecvSendMessageCb_t f, void * data)
+void SERVCONF::SetSendMessageCallback(PARSER_SEND_MESSAGE::CALLBACK f, void * data)
 {
-RecvSendMessageCb = f;
-sendMessageDataCb = data;
+parserSendMessage.SetCallback(f, data);
 }
 //-----------------------------------------------------------------------------
 const std::string & SERVCONF::GetStrError() const
