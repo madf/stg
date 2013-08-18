@@ -602,6 +602,7 @@ if (!fakeConnect)
         while (it != settings->GetScriptParams().end())
             {
             scriptOnConnectParams += " \"" + GetParamValue(it->c_str()) + "\"";
+            ++it;
             }
 
         ScriptExec(scriptOnConnectParams.c_str());
@@ -665,6 +666,7 @@ if (!fakeDisconnect)
         while (it != settings->GetScriptParams().end())
             {
             scriptOnDisonnectParams += " \"" + GetParamValue(it->c_str()) + "\"";
+            ++it;
             }
 
         ScriptExec(scriptOnDisonnectParams.c_str());
@@ -1495,15 +1497,16 @@ if (name == "userdata6")    return property.userdata6;
 if (name == "userdata7")    return property.userdata7;
 if (name == "userdata8")    return property.userdata8;
 if (name == "userdata9")    return property.userdata9;
-//if (name == "cash")         return property.cash.ToString();
-//if (name == "id")
-//    {
-//    std::stringstream stream;
-//    stream << id;
-//    return stream.str();;
-//    }
-//if (name == "login")        return login;
-//if (name == "ip")           return currIP.ToString();
+if (name == "cash")         return property.cash.ToString();
+if (name == "id")
+    {
+    std::stringstream stream;
+    stream << id;
+    return stream.str();;
+    }
+if (name == "login")        return login;
+if (name == "ip")           return currIP.ToString();
+return "";
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
