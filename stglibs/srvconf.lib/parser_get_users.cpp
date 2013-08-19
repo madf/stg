@@ -52,8 +52,11 @@ if (depth > 0)
     userParser.ParseEnd(el);
 
 if (depth == 0)
+    {
     if (callback)
-        callback(info, data);
+        callback(error.empty(), error, info, data);
+    error.clear();
+    }
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USERS::ParseUsers(const char * el, const char ** /*attr*/)
@@ -73,8 +76,11 @@ callback = f;
 data = d;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USERS::UserCallback(const PARSER_GET_USER::INFO & info, void * data)
+void PARSER_GET_USERS::UserCallback(bool result, const std::string & error, const PARSER_GET_USER::INFO & info, void * data)
 {
     PARSER_GET_USERS * parser = static_cast<PARSER_GET_USERS *>(data);
-    parser->AddUser(info);
+    if (!result)
+        parser->SetError(error);
+    else
+        parser->AddUser(info);
 }

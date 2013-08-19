@@ -9,6 +9,7 @@ STGLIBS = -lstgcommon \
 LIBS = -lexpat
 
 SRCS =  netunit.cpp \
+        property_parsers.cpp \
         parser_auth_by.cpp \
         parser_server_info.cpp \
         parser_check_user.cpp \

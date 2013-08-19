@@ -1363,11 +1363,11 @@ switch (result)
         break;
     case res_params_error:
         printfd(__FILE__, "res_params_error\n");
-        answerList->push_back("<SendMessageResult value=\"Parameters error\"/>");
+        answerList->push_back("<SendMessageResult value=\"Parameters error.\"/>");
         break;
     case res_unknown:
         printfd(__FILE__, "res_unknown\n");
-        answerList->push_back("<SendMessageResult value=\"Unknown user\"/>");
+        answerList->push_back("<SendMessageResult value=\"Unknown user.\"/>");
         break;
     default:
         printfd(__FILE__, "res_default\n");
@@ -1421,30 +1421,17 @@ else
     answerList->push_back("<DelUser value=\"ok\"/>");
 }
 //-----------------------------------------------------------------------------
-/*void PARSERDELUSER::CreateAnswer(char * mes)
-{
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
-char str[255];
-sprintf(str, "<DelUser value=\"%s\"/>", mes);
-answerList->push_back(str);
-}*/
-//-----------------------------------------------------------------------------
 //  CHECK USER
 // <checkuser login="vasya" password=\"123456\"/>
 //-----------------------------------------------------------------------------
 int PARSER_CHECK_USER::ParseStart(void *, const char *el, const char **attr)
 {
-result = false;
-
 if (strcasecmp(el, "CheckUser") == 0)
     {
     if (attr[0] == NULL || attr[1] == NULL
      || attr[2] == NULL || attr[3] == NULL)
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("Invalid parameters.");
         printfd(__FILE__, "PARSER_CHECK_USER - attr err\n");
         return 0;
         }
@@ -1452,22 +1439,19 @@ if (strcasecmp(el, "CheckUser") == 0)
     USER_PTR user;
     if (users->FindByName(attr[1], &user))
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("User not found.");
         printfd(__FILE__, "PARSER_CHECK_USER - login err\n");
         return 0;
         }
 
     if (strcmp(user->GetProperty().password.Get().c_str(), attr[3]))
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("Wrong password.");
         printfd(__FILE__, "PARSER_CHECK_USER - passwd err\n");
         return 0;
         }
 
-    result = true;
-    CreateAnswer();
+    CreateAnswer(NULL);
     return 0;
     }
 return -1;
@@ -1482,12 +1466,12 @@ if (strcasecmp(el, "CheckUser") == 0)
 return -1;
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHECK_USER::CreateAnswer()
+void PARSER_CHECK_USER::CreateAnswer(const char * error)
 {
-if (result)
-    answerList->push_back("<CheckUser value=\"Ok\"/>");
+if (error)
+    answerList->push_back(std::string("<CheckUser value=\"Err\" reason=\"") + error + "\"/>");
 else
-    answerList->push_back("<CheckUser value=\"Err\"/>");
+    answerList->push_back("<CheckUser value=\"Ok\"/>");
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

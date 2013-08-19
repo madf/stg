@@ -33,7 +33,7 @@ class PARSER_GET_USERS: public PARSER
 {
 public:
     typedef std::vector<PARSER_GET_USER::INFO> INFO;
-    typedef void (* CALLBACK)(const INFO & info, void * data);
+    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
     PARSER_GET_USERS();
     int  ParseStart(const char * el, const char ** attr);
@@ -45,8 +45,10 @@ private:
     PARSER_GET_USER userParser;
     INFO info;
     int depth;
+    std::string error;
 
     void AddUser(const PARSER_GET_USER::INFO & userInfo);
+    void SetError(const std::string & e) { error = e; }
     void ParseUsers(const char * el, const char ** attr);
 
     static void UserCallback(const PARSER_GET_USER::INFO & info, void * data);

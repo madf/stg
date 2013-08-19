@@ -24,10 +24,12 @@
 
 #include "parser.h"
 
+#include <string>
+
 class PARSER_CHG_USER: public PARSER
 {
 public:
-    typedef int (* CALLBACK)(const char * asnwer, void * data);
+    typedef int (* CALLBACK)(bool result, const std::string& reason, void * data);
 
     PARSER_CHG_USER();
     int  ParseStart(const char * el, const char ** attr);

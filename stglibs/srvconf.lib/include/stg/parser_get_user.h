@@ -24,34 +24,14 @@
 
 #include "parser.h"
 
+#include "property_parsers.h"
+
 #include "stg/os_int.h"
 #include "stg/const.h"
 
 #include <string>
-#include <map>
 
 #include <ctime>
-
-class BASE_PROPERTY_PARSER
-{
-    public:
-        virtual ~BASE_PROPERTY_PARSER() {}
-        virtual void Parse(const char ** attr) = 0;
-};
-
-template <typename T>
-class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
-{
-    public:
-        typedef T (* FUNC)(const char **);
-        PROPERTY_PARSER(T & v, FUNC f) : value(v), func(f) {}
-        virtual void Parse(const char ** attr) { value = func(attr); }
-    private:
-        T & value;
-        FUNC func;
-};
-
-typedef std::map<std::string, BASE_PROPERTY_PARSER *> PROPERTY_PARSERS;
 
 class PARSER_GET_USER: public PARSER
 {
@@ -92,7 +72,7 @@ public:
         std::string userData[USERDATA_NUM];
     };
 
-    typedef void (* CALLBACK)(const INFO & info, void * data);
+    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
     PARSER_GET_USER();
     virtual ~PARSER_GET_USER();
@@ -105,6 +85,7 @@ private:
     void * data;
     INFO info;
     int depth;
+    std::string error;
 
     void ParseUser(const char *el, const char **attr);
     void ParseUserParams(const char *el, const char **attr);

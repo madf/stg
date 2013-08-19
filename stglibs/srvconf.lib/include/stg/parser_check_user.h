@@ -24,21 +24,23 @@
 
 #include "parser.h"
 
+#include <string>
+
 class PARSER_CHECK_USER: public PARSER
 {
 public:
-    typedef int (* CALLBACK)(const char * answer, void * data);
+    typedef int (* CALLBACK)(bool result, const std::string & reason, void * data);
 
     PARSER_CHECK_USER();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
 private:
     CALLBACK callback;
     void * data;
     int depth;
 
-    void ParseAnswer(const char *el, const char **attr);
+    void ParseAnswer(const char * el, const char ** attr);
 };
 
 #endif

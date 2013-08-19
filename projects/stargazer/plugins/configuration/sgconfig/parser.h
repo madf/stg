@@ -7,10 +7,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <list>
-#include <string>
-#include <vector>
-
 #include "stg/resetable.h"
 #include "stg/const.h"
 #include "stg/store.h"
@@ -18,6 +14,10 @@
 #include "stg/admin.h"
 #include "stg/users.h"
 #include "stg/message.h"
+
+#include <list>
+#include <string>
+#include <vector>
 
 class TARIFFS;
 class SETTINGS;
@@ -236,9 +236,7 @@ public:
         PARSER_CHECK_USER() : BASE_PARSER(), result(false) {}
     int ParseStart(void *data, const char *el, const char **attr);
     int ParseEnd(void *data, const char *el);
-    void CreateAnswer();
-private:
-    bool result;
+    void CreateAnswer(const char * error);
 };
 //-----------------------------------------------------------------------------
 class PARSER_SEND_MESSAGE: public BASE_PARSER {

@@ -35,27 +35,6 @@ const size_t UNAME_LEN    = 256;
 const size_t SERV_VER_LEN = 64;
 const size_t DIRNAME_LEN  = 16;
 
-bool checkValue(const char ** attr)
-{
-return attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0;
-}
-
-int getIntValue(const char ** attr)
-{
-int value = -1;
-if (checkValue(attr))
-    if (str2x(attr[1], value) < 0)
-        return -1;
-return value;
-}
-
-std::string getStringValue(const char ** attr)
-{
-if (checkValue(attr))
-    return attr[1];
-return "";
-}
-
 }
 
 PARSER_SERVER_INFO::PARSER_SERVER_INFO()
@@ -63,85 +42,43 @@ PARSER_SERVER_INFO::PARSER_SERVER_INFO()
       data(NULL),
       depth(0)
 {
+    AddParser(propertyParsers, "uname", info.uname);
+    AddParser(propertyParsers, "version", info.version);
+    AddParser(propertyParsers, "tariff", info.tariffType);
+    AddParser(propertyParsers, "dir_num", info.dirNum);
+    AddParser(propertyParsers, "users_num", info.usersNum);
+    AddParser(propertyParsers, "tariff_num", info.tariffNum);
+
+    for (size_t i = 0; i < DIR_NUM; i++)
+        AddParser(propertyParsers, "dir_name_" + x2str(i), info.dirName[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 int PARSER_SERVER_INFO::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
-    {
     if (strcasecmp(el, "ServerInfo") != 0)
-        {
-        //printf("%s\n", el);
-        }
-    }
+        error = "Invalid response.";
 else
-    {
     if (depth == 2)
-        {
-        if (strcasecmp(el, "uname") == 0)
-            {
-            info.uname = getStringValue(attr);
-            return 0;
-            }
-        if (strcasecmp(el, "version") == 0)
-            {
-            info.version = getStringValue(attr);
-            return 0;
-            }
-        if (strcasecmp(el, "tariff") == 0)
-            {
-            info.tariffType = getIntValue(attr);
-            return 0;
-            }
-        if (strcasecmp(el, "dir_num") == 0)
-            {
-            info.dirNum = getIntValue(attr);
-            return 0;
-            }
-        if (strcasecmp(el, "users_num") == 0)
-            {
-            info.usersNum = getIntValue(attr);
-            return 0;
-            }
-        if (strcasecmp(el, "tariff_num") == 0)
-            {
-            info.tariffNum = getIntValue(attr);
-            return 0;
-            }
-
-        for (int j = 0; j < DIR_NUM; j++)
-            {
-            char str[16];
-            sprintf(str, "dir_name_%d", j);
-            if (strcasecmp(el, str) == 0)
-                ParseDirName(attr, j);
-            }
-
-        }
-    }
+        if (!TryParse(propertyParsers, ToLower(el), attr))
+            error = "Invalid parameter.";
 return 0;
 }
 //-----------------------------------------------------------------------------
 void PARSER_SERVER_INFO::ParseEnd(const char * /*el*/)
 {
 depth--;
-if (depth == 0 && callback)
-    callback(info, data);
+if (depth == 0)
+    {
+    if (callback)
+        callback(error.empty(), error, info, data);
+    error.clear();
+    }
 }
 //-----------------------------------------------------------------------------
 void PARSER_SERVER_INFO::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;
-}
-//-----------------------------------------------------------------------------
-void PARSER_SERVER_INFO::ParseDirName(const char **attr, int d)
-{
-if (checkValue(attr))
-    {
-    char str[2 * DIRNAME_LEN + 1];
-    Decode21(str, attr[1]);
-    info.dirName[d] = str;
-    }
 }

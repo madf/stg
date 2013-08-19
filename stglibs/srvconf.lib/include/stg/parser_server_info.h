@@ -24,6 +24,7 @@
 
 #include "parser.h"
 
+#include "property_parsers.h"
 #include "stg/const.h"
 
 #include <string>
@@ -41,19 +42,19 @@ public:
         int         dirNum;
         std::string dirName[DIR_NUM];
     };
-    typedef void (* CALLBACK)(const INFO & info, void * data);
+    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
     PARSER_SERVER_INFO();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
 private:
-    void ParseDirName(const char **attr, int d);
-
+    PROPERTY_PARSERS propertyParsers;
     CALLBACK callback;
     void * data;
     int depth;
     INFO info;
+    std::string error;
 };
 
 #endif

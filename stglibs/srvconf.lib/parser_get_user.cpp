@@ -23,53 +23,17 @@
 
 #include "stg/common.h"
 
+#include <map>
 #include <utility>
 #include <cstddef>
 
 #include <strings.h>
 
-namespace
-{
-
-bool checkValue(const char ** attr)
-{
-return attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0;
-}
-
-template <typename T>
-T getValue(const char ** attr)
-{
-T value = 0;
-if (checkValue(attr))
-    if (str2x(attr[1], value) < 0)
-        return 0;
-return value;
-}
-
 template <>
-std::string getValue<std::string>(const char ** attr)
+bool GetValue<PARSER_GET_USER::STAT>(const char ** attr, PARSER_GET_USER::STAT & value)
 {
-if (checkValue(attr))
-    return attr[1];
-return "";
-}
-
-template <>
-double getValue<double>(const char ** attr)
-{
-double value = 0;
-if (checkValue(attr))
-    if (strtodouble2(attr[1], value))
-        return 0;
-return value;
-}
-
-template <>
-PARSER_GET_USER::STAT getValue<PARSER_GET_USER::STAT>(const char ** attr)
-{
-PARSER_GET_USER::STAT value;
 if (!attr)
-    return value;
+    return false;
 std::map<std::string, long long *> props;
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
@@ -84,74 +48,42 @@ while (attr[pos])
         std::string name(ToLower(attr[pos++]));
         std::map<std::string, long long *>::iterator it(props.find(name));
         if (it != props.end())
-            str2x(attr[pos++], *it->second);
+            if (str2x(attr[pos++], *it->second) < 0)
+                return false;
     }
-return value;
+return true;
 }
-
-std::string getEncodedValue(const char ** attr)
-{
-std::string value;
-if (checkValue(attr))
-    Decode21str(value, attr[1]);
-return value;
-}
-
-uint32_t getIPValue(const char ** attr)
-{
-if (checkValue(attr))
-    return inet_strington(attr[1]);
-return 0;
-}
-
-template <typename T>
-void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = getValue<T>);
-
-template <typename T>
-void addParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func)
-{
-    parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func)));
-}
-
-void tryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
-{
-    PROPERTY_PARSERS::iterator it(parsers.find(name));
-    if (it != parsers.end())
-        it->second->Parse(attr);
-}
-
-} // namespace anonymous
 
 PARSER_GET_USER::PARSER_GET_USER()
     : callback(NULL),
       data(NULL),
       depth(0)
 {
-    addParser(propertyParsers, "login", info.login);
-    addParser(propertyParsers, "password", info.password);
-    addParser(propertyParsers, "cash", info.cash);
-    addParser(propertyParsers, "credit", info.credit);
-    addParser(propertyParsers, "creditExpire", info.creditExpire);
-    addParser(propertyParsers, "lastCash", info.lastCash);
-    addParser(propertyParsers, "prepaidTraff", info.prepaidTraff);
-    addParser(propertyParsers, "down", info.down);
-    addParser(propertyParsers, "passive", info.passive);
-    addParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
-    addParser(propertyParsers, "connected", info.connected);
-    addParser(propertyParsers, "alwaysOnline", info.alwaysOnline);
-    addParser(propertyParsers, "currIP", info.ip, getIPValue);
-    addParser(propertyParsers, "ip", info.ips);
-    addParser(propertyParsers, "tariff", info.tariff);
-    addParser(propertyParsers, "group", info.group, getEncodedValue);
-    addParser(propertyParsers, "note", info.note, getEncodedValue);
-    addParser(propertyParsers, "email", info.email, getEncodedValue);
-    addParser(propertyParsers, "name", info.name, getEncodedValue);
-    addParser(propertyParsers, "address", info.address, getEncodedValue);
-    addParser(propertyParsers, "phone", info.phone, getEncodedValue);
-    addParser(propertyParsers, "traff", info.stat);
+    AddParser(propertyParsers, "login", info.login);
+    AddParser(propertyParsers, "password", info.password);
+    AddParser(propertyParsers, "cash", info.cash);
+    AddParser(propertyParsers, "credit", info.credit);
+    AddParser(propertyParsers, "creditExpire", info.creditExpire);
+    AddParser(propertyParsers, "lastCash", info.lastCash);
+    AddParser(propertyParsers, "prepaidTraff", info.prepaidTraff);
+    AddParser(propertyParsers, "down", info.down);
+    AddParser(propertyParsers, "passive", info.passive);
+    AddParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
+    AddParser(propertyParsers, "connected", info.connected);
+    AddParser(propertyParsers, "alwaysOnline", info.alwaysOnline);
+    AddParser(propertyParsers, "currIP", info.ip, GetIPValue);
+    AddParser(propertyParsers, "ip", info.ips);
+    AddParser(propertyParsers, "tariff", info.tariff);
+    AddParser(propertyParsers, "group", info.group, GetEncodedValue);
+    AddParser(propertyParsers, "note", info.note, GetEncodedValue);
+    AddParser(propertyParsers, "email", info.email, GetEncodedValue);
+    AddParser(propertyParsers, "name", info.name, GetEncodedValue);
+    AddParser(propertyParsers, "address", info.address, GetEncodedValue);
+    AddParser(propertyParsers, "phone", info.phone, GetEncodedValue);
+    AddParser(propertyParsers, "traff", info.stat);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        addParser(propertyParsers, "userData" + x2str(i), info.userData[i], getEncodedValue);
+        AddParser(propertyParsers, "userData" + x2str(i), info.userData[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 PARSER_GET_USER::~PARSER_GET_USER()
@@ -161,7 +93,7 @@ PARSER_GET_USER::~PARSER_GET_USER()
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int PARSER_GET_USER::ParseStart(const char *el, const char **attr)
+int PARSER_GET_USER::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1)
@@ -173,24 +105,28 @@ if (depth == 2)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USER::ParseEnd(const char *)
+void PARSER_GET_USER::ParseEnd(const char * /*el*/)
 {
 depth--;
 if (depth == 0)
+    {
     if (callback)
-        callback(info, data);
+        callback(error.empty(), error, info, data);
+    error.clear();
+    }
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::ParseUser(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "user") == 0)
     if (strcasecmp(attr[1], "error") == 0)
-        info.login = "";
+        error = "User not found.";
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::ParseUserParams(const char * el, const char ** attr)
 {
-tryParse(propertyParsers, ToLower(el), attr);
+if (!TryParse(propertyParsers, ToLower(el), attr))
+    error = "Invalid parameter.";
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::SetCallback(CALLBACK f, void * d)

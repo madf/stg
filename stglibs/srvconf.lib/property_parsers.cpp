@@ -15,32 +15,41 @@
  */
 
 /*
- *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
+#include "stg/property_parsers.h"
 
-#include "parser.h"
+#include <strings.h>
 
-#include <string>
-
-class PARSER_SEND_MESSAGE: public PARSER
+bool CheckValue(const char ** attr)
 {
-public:
-    typedef int (* CALLBACK)(bool result, const std::string& reason, void * data);
+return attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0;
+}
 
-    PARSER_SEND_MESSAGE();
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void SetCallback(CALLBACK f, void * data);
-private:
-    CALLBACK callback;
-    void * data;
-    int depth;
+bool GetEncodedValue(const char ** attr, std::string & value)
+{
+if (!CheckValue(attr))
+    return false;
+Decode21str(value, attr[1]);
+return true;
+}
 
-    void ParseAnswer(const char * el, const char ** attr);
-};
+bool GetIPValue(const char ** attr, uint32_t value)
+{
+if (!CheckValue(attr))
+    return false;
+std::string ip(attr[1]);
+value = inet_strington(attr[1]);
+if (value == 0 && ip != "0.0.0.0")
+    return false;
+return true;
+}
 
-#endif
+bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
+{
+    PROPERTY_PARSERS::iterator it(parsers.find(name));
+    if (it != parsers.end())
+        return it->second->Parse(attr);
+    return true; // Assume that non-existing params are ok.
+}

@@ -48,9 +48,12 @@ depth--;
 //-----------------------------------------------------------------------------
 void PARSER_SEND_MESSAGE::ParseAnswer(const char * /*el*/, const char **attr)
 {
+if (!callback)
+    return;
 if (attr && attr[0] && attr[1])
-    if (callback)
-        callback(attr[1], data);
+    callback(strcasecmp(attr[1], "ok") == 0, attr[1], data);
+else
+    callback(false, "Invalid response.", data);
 }
 //-----------------------------------------------------------------------------
 void PARSER_SEND_MESSAGE::SetCallback(CALLBACK f, void * d)
