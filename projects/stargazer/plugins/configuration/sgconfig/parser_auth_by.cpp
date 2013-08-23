@@ -33,7 +33,7 @@ answerList->erase(answerList->begin(), answerList->end());
 USER_PTR u;
 if (users->FindByName(login, &u))
     {
-    answerList->push_back("<user result=\"error\"/>");
+    answerList->push_back("<AuthorizedBy result=\"error\" reason=\"User not found.\"/>");
     return;
     }
 
