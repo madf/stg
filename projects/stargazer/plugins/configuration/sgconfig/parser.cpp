@@ -133,8 +133,7 @@ answerList->erase(answerList->begin(), answerList->end());
 
 if (users->FindByName(login, &u))
     {
-    s = "<user result=\"error\"/>";
-    answerList->push_back(s);
+    answerList->push_back("<user result=\"error\" reason=\"User not found.\"/>");
     return;
     }
 
