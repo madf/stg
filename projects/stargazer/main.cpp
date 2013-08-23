@@ -271,7 +271,6 @@ if (settings->ReadSettings())
     WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
     exit(1);
     }
-
 #ifndef NO_DAEMON
 std::string startFile(settings->GetConfDir() + START_FILE);
 #endif
