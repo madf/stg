@@ -579,6 +579,7 @@ if (!fakeConnect)
             }
 
         std::string scriptOnConnectParams;
+
         strprintf(&scriptOnConnectParams,
                 "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
                 scriptOnConnect.c_str(),
@@ -587,6 +588,13 @@ if (!fakeConnect)
                 cash.ConstData(),
                 id,
                 dirsStr);
+
+        std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
+        while (it != settings->GetScriptParams().end())
+            {
+            scriptOnConnectParams += " \"" + GetParamValue(it->c_str()) + "\"";
+            ++it;
+            }
 
         ScriptExec(scriptOnConnectParams.c_str());
         }
@@ -645,6 +653,13 @@ if (!fakeDisconnect)
                 cash.ConstData(),
                 id,
                 dirsStr);
+
+        std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
+        while (it != settings->GetScriptParams().end())
+            {
+            scriptOnDisonnectParams += " \"" + GetParamValue(it->c_str()) + "\"";
+            ++it;
+            }
 
         ScriptExec(scriptOnDisonnectParams.c_str());
         }
@@ -1447,6 +1462,43 @@ while (it != messages.end())
         ++it;
         }
     }
+}
+//-----------------------------------------------------------------------------
+std::string USER_IMPL::GetParamValue(const std::string & name) const
+{
+if (name == "freeMb")       return property.freeMb.ToString();
+if (name == "passive")      return property.passive.ToString();
+if (name == "disabled")     return property.disabled.ToString();
+if (name == "alwaysOnline") return property.alwaysOnline.ToString();
+if (name == "tariffName")   return property.tariffName;
+if (name == "nextTariff")   return property.nextTariff;
+if (name == "address")      return property.address;
+if (name == "note")         return property.note;
+if (name == "group")        return property.group;
+if (name == "email")        return property.email;
+if (name == "phone")        return property.phone;
+if (name == "realName")     return property.realName;
+if (name == "credit")       return property.credit.ToString();
+if (name == "userdata0")    return property.userdata0;
+if (name == "userdata1")    return property.userdata1;
+if (name == "userdata2")    return property.userdata2;
+if (name == "userdata3")    return property.userdata3;
+if (name == "userdata4")    return property.userdata4;
+if (name == "userdata5")    return property.userdata5;
+if (name == "userdata6")    return property.userdata6;
+if (name == "userdata7")    return property.userdata7;
+if (name == "userdata8")    return property.userdata8;
+if (name == "userdata9")    return property.userdata9;
+if (name == "cash")         return property.cash.ToString();
+if (name == "id")
+    {
+    std::stringstream stream;
+    stream << id;
+    return stream.str();;
+    }
+if (name == "login")        return login;
+if (name == "ip")           return currIP.ToString();
+return "";
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

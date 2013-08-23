@@ -98,6 +98,7 @@ public:
         { return storeModuleSettings; }
     const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
         { return modulesSettings; }
+    const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
 
 private:
 
@@ -117,6 +118,7 @@ private:
     std::string logFile;
     std::string pidFile;
     std::string monitorDir;
+    std::vector<std::string> scriptParams;
     bool        monitoring;
     unsigned    detailStatWritePeriod;
     unsigned    statWritePeriod;
@@ -136,7 +138,6 @@ private:
 
     std::vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS storeModuleSettings;
-
     STG_LOGGER & logger;
 };
 //-----------------------------------------------------------------------------
