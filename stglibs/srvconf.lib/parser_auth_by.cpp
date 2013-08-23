@@ -27,7 +27,8 @@
 PARSER_AUTH_BY::PARSER_AUTH_BY()
     : callback(NULL),
       data(NULL),
-      depth(0)
+      depth(0),
+      parsingAnswer(false)
 {
 }
 //-----------------------------------------------------------------------------
@@ -36,14 +37,25 @@ int PARSER_AUTH_BY::ParseStart(const char *el, const char **attr)
 depth++;
 if (depth == 1)
     {
-    if (strcasecmp(el, "AuthorizedBy") != 0)
-        info.clear();
+    if (strcasecmp(el, "AuthorizedBy") == 0)
+        if (attr && attr[0] && attr[1])
+            {
+            if (strcasecmp(attr[1], "error") == 0)
+                {
+                if (attr[2] && attr[3])
+                    error = attr[3];
+                else
+                    error = "User not found.";
+                }
+            else
+                parsingAnswer = true;
+            }
     }
 else
     {
     if (depth == 2)
         {
-        if (strcasecmp(el, "Auth") == 0)
+        if (parsingAnswer && strcasecmp(el, "Auth") == 0)
             {
             if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "name") == 0)
                 info.push_back(attr[1]);
@@ -57,8 +69,13 @@ return 0;
 void PARSER_AUTH_BY::ParseEnd(const char * /*el*/)
 {
 depth--;
-if (depth == 0 && callback)
-    callback(info, data);
+if (depth == 0)
+    {
+    if (callback)
+        callback(error.empty(), error, info, data);
+    info.clear();
+    error.clear();
+    }
 }
 //-----------------------------------------------------------------------------
 void PARSER_AUTH_BY::SetCallback(CALLBACK f, void * d)

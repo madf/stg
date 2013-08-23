@@ -35,7 +35,7 @@ Decode21str(value, attr[1]);
 return true;
 }
 
-bool GetIPValue(const char ** attr, uint32_t value)
+bool GetIPValue(const char ** attr, uint32_t & value)
 {
 if (!CheckValue(attr))
     return false;

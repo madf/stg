@@ -32,7 +32,7 @@ PARSER_SEND_MESSAGE::PARSER_SEND_MESSAGE()
 {
 }
 //-----------------------------------------------------------------------------
-int  PARSER_SEND_MESSAGE::ParseStart(const char * el, const char ** attr)
+int PARSER_SEND_MESSAGE::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1)

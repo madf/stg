@@ -32,7 +32,7 @@ PARSER_CHECK_USER::PARSER_CHECK_USER()
 {
 }
 //-----------------------------------------------------------------------------
-int PARSER_CHECK_USER::ParseStart(const char *el, const char **attr)
+int PARSER_CHECK_USER::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1)

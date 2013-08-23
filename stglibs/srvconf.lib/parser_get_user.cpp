@@ -57,7 +57,8 @@ return true;
 PARSER_GET_USER::PARSER_GET_USER()
     : callback(NULL),
       data(NULL),
-      depth(0)
+      depth(0),
+      parsingAnswer(false)
 {
     AddParser(propertyParsers, "login", info.login);
     AddParser(propertyParsers, "password", info.password);
@@ -99,7 +100,7 @@ depth++;
 if (depth == 1)
     ParseUser(el, attr);
 
-if (depth == 2)
+if (depth == 2 && parsingAnswer)
     ParseUserParams(el, attr);
 
 return 0;
@@ -108,19 +109,32 @@ return 0;
 void PARSER_GET_USER::ParseEnd(const char * /*el*/)
 {
 depth--;
-if (depth == 0)
+if (depth == 0 && parsingAnswer)
     {
     if (callback)
         callback(error.empty(), error, info, data);
     error.clear();
+    parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::ParseUser(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "user") == 0)
-    if (strcasecmp(attr[1], "error") == 0)
-        error = "User not found.";
+    if (attr && attr[0] && attr[1])
+        {
+        if (strcasecmp(attr[1], "error") == 0)
+            {
+            if (attr[2] && attr[3])
+                error = attr[3];
+            else
+                error = "User not found.";
+            }
+        else
+            parsingAnswer = true;
+        }
+    else
+        parsingAnswer = true;
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::ParseUserParams(const char * el, const char ** attr)

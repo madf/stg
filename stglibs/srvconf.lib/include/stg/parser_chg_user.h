@@ -29,7 +29,7 @@
 class PARSER_CHG_USER: public PARSER
 {
 public:
-    typedef int (* CALLBACK)(bool result, const std::string& reason, void * data);
+    typedef void (* CALLBACK)(bool result, const std::string& reason, void * data);
 
     PARSER_CHG_USER();
     int  ParseStart(const char * el, const char ** attr);

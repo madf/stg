@@ -53,6 +53,7 @@ private:
     CALLBACK callback;
     void * data;
     int depth;
+    bool parsingAnswer;
     INFO info;
     std::string error;
 };

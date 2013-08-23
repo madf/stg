@@ -85,6 +85,7 @@ private:
     void * data;
     INFO info;
     int depth;
+    bool parsingAnswer;
     std::string error;
 
     void ParseUser(const char *el, const char **attr);

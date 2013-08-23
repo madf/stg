@@ -724,7 +724,7 @@ int CheckParametersSet(REQUEST * req)
 return CheckParameters(req);
 }
 //-----------------------------------------------------------------------------
-int mainGet(int argc, char **argv)
+bool mainGet(int argc, char **argv)
 {
 int c;
 REQUEST req;
@@ -890,7 +890,7 @@ else
     return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
 }
 //-----------------------------------------------------------------------------
-int mainSet(int argc, char **argv)
+bool mainSet(int argc, char **argv)
 {
 string str;
 
@@ -1087,7 +1087,10 @@ char rstr[rLen];
 memset(rstr, 0, rLen);
 
 CreateRequestSet(&req, rstr);
-return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr, isMessage);
+if (isMessage)
+    return ProcessSendMessage(req.server, req.port, req.admLogin, req.admPasswd, rstr);
+
+return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
@@ -1106,7 +1109,9 @@ if (strcmp(argv[1], "get") == 0)
 else if (strcmp(argv[1], "set") == 0)
     {
     //printf("set\n");
-    return mainSet(argc - 1, argv + 1);
+    if (mainSet(argc - 1, argv + 1) )
+        return 0;
+    return -1;
     }
 else
     {

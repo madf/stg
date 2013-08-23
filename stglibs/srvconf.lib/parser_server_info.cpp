@@ -40,7 +40,8 @@ const size_t DIRNAME_LEN  = 16;
 PARSER_SERVER_INFO::PARSER_SERVER_INFO()
     : callback(NULL),
       data(NULL),
-      depth(0)
+      depth(0),
+      parsingAnswer(false)
 {
     AddParser(propertyParsers, "uname", info.uname);
     AddParser(propertyParsers, "version", info.version);
@@ -57,10 +58,10 @@ int PARSER_SERVER_INFO::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
-    if (strcasecmp(el, "ServerInfo") != 0)
-        error = "Invalid response.";
+    if (strcasecmp(el, "ServerInfo") == 0)
+        parsingAnswer = true;
 else
-    if (depth == 2)
+    if (depth == 2 && parsingAnswer)
         if (!TryParse(propertyParsers, ToLower(el), attr))
             error = "Invalid parameter.";
 return 0;
@@ -69,11 +70,12 @@ return 0;
 void PARSER_SERVER_INFO::ParseEnd(const char * /*el*/)
 {
 depth--;
-if (depth == 0)
+if (depth == 0 && parsingAnswer)
     {
     if (callback)
         callback(error.empty(), error, info, data);
     error.clear();
+    parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------

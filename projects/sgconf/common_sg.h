@@ -45,24 +45,27 @@ int CheckLogin(const char * login);
 void ConvertFromKOI8(const std::string & src, std::string * dst);
 void ConvertToKOI8(const std::string & src, std::string * dst);
 
-int ProcessGetUser(const std::string &server,
-                   int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &login,
-                   REQUEST & request);
+bool ProcessGetUser(const std::string & server,
+                    int port,
+                    const std::string & admLogin,
+                    const std::string & admPasswd,
+                    const std::string & login,
+                    REQUEST & request);
 
-int ProcessAuthBy(const std::string &server,
-                  int port,
-                  const std::string &admLogin,
-                  const std::string &admPasswd,
-                  const std::string &login);
-
-int ProcessSetUser(const std::string &server,
+bool ProcessAuthBy(const std::string & server,
                    int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &str,
-                   bool isMessage = false);
+                   const std::string & admLogin,
+                   const std::string & admPasswd,
+                   const std::string & login);
+
+bool ProcessSetUser(const std::string & server,
+                    int port,
+                    const std::string & admLogin,
+                    const std::string & admPasswd,
+                    const std::string & str);
+
+bool ProcessSendMessage(const std::string & server, uint16_t port,
+                        const std::string & login, const std::string & password,
+                        const std::string & requestString);
 
 #endif

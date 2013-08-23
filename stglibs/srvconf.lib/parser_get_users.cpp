@@ -28,7 +28,8 @@
 PARSER_GET_USERS::PARSER_GET_USERS()
     : callback(NULL),
       data(NULL),
-      depth(0)
+      depth(0),
+      parsingAnswer(false)
 {
     userParser.SetCallback(&PARSER_GET_USERS::UserCallback, this);
 }
@@ -36,10 +37,10 @@ PARSER_GET_USERS::PARSER_GET_USERS()
 int PARSER_GET_USERS::ParseStart(const char * el, const char ** attr)
 {
 depth++;
-if (depth == 1)
-    ParseUsers(el, attr);
+if (depth == 1 && strcasecmp(el, "users") == 0)
+    parsingAnswer = true;
 
-if (depth > 1)
+if (depth > 1 && parsingAnswer)
     userParser.ParseStart(el, attr);
 
 return 0;
@@ -48,21 +49,17 @@ return 0;
 void PARSER_GET_USERS::ParseEnd(const char * el)
 {
 depth--;
-if (depth > 0)
+if (depth > 0 && parsingAnswer)
     userParser.ParseEnd(el);
 
-if (depth == 0)
+if (depth == 0 && parsingAnswer)
     {
     if (callback)
         callback(error.empty(), error, info, data);
     error.clear();
-    }
-}
-//-----------------------------------------------------------------------------
-void PARSER_GET_USERS::ParseUsers(const char * el, const char ** /*attr*/)
-{
-if (strcasecmp(el, "users") == 0)
     info.clear();
+    parsingAnswer = false;
+    }
 }
 //-----------------------------------------------------------------------------
 void PARSER_GET_USERS::AddUser(const PARSER_GET_USER::INFO & userInfo)

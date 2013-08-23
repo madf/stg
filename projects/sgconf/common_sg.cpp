@@ -49,11 +49,18 @@ const int usageInfo = 1;
 const int TO_KOI8 = 0;
 const int FROM_KOI8 = 1;
 //-----------------------------------------------------------------------------
+struct ResultData
+{
+    bool result;
+    std::string reason;
+};
+//-----------------------------------------------------------------------------
 struct GetUserData
 {
     GetUserData(REQUEST & req, bool res) : request(req), result(res) {}
     REQUEST & request;
     bool result;
+    std::string reason;
 };
 //---------------------------------------------------------------------------
 struct HelpParams
@@ -287,15 +294,34 @@ void ConvertFromKOI8(const std::string & src, std::string * dst)
 ConvertKOI8(src, dst, FROM_KOI8);
 }
 //-----------------------------------------------------------------------------
-int RecvSetUserAnswer(const char * ans, void * d)
+void SendMessageCallback(bool result, const std::string & reason, void * d)
 {
-GetUserData * data = static_cast<GetUserData *>(d);
+ResultData * data = static_cast<ResultData *>(d);
+data->result = result;
+data->reason = reason;
+}
+//-----------------------------------------------------------------------------
+void RecvSetUserAnswer(bool result, const std::string & reason, void * d)
+{
+ResultData * data = static_cast<ResultData *>(d);
+data->result = result;
+data->reason = reason;
+}
+//-----------------------------------------------------------------------------
+void RecvAuthByData(bool result, const std::string & reason,
+                    const PARSER_AUTH_BY::INFO & list, void * d)
+{
+ResultData * data = static_cast<ResultData *>(d);
+data->result = result;
+data->reason = reason;
 
-std::cout << ans << std::endl;
+if (!result)
+    return;
 
-data->result = (strcasecmp("Ok", ans) == 0);
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    std::cout << *it << "\n";
 
-return 0;
+std::cout << std::endl;
 }
 //-----------------------------------------------------------------------------
 struct StringReqParams
@@ -305,13 +331,19 @@ struct StringReqParams
     const std::string * value;
 };
 //-----------------------------------------------------------------------------
-void GetUserCallback(const PARSER_GET_USER::INFO & info, void * d)
+void GetUserCallback(bool result, const std::string& reason, const PARSER_GET_USER::INFO & info, void * d)
 {
 GetUserData * data = static_cast<GetUserData *>(d);
+data->result = false;
+data->reason = reason;
+
+if (!result)
+    return;
 
 if (info.login == "")
     {
     data->result = false;
+    data->reason = "Invalid login.";
     return;
     }
 
@@ -406,19 +438,11 @@ for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
 data->result = true;
 }
 //-----------------------------------------------------------------------------
-void RecvAuthByData(const PARSER_AUTH_BY::INFO & list, void *)
-{
-for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-    cout << *it << "\n";
-cout << endl;
-}
-//-----------------------------------------------------------------------------
-int ProcessSetUser(const std::string &server,
-                   int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &str,
-                   bool isMessage)
+bool ProcessSetUser(const std::string & server,
+                    int port,
+                    const std::string & admLogin,
+                    const std::string & admPasswd,
+                    const std::string & str)
 {
 SERVCONF sc;
 
@@ -427,43 +451,59 @@ sc.SetPort(port);
 sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
-REQUEST request;
-GetUserData cbdata(request, false);
+ResultData data;
+sc.SetChgUserCallback(RecvSetUserAnswer, &data);
+int res = sc.ChgUser(str.c_str());
 
-int res = 0;
-if (isMessage)
-    {
-    sc.SetSendMessageCallback(RecvSetUserAnswer, &cbdata);
-    res = sc.SendMessage(str.c_str());
-    }
-else
-    {
-    sc.SetChgUserCallback(RecvSetUserAnswer, &cbdata);
-    res = sc.ChgUser(str.c_str());
-    }
-
-if (res == st_ok && cbdata.result)
+if (res == st_ok && data.result)
     {
     printf("Ok\n");
-    return 0;
-    }
-else
-    {
-    printf("Error\n");
-    if (res != st_ok)
-        printf("%s\n", sc.GetStrError().c_str());
-    return -1;
+    return false;
     }
 
-return 0;
+printf("Error\n");
+if (res != st_ok)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return true;
 }
 //-----------------------------------------------------------------------------
-int ProcessGetUser(const std::string &server,
-                   int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &login,
-                   REQUEST & request)
+bool ProcessSendMessage(const std::string & server, uint16_t port,
+                        const std::string & login, const std::string & password,
+                        const std::string & requestString)
+{
+SERVCONF sc;
+
+sc.SetServer(server.c_str());
+sc.SetPort(port);
+sc.SetAdmLogin(login.c_str());
+sc.SetAdmPassword(password.c_str());
+
+ResultData data;
+sc.SetSendMessageCallback(SendMessageCallback, &data);
+int res = sc.SendMessage(requestString.c_str());
+
+if (res == st_ok && data.result)
+    {
+    printf("Ok\n");
+    return true;
+    }
+
+printf("Error\n");
+if (res != st_ok)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return false;
+}
+//-----------------------------------------------------------------------------
+bool ProcessGetUser(const std::string &server,
+                    int port,
+                    const std::string &admLogin,
+                    const std::string &admPasswd,
+                    const std::string &login,
+                    REQUEST & request)
 {
 SERVCONF sc;
 
@@ -480,22 +520,22 @@ bool res = (sc.GetUser(login.c_str()) == st_ok);
 if (res && data.result)
     {
     printf("Ok\n");
-    return 0;
-    }
-else
-    {
-    printf("Error\n");
-    return -1;
+    return true;
     }
 
-return 0;
+printf("Error\n");
+if (!res)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return false;
 }
 //-----------------------------------------------------------------------------
-int ProcessAuthBy(const std::string &server,
-                  int port,
-                  const std::string &admLogin,
-                  const std::string &admPasswd,
-                  const std::string &login)
+bool ProcessAuthBy(const std::string &server,
+                   int port,
+                   const std::string &admLogin,
+                   const std::string &admPasswd,
+                   const std::string &login)
 {
 SERVCONF sc;
 
@@ -504,16 +544,21 @@ sc.SetPort(port);
 sc.SetAdmLogin(admLogin.c_str());
 sc.SetAdmPassword(admPasswd.c_str());
 
-sc.SetAuthByCallback(RecvAuthByData, NULL);
+ResultData data;
+sc.SetAuthByCallback(RecvAuthByData, &data);
 bool res = (sc.AuthBy(login.c_str()) == st_ok);
 
-if (!res)
+if (res && data.result)
     {
-    printf("Error\n");
-    return -1;
+    printf("Ok\n");
+    return true;
     }
 
-printf("Ok\n");
-return 0;
+printf("Error\n");
+if (!res)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return false;
 }
 //-----------------------------------------------------------------------------

@@ -45,13 +45,13 @@ private:
     PARSER_GET_USER userParser;
     INFO info;
     int depth;
+    bool parsingAnswer;
     std::string error;
 
     void AddUser(const PARSER_GET_USER::INFO & userInfo);
     void SetError(const std::string & e) { error = e; }
-    void ParseUsers(const char * el, const char ** attr);
 
-    static void UserCallback(const PARSER_GET_USER::INFO & info, void * data);
+    static void UserCallback(bool result, const std::string& reason, const PARSER_GET_USER::INFO & info, void * data);
 };
 
 #endif

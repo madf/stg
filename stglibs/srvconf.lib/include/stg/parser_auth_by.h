@@ -30,7 +30,7 @@ class PARSER_AUTH_BY: public PARSER
 {
 public:
     typedef std::vector<std::string> INFO;
-    typedef void (* CALLBACK)(const INFO & info, void * data);
+    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
     PARSER_AUTH_BY();
     int  ParseStart(const char *el, const char **attr);
@@ -40,7 +40,9 @@ private:
     CALLBACK callback;
     void * data;
     int depth;
+    bool parsingAnswer;
     INFO info;
+    std::string error;
 };
 
 #endif

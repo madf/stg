@@ -50,6 +50,7 @@ typedef std::map<std::string, BASE_PROPERTY_PARSER *> PROPERTY_PARSERS;
 bool CheckValue(const char ** attr);
 
 template <typename T>
+inline
 bool GetValue(const char ** attr, T & value)
 {
 if (CheckValue(attr))
@@ -59,6 +60,7 @@ return true;
 }
 
 template <>
+inline
 bool GetValue<std::string>(const char ** attr, std::string & value)
 {
 if (!CheckValue(attr))
@@ -68,6 +70,7 @@ return true;
 }
 
 template <>
+inline
 bool GetValue<double>(const char ** attr, double & value)
 {
 if (CheckValue(attr))
@@ -84,6 +87,7 @@ template <typename T>
 void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = GetValue<T>);
 
 template <typename T>
+inline
 void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func)
 {
     parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func)));
