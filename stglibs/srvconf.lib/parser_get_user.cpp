@@ -71,7 +71,7 @@ PARSER_GET_USER::PARSER_GET_USER()
     AddParser(propertyParsers, "passive", info.passive);
     AddParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
     AddParser(propertyParsers, "connected", info.connected);
-    AddParser(propertyParsers, "alwaysOnline", info.alwaysOnline);
+    AddParser(propertyParsers, "aonline", info.alwaysOnline);
     AddParser(propertyParsers, "currIP", info.ip, GetIPValue);
     AddParser(propertyParsers, "ip", info.ips);
     AddParser(propertyParsers, "tariff", info.tariff);
