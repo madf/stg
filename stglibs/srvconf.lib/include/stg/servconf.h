@@ -98,7 +98,7 @@ private:
 
     int Exec(const char * request);
 
-    friend int AnsRecv(void * data, std::list<std::string> * list);
+    friend bool AnsRecv(void * data, const std::string & chunk, bool final);
 };
 //-----------------------------------------------------------------------------
 

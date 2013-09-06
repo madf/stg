@@ -29,13 +29,13 @@ namespace
 {
 
 //-----------------------------------------------------------------------------
-void Start(void *data, const char *el, const char **attr)
+void ElementStart(void *data, const char *el, const char **attr)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
 sc->Start(el, attr);
 }
 //-----------------------------------------------------------------------------
-void End(void * data, const char * el)
+void ElementEnd(void * data, const char * el)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
 sc->End(el);
@@ -43,39 +43,21 @@ sc->End(el);
 
 } // namespace anonymous
 
-int AnsRecv(void * data, std::list<std::string> * list1)
+bool AnsRecv(void * data, const std::string & chunk, bool final)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
+printf("Chunk: '%s', length: %d, final: %d\n", chunk.c_str(), chunk.length(), final);
 
-XML_ParserReset(sc->parser, NULL);
-XML_SetElementHandler(sc->parser, Start, End);
-XML_SetUserData(sc->parser, data);
-
-char ans[ENC_MSG_LEN + 1];
-int len, done = 0;
-
-//loop parsing
-std::list<std::string>::iterator node;
-node = list1->begin();
-
-while (node != list1->end())
+if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ERROR)
     {
-    strncpy(ans, node->c_str(), ENC_MSG_LEN);
-    ans[ENC_MSG_LEN] = 0;
-    len = strlen(ans);
-
-    if (XML_Parse(sc->parser, ans, len, done) == XML_STATUS_ERROR)
-        {
-        strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
-                  static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
-                  XML_ErrorString(XML_GetErrorCode(sc->parser)));
-        printf("%s\n", sc->errorMsg.c_str());
-        return st_xml_parse_error;
-        }
-    ++node;
+    strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
+              static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
+              XML_ErrorString(XML_GetErrorCode(sc->parser)));
+    printf("%s\n", sc->errorMsg.c_str());
+    return false;
     }
 
-return st_ok;
+return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -203,7 +185,9 @@ return errorMsg;
 //-----------------------------------------------------------------------------
 int SERVCONF::Exec(const char * request)
 {
-nt.Reset();
+XML_ParserReset(parser, NULL);
+XML_SetElementHandler(parser, ElementStart, ElementEnd);
+XML_SetUserData(parser, this);
 
 int ret = 0;
 if ((ret = nt.Connect()) != st_ok)

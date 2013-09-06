@@ -29,7 +29,6 @@
 
 #include "stg/blowfish.h"
 
-#include <list>
 #include <string>
 
 #include <sys/types.h>
@@ -49,7 +48,7 @@
 
 #define MAX_ERR_STR_LEN (64)
 
-typedef int(*RxCallback_t)(void *, std::list<std::string> *);
+typedef bool (* RxCallback_t)(void *, const std::string &, bool);
 
 enum status
 {
@@ -87,7 +86,6 @@ public:
 
     int     Connect();
     int     Disconnect();
-    void    Reset();
 private:
     int     TxHeader();
     int     RxHeaderAnswer();
@@ -107,7 +105,6 @@ private:
     std::string login;
     std::string password;
     int     outerSocket;
-    std::list<std::string>   answerList;
     RxCallback_t RxCallBack;
     void *  dataRxCallBack;
     std::string errorMsg;

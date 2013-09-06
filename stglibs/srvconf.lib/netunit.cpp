@@ -38,6 +38,13 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+namespace
+{
+
+const std::string::size_type MAX_XML_CHUNK_LENGTH = 2048;
+
+}
+
 //---------------------------------------------------------------------------
 
 #define SEND_DATA_ERROR             "Send data error!"
@@ -400,6 +407,7 @@ int NETTRANSACT::RxDataAnswer()
 BLOWFISH_CTX ctx;
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
+std::string chunk;
 while (true)
     {
     char bufferS[ENC_MSG_LEN];
@@ -417,22 +425,28 @@ while (true)
         toRead -= ret;
         }
 
-    char buffer[ENC_MSG_LEN + 1];
+    char buffer[ENC_MSG_LEN];
     DecodeString(buffer, bufferS, &ctx);
-    buffer[ENC_MSG_LEN] = 0;
 
-    answerList.push_back(buffer);
+    bool final = false;
+    size_t pos = 0;
+    for (; pos < ENC_MSG_LEN && buffer[pos] != 0; pos++);
+    if (pos < ENC_MSG_LEN && buffer[pos] == 0)
+        final = true;
 
-    for (size_t i = 0; i < ENC_MSG_LEN; i++)
+    if (pos > 0)
+        chunk.append(&buffer[0], &buffer[pos]);
+
+    if (chunk.length() > MAX_XML_CHUNK_LENGTH || final)
         {
-        if (buffer[i] == 0)
-            {
-            if (RxCallBack)
-                if (st_ok != RxCallBack(dataRxCallBack, &answerList))
-                    return st_xml_parse_error;
-            return st_ok;
-            }
+        if (RxCallBack != NULL)
+            if (!RxCallBack(dataRxCallBack, chunk, final))
+                return st_xml_parse_error;
+        chunk.clear();
         }
+
+    if (final)
+        return st_ok;
     }
 }
 //---------------------------------------------------------------------------
@@ -445,10 +459,5 @@ dataRxCallBack = data;
 const std::string & NETTRANSACT::GetError() const
 {
 return errorMsg;
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::Reset()
-{
-answerList.clear();
 }
 //---------------------------------------------------------------------------
