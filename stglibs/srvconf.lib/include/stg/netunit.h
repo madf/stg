@@ -78,18 +78,13 @@ confData
 class NETTRANSACT
 {
 public:
-    NETTRANSACT();
+    NETTRANSACT(const std::string & server, uint16_t port,
+                const std::string & login, const std::string & password);
     int     Transact(const char * data);
     const std::string & GetError() const;
 
     void    SetRxCallback(void * data, RxCallback_t);
 
-    void    SetServer(const char * serverName);
-    void    SetServerPort(short unsigned p);
-
-    void    SetLogin(const char * l);
-    void    SetPassword(const char * p);
-    ////////////////////////////////////////////
     int     Connect();
     int     Disconnect();
     void    Reset();
@@ -112,7 +107,7 @@ private:
     void Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx);
 
     std::string server;
-    short unsigned  port;
+    uint16_t  port;
     std::string login;
     std::string password;
     int     outerSocket;

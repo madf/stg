@@ -53,8 +53,12 @@
 #define RECV_HEADER_ANSWER_ERROR    "Recv header answer error!"
 
 //---------------------------------------------------------------------------
-NETTRANSACT::NETTRANSACT()
-    : port(0),
+NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
+                         const std::string & l, const std::string & pwd)
+    : server(s),
+      port(p),
+      login(l),
+      password(pwd),
       outerSocket(-1),
       RxCallBack(NULL),
       dataRxCallBack(NULL)
@@ -459,26 +463,6 @@ while (1)
             }
         }
     }
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::SetLogin(const char * l)
-{
-login = l;
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::SetPassword(const char * p)
-{
-password = p;
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::SetServer(const char * serverName)
-{
-server = serverName;
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::SetServerPort(short unsigned p)
-{
-port = p;
 }
 //---------------------------------------------------------------------------
 void NETTRANSACT::SetRxCallback(void * data, RxCallback_t cb)

@@ -440,16 +440,11 @@ data->result = true;
 //-----------------------------------------------------------------------------
 bool ProcessSetUser(const std::string & server,
                     int port,
-                    const std::string & admLogin,
-                    const std::string & admPasswd,
+                    const std::string & login,
+                    const std::string & password,
                     const std::string & str)
 {
-SERVCONF sc;
-
-sc.SetServer(server.c_str());
-sc.SetPort(port);
-sc.SetAdmLogin(admLogin.c_str());
-sc.SetAdmPassword(admPasswd.c_str());
+SERVCONF sc(server, port, login, password);
 
 ResultData data;
 sc.SetChgUserCallback(RecvSetUserAnswer, &data);
@@ -473,12 +468,7 @@ bool ProcessSendMessage(const std::string & server, uint16_t port,
                         const std::string & login, const std::string & password,
                         const std::string & requestString)
 {
-SERVCONF sc;
-
-sc.SetServer(server.c_str());
-sc.SetPort(port);
-sc.SetAdmLogin(login.c_str());
-sc.SetAdmPassword(password.c_str());
+SERVCONF sc(server, port, login, password);
 
 ResultData data;
 sc.SetSendMessageCallback(SendMessageCallback, &data);
@@ -505,12 +495,7 @@ bool ProcessGetUser(const std::string &server,
                     const std::string &login,
                     REQUEST & request)
 {
-SERVCONF sc;
-
-sc.SetServer(server.c_str());
-sc.SetPort(port);
-sc.SetAdmLogin(admLogin.c_str());
-sc.SetAdmPassword(admPasswd.c_str());
+SERVCONF sc(server, port, admLogin, admPasswd);
 
 GetUserData data(request, false);
 
@@ -537,12 +522,7 @@ bool ProcessAuthBy(const std::string &server,
                    const std::string &admPasswd,
                    const std::string &login)
 {
-SERVCONF sc;
-
-sc.SetServer(server.c_str());
-sc.SetPort(port);
-sc.SetAdmLogin(admLogin.c_str());
-sc.SetAdmPassword(admPasswd.c_str());
+SERVCONF sc(server, port, admLogin, admPasswd);
 
 ResultData data;
 sc.SetAuthByCallback(RecvAuthByData, &data);

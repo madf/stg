@@ -46,9 +46,6 @@
 
 #include <expat.h>
 
-void Start(void * data, const char * el, const char ** attr);
-void End(void * data, const char * el);
-
 #define MAX_ERR_STR_LEN (64)
 #define IP_STRING_LEN   (255)
 
@@ -60,12 +57,8 @@ struct ADMINDATA
 class SERVCONF
 {
 public:
-    SERVCONF();
-    void SetServer(const char * server);
-    void SetPort(uint16_t port);
-
-    void SetAdmLogin(const char * login);
-    void SetAdmPassword(const char * password);
+    SERVCONF(const std::string & server, uint16_t port,
+             const std::string & login, const std::string & password);
 
     void SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data);
     void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);

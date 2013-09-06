@@ -25,7 +25,24 @@
 #include <cstdio>
 #include <cstring>
 
+namespace
+{
+
 //-----------------------------------------------------------------------------
+void Start(void *data, const char *el, const char **attr)
+{
+SERVCONF * sc = static_cast<SERVCONF *>(data);
+sc->Start(el, attr);
+}
+//-----------------------------------------------------------------------------
+void End(void * data, const char * el)
+{
+SERVCONF * sc = static_cast<SERVCONF *>(data);
+sc->End(el);
+}
+
+} // namespace anonymous
+
 int AnsRecv(void * data, std::list<std::string> * list1)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
@@ -60,44 +77,15 @@ while (node != list1->end())
 
 return st_ok;
 }
+
 //-----------------------------------------------------------------------------
-void Start(void *data, const char *el, const char **attr)
-{
-SERVCONF * sc = static_cast<SERVCONF *>(data);
-sc->Start(el, attr);
-}
-//-----------------------------------------------------------------------------
-void End(void * data, const char * el)
-{
-SERVCONF * sc = static_cast<SERVCONF *>(data);
-sc->End(el);
-}
-//-----------------------------------------------------------------------------
-SERVCONF::SERVCONF()
-    : currParser(NULL)
+SERVCONF::SERVCONF(const std::string & server, uint16_t port,
+                   const std::string & login, const std::string & password)
+    : currParser(NULL),
+      nt( server, port, login, password )
 {
 parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetServer(const char * server)
-{
-nt.SetServer(server);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetPort(uint16_t port)
-{
-nt.SetServerPort(port);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetAdmLogin(const char * login)
-{
-nt.SetLogin(login);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetAdmPassword(const char * password)
-{
-nt.SetPassword(password);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::GetUser(const char * l)
