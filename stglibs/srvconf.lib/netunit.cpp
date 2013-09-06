@@ -397,45 +397,40 @@ return 0;
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxDataAnswer()
 {
-int n = 0;
-int ret;
-char bufferS[ENC_MSG_LEN];
-char buffer[ENC_MSG_LEN + 1];
-
 BLOWFISH_CTX ctx;
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
-while (1)
+while (true)
     {
-    ret = recv(outerSocket, &bufferS[n++], 1, 0);
-    if (ret <= 0)
+    char bufferS[ENC_MSG_LEN];
+    size_t toRead = ENC_MSG_LEN;
+    while (toRead > 0)
         {
-        printf("Receive data error: '%s'\n", strerror(errno));
-        close(outerSocket);
-        errorMsg = RECV_DATA_ANSWER_ERROR;
-        return st_recv_fail;
+        int ret = recv(outerSocket, &bufferS[ENC_MSG_LEN - toRead], toRead, 0);
+        if (ret <= 0)
+            {
+            printf("Receive data error: '%s'\n", strerror(errno));
+            close(outerSocket);
+            errorMsg = RECV_DATA_ANSWER_ERROR;
+            return st_recv_fail;
+            }
+        toRead -= ret;
         }
 
-    if (n == ENC_MSG_LEN)
+    char buffer[ENC_MSG_LEN + 1];
+    DecodeString(buffer, bufferS, &ctx);
+    buffer[ENC_MSG_LEN] = 0;
+
+    answerList.push_back(buffer);
+
+    for (size_t i = 0; i < ENC_MSG_LEN; i++)
         {
-        n = 0;
-        DecodeString(buffer, bufferS, &ctx);
-        buffer[ENC_MSG_LEN] = 0;
-
-        printf("%s", buffer);
-
-        answerList.push_back(buffer);
-
-        for (int j = 0; j < ENC_MSG_LEN; j++)
+        if (buffer[i] == 0)
             {
-            if (buffer[j] == 0)
-                {
-                printf("\n");
-                if (RxCallBack)
-                    if (st_ok != RxCallBack(dataRxCallBack, &answerList))
-                        return st_xml_parse_error;
-                return st_ok;
-                }
+            if (RxCallBack)
+                if (st_ok != RxCallBack(dataRxCallBack, &answerList))
+                    return st_xml_parse_error;
+            return st_ok;
             }
         }
     }
