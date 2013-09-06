@@ -28,13 +28,12 @@
 namespace
 {
 
-//-----------------------------------------------------------------------------
-void ElementStart(void *data, const char *el, const char **attr)
+void ElementStart(void * data, const char * el, const char ** attr)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
 sc->Start(el, attr);
 }
-//-----------------------------------------------------------------------------
+
 void ElementEnd(void * data, const char * el)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
@@ -46,7 +45,6 @@ sc->End(el);
 bool AnsRecv(void * data, const std::string & chunk, bool final)
 {
 SERVCONF * sc = static_cast<SERVCONF *>(data);
-printf("Chunk: '%s', length: %d, final: %d\n", chunk.c_str(), chunk.length(), final);
 
 if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ERROR)
     {
@@ -75,9 +73,7 @@ int SERVCONF::GetUser(const char * l)
 char request[255];
 snprintf(request, 255, "<GetUser login=\"%s\"/>", l);
 
-currParser = &parserGetUser;
-
-return Exec(request);
+return Exec(request, parserGetUser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::AuthBy(const char * l)
@@ -85,41 +81,31 @@ int SERVCONF::AuthBy(const char * l)
 char request[255];
 snprintf(request, 255, "<GetUserAuthBy login=\"%s\"/>", l);
 
-currParser = &parserAuthBy;
-
-return Exec(request);
+return Exec(request, parserAuthBy);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::GetUsers()
 {
 char request[] = "<GetUsers/>";
 
-currParser = &parserGetUsers;
-
-return Exec(request);
+return Exec(request, parserGetUsers);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::ServerInfo()
 {
 char request[] = "<GetServerInfo/>";
 
-currParser = &parserServerInfo;
-
-return Exec(request);
+return Exec(request, parserServerInfo);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::ChgUser(const char * request)
 {
-currParser = &parserChgUser;
-
-return Exec(request);
+return Exec(request, parserChgUser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::SendMessage(const char * request)
 {
-currParser = &parserSendMessage;
-
-return Exec(request);
+return Exec(request, parserSendMessage);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::CheckUser(const char * login, const char * password)
@@ -127,9 +113,7 @@ int SERVCONF::CheckUser(const char * login, const char * password)
 char request[255];
 snprintf(request, 255, "<CheckUser login=\"%s\" password=\"%s\"/>", login, password);
 
-currParser = &parserCheckUser;
-
-return Exec(request);
+return Exec(request, parserCheckUser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::Start(const char * el, const char ** attr)
@@ -183,8 +167,10 @@ const std::string & SERVCONF::GetStrError() const
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::Exec(const char * request)
+int SERVCONF::Exec(const char * request, PARSER & cp)
 {
+currParser = &cp;
+
 XML_ParserReset(parser, NULL);
 XML_SetElementHandler(parser, ElementStart, ElementEnd);
 XML_SetUserData(parser, this);

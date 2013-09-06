@@ -96,7 +96,7 @@ private:
     std::string errorMsg;
     XML_Parser parser;
 
-    int Exec(const char * request);
+    int Exec(const char * request, PARSER & cp);
 
     friend bool AnsRecv(void * data, const std::string & chunk, bool final);
 };
