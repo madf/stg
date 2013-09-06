@@ -28,6 +28,7 @@
 
 #include "stg/netunit.h"
 #include "stg/common.h"
+#include "stg/blowfish.h"
 
 #include <cstdio>
 #include <cerrno>
@@ -63,31 +64,6 @@ NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
       RxCallBack(NULL),
       dataRxCallBack(NULL)
 {
-}
-//-----------------------------------------------------------------------------
-void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
-{
-unsigned char * keyL = NULL;
-
-keyL = new unsigned char[PASSWD_LEN];
-
-memset(keyL, 0, PASSWD_LEN);
-
-strncpy((char *)keyL, passwd, PASSWD_LEN);
-
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
-
-delete[] keyL;
-}
-//-----------------------------------------------------------------------------
-void NETTRANSACT::Encrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
-{
-EncodeString(d, s, ctx);
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
-{
-DecodeString(d, s, ctx);
 }
 //---------------------------------------------------------------------------
 int NETTRANSACT::Connect()
@@ -302,11 +278,11 @@ memset(loginZ, 0, ADM_LOGIN_LEN);
 strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
+EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
 for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
     {
-    Encrypt(ct, loginZ + j*ENC_MSG_LEN, &ctx);
+    EncodeString(ct, loginZ + j*ENC_MSG_LEN, &ctx);
     ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
     if (ret <= 0)
         {
@@ -361,12 +337,12 @@ int n = strlen(text) / ENC_MSG_LEN;
 int r = strlen(text) % ENC_MSG_LEN;
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
+EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
 for (j = 0; j < n; j++)
     {
     strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
-    Encrypt(ct, textZ, &ctx);
+    EncodeString(ct, textZ, &ctx);
     ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
     if (ret <= 0)
         {
@@ -379,9 +355,9 @@ memset(textZ, 0, ENC_MSG_LEN);
 if (r)
     strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
 
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
+EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
-Encrypt(ct, textZ, &ctx);
+EncodeString(ct, textZ, &ctx);
 ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
 if (ret <= 0)
     {
@@ -407,12 +383,12 @@ if (strlen(data)%ENC_MSG_LEN)
     l++;
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(passwd, PASSWD_LEN, &ctx);
+EnDecodeInit(passwd, PASSWD_LEN, &ctx);
 
 for (int j = 0; j < l; j++)
     {
     strncpy(buff, &data[j*ENC_MSG_LEN], ENC_MSG_LEN);
-    Encrypt(buffS, buff, &ctx);
+    EncodeString(buffS, buff, &ctx);
     send(outerSocket, buffS, ENC_MSG_LEN, 0);
     }
 
@@ -427,7 +403,7 @@ char bufferS[ENC_MSG_LEN];
 char buffer[ENC_MSG_LEN + 1];
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
+EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
 while (1)
     {
@@ -443,7 +419,7 @@ while (1)
     if (n == ENC_MSG_LEN)
         {
         n = 0;
-        Decrypt(buffer, bufferS, &ctx);
+        DecodeString(buffer, bufferS, &ctx);
         buffer[ENC_MSG_LEN] = 0;
 
         printf("%s", buffer);
