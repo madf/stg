@@ -25,10 +25,14 @@ $Author: faust $
 #include "noncopyable.h"
 
 extern volatile time_t stgTime;
-
+//-----------------------------------------------------------------------------
+class USER_PROPERTY_BASE {
+public:
+    virtual std::string ToString() const = 0;
+};
 //-----------------------------------------------------------------------------
 template<typename varT>
-class USER_PROPERTY {
+class USER_PROPERTY : USER_PROPERTY_BASE {
 public:
     USER_PROPERTY(varT & val);
     virtual ~USER_PROPERTY();
@@ -130,6 +134,8 @@ public:
 
     void SetProperties(const USER_PROPERTIES & p) { stat = p.stat; conf = p.conf; }
 
+    std::string GetPropertyValue(const std::string & name) const;
+
     USER_PROPERTY_LOGGED<double>            cash;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         up;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         down;
@@ -165,6 +171,8 @@ public:
     USER_PROPERTY_LOGGED<std::string>       userdata7;
     USER_PROPERTY_LOGGED<std::string>       userdata8;
     USER_PROPERTY_LOGGED<std::string>       userdata9;
+
+    std::map<std::string, USER_PROPERTY_BASE*> params;
 };
 //=============================================================================
 
@@ -372,6 +380,15 @@ else
     {
     stgLogger("Script OnChange cannot be executed. File %s not found.", filePath.c_str());
     }
+}
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
+std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
+{
+    std::map<std::string, USER_PROPERTY_BASE*>::iterator it = params.find(name);
+    if (it != params.end()) return it->second.ToString();
+    else return "";
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
