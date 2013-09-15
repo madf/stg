@@ -447,8 +447,7 @@ bool ProcessSetUser(const std::string & server,
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-sc.SetChgUserCallback(RecvSetUserAnswer, &data);
-int res = sc.ChgUser(str.c_str());
+int res = sc.ChgUser(str.c_str(), RecvSetUserAnswer, &data);
 
 if (res == st_ok && data.result)
     {
@@ -471,8 +470,7 @@ bool ProcessSendMessage(const std::string & server, uint16_t port,
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-sc.SetSendMessageCallback(SendMessageCallback, &data);
-int res = sc.SendMessage(requestString.c_str());
+int res = sc.SendMessage(requestString.c_str(), SendMessageCallback, &data);
 
 if (res == st_ok && data.result)
     {
@@ -498,9 +496,7 @@ bool ProcessGetUser(const std::string &server,
 SERVCONF sc(server, port, admLogin, admPasswd);
 
 GetUserData data(request, false);
-
-sc.SetGetUserCallback(GetUserCallback, &data);
-bool res = (sc.GetUser(login.c_str()) == st_ok);
+bool res = (sc.GetUser(login.c_str(), GetUserCallback, &data) == st_ok);
 
 if (res && data.result)
     {
@@ -525,8 +521,7 @@ bool ProcessAuthBy(const std::string &server,
 SERVCONF sc(server, port, admLogin, admPasswd);
 
 ResultData data;
-sc.SetAuthByCallback(RecvAuthByData, &data);
-bool res = (sc.AuthBy(login.c_str()) == st_ok);
+bool res = (sc.AuthBy(login.c_str(), RecvAuthByData, &data) == st_ok);
 
 if (res && data.result)
     {

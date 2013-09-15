@@ -30,14 +30,12 @@ namespace
 
 void ElementStart(void * data, const char * el, const char ** attr)
 {
-SERVCONF * sc = static_cast<SERVCONF *>(data);
-sc->Start(el, attr);
+static_cast<SERVCONF *>(data)->Start(el, attr);
 }
 
 void ElementEnd(void * data, const char * el)
 {
-SERVCONF * sc = static_cast<SERVCONF *>(data);
-sc->End(el);
+static_cast<SERVCONF *>(data)->End(el);
 }
 
 } // namespace anonymous
@@ -68,58 +66,51 @@ parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetUser(const char * l)
+int SERVCONF::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
 {
-char request[255];
-snprintf(request, 255, "<GetUser login=\"%s\"/>", l);
-
-return Exec(request, parserGetUser);
+parserGetUser.SetCallback(f, data);
+return Exec("<GetUser login=\"" + login + "\"/>", parserGetUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::AuthBy(const char * l)
+int SERVCONF::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
 {
-char request[255];
-snprintf(request, 255, "<GetUserAuthBy login=\"%s\"/>", l);
-
-return Exec(request, parserAuthBy);
+parserAuthBy.SetCallback(f, data);
+return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parserAuthBy);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetUsers()
+int SERVCONF::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
 {
-char request[] = "<GetUsers/>";
-
-return Exec(request, parserGetUsers);
+parserGetUsers.SetCallback(f, data);
+return Exec("<GetUsers/>", parserGetUsers);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::ServerInfo()
+int SERVCONF::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
 {
-char request[] = "<GetServerInfo/>";
-
-return Exec(request, parserServerInfo);
+parserServerInfo.SetCallback(f, data);
+return Exec("<GetServerInfo/>", parserServerInfo);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::ChgUser(const char * request)
+int SERVCONF::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
 {
+parserChgUser.SetCallback(f, data);
 return Exec(request, parserChgUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::SendMessage(const char * request)
+int SERVCONF::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
 {
+parserSendMessage.SetCallback(f, data);
 return Exec(request, parserSendMessage);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::CheckUser(const char * login, const char * password)
+int SERVCONF::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
 {
-char request[255];
-snprintf(request, 255, "<CheckUser login=\"%s\" password=\"%s\"/>", login, password);
-
-return Exec(request, parserCheckUser);
+parserCheckUser.SetCallback(f, data);
+return Exec("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", parserCheckUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::Start(const char * el, const char ** attr)
+void SERVCONF::Start(const char * el, const char ** attr)
 {
 currParser->ParseStart(el, attr);
-return 0;
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::End(const char * el)
@@ -127,47 +118,12 @@ void SERVCONF::End(const char * el)
 currParser->ParseEnd(el);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data)
-{
-parserGetUsers.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data)
-{
-parserGetUser.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data)
-{
-parserAuthBy.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data)
-{
-parserServerInfo.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetChgUserCallback(PARSER_CHG_USER::CALLBACK f, void * data)
-{
-parserChgUser.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data)
-{
-parserCheckUser.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetSendMessageCallback(PARSER_SEND_MESSAGE::CALLBACK f, void * data)
-{
-parserSendMessage.SetCallback(f, data);
-}
-//-----------------------------------------------------------------------------
 const std::string & SERVCONF::GetStrError() const
 {
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::Exec(const char * request, PARSER & cp)
+int SERVCONF::Exec(const std::string & request, PARSER & cp)
 {
 currParser = &cp;
 
@@ -181,7 +137,7 @@ if ((ret = nt.Connect()) != st_ok)
     errorMsg = nt.GetError();
     return ret;
     }
-if ((ret = nt.Transact(request)) != st_ok)
+if ((ret = nt.Transact(request.c_str())) != st_ok)
     {
     errorMsg = nt.GetError();
     return ret;

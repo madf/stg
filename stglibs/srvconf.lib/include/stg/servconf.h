@@ -60,24 +60,16 @@ public:
     SERVCONF(const std::string & server, uint16_t port,
              const std::string & login, const std::string & password);
 
-    void SetGetUsersCallback(PARSER_GET_USERS::CALLBACK f, void * data);
-    void SetAuthByCallback(PARSER_AUTH_BY::CALLBACK f, void * data);
-    void SetServerInfoCallback(PARSER_SERVER_INFO::CALLBACK f, void * data);
-    void SetChgUserCallback(PARSER_CHG_USER::CALLBACK f, void * data);
-    void SetCheckUserCallback(PARSER_CHECK_USER::CALLBACK f, void * data);
-    void SetGetUserCallback(PARSER_GET_USER::CALLBACK f, void * data);
-    void SetSendMessageCallback(PARSER_SEND_MESSAGE::CALLBACK f, void * data);
-
-    int GetUsers();
-    int GetUser(const char * login);
-    int ChgUser(const char * request);
-    int AuthBy(const char * login);
-    int SendMessage(const char * request);
-    int ServerInfo();
-    int CheckUser(const char * login, const char * password);
+    int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
+    int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
+    int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
+    int AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data);
+    int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
+    int ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data);
+    int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
-    int Start(const char * el, const char ** attr);
+    void Start(const char * el, const char ** attr);
     void End(const char * el);
 
 private:
@@ -96,7 +88,7 @@ private:
     std::string errorMsg;
     XML_Parser parser;
 
-    int Exec(const char * request, PARSER & cp);
+    int Exec(const std::string & request, PARSER & cp);
 
     friend bool AnsRecv(void * data, const std::string & chunk, bool final);
 };
