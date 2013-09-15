@@ -49,11 +49,6 @@
 #define MAX_ERR_STR_LEN (64)
 #define IP_STRING_LEN   (255)
 
-struct ADMINDATA
-{
-    char login[ADM_LOGIN_LEN];
-};
-//-----------------------------------------------------------------------------
 class SERVCONF
 {
 public:
