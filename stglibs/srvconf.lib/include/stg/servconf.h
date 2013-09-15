@@ -38,16 +38,10 @@
 #include "stg/parser_send_message.h"
 
 #include "stg/os_int.h"
-#include "stg/const.h"
 
-#include <list>
-#include <vector>
 #include <string>
 
 #include <expat.h>
-
-#define MAX_ERR_STR_LEN (64)
-#define IP_STRING_LEN   (255)
 
 class SERVCONF
 {
