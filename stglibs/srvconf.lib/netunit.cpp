@@ -27,6 +27,7 @@
 //---------------------------------------------------------------------------
 
 #include "stg/netunit.h"
+#include "stg/servconf_types.h"
 #include "stg/common.h"
 #include "stg/blowfish.h"
 
@@ -37,6 +38,10 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 namespace
 {

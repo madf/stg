@@ -29,6 +29,7 @@
 #define COMMON_SG_H
 
 #include "stg/servconf.h"
+#include "stg/servconf_types.h"
 #include "request.h"
 
 #include <string>

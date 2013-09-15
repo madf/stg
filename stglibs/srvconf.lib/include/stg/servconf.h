@@ -27,8 +27,6 @@
 #ifndef SERVCONF_H
 #define SERVCONF_H
 
-#include "netunit.h"
-
 #include "stg/parser_auth_by.h"
 #include "stg/parser_server_info.h"
 #include "stg/parser_check_user.h"
@@ -41,13 +39,12 @@
 
 #include <string>
 
-#include <expat.h>
-
 class SERVCONF
 {
 public:
     SERVCONF(const std::string & server, uint16_t port,
              const std::string & login, const std::string & password);
+    ~SERVCONF();
 
     int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
@@ -58,28 +55,10 @@ public:
     int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
-    void Start(const char * el, const char ** attr);
-    void End(const char * el);
 
 private:
-    PARSER * currParser;
-
-    PARSER_GET_USERS parserGetUsers;
-    PARSER_GET_USER parserGetUser;
-    PARSER_AUTH_BY parserAuthBy;
-    PARSER_SERVER_INFO  parserServerInfo;
-    PARSER_CHG_USER parserChgUser;
-    PARSER_CHECK_USER parserCheckUser;
-    PARSER_SEND_MESSAGE parserSendMessage;
-
-    NETTRANSACT nt;
-
-    std::string errorMsg;
-    XML_Parser parser;
-
-    int Exec(const std::string & request, PARSER & cp);
-
-    friend bool AnsRecv(void * data, const std::string & chunk, bool final);
+    class IMPL;
+    IMPL * pImpl;
 };
 //-----------------------------------------------------------------------------
 

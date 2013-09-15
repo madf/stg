@@ -20,29 +20,72 @@
 
 #include "stg/servconf.h"
 
+#include "stg/netunit.h"
+#include "stg/servconf_types.h"
+
 #include "stg/common.h"
 
 #include <cstdio>
 #include <cstring>
 
-namespace
+#include <expat.h>
+
+class SERVCONF::IMPL
+{
+public:
+    IMPL(const std::string & server, uint16_t port,
+         const std::string & login, const std::string & password);
+
+    int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
+    int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
+    int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
+    int AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data);
+    int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
+    int ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data);
+    int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
+
+    const std::string & GetStrError() const;
+    static void Start(void * data, const char * el, const char ** attr);
+    static void End(void * data, const char * el);
+
+private:
+    PARSER_GET_USERS parserGetUsers;
+    PARSER_GET_USER parserGetUser;
+    PARSER_AUTH_BY parserAuthBy;
+    PARSER_SERVER_INFO  parserServerInfo;
+    PARSER_CHG_USER parserChgUser;
+    PARSER_CHECK_USER parserCheckUser;
+    PARSER_SEND_MESSAGE parserSendMessage;
+
+    NETTRANSACT nt;
+
+    std::string errorMsg;
+    XML_Parser parser;
+
+    int Exec(const std::string & request, PARSER & cp);
+
+    static bool AnsRecv(void * data, const std::string & chunk, bool final);
+};
+
+/*namespace
 {
 
 void ElementStart(void * data, const char * el, const char ** attr)
 {
-static_cast<SERVCONF *>(data)->Start(el, attr);
+static_cast<SERVCONF::IMPL *>(data)->Start(el, attr);
 }
 
 void ElementEnd(void * data, const char * el)
 {
-static_cast<SERVCONF *>(data)->End(el);
+static_cast<SERVCONF::IMPL *>(data)->End(el);
 }
 
 } // namespace anonymous
+*/
 
-bool AnsRecv(void * data, const std::string & chunk, bool final)
+bool SERVCONF::IMPL::AnsRecv(void * data, const std::string & chunk, bool final)
 {
-SERVCONF * sc = static_cast<SERVCONF *>(data);
+SERVCONF::IMPL * sc = static_cast<SERVCONF::IMPL *>(data);
 
 if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ERROR)
     {
@@ -56,80 +99,130 @@ if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ER
 return true;
 }
 
-//-----------------------------------------------------------------------------
 SERVCONF::SERVCONF(const std::string & server, uint16_t port,
                    const std::string & login, const std::string & password)
-    : currParser(NULL),
-      nt( server, port, login, password )
+    : pImpl(new IMPL(server, port, login, password))
+{
+}
+
+SERVCONF::~SERVCONF()
+{
+    delete pImpl;
+}
+
+int SERVCONF::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
+{
+    return pImpl->GetUsers( f, data );
+}
+
+int SERVCONF::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
+{
+    return pImpl->GetUser(login, f, data);
+}
+
+int SERVCONF::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
+{
+    return pImpl->ChgUser(request, f, data);
+}
+
+int SERVCONF::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
+{
+    return pImpl->AuthBy(login, f, data);
+}
+
+int SERVCONF::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
+{
+    return pImpl->SendMessage(request, f, data);
+}
+
+int SERVCONF::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
+{
+    return pImpl->ServerInfo(f, data);
+}
+
+int SERVCONF::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
+{
+    return pImpl->CheckUser(login, password, f, data);
+}
+
+const std::string & SERVCONF::GetStrError() const
+{
+    return pImpl->GetStrError();
+}
+
+//-----------------------------------------------------------------------------
+SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
+                     const std::string & login, const std::string & password)
+    : nt( server, port, login, password )
 {
 parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
 {
 parserGetUser.SetCallback(f, data);
 return Exec("<GetUser login=\"" + login + "\"/>", parserGetUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
+int SERVCONF::IMPL::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
 {
 parserAuthBy.SetCallback(f, data);
 return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parserAuthBy);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
+int SERVCONF::IMPL::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
 {
 parserGetUsers.SetCallback(f, data);
 return Exec("<GetUsers/>", parserGetUsers);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
+int SERVCONF::IMPL::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
 {
 parserServerInfo.SetCallback(f, data);
 return Exec("<GetServerInfo/>", parserServerInfo);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
 {
 parserChgUser.SetCallback(f, data);
 return Exec(request, parserChgUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
+int SERVCONF::IMPL::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
 {
 parserSendMessage.SetCallback(f, data);
 return Exec(request, parserSendMessage);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
 {
 parserCheckUser.SetCallback(f, data);
 return Exec("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", parserCheckUser);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::Start(const char * el, const char ** attr)
+void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
 {
+PARSER * currParser = static_cast<PARSER *>(data);
 currParser->ParseStart(el, attr);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::End(const char * el)
+void SERVCONF::IMPL::End(void * data, const char * el)
 {
+PARSER * currParser = static_cast<PARSER *>(data);
 currParser->ParseEnd(el);
 }
 //-----------------------------------------------------------------------------
-const std::string & SERVCONF::GetStrError() const
+const std::string & SERVCONF::IMPL::GetStrError() const
 {
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::Exec(const std::string & request, PARSER & cp)
+int SERVCONF::IMPL::Exec(const std::string & request, PARSER & cp)
 {
-currParser = &cp;
-
 XML_ParserReset(parser, NULL);
-XML_SetElementHandler(parser, ElementStart, ElementEnd);
-XML_SetUserData(parser, this);
+XML_SetElementHandler(parser, Start, End);
+XML_SetUserData(parser, &cp);
 
 int ret = 0;
 if ((ret = nt.Connect()) != st_ok)

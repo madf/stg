@@ -27,52 +27,12 @@
 #ifndef NetUnitH
 #define NetUnitH
 
-#include "stg/blowfish.h"
+#include "stg/os_int.h"
 
 #include <string>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
-#define  STG_HEADER     "SG04"
-#define  OK_HEADER      "OKHD"
-#define  ERR_HEADER     "ERHD"
-#define  OK_LOGIN       "OKLG"
-#define  ERR_LOGIN      "ERLG"
-#define  OK_LOGINS      "OKLS"
-#define  ERR_LOGINS     "ERLS"
-
-// Длинна шифруемого и передаваемог за один раз блока информации
-#define  ENC_MSG_LEN    (8)
-
-#define MAX_ERR_STR_LEN (64)
-
 typedef bool (* RxCallback_t)(void *, const std::string &, bool);
 
-enum status
-{
-st_ok = 0,
-st_conn_fail,
-st_send_fail,
-st_recv_fail,
-st_header_err,
-st_login_err,
-st_logins_err,
-st_data_err,
-st_unknown_err,
-st_dns_err,
-st_xml_parse_error,
-st_data_error
-};
-
-enum CONF_STATE
-{
-confHdr = 0,
-confLogin,
-confLoginCipher,
-confData
-};
 //---------------------------------------------------------------------------
 class NETTRANSACT
 {
