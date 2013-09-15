@@ -294,14 +294,7 @@ void ConvertFromKOI8(const std::string & src, std::string * dst)
 ConvertKOI8(src, dst, FROM_KOI8);
 }
 //-----------------------------------------------------------------------------
-void SendMessageCallback(bool result, const std::string & reason, void * d)
-{
-ResultData * data = static_cast<ResultData *>(d);
-data->result = result;
-data->reason = reason;
-}
-//-----------------------------------------------------------------------------
-void RecvSetUserAnswer(bool result, const std::string & reason, void * d)
+void ResultCallback(bool result, const std::string & reason, void * d)
 {
 ResultData * data = static_cast<ResultData *>(d);
 data->result = result;
@@ -447,7 +440,7 @@ bool ProcessSetUser(const std::string & server,
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-int res = sc.ChgUser(str.c_str(), RecvSetUserAnswer, &data);
+int res = sc.ChgUser(str.c_str(), ResultCallback, &data);
 
 if (res == st_ok && data.result)
     {
@@ -470,7 +463,7 @@ bool ProcessSendMessage(const std::string & server, uint16_t port,
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-int res = sc.SendMessage(requestString.c_str(), SendMessageCallback, &data);
+int res = sc.SendMessage(requestString.c_str(), ResultCallback, &data);
 
 if (res == st_ok && data.result)
     {
