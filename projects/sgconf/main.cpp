@@ -38,7 +38,7 @@
 #include <sstream>
 
 #include "stg/common.h"
-#include "stg/netunit.h"
+//#include "stg/netunit.h"
 #include "request.h"
 #include "common_sg.h"
 #include "sg_error_codes.h"

@@ -26,7 +26,8 @@
 
 //---------------------------------------------------------------------------
 
-#include "stg/netunit.h"
+#include "netunit.h"
+
 #include "stg/servconf_types.h"
 #include "stg/common.h"
 #include "stg/blowfish.h"
