@@ -34,7 +34,6 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <list>
 #include <sstream>
 
 #include "stg/common.h"
@@ -73,9 +72,6 @@ return true;
 } // namespace anonymous
 
 time_t stgTime;
-
-int ParseReplyGet(void * data, list<string> * ans);
-//int ParseReplySet(void * data, list<string> * ans);
 
 struct option long_options_get[] = {
 {"server",      1, 0, 's'},  //Server
