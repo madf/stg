@@ -22,10 +22,9 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 
-#include "stg/parser.h"
-#include "stg/servconf_types.h"
+#include "parser.h"
 
-#include <string>
+#include "stg/servconf_types.h"
 
 namespace STG
 {
@@ -35,11 +34,11 @@ namespace CHECK_USER
 class PARSER: public STG::PARSER
 {
 public:
-
     PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
+
 private:
     CALLBACK callback;
     void * data;

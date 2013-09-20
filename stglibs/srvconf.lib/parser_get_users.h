@@ -23,12 +23,12 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_USERS_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_GET_USERS_H__
 
-#include "stg/parser.h"
-#include "stg/servconf_types.h"
-
+#include "parser.h"
 #include "parser_get_user.h"
 
-#include <vector>
+#include "stg/servconf_types.h"
+
+#include <string>
 
 namespace STG
 {
@@ -38,11 +38,11 @@ namespace GET_USERS
 class PARSER: public STG::PARSER
 {
 public:
-
     PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
+
 private:
     CALLBACK callback;
     void * data;

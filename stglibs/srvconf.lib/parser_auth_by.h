@@ -21,11 +21,10 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
 
-#include "stg/parser.h"
+#include "parser.h"
 
 #include "stg/servconf_types.h"
 
-#include <vector>
 #include <string>
 
 namespace STG
@@ -37,9 +36,10 @@ class PARSER: public STG::PARSER
 {
 public:
     PARSER();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
+
 private:
     CALLBACK callback;
     void * data;

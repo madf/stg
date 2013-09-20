@@ -22,14 +22,12 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 
-#include "stg/parser.h"
+#include "parser.h"
+#include "property_parsers.h"
 
-#include "stg/property_parsers.h"
 #include "stg/servconf_types.h"
 
 #include <string>
-
-#include <ctime>
 
 namespace STG
 {
@@ -39,12 +37,12 @@ namespace GET_USER
 class PARSER: public STG::PARSER
 {
 public:
-
     PARSER();
     virtual ~PARSER();
-    int  ParseStart(const char *el, const char **attr);
-    void ParseEnd(const char *el);
+    int  ParseStart(const char * el, const char ** attr);
+    void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
+
 private:
     PROPERTY_PARSERS propertyParsers;
     CALLBACK callback;
@@ -54,8 +52,8 @@ private:
     bool parsingAnswer;
     std::string error;
 
-    void ParseUser(const char *el, const char **attr);
-    void ParseUserParams(const char *el, const char **attr);
+    void ParseUser(const char * el, const char ** attr);
+    void ParseUserParams(const char * el, const char ** attr);
 };
 
 } // namespace GET_USER

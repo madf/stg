@@ -22,9 +22,9 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 
-#include "stg/parser.h"
+#include "parser.h"
+#include "property_parsers.h"
 
-#include "stg/property_parsers.h"
 #include "stg/servconf_types.h"
 
 #include <string>
@@ -37,11 +37,11 @@ namespace SERVER_INFO
 class PARSER: public STG::PARSER
 {
 public:
-
     PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
+
 private:
     PROPERTY_PARSERS propertyParsers;
     CALLBACK callback;

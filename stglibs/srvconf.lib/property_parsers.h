@@ -21,10 +21,13 @@
 #ifndef __STG_STGLIBS_SRVCONF_PROPERTY_PARSERS_H__
 #define __STG_STGLIBS_SRVCONF_PROPERTY_PARSERS_H__
 
+#include "stg/common.h"
+
 #include <map>
 #include <string>
 
-#include "stg/common.h"
+namespace STG
+{
 
 class BASE_PROPERTY_PARSER
 {
@@ -94,5 +97,7 @@ void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, 
 }
 
 bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr);
+
+} // namespace STG
 
 #endif

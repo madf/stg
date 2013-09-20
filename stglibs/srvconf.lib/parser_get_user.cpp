@@ -31,6 +31,9 @@
 
 using namespace STG;
 
+namespace STG
+{
+
 template <>
 bool GetValue<GET_USER::STAT>(const char ** attr, GET_USER::STAT & value)
 {
@@ -54,6 +57,8 @@ while (attr[pos])
                 return false;
     }
 return true;
+}
+
 }
 
 GET_USER::PARSER::PARSER()

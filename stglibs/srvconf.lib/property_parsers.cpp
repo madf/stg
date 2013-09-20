@@ -18,16 +18,16 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/property_parsers.h"
+#include "property_parsers.h"
 
 #include <strings.h>
 
-bool CheckValue(const char ** attr)
+bool STG::CheckValue(const char ** attr)
 {
 return attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0;
 }
 
-bool GetEncodedValue(const char ** attr, std::string & value)
+bool STG::GetEncodedValue(const char ** attr, std::string & value)
 {
 if (!CheckValue(attr))
     return false;
@@ -35,7 +35,7 @@ Decode21str(value, attr[1]);
 return true;
 }
 
-bool GetIPValue(const char ** attr, uint32_t & value)
+bool STG::GetIPValue(const char ** attr, uint32_t & value)
 {
 if (!CheckValue(attr))
     return false;
@@ -46,7 +46,7 @@ if (value == 0 && ip != "0.0.0.0")
 return true;
 }
 
-bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
+bool STG::TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr)
 {
     PROPERTY_PARSERS::iterator it(parsers.find(name));
     if (it != parsers.end())
