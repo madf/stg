@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_send_message.h"
+#include "parser_send_message.h"
 
 #include <cstddef>
 
@@ -27,14 +27,14 @@
 
 using namespace STG;
 
-PARSER_SEND_MESSAGE::PARSER_SEND_MESSAGE()
+SEND_MESSAGE::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0)
 {
 }
 //-----------------------------------------------------------------------------
-int PARSER_SEND_MESSAGE::ParseStart(const char * el, const char ** attr)
+int SEND_MESSAGE::PARSER::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1)
@@ -43,12 +43,12 @@ if (depth == 1)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_SEND_MESSAGE::ParseEnd(const char * /*el*/)
+void SEND_MESSAGE::PARSER::ParseEnd(const char * /*el*/)
 {
 depth--;
 }
 //-----------------------------------------------------------------------------
-void PARSER_SEND_MESSAGE::ParseAnswer(const char * /*el*/, const char **attr)
+void SEND_MESSAGE::PARSER::ParseAnswer(const char * /*el*/, const char **attr)
 {
 if (!callback)
     return;
@@ -58,7 +58,7 @@ else
     callback(false, "Invalid response.", data);
 }
 //-----------------------------------------------------------------------------
-void PARSER_SEND_MESSAGE::SetCallback(CALLBACK f, void * d)
+void SEND_MESSAGE::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;

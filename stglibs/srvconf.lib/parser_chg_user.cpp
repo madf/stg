@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_chg_user.h"
+#include "parser_chg_user.h"
 
 #include <cstddef>
 
@@ -27,14 +27,14 @@
 
 using namespace STG;
 
-PARSER_CHG_USER::PARSER_CHG_USER()
+CHG_USER::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0)
 {
 }
 //-----------------------------------------------------------------------------
-int PARSER_CHG_USER::ParseStart(const char *el, const char **attr)
+int CHG_USER::PARSER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
@@ -49,12 +49,12 @@ if (depth == 1)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHG_USER::ParseEnd(const char *)
+void CHG_USER::PARSER::ParseEnd(const char *)
 {
 depth--;
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHG_USER::ParseAnswer(const char * /*el*/, const char ** attr)
+void CHG_USER::PARSER::ParseAnswer(const char * /*el*/, const char ** attr)
 {
 if (!callback)
     return;
@@ -64,7 +64,7 @@ else
     callback(false, "Invalid response.", data);
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHG_USER::SetCallback(CALLBACK f, void * d)
+void CHG_USER::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;

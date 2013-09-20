@@ -26,6 +26,8 @@
 #include "parser_check_user.h"
 #include "parser_get_users.h"
 #include "parser_get_user.h"
+#include "parser_chg_user.h"
+#include "parser_send_message.h"
 
 #include "stg/common.h"
 
@@ -44,9 +46,9 @@ public:
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
-    int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
+    int ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
-    int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
+    int SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data);
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
 
@@ -59,9 +61,9 @@ private:
     GET_USER::PARSER parserGetUser;
     AUTH_BY::PARSER parserAuthBy;
     SERVER_INFO::PARSER  parserServerInfo;
-    PARSER_CHG_USER parserChgUser;
+    CHG_USER::PARSER parserChgUser;
     CHECK_USER::PARSER parserCheckUser;
-    PARSER_SEND_MESSAGE parserSendMessage;
+    SEND_MESSAGE::PARSER parserSendMessage;
 
     NETTRANSACT nt;
 
@@ -110,7 +112,7 @@ int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * da
     return pImpl->GetUser(login, f, data);
 }
 
-int SERVCONF::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
+int SERVCONF::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
 {
     return pImpl->ChgUser(request, f, data);
 }
@@ -120,7 +122,7 @@ int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data
     return pImpl->AuthBy(login, f, data);
 }
 
-int SERVCONF::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
+int SERVCONF::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
 {
     return pImpl->SendMessage(request, f, data);
 }
@@ -173,13 +175,13 @@ parserServerInfo.SetCallback(f, data);
 return Exec("<GetServerInfo/>", parserServerInfo);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
 {
 parserChgUser.SetCallback(f, data);
 return Exec(request, parserChgUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data)
+int SERVCONF::IMPL::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
 {
 parserSendMessage.SetCallback(f, data);
 return Exec(request, parserSendMessage);

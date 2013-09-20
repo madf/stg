@@ -22,19 +22,20 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
 
-#include "parser.h"
+#include "stg/parser.h"
+#include "stg/servconf_types.h"
 
 #include <string>
 
 namespace STG
 {
+namespace SEND_MESSAGE
+{
 
-class PARSER_SEND_MESSAGE: public PARSER
+class PARSER: public STG::PARSER
 {
 public:
-    typedef void (* CALLBACK)(bool result, const std::string& reason, void * data);
-
-    PARSER_SEND_MESSAGE();
+    PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
@@ -46,6 +47,7 @@ private:
     void ParseAnswer(const char * el, const char ** attr);
 };
 
+} // namespace SEND_MESSAGE
 } // namespace STG
 
 #endif

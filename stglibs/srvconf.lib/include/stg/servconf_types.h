@@ -147,6 +147,20 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 } // namespace GET_USERS
 
+namespace CHG_USER
+{
+
+typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+
+}
+
+namespace SEND_MESSAGE
+{
+
+typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+
+}
+
 } // namespace STG
 
 #endif
