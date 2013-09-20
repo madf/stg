@@ -23,6 +23,7 @@
 #include "netunit.h"
 #include "parser_auth_by.h"
 #include "parser_server_info.h"
+#include "parser_check_user.h"
 
 #include "stg/common.h"
 
@@ -45,7 +46,7 @@ public:
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
-    int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
+    int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
     static void Start(void * data, const char * el, const char ** attr);
@@ -57,7 +58,7 @@ private:
     AUTH_BY::PARSER parserAuthBy;
     SERVER_INFO::PARSER  parserServerInfo;
     PARSER_CHG_USER parserChgUser;
-    PARSER_CHECK_USER parserCheckUser;
+    CHECK_USER::PARSER parserCheckUser;
     PARSER_SEND_MESSAGE parserSendMessage;
 
     NETTRANSACT nt;
@@ -127,7 +128,7 @@ int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
     return pImpl->ServerInfo(f, data);
 }
 
-int SERVCONF::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
+int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
 {
     return pImpl->CheckUser(login, password, f, data);
 }
@@ -182,7 +183,7 @@ parserSendMessage.SetCallback(f, data);
 return Exec(request, parserSendMessage);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
 {
 parserCheckUser.SetCallback(f, data);
 return Exec("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", parserCheckUser);

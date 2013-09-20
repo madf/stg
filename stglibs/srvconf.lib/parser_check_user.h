@@ -22,19 +22,21 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_CHECK_USER_H__
 
-#include "parser.h"
+#include "stg/parser.h"
+#include "stg/servconf_types.h"
 
 #include <string>
 
 namespace STG
 {
+namespace CHECK_USER
+{
 
-class PARSER_CHECK_USER: public PARSER
+class PARSER: public STG::PARSER
 {
 public:
-    typedef int (* CALLBACK)(bool result, const std::string & reason, void * data);
 
-    PARSER_CHECK_USER();
+    PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
@@ -46,6 +48,7 @@ private:
     void ParseAnswer(const char * el, const char ** attr);
 };
 
+} // namespace CHECK_USER
 } // namespace STG
 
 #endif

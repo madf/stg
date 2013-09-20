@@ -80,7 +80,7 @@ if (depth == 0)
     }
 }
 //-----------------------------------------------------------------------------
-void AUTH_BY::PARSER::SetCallback(AUTH_BY::CALLBACK f, void * d)
+void AUTH_BY::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;

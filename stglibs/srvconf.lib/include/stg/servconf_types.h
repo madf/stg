@@ -87,6 +87,13 @@ struct INFO
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 } // namespace SERVER_INFO
+
+namespace CHECK_USER
+{
+
+typedef int (* CALLBACK)(bool result, const std::string & reason, void * data);
+
+}
 } // namespace STG
 
 #endif
