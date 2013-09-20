@@ -22,12 +22,10 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_GET_USER_H__
 
-#include "parser.h"
+#include "stg/parser.h"
 
-#include "property_parsers.h"
-
-#include "stg/os_int.h"
-#include "stg/const.h"
+#include "stg/property_parsers.h"
+#include "stg/servconf_types.h"
 
 #include <string>
 
@@ -35,50 +33,15 @@
 
 namespace STG
 {
+namespace GET_USER
+{
 
-class PARSER_GET_USER: public PARSER
+class PARSER: public STG::PARSER
 {
 public:
-    struct STAT
-    {
-        long long  su[DIR_NUM];
-        long long  sd[DIR_NUM];
-        long long  mu[DIR_NUM];
-        long long  md[DIR_NUM];
-        double     freeMb;
-    };
 
-    struct INFO
-    {
-        std::string login;
-        std::string password;
-        double      cash;
-        double      credit;
-        time_t      creditExpire;
-        double      lastCash;
-        double      prepaidTraff;
-        int         down;
-        int         passive;
-        int         disableDetailStat;
-        int         connected;
-        int         alwaysOnline;
-        uint32_t    ip;
-        std::string ips;
-        std::string tariff;
-        std::string group;
-        std::string note;
-        std::string email;
-        std::string name;
-        std::string address;
-        std::string phone;
-        STAT        stat;
-        std::string userData[USERDATA_NUM];
-    };
-
-    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-    PARSER_GET_USER();
-    virtual ~PARSER_GET_USER();
+    PARSER();
+    virtual ~PARSER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
     void SetCallback(CALLBACK f, void * data);
@@ -95,6 +58,7 @@ private:
     void ParseUserParams(const char *el, const char **attr);
 };
 
+} // namespace GET_USER
 } // namespace STG
 
 #endif

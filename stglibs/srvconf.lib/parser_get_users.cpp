@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_get_users.h"
+#include "parser_get_users.h"
 
 #include <cstddef>
 
@@ -27,16 +27,16 @@
 
 using namespace STG;
 
-PARSER_GET_USERS::PARSER_GET_USERS()
+GET_USERS::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0),
       parsingAnswer(false)
 {
-    userParser.SetCallback(&PARSER_GET_USERS::UserCallback, this);
+    userParser.SetCallback(&GET_USERS::PARSER::UserCallback, this);
 }
 //-----------------------------------------------------------------------------
-int PARSER_GET_USERS::ParseStart(const char * el, const char ** attr)
+int GET_USERS::PARSER::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1 && strcasecmp(el, "users") == 0)
@@ -48,7 +48,7 @@ if (depth > 1 && parsingAnswer)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USERS::ParseEnd(const char * el)
+void GET_USERS::PARSER::ParseEnd(const char * el)
 {
 depth--;
 if (depth > 0 && parsingAnswer)
@@ -64,20 +64,20 @@ if (depth == 0 && parsingAnswer)
     }
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USERS::AddUser(const PARSER_GET_USER::INFO & userInfo)
+void GET_USERS::PARSER::AddUser(const GET_USER::INFO & userInfo)
 {
 info.push_back(userInfo);
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USERS::SetCallback(CALLBACK f, void * d)
+void GET_USERS::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USERS::UserCallback(bool result, const std::string & error, const PARSER_GET_USER::INFO & info, void * data)
+void GET_USERS::PARSER::UserCallback(bool result, const std::string & error, const GET_USER::INFO & info, void * data)
 {
-    PARSER_GET_USERS * parser = static_cast<PARSER_GET_USERS *>(data);
+    GET_USERS::PARSER * parser = static_cast<GET_USERS::PARSER *>(data);
     if (!result)
         parser->SetError(error);
     else

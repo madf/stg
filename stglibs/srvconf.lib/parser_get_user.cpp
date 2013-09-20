@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_get_user.h"
+#include "parser_get_user.h"
 
 #include "stg/common.h"
 
@@ -32,7 +32,7 @@
 using namespace STG;
 
 template <>
-bool GetValue<PARSER_GET_USER::STAT>(const char ** attr, PARSER_GET_USER::STAT & value)
+bool GetValue<GET_USER::STAT>(const char ** attr, GET_USER::STAT & value)
 {
 if (!attr)
     return false;
@@ -56,7 +56,7 @@ while (attr[pos])
 return true;
 }
 
-PARSER_GET_USER::PARSER_GET_USER()
+GET_USER::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0),
@@ -89,14 +89,14 @@ PARSER_GET_USER::PARSER_GET_USER()
         AddParser(propertyParsers, "userData" + x2str(i), info.userData[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
-PARSER_GET_USER::~PARSER_GET_USER()
+GET_USER::PARSER::~PARSER()
 {
     PROPERTY_PARSERS::iterator it(propertyParsers.begin());
     while (it != propertyParsers.end())
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int PARSER_GET_USER::ParseStart(const char * el, const char ** attr)
+int GET_USER::PARSER::ParseStart(const char * el, const char ** attr)
 {
 depth++;
 if (depth == 1)
@@ -108,7 +108,7 @@ if (depth == 2 && parsingAnswer)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USER::ParseEnd(const char * /*el*/)
+void GET_USER::PARSER::ParseEnd(const char * /*el*/)
 {
 depth--;
 if (depth == 0 && parsingAnswer)
@@ -120,7 +120,7 @@ if (depth == 0 && parsingAnswer)
     }
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USER::ParseUser(const char * el, const char ** attr)
+void GET_USER::PARSER::ParseUser(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "user") == 0)
     if (attr && attr[0] && attr[1])
@@ -139,13 +139,13 @@ if (strcasecmp(el, "user") == 0)
         parsingAnswer = true;
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USER::ParseUserParams(const char * el, const char ** attr)
+void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
 {
 if (!TryParse(propertyParsers, ToLower(el), attr))
     error = "Invalid parameter.";
 }
 //-----------------------------------------------------------------------------
-void PARSER_GET_USER::SetCallback(CALLBACK f, void * d)
+void GET_USER::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;

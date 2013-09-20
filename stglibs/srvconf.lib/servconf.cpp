@@ -24,6 +24,8 @@
 #include "parser_auth_by.h"
 #include "parser_server_info.h"
 #include "parser_check_user.h"
+#include "parser_get_users.h"
+#include "parser_get_user.h"
 
 #include "stg/common.h"
 
@@ -40,8 +42,8 @@ public:
     IMPL(const std::string & server, uint16_t port,
          const std::string & login, const std::string & password);
 
-    int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
-    int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
+    int GetUsers(GET_USERS::CALLBACK f, void * data);
+    int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
@@ -53,8 +55,8 @@ public:
     static void End(void * data, const char * el);
 
 private:
-    PARSER_GET_USERS parserGetUsers;
-    PARSER_GET_USER parserGetUser;
+    GET_USERS::PARSER parserGetUsers;
+    GET_USER::PARSER parserGetUser;
     AUTH_BY::PARSER parserAuthBy;
     SERVER_INFO::PARSER  parserServerInfo;
     PARSER_CHG_USER parserChgUser;
@@ -98,12 +100,12 @@ SERVCONF::~SERVCONF()
     delete pImpl;
 }
 
-int SERVCONF::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
+int SERVCONF::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
     return pImpl->GetUsers( f, data );
 }
 
-int SERVCONF::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
+int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
 {
     return pImpl->GetUser(login, f, data);
 }
@@ -147,7 +149,7 @@ parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data)
+int SERVCONF::IMPL::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
 {
 parserGetUser.SetCallback(f, data);
 return Exec("<GetUser login=\"" + login + "\"/>", parserGetUser);
@@ -159,7 +161,7 @@ parserAuthBy.SetCallback(f, data);
 return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parserAuthBy);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::GetUsers(PARSER_GET_USERS::CALLBACK f, void * data)
+int SERVCONF::IMPL::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
 parserGetUsers.SetCallback(f, data);
 return Exec("<GetUsers/>", parserGetUsers);

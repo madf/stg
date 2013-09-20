@@ -27,8 +27,6 @@
 #ifndef __STG_STGLIBS_SERVCONF_H__
 #define __STG_STGLIBS_SERVCONF_H__
 
-#include "stg/parser_get_user.h"
-#include "stg/parser_get_users.h"
 #include "stg/parser_chg_user.h"
 #include "stg/parser_send_message.h"
 
@@ -48,8 +46,8 @@ public:
              const std::string & login, const std::string & password);
     ~SERVCONF();
 
-    int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
-    int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
+    int GetUsers(GET_USERS::CALLBACK f, void * data);
+    int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);

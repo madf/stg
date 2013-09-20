@@ -326,7 +326,7 @@ struct StringReqParams
     const std::string * value;
 };
 //-----------------------------------------------------------------------------
-void GetUserCallback(bool result, const std::string& reason, const PARSER_GET_USER::INFO & info, void * d)
+void GetUserCallback(bool result, const std::string& reason, const GET_USER::INFO & info, void * d)
 {
 GetUserData * data = static_cast<GetUserData *>(d);
 data->result = false;

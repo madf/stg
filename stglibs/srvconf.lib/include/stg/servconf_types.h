@@ -22,6 +22,7 @@
 #define __STG_STGLIBS_SRVCONF_TYPES_H__
 
 #include "stg/const.h" // DIR_NUM
+#include "stg/os_int.h" // uint32_t, etc...
 
 #include <string>
 #include <vector>
@@ -93,7 +94,59 @@ namespace CHECK_USER
 
 typedef int (* CALLBACK)(bool result, const std::string & reason, void * data);
 
-}
+} // namespace CHECK_USER
+
+namespace GET_USER
+{
+
+struct STAT
+{
+    long long  su[DIR_NUM];
+    long long  sd[DIR_NUM];
+    long long  mu[DIR_NUM];
+    long long  md[DIR_NUM];
+    double     freeMb;
+};
+
+struct INFO
+{
+    std::string login;
+    std::string password;
+    double      cash;
+    double      credit;
+    time_t      creditExpire;
+    double      lastCash;
+    double      prepaidTraff;
+    int         down;
+    int         passive;
+    int         disableDetailStat;
+    int         connected;
+    int         alwaysOnline;
+    uint32_t    ip;
+    std::string ips;
+    std::string tariff;
+    std::string group;
+    std::string note;
+    std::string email;
+    std::string name;
+    std::string address;
+    std::string phone;
+    STAT        stat;
+    std::string userData[USERDATA_NUM];
+};
+
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+} // namespace GET_USER
+
+namespace GET_USERS
+{
+
+typedef std::vector<GET_USER::INFO> INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+} // namespace GET_USERS
+
 } // namespace STG
 
 #endif
