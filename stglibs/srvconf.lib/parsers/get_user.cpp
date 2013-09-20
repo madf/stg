@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_get_user.h"
+#include "get_user.h"
 
 #include "stg/common.h"
 

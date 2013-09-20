@@ -8,16 +8,17 @@ STGLIBS = -lstgcommon \
           -lstgcrypto
 LIBS = -lexpat
 
-SRCS =  netunit.cpp \
-        property_parsers.cpp \
-        parser_auth_by.cpp \
-        parser_server_info.cpp \
-        parser_check_user.cpp \
-        parser_get_user.cpp \
-        parser_get_users.cpp \
-        parser_chg_user.cpp \
-        parser_send_message.cpp \
+SRCS =  parsers/property.cpp \
+        parsers/auth_by.cpp \
+        parsers/server_info.cpp \
+        parsers/check_user.cpp \
+        parsers/get_user.cpp \
+        parsers/get_users.cpp \
+        parsers/chg_user.cpp \
+        parsers/send_message.cpp \
+        netunit.cpp \
         servconf.cpp
+
 
 INCS = servconf.h \
        netunit.h

@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_server_info.h"
+#include "server_info.h"
 
 #include "stg/common.h"
 

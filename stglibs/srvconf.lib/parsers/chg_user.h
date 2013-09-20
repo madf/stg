@@ -22,7 +22,7 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_USER_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_CHG_USER_H__
 
-#include "parser.h"
+#include "base.h"
 
 #include "stg/servconf_types.h"
 

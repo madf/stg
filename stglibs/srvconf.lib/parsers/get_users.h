@@ -23,8 +23,8 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_USERS_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_GET_USERS_H__
 
-#include "parser.h"
-#include "parser_get_user.h"
+#include "base.h"
+#include "get_user.h"
 
 #include "stg/servconf_types.h"
 

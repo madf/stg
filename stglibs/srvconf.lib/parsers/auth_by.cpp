@@ -18,7 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_auth_by.h"
+#include "auth_by.h"
 
 #include <cstddef>
 

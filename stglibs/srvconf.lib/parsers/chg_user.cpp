@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_chg_user.h"
+#include "chg_user.h"
 
 #include <cstddef>
 

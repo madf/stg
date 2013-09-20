@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_send_message.h"
+#include "send_message.h"
 
 #include <cstddef>
 

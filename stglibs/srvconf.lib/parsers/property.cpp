@@ -18,7 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "property_parsers.h"
+#include "property.h"
 
 #include <strings.h>
 

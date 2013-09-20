@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "parser_get_users.h"
+#include "get_users.h"
 
 #include <cstddef>
 

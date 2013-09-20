@@ -22,8 +22,8 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 
-#include "parser.h"
-#include "property_parsers.h"
+#include "base.h"
+#include "property.h"
 
 #include "stg/servconf_types.h"
 

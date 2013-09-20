@@ -21,13 +21,14 @@
 #include "stg/servconf.h"
 
 #include "netunit.h"
-#include "parser_auth_by.h"
-#include "parser_server_info.h"
-#include "parser_check_user.h"
-#include "parser_get_users.h"
-#include "parser_get_user.h"
-#include "parser_chg_user.h"
-#include "parser_send_message.h"
+#include "parsers/auth_by.h"
+#include "parsers/server_info.h"
+#include "parsers/check_user.h"
+#include "parsers/get_users.h"
+#include "parsers/get_user.h"
+#include "parsers/chg_user.h"
+#include "parsers/send_message.h"
+#include "parsers/base.h"
 
 #include "stg/common.h"
 
