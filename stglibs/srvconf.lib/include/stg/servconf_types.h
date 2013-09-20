@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <ctime>
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
