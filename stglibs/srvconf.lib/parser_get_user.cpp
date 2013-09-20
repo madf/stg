@@ -29,6 +29,8 @@
 
 #include <strings.h>
 
+using namespace STG;
+
 template <>
 bool GetValue<PARSER_GET_USER::STAT>(const char ** attr, PARSER_GET_USER::STAT & value)
 {

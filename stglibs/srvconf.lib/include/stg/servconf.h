@@ -24,10 +24,9 @@
  $Author: faust $
  */
 
-#ifndef SERVCONF_H
-#define SERVCONF_H
+#ifndef __STG_STGLIBS_SERVCONF_H__
+#define __STG_STGLIBS_SERVCONF_H__
 
-#include "stg/parser_auth_by.h"
 #include "stg/parser_server_info.h"
 #include "stg/parser_check_user.h"
 #include "stg/parser_get_user.h"
@@ -35,9 +34,14 @@
 #include "stg/parser_chg_user.h"
 #include "stg/parser_send_message.h"
 
+#include "stg/servconf_types.h"
+
 #include "stg/os_int.h"
 
 #include <string>
+
+namespace STG
+{
 
 class SERVCONF
 {
@@ -49,7 +53,7 @@ public:
     int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
-    int AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data);
+    int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
     int ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
@@ -60,6 +64,7 @@ private:
     class IMPL;
     IMPL * pImpl;
 };
-//-----------------------------------------------------------------------------
 
-#endif  /* _SERVCONF_H_ */
+} // namespace STG
+
+#endif

@@ -25,6 +25,8 @@
 
 #include <strings.h>
 
+using namespace STG;
+
 PARSER_GET_USERS::PARSER_GET_USERS()
     : callback(NULL),
       data(NULL),

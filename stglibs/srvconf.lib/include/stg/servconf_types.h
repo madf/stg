@@ -21,6 +21,9 @@
 #ifndef __STG_STGLIBS_SRVCONF_TYPES_H__
 #define __STG_STGLIBS_SRVCONF_TYPES_H__
 
+#include <string>
+#include <vector>
+
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
 #define  ERR_HEADER     "ERHD"
@@ -30,6 +33,9 @@
 #define  ERR_LOGINS     "ERLS"
 
 #define  ENC_MSG_LEN    (8)
+
+namespace STG
+{
 
 enum status
 {
@@ -54,5 +60,14 @@ confLogin,
 confLoginCipher,
 confData
 };
+
+namespace AUTH_BY
+{
+
+typedef std::vector<std::string> INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+} // namespace AUTH_BY
+} // namespace STG
 
 #endif

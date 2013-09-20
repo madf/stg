@@ -21,7 +21,7 @@
 #include "stg/servconf.h"
 
 #include "netunit.h"
-#include "stg/servconf_types.h"
+#include "parser_auth_by.h"
 
 #include "stg/common.h"
 
@@ -29,6 +29,8 @@
 #include <cstring>
 
 #include <expat.h>
+
+using namespace STG;
 
 class SERVCONF::IMPL
 {
@@ -39,7 +41,7 @@ public:
     int GetUsers(PARSER_GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, PARSER_GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
-    int AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data);
+    int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
     int ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
@@ -51,7 +53,7 @@ public:
 private:
     PARSER_GET_USERS parserGetUsers;
     PARSER_GET_USER parserGetUser;
-    PARSER_AUTH_BY parserAuthBy;
+    AUTH_BY::PARSER parserAuthBy;
     PARSER_SERVER_INFO  parserServerInfo;
     PARSER_CHG_USER parserChgUser;
     PARSER_CHECK_USER parserCheckUser;
@@ -66,22 +68,6 @@ private:
 
     static bool AnsRecv(void * data, const std::string & chunk, bool final);
 };
-
-/*namespace
-{
-
-void ElementStart(void * data, const char * el, const char ** attr)
-{
-static_cast<SERVCONF::IMPL *>(data)->Start(el, attr);
-}
-
-void ElementEnd(void * data, const char * el)
-{
-static_cast<SERVCONF::IMPL *>(data)->End(el);
-}
-
-} // namespace anonymous
-*/
 
 bool SERVCONF::IMPL::AnsRecv(void * data, const std::string & chunk, bool final)
 {
@@ -125,7 +111,7 @@ int SERVCONF::ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, 
     return pImpl->ChgUser(request, f, data);
 }
 
-int SERVCONF::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
+int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
 {
     return pImpl->AuthBy(login, f, data);
 }
@@ -165,7 +151,7 @@ parserGetUser.SetCallback(f, data);
 return Exec("<GetUser login=\"" + login + "\"/>", parserGetUser);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::AuthBy(const std::string & login, PARSER_AUTH_BY::CALLBACK f, void * data)
+int SERVCONF::IMPL::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
 {
 parserAuthBy.SetCallback(f, data);
 return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parserAuthBy);

@@ -25,6 +25,8 @@
 
 #include <strings.h>
 
+using namespace STG;
+
 PARSER_CHG_USER::PARSER_CHG_USER()
     : callback(NULL),
       data(NULL),

@@ -29,6 +29,9 @@
 
 #include <string>
 
+namespace STG
+{
+
 class PARSER_SERVER_INFO: public PARSER
 {
 public:
@@ -57,5 +60,7 @@ private:
     INFO info;
     std::string error;
 };
+
+}
 
 #endif

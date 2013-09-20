@@ -29,6 +29,9 @@
 
 #include <vector>
 
+namespace STG
+{
+
 class PARSER_GET_USERS: public PARSER
 {
 public:
@@ -53,5 +56,7 @@ private:
 
     static void UserCallback(bool result, const std::string& reason, const PARSER_GET_USER::INFO & info, void * data);
 };
+
+} // namespace STG
 
 #endif

@@ -18,13 +18,15 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_auth_by.h"
+#include "parser_auth_by.h"
 
 #include <cstddef>
 
 #include <strings.h> // strcasecmp
 
-PARSER_AUTH_BY::PARSER_AUTH_BY()
+using namespace STG;
+
+AUTH_BY::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0),
@@ -32,7 +34,7 @@ PARSER_AUTH_BY::PARSER_AUTH_BY()
 {
 }
 //-----------------------------------------------------------------------------
-int PARSER_AUTH_BY::ParseStart(const char *el, const char **attr)
+int AUTH_BY::PARSER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
@@ -66,7 +68,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::ParseEnd(const char * /*el*/)
+void AUTH_BY::PARSER::ParseEnd(const char * /*el*/)
 {
 depth--;
 if (depth == 0)
@@ -78,7 +80,7 @@ if (depth == 0)
     }
 }
 //-----------------------------------------------------------------------------
-void PARSER_AUTH_BY::SetCallback(CALLBACK f, void * d)
+void AUTH_BY::PARSER::SetCallback(AUTH_BY::CALLBACK f, void * d)
 {
 callback = f;
 data = d;

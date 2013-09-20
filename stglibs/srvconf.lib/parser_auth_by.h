@@ -21,18 +21,22 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
 
-#include "parser.h"
+#include "stg/parser.h"
+
+#include "stg/servconf_types.h"
 
 #include <vector>
 #include <string>
 
-class PARSER_AUTH_BY: public PARSER
+namespace STG
+{
+namespace AUTH_BY
+{
+
+class PARSER: public STG::PARSER
 {
 public:
-    typedef std::vector<std::string> INFO;
-    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-    PARSER_AUTH_BY();
+    PARSER();
     int  ParseStart(const char *el, const char **attr);
     void ParseEnd(const char *el);
     void SetCallback(CALLBACK f, void * data);
@@ -44,5 +48,8 @@ private:
     INFO info;
     std::string error;
 };
+
+} // namespace AUTH_BY
+} // namespace STG
 
 #endif

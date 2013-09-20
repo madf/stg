@@ -43,6 +43,8 @@
 #include <langinfo.h>
 #include <iconv.h>
 
+using namespace STG;
+
 const int usageConf = 0;
 const int usageInfo = 1;
 
@@ -302,7 +304,7 @@ data->reason = reason;
 }
 //-----------------------------------------------------------------------------
 void RecvAuthByData(bool result, const std::string & reason,
-                    const PARSER_AUTH_BY::INFO & list, void * d)
+                    const AUTH_BY::INFO & list, void * d)
 {
 ResultData * data = static_cast<ResultData *>(d);
 data->result = result;

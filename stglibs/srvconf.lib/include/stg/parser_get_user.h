@@ -33,6 +33,9 @@
 
 #include <ctime>
 
+namespace STG
+{
+
 class PARSER_GET_USER: public PARSER
 {
 public:
@@ -91,5 +94,7 @@ private:
     void ParseUser(const char *el, const char **attr);
     void ParseUserParams(const char *el, const char **attr);
 };
+
+} // namespace STG
 
 #endif

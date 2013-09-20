@@ -28,6 +28,8 @@
 
 #include <strings.h>
 
+using namespace STG;
+
 namespace
 {
 

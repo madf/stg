@@ -26,6 +26,9 @@
 
 #include <string>
 
+namespace STG
+{
+
 class PARSER_CHECK_USER: public PARSER
 {
 public:
@@ -42,5 +45,7 @@ private:
 
     void ParseAnswer(const char * el, const char ** attr);
 };
+
+} // namespace STG
 
 #endif
