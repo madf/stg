@@ -438,7 +438,7 @@ while (true)
 
     bool final = false;
     size_t pos = 0;
-    for (; pos < ENC_MSG_LEN && buffer[pos] != 0; pos++);
+    for (; pos < ENC_MSG_LEN && buffer[pos] != 0; pos++) ;
     if (pos < ENC_MSG_LEN && buffer[pos] == 0)
         final = true;
 
