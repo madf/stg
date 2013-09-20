@@ -40,9 +40,9 @@ public:
     NETTRANSACT(const std::string & server, uint16_t port,
                 const std::string & login, const std::string & password);
     int     Transact(const char * data);
-    const std::string & GetError() const;
+    const std::string & GetError() const { return errorMsg; }
 
-    void    SetRxCallback(void * data, RxCallback_t);
+    void    SetRxCallback(void * data, RxCallback_t cb);
 
     int     Connect();
     int     Disconnect();
@@ -64,9 +64,9 @@ private:
     uint16_t  port;
     std::string login;
     std::string password;
-    int     outerSocket;
+    int outerSocket;
     RxCallback_t RxCallBack;
-    void *  dataRxCallBack;
+    void * dataRxCallBack;
     std::string errorMsg;
 };
 //---------------------------------------------------------------------------

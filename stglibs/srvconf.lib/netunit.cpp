@@ -83,8 +83,6 @@ NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
 //---------------------------------------------------------------------------
 int NETTRANSACT::Connect()
 {
-int ret;
-
 outerSocket = socket(PF_INET, SOCK_STREAM, 0);
 if (outerSocket < 0)
     {
@@ -95,36 +93,33 @@ if (outerSocket < 0)
 struct sockaddr_in outerAddr;
 memset(&outerAddr, 0, sizeof(outerAddr));
 
-struct hostent he;
-struct hostent * phe;
-
-unsigned long ip;
-ip = inet_addr(server.c_str());
+unsigned long ip = inet_addr(server.c_str());
 
 if (ip == INADDR_NONE)
     {
-    phe = gethostbyname(server.c_str());
+    struct hostent * phe = gethostbyname(server.c_str());
     if (phe == NULL)
         {
         errorMsg = "DNS error.\nCan not reslove " + server;
         return st_dns_err;
         }
 
+    struct hostent he;
     memcpy(&he, phe, sizeof(he));
-    ip = *((long*)he.h_addr_list[0]);
+    ip = *((long *)he.h_addr_list[0]);
     }
+
 outerAddr.sin_family = AF_INET;
 outerAddr.sin_port = htons(port);
 outerAddr.sin_addr.s_addr = ip;
 
-ret = connect(outerSocket, (struct sockaddr*)&outerAddr, sizeof(outerAddr));
-
-if (ret < 0)
+if (connect(outerSocket, (struct sockaddr *)&outerAddr, sizeof(outerAddr)) < 0)
     {
     errorMsg = CONNECT_FAILED;
     close(outerSocket);
     return st_conn_fail;
     }
+
 return st_ok;
 }
 //---------------------------------------------------------------------------
@@ -190,9 +185,7 @@ return st_ok;
 //---------------------------------------------------------------------------
 int NETTRANSACT::TxHeader()
 {
-int ret;
-ret = send(outerSocket, STG_HEADER, strlen(STG_HEADER), 0);
-if (ret <= 0)
+if (send(outerSocket, STG_HEADER, strlen(STG_HEADER), 0) <= 0)
     {
     errorMsg = SEND_HEADER_ERROR;
     return st_send_fail;
@@ -203,11 +196,9 @@ return st_ok;
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxHeaderAnswer()
 {
-char buffer[sizeof(STG_HEADER)+1];
-int ret;
+char buffer[sizeof(STG_HEADER) + 1];
 
-ret = recv(outerSocket, buffer, strlen(OK_HEADER), 0);
-if (ret <= 0)
+if (recv(outerSocket, buffer, strlen(OK_HEADER), 0) <= 0)
     {
     printf("Receive header answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_HEADER_ANSWER_ERROR;
@@ -236,13 +227,10 @@ else
 int NETTRANSACT::TxLogin()
 {
 char loginZ[ADM_LOGIN_LEN];
-int ret;
-
 memset(loginZ, 0, ADM_LOGIN_LEN);
 strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
-ret = send(outerSocket, loginZ, ADM_LOGIN_LEN, 0);
 
-if (ret <= 0)
+if (send(outerSocket, loginZ, ADM_LOGIN_LEN, 0) <= 0)
     {
     errorMsg = SEND_LOGIN_ERROR;
     return st_send_fail;
@@ -253,11 +241,9 @@ return st_ok;
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxLoginAnswer()
 {
-char buffer[sizeof(OK_LOGIN)+1];
-int ret;
+char buffer[sizeof(OK_LOGIN) + 1];
 
-ret = recv(outerSocket, buffer, strlen(OK_LOGIN), 0);
-if (ret <= 0)
+if (recv(outerSocket, buffer, strlen(OK_LOGIN), 0) <= 0)
     {
     printf("Receive login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
@@ -286,9 +272,6 @@ else
 int NETTRANSACT::TxLoginS()
 {
 char loginZ[ADM_LOGIN_LEN];
-char ct[ENC_MSG_LEN];
-int ret;
-
 memset(loginZ, 0, ADM_LOGIN_LEN);
 strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
 
@@ -297,9 +280,9 @@ EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
 for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
     {
-    EncodeString(ct, loginZ + j*ENC_MSG_LEN, &ctx);
-    ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-    if (ret <= 0)
+    char ct[ENC_MSG_LEN];
+    EncodeString(ct, loginZ + j * ENC_MSG_LEN, &ctx);
+    if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
         {
         errorMsg = SEND_LOGIN_ERROR;
         return st_send_fail;
@@ -311,11 +294,9 @@ return st_ok;
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxLoginSAnswer()
 {
-char buffer[sizeof(OK_LOGINS)+1];
-int ret;
+char buffer[sizeof(OK_LOGINS) + 1];
 
-ret = recv(outerSocket, buffer, strlen(OK_LOGINS), 0);
-if (ret <= 0)
+if (recv(outerSocket, buffer, strlen(OK_LOGINS), 0) <= 0)
     {
     printf("Receive secret login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
@@ -343,23 +324,20 @@ else
 //---------------------------------------------------------------------------
 int NETTRANSACT::TxData(const char * text)
 {
-char textZ[ENC_MSG_LEN];
-char ct[ENC_MSG_LEN];
-int ret;
-int j;
-
 int n = strlen(text) / ENC_MSG_LEN;
 int r = strlen(text) % ENC_MSG_LEN;
 
 BLOWFISH_CTX ctx;
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
-for (j = 0; j < n; j++)
+char textZ[ENC_MSG_LEN];
+char ct[ENC_MSG_LEN];
+
+for (int j = 0; j < n; j++)
     {
-    strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
+    strncpy(textZ, text + j * ENC_MSG_LEN, ENC_MSG_LEN);
     EncodeString(ct, textZ, &ctx);
-    ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-    if (ret <= 0)
+    if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
         {
         errorMsg = SEND_DATA_ERROR;
         return st_send_fail;
@@ -367,14 +345,14 @@ for (j = 0; j < n; j++)
     }
 
 memset(textZ, 0, ENC_MSG_LEN);
+
 if (r)
-    strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
+    strncpy(textZ, text + n * ENC_MSG_LEN, ENC_MSG_LEN);
 
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
 EncodeString(ct, textZ, &ctx);
-ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-if (ret <= 0)
+if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
     {
     errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
@@ -385,16 +363,15 @@ return st_ok;
 //---------------------------------------------------------------------------
 int NETTRANSACT::TxData(char * data)
 {
-char buff[ENC_MSG_LEN];
-char buffS[ENC_MSG_LEN];
 char passwd[ADM_PASSWD_LEN];
-
 memset(passwd, 0, ADM_PASSWD_LEN);
 strncpy(passwd, password.c_str(), ADM_PASSWD_LEN);
+
+char buff[ENC_MSG_LEN];
 memset(buff, 0, ENC_MSG_LEN);
 
-int l = strlen(data)/ENC_MSG_LEN;
-if (strlen(data)%ENC_MSG_LEN)
+int l = strlen(data) / ENC_MSG_LEN;
+if (strlen(data) % ENC_MSG_LEN)
     l++;
 
 BLOWFISH_CTX ctx;
@@ -402,7 +379,8 @@ EnDecodeInit(passwd, PASSWD_LEN, &ctx);
 
 for (int j = 0; j < l; j++)
     {
-    strncpy(buff, &data[j*ENC_MSG_LEN], ENC_MSG_LEN);
+    strncpy(buff, &data[j * ENC_MSG_LEN], ENC_MSG_LEN);
+    char buffS[ENC_MSG_LEN];
     EncodeString(buffS, buff, &ctx);
     send(outerSocket, buffS, ENC_MSG_LEN, 0);
     }
@@ -463,9 +441,3 @@ void NETTRANSACT::SetRxCallback(void * data, RxCallback_t cb)
 RxCallBack = cb;
 dataRxCallBack = data;
 }
-//---------------------------------------------------------------------------
-const std::string & NETTRANSACT::GetError() const
-{
-return errorMsg;
-}
-//---------------------------------------------------------------------------
