@@ -22,32 +22,23 @@
 #ifndef __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 #define __STG_STGLIBS_SRVCONF_PARSER_SERVER_INFO_H__
 
-#include "parser.h"
+#include "stg/parser.h"
 
-#include "property_parsers.h"
-#include "stg/const.h"
+#include "stg/property_parsers.h"
+#include "stg/servconf_types.h"
 
 #include <string>
 
 namespace STG
 {
+namespace SERVER_INFO
+{
 
-class PARSER_SERVER_INFO: public PARSER
+class PARSER: public STG::PARSER
 {
 public:
-    struct INFO
-    {
-        std::string version;
-        int         tariffNum;
-        int         tariffType;
-        int         usersNum;
-        std::string uname;
-        int         dirNum;
-        std::string dirName[DIR_NUM];
-    };
-    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
-    PARSER_SERVER_INFO();
+    PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void SetCallback(CALLBACK f, void * data);
@@ -61,6 +52,7 @@ private:
     std::string error;
 };
 
-}
+} // namespace SERVER_INFO
+} // namespace STG
 
 #endif

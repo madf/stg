@@ -22,6 +22,7 @@
 
 #include "netunit.h"
 #include "parser_auth_by.h"
+#include "parser_server_info.h"
 
 #include "stg/common.h"
 
@@ -43,7 +44,7 @@ public:
     int ChgUser(const std::string & request, PARSER_CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALLBACK f, void * data);
-    int ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data);
+    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, PARSER_CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
@@ -54,7 +55,7 @@ private:
     PARSER_GET_USERS parserGetUsers;
     PARSER_GET_USER parserGetUser;
     AUTH_BY::PARSER parserAuthBy;
-    PARSER_SERVER_INFO  parserServerInfo;
+    SERVER_INFO::PARSER  parserServerInfo;
     PARSER_CHG_USER parserChgUser;
     PARSER_CHECK_USER parserCheckUser;
     PARSER_SEND_MESSAGE parserSendMessage;
@@ -121,7 +122,7 @@ int SERVCONF::SendMessage(const std::string & request, PARSER_SEND_MESSAGE::CALL
     return pImpl->SendMessage(request, f, data);
 }
 
-int SERVCONF::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
+int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
     return pImpl->ServerInfo(f, data);
 }
@@ -163,7 +164,7 @@ parserGetUsers.SetCallback(f, data);
 return Exec("<GetUsers/>", parserGetUsers);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::ServerInfo(PARSER_SERVER_INFO::CALLBACK f, void * data)
+int SERVCONF::IMPL::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
 parserServerInfo.SetCallback(f, data);
 return Exec("<GetServerInfo/>", parserServerInfo);

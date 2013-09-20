@@ -21,6 +21,8 @@
 #ifndef __STG_STGLIBS_SRVCONF_TYPES_H__
 #define __STG_STGLIBS_SRVCONF_TYPES_H__
 
+#include "stg/const.h" // DIR_NUM
+
 #include <string>
 #include <vector>
 
@@ -68,6 +70,23 @@ typedef std::vector<std::string> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 } // namespace AUTH_BY
+
+namespace SERVER_INFO
+{
+
+struct INFO
+{
+    std::string version;
+    int         tariffNum;
+    int         tariffType;
+    int         usersNum;
+    std::string uname;
+    int         dirNum;
+    std::string dirName[DIR_NUM];
+};
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+} // namespace SERVER_INFO
 } // namespace STG
 
 #endif

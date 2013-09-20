@@ -19,7 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/parser_server_info.h"
+#include "parser_server_info.h"
 
 #include "stg/common.h"
 
@@ -39,7 +39,7 @@ const size_t DIRNAME_LEN  = 16;
 
 }
 
-PARSER_SERVER_INFO::PARSER_SERVER_INFO()
+SERVER_INFO::PARSER::PARSER()
     : callback(NULL),
       data(NULL),
       depth(0),
@@ -56,7 +56,7 @@ PARSER_SERVER_INFO::PARSER_SERVER_INFO()
         AddParser(propertyParsers, "dir_name_" + x2str(i), info.dirName[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
-int PARSER_SERVER_INFO::ParseStart(const char *el, const char **attr)
+int SERVER_INFO::PARSER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
@@ -69,7 +69,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-void PARSER_SERVER_INFO::ParseEnd(const char * /*el*/)
+void SERVER_INFO::PARSER::ParseEnd(const char * /*el*/)
 {
 depth--;
 if (depth == 0 && parsingAnswer)
@@ -81,7 +81,7 @@ if (depth == 0 && parsingAnswer)
     }
 }
 //-----------------------------------------------------------------------------
-void PARSER_SERVER_INFO::SetCallback(CALLBACK f, void * d)
+void SERVER_INFO::PARSER::SetCallback(CALLBACK f, void * d)
 {
 callback = f;
 data = d;
