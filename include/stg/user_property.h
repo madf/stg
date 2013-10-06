@@ -72,7 +72,8 @@ public:
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
-                         const std::string & sd);
+                         const std::string & sd,
+                         std::map<std::string, USER_PROPERTY_BASE*> & properties);
     virtual ~USER_PROPERTY_LOGGED() {}
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw() { return this; }
@@ -122,6 +123,7 @@ private:
     USER_STAT stat;
     USER_CONF conf;
 
+    std::map<std::string, USER_PROPERTY_BASE *> & properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
@@ -171,8 +173,6 @@ public:
     USER_PROPERTY_LOGGED<std::string>       userdata7;
     USER_PROPERTY_LOGGED<std::string>       userdata8;
     USER_PROPERTY_LOGGED<std::string>       userdata9;
-
-    std::map<std::string, USER_PROPERTY_BASE*> params;
 };
 //=============================================================================
 
@@ -276,7 +276,8 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
-                                                 const std::string & sd)
+                                                 const std::string & sd,
+                                                 std::map<std::string, USER_PROPERTY_BASE*> & properties)
 
     : USER_PROPERTY<varT>(val),
       stgLogger(logger),
@@ -285,6 +286,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
       name(n),
       scriptsDir(sd)
 {
+properties.insert(std::make_pair(name, this));
 }
 //-------------------------------------------------------------------------
 template <typename varT>
@@ -386,9 +388,10 @@ else
 //-------------------------------------------------------------------------
 std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
 {
-    std::map<std::string, USER_PROPERTY_BASE*>::iterator it = params.find(name);
-    if (it != params.end()) return it->second.ToString();
-    else return "";
+std::map<std::string, USER_PROPERTY_BASE*>::iterator it = properties.find(name);
+if (it == properties.end())
+    return "";
+return it->second.ToString();
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
@@ -401,6 +404,7 @@ return stream << value.ConstData();
 }
 //-----------------------------------------------------------------------------
 template<typename varT>
+inline
 std::string USER_PROPERTY<varT>::ToString() const
 {
 std::stringstream stream;
