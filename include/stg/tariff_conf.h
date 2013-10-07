@@ -102,21 +102,21 @@ struct DIRPRICE_DATA_RES
         return *this;
         }
 
-    DIRPRICE_DATA GetData()
+    DIRPRICE_DATA GetData() const
         {
         DIRPRICE_DATA dd;
-        dd.hDay        = hDay;
-        dd.hNight      = hNight;
-        dd.mDay        = mDay;
-        dd.mNight      = mNight;
-        dd.noDiscount  = noDiscount;
-        dd.priceDayA   = priceDayA;
-        dd.priceDayB   = priceDayB;
+        dd.hDay        = hDay.data();
+        dd.hNight      = hNight.data();
+        dd.mDay        = mDay.data();
+        dd.mNight      = mNight.data();
+        dd.noDiscount  = noDiscount.data();
+        dd.priceDayA   = priceDayA.data();
+        dd.priceDayB   = priceDayB.data();
 
-        dd.priceNightA = priceNightA;
-        dd.priceNightB = priceNightB;
-        dd.singlePrice = singlePrice;
-        dd.threshold   = threshold;
+        dd.priceNightA = priceNightA.data();
+        dd.priceNightB = priceNightB.data();
+        dd.singlePrice = singlePrice.data();
+        dd.threshold   = threshold.data();
         return dd;
         }
 
@@ -178,14 +178,14 @@ struct TARIFF_CONF_RES
         return *this;
         }
 
-    TARIFF_CONF GetData()
+    TARIFF_CONF GetData() const
         {
         TARIFF_CONF tc;
-        tc.fee         = fee;
-        tc.free        = free;
-        tc.name        = name;
-        tc.passiveCost = passiveCost;
-        tc.traffType   = traffType;
+        tc.fee         = fee.data();
+        tc.free        = free.data();
+        tc.name        = name.data();
+        tc.passiveCost = passiveCost.data();
+        tc.traffType   = traffType.data();
         return tc;
         }
 
@@ -234,7 +234,7 @@ struct TARIFF_DATA_RES
           dirPrice(DIR_NUM)
         {}
 
-    TARIFF_DATA GetData()
+    TARIFF_DATA GetData() const
         {
         TARIFF_DATA td;
         td.tariffConf = tariffConf.GetData();

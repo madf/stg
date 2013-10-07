@@ -144,7 +144,7 @@ struct option long_options_set[] = {
 {"email",       1, 0, 'L'},  //emaiL
 {"phone",       1, 0, 'P'},  //phone
 {"group",       1, 0, 'G'},  //Group
-{"ip",		0, 0, 'I'},  //IP-address of user
+{"ip",          0, 0, 'I'},  //IP-address of user
 
 {0, 0, 0, 0}};
 
@@ -374,10 +374,10 @@ memset(str, 0, strLen);
 
 r[0] = 0;
 
-if (!req->usrMsg.res_empty())
+if (!req->usrMsg.empty())
     {
     string msg;
-    Encode12str(msg, req->usrMsg);
+    Encode12str(msg, req->usrMsg.data());
     sprintf(str, "<Message login=\"%s\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"%s\"/>", req->login.const_data().c_str(), msg.c_str());
     //sprintf(str, "<message login=\"%s\" priority=\"0\" text=\"%s\"/>\n", req->login, msg);
     strcat(r, str);
@@ -403,25 +403,25 @@ if (req->createUser)
 strcat(r, "<SetUser>\n");
 sprintf(str, "<login value=\"%s\"/>\n", req->login.const_data().c_str());
 strcat(r, str);
-if (!req->credit.res_empty())
+if (!req->credit.empty())
     {
     sprintf(str, "<credit value=\"%f\"/>\n", req->credit.const_data());
     strcat(r, str);
     }
 
-if (!req->creditExpire.res_empty())
+if (!req->creditExpire.empty())
     {
     sprintf(str, "<creditExpire value=\"%ld\"/>\n", req->creditExpire.const_data());
     strcat(r, str);
     }
 
-if (!req->prepaidTraff.res_empty())
+if (!req->prepaidTraff.empty())
     {
     sprintf(str, "<FreeMb value=\"%f\"/>\n", req->prepaidTraff.const_data());
     strcat(r, str);
     }
 
-if (!req->cash.res_empty())
+if (!req->cash.empty())
     {
     string msg;
     Encode12str(msg, req->message);
@@ -429,7 +429,7 @@ if (!req->cash.res_empty())
     strcat(r, str);
     }
 
-if (!req->setCash.res_empty())
+if (!req->setCash.empty())
     {
     string msg;
     Encode12str(msg, req->message);
@@ -437,38 +437,38 @@ if (!req->setCash.res_empty())
     strcat(r, str);
     }
 
-if (!req->usrPasswd.res_empty())
+if (!req->usrPasswd.empty())
     {
     sprintf(str, "<password value=\"%s\" />\n", req->usrPasswd.const_data().c_str());
     strcat(r, str);
     }
 
-if (!req->down.res_empty())
+if (!req->down.empty())
     {
     sprintf(str, "<down value=\"%d\" />\n", req->down.const_data());
     strcat(r, str);
     }
 
-if (!req->passive.res_empty())
+if (!req->passive.empty())
     {
     sprintf(str, "<passive value=\"%d\" />\n", req->passive.const_data());
     strcat(r, str);
     }
 
-if (!req->disableDetailStat.res_empty())
+if (!req->disableDetailStat.empty())
     {
     sprintf(str, "<disableDetailStat value=\"%d\" />\n", req->disableDetailStat.const_data());
     strcat(r, str);
     }
 
-if (!req->alwaysOnline.res_empty())
+if (!req->alwaysOnline.empty())
     {
     sprintf(str, "<aonline value=\"%d\" />\n", req->alwaysOnline.const_data());
     strcat(r, str);
     }
 
 // IP-address of user
-if (!req->ips.res_empty())
+if (!req->ips.empty())
     {
     sprintf(str, "<ip value=\"%s\" />\n", req->ips.const_data().c_str());
     strcat(r, str);
@@ -478,7 +478,7 @@ int uPresent = false;
 int dPresent = false;
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->monthUpload[i].res_empty())
+    if (!req->monthUpload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -493,7 +493,7 @@ for (int i = 0; i < DIR_NUM; i++)
         sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
-    if (!req->monthDownload[i].res_empty())
+    if (!req->monthDownload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -507,7 +507,7 @@ for (int i = 0; i < DIR_NUM; i++)
         sprintf(str, "MD%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
-    if (!req->sessionUpload[i].res_empty())
+    if (!req->sessionUpload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -522,7 +522,7 @@ for (int i = 0; i < DIR_NUM; i++)
         sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
-    if (!req->sessionDownload[i].res_empty())
+    if (!req->sessionDownload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -544,7 +544,7 @@ if (uPresent || dPresent)
 
 //printf("%s\n", r);
 
-if (!req->tariff.res_empty())
+if (!req->tariff.empty())
     {
     switch (req->chgTariff)
         {
@@ -564,60 +564,60 @@ if (!req->tariff.res_empty())
 
     }
 
-if (!req->note.res_empty())
+if (!req->note.empty())
     {
     string note;
-    Encode12str(note, req->note);
+    Encode12str(note, req->note.data());
     sprintf(str, "<note value=\"%s\"/>", note.c_str());
     strcat(r, str);
     }
 
-if (!req->name.res_empty())
+if (!req->name.empty())
     {
     string name;
-    Encode12str(name, req->name);
+    Encode12str(name, req->name.data());
     sprintf(str, "<name value=\"%s\"/>", name.c_str());
     strcat(r, str);
     }
 
-if (!req->address.res_empty())
+if (!req->address.empty())
     {
     string address;
-    Encode12str(address, req->address);
+    Encode12str(address, req->address.data());
     sprintf(str, "<address value=\"%s\"/>", address.c_str());
     strcat(r, str);
     }
 
-if (!req->email.res_empty())
+if (!req->email.empty())
     {
     string email;
-    Encode12str(email, req->email);
+    Encode12str(email, req->email.data());
     sprintf(str, "<email value=\"%s\"/>", email.c_str());
     strcat(r, str);
     }
 
-if (!req->phone.res_empty())
+if (!req->phone.empty())
     {
     string phone;
-    Encode12str(phone, req->phone);
+    Encode12str(phone, req->phone.data());
     sprintf(str, "<phone value=\"%s\"/>", phone.c_str());
     strcat(r, str);
     }
 
-if (!req->group.res_empty())
+if (!req->group.empty())
     {
     string group;
-    Encode12str(group, req->group);
+    Encode12str(group, req->group.data());
     sprintf(str, "<group value=\"%s\"/>", group.c_str());
     strcat(r, str);
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->userData[i].res_empty())
+    if (!req->userData[i].empty())
         {
         string ud;
-        Encode12str(ud, req->userData[i]);
+        Encode12str(ud, req->userData[i].data());
         sprintf(str, "<userdata%d value=\"%s\"/>", i, ud.c_str());
         strcat(r, str);
         }
@@ -633,27 +633,27 @@ bool sd = false;
 bool mu = false;
 bool md = false;
 bool ud = false;
-bool a = !req->admLogin.res_empty()
-    && !req->admPasswd.res_empty()
-    && !req->server.res_empty()
-    && !req->port.res_empty()
-    && !req->login.res_empty();
+bool a = !req->admLogin.empty()
+    && !req->admPasswd.empty()
+    && !req->server.empty()
+    && !req->port.empty()
+    && !req->login.empty();
 
-bool b = !req->cash.res_empty()
-    || !req->setCash.res_empty()
-    || !req->credit.res_empty()
-    || !req->prepaidTraff.res_empty()
-    || !req->tariff.res_empty()
-    || !req->usrMsg.res_empty()
-    || !req->usrPasswd.res_empty()
+bool b = !req->cash.empty()
+    || !req->setCash.empty()
+    || !req->credit.empty()
+    || !req->prepaidTraff.empty()
+    || !req->tariff.empty()
+    || !req->usrMsg.empty()
+    || !req->usrPasswd.empty()
 
-    || !req->note.res_empty()
-    || !req->name.res_empty()
-    || !req->address.res_empty()
-    || !req->email.res_empty()
-    || !req->phone.res_empty()
-    || !req->group.res_empty()
-    || !req->ips.res_empty()	// IP-address of user
+    || !req->note.empty()
+    || !req->name.empty()
+    || !req->address.empty()
+    || !req->email.empty()
+    || !req->phone.empty()
+    || !req->group.empty()
+    || !req->ips.empty() // IP-address of user
 
     || !req->createUser
     || !req->deleteUser;
@@ -661,7 +661,7 @@ bool b = !req->cash.res_empty()
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->sessionUpload[i].res_empty())
+    if (req->sessionUpload[i].empty())
         {
         su = true;
         break;
@@ -670,7 +670,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->sessionDownload[i].res_empty())
+    if (req->sessionDownload[i].empty())
         {
         sd = true;
         break;
@@ -679,7 +679,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->monthUpload[i].res_empty())
+    if (req->monthUpload[i].empty())
         {
         mu = true;
         break;
@@ -688,7 +688,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->monthDownload[i].res_empty())
+    if (req->monthDownload[i].empty())
         {
         md = true;
         break;
@@ -697,7 +697,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->userData[i].res_empty())
+    if (req->userData[i].empty())
         {
         ud = true;
         break;
@@ -880,9 +880,9 @@ if (missedOptionArg || !CheckParametersGet(&req))
     }
 
 if (req.authBy)
-    return ProcessAuthBy(req.server, req.port, req.admLogin, req.admPasswd, req.login);
+    return ProcessAuthBy(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data());
 else
-    return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, req);
+    return ProcessGetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), req);
 }
 //-----------------------------------------------------------------------------
 bool mainSet(int argc, char **argv)
@@ -1083,9 +1083,9 @@ memset(rstr, 0, rLen);
 
 CreateRequestSet(&req, rstr);
 if (isMessage)
-    return ProcessSendMessage(req.server, req.port, req.admLogin, req.admPasswd, rstr);
+    return ProcessSendMessage(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr);
 
-return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr);
+return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)

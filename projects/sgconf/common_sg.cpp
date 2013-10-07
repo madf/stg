@@ -342,13 +342,13 @@ if (info.login == "")
     return;
     }
 
-if (!data->request.cash.res_empty())
+if (!data->request.cash.empty())
     cout << "cash = " << info.cash << endl;
 
-if (!data->request.credit.res_empty())
+if (!data->request.credit.empty())
     cout << "credit = " << info.credit << endl;
 
-if (!data->request.creditExpire.res_empty())
+if (!data->request.creditExpire.empty())
     {
     char buf[32];
     struct tm brokenTime;
@@ -368,40 +368,40 @@ if (!data->request.creditExpire.res_empty())
     cout << "creditExpire = " << buf << endl;
     }
 
-if (!data->request.down.res_empty())
+if (!data->request.down.empty())
     cout << "down = " << info.down << endl;
 
-if (!data->request.passive.res_empty())
+if (!data->request.passive.empty())
     cout << "passive = " << info.passive << endl;
 
-if (!data->request.disableDetailStat.res_empty())
+if (!data->request.disableDetailStat.empty())
     cout << "disableDetailStat = " << info.disableDetailStat << endl;
 
-if (!data->request.alwaysOnline.res_empty())
+if (!data->request.alwaysOnline.empty())
     cout << "alwaysOnline = " << info.alwaysOnline << endl;
 
-if (!data->request.prepaidTraff.res_empty())
+if (!data->request.prepaidTraff.empty())
     cout << "prepaidTraff = " << info.prepaidTraff << endl;
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->request.sessionUpload[i].res_empty())
+    if (!data->request.sessionUpload[i].empty())
         cout << "session upload for dir " << i << " = " << info.stat.su[i] << endl;
-    if (!data->request.sessionDownload[i].res_empty())
+    if (!data->request.sessionDownload[i].empty())
         cout << "session download for dir " << i << "=" << info.stat.sd[i] << endl;
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!data->request.monthUpload[i].res_empty())
+    if (!data->request.monthUpload[i].empty())
         cout << "month upload for dir " << i << " = " << info.stat.mu[i] << endl;
-    if (!data->request.monthDownload[i].res_empty())
+    if (!data->request.monthDownload[i].empty())
         cout << "month download for dir " << i << " = " << info.stat.md[i] << endl;
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!data->request.userData[i].res_empty())
+    if (!data->request.userData[i].empty())
         {
         std::string str;
         ConvertFromKOI8(info.userData[i], &str);
@@ -423,7 +423,7 @@ StringReqParams strReqParams[] =
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
-    if (!strReqParams[i].reqParam.res_empty())
+    if (!strReqParams[i].reqParam.empty())
         {
         string str;
         ConvertFromKOI8(*strReqParams[i].value, &str);

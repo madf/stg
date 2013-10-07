@@ -113,7 +113,6 @@ struct STAT_NODE
 //-----------------------------------------------------------------------------
 struct USER_STAT
 {
-    //USER_STAT & operator= (const USER_STAT_RES & usr);
     USER_STAT()
         : up(),
           down(),
@@ -162,17 +161,17 @@ struct USER_STAT_RES
         down = us.down;
         return * this;
     }
-    operator USER_STAT() const
+    USER_STAT GetData() const
     {
         USER_STAT us;
-        us.cash             = cash;
-        us.freeMb           = freeMb;
-        us.lastCashAdd      = lastCashAdd;
-        us.lastCashAddTime  = lastCashAddTime;
-        us.passiveTime      = passiveTime;
-        us.lastActivityTime = lastActivityTime;
-        us.up               = up;
-        us.down             = down;
+        us.cash             = cash.data();
+        us.freeMb           = freeMb.data();
+        us.lastCashAdd      = lastCashAdd.data();
+        us.lastCashAddTime  = lastCashAddTime.data();
+        us.passiveTime      = passiveTime.data();
+        us.lastActivityTime = lastActivityTime.data();
+        us.up               = up.data();
+        us.down             = down.data();
         return us;
     }
 

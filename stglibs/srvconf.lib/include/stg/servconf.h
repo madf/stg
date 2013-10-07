@@ -43,12 +43,17 @@ public:
              const std::string & login, const std::string & password);
     ~SERVCONF();
 
+    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
+
+    /*int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
+    int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
+    int ChgAdmin(const std::string & request, CHG_ADMIN::CALLBACK f, void * data);*/
+
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data);
-    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
