@@ -90,6 +90,7 @@ struct ADMIN_CONF_RES
         priv = rhs.priv;
         login = rhs.login;
         password = rhs.password;
+        return *this;
     }
     RESETABLE<PRIV> priv;
     RESETABLE<std::string> login;
