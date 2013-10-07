@@ -49,7 +49,7 @@ public:
     int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
     int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
     int ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data);
-    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, GET_ADMIN::CALLBACK f, void * data);
+    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, ADD_ADMIN::CALLBACK f, void * data);
     int DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data);
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
