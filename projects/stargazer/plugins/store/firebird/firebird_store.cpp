@@ -26,13 +26,16 @@
  *
  */
 
+#include "firebird_store.h"
+
+#include "stg/ibpp.h"
+#include "stg/plugin_creator.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
 
-#include "stg/ibpp.h"
-#include "stg/plugin_creator.h"
-#include "firebird_store.h"
+#include <cctype>
 
 namespace
 {
@@ -78,55 +81,41 @@ std::string s;
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
     s = i->param;
-    std::transform(s.begin(), s.end(), s.begin(), ToLower());
+
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+
     if (s == "server")
-        {
         db_server = *(i->value.begin());
-        }
+
     if (s == "database")
-        {
         db_database = *(i->value.begin());
-        }
+
     if (s == "user")
-        {
         db_user = *(i->value.begin());
-        }
+
     if (s == "password")
-        {
         db_password = *(i->value.begin());
-        }
 
     // Advanced settings block
 
     if (s == "isolationLevel")
         {
         if (*(i->value.begin()) == "Concurrency")
-            {
             til = IBPP::ilConcurrency;
-            }
         else if (*(i->value.begin()) == "DirtyRead")
-            {
             til = IBPP::ilReadDirty;
-            }
         else if (*(i->value.begin()) == "ReadCommitted")
-            {
             til = IBPP::ilReadCommitted;
-            }
         else if (*(i->value.begin()) == "Consistency")
-            {
             til = IBPP::ilConsistency;
-            }
         }
+
     if (s == "lockResolution")
         {
         if (*(i->value.begin()) == "Wait")
-            {
             tlr = IBPP::lrWait;
-            }
         else if (*(i->value.begin()) == "NoWait")
-            {
             tlr = IBPP::lrNoWait;
-            }
         }
     }
 
