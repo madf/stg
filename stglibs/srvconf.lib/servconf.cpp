@@ -45,8 +45,6 @@ public:
     IMPL(const std::string & server, uint16_t port,
          const std::string & login, const std::string & password);
 
-    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
-
     const std::string & GetStrError() const;
     static void Start(void * data, const char * el, const char ** attr);
     static void End(void * data, const char * el);
@@ -117,7 +115,7 @@ return pImpl->Exec<SEND_MESSAGE::PARSER>(request, f, data);
 
 int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
-    return pImpl->ServerInfo(f, data);
+return Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
 }
 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
@@ -137,11 +135,6 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
 {
 parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
-{
-return Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
