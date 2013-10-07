@@ -38,6 +38,8 @@
 
 #define  ENC_MSG_LEN    (8)
 
+struct ADMIN_CONF;
+
 namespace STG
 {
 
@@ -64,6 +66,8 @@ confLogin,
 confLoginCipher,
 confData
 };
+
+typedef void (* SIMPLE_CALLBACK)(bool result, const std::string & reason, void * data);
 
 namespace AUTH_BY
 {
@@ -93,7 +97,7 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 namespace CHECK_USER
 {
 
-typedef int (* CALLBACK)(bool result, const std::string & reason, void * data);
+typedef SIMPLE_CALLBACK CALLBACK;
 
 } // namespace CHECK_USER
 
@@ -151,14 +155,51 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 namespace CHG_USER
 {
 
-typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+typedef SIMPLE_CALLBACK CALLBACK;
 
 }
 
 namespace SEND_MESSAGE
 {
 
-typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+typedef SIMPLE_CALLBACK CALLBACK;
+
+}
+
+namespace GET_ADMIN
+{
+
+typedef ADMIN_CONF INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace GET_ADMINS
+{
+
+typedef std::vector<GET_ADMIN::INFO> INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace ADD_ADMIN
+{
+
+typedef SIMPLE_CALLBACK CALLBACK;
+
+}
+
+namespace DEL_ADMIN
+{
+
+typedef SIMPLE_CALLBACK CALLBACK;
+
+}
+
+namespace CHG_ADMIN
+{
+
+typedef SIMPLE_CALLBACK CALLBACK;
 
 }
 

@@ -21,15 +21,13 @@
 
 #include "send_message.h"
 
-#include <cstddef>
-
 #include <strings.h>
 
 using namespace STG;
 
-SEND_MESSAGE::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+SEND_MESSAGE::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
       depth(0)
 {
 }
@@ -56,10 +54,4 @@ if (attr && attr[0] && attr[1])
     callback(strcasecmp(attr[1], "ok") == 0, attr[1], data);
 else
     callback(false, "Invalid response.", data);
-}
-//-----------------------------------------------------------------------------
-void SEND_MESSAGE::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }

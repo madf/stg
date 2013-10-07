@@ -21,15 +21,13 @@
 
 #include "check_user.h"
 
-#include <cstddef>
-
 #include <strings.h>
 
 using namespace STG;
 
-CHECK_USER::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+CHECK_USER::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
       depth(0)
 {
 }
@@ -56,10 +54,4 @@ if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "value") == 0)
     callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : "", data);
 else
     callback(false, "Invalid response.", data);
-}
-//-----------------------------------------------------------------------------
-void CHECK_USER::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }

@@ -29,6 +29,7 @@
 
 #include "stg/servconf_types.h"
 
+#include "stg/admin_conf.h"
 #include "stg/os_int.h"
 
 #include <string>
@@ -45,9 +46,11 @@ public:
 
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
 
-    /*int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
+    int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
     int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
-    int ChgAdmin(const std::string & request, CHG_ADMIN::CALLBACK f, void * data);*/
+    int ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data);
+    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, GET_ADMIN::CALLBACK f, void * data);
+    int DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data);
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);

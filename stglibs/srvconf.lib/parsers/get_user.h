@@ -37,11 +37,10 @@ namespace GET_USER
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER();
+    PARSER(CALLBACK f, void * data);
     virtual ~PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
-    void SetCallback(CALLBACK f, void * data);
 
 private:
     PROPERTY_PARSERS propertyParsers;

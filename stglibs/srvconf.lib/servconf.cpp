@@ -45,12 +45,19 @@ public:
     IMPL(const std::string & server, uint16_t port,
          const std::string & login, const std::string & password);
 
+    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
+
+    int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
+    int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
+    int ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data);
+    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, GET_ADMIN::CALLBACK f, void * data);
+    int DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data);
+
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data);
-    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
@@ -58,14 +65,6 @@ public:
     static void End(void * data, const char * el);
 
 private:
-    GET_USERS::PARSER parserGetUsers;
-    GET_USER::PARSER parserGetUser;
-    AUTH_BY::PARSER parserAuthBy;
-    SERVER_INFO::PARSER  parserServerInfo;
-    CHG_USER::PARSER parserChgUser;
-    CHECK_USER::PARSER parserCheckUser;
-    SEND_MESSAGE::PARSER parserSendMessage;
-
     NETTRANSACT nt;
 
     std::string errorMsg;
@@ -154,44 +153,44 @@ nt.SetRxCallback(this, AnsRecv);
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
 {
-parserGetUser.SetCallback(f, data);
-return Exec("<GetUser login=\"" + login + "\"/>", parserGetUser);
+GET_USER::PARSER parser(f, data);
+return Exec("<GetUser login=\"" + login + "\"/>", parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
 {
-parserAuthBy.SetCallback(f, data);
-return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parserAuthBy);
+AUTH_BY::PARSER parser(f, data);
+return Exec("<GetUserAuthBy login=\"" + login + "\"/>", parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
-parserGetUsers.SetCallback(f, data);
-return Exec("<GetUsers/>", parserGetUsers);
+GET_USERS::PARSER parser(f, data);
+return Exec("<GetUsers/>", parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
-parserServerInfo.SetCallback(f, data);
-return Exec("<GetServerInfo/>", parserServerInfo);
+SERVER_INFO::PARSER parser(f, data);
+return Exec("<GetServerInfo/>", parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
 {
-parserChgUser.SetCallback(f, data);
-return Exec(request, parserChgUser);
+CHG_USER::PARSER parser(f, data);
+return Exec(request, parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
 {
-parserSendMessage.SetCallback(f, data);
-return Exec(request, parserSendMessage);
+SEND_MESSAGE::PARSER parser(f, data);
+return Exec(request, parser);
 }
 //-----------------------------------------------------------------------------
 int SERVCONF::IMPL::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
 {
-parserCheckUser.SetCallback(f, data);
-return Exec("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", parserCheckUser);
+CHECK_USER::PARSER parser(f, data);
+return Exec("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", parser);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)

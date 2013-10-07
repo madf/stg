@@ -21,19 +21,17 @@
 
 #include "get_users.h"
 
-#include <cstddef>
-
 #include <strings.h>
 
 using namespace STG;
 
-GET_USERS::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+GET_USERS::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
+      userParser(&GET_USERS::PARSER::UserCallback, this),
       depth(0),
       parsingAnswer(false)
 {
-    userParser.SetCallback(&GET_USERS::PARSER::UserCallback, this);
 }
 //-----------------------------------------------------------------------------
 int GET_USERS::PARSER::ParseStart(const char * el, const char ** attr)
@@ -67,12 +65,6 @@ if (depth == 0 && parsingAnswer)
 void GET_USERS::PARSER::AddUser(const GET_USER::INFO & userInfo)
 {
 info.push_back(userInfo);
-}
-//-----------------------------------------------------------------------------
-void GET_USERS::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }
 //-----------------------------------------------------------------------------
 void GET_USERS::PARSER::UserCallback(bool result, const std::string & error, const GET_USER::INFO & info, void * data)

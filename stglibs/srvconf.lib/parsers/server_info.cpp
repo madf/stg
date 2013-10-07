@@ -24,7 +24,6 @@
 #include "stg/common.h"
 
 #include <cstdio> // sprintf
-#include <cstddef>
 
 #include <strings.h>
 
@@ -39,9 +38,9 @@ const size_t DIRNAME_LEN  = 16;
 
 }
 
-SERVER_INFO::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
       depth(0),
       parsingAnswer(false)
 {
@@ -79,10 +78,4 @@ if (depth == 0 && parsingAnswer)
     error.clear();
     parsingAnswer = false;
     }
-}
-//-----------------------------------------------------------------------------
-void SERVER_INFO::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }

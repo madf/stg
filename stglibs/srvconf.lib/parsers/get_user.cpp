@@ -25,7 +25,6 @@
 
 #include <map>
 #include <utility>
-#include <cstddef>
 
 #include <strings.h>
 
@@ -61,9 +60,9 @@ return true;
 
 }
 
-GET_USER::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+GET_USER::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
       depth(0),
       parsingAnswer(false)
 {
@@ -148,10 +147,4 @@ void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
 {
 if (!TryParse(propertyParsers, ToLower(el), attr))
     error = "Invalid parameter.";
-}
-//-----------------------------------------------------------------------------
-void GET_USER::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }

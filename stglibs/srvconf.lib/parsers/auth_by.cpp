@@ -20,15 +20,13 @@
 
 #include "auth_by.h"
 
-#include <cstddef>
-
 #include <strings.h> // strcasecmp
 
 using namespace STG;
 
-AUTH_BY::PARSER::PARSER()
-    : callback(NULL),
-      data(NULL),
+AUTH_BY::PARSER::PARSER(CALLBACK f, void * d)
+    : callback(f),
+      data(d),
       depth(0),
       parsingAnswer(false)
 {
@@ -78,10 +76,4 @@ if (depth == 0)
     info.clear();
     error.clear();
     }
-}
-//-----------------------------------------------------------------------------
-void AUTH_BY::PARSER::SetCallback(CALLBACK f, void * d)
-{
-callback = f;
-data = d;
 }
