@@ -47,31 +47,18 @@ public:
 
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
 
-    int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
-    int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
-    int ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data);
-    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, GET_ADMIN::CALLBACK f, void * data);
-    int DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data);
-
-    int GetUsers(GET_USERS::CALLBACK f, void * data);
-    int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
-    int ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data);
-    int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
-    int SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data);
-    int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
-
     const std::string & GetStrError() const;
     static void Start(void * data, const char * el, const char ** attr);
     static void End(void * data, const char * el);
+
+    template <class P, typename C>
+    int Exec(const std::string & request, C callback, void * data);
 
 private:
     NETTRANSACT nt;
 
     std::string errorMsg;
     XML_Parser parser;
-
-    template <class P, typename C>
-    int Exec(const std::string & request, C callback, void * data);
 
     static bool AnsRecv(void * data, const std::string & chunk, bool final);
 };
@@ -100,32 +87,32 @@ SERVCONF::SERVCONF(const std::string & server, uint16_t port,
 
 SERVCONF::~SERVCONF()
 {
-    delete pImpl;
+delete pImpl;
 }
 
 int SERVCONF::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
-    return pImpl->GetUsers( f, data );
+return pImpl->Exec<GET_USERS::PARSER>("<GetUsers/>", f, data);
 }
 
 int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
 {
-    return pImpl->GetUser(login, f, data);
+return pImpl->Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
 }
 
 int SERVCONF::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
 {
-    return pImpl->ChgUser(request, f, data);
+return pImpl->Exec<CHG_USER::PARSER>(request, f, data);
 }
 
 int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
 {
-    return pImpl->AuthBy(login, f, data);
+return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
 }
 
 int SERVCONF::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
 {
-    return pImpl->SendMessage(request, f, data);
+return pImpl->Exec<SEND_MESSAGE::PARSER>(request, f, data);
 }
 
 int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
@@ -135,7 +122,7 @@ int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
 {
-    return pImpl->CheckUser(login, password, f, data);
+return pImpl->Exec<CHECK_USER::PARSER>("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
 }
 
 const std::string & SERVCONF::GetStrError() const
@@ -152,39 +139,9 @@ parser = XML_ParserCreate(NULL);
 nt.SetRxCallback(this, AnsRecv);
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
-{
-return Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
-{
-return Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::GetUsers(GET_USERS::CALLBACK f, void * data)
-{
-return Exec<GET_USERS::PARSER>("<GetUsers/>", f, data);
-}
-//-----------------------------------------------------------------------------
 int SERVCONF::IMPL::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
 return Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
-{
-return Exec<CHG_USER::PARSER>(request, f, data);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
-{
-return Exec<SEND_MESSAGE::PARSER>(request, f, data);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::IMPL::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
-{
-return Exec<CHECK_USER::PARSER>("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
