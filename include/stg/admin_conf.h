@@ -75,6 +75,26 @@ struct ADMIN_CONF
     std::string   password;
 };
 //-----------------------------------------------------------------------------
+struct ADMIN_CONF_RES
+{
+    ADMIN_CONF_RES()
+    {}
+    ADMIN_CONF_RES(const ADMIN_CONF_RES & rhs)
+        : priv(rhs.priv),
+          login(rhs.login),
+          password(rhs.password)
+    {}
+    ADMIN_CONF_RES & operator=(const ADMIN_CONF_RES & rhs)
+    {
+        priv = rhs.priv;
+        login = rhs.login;
+        password = rhs.password;
+        return *this;
+    }
+    RESETABLE<PRIV> priv;
+    RESETABLE<std::string> login;
+    RESETABLE<std::string> password;
+};
 
 #include "admin_conf.inc.h"
 
