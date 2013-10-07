@@ -15,7 +15,6 @@
  */
 
 /*
- *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 

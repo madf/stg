@@ -15,11 +15,12 @@
  */
 
 /*
- *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
 #include "get_admins.h"
+
+#include "stg/admin_conf.h"
 
 #include <strings.h>
 
