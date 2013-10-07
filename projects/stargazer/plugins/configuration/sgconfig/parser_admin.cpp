@@ -213,11 +213,11 @@ void PARSER_CHG_ADMIN::CreateAnswer()
 answerList->erase(answerList->begin(), answerList->end());
 
 
-if (!login.res_empty())
+if (!login.empty())
     {
     ADMIN * origAdmin = NULL;
 
-    if (admins->Find(login, &origAdmin))
+    if (admins->Find(login.data(), &origAdmin))
         {
         answerList->push_back(std::string("<ChgAdmin Result = \"Admin '") + login.data() + "' is not found.\"/>");
         return;
@@ -225,10 +225,10 @@ if (!login.res_empty())
 
     ADMIN_CONF conf(origAdmin->GetConf());
 
-    if (!password.res_empty())
+    if (!password.empty())
         conf.password = password.data();
 
-    if (!privAsString.res_empty())
+    if (!privAsString.empty())
         {
         int p = 0;
         if (str2x(privAsString.data().c_str(), p) < 0)

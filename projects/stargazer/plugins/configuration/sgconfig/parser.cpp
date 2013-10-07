@@ -1016,13 +1016,13 @@ if (users->FindByName(login, &u))
 
 bool check = false;
 bool alwaysOnline = u->GetProperty().alwaysOnline;
-if (!ucr->alwaysOnline.res_empty())
+if (!ucr->alwaysOnline.empty())
     {
     check = true;
     alwaysOnline = ucr->alwaysOnline.const_data();
     }
 bool onlyOneIP = u->GetProperty().ips.ConstData().OnlyOneIP();
-if (!ucr->ips.res_empty())
+if (!ucr->ips.empty())
     {
     check = true;
     onlyOneIP = ucr->ips.const_data().OnlyOneIP();
@@ -1049,49 +1049,49 @@ for (size_t i = 0; i < ucr->ips.const_data().Count(); ++i)
         }
     }
 
-if (!ucr->ips.res_empty())
+if (!ucr->ips.empty())
     if (!u->GetProperty().ips.Set(ucr->ips.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->alwaysOnline.res_empty())
+if (!ucr->alwaysOnline.empty())
     if (!u->GetProperty().alwaysOnline.Set(ucr->alwaysOnline.const_data(),
                                       currAdmin, login, store))
         res = -1;
 
-if (!ucr->address.res_empty())
+if (!ucr->address.empty())
     if (!u->GetProperty().address.Set(ucr->address.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->creditExpire.res_empty())
+if (!ucr->creditExpire.empty())
     if (!u->GetProperty().creditExpire.Set(ucr->creditExpire.const_data(),
                                       currAdmin, login, store))
         res = -1;
 
-if (!ucr->credit.res_empty())
+if (!ucr->credit.empty())
     if (!u->GetProperty().credit.Set(ucr->credit.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!usr->freeMb.res_empty())
+if (!usr->freeMb.empty())
     if (!u->GetProperty().freeMb.Set(usr->freeMb.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->disabled.res_empty())
+if (!ucr->disabled.empty())
     if (!u->GetProperty().disabled.Set(ucr->disabled.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->disabledDetailStat.res_empty())
+if (!ucr->disabledDetailStat.empty())
     if (!u->GetProperty().disabledDetailStat.Set(ucr->disabledDetailStat.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->email.res_empty())
+if (!ucr->email.empty())
     if (!u->GetProperty().email.Set(ucr->email.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->group.res_empty())
+if (!ucr->group.empty())
     if (!u->GetProperty().group.Set(ucr->group.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->note.res_empty())
+if (!ucr->note.empty())
     if (!u->GetProperty().note.Set(ucr->note.const_data(), currAdmin, login, store))
         res = -1;
 
@@ -1109,31 +1109,31 @@ userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
 for (int i = 0; i < (int)userdata.size(); i++)
     {
-    if (!ucr->userdata[i].res_empty())
+    if (!ucr->userdata[i].empty())
         {
         if(!userdata[i]->Set(ucr->userdata[i].const_data(), currAdmin, login, store))
             res = -1;
         }
     }
 
-if (!ucr->passive.res_empty())
+if (!ucr->passive.empty())
     if (!u->GetProperty().passive.Set(ucr->passive.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->password.res_empty())
+if (!ucr->password.empty())
     if (!u->GetProperty().password.Set(ucr->password.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->phone.res_empty())
+if (!ucr->phone.empty())
     if (!u->GetProperty().phone.Set(ucr->phone.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->realName.res_empty())
+if (!ucr->realName.empty())
     if (!u->GetProperty().realName.Set(ucr->realName.const_data(), currAdmin, login, store))
         res = -1;
 
 
-if (!usr->cash.res_empty())
+if (!usr->cash.empty())
     {
     //if (*currAdmin->GetPriv()->userCash)
         {
@@ -1155,7 +1155,7 @@ if (!usr->cash.res_empty())
     }
 
 
-if (!ucr->tariffName.res_empty())
+if (!ucr->tariffName.empty())
     {
     if (tariffs->FindByName(ucr->tariffName.const_data()))
         {
@@ -1170,7 +1170,7 @@ if (!ucr->tariffName.res_empty())
         }
     }
 
-if (!ucr->nextTariff.res_empty())
+if (!ucr->nextTariff.empty())
     {
     if (tariffs->FindByName(ucr->nextTariff.const_data()))
         {
@@ -1190,14 +1190,14 @@ int upCount = 0;
 int downCount = 0;
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!upr[i].res_empty())
+    if (!upr[i].empty())
         {
-        up[i] = upr[i];
+        up[i] = upr[i].data();
         upCount++;
         }
-    if (!downr[i].res_empty())
+    if (!downr[i].empty())
         {
-        down[i] = downr[i];
+        down[i] = downr[i].data();
         downCount++;
         }
     }
@@ -1210,11 +1210,11 @@ if (downCount)
     if (!u->GetProperty().down.Set(down, currAdmin, login, store))
         res = -1;
 
-/*if (!usr->down.res_empty())
+/*if (!usr->down.empty())
     {
     u->GetProperty().down.Set(usr->down.const_data(), currAdmin, login, store);
     }
-if (!usr->up.res_empty())
+if (!usr->up.empty())
     {
     u->GetProperty().up.Set(usr->up.const_data(), currAdmin, login, store);
     }*/
