@@ -115,7 +115,7 @@ return pImpl->Exec<SEND_MESSAGE::PARSER>(request, f, data);
 
 int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
-return Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
+return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
 }
 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
