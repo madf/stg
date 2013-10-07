@@ -26,9 +26,9 @@
 
 #include "parsers/get_admins.h"
 #include "parsers/get_admin.h"
-#include "parsers/chg_admin.h"
+/*#include "parsers/chg_admin.h"
 #include "parsers/add_admin.h"
-#include "parsers/del_admin.h"
+#include "parsers/del_admin.h"*/
 
 #include "parsers/auth_by.h"
 #include "parsers/check_user.h"
@@ -119,7 +119,7 @@ int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * 
 return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data)
+/*int SERVCONF::ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data)
 {
 return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin login=\"" + login + "\">" + CHG_ADMIN::Serialize(conf) + "</ChgAdmin>", f, data);
 }
@@ -135,7 +135,7 @@ return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin login=\"" + login + "\">" + CHG
 int SERVCONF::DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data)
 {
 return pImpl->Exec<DEL_ADMIN::PARSER>("<DelAdmin login=\"" + login + "\"/>", f, data);
-}
+}*/
 
 // -- Users --
 
