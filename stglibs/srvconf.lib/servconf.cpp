@@ -21,13 +21,22 @@
 #include "stg/servconf.h"
 
 #include "netunit.h"
-#include "parsers/auth_by.h"
+
 #include "parsers/server_info.h"
+
+#include "parsers/get_admins.h"
+#include "parsers/get_admin.h"
+#include "parsers/chg_admin.h"
+#include "parsers/add_admin.h"
+#include "parsers/del_admin.h"
+
+#include "parsers/auth_by.h"
 #include "parsers/check_user.h"
 #include "parsers/get_users.h"
 #include "parsers/get_user.h"
 #include "parsers/chg_user.h"
 #include "parsers/send_message.h"
+
 #include "parsers/base.h"
 
 #include "stg/common.h"
@@ -50,7 +59,11 @@ public:
     static void End(void * data, const char * el);
 
     template <class P, typename C>
-    int Exec(const std::string & request, C callback, void * data);
+    int Exec(const std::string & request, C callback, void * data)
+    {
+        P cp(callback, data);
+        return ExecImpl(request, cp);
+    }
 
 private:
     NETTRANSACT nt;
@@ -59,6 +72,7 @@ private:
     XML_Parser parser;
 
     static bool AnsRecv(void * data, const std::string & chunk, bool final);
+    int ExecImpl(const std::string & request, PARSER & cp);
 };
 
 bool SERVCONF::IMPL::AnsRecv(void * data, const std::string & chunk, bool final)
@@ -88,6 +102,43 @@ SERVCONF::~SERVCONF()
 delete pImpl;
 }
 
+int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
+{
+return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
+}
+
+// -- Admins --
+
+int SERVCONF::GetAdmins(GET_ADMINS::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_ADMINS::PARSER>("<GetAdmins/>", f, data);
+}
+
+int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::ChgAdmin(const std::string & login, const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data)
+{
+return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin login=\"" + login + "\">" + CHG_ADMIN::Serialize(conf) + "</ChgAdmin>", f, data);
+}
+
+int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, ADD_ADMIN::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<ADD_ADMIN::PARSER>("<AddAdmin login=\"" + login + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin login=\"" + login + "\">" + CHG_ADMIN::Serialize(conf) + "</ChgAdmin>", f, data);
+}
+
+int SERVCONF::DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data)
+{
+return pImpl->Exec<DEL_ADMIN::PARSER>("<DelAdmin login=\"" + login + "\"/>", f, data);
+}
+
+// -- Users --
+
 int SERVCONF::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
 return pImpl->Exec<GET_USERS::PARSER>("<GetUsers/>", f, data);
@@ -113,11 +164,6 @@ int SERVCONF::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f,
 return pImpl->Exec<SEND_MESSAGE::PARSER>(request, f, data);
 }
 
-int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
-{
-return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
-}
-
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
 {
 return pImpl->Exec<CHECK_USER::PARSER>("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
@@ -125,7 +171,7 @@ return pImpl->Exec<CHECK_USER::PARSER>("<CheckUser login=\"" + login + "\" passw
 
 const std::string & SERVCONF::GetStrError() const
 {
-    return pImpl->GetStrError();
+return pImpl->GetStrError();
 }
 
 //-----------------------------------------------------------------------------
@@ -154,10 +200,8 @@ const std::string & SERVCONF::IMPL::GetStrError() const
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-template <class P, typename C>
-int SERVCONF::IMPL::Exec(const std::string & request, C callback, void * data)
+int SERVCONF::IMPL::ExecImpl(const std::string & request, PARSER & cp)
 {
-P cp(callback, data);
 XML_ParserReset(parser, NULL);
 XML_SetElementHandler(parser, Start, End);
 XML_SetUserData(parser, &cp);
