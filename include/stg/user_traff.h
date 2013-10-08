@@ -88,7 +88,7 @@ public:
     ValueType & operator[](IndexType idx) { return traff[idx]; }
     DIR_TRAFF GetData() const
     {
-    DIR_TRAFF res(traff.size());
+    DIR_TRAFF res;
     for (IndexType i = 0; i < traff.size(); ++i)
         if (!traff[i].empty())
             res[i] = traff[i].data();

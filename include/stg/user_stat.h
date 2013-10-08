@@ -114,8 +114,10 @@ struct STAT_NODE
 struct USER_STAT
 {
     USER_STAT()
-        : up(),
-          down(),
+        : sessionUp(),
+          sessionDown(),
+          monthUp(),
+          monthDown(),
           cash(0),
           freeMb(0),
           lastCashAdd(0),
@@ -124,8 +126,10 @@ struct USER_STAT
           lastActivityTime(0)
     {}
 
-    DIR_TRAFF   up;
-    DIR_TRAFF   down;
+    DIR_TRAFF   sessionUp;
+    DIR_TRAFF   sessionDown;
+    DIR_TRAFF   monthUp;
+    DIR_TRAFF   monthDown;
     double      cash;
     double      freeMb;
     double      lastCashAdd;
@@ -145,8 +149,10 @@ struct USER_STAT_RES
           lastCashAddTime(),
           passiveTime(),
           lastActivityTime(),
-          up(),
-          down()
+          sessionUp(),
+          sessionDown(),
+          monthUp(),
+          monthDown()
     {}
 
     USER_STAT_RES & operator= (const USER_STAT & us)
@@ -157,8 +163,10 @@ struct USER_STAT_RES
         lastCashAddTime  = us.lastCashAddTime;
         passiveTime      = us.passiveTime;
         lastActivityTime = us.lastActivityTime;
-        up               = us.up;
-        down             = us.down;
+        sessionUp        = us.sessionUp;
+        sessionDown      = us.sessionDown;
+        monthUp          = us.monthUp;
+        monthDown        = us.monthDown;
         return *this;
     }
     USER_STAT GetData() const
@@ -170,8 +178,10 @@ struct USER_STAT_RES
         us.lastCashAddTime  = lastCashAddTime.data();
         us.passiveTime      = passiveTime.data();
         us.lastActivityTime = lastActivityTime.data();
-        us.up               = up.GetData();
-        us.down             = down.GetData();
+        us.sessionUp        = sessionUp.GetData();
+        us.sessionDown      = sessionDown.GetData();
+        us.monthUp          = monthUp.GetData();
+        us.monthDown        = monthDown.GetData();
         return us;
     }
 
@@ -181,8 +191,10 @@ struct USER_STAT_RES
     RESETABLE<time_t>      lastCashAddTime;
     RESETABLE<time_t>      passiveTime;
     RESETABLE<time_t>      lastActivityTime;
-    DIR_TRAFF_RES          up;
-    DIR_TRAFF_RES          down;
+    DIR_TRAFF_RES          sessionUp;
+    DIR_TRAFF_RES          sessionDown;
+    DIR_TRAFF_RES          monthUp;
+    DIR_TRAFF_RES          monthDown;
 };
 //-----------------------------------------------------------------------------
 #endif

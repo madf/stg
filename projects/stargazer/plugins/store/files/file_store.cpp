@@ -728,7 +728,7 @@ for (int i = 0; i < DIR_NUM; i++)
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - download stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
-    stat->down[i] = traff;
+    stat->monthDown[i] = traff;
 
     snprintf(s, 22, "U%d", i);
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
@@ -738,7 +738,7 @@ for (int i = 0; i < DIR_NUM; i++)
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - upload stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
-    stat->up[i] = traff;
+    stat->monthUp[i] = traff;
     }
 
 if (cf.ReadDouble("Cash", &stat->cash, 0) != 0)
@@ -869,9 +869,9 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
     for (int i = 0; i < DIR_NUM; i++)
         {
         snprintf(s, 22, "D%d", i);
-        cfstat.WriteInt(s, stat.down[i]);
+        cfstat.WriteInt(s, stat.monthDown[i]);
         snprintf(s, 22, "U%d", i);
-        cfstat.WriteInt(s, stat.up[i]);
+        cfstat.WriteInt(s, stat.monthUp[i]);
         }
 
     cfstat.WriteDouble("Cash", stat.cash);
@@ -990,8 +990,8 @@ return WriteLog2String(logStr, login);
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::WriteUserDisconnect(const std::string & login,
-                                     const DIR_TRAFF & up,
-                                     const DIR_TRAFF & down,
+                                     const DIR_TRAFF & monthUp,
+                                     const DIR_TRAFF & monthDown,
                                      const DIR_TRAFF & sessionUp,
                                      const DIR_TRAFF & sessionDown,
                                      double cash,
@@ -1005,9 +1005,9 @@ logStr << "Disconnect, "
        << "\' session download: \'"
        << sessionDown
        << "\' month upload: \'"
-       << up
+       << monthUp
        << "\' month download: \'"
-       << down
+       << monthDown
        << "\' cash: \'"
        << cash
        << "\'";
@@ -1061,11 +1061,11 @@ for (size_t i = 0; i < DIR_NUM; i++)
     {
     char dirName[3];
     snprintf(dirName, 3, "U%llu", (unsigned long long)i);
-    s.WriteInt(dirName, stat.up[i]); // Classic
-    s2.WriteInt(dirName, stat.up[i]); // New
+    s.WriteInt(dirName, stat.monthUp[i]); // Classic
+    s2.WriteInt(dirName, stat.monthUp[i]); // New
     snprintf(dirName, 3, "D%llu", (unsigned long long)i);
-    s.WriteInt(dirName, stat.down[i]); // Classic
-    s2.WriteInt(dirName, stat.down[i]); // New
+    s.WriteInt(dirName, stat.monthDown[i]); // Classic
+    s2.WriteInt(dirName, stat.monthDown[i]); // New
     }
 
 // Classic
