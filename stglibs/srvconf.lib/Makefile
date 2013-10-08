@@ -12,6 +12,9 @@ SRCS =  parsers/property.cpp \
         parsers/server_info.cpp \
         parsers/get_admins.cpp \
         parsers/get_admin.cpp \
+        parsers/chg_admin.cpp \
+        parsers/add_admin.cpp \
+        parsers/del_admin.cpp \
         parsers/auth_by.cpp \
         parsers/check_user.cpp \
         parsers/get_user.cpp \

@@ -78,7 +78,10 @@ struct ADMIN_CONF
 //-----------------------------------------------------------------------------
 struct ADMIN_CONF_RES
 {
-    ADMIN_CONF_RES()
+    ADMIN_CONF_RES(const ADMIN_CONF & conf)
+        : priv(conf.priv),
+          login(conf.login),
+          password(conf.password)
     {}
     ADMIN_CONF_RES(const ADMIN_CONF_RES & rhs)
         : priv(rhs.priv),
