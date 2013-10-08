@@ -86,6 +86,14 @@ public:
     }
     const ValueType & operator[](IndexType idx) const { return traff[idx]; }
     ValueType & operator[](IndexType idx) { return traff[idx]; }
+    DIR_TRAFF GetData() const
+    {
+    DIR_TRAFF res(traff.size());
+    for (IndexType i = 0; i < traff.size(); ++i)
+        if (!traff[i].empty())
+            res[i] = traff[i].data();
+    return res;
+    }
 
 private:
     ContainerType traff;

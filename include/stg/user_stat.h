@@ -157,9 +157,9 @@ struct USER_STAT_RES
         lastCashAddTime  = us.lastCashAddTime;
         passiveTime      = us.passiveTime;
         lastActivityTime = us.lastActivityTime;
-        up = us.up;
-        down = us.down;
-        return * this;
+        up               = us.up;
+        down             = us.down;
+        return *this;
     }
     USER_STAT GetData() const
     {
@@ -170,8 +170,8 @@ struct USER_STAT_RES
         us.lastCashAddTime  = lastCashAddTime.data();
         us.passiveTime      = passiveTime.data();
         us.lastActivityTime = lastActivityTime.data();
-        us.up               = up.data();
-        us.down             = down.data();
+        us.up               = up.GetData();
+        us.down             = down.GetData();
         return us;
     }
 
@@ -181,8 +181,8 @@ struct USER_STAT_RES
     RESETABLE<time_t>      lastCashAddTime;
     RESETABLE<time_t>      passiveTime;
     RESETABLE<time_t>      lastActivityTime;
-    RESETABLE<DIR_TRAFF>   up;
-    RESETABLE<DIR_TRAFF>   down;
+    DIR_TRAFF_RES          up;
+    DIR_TRAFF_RES          down;
 };
 //-----------------------------------------------------------------------------
 #endif

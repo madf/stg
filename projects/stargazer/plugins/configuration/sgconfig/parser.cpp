@@ -943,8 +943,6 @@ else
                 }
             j+=2;
             }
-        usr->down = dtd;
-        usr->up = dtu;
         return 0;
         }
 
@@ -1209,15 +1207,6 @@ if (upCount)
 if (downCount)
     if (!u->GetProperty().down.Set(down, currAdmin, login, store))
         res = -1;
-
-/*if (!usr->down.empty())
-    {
-    u->GetProperty().down.Set(usr->down.const_data(), currAdmin, login, store);
-    }
-if (!usr->up.empty())
-    {
-    u->GetProperty().up.Set(usr->up.const_data(), currAdmin, login, store);
-    }*/
 
 u->WriteConf();
 u->WriteStat();
