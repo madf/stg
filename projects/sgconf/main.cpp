@@ -1084,7 +1084,7 @@ memset(rstr, 0, rLen);
 
 CreateRequestSet(&req, rstr);
 if (isMessage)
-    return ProcessSendMessage(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr);
+    return ProcessSendMessage(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), req.usrMsg.data());
 
 return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr);
 }

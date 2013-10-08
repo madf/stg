@@ -67,6 +67,6 @@ bool ProcessSetUser(const std::string & server,
 
 bool ProcessSendMessage(const std::string & server, uint16_t port,
                         const std::string & login, const std::string & password,
-                        const std::string & requestString);
+                        const std::string & user, const std::string & text);
 
 #endif

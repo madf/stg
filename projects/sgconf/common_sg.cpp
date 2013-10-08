@@ -460,12 +460,12 @@ return true;
 //-----------------------------------------------------------------------------
 bool ProcessSendMessage(const std::string & server, uint16_t port,
                         const std::string & login, const std::string & password,
-                        const std::string & requestString)
+                        const std::string & user, const std::string & text)
 {
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-int res = sc.SendMessage(requestString.c_str(), ResultCallback, &data);
+int res = sc.SendMessage(user, text, ResultCallback, &data);
 
 if (res == st_ok && data.result)
     {

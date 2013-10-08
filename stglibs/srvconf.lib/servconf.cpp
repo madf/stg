@@ -159,14 +159,24 @@ int SERVCONF::ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * da
 return pImpl->Exec<CHG_USER::PARSER>(request, f, data);
 }
 
+int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelUser", "<DelUser login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
+}
+
 int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
 {
 return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::SendMessage(const std::string & request, SIMPLE::CALLBACK f, void * data)
+int SERVCONF::SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SendMessage", request, f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SendMessage", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
 }
 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)

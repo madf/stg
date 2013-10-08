@@ -55,8 +55,10 @@ public:
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
     int ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * data);
+    int DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
+    int AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
-    int SendMessage(const std::string & request, SIMPLE::CALLBACK f, void * data);
+    int SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;

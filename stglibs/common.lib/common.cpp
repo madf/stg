@@ -347,6 +347,20 @@ for (size_t i = 0; i < src.length() / 2; i++)
     }
 }
 //---------------------------------------------------------------------------
+std::string Encode12str(const std::string & src)
+{
+std::string res;
+Encode12str(res, src);
+return res;
+}
+//---------------------------------------------------------------------------
+std::string Decode21str(const std::string & src)
+{
+std::string res;
+Decode21str(res, src);
+return res;
+}
+//---------------------------------------------------------------------------
 void Encode12(char * dst, const char * src, size_t srcLen)
 {
 for (size_t i = 0; i <= srcLen; i++)
