@@ -15,43 +15,43 @@
  */
 
 /*
- *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "send_message.h"
+#include "simple.h"
 
 #include <strings.h>
 
 using namespace STG;
 
-SEND_MESSAGE::PARSER::PARSER(CALLBACK f, void * d)
-    : callback(f),
+SIMPLE::PARSER::PARSER(const std::string & t, CALLBACK f, void * d)
+    : tag(t),
+      callback(f),
       data(d),
       depth(0)
 {
 }
 //-----------------------------------------------------------------------------
-int SEND_MESSAGE::PARSER::ParseStart(const char * el, const char ** attr)
+int SIMPLE::PARSER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
-    if (strcasecmp(el, "SendMessageResult") == 0)
+    if (strcasecmp(el, tag.c_str()) == 0)
         ParseAnswer(el, attr);
 return 0;
 }
 //-----------------------------------------------------------------------------
-void SEND_MESSAGE::PARSER::ParseEnd(const char * /*el*/)
+void SIMPLE::PARSER::ParseEnd(const char *)
 {
 depth--;
 }
 //-----------------------------------------------------------------------------
-void SEND_MESSAGE::PARSER::ParseAnswer(const char * /*el*/, const char **attr)
+void SIMPLE::PARSER::ParseAnswer(const char * /*el*/, const char ** attr)
 {
 if (!callback)
     return;
 if (attr && attr[0] && attr[1])
-    callback(strcasecmp(attr[1], "ok") == 0, attr[1], data);
+    callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : attr[1], data);
 else
     callback(false, "Invalid response.", data);
 }

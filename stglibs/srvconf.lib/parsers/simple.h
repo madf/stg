@@ -15,30 +15,32 @@
  */
 
 /*
- *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_SEND_MESSAGE_H__
+#ifndef __STG_STGLIBS_SRVCONF_PARSER_SIMPLE_H__
+#define __STG_STGLIBS_SRVCONF_PARSER_SIMPLE_H__
 
 #include "base.h"
 
 #include "stg/servconf_types.h"
 
+#include <string>
+
 namespace STG
 {
-namespace SEND_MESSAGE
+namespace SIMPLE
 {
 
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER(CALLBACK f, void * data);
+    PARSER(const std::string & tag, CALLBACK f, void * data);
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
 
 private:
+    std::string tag;
     CALLBACK callback;
     void * data;
     int depth;
@@ -46,7 +48,7 @@ private:
     void ParseAnswer(const char * el, const char ** attr);
 };
 
-} // namespace SEND_MESSAGE
+} // namespace SIMPLE
 } // namespace STG
 
 #endif

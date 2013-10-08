@@ -27,7 +27,7 @@
 
 using namespace STG;
 
-CHG_ADMIN::PARSER::PARSER(CALLBACK f, void * d)
+CHG_ADMIN::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
     : callback(f),
       data(d),
       depth(0)
@@ -53,7 +53,7 @@ void CHG_ADMIN::PARSER::ParseAnswer(const char * /*el*/, const char ** attr)
 if (!callback)
     return;
 if (attr && attr[0] && attr[1])
-    callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : "", data);
+    callback(strcasecmp(attr[1], "ok") == 0, attr[1], data);
 else
     callback(false, "Invalid response.", data);
 }

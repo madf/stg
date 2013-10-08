@@ -22,20 +22,18 @@
 
 #include "netunit.h"
 
+#include "parsers/simple.h"
+
 #include "parsers/server_info.h"
 
 #include "parsers/get_admins.h"
 #include "parsers/get_admin.h"
 #include "parsers/chg_admin.h"
-#include "parsers/add_admin.h"
-#include "parsers/del_admin.h"
 
 #include "parsers/auth_by.h"
-#include "parsers/check_user.h"
 #include "parsers/get_users.h"
 #include "parsers/get_user.h"
 #include "parsers/chg_user.h"
-#include "parsers/send_message.h"
 
 #include "parsers/base.h"
 
@@ -62,6 +60,13 @@ public:
     int Exec(const std::string & request, C callback, void * data)
     {
         P cp(callback, data);
+        return ExecImpl(request, cp);
+    }
+
+    template <class P, typename C>
+    int Exec(const std::string & tag, const std::string & request, C callback, void * data)
+    {
+        P cp(tag, callback, data);
         return ExecImpl(request, cp);
     }
 
@@ -119,22 +124,22 @@ int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * 
 return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data)
+int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
 return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
 }
 
-int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, ADD_ADMIN::CALLBACK f, void * data)
+int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPLE::CALLBACK f, void * data)
 {
-int res = pImpl->Exec<ADD_ADMIN::PARSER>("<AddAdmin login=\"" + login + "\"/>", f, data);
+int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
 if (res != st_ok)
     return res;
 return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
 }
 
-int SERVCONF::DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data)
+int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<DEL_ADMIN::PARSER>("<DelAdmin login=\"" + login + "\"/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\"/>", f, data);
 }
 
 // -- Users --
@@ -149,7 +154,7 @@ int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * da
 return pImpl->Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data)
+int SERVCONF::ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * data)
 {
 return pImpl->Exec<CHG_USER::PARSER>(request, f, data);
 }
@@ -159,14 +164,14 @@ int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data
 return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data)
+int SERVCONF::SendMessage(const std::string & request, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SEND_MESSAGE::PARSER>(request, f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SendMessage", request, f, data);
 }
 
-int SERVCONF::CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data)
+int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<CHECK_USER::PARSER>("<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
 }
 
 const std::string & SERVCONF::GetStrError() const

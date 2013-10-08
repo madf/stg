@@ -34,12 +34,12 @@ namespace CHG_USER
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER(CALLBACK f, void * data);
+    PARSER(SIMPLE::CALLBACK f, void * data);
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
 
 private:
-    CALLBACK callback;
+    SIMPLE::CALLBACK callback;
     void * data;
     int depth;
 

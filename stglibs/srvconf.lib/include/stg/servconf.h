@@ -48,16 +48,16 @@ public:
 
     int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
     int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
-    int ChgAdmin(const ADMIN_CONF_RES & conf, CHG_ADMIN::CALLBACK f, void * data);
-    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, ADD_ADMIN::CALLBACK f, void * data);
-    int DelAdmin(const std::string & login, DEL_ADMIN::CALLBACK f, void * data);
+    int ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
+    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPLE::CALLBACK f, void * data);
+    int DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data);
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
-    int ChgUser(const std::string & request, CHG_USER::CALLBACK f, void * data);
+    int ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
-    int SendMessage(const std::string & request, SEND_MESSAGE::CALLBACK f, void * data);
-    int CheckUser(const std::string & login, const std::string & password, CHECK_USER::CALLBACK f, void * data);
+    int SendMessage(const std::string & request, SIMPLE::CALLBACK f, void * data);
+    int CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
 

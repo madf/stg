@@ -67,7 +67,12 @@ confLoginCipher,
 confData
 };
 
-typedef void (* SIMPLE_CALLBACK)(bool result, const std::string & reason, void * data);
+namespace SIMPLE
+{
+
+typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+
+} // namespace SIMPLE
 
 namespace AUTH_BY
 {
@@ -93,13 +98,6 @@ struct INFO
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 } // namespace SERVER_INFO
-
-namespace CHECK_USER
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
-
-} // namespace CHECK_USER
 
 namespace GET_USER
 {
@@ -152,20 +150,6 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 } // namespace GET_USERS
 
-namespace CHG_USER
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
-
-}
-
-namespace SEND_MESSAGE
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
-
-}
-
 namespace GET_ADMIN
 {
 
@@ -179,27 +163,6 @@ namespace GET_ADMINS
 
 typedef std::vector<GET_ADMIN::INFO> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-}
-
-namespace ADD_ADMIN
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
-
-}
-
-namespace DEL_ADMIN
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
-
-}
-
-namespace CHG_ADMIN
-{
-
-typedef SIMPLE_CALLBACK CALLBACK;
 
 }
 

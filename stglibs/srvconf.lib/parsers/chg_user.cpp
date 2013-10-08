@@ -25,7 +25,7 @@
 
 using namespace STG;
 
-CHG_USER::PARSER::PARSER(CALLBACK f, void * d)
+CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
     : callback(f),
       data(d),
       depth(0)
