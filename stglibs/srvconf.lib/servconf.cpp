@@ -126,7 +126,7 @@ return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, 
 
 int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
 }
 
 int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPLE::CALLBACK f, void * data)
@@ -134,7 +134,7 @@ int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPL
 int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<CHG_ADMIN::PARSER>("<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
 }
 
 int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)

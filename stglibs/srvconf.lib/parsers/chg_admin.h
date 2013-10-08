@@ -34,21 +34,6 @@ namespace STG
 namespace CHG_ADMIN
 {
 
-class PARSER: public STG::PARSER
-{
-public:
-    PARSER(SIMPLE::CALLBACK f, void * data);
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-
-private:
-    SIMPLE::CALLBACK callback;
-    void * data;
-    int depth;
-
-    void ParseAnswer(const char * el, const char ** attr);
-};
-
 std::string Serialize(const ADMIN_CONF_RES & conf);
 
 } // namespace CHG_ADMIN

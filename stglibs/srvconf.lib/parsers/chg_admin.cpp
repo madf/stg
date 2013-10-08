@@ -27,37 +27,6 @@
 
 using namespace STG;
 
-CHG_ADMIN::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
-    : callback(f),
-      data(d),
-      depth(0)
-{
-}
-//-----------------------------------------------------------------------------
-int CHG_ADMIN::PARSER::ParseStart(const char *el, const char **attr)
-{
-depth++;
-if (depth == 1)
-    if (strcasecmp(el, "SetAdmin") == 0)
-        ParseAnswer(el, attr);
-return 0;
-}
-//-----------------------------------------------------------------------------
-void CHG_ADMIN::PARSER::ParseEnd(const char *)
-{
-depth--;
-}
-//-----------------------------------------------------------------------------
-void CHG_ADMIN::PARSER::ParseAnswer(const char * /*el*/, const char ** attr)
-{
-if (!callback)
-    return;
-if (attr && attr[0] && attr[1])
-    callback(strcasecmp(attr[1], "ok") == 0, attr[1], data);
-else
-    callback(false, "Invalid response.", data);
-}
-
 std::string CHG_ADMIN::Serialize(const ADMIN_CONF_RES & conf)
 {
 std::string params;
