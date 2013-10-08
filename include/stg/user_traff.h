@@ -43,12 +43,11 @@ public:
     typedef std::vector<uint64_t> ContainerType;
     typedef ContainerType::size_type IndexType;
 
-    DIR_TRAFF() {}
+    DIR_TRAFF() : traff(DIR_NUM) {}
     DIR_TRAFF(const DIR_TRAFF & ts) : traff(ts.traff) {}
     DIR_TRAFF & operator=(const DIR_TRAFF & ts) { traff = ts.traff; return *this; }
     const uint64_t & operator[](IndexType idx) const { return traff[idx]; }
     uint64_t & operator[](IndexType idx) { return traff[idx]; }
-    DIR_TRAFF operator+(const DIR_TRAFF & ts);
     IndexType size() const { return traff.size(); }
 
 private:
@@ -57,19 +56,10 @@ private:
 
 //-----------------------------------------------------------------------------
 inline
-DIR_TRAFF DIR_TRAFF::operator+(const DIR_TRAFF & ts)
-{
-for (IndexType i = 0; i < DIR_NUM; i++)
-    {
-    traff[i] = traff[i] + ts.traff[i];
-    }
-return *this;
-}
-//-----------------------------------------------------------------------------
-inline std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
+std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
 {
 bool first = true;
-for (DIR_TRAFF::IndexType i = 0; i < DIR_NUM; ++i)
+for (DIR_TRAFF::IndexType i = 0; i < traff.size(); ++i)
     {
     if (first)
         first = false;
@@ -87,6 +77,7 @@ public:
     typedef std::vector<ValueType> ContainerType;
     typedef ContainerType::size_type IndexType;
 
+    DIR_TRAFF_RES() : traff(DIR_NUM) {}
     DIR_TRAFF_RES(const DIR_TRAFF & ts)
         : traff(ts.size())
     {
