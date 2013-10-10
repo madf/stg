@@ -391,7 +391,7 @@ std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
 std::map<std::string, USER_PROPERTY_BASE*>::iterator it = properties.find(name);
 if (it == properties.end())
     return "";
-return it->second.ToString();
+return it->second->ToString();
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
