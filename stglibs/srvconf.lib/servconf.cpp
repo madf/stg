@@ -56,6 +56,8 @@ public:
     static void Start(void * data, const char * el, const char ** attr);
     static void End(void * data, const char * el);
 
+    int RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data);
+
     template <class P, typename C>
     int Exec(const std::string & request, C callback, void * data)
     {
@@ -76,11 +78,12 @@ private:
     std::string errorMsg;
     XML_Parser parser;
 
-    static bool AnsRecv(void * data, const std::string & chunk, bool final);
+    static bool ParserRecv(void * data, const std::string & chunk, bool final);
+    static bool SimpleRecv(void * data, const std::string & chunk, bool final);
     int ExecImpl(const std::string & request, PARSER & cp);
 };
 
-bool SERVCONF::IMPL::AnsRecv(void * data, const std::string & chunk, bool final)
+bool SERVCONF::IMPL::ParserRecv(void * data, const std::string & chunk, bool final)
 {
 SERVCONF::IMPL * sc = static_cast<SERVCONF::IMPL *>(data);
 
@@ -93,6 +96,12 @@ if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ER
     return false;
     }
 
+return true;
+}
+
+bool SERVCONF::IMPL::SimpleRecv(void * data, const std::string & chunk, bool final)
+{
+*static_cast<std::string *>(data) += chunk;
 return true;
 }
 
@@ -110,6 +119,10 @@ delete pImpl;
 int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
 {
 return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
+}
+
+int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
+{
 }
 
 // -- Admins --
@@ -200,7 +213,7 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
     : nt( server, port, login, password )
 {
 parser = XML_ParserCreate(NULL);
-nt.SetRxCallback(this, AnsRecv);
+nt.SetRxCallback(this, ParserRecv);
 }
 //-----------------------------------------------------------------------------
 void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
@@ -243,5 +256,36 @@ if ((ret = nt.Disconnect()) != st_ok)
     return ret;
     }
 
+return st_ok;
+}
+
+int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
+{
+std::string response;
+nt.SetRxCallback(&response, SimpleRecv);
+int ret = 0;
+if ((ret = nt.Connect()) != st_ok)
+    {
+    nt.SetRxCallback(this, ParserRecv);
+    errorMsg = nt.GetError();
+    f(false, errorMsg, "", data);
+    return ret;
+    }
+if ((ret = nt.Transact(request.c_str())) != st_ok)
+    {
+    nt.SetRxCallback(this, ParserRecv);
+    errorMsg = nt.GetError();
+    f(false, errorMsg, "", data);
+    return ret;
+    }
+if ((ret = nt.Disconnect()) != st_ok)
+    {
+    nt.SetRxCallback(this, ParserRecv);
+    errorMsg = nt.GetError();
+    f(false, errorMsg, "", data);
+    return ret;
+    }
+nt.SetRxCallback(this, ParserRecv);
+f(true, "", response, data);
 return st_ok;
 }

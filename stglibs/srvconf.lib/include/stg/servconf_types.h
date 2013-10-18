@@ -99,6 +99,13 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 } // namespace SERVER_INFO
 
+namespace RAW_XML
+{
+
+typedef void (* CALLBACK)(bool result, const std::string & reason, const std::string & response, void * data);
+
+}
+
 namespace GET_USER
 {
 

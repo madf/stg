@@ -49,6 +49,8 @@ public:
 
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
 
+    int RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data);
+
     int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
     int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
     int ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
