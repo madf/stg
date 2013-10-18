@@ -34,6 +34,9 @@
 
 #include <string>
 
+struct USER_CONF_RES;
+struct USER_STAT_RES;
+
 namespace STG
 {
 
@@ -49,12 +52,17 @@ public:
     int GetAdmins(GET_ADMINS::CALLBACK f, void * data);
     int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
     int ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
-    int AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPLE::CALLBACK f, void * data);
+    int AddAdmin(const std::string & login,
+                 const ADMIN_CONF_RES & conf,
+                 SIMPLE::CALLBACK f, void * data);
     int DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data);
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
-    int ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * data);
+    int ChgUser(const std::string & login,
+                const USER_CONF_RES & conf,
+                const USER_STAT_RES & stat,
+                SIMPLE::CALLBACK f, void * data);
     int DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
     int AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);

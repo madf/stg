@@ -24,10 +24,13 @@
  $Date: 2010/03/25 14:37:43 $
  */
 
-#include <unistd.h>
-#include <getopt.h>
-#include <iconv.h>
-#include <langinfo.h>
+#include "request.h"
+#include "common_sg.h"
+#include "sg_error_codes.h"
+
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/common.h"
 
 #include <cerrno>
 #include <clocale>
@@ -37,16 +40,19 @@
 #include <string>
 #include <sstream>
 
-#include "stg/common.h"
-#include "request.h"
-#include "common_sg.h"
-#include "sg_error_codes.h"
+#include <unistd.h>
+#include <getopt.h>
+#include <iconv.h>
+#include <langinfo.h>
 
 namespace
 {
 
 template <typename T>
-struct ARRAY_TYPE;
+struct ARRAY_TYPE
+{
+typedef typename T::value_type type;
+};
 
 template <typename T>
 struct ARRAY_TYPE<T[]>
@@ -150,35 +156,28 @@ struct option long_options_set[] = {
 {0, 0, 0, 0}};
 
 //-----------------------------------------------------------------------------
-double ParseCash(const char * c, string * message)
+CASH_INFO ParseCash(const char * str)
 {
 //-c 123.45:log message
-double cash;
-char * msg;
-char * str;
-str = new char[strlen(c) + 1];
-
-strncpy(str, c, strlen(c));
-str[strlen(c)] = 0;
-
-msg = strchr(str, ':');
-
-if (msg)
+std::string cashString;
+std::string message;
+const char * pos = strchr(str, ':');
+if (pos != NULL)
     {
-    *message =  msg + 1;
-    str[msg - str] = 0;
+    cashString.append(str, pos);
+    message.append(pos + 1);
     }
 else
-    *message = "";
+    cashString = str;
 
-if (strtodouble2(str, cash) != 0)
+double cash = 0;
+if (strtodouble2(cashString, cash) != 0)
     {
-    printf("Incorrect cash value %s\n", c);
+    printf("Incorrect cash value %s\n", str);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-delete[] str;
-return cash;
+return CASH_INFO(cash, message);
 }
 //-----------------------------------------------------------------------------
 double ParseCredit(const char * c)
@@ -228,63 +227,24 @@ if (!(dp[1] == 0 && (dp[0] == '1' || dp[0] == '0')))
 return dp[0] - '0';
 }
 //-----------------------------------------------------------------------------
-string ParseTariff(const char * t, int &chgType)
+void ParseTariff(const char * str, RESETABLE<std::string> & tariffName, RESETABLE<std::string> & nextTariff)
 {
-int l = strlen(t);
-char * s;
-s = new char[l];
-char * s1, * s2;
-string ss;
-
-strcpy(s, t);
-
-s1 = strtok(s, ":");
-
-if (strlen(s1) >= TARIFF_NAME_LEN)
+const char * pos = strchr(str, ':');
+if (pos != NULL)
     {
-    printf("Tariff name too big %s\n", s1);
-    exit(PARAMETER_PARSING_ERR_CODE);
+    std::string tariff(str, pos);
+    if (strcmp(pos + 1, "now") == 0)
+        tariffName = tariff;
+    else if (strcmp(pos + 1, "delayed") == 0)
+        nextTariff = tariff;
+    else
+        {
+        printf("Incorrect tariff value '%s'. Should be '<tariff>', '<tariff>:now' or '<tariff>:delayed'.\n", str);
+        exit(PARAMETER_PARSING_ERR_CODE);
+        }
     }
-
-//*tariff = s;
-
-if (CheckLogin(s1))
-    {
-    printf("Incorrect tariff value %s\n", t);
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-
-s2 = strtok(NULL, ":");
-
-chgType = -1;
-
-if (s2 == NULL)
-    {
-    chgType = TARIFF_NOW;
-    ss = s;
-    delete[] s;
-    return ss;
-    }
-
-
-if (strcmp(s2, "now") == 0)
-    chgType = TARIFF_NOW;
-
-if (strcmp(s2, "delayed") == 0)
-    chgType = TARIFF_DEL;
-
-if (strcmp(s2, "recalc") == 0)
-    chgType = TARIFF_REC;
-
-if (chgType < 0)
-    {
-    printf("Incorrect tariff value %s\n", t);
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-
-ss = s;
-delete[] s;
-return ss;
+else
+    tariffName = str;
 }
 //-----------------------------------------------------------------------------
 time_t ParseCreditExpire(const char * str)
@@ -900,6 +860,8 @@ const char * short_options_set = "s:p:a:w:u:c:r:t:m:o:d:i:e:v:nlN:A:D:L:P:G:I:S:
 
 int missedOptionArg = false;
 
+USER_CONF_RES conf;
+USER_STAT_RES stat;
 while (1)
     {
     int option_index = -1;
@@ -929,7 +891,7 @@ while (1)
             break;
 
         case 'o': //change user password
-            req.usrPasswd = ParsePassword(optarg);
+            conf.password = ParsePassword(optarg);
             break;
 
         case 'u': //user
@@ -937,31 +899,31 @@ while (1)
             break;
 
         case 'c': //add cash
-            req.cash = ParseCash(optarg, &req.message);
+            stat.cashAdd = ParseCash(optarg);
             break;
 
         case 'v': //set cash
-            req.setCash = ParseCash(optarg, &req.message);
+            stat.cashSet = ParseCash(optarg);
             break;
 
         case 'r': //credit
-            req.credit = ParseCredit(optarg);
+            conf.credit = ParseCredit(optarg);
             break;
 
         case 'E': //credit expire
-            req.creditExpire = ParseCreditExpire(optarg);
+            conf.creditExpire = ParseCreditExpire(optarg);
             break;
 
         case 'd': //down
-            req.down = ParseDownPassive(optarg);
+            conf.disabled = ParseDownPassive(optarg);
             break;
 
         case 'i': //passive
-            req.passive = ParseDownPassive(optarg);
+            conf.passive = ParseDownPassive(optarg);
             break;
 
         case 't': //tariff
-            req.tariff = ParseTariff(optarg, req.chgTariff);
+            ParseTariff(optarg, conf.tariffName, conf.nextTariff);
             break;
 
         case 'm': //message
@@ -971,7 +933,7 @@ while (1)
             break;
 
         case 'e': //Prepaid Traffic
-            req.prepaidTraff = ParsePrepaidTraffic(optarg);
+            stat.freeMb = ParsePrepaidTraffic(optarg);
             break;
 
         case 'n': //Create User
@@ -984,69 +946,63 @@ while (1)
 
         case 'N': //Note
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.note = str;
+            conf.note = str;
             break;
 
         case 'A': //nAme
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.name = str;
+            conf.realName = str;
             break;
 
         case 'D': //aDdress
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.address = str;
+            conf.address = str;
             break;
 
         case 'L': //emaiL
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.email = str;
-            //printf("EMAIL=%s\n", optarg);
+            conf.email = str;
             break;
 
         case 'P': //phone
             ParseAnyString(optarg, &str);
-            req.phone = str;
+            conf.phone = str;
             break;
 
         case 'G': //Group
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.group = str;
+            conf.group = str;
             break;
 
         case 'I': //IP-address of user
             ParseAnyString(optarg, &str);
-            req.ips = str;
+            conf.ips = StrToIPS(str);
             break;
 
         case 'S':
-            req.disableDetailStat = ParseDownPassive(optarg);
+            conf.disabledDetailStat = ParseDownPassive(optarg);
             break;
 
         case 'O':
-            req.alwaysOnline = ParseDownPassive(optarg);
+            conf.alwaysOnline = ParseDownPassive(optarg);
             break;
 
         case 500: //U
-            SetArrayItem(req.sessionUpload, optarg, ParseTraff(argv[optind++]));
-            //req.sessionUpload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(stat.sessionUp, optarg, ParseTraff(argv[optind++]));
             break;
         case 501:
-            SetArrayItem(req.sessionDownload, optarg, ParseTraff(argv[optind++]));
-            //req.sessionDownload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(stat.sessionDown, optarg, ParseTraff(argv[optind++]));
             break;
         case 502:
-            SetArrayItem(req.monthUpload, optarg, ParseTraff(argv[optind++]));
-            //req.monthUpload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(stat.monthUp, optarg, ParseTraff(argv[optind++]));
             break;
         case 503:
-            SetArrayItem(req.monthDownload, optarg, ParseTraff(argv[optind++]));
-            //req.monthDownload[optarg] = ParseTraff(argv[optind++]);
+            SetArrayItem(stat.monthDown, optarg, ParseTraff(argv[optind++]));
             break;
 
         case 700: //UserData
             ParseAnyString(argv[optind++], &str);
-            SetArrayItem(req.userData, optarg, str);
-            //req.userData[optarg] = str;
+            SetArrayItem(conf.userdata, optarg, str);
             break;
 
         case '?':
@@ -1082,11 +1038,10 @@ const int rLen = 20000;
 char rstr[rLen];
 memset(rstr, 0, rLen);
 
-CreateRequestSet(&req, rstr);
 if (isMessage)
     return ProcessSendMessage(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), req.usrMsg.data());
 
-return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr);
+return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), conf, stat);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)

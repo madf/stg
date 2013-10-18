@@ -90,6 +90,7 @@ if (depth == 0 && parsingAnswer)
 void GET_ADMIN::PARSER::ParseAdmin(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "admin") == 0)
+    {
     if (attr && attr[0] && attr[1])
         {
         if (strcasecmp(attr[1], "error") == 0)
@@ -104,6 +105,7 @@ if (strcasecmp(el, "admin") == 0)
         }
     else
         parsingAnswer = true;
+    }
 }
 //-----------------------------------------------------------------------------
 void GET_ADMIN::PARSER::ParseAdminParams(const char * el, const char ** attr)

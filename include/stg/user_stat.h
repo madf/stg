@@ -29,6 +29,8 @@
 
 #include <ctime>
 #include <map>
+#include <utility>
+#include <string>
 
 #include "os_int.h"
 #include "resetable.h"
@@ -140,6 +142,8 @@ struct USER_STAT
 //-----------------------------------------------------------------------------
 typedef std::map<IP_DIR_PAIR, STAT_NODE> TRAFF_STAT;
 //-----------------------------------------------------------------------------
+typedef std::pair<double, std::string> CASH_INFO;
+//-----------------------------------------------------------------------------
 struct USER_STAT_RES
 {
     USER_STAT_RES()
@@ -186,6 +190,8 @@ struct USER_STAT_RES
     }
 
     RESETABLE<double>      cash;
+    RESETABLE<CASH_INFO>   cashAdd;
+    RESETABLE<CASH_INFO>   cashSet;
     RESETABLE<double>      freeMb;
     RESETABLE<double>      lastCashAdd;
     RESETABLE<time_t>      lastCashAddTime;

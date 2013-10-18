@@ -41,10 +41,10 @@ if (!attr)
 std::map<std::string, long long *> props;
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
-    props.insert(std::pair<std::string, long long *>("su" + x2str(i), &value.su[i]));
-    props.insert(std::pair<std::string, long long *>("sd" + x2str(i), &value.sd[i]));
-    props.insert(std::pair<std::string, long long *>("mu" + x2str(i), &value.mu[i]));
-    props.insert(std::pair<std::string, long long *>("md" + x2str(i), &value.md[i]));
+    props.insert(std::pair<std::string, long long *>("su" + unsigned2str(i), &value.su[i]));
+    props.insert(std::pair<std::string, long long *>("sd" + unsigned2str(i), &value.sd[i]));
+    props.insert(std::pair<std::string, long long *>("mu" + unsigned2str(i), &value.mu[i]));
+    props.insert(std::pair<std::string, long long *>("md" + unsigned2str(i), &value.md[i]));
     }
 size_t pos = 0;
 while (attr[pos])
@@ -90,7 +90,7 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "traff", info.stat);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        AddParser(propertyParsers, "userData" + x2str(i), info.userData[i], GetEncodedValue);
+        AddParser(propertyParsers, "userData" + unsigned2str(i), info.userData[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 GET_USER::PARSER::~PARSER()
@@ -127,6 +127,7 @@ if (depth == 0 && parsingAnswer)
 void GET_USER::PARSER::ParseUser(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "user") == 0)
+    {
     if (attr && attr[0] && attr[1])
         {
         if (strcasecmp(attr[1], "error") == 0)
@@ -141,6 +142,7 @@ if (strcasecmp(el, "user") == 0)
         }
     else
         parsingAnswer = true;
+    }
 }
 //-----------------------------------------------------------------------------
 void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)

@@ -437,12 +437,14 @@ bool ProcessSetUser(const std::string & server,
                     int port,
                     const std::string & login,
                     const std::string & password,
-                    const std::string & str)
+                    const std::string & user,
+                    const USER_CONF_RES & conf,
+                    const USER_STAT_RES & stat)
 {
 SERVCONF sc(server, port, login, password);
 
 ResultData data;
-int res = sc.ChgUser(str.c_str(), ResultCallback, &data);
+int res = sc.ChgUser(user, conf, stat, ResultCallback, &data);
 
 if (res == st_ok && data.result)
     {

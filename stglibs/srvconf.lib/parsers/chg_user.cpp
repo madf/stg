@@ -21,9 +21,33 @@
 
 #include "chg_user.h"
 
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+
+#include <sstream>
+
 #include <strings.h>
 
 using namespace STG;
+
+namespace
+{
+
+template <typename T>
+void appendResetable(std::ostream & stream, const std::string & name, const T & value)
+{
+if (!value.empty())
+    stream << "<" << name << " value=\"" << value.data() << "\"/>";
+}
+
+template <typename T>
+void appendResetable(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+if (!value.empty())
+    stream << "<" << name << suffix << " value=\"" << value.data() << "\"/>";
+}
+
+} // namespace anonymous
 
 CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
     : callback(f),
@@ -60,4 +84,64 @@ if (attr && attr[0] && attr[1])
     callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : "", data);
 else
     callback(false, "Invalid response.", data);
+}
+
+std::string CHG_USER::Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat)
+{
+std::ostringstream stream;
+
+// Conf
+
+appendResetable(stream, "credit", conf.credit);
+appendResetable(stream, "creditExpire", conf.creditExpire);
+appendResetable(stream, "password", conf.password);
+appendResetable(stream, "down", conf.disabled); // TODO: down -> disabled
+appendResetable(stream, "passive", conf.passive);
+appendResetable(stream, "disableDetailStat", conf.disabledDetailStat); // TODO: disable -> disabled
+appendResetable(stream, "aonline", conf.alwaysOnline); // TODO: aonline -> alwaysOnline
+appendResetable(stream, "ip", conf.ips); // TODO: ip -> ips
+
+if (!conf.nextTariff.empty())
+    stream << "<tariff delayed=\"" << conf.nextTariff.data() << "\"/>";
+else if (!conf.tariffName.empty())
+    stream << "<tariff now=\"" << conf.nextTariff.data() << "\"/>";
+
+appendResetable(stream, "note", conf.note);
+appendResetable(stream, "name", conf.realName); // TODO: name -> realName
+appendResetable(stream, "address", conf.address);
+appendResetable(stream, "email", conf.email);
+appendResetable(stream, "phone", conf.phone);
+appendResetable(stream, "group", conf.group);
+
+for (size_t i = 0; i < conf.userdata.size(); ++i)
+    appendResetable(stream, "userdata", i, conf.userdata[i]);
+
+// Stat
+
+if (!stat.cashAdd.empty())
+    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << stat.cashAdd.data().second << "\"/>";
+else if (!stat.cashSet.empty())
+    stream << "<cash set=\"" << stat.cashAdd.data().first << "\" msg=\"" << stat.cashAdd.data().second << "\"/>";
+
+appendResetable(stream, "freeMb", stat.freeMb);
+
+std::ostringstream traff;
+for (size_t i = 0; i < stat.sessionUp.size(); ++i)
+    if (!stat.sessionUp[i].empty())
+        traff << " SU" << i << "=\"" << stat.sessionUp[i].data() << "\"";
+for (size_t i = 0; i < stat.sessionDown.size(); ++i)
+    if (!stat.sessionDown[i].empty())
+        traff << " SD" << i << "=\"" << stat.sessionDown[i].data() << "\"";
+for (size_t i = 0; i < stat.monthUp.size(); ++i)
+    if (!stat.monthUp[i].empty())
+        traff << " MU" << i << "=\"" << stat.monthUp[i].data() << "\"";
+for (size_t i = 0; i < stat.monthDown.size(); ++i)
+    if (!stat.monthDown[i].empty())
+        traff << " MD" << i << "=\"" << stat.monthDown[i].data() << "\"";
+
+std::string traffData = traff.str();
+if (!traffData.empty())
+    stream << "<traff" << traffData << "/>";
+
+return stream.str();
 }

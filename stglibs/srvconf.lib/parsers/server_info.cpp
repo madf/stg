@@ -52,19 +52,23 @@ SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "tariff_num", info.tariffNum);
 
     for (size_t i = 0; i < DIR_NUM; i++)
-        AddParser(propertyParsers, "dir_name_" + x2str(i), info.dirName[i], GetEncodedValue);
+        AddParser(propertyParsers, "dir_name_" + unsigned2str(i), info.dirName[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 int SERVER_INFO::PARSER::ParseStart(const char *el, const char **attr)
 {
 depth++;
 if (depth == 1)
+    {
     if (strcasecmp(el, "ServerInfo") == 0)
         parsingAnswer = true;
+    }
 else
+    {
     if (depth == 2 && parsingAnswer)
         if (!TryParse(propertyParsers, ToLower(el), attr))
             error = "Invalid parameter.";
+    }
 return 0;
 }
 //-----------------------------------------------------------------------------

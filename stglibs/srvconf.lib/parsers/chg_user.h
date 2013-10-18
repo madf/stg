@@ -26,6 +26,9 @@
 
 #include "stg/servconf_types.h"
 
+struct USER_CONF_RES;
+struct USER_STAT_RES;
+
 namespace STG
 {
 namespace CHG_USER
@@ -45,6 +48,8 @@ private:
 
     void ParseAnswer(const char * el, const char ** attr);
 };
+
+std::string Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat);
 
 } // namespace CHG_USER
 } // namespace STG

@@ -129,7 +129,9 @@ int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * d
 return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
 }
 
-int SERVCONF::AddAdmin(const std::string & login, const ADMIN_CONF & conf, SIMPLE::CALLBACK f, void * data)
+int SERVCONF::AddAdmin(const std::string & login,
+                       const ADMIN_CONF_RES & conf,
+                       SIMPLE::CALLBACK f, void * data)
 {
 int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
 if (res != st_ok)
@@ -154,9 +156,12 @@ int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * da
 return pImpl->Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgUser(const std::string & request, SIMPLE::CALLBACK f, void * data)
+int SERVCONF::ChgUser(const std::string & login,
+                      const USER_CONF_RES & conf,
+                      const USER_STAT_RES & stat,
+                      SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<CHG_USER::PARSER>(request, f, data);
+return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat) + "</SetUser>", f, data);
 }
 
 int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data)

@@ -77,7 +77,7 @@ struct USER_CONF_RES
           group(),
           credit(),
           nextTariff(),
-          userdata(USERDATA_NUM, RESETABLE<std::string>()),
+          userdata(USERDATA_NUM),
           creditExpire(),
           ips()
     {
@@ -100,10 +100,7 @@ struct USER_CONF_RES
         group        = uc.group;
         credit       = uc.credit;
         nextTariff   = uc.nextTariff;
-        for (int i = 0; i < USERDATA_NUM; i++)
-            {
-            userdata[i]  = uc.userdata[i];
-            }
+        for (size_t i = 0; i < USERDATA_NUM; i++) userdata[i]  = uc.userdata[i];
         creditExpire = uc.creditExpire;
         ips          = uc.ips;
         return *this;

@@ -56,9 +56,8 @@ const char    * IntToKMG(int64_t a, int statType = ST_F);
 const char    * LogDate(time_t t);
 int             ParesTimeStat(const char * str);
 int             IsTimeStat(struct tm * t, int statTime);
-/*bool            IsDigit(char c);
-bool            IsAlpha(char c);*/
-int             strtodouble2(const char * s, double &a);
+int             strtodouble2(const char * str, double & value);
+inline int      strtodouble2(const std::string & str, double & value) { return strtodouble2(str.c_str(), value); }
 int             printfd(const char * __file__, const char * fmt, ...);
 void            Encode12(char * dst, const char * src, size_t srcLen);
 void            Decode21(char * dst, const char * src);
@@ -76,7 +75,6 @@ void            WinToKOI(const std::string & s1, std::string * s2);
 int             DaysInMonth(unsigned year, unsigned mon);
 int             DaysInCurrentMonth();
 int             Min8(int a);
-//char          * inet_ntostr(unsigned long);
 std::string     inet_ntostring(uint32_t);
 uint32_t        inet_strington(const std::string & value);
 int             strprintf(std::string * str, const char * fmt, ...);

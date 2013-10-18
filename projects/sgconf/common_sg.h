@@ -34,6 +34,9 @@
 
 #include <string>
 
+struct USER_CONF_RES;
+struct USER_STAT_RES;
+
 void UsageConf();
 void UsageInfo();
 
@@ -63,7 +66,9 @@ bool ProcessSetUser(const std::string & server,
                     int port,
                     const std::string & admLogin,
                     const std::string & admPasswd,
-                    const std::string & str);
+                    const std::string & user,
+                    const USER_CONF_RES & conf,
+                    const USER_STAT_RES & stat);
 
 bool ProcessSendMessage(const std::string & server, uint16_t port,
                         const std::string & login, const std::string & password,
