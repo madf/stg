@@ -18,19 +18,13 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.6 $
- $Date: 2009/02/06 10:25:54 $
- $Author: faust $
- */
-
-//---------------------------------------------------------------------------
-
 #include "netunit.h"
 
 #include "stg/servconf_types.h"
 #include "stg/common.h"
 #include "stg/blowfish.h"
+
+#include <algorithm> // std::min
 
 #include <cstdio>
 #include <cerrno>
@@ -126,7 +120,7 @@ void NETTRANSACT::Disconnect()
 close(outerSocket);
 }
 //---------------------------------------------------------------------------
-int NETTRANSACT::Transact(const char * request, CALLBACK callback, void * data)
+int NETTRANSACT::Transact(const std::string & request, CALLBACK callback, void * data)
 {
 int ret;
 if ((ret = TxHeader()) != st_ok)
@@ -319,70 +313,29 @@ else
     }
 }
 //---------------------------------------------------------------------------
-int NETTRANSACT::TxData(const char * text)
+int NETTRANSACT::TxData(const std::string & text)
 {
-int n = strlen(text) / ENC_MSG_LEN;
-int r = strlen(text) % ENC_MSG_LEN;
-
 BLOWFISH_CTX ctx;
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
 
-char textZ[ENC_MSG_LEN];
-char ct[ENC_MSG_LEN];
-
-for (int j = 0; j < n; j++)
+size_t pos = 0;
+while (pos < text.size())
     {
-    strncpy(textZ, text + j * ENC_MSG_LEN, ENC_MSG_LEN);
+    char textZ[ENC_MSG_LEN];
+    if (text.size() - pos < ENC_MSG_LEN)
+        memset(textZ, 0, ENC_MSG_LEN);
+    strncpy(textZ, text.c_str() + pos, std::min(ENC_MSG_LEN, (int)(text.size() - pos)));
+    char ct[ENC_MSG_LEN];
     EncodeString(ct, textZ, &ctx);
     if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
         {
         errorMsg = SEND_DATA_ERROR;
         return st_send_fail;
         }
-    }
-
-memset(textZ, 0, ENC_MSG_LEN);
-
-if (r)
-    strncpy(textZ, text + n * ENC_MSG_LEN, ENC_MSG_LEN);
-
-EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
-
-EncodeString(ct, textZ, &ctx);
-if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
-    {
-    errorMsg = SEND_DATA_ERROR;
-    return st_send_fail;
+    pos += ENC_MSG_LEN;
     }
 
 return st_ok;
-}
-//---------------------------------------------------------------------------
-int NETTRANSACT::TxData(char * data)
-{
-char passwd[ADM_PASSWD_LEN];
-memset(passwd, 0, ADM_PASSWD_LEN);
-strncpy(passwd, password.c_str(), ADM_PASSWD_LEN);
-
-char buff[ENC_MSG_LEN];
-memset(buff, 0, ENC_MSG_LEN);
-
-int l = strlen(data) / ENC_MSG_LEN;
-if (strlen(data) % ENC_MSG_LEN)
-    l++;
-
-BLOWFISH_CTX ctx;
-EnDecodeInit(passwd, PASSWD_LEN, &ctx);
-
-for (int j = 0; j < l; j++)
-    {
-    strncpy(buff, &data[j * ENC_MSG_LEN], ENC_MSG_LEN);
-    char buffS[ENC_MSG_LEN];
-    EncodeString(buffS, buff, &ctx);
-    send(outerSocket, buffS, ENC_MSG_LEN, 0);
-    }
-
-return 0;
 }
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxDataAnswer(CALLBACK callback, void * data)

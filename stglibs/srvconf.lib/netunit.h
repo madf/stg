@@ -18,12 +18,6 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.6 $
- $Date: 2010/02/11 12:32:53 $
- $Author: faust $
- */
-
 #ifndef NetUnitH
 #define NetUnitH
 
@@ -31,7 +25,6 @@
 
 #include <string>
 
-//---------------------------------------------------------------------------
 class NETTRANSACT
 {
 public:
@@ -39,24 +32,23 @@ public:
 
     NETTRANSACT(const std::string & server, uint16_t port,
                 const std::string & login, const std::string & password);
-    int     Transact(const char * request, CALLBACK f, void * data);
+    int Transact(const std::string & request, CALLBACK f, void * data);
     const std::string & GetError() const { return errorMsg; }
 
-    int     Connect();
-    void    Disconnect();
+    int  Connect();
+    void Disconnect();
 private:
-    int     TxHeader();
-    int     RxHeaderAnswer();
+    int  TxHeader();
+    int  RxHeaderAnswer();
 
-    int     TxLogin();
-    int     RxLoginAnswer();
+    int  TxLogin();
+    int  RxLoginAnswer();
 
-    int     TxLoginS();
-    int     RxLoginSAnswer();
+    int  TxLoginS();
+    int  RxLoginSAnswer();
 
-    int     TxData(const char * text);
-    int     TxData(char * data);
-    int     RxDataAnswer(CALLBACK f, void * data);
+    int  TxData(const std::string & text);
+    int  RxDataAnswer(CALLBACK f, void * data);
 
     std::string server;
     uint16_t  port;
@@ -65,5 +57,5 @@ private:
     int outerSocket;
     std::string errorMsg;
 };
-//---------------------------------------------------------------------------
+
 #endif

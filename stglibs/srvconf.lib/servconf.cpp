@@ -350,7 +350,7 @@ if ((ret = nt.Connect()) != st_ok)
     errorMsg = nt.GetError();
     return ret;
     }
-if ((ret = nt.Transact(request.c_str(), ParserRecv, this)) != st_ok)
+if ((ret = nt.Transact(request, ParserRecv, this)) != st_ok)
     {
     errorMsg = nt.GetError();
     return ret;
@@ -370,7 +370,7 @@ if ((ret = nt.Connect()) != st_ok)
     return ret;
     }
 std::string response;
-if ((ret = nt.Transact(request.c_str(), SimpleRecv, &response)) != st_ok)
+if ((ret = nt.Transact(request, SimpleRecv, &response)) != st_ok)
     {
     errorMsg = nt.GetError();
     callback(false, errorMsg, "", data);
