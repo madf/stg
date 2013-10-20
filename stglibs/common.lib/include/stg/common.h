@@ -110,6 +110,20 @@ int ParseYesNo(const std::string & str, bool * val);
 
 bool WaitPackets(int sd);
 
+//-----------------------------------------------------------------------------
+int str2x(const std::string & str, int32_t & x);
+int str2x(const std::string & str, uint32_t & x);
+#ifndef WIN32
+int str2x(const std::string & str, int64_t & x);
+int str2x(const std::string & str, uint64_t & x);
+#endif
+//-----------------------------------------------------------------------------
+const std::string & x2str(uint32_t x, std::string & s);
+const std::string & x2str(uint64_t x, std::string & s);
+//-----------------------------------------------------------------------------
+const std::string & x2str(double x, std::string & s);
+//-----------------------------------------------------------------------------
+
 template <typename varT>
 int str2x(const std::string & str, varT & x);
 template <typename varT>
@@ -242,16 +256,6 @@ const std::string & unsigned2str(varT x, std::string & s)
 
     return s;
 }
-//-----------------------------------------------------------------------------
-int str2x(const std::string & str, int32_t & x);
-int str2x(const std::string & str, uint32_t & x);
-#ifndef WIN32
-int str2x(const std::string & str, int64_t & x);
-int str2x(const std::string & str, uint64_t & x);
-#endif
-//-----------------------------------------------------------------------------
-const std::string & x2str(uint32_t x, std::string & s);
-const std::string & x2str(uint64_t x, std::string & s);
 //-----------------------------------------------------------------------------
 char * stg_strptime(const char *, const char *, struct tm *);
 time_t stg_timegm(struct tm *);
