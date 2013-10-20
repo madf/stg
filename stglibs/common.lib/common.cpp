@@ -790,6 +790,13 @@ const std::string & x2str(uint64_t x, std::string & s)
 return unsigned2str(x, s);
 }
 //---------------------------------------------------------------------------
+const std::string & x2str(double x, std::string & s)
+{
+char buf[256];
+s = snprintf(buf, sizeof(buf), "%f", x);
+return s;
+}
+//---------------------------------------------------------------------------
 std::string & TrimL(std::string & val)
 {
 size_t pos = val.find_first_not_of(" \t");
