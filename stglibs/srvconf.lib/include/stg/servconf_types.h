@@ -77,6 +77,17 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
 
 } // namespace SIMPLE
 
+namespace GET_CONTAINER
+{
+
+template <typename INFO>
+struct CALLBACK
+{
+typedef void (* TYPE)(bool result, const std::string & reason, const std::vector<INFO> & info, void * data);
+};
+
+}
+
 namespace AUTH_BY
 {
 
@@ -152,26 +163,10 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 } // namespace GET_USER
 
-namespace GET_USERS
-{
-
-typedef std::vector<GET_USER::INFO> INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-} // namespace GET_USERS
-
 namespace GET_ADMIN
 {
 
 typedef ADMIN_CONF INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-}
-
-namespace GET_ADMINS
-{
-
-typedef std::vector<GET_ADMIN::INFO> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 }
@@ -184,14 +179,6 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 }
 
-namespace GET_TARIFFS
-{
-
-typedef std::vector<GET_TARIFF::INFO> INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-}
-
 namespace GET_SERVICE
 {
 
@@ -200,26 +187,10 @@ typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & 
 
 }
 
-namespace GET_SERVICES
-{
-
-typedef std::vector<GET_SERVICE::INFO> INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-}
-
 namespace GET_CORP
 {
 
 typedef CORP_CONF INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-
-}
-
-namespace GET_CORPORATIONS
-{
-
-typedef std::vector<GET_CORP::INFO> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 }

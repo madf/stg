@@ -137,7 +137,7 @@ return pImpl->RawXML(request, f, data);
 
 // -- Admins --
 
-int SERVCONF::GetAdmins(GET_ADMINS::CALLBACK f, void * data)
+int SERVCONF::GetAdmins(GET_CONTAINER::CALLBACK<GET_ADMIN::INFO>::TYPE f, void * data)
 {
 return pImpl->Exec<GET_CONTAINER::PARSER<GET_ADMIN::PARSER> >("admins", "<GetAdmins/>", f, data);
 }
@@ -169,7 +169,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\
 
 // -- Tariffs --
 
-int SERVCONF::GetTariffs(GET_TARIFFS::CALLBACK f, void * data)
+int SERVCONF::GetTariffs(GET_CONTAINER::CALLBACK<GET_TARIFF::INFO>::TYPE f, void * data)
 {
 return pImpl->Exec<GET_CONTAINER::PARSER<GET_TARIFF::PARSER> >("tariffs", "<GetTariffs/>", f, data);
 }
@@ -201,7 +201,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelTariff", "<DelTariff name=\"" + name + "\
 
 // -- Users --
 
-int SERVCONF::GetUsers(GET_USERS::CALLBACK f, void * data)
+int SERVCONF::GetUsers(GET_CONTAINER::CALLBACK<GET_USER::INFO>::TYPE f, void * data)
 {
 return pImpl->Exec<GET_CONTAINER::PARSER<GET_USER::PARSER> >("users", "<GetUsers/>", f, data);
 }
@@ -246,7 +246,7 @@ return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + 
 
 // -- Services --
 
-int SERVCONF::GetServices(GET_SERVICES::CALLBACK f, void * data)
+int SERVCONF::GetServices(GET_CONTAINER::CALLBACK<GET_SERVICE::INFO>::TYPE f, void * data)
 {
 return pImpl->Exec<GET_CONTAINER::PARSER<GET_SERVICE::PARSER> >("services", "<GetServices/>", f, data);
 }
@@ -278,7 +278,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + 
 
 // -- Corporations --
 
-int SERVCONF::GetCorporations(GET_CORPORATIONS::CALLBACK f, void * data)
+int SERVCONF::GetCorporations(GET_CONTAINER::CALLBACK<GET_CORP::INFO>::TYPE f, void * data)
 {
 return pImpl->Exec<GET_CONTAINER::PARSER<GET_CORP::PARSER> >("corporations", "<GetCorporations/>", f, data);
 }
