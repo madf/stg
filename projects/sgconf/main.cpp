@@ -76,6 +76,14 @@ array[pos] = value;
 return true;
 }
 
+void Usage();
+void UsageConnection();
+void UsageAdmins();
+void UsageTariffs();
+void UsageUsers();
+void UsageServices();
+void UsageCorporations();
+
 } // namespace anonymous
 
 time_t stgTime;
@@ -1046,6 +1054,8 @@ return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), r
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+Usage();
+exit(0);
 if (argc <= 2)
     {
     UsageConf();
@@ -1073,3 +1083,100 @@ return UNKNOWN_ERR_CODE;
 }
 //-----------------------------------------------------------------------------
 
+namespace
+{
+
+void Usage()
+{
+std::cout << "sgconf is the Stargazer management utility.\n\n"
+          << "Usage:\n"
+          << "\tsgconf [options]\n\n"
+          << "General options:\n"
+          << "\t-f, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\", \"/etc/stg/sgconf.conf\")\n"
+          << "\t-h, --help\t\t\t\tshow this help and exit\n"
+          << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
+UsageConnection();
+UsageAdmins();
+UsageTariffs();
+UsageUsers();
+UsageServices();
+UsageCorporations();
+}
+//-----------------------------------------------------------------------------
+void UsageConnection()
+{
+std::cout << "Connection options:\n"
+          << "\t-s, --server <address>\t\t\thost to connect (ip or domain name, default: \"localhost\")\n"
+          << "\t-p, --port <port>\t\t\tport to connect (default: \"5555\")\n"
+          << "\t-u, --username <username>\t\tadministrative login (default: \"admin\")\n"
+          << "\t-w, --userpass <password>\t\tpassword for administrative login\n"
+          << "\t-c, --connect <connection string>\tconnection params as a single string in format: <login>:<password>@<host>:<port>\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageAdmins()
+{
+std::cout << "Admins management options:\n"
+          << "\t--get-admins\t\t\t\tget a list of admins (subsequent options will define what to show)\n"
+          << "\t\t--login\t\t\t\tshow admin's login\n"
+          << "\t\t--priv\t\t\t\tshow admin's priviledges\n"
+          << "\t--get-admin\t\t\t\tget the information about admin\n"
+          << "\t\t--login\t\t\t\tlogin of the admin to show\n"
+          << "\t\t--priv\t\t\t\tshow admin's priviledges\n"
+          << "\t--add-admin\t\t\t\tadd a new admin\n"
+          << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
+          << "\t\t--password <password>\t\tpassword of the admin to add\n"
+          << "\t\t--priv <priv number>\t\tpriviledges of the admin to add\n"
+          << "\t--del-admin\t\t\t\tdelete an existing admin\n"
+          << "\t\t--login <login>\t\t\tlogin of the admin to delete\n"
+          << "\t--chg-admin\t\t\t\tchange an existing admin\n"
+          << "\t\t--login <login>\t\t\tlogin of the admin to change\n"
+          << "\t\t--priv <priv number>\t\tnew priviledges\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageTariffs()
+{
+std::cout << "Tariffs management options:\n"
+          << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n"
+          << "\t--get-tariff\t\t\t\tget the information about tariff\n"
+          << "\t--add-tariff\t\t\t\tadd a new tariff\n"
+          << "\t--del-tariff\t\t\t\tdelete an existing tariff\n"
+          << "\t--chg-tariff\t\t\t\tchange an existing tariff\n"
+          << "\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageUsers()
+{
+std::cout << "Users management options:\n"
+          << "\t--get-users\t\t\t\tget a list of users (subsequent options will define what to show)\n"
+          << "\t--get-user\t\t\t\tget the information about user\n"
+          << "\t--add-user\t\t\t\tadd a new user\n"
+          << "\t--del-user\t\t\t\tdelete an existing user\n"
+          << "\t--chg-user\t\t\t\tchange an existing user\n"
+          << "\t--check-user\t\t\t\tcheck credentials is valid\n"
+          << "\t--send-message\t\t\t\tsend a message to a user\n"
+          << "\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageServices()
+{
+std::cout << "Services management options:\n"
+          << "\t--get-services\t\t\t\tget a list of services (subsequent options will define what to show)\n"
+          << "\t--get-service\t\t\t\tget the information about service\n"
+          << "\t--add-service\t\t\t\tadd a new service\n"
+          << "\t--del-service\t\t\t\tdelete an existing service\n"
+          << "\t--chg-service\t\t\t\tchange an existing service\n"
+          << "\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageCorporations()
+{
+std::cout << "Corporations management options:\n"
+          << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n"
+          << "\t--get-corp\t\t\t\tget the information about corporation\n"
+          << "\t--add-corp\t\t\t\tadd a new corporation\n"
+          << "\t--del-corp\t\t\t\tdelete an existing corporation\n"
+          << "\t--chg-corp\t\t\t\tchange an existing corporation\n"
+          << "\n\n";
+}
+
+} // namespace anonymous
