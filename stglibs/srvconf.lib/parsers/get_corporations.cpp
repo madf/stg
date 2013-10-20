@@ -20,8 +20,6 @@
 
 #include "get_corporations.h"
 
-#include "stg/corp_conf.h"
-
 #include <strings.h>
 
 using namespace STG;

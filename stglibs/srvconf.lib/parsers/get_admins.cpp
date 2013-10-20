@@ -20,8 +20,6 @@
 
 #include "get_admins.h"
 
-#include "stg/admin_conf.h"
-
 #include <strings.h>
 
 using namespace STG;

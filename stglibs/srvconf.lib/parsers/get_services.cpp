@@ -20,8 +20,6 @@
 
 #include "get_services.h"
 
-#include "stg/service_conf.h"
-
 #include <strings.h>
 
 using namespace STG;

@@ -20,8 +20,6 @@
 
 #include "get_tariffs.h"
 
-#include "stg/tariff_conf.h"
-
 #include <strings.h>
 
 using namespace STG;
