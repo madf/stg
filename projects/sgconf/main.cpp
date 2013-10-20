@@ -76,13 +76,13 @@ array[pos] = value;
 return true;
 }
 
-void Usage();
+void Usage(bool full);
 void UsageConnection();
-void UsageAdmins();
-void UsageTariffs();
-void UsageUsers();
-void UsageServices();
-void UsageCorporations();
+void UsageAdmins(bool full);
+void UsageTariffs(bool full);
+void UsageUsers(bool full);
+void UsageServices(bool full);
+void UsageCorporations(bool full);
 
 } // namespace anonymous
 
@@ -1054,7 +1054,7 @@ return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), r
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-Usage();
+Usage(true);
 exit(0);
 if (argc <= 2)
     {
@@ -1086,7 +1086,7 @@ return UNKNOWN_ERR_CODE;
 namespace
 {
 
-void Usage()
+void Usage(bool full)
 {
 std::cout << "sgconf is the Stargazer management utility.\n\n"
           << "Usage:\n"
@@ -1094,13 +1094,14 @@ std::cout << "sgconf is the Stargazer management utility.\n\n"
           << "General options:\n"
           << "\t-c, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\")\n"
           << "\t-h, --help\t\t\t\tshow this help and exit\n"
+          << "\t-h, --help-all\t\t\t\tshow full help and exit\n"
           << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
 UsageConnection();
-UsageAdmins();
-UsageTariffs();
-UsageUsers();
-UsageServices();
-UsageCorporations();
+UsageAdmins(full);
+UsageTariffs(full);
+UsageUsers(full);
+UsageServices(full);
+UsageCorporations(full);
 }
 //-----------------------------------------------------------------------------
 void UsageConnection()
@@ -1113,134 +1114,167 @@ std::cout << "Connection options:\n"
           << "\t-a, --address <connection string>\tconnection params as a single string in format: <login>:<password>@<host>:<port>\n\n";
 }
 //-----------------------------------------------------------------------------
-void UsageAdmins()
+void UsageAdmins(bool full)
 {
 std::cout << "Admins management options:\n"
-          << "\t--get-admins\t\t\t\tget a list of admins (subsequent options will define what to show)\n"
-          << "\t\t--login\t\t\t\tshow admin's login\n"
-          << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n"
-          << "\t--get-admin\t\t\t\tget the information about admin\n"
-          << "\t\t--login <login>\t\t\tlogin of the admin to show\n"
-          << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n"
-          << "\t--add-admin\t\t\t\tadd a new admin\n"
-          << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
-          << "\t\t--password <password>\t\tpassword of the admin to add\n"
-          << "\t\t--priv <priv number>\t\tpriviledges of the admin to add\n\n"
-          << "\t--del-admin\t\t\t\tdelete an existing admin\n"
-          << "\t\t--login <login>\t\t\tlogin of the admin to delete\n\n"
-          << "\t--chg-admin\t\t\t\tchange an existing admin\n"
-          << "\t\t--login <login>\t\t\tlogin of the admin to change\n"
-          << "\t\t--priv <priv number>\t\tnew priviledges\n\n";
+          << "\t--get-admins\t\t\t\tget a list of admins (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--login\t\t\t\tshow admin's login\n"
+              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
+std::cout << "\t--get-admin\t\t\t\tget the information about admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to show\n"
+              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
+std::cout << "\t--add-admin\t\t\t\tadd a new admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
+              << "\t\t--password <password>\t\tpassword of the admin to add\n"
+              << "\t\t--priv <priv number>\t\tpriviledges of the admin to add\n\n";
+std::cout << "\t--del-admin\t\t\t\tdelete an existing admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to delete\n\n";
+std::cout << "\t--chg-admin\t\t\t\tchange an existing admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to change\n"
+              << "\t\t--priv <priv number>\t\tnew priviledges\n\n";
 }
 //-----------------------------------------------------------------------------
-void UsageTariffs()
+void UsageTariffs(bool full)
 {
 std::cout << "Tariffs management options:\n"
-          << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n"
-          << "\t\t--name\t\t\t\tshow tariff's name\n"
-          << "\t\t--fee\t\t\t\tshow tariff's fee\n"
-          << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
-          << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
-          << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
-          << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n"
-          << "\t--get-tariff\t\t\t\tget the information about tariff\n"
-          << "\t\t--name <name>\t\t\tname of the tariff to show\n"
-          << "\t\t--fee\t\t\t\tshow tariff's fee\n"
-          << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
-          << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
-          << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
-          << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n"
-          << "\t--add-tariff\t\t\t\tadd a new tariff\n"
-          << "\t\t--name <name>\t\t\tname of the tariff to add\n"
-          << "\t\t--fee <fee>\t\t\tstariff's fee\n"
-          << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
-          << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
-          << "\t\t--traff-type <type>\t\twhat type of traffi will be accounted by the tariff\n"
-          << "\t\t--times <times>\t\t\tslash-separated list of \"day\" time-spans (in form \"hh:mm-hh:mm\") for each direction\n"
-          << "\t\t--prices-day-a <prices>\t\tslash-separated list of prices for \"day\" traffic before threshold for each direction\n"
-          << "\t\t--prices-night-a <prices>\tslash-separated list of prices for \"night\" traffic before threshold for each direction\n"
-          << "\t\t--prices-day-b <prices>\t\tslash-separated list of prices for \"day\" traffic after threshold for each direction\n"
-          << "\t\t--prices-night-b <prices>\tslash-separated list of prices for \"night\" traffic after threshold for each direction\n"
-          << "\t\t--single-prices <yes|no>\tslash-separated list of \"single price\" flags for each direction\n"
-          << "\t\t--no-discounts <yes|no>\t\tslash-separated list of \"no discount\" flags for each direction\n"
-          << "\t\t--thresholds <thresholds>\tslash-separated list of thresholds (in Mb) for each direction\n\n"
-          << "\t--del-tariff\t\t\t\tdelete an existing tariff\n"
-          << "\t\t--name <name>\t\t\tname of the tariff to delete\n\n"
-          << "\t--chg-tariff\t\t\t\tchange an existing tariff\n"
-          << "\t\t--name <name>\t\t\tname of the tariff to change\n"
-          << "\t\t--fee <fee>\t\t\tstariff's fee\n"
-          << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
-          << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
-          << "\t\t--traff-type <type>\t\twhat type of traffix will be accounted by the tariff\n"
-          << "\t\t--dir <N>\t\t\tnumber of direction data to change\n"
-          << "\t\t\t--time <time>\t\t\"day\" time-span (in form \"hh:mm-hh:mm\")\n"
-          << "\t\t\t--price-day-a <price>\tprice for \"day\" traffic before threshold\n"
-          << "\t\t\t--price-night-a <price>\tprice for \"night\" traffic before threshold\n"
-          << "\t\t\t--price-day-b <price>\tprice for \"day\" traffic after threshold\n"
-          << "\t\t\t--price-night-b <price>\tprice for \"night\" traffic after threshold\n"
-          << "\t\t\t--single-price <yes|no>\t\"single price\" flag\n"
-          << "\t\t\t--no-discount <yes|no>\t\"no discount\" flag\n"
-          << "\t\t\t--threshold <threshold>\tthreshold (in Mb)\n\n";
+          << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow tariff's name\n"
+              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
+              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
+              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
+std::cout << "\t--get-tariff\t\t\t\tget the information about tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to show\n"
+              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
+              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
+              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
+std::cout << "\t--add-tariff\t\t\t\tadd a new tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to add\n"
+              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
+              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type <type>\t\twhat type of traffi will be accounted by the tariff\n"
+              << "\t\t--times <times>\t\t\tslash-separated list of \"day\" time-spans (in form \"hh:mm-hh:mm\") for each direction\n"
+              << "\t\t--prices-day-a <prices>\t\tslash-separated list of prices for \"day\" traffic before threshold for each direction\n"
+              << "\t\t--prices-night-a <prices>\tslash-separated list of prices for \"night\" traffic before threshold for each direction\n"
+              << "\t\t--prices-day-b <prices>\t\tslash-separated list of prices for \"day\" traffic after threshold for each direction\n"
+              << "\t\t--prices-night-b <prices>\tslash-separated list of prices for \"night\" traffic after threshold for each direction\n"
+              << "\t\t--single-prices <yes|no>\tslash-separated list of \"single price\" flags for each direction\n"
+              << "\t\t--no-discounts <yes|no>\t\tslash-separated list of \"no discount\" flags for each direction\n"
+              << "\t\t--thresholds <thresholds>\tslash-separated list of thresholds (in Mb) for each direction\n\n";
+std::cout << "\t--del-tariff\t\t\t\tdelete an existing tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to delete\n\n";
+std::cout << "\t--chg-tariff\t\t\t\tchange an existing tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to change\n"
+              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
+              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type <type>\t\twhat type of traffix will be accounted by the tariff\n"
+              << "\t\t--dir <N>\t\t\tnumber of direction data to change\n"
+              << "\t\t\t--time <time>\t\t\"day\" time-span (in form \"hh:mm-hh:mm\")\n"
+              << "\t\t\t--price-day-a <price>\tprice for \"day\" traffic before threshold\n"
+              << "\t\t\t--price-night-a <price>\tprice for \"night\" traffic before threshold\n"
+              << "\t\t\t--price-day-b <price>\tprice for \"day\" traffic after threshold\n"
+              << "\t\t\t--price-night-b <price>\tprice for \"night\" traffic after threshold\n"
+              << "\t\t\t--single-price <yes|no>\t\"single price\" flag\n"
+              << "\t\t\t--no-discount <yes|no>\t\"no discount\" flag\n"
+              << "\t\t\t--threshold <threshold>\tthreshold (in Mb)\n\n";
 }
 //-----------------------------------------------------------------------------
-void UsageUsers()
+void UsageUsers(bool full)
 {
 std::cout << "Users management options:\n"
-          << "\t--get-users\t\t\t\tget a list of users (subsequent options will define what to show)\n"
-          << "\t--get-user\t\t\t\tget the information about user\n"
-          << "\t--add-user\t\t\t\tadd a new user\n"
-          << "\t--del-user\t\t\t\tdelete an existing user\n"
-          << "\t--chg-user\t\t\t\tchange an existing user\n"
-          << "\t--check-user\t\t\t\tcheck credentials is valid\n"
-          << "\t--send-message\t\t\t\tsend a message to a user\n"
-          << "\n\n";
+          << "\t--get-users\t\t\t\tget a list of users (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--get-user\t\t\t\tget the information about user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--add-user\t\t\t\tadd a new user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--del-user\t\t\t\tdelete an existing user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--chg-user\t\t\t\tchange an existing user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--check-user\t\t\t\tcheck credentials is valid\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--send-message\t\t\t\tsend a message to a user\n";
+if (full)
+    std::cout << "\n\n";
 }
 //-----------------------------------------------------------------------------
-void UsageServices()
+void UsageServices(bool full)
 {
 std::cout << "Services management options:\n"
-          << "\t--get-services\t\t\t\tget a list of services (subsequent options will define what to show)\n"
-          << "\t\t--name\t\t\t\tshow service's name\n"
-          << "\t\t--comment\t\t\tshow a comment to the service\n"
-          << "\t\t--cost\t\t\t\tshow service's cost\n"
-          << "\t\t--pay-day\t\t\tshow service's pay day\n\n"
-          << "\t--get-service\t\t\t\tget the information about service\n"
-          << "\t\t--name <name>\t\t\tname of the service to show\n"
-          << "\t\t--comment\t\t\tshow a comment to the service\n"
-          << "\t\t--cost\t\t\t\tshow service's cost\n"
-          << "\t\t--pay-day\t\t\tshow service's pay day\n\n"
-          << "\t--add-service\t\t\t\tadd a new service\n"
-          << "\t\t--name <name>\t\t\tname of the service to add\n"
-          << "\t\t--comment <comment>\t\ta comment to the service\n"
-          << "\t\t--cost <cost>\t\t\tservice's cost\n"
-          << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n"
-          << "\t--del-service\t\t\t\tdelete an existing service\n"
-          << "\t\t--name <name>\t\t\tname of the service to delete\n\n"
-          << "\t--chg-service\t\t\t\tchange an existing service\n"
-          << "\t\t--name <name>\t\t\tname of the service to change\n"
-          << "\t\t--comment <comment>\t\ta comment to the service\n"
-          << "\t\t--cost <cost>\t\t\tservice's cost\n"
-          << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
+          << "\t--get-services\t\t\t\tget a list of services (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow service's name\n"
+              << "\t\t--comment\t\t\tshow a comment to the service\n"
+              << "\t\t--cost\t\t\t\tshow service's cost\n"
+              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
+std::cout << "\t--get-service\t\t\t\tget the information about service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to show\n"
+              << "\t\t--comment\t\t\tshow a comment to the service\n"
+              << "\t\t--cost\t\t\t\tshow service's cost\n"
+              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
+std::cout << "\t--add-service\t\t\t\tadd a new service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to add\n"
+              << "\t\t--comment <comment>\t\ta comment to the service\n"
+              << "\t\t--cost <cost>\t\t\tservice's cost\n"
+              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
+std::cout << "\t--del-service\t\t\t\tdelete an existing service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to delete\n\n";
+std::cout << "\t--chg-service\t\t\t\tchange an existing service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to change\n"
+              << "\t\t--comment <comment>\t\ta comment to the service\n"
+              << "\t\t--cost <cost>\t\t\tservice's cost\n"
+              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
 }
 //-----------------------------------------------------------------------------
-void UsageCorporations()
+void UsageCorporations(bool full)
 {
 std::cout << "Corporations management options:\n"
-          << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n"
-          << "\t\t--name\t\t\t\tshow corporation's name\n"
-          << "\t\t--cash\t\t\t\tshow corporation's cash\n\n"
-          << "\t--get-corp\t\t\t\tget the information about corporation\n"
-          << "\t\t--name <name>\t\t\tname of the corporation to show\n"
-          << "\t\t--cash\t\t\t\tshow corporation's cash\n\n"
-          << "\t--add-corp\t\t\t\tadd a new corporation\n"
-          << "\t\t--name <name>\t\t\tname of the corporation to add\n"
-          << "\t\t--cash <cash>\t\t\tinitial corporation's cash (default: \"0\")\n\n"
-          << "\t--del-corp\t\t\t\tdelete an existing corporation\n"
-          << "\t\t--name <name>\t\t\tname of the corporation to delete\n\n"
-          << "\t--chg-corp\t\t\t\tchange an existing corporation\n"
-          << "\t\t--name <name>\t\t\tname of the corporation to change\n"
-          << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
-          << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n\n";
+          << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow corporation's name\n"
+              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
+std::cout << "\t--get-corp\t\t\t\tget the information about corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to show\n"
+              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
+std::cout << "\t--add-corp\t\t\t\tadd a new corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to add\n"
+              << "\t\t--cash <cash>\t\t\tinitial corporation's cash (default: \"0\")\n\n";
+std::cout << "\t--del-corp\t\t\t\tdelete an existing corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to delete\n\n";
+std::cout << "\t--chg-corp\t\t\t\tchange an existing corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to change\n"
+              << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
+              << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n\n";
 }
 
 } // namespace anonymous
