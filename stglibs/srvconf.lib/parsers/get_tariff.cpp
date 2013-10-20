@@ -24,7 +24,6 @@
 
 #include "stg/common.h"
 
-#include <map>
 #include <utility>
 
 #include <strings.h>
