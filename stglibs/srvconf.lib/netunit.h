@@ -43,7 +43,6 @@ public:
     const std::string & GetError() const { return errorMsg; }
 
     void    SetRxCallback(void * data, RxCallback_t cb);
-    RxCallback_t GetRxCallback() const { return dataRxCallBack; }
 
     int     Connect();
     int     Disconnect();
