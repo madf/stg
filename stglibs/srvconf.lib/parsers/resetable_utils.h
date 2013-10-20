@@ -18,23 +18,31 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "chg_corp.h"
+#ifndef __STG_STGLIBS_SRVCONF_RESETABLE_UTILS_H__
+#define __STG_STGLIBS_SRVCONF_RESETABLE_UTILS_H__
 
-#include "resetable_utils.h"
+#include "stg/resetable.h"
 
-#include "stg/corp_conf.h"
-#include "stg/common.h"
+#include <string>
+#include <ostream>
 
-#include <sstream>
-
-using namespace STG;
-
-std::string CHG_CORP::Serialize(const CORP_CONF_RES & conf)
+namespace STG
 {
-std::ostringstream stream;
 
-appendResetable(stream, "name", conf.name);
-appendResetable(stream, "cash", conf.cash);
-
-return stream.str();
+template <typename T>
+void appendResetable(std::ostream & stream, const std::string & name, const T & value)
+{
+if (!value.empty())
+    stream << "<" << name << " value=\"" << value.data() << "\"/>";
 }
+
+template <typename T>
+void appendResetable(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+if (!value.empty())
+    stream << "<" << name << suffix << " value=\"" << value.data() << "\"/>";
+}
+
+} // namespace STG
+
+#endif

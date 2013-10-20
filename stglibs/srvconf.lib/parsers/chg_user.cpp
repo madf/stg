@@ -21,6 +21,8 @@
 
 #include "chg_user.h"
 
+#include "resetable_utils.h"
+
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
 
@@ -29,25 +31,6 @@
 #include <strings.h>
 
 using namespace STG;
-
-namespace
-{
-
-template <typename T>
-void appendResetable(std::ostream & stream, const std::string & name, const T & value)
-{
-if (!value.empty())
-    stream << "<" << name << " value=\"" << value.data() << "\"/>";
-}
-
-template <typename T>
-void appendResetable(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
-{
-if (!value.empty())
-    stream << "<" << name << suffix << " value=\"" << value.data() << "\"/>";
-}
-
-} // namespace anonymous
 
 CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
     : callback(f),

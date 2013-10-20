@@ -20,24 +20,14 @@
 
 #include "chg_service.h"
 
+#include "resetable_utils.h"
+
 #include "stg/service_conf.h"
 #include "stg/common.h"
 
 #include <sstream>
 
 using namespace STG;
-
-namespace
-{
-
-template <typename T>
-void appendResetable(std::ostream & stream, const std::string & name, const T & value)
-{
-if (!value.empty())
-    stream << "<" << name << " value=\"" << value.data() << "\"/>";
-}
-
-} // namespace anonymous
 
 std::string CHG_SERVICE::Serialize(const SERVICE_CONF_RES & conf)
 {

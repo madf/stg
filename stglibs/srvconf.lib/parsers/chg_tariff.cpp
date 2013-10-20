@@ -20,6 +20,8 @@
 
 #include "chg_tariff.h"
 
+#include "resetable_utils.h"
+
 #include "stg/tariff_conf.h"
 #include "stg/common.h"
 
@@ -31,13 +33,6 @@ using namespace STG;
 
 namespace
 {
-
-template <typename T>
-void appendResetable(std::ostream & stream, const std::string & name, const T & value)
-{
-if (!value.empty())
-    stream << "<" << name << " value=\"" << value.data() << "\"/>";
-}
 
 template <typename A, typename T>
 void appendSlashedResetable(std::ostream & stream, const std::string & name, const A & array, T A::value_type:: * field)
