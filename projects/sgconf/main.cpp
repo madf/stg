@@ -1092,7 +1092,7 @@ std::cout << "sgconf is the Stargazer management utility.\n\n"
           << "Usage:\n"
           << "\tsgconf [options]\n\n"
           << "General options:\n"
-          << "\t-f, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\", \"/etc/stg/sgconf.conf\")\n"
+          << "\t-f, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\")\n"
           << "\t-h, --help\t\t\t\tshow this help and exit\n"
           << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
 UsageConnection();
@@ -1120,7 +1120,7 @@ std::cout << "Admins management options:\n"
           << "\t\t--login\t\t\t\tshow admin's login\n"
           << "\t\t--priv\t\t\t\tshow admin's priviledges\n"
           << "\t--get-admin\t\t\t\tget the information about admin\n"
-          << "\t\t--login\t\t\t\tlogin of the admin to show\n"
+          << "\t\t--login <login>\t\t\t\tlogin of the admin to show\n"
           << "\t\t--priv\t\t\t\tshow admin's priviledges\n"
           << "\t--add-admin\t\t\t\tadd a new admin\n"
           << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
@@ -1172,10 +1172,20 @@ void UsageCorporations()
 {
 std::cout << "Corporations management options:\n"
           << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n"
+          << "\t\t--name\t\t\t\tshow corporation's name\n"
+          << "\t\t--cash\t\t\t\tshow corporation's cash\n"
           << "\t--get-corp\t\t\t\tget the information about corporation\n"
+          << "\t\t--name <name>\t\t\tname of the corporation to show\n"
+          << "\t\t--cash\t\t\t\tshow corporation's cash\n"
           << "\t--add-corp\t\t\t\tadd a new corporation\n"
+          << "\t\t--name <name>\t\t\tname of the corporation to add\n"
+          << "\t\t--cash <cash>\t\t\tinitial corporation's cash (default: \"0\")\n"
           << "\t--del-corp\t\t\t\tdelete an existing corporation\n"
+          << "\t\t--name <name>\t\t\tname of the corporation to delete\n"
           << "\t--chg-corp\t\t\t\tchange an existing corporation\n"
+          << "\t\t--name <name>\t\t\tname of the corporation to change\n"
+          << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
+          << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n"
           << "\n\n";
 }
 
