@@ -130,6 +130,7 @@ GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d)
     AddAOSParser(propertyParsers, "priceNightB", info.dirPrice, &DIRPRICE_DATA::priceNightB, GetSlashedValue);
     AddAOSParser(propertyParsers, "singlePrice", info.dirPrice, &DIRPRICE_DATA::singlePrice, GetSlashedValue);
     AddAOSParser(propertyParsers, "noDiscount", info.dirPrice, &DIRPRICE_DATA::noDiscount, GetSlashedValue);
+    AddAOSParser(propertyParsers, "threshold", info.dirPrice, &DIRPRICE_DATA::threshold, GetSlashedValue);
 }
 //-----------------------------------------------------------------------------
 GET_TARIFF::PARSER::~PARSER()

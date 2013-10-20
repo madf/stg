@@ -84,6 +84,7 @@ appendSlashedResetable(stream, "priceNightA", data.dirPrice, &DIRPRICE_DATA_RES:
 appendSlashedResetable(stream, "priceNightB", data.dirPrice, &DIRPRICE_DATA_RES::priceNightB);
 appendSlashedResetable(stream, "singlePrice", data.dirPrice, &DIRPRICE_DATA_RES::singlePrice);
 appendSlashedResetable(stream, "noDiscount", data.dirPrice, &DIRPRICE_DATA_RES::noDiscount);
+appendSlashedResetable(stream, "threshold", data.dirPrice, &DIRPRICE_DATA_RES::threshold);
 
 return stream.str();
 }
