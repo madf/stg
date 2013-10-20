@@ -75,9 +75,7 @@ NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
       port(p),
       login(l),
       password(pwd),
-      outerSocket(-1),
-      RxCallBack(NULL),
-      dataRxCallBack(NULL)
+      outerSocket(-1)
 {
 }
 //---------------------------------------------------------------------------
@@ -123,13 +121,12 @@ if (connect(outerSocket, (struct sockaddr *)&outerAddr, sizeof(outerAddr)) < 0)
 return st_ok;
 }
 //---------------------------------------------------------------------------
-int NETTRANSACT::Disconnect()
+void NETTRANSACT::Disconnect()
 {
 close(outerSocket);
-return 0;
 }
 //---------------------------------------------------------------------------
-int NETTRANSACT::Transact(const char * data)
+int NETTRANSACT::Transact(const char * request, CALLBACK callback, void * data)
 {
 int ret;
 if ((ret = TxHeader()) != st_ok)
@@ -168,13 +165,13 @@ if ((ret = RxLoginSAnswer()) != st_ok)
     return ret;
     }
 
-if ((ret = TxData(data)) != st_ok)
+if ((ret = TxData(request)) != st_ok)
     {
     Disconnect();
     return ret;
     }
 
-if ((ret = RxDataAnswer()) != st_ok)
+if ((ret = RxDataAnswer(callback, data)) != st_ok)
     {
     Disconnect();
     return ret;
@@ -388,7 +385,7 @@ for (int j = 0; j < l; j++)
 return 0;
 }
 //---------------------------------------------------------------------------
-int NETTRANSACT::RxDataAnswer()
+int NETTRANSACT::RxDataAnswer(CALLBACK callback, void * data)
 {
 BLOWFISH_CTX ctx;
 EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
@@ -425,8 +422,8 @@ while (true)
 
     if (chunk.length() > MAX_XML_CHUNK_LENGTH || final)
         {
-        if (RxCallBack != NULL)
-            if (!RxCallBack(dataRxCallBack, chunk, final))
+        if (callback)
+            if (!callback(chunk, final, data))
                 return st_xml_parse_error;
         chunk.clear();
         }
@@ -434,10 +431,4 @@ while (true)
     if (final)
         return st_ok;
     }
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::SetRxCallback(void * data, RxCallback_t cb)
-{
-RxCallBack = cb;
-dataRxCallBack = data;
 }

@@ -31,21 +31,19 @@
 
 #include <string>
 
-typedef bool (* RxCallback_t)(void *, const std::string &, bool);
-
 //---------------------------------------------------------------------------
 class NETTRANSACT
 {
 public:
+    typedef bool (* CALLBACK)(const std::string &, bool, void *);
+
     NETTRANSACT(const std::string & server, uint16_t port,
                 const std::string & login, const std::string & password);
-    int     Transact(const char * data);
+    int     Transact(const char * request, CALLBACK f, void * data);
     const std::string & GetError() const { return errorMsg; }
 
-    void    SetRxCallback(void * data, RxCallback_t cb);
-
     int     Connect();
-    int     Disconnect();
+    void    Disconnect();
 private:
     int     TxHeader();
     int     RxHeaderAnswer();
@@ -58,15 +56,13 @@ private:
 
     int     TxData(const char * text);
     int     TxData(char * data);
-    int     RxDataAnswer();
+    int     RxDataAnswer(CALLBACK f, void * data);
 
     std::string server;
     uint16_t  port;
     std::string login;
     std::string password;
     int outerSocket;
-    RxCallback_t RxCallBack;
-    void * dataRxCallBack;
     std::string errorMsg;
 };
 //---------------------------------------------------------------------------
