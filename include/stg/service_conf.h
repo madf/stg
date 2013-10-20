@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "resetable.h"
 #include "os_int.h"
 
 struct SERVICE_CONF
@@ -28,6 +29,38 @@ std::string name;
 std::string comment;
 double      cost;
 uint8_t     payDay;
+};
+
+struct SERVICE_CONF_RES
+{
+SERVICE_CONF_RES()
+    : name(), comment(),
+      cost(), payDay()
+{}
+
+SERVICE_CONF_RES & operator=(const SERVICE_CONF & conf)
+{
+name = conf.name;
+comment = conf.comment;
+cost = conf.cost;
+payDay = conf.payDay;
+return *this;
+}
+
+SERVICE_CONF GetData() const
+{
+SERVICE_CONF sc;
+sc.name = name.data();
+sc.comment = comment.data();
+sc.cost = cost.data();
+sc.payDay = payDay.data();
+return sc;
+}
+
+RESETABLE<std::string> name;
+RESETABLE<std::string> comment;
+RESETABLE<double>      cost;
+RESETABLE<uint8_t>     payDay;
 };
 
 inline
