@@ -40,6 +40,7 @@
 
 struct ADMIN_CONF;
 struct TARIFF_DATA;
+struct SERVICE_CONF;
 
 namespace STG
 {
@@ -186,6 +187,22 @@ namespace GET_TARIFFS
 {
 
 typedef std::vector<GET_TARIFF::INFO> INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace GET_SERVICE
+{
+
+typedef SERVICE_CONF INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace GET_SERVICES
+{
+
+typedef std::vector<GET_SERVICE::INFO> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 }

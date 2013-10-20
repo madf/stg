@@ -37,6 +37,7 @@
 struct USER_CONF_RES;
 struct USER_STAT_RES;
 struct TARIFF_DATA_RES;
+struct SERVICE_CONF_RES;
 
 namespace STG
 {
@@ -79,6 +80,14 @@ public:
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data);
+
+    int GetServices(GET_SERVICES::CALLBACK f, void * data);
+    int GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data);
+    int ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
+    int AddService(const std::string & name,
+                   const SERVICE_CONF_RES & conf,
+                   SIMPLE::CALLBACK f, void * data);
+    int DelService(const std::string & name, SIMPLE::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
 

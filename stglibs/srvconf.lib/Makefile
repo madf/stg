@@ -21,6 +21,9 @@ SRCS =  parsers/property.cpp \
         parsers/get_user.cpp \
         parsers/get_users.cpp \
         parsers/chg_user.cpp \
+        parsers/get_services.cpp \
+        parsers/get_service.cpp \
+        parsers/chg_service.cpp \
         netunit.cpp \
         servconf.cpp
 

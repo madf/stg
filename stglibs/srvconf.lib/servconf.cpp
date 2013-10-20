@@ -39,6 +39,10 @@
 #include "parsers/get_user.h"
 #include "parsers/chg_user.h"
 
+#include "parsers/get_services.h"
+#include "parsers/get_service.h"
+#include "parsers/chg_service.h"
+
 #include "parsers/base.h"
 
 #include "stg/common.h"
@@ -237,6 +241,38 @@ return pImpl->Exec<SIMPLE::PARSER>("SendMessage", "<Message login=\"" + login + 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)
 {
 return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
+}
+
+// -- Services --
+
+int SERVCONF::GetServices(GET_SERVICES::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_SERVICES::PARSER>("<GetServices/>", f, data);
+}
+
+int SERVCONF::GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_SERVICE::PARSER>("<GetService name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + conf.name.data() + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+}
+
+int SERVCONF::AddService(const std::string & name,
+                         const SERVICE_CONF_RES & conf,
+                         SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+}
+
+int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + "\"/>", f, data);
 }
 
 const std::string & SERVCONF::GetStrError() const
