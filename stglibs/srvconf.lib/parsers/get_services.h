@@ -24,7 +24,6 @@
 #include "base.h"
 #include "get_service.h"
 
-#include "stg/service_conf.h"
 #include "stg/servconf_types.h"
 
 #include <string>

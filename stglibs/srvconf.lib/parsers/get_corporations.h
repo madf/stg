@@ -24,7 +24,6 @@
 #include "base.h"
 #include "get_corp.h"
 
-#include "stg/corp_conf.h"
 #include "stg/servconf_types.h"
 
 #include <string>
