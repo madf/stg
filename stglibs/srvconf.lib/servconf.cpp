@@ -16,6 +16,7 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
 #include "stg/servconf.h"
@@ -42,6 +43,10 @@
 #include "parsers/get_services.h"
 #include "parsers/get_service.h"
 #include "parsers/chg_service.h"
+
+#include "parsers/get_corporations.h"
+#include "parsers/get_corp.h"
+#include "parsers/chg_corp.h"
 
 #include "parsers/base.h"
 
@@ -273,6 +278,38 @@ return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + 
 int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
 {
 return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + "\"/>", f, data);
+}
+
+// -- Corporations --
+
+int SERVCONF::GetCorporations(GET_CORPORATIONS::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_CORPORATIONS::PARSER>("<GetCorporations/>", f, data);
+}
+
+int SERVCONF::GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_CORP::PARSER>("<GetCorp name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+}
+
+int SERVCONF::AddCorp(const std::string & name,
+                      const CORP_CONF_RES & conf,
+                      SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddCorp", "<AddCorp name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + name + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+}
+
+int SERVCONF::DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelCorp", "<DelCorp name=\"" + name + "\"/>", f, data);
 }
 
 const std::string & SERVCONF::GetStrError() const

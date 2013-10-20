@@ -16,12 +16,7 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
- */
-
- /*
- $Revision: 1.10 $
- $Date: 2009/03/17 09:52:35 $
- $Author: faust $
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
 #ifndef __STG_STGLIBS_SERVCONF_H__
@@ -38,6 +33,7 @@ struct USER_CONF_RES;
 struct USER_STAT_RES;
 struct TARIFF_DATA_RES;
 struct SERVICE_CONF_RES;
+struct CORP_CONF_RES;
 
 namespace STG
 {
@@ -88,6 +84,14 @@ public:
                    const SERVICE_CONF_RES & conf,
                    SIMPLE::CALLBACK f, void * data);
     int DelService(const std::string & name, SIMPLE::CALLBACK f, void * data);
+
+    int GetCorporations(GET_CORPORATIONS::CALLBACK f, void * data);
+    int GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data);
+    int ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
+    int AddCorp(const std::string & name,
+                const CORP_CONF_RES & conf,
+                SIMPLE::CALLBACK f, void * data);
+    int DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data);
 
     const std::string & GetStrError() const;
 
