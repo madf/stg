@@ -36,6 +36,7 @@
 
 struct USER_CONF_RES;
 struct USER_STAT_RES;
+struct TARIFF_DATA_RES;
 
 namespace STG
 {
@@ -58,6 +59,14 @@ public:
                  const ADMIN_CONF_RES & conf,
                  SIMPLE::CALLBACK f, void * data);
     int DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data);
+
+    int GetTariffs(GET_TARIFFS::CALLBACK f, void * data);
+    int GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data);
+    int ChgTariff(const TARIFF_DATA_RES & conf, SIMPLE::CALLBACK f, void * data);
+    int AddTariff(const std::string & name,
+                  const TARIFF_DATA_RES & conf,
+                  SIMPLE::CALLBACK f, void * data);
+    int DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data);
 
     int GetUsers(GET_USERS::CALLBACK f, void * data);
     int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);

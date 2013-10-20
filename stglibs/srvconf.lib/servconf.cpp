@@ -30,6 +30,10 @@
 #include "parsers/get_admin.h"
 #include "parsers/chg_admin.h"
 
+#include "parsers/get_tariffs.h"
+#include "parsers/get_tariff.h"
+#include "parsers/chg_tariff.h"
+
 #include "parsers/auth_by.h"
 #include "parsers/get_users.h"
 #include "parsers/get_user.h"
@@ -99,7 +103,7 @@ if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ER
 return true;
 }
 
-bool SERVCONF::IMPL::SimpleRecv(void * data, const std::string & chunk, bool final)
+bool SERVCONF::IMPL::SimpleRecv(void * data, const std::string & chunk, bool /*final*/)
 {
 *static_cast<std::string *>(data) += chunk;
 return true;
@@ -123,6 +127,7 @@ return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
 
 int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
 {
+return pImpl->RawXML(request, f, data);
 }
 
 // -- Admins --
@@ -155,6 +160,38 @@ return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serializ
 int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)
 {
 return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\"/>", f, data);
+}
+
+// -- Tariffs --
+
+int SERVCONF::GetTariffs(GET_TARIFFS::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_TARIFFS::PARSER>("<GetTariffs/>", f, data);
+}
+
+int SERVCONF::GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_TARIFF::PARSER>("<GetTariff name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgTariff(const TARIFF_DATA_RES & tariffData, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+}
+
+int SERVCONF::AddTariff(const std::string & name,
+                       const TARIFF_DATA_RES & tariffData,
+                       SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddTariff", "<AddTariff name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + name + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+}
+
+int SERVCONF::DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelTariff", "<DelTariff name=\"" + name + "\"/>", f, data);
 }
 
 // -- Users --
@@ -259,7 +296,7 @@ if ((ret = nt.Disconnect()) != st_ok)
 return st_ok;
 }
 
-int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
+int SERVCONF::IMPL::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
 {
 std::string response;
 nt.SetRxCallback(&response, SimpleRecv);

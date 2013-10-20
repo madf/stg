@@ -39,6 +39,7 @@
 #define  ENC_MSG_LEN    (8)
 
 struct ADMIN_CONF;
+struct TARIFF_DATA;
 
 namespace STG
 {
@@ -169,6 +170,22 @@ namespace GET_ADMINS
 {
 
 typedef std::vector<GET_ADMIN::INFO> INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace GET_TARIFF
+{
+
+typedef TARIFF_DATA INFO;
+typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+
+}
+
+namespace GET_TARIFFS
+{
+
+typedef std::vector<GET_TARIFF::INFO> INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
 }

@@ -14,6 +14,9 @@ SRCS =  parsers/property.cpp \
         parsers/get_admins.cpp \
         parsers/get_admin.cpp \
         parsers/chg_admin.cpp \
+        parsers/get_tariffs.cpp \
+        parsers/get_tariff.cpp \
+        parsers/chg_tariff.cpp \
         parsers/auth_by.cpp \
         parsers/get_user.cpp \
         parsers/get_users.cpp \
