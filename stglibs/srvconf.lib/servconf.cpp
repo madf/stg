@@ -24,27 +24,23 @@
 #include "netunit.h"
 
 #include "parsers/simple.h"
+#include "parsers/get_container.h"
 
 #include "parsers/server_info.h"
 
-#include "parsers/get_admins.h"
 #include "parsers/get_admin.h"
 #include "parsers/chg_admin.h"
 
-#include "parsers/get_tariffs.h"
 #include "parsers/get_tariff.h"
 #include "parsers/chg_tariff.h"
 
 #include "parsers/auth_by.h"
-#include "parsers/get_users.h"
 #include "parsers/get_user.h"
 #include "parsers/chg_user.h"
 
-#include "parsers/get_services.h"
 #include "parsers/get_service.h"
 #include "parsers/chg_service.h"
 
-#include "parsers/get_corporations.h"
 #include "parsers/get_corp.h"
 #include "parsers/chg_corp.h"
 
@@ -143,7 +139,7 @@ return pImpl->RawXML(request, f, data);
 
 int SERVCONF::GetAdmins(GET_ADMINS::CALLBACK f, void * data)
 {
-return pImpl->Exec<GET_ADMINS::PARSER>("<GetAdmins/>", f, data);
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_ADMIN::PARSER> >("admins", "<GetAdmins/>", f, data);
 }
 
 int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data)
@@ -175,7 +171,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\
 
 int SERVCONF::GetTariffs(GET_TARIFFS::CALLBACK f, void * data)
 {
-return pImpl->Exec<GET_TARIFFS::PARSER>("<GetTariffs/>", f, data);
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_TARIFF::PARSER> >("tariffs", "<GetTariffs/>", f, data);
 }
 
 int SERVCONF::GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data)
@@ -207,7 +203,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelTariff", "<DelTariff name=\"" + name + "\
 
 int SERVCONF::GetUsers(GET_USERS::CALLBACK f, void * data)
 {
-return pImpl->Exec<GET_USERS::PARSER>("<GetUsers/>", f, data);
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_USER::PARSER> >("users", "<GetUsers/>", f, data);
 }
 
 int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
@@ -252,7 +248,7 @@ return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + 
 
 int SERVCONF::GetServices(GET_SERVICES::CALLBACK f, void * data)
 {
-return pImpl->Exec<GET_SERVICES::PARSER>("<GetServices/>", f, data);
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_SERVICE::PARSER> >("services", "<GetServices/>", f, data);
 }
 
 int SERVCONF::GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data)
@@ -284,7 +280,7 @@ return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + 
 
 int SERVCONF::GetCorporations(GET_CORPORATIONS::CALLBACK f, void * data)
 {
-return pImpl->Exec<GET_CORPORATIONS::PARSER>("<GetCorporations/>", f, data);
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_CORP::PARSER> >("corporations", "<GetCorporations/>", f, data);
 }
 
 int SERVCONF::GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data)

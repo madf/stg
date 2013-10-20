@@ -37,6 +37,8 @@ namespace GET_USER
 class PARSER: public STG::PARSER
 {
 public:
+    typedef GET_USER::INFO INFO;
+
     PARSER(CALLBACK f, void * data);
     virtual ~PARSER();
     int  ParseStart(const char * el, const char ** attr);
