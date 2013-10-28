@@ -1474,15 +1474,15 @@ while (it != messages.end())
 //-----------------------------------------------------------------------------
 std::string USER_IMPL::GetParamValue(const std::string & name) const
 {
-    if (name == "id")
+if (name == "id")
     {
     std::stringstream stream;
     stream << id;
     return stream.str();;
     }
-    if (name == "login")        return login;
-    if (name == "ip")           return currIP.ToString();
-    return properties.GetPropertyValue(&name);    
+if (name == "login")        return login;
+if (name == "ip")           return currIP.ToString();
+return property.GetPropertyValue(&name);
 //if (name == "freeMb")       return property.freeMb.ToString();
 //if (name == "passive")      return property.passive.ToString();
 //if (name == "disabled")     return property.disabled.ToString();
