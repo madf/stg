@@ -1052,10 +1052,69 @@ if (isMessage)
 return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), conf, stat);
 }
 //-----------------------------------------------------------------------------
+PARSER_STATE TryParse(const PARSERS& parsers, char ** argv, int argc)
+{
+PARSERS::const_iterator it = parsers.find(*argv);
+if (it != parsers.end())
+    return it->second(++argv, --argc);
+PARSER_STATE state;
+state.argc = argc;
+state.argv = argv;
+state.result = false;
+return state;
+}
+//-----------------------------------------------------------------------------
+PARSER_STATE ParseCommon(int argc, char ** argv, CONFIG& config)
+{
+if (pos == 0)
+    ++pos;
+
+PARSERS parsers;
+parsers.add<std::string>("-c", "--config", config.configFile);
+parsers.add<void>("-h", "--help", Usage, false);
+parsers.add<void>("--help-all", Usage, true);
+parsers.add<void>("-v", "--version", Version);
+
+while (true)
+    {
+    PARSER_STATE state(TryParse(parsers, argv, argc, config));
+    if (state.argv == argv)
+        return state; // No-op
+    if (state.argc == 0)
+        return state; // EOF
+    if (state.result)
+        return state; // Done
+    argv = state.argv;
+    argc = state.argc;
+    }
+
+assert(0 && "Can't be here.");
+return PARSER_STATE();
+}
+//-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
 Usage(true);
 exit(0);
+
+// Ok - succesfully parsed
+// Done - don't continue, return 0
+// Error - don't continue, return -1
+// No-op - nothing changed
+
+return COMPOSER(argv).compose(ParseCommon)
+                     .compose(ReadConfig)
+                     .compose(ParseCommand)
+                     .exec();
+
+
+if (argc < 2)
+    {
+    // TODO: no arguments
+    Usage(false);
+    return 1;
+    }
+
 if (argc <= 2)
     {
     UsageConf();
@@ -1094,7 +1153,7 @@ std::cout << "sgconf is the Stargazer management utility.\n\n"
           << "General options:\n"
           << "\t-c, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\")\n"
           << "\t-h, --help\t\t\t\tshow this help and exit\n"
-          << "\t-h, --help-all\t\t\t\tshow full help and exit\n"
+          << "\t--help-all\t\t\t\tshow full help and exit\n"
           << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
 UsageConnection();
 UsageAdmins(full);
