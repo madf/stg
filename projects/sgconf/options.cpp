@@ -103,7 +103,10 @@ try
     }
 catch (const ACTION::ERROR & ex)
     {
-    throw ERROR(m_longName + ": " + ex.what());
+    if (m_longName.empty())
+        throw ERROR("-" + m_shortName + ": " + ex.what());
+    else
+        throw ERROR("--" + m_longName + ", -" + m_shortName + ": " + ex.what());
     }
 }
 

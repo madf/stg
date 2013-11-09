@@ -178,6 +178,10 @@ class CONFIG_ACTION : public ACTION
 
 PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
 {
+if (argc == 0 ||
+    argv == NULL ||
+    *argv == NULL)
+    throw ERROR("Missing argument.");
 char * pos = strchr(*argv, '@');
 if (pos != NULL)
     {
@@ -1214,7 +1218,18 @@ blocks.Add("Connection options")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 
-SGCONF::PARSER_STATE state(blocks.Parse(--argc, ++argv)); // Skipping self name
+
+SGCONF::PARSER_STATE state(false, argc, argv);
+
+try
+{
+state = blocks.Parse(--argc, ++argv); // Skipping self name
+}
+catch (const SGCONF::OPTION::ERROR& ex)
+{
+std::cerr << ex.what() << "\n";
+return -1;
+}
 
 if (state.stop)
     return 0;

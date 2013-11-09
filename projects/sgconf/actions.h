@@ -118,6 +118,10 @@ template <typename T>
 inline
 PARSER_STATE PARAM_ACTION<T>::Parse(int argc, char ** argv)
 {
+if (argc == 0 ||
+    argv == NULL ||
+    *argv == NULL)
+    throw ERROR("Missing argument.");
 T value;
 if (str2x(*argv, value))
     throw ERROR(std::string("Bad argument: '") + *argv + "'");
@@ -129,6 +133,10 @@ template <>
 inline
 PARSER_STATE PARAM_ACTION<std::string>::Parse(int argc, char ** argv)
 {
+if (argc == 0 ||
+    argv == NULL ||
+    *argv == NULL)
+    throw ERROR("Missing argument.");
 m_param = *argv;
 return PARSER_STATE(false, --argc, ++argv);
 }
