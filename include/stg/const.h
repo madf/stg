@@ -80,8 +80,6 @@
 #define NO_TARIFF_NAME  "*_NO_TARIFF_*"
 #define NO_CORP_NAME    "*_NO_CORP_*"
 
-#define mega (1024 * 1024)
-
 #define MONITOR_TIME_DELAY_SEC  (60)
 
 #endif
