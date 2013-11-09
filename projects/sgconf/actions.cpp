@@ -18,20 +18,13 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_PARSER_STATE_H__
-#define __STG_SGCONF_PARSER_STATE_H__
+#include "actions.h"
 
-namespace SGCONF
+using SGCONF::FUNC0_ACTION;
+using SGCONF::PARSER_STATE;
+
+PARSER_STATE FUNC0_ACTION::Parse(int argc, char ** argv)
 {
-
-struct PARSER_STATE
-{
-    PARSER_STATE(bool s, int c, char ** v) : stop(s), argc(c), argv(v) {}
-    bool stop;
-    int argc;
-    char ** argv;
-};
-
+m_func();
+return PARSER_STATE(true, argc, argv);
 }
-
-#endif

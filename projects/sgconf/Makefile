@@ -7,7 +7,9 @@ include ../../Makefile.conf
 PROG = sgconf
 
 SRCS = ./main.cpp \
-       ./common_sg.cpp
+       ./common_sg.cpp \
+       ./options.cpp \
+       ./actions.cpp
 
 STGLIBS = conffiles \
           srvconf \
