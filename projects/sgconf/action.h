@@ -35,6 +35,7 @@ class ACTION
     public:
         virtual ~ACTION() {}
 
+        virtual ACTION * Clone() const = 0;
         virtual std::string ParamDescription() const = 0;
         virtual std::string DefaultDescription() const = 0;
         virtual OPTION_BLOCK & Suboptions() = 0;
@@ -46,6 +47,13 @@ class ACTION
                 ERROR(const std::string & message)
                     : std::runtime_error(message.c_str()) {}
         };
+};
+
+template <typename T>
+class ACTION_CLONE_MIXIN : public ACTION
+{
+    public:
+        virtual ACTION * Clone() const { return new T(*this); }
 };
 
 } // namespace SGCONF

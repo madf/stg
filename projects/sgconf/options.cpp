@@ -29,6 +29,7 @@
 
 using SGCONF::OPTION;
 using SGCONF::OPTION_BLOCK;
+using SGCONF::OPTION_BLOCKS;
 using SGCONF::ACTION;
 using SGCONF::PARSER_STATE;
 
@@ -55,7 +56,7 @@ OPTION::OPTION(const std::string & longName,
 OPTION::OPTION(const OPTION & rhs)
     : m_shortName(rhs.m_shortName),
       m_longName(rhs.m_longName),
-      m_action(rhs.m_action),
+      m_action(rhs.m_action->Clone()),
       m_description(rhs.m_description)
 {
 }
@@ -106,26 +107,31 @@ catch (const ACTION::ERROR & ex)
     }
 }
 
-void OPTION_BLOCK::Add(const std::string & shortName,
-                       const std::string & longName,
-                       ACTION * action,
-                       const std::string & description)
+OPTION_BLOCK & OPTION_BLOCK::Add(const std::string & shortName,
+                                 const std::string & longName,
+                                 ACTION * action,
+                                 const std::string & description)
 {
 m_options.push_back(OPTION(shortName, longName, action, description));
+return *this;
 }
 
-void OPTION_BLOCK::Add(const std::string & longName,
-                       ACTION * action,
-                       const std::string & description)
+OPTION_BLOCK & OPTION_BLOCK::Add(const std::string & longName,
+                                 ACTION * action,
+                                 const std::string & description)
 {
 m_options.push_back(OPTION(longName, action, description));
+return *this;
 }
 
 void OPTION_BLOCK::Help(size_t level) const
 {
+if (m_options.empty())
+    return;
+std::cout << m_description << ":\n";
 std::for_each(m_options.begin(),
               m_options.end(),
-              std::bind2nd(std::mem_fun_ref(&OPTION::Help), level));
+              std::bind2nd(std::mem_fun_ref(&OPTION::Help), level + 1));
 }
 
 PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv)
@@ -138,6 +144,30 @@ while (state.argc > 0 && !state.stop)
         state = it->Parse(--state.argc, ++state.argv);
     else
         break;
+    ++it;
+    }
+return state;
+}
+
+void OPTION_BLOCKS::Help(size_t level) const
+{
+std::list<OPTION_BLOCK>::const_iterator it(m_blocks.begin());
+while (it != m_blocks.end())
+    {
+    it->Help(level);
+    std::cout << "\n";
+    ++it;
+    }
+}
+
+PARSER_STATE OPTION_BLOCKS::Parse(int argc, char ** argv)
+{
+PARSER_STATE state(false, argc, argv);
+std::list<OPTION_BLOCK>::iterator it(m_blocks.begin());
+while (!state.stop && it != m_blocks.end())
+    {
+    state = it->Parse(state.argc, state.argv);
+    ++it;
     }
 return state;
 }

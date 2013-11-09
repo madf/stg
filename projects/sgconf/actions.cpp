@@ -17,14 +17,3 @@
 /*
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
-
-#include "actions.h"
-
-using SGCONF::FUNC0_ACTION;
-using SGCONF::PARSER_STATE;
-
-PARSER_STATE FUNC0_ACTION::Parse(int argc, char ** argv)
-{
-m_func();
-return PARSER_STATE(true, argc, argv);
-}

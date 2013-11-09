@@ -66,6 +66,65 @@ typedef T type;
 };
 
 template <typename T>
+struct nullary_function
+{
+typedef T result_type;
+};
+
+template <typename F>
+class binder0 : public nullary_function<typename F::result_type>
+{
+    public:
+        binder0(const F & func, const typename F::argument_type & arg)
+            : m_func(func), m_arg(arg) {}
+        typename F::result_type operator()() const { return m_func(m_arg); }
+    private:
+        F m_func;
+        typename F::argument_type m_arg;
+};
+
+template <typename F>
+inline
+binder0<F> bind0(const F & func, const typename F::argument_type & arg)
+{
+return binder0<F>(func, arg);
+}
+
+template <typename C, typename A, typename R>
+class METHOD1_ADAPTER : public std::unary_function<A, R>
+{
+    public:
+        METHOD1_ADAPTER(R (C::* func)(A), C & obj) : m_func(func), m_obj(obj) {}
+        R operator()(A arg) { return (m_obj.*m_func)(arg); }
+    private:
+        R (C::* m_func)(A);
+        C & m_obj;
+};
+
+template <typename C, typename A, typename R>
+class CONST_METHOD1_ADAPTER : public std::unary_function<A, R>
+{
+    public:
+        CONST_METHOD1_ADAPTER(R (C::* func)(A) const, C & obj) : m_func(func), m_obj(obj) {}
+        R operator()(A arg) const { return (m_obj.*m_func)(arg); }
+    private:
+        R (C::* m_func)(A) const;
+        C & m_obj;
+};
+
+template <typename C, typename A, typename R>
+METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A), C & obj)
+{
+return METHOD1_ADAPTER<C, A, R>(func, obj);
+}
+
+template <typename C, typename A, typename R>
+CONST_METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A) const, C & obj)
+{
+return CONST_METHOD1_ADAPTER<C, A, R>(func, obj);
+}
+
+template <typename T>
 bool SetArrayItem(T & array, const char * index, const typename ARRAY_TYPE<T>::type & value)
 {
 size_t pos = 0;
@@ -92,7 +151,7 @@ void Version();
 namespace SGCONF
 {
 
-class CONFIG_ACTION: public ACTION
+class CONFIG_ACTION : public ACTION
 {
     public:
         CONFIG_ACTION(CONFIG & config,
@@ -100,6 +159,8 @@ class CONFIG_ACTION: public ACTION
             : m_config(config),
               m_description(paramDescription)
         {}
+
+        virtual ACTION * Clone() const { return new CONFIG_ACTION(*this); }
 
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const { return ""; }
@@ -1138,23 +1199,33 @@ return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), r
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-UsageAll();
-exit(0);
-
 SGCONF::CONFIG config;
 
-SGCONF::OPTION_BLOCK generalOptions;
-generalOptions.Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file");
-generalOptions.Add("h", "help", SGCONF::MakeFunc0Action(Usage), "show this help and exit");
-generalOptions.Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "show full help and exit");
-generalOptions.Add("v", "version", SGCONF::MakeFunc0Action(Version), "show version information and exit");
+SGCONF::OPTION_BLOCKS blocks;
+blocks.Add("General options")
+      .Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file")
+      .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
+      .Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
+      .Add("v", "version", SGCONF::MakeFunc0Action(Version), "\t\tshow version information and exit");
+blocks.Add("Connection options")
+      .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
+      .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
+      .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
+      .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
+      .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 
-SGCONF::OPTION_BLOCK connOptions;
-connOptions.Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "host to connect");
-connOptions.Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "port to connect");
-connOptions.Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "administrative login");
-connOptions.Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "password for the administrative login");
-connOptions.Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
+SGCONF::PARSER_STATE state(blocks.Parse(--argc, ++argv)); // Skipping self name
+
+if (state.stop)
+    return 0;
+
+if (state.argc > 0)
+    {
+    std::cerr << "Unknown option: '" << *state.argv << "'\n";
+    return -1;
+    }
+
+return 0;
 
 if (argc < 2)
     {

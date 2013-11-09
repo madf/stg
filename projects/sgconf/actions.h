@@ -35,29 +35,37 @@ namespace SGCONF
 
 typedef void (* FUNC0)();
 
+template <typename F>
 class FUNC0_ACTION : public ACTION
 {
     public:
-        FUNC0_ACTION(FUNC0 func) : m_func(func) {}
+        FUNC0_ACTION(const F & func) : m_func(func) {}
+
+        virtual ACTION * Clone() const { return new FUNC0_ACTION<F>(*this); }
 
         virtual std::string ParamDescription() const { return ""; }
         virtual std::string DefaultDescription() const { return ""; }
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual PARSER_STATE Parse(int argc, char ** argv)
+        {
+        m_func();
+        return PARSER_STATE(true, argc, argv);
+        }
 
     private:
-        FUNC0 m_func;
+        F m_func;
         OPTION_BLOCK m_suboptions;
 };
 
+template <typename F>
 inline
-FUNC0_ACTION * MakeFunc0Action(FUNC0 func)
+FUNC0_ACTION<F> * MakeFunc0Action(F func)
 {
-return new FUNC0_ACTION(func);
+return new FUNC0_ACTION<F>(func);
 }
 
 template <typename T>
-class PARAM_ACTION: public ACTION
+class PARAM_ACTION : public ACTION
 {
     public:
         PARAM_ACTION(RESETABLE<T> & param,
@@ -74,6 +82,8 @@ class PARAM_ACTION: public ACTION
               m_description(paramDescription),
               m_hasDefault(false)
         {}
+
+        virtual ACTION * Clone() const { return new PARAM_ACTION<T>(*this); }
 
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const;

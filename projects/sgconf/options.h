@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <list>
 #include <stdexcept>
 #include <cstddef> // size_t
 
@@ -68,13 +69,16 @@ class OPTION
 class OPTION_BLOCK
 {
     public:
-        void Add(const std::string & shortName,
-                 const std::string & longName,
-                 ACTION * action,
-                 const std::string & description);
-        void Add(const std::string & longName,
-                 ACTION * action,
-                 const std::string & description);
+        OPTION_BLOCK() {}
+        OPTION_BLOCK(const std::string & description)
+            : m_description(description) {}
+        OPTION_BLOCK & Add(const std::string & shortName,
+                           const std::string & longName,
+                           ACTION * action,
+                           const std::string & description);
+        OPTION_BLOCK & Add(const std::string & longName,
+                           ACTION * action,
+                           const std::string & description);
 
         void Help(size_t level) const;
 
@@ -82,6 +86,19 @@ class OPTION_BLOCK
 
     private:
         std::vector<OPTION> m_options;
+        std::string m_description;
+};
+
+class OPTION_BLOCKS
+{
+    public:
+        OPTION_BLOCK & Add(const std::string & description)
+        { m_blocks.push_back(OPTION_BLOCK(description)); return m_blocks.back(); }
+        void Help(size_t level) const;
+        PARSER_STATE Parse(int argc, char ** argv);
+
+    private:
+        std::list<OPTION_BLOCK> m_blocks;
 };
 
 } // namespace SGCONF
