@@ -33,7 +33,7 @@ public:
 };
 //-----------------------------------------------------------------------------
 template<typename varT>
-class USER_PROPERTY : USER_PROPERTY_BASE {
+class USER_PROPERTY : public USER_PROPERTY_BASE {
 public:
     USER_PROPERTY(varT & val);
     virtual ~USER_PROPERTY();
@@ -124,7 +124,7 @@ private:
     USER_STAT stat;
     USER_CONF conf;
 
-    std::map<std::string, USER_PROPERTY_BASE*> & properties;
+    std::map<std::string, USER_PROPERTY_BASE*> properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
@@ -390,7 +390,7 @@ else
 inline
 std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
 {
-std::map<std::string, USER_PROPERTY_BASE*>::iterator it = properties.find(name);
+std::map<std::string, USER_PROPERTY_BASE*>::const_iterator it = properties.find(name);
 if (it == properties.end())
     return "";
 return it->second->ToString();
