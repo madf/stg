@@ -1482,7 +1482,7 @@ if (name == "id")
     }
 if (name == "login")        return login;
 if (name == "ip")           return currIP.ToString();
-return property.GetPropertyValue(&name);
+return property.GetPropertyValue(name);
 //if (name == "freeMb")       return property.freeMb.ToString();
 //if (name == "passive")      return property.passive.ToString();
 //if (name == "disabled")     return property.disabled.ToString();

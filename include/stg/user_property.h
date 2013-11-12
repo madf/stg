@@ -26,6 +26,7 @@ $Author: faust $
 
 extern volatile time_t stgTime;
 //-----------------------------------------------------------------------------
+//template<typename varT>
 class USER_PROPERTY_BASE {
 public:
     virtual std::string ToString() const = 0;
@@ -123,7 +124,7 @@ private:
     USER_STAT stat;
     USER_CONF conf;
 
-    std::map<std::string, USER_PROPERTY_BASE *> & properties;
+    std::map<std::string, USER_PROPERTY_BASE*> & properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
