@@ -464,7 +464,7 @@ while (true)
                 }
             break;
         default:
-            WriteServLog("Ignore signel %d", sig);
+            WriteServLog("Ignore signal %d", sig);
             break;
         }
     if (stop)
