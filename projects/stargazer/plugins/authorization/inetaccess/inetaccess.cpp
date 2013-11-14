@@ -134,6 +134,17 @@ if (ParseIntInRange(pvi->value[0], 15, 1200, &userTimeout))
     printfd(__FILE__, "Cannot parse parameter 'UserTimeout'\n");
     return -1;
     }
+///////////////////////////
+pv.param = "LogProtocolErrors";
+pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+if (pvi == s.moduleParams.end())
+    logProtocolErrors = false;
+else if (ParseYesNo(pvi->value[0], &logProtocolErrors))
+    {
+    errorStr = "Cannot parse parameter \'LogProtocolErrors\': " + errorStr;
+    printfd(__FILE__, "Cannot parse parameter 'LogProtocolErrors'\n");
+    return -1;
+    }
 /////////////////////////////////////////////////////////////
 std::string freeMbType;
 int n = 0;
@@ -590,17 +601,17 @@ if (dataLen <= 0) // Error
 if (dataLen > 256)
     return -1;
 
+uint32_t sip = outerAddr.sin_addr.s_addr;
+uint16_t sport = htons(outerAddr.sin_port);
+
 int protoVer;
-if (CheckHeader(buffer, &protoVer))
+if (CheckHeader(buffer, sip, &protoVer))
     return -1;
 
 char login[PASSWD_LEN];  //TODO why PASSWD_LEN ?
 memset(login, 0, PASSWD_LEN);
 
 Decrypt(&ctxS, login, buffer + 8, PASSWD_LEN / 8);
-
-uint32_t sip = outerAddr.sin_addr.s_addr;
-uint16_t sport = htons(outerAddr.sin_port);
 
 USER_PTR user;
 if (users->FindByName(login, &user))
@@ -642,12 +653,14 @@ if (!user->GetProperty().ips.Get().IsIPInIPS(sip))
 return PacketProcessor(buffer, dataLen, sip, sport, protoVer, user);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::CheckHeader(const char * buffer, int * protoVer)
+int AUTH_IA::CheckHeader(const char * buffer, uint32_t sip, int * protoVer)
 {
 if (strncmp(IA_ID, buffer, strlen(IA_ID)) != 0)
     {
     //SendError(userIP, updateMsg);
     printfd(__FILE__, "update needed - IA_ID\n");
+    if (iaSettings.LogProtocolErrors())
+        logger("IP: %s. Header: invalid packed signature.", inet_ntostring(sip).c_str());
     //SendError(userIP, "Incorrect header!");
     return -1;
     }
@@ -655,6 +668,8 @@ if (strncmp(IA_ID, buffer, strlen(IA_ID)) != 0)
 if (buffer[6] != 0) //proto[0] shoud be 0
     {
     printfd(__FILE__, "update needed - PROTO major: %d\n", buffer[6]);
+    if (iaSettings.LogProtocolErrors())
+        logger("IP: %s. Header: invalid protocol major version: %d.", inet_ntostring(sip).c_str(), buffer[6]);
     //SendError(userIP, updateMsg);
     return -1;
     }
@@ -664,6 +679,8 @@ if (buffer[7] < 6)
     // need update
     //SendError(userIP, updateMsg);
     printfd(__FILE__, "update needed - PROTO minor: %d\n", buffer[7]);
+    if (iaSettings.LogProtocolErrors())
+        logger("IP: %s. Header: invalid protocol minor version: %d.", inet_ntostring(sip).c_str(), buffer[7]);
     return -1;
     }
 else
@@ -691,6 +708,8 @@ while (it != ip2user.end())
     if ((it->second.phase.GetPhase() == 2)
         && (currTime - it->second.phase.GetTime()) > iaSettings.GetUserDelay())
         {
+        if (iaSettings.LogProtocolErrors())
+            logger("User '%s'. Protocol version: %d. Phase 2: connect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay());
         it->second.phase.SetPhase1();
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: timeout\n");
         ip2user.erase(it++);
@@ -733,6 +752,8 @@ while (it != ip2user.end())
 
         if ((currTime - it->second.phase.GetTime()) > iaSettings.GetUserTimeout())
             {
+            if (iaSettings.LogProtocolErrors())
+                logger("User '%s'. Protocol version: %d. Phase 3: alive timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserTimeout());
             users->Unauthorize(it->second.user->GetLogin(), this);
             ip2user.erase(it++);
             continue;
@@ -742,6 +763,8 @@ while (it != ip2user.end())
     if ((it->second.phase.GetPhase() == 4)
         && ((currTime - it->second.phase.GetTime()) > iaSettings.GetUserDelay()))
         {
+        if (iaSettings.LogProtocolErrors())
+            logger("User '%s'. Protocol version: %d. Phase 4: disconnect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay());
         it->second.phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 4 to 3. Reason: timeout\n");
         }
@@ -1174,6 +1197,8 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     else
         {
         errorStr = iaUser->user->GetStrError();
+        if (iaSettings.LogProtocolErrors())
+            logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: phase 2, authorization error ('%s').", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, errorStr.c_str());
         iaUser->phase.SetPhase1();
         ip2user.erase(sip);
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: failed to authorize user\n");
@@ -1181,6 +1206,13 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         }
     }
 printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), connAck->rnd);
+if (iaSettings.LogProtocolErrors())
+    {
+    if (iaUser->phase.GetPhase() != 2)
+        logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: invalid phase, expected 2, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
+    if (connAck->rnd != iaUser->rnd + 1)
+        logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: invalid control number, expected %d, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, (iaUser->rnd + 1), connAck->rnd);
+    }
 return -1;
 }
 //-----------------------------------------------------------------------------
@@ -1210,6 +1242,8 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
     else
         {
         errorStr = iaUser->user->GetStrError();
+        if (iaSettings.LogProtocolErrors())
+            logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: phase 2, authorization error ('%s').", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, errorStr.c_str());
         iaUser->phase.SetPhase1();
         ip2user.erase(sip);
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: failed to authorize user\n");
@@ -1217,6 +1251,13 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         }
     }
 printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), connAck->rnd);
+if (iaSettings.LogProtocolErrors())
+    {
+    if (iaUser->phase.GetPhase() != 2)
+        logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: invalid phase, expected 2, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
+    if (connAck->rnd != iaUser->rnd + 1)
+        logger("IP: %s. User '%s'. Protocol version: %d. CONN_ACK: invalid control number, expected %d, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, (iaUser->rnd + 1), connAck->rnd);
+    }
 return -1;
 }
 //-----------------------------------------------------------------------------
@@ -1259,11 +1300,13 @@ if ((iaUser->phase.GetPhase() == 3) && (aliveAck->rnd == iaUser->rnd + 1))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_SYN_6(DISCONN_SYN_6 *, IA_USER * iaUser, uint32_t)
+int AUTH_IA::Process_DISCONN_SYN_6(DISCONN_SYN_6 *, IA_USER * iaUser, uint32_t sip)
 {
 printfd(__FILE__, "DISCONN_SYN_6\n");
 if (iaUser->phase.GetPhase() != 3)
     {
+    if (iaSettings.LogProtocolErrors())
+        logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_SYN: invalid phase, expected 3, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
     printfd(__FILE__, "Invalid phase. Expected 3, actual %d\n", iaUser->phase.GetPhase());
     errorStr = "Incorrect request DISCONN_SYN";
     return -1;
@@ -1280,10 +1323,12 @@ int AUTH_IA::Process_DISCONN_SYN_7(DISCONN_SYN_7 * disconnSyn, IA_USER * iaUser,
 return Process_DISCONN_SYN_6(disconnSyn, iaUser, sip);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_SYN_8(DISCONN_SYN_8 *, IA_USER * iaUser, uint32_t)
+int AUTH_IA::Process_DISCONN_SYN_8(DISCONN_SYN_8 *, IA_USER * iaUser, uint32_t sip)
 {
 if (iaUser->phase.GetPhase() != 3)
     {
+    if (iaSettings.LogProtocolErrors())
+        logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_SYN: invalid phase, expected 3, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
     errorStr = "Incorrect request DISCONN_SYN";
     printfd(__FILE__, "Invalid phase. Expected 3, actual %d\n", iaUser->phase.GetPhase());
     return -1;
@@ -1297,7 +1342,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::Process_DISCONN_ACK_6(DISCONN_ACK_6 * disconnAck,
                                    IA_USER * iaUser,
-                                   uint32_t,
+                                   uint32_t sip,
                                    std::map<uint32_t, IA_USER>::iterator)
 {
 #ifdef ARCH_BE
@@ -1307,6 +1352,13 @@ SwapBytes(disconnAck->rnd);
 printfd(__FILE__, "DISCONN_ACK_6\n");
 if (!((iaUser->phase.GetPhase() == 4) && (disconnAck->rnd == iaUser->rnd + 1)))
     {
+    if (iaSettings.LogProtocolErrors())
+        {
+        if (iaUser->phase.GetPhase() != 4)
+            logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_ACK: invalid phase, expected 4, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
+        if (disconnAck->rnd != iaUser->rnd + 1)
+            logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_ACK: invalid control number, expected %d, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, (iaUser->rnd + 1), disconnAck->rnd);
+        }
     printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), disconnAck->rnd);
     return -1;
     }
@@ -1319,7 +1371,7 @@ int AUTH_IA::Process_DISCONN_ACK_7(DISCONN_ACK_7 * disconnAck, IA_USER * iaUser,
 return Process_DISCONN_ACK_6(disconnAck, iaUser, sip, it);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, uint32_t, std::map<uint32_t, IA_USER>::iterator)
+int AUTH_IA::Process_DISCONN_ACK_8(DISCONN_ACK_8 * disconnAck, IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator)
 {
 #ifdef ARCH_BE
 SwapBytes(disconnAck->len);
@@ -1328,6 +1380,13 @@ SwapBytes(disconnAck->rnd);
 printfd(__FILE__, "DISCONN_ACK_8\n");
 if (!((iaUser->phase.GetPhase() == 4) && (disconnAck->rnd == iaUser->rnd + 1)))
     {
+    if (iaSettings.LogProtocolErrors())
+        {
+        if (iaUser->phase.GetPhase() != 4)
+            logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_ACK: invalid phase, expected 4, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, iaUser->phase.GetPhase());
+        if (disconnAck->rnd != iaUser->rnd + 1)
+            logger("IP: %s. User '%s'. Protocol version: %d. DISCONN_ACK: invalid control number, expected %d, got %d.", inet_ntostring(sip).c_str(), iaUser->login.c_str(), iaUser->protoVer, (iaUser->rnd + 1), disconnAck->rnd);
+        }
     printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), disconnAck->rnd);
     return -1;
     }

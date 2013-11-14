@@ -47,7 +47,9 @@ public:
 
     virtual bool Authorize(const std::string & login, uint32_t ip,
                            uint32_t enabledDirs, const AUTH * auth) = 0;
-    virtual bool Unauthorize(const std::string & login, const AUTH * auth) = 0;
+    virtual bool Unauthorize(const std::string & login,
+                             const AUTH * auth,
+                             const std::string & reason = std::string()) = 0;
 
     virtual int  ReadUsers() = 0;
     virtual size_t Count() const = 0;

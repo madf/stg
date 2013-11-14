@@ -96,7 +96,9 @@ public:
 
     bool            Authorize(const std::string & login, uint32_t ip,
                               uint32_t enabledDirs, const AUTH * auth);
-    bool            Unauthorize(const std::string & login, const AUTH * auth);
+    bool            Unauthorize(const std::string & login,
+                                const AUTH * auth,
+                                const std::string & reason = std::string());
 
     int             ReadUsers();
     size_t          Count() const { return users.size(); }

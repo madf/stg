@@ -525,7 +525,7 @@ ScanMessage();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Unauthorize(const AUTH * auth)
+void USER_IMPL::Unauthorize(const AUTH * auth, const std::string & reason)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -537,6 +537,7 @@ if (!authorizedBy.erase(auth))
 if (authorizedBy.empty())
     {
     authorizedModificationTime = stgTime;
+    lastDisconnectReason = reason;
     lastIPForDisconnect = currIP;
     currIP = 0; // DelUser in traffcounter
     return;
@@ -671,7 +672,12 @@ if (!fakeDisconnect)
     connected = false;
     }
 
-if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload, cash, freeMb, reason))
+std::string reasonMessage(reason);
+if (!lastDisconnectReason.empty())
+    reasonMessage += ": " + lastDisconnectReason;
+
+if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload,
+                               cash, freeMb, reasonMessage))
     {
     WriteServLog("Cannot write disconnect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());

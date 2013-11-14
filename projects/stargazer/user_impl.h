@@ -188,7 +188,8 @@ public:
     int             GetAuthorized() const { return static_cast<int>(authorizedBy.size()); }
     time_t          GetAuthorizedModificationTime() const { return authorizedModificationTime; }
     int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
-    void            Unauthorize(const AUTH * auth);
+    void            Unauthorize(const AUTH * auth,
+                                const std::string & reason = std::string());
     bool            IsAuthorizedBy(const AUTH * auth) const;
     std::vector<std::string> GetAuthorizers() const;
 
@@ -255,6 +256,7 @@ private:
     USER_PROPERTY<uint32_t> currIP;
 
     uint32_t        lastIPForDisconnect; // User's ip after unauth but before disconnect
+    std::string     lastDisconnectReason;
 
     time_t          pingTime;
 
