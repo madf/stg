@@ -17,21 +17,3 @@
 /*
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
-
-#ifndef __STG_SGCONF_PARSER_STATE_H__
-#define __STG_SGCONF_PARSER_STATE_H__
-
-namespace SGCONF
-{
-
-struct PARSER_STATE
-{
-    PARSER_STATE(bool s, int c, char ** v) : stop(s), argc(c), argv(v) {}
-    bool stop;
-    int argc;
-    char ** argv;
-};
-
-}
-
-#endif

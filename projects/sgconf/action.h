@@ -18,20 +18,44 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_PARSER_STATE_H__
-#define __STG_SGCONF_PARSER_STATE_H__
+#ifndef __STG_SGCONF_ACTION_H__
+#define __STG_SGCONF_ACTION_H__
+
+#include <string>
+#include <stdexcept>
 
 namespace SGCONF
 {
 
-struct PARSER_STATE
+class OPTION_BLOCK;
+struct PARSER_STATE;
+
+class ACTION
 {
-    PARSER_STATE(bool s, int c, char ** v) : stop(s), argc(c), argv(v) {}
-    bool stop;
-    int argc;
-    char ** argv;
+    public:
+        virtual ~ACTION() {}
+
+        virtual ACTION * Clone() const = 0;
+        virtual std::string ParamDescription() const = 0;
+        virtual std::string DefaultDescription() const = 0;
+        virtual OPTION_BLOCK & Suboptions() = 0;
+        virtual PARSER_STATE Parse(int argc, char ** argv) = 0;
+
+        class ERROR : public std::runtime_error
+        {
+            public:
+                ERROR(const std::string & message)
+                    : std::runtime_error(message.c_str()) {}
+        };
 };
 
-}
+template <typename T>
+class ACTION_CLONE_MIXIN : public ACTION
+{
+    public:
+        virtual ACTION * Clone() const { return new T(*this); }
+};
+
+} // namespace SGCONF
 
 #endif
