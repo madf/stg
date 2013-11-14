@@ -298,7 +298,9 @@ AddToIPIdx(iter);
 return true;
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::Unauthorize(const std::string & login, const AUTH * auth)
+bool USERS_IMPL::Unauthorize(const std::string & login,
+                             const AUTH * auth,
+                             const std::string & reason)
 {
 user_iter iter;
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -310,7 +312,7 @@ if (FindByNameNonLock(login, &iter))
 
 uint32_t ip = iter->GetCurrIP();
 
-iter->Unauthorize(auth);
+iter->Unauthorize(auth, reason);
 
 if (!iter->GetAuthorized())
     DelFromIPIdx(ip);

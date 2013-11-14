@@ -164,6 +164,11 @@ struct UTIME: public timeval
     {
     return tv_usec;
     }
+
+    double AsDouble() const
+    {
+    return tv_sec + tv_usec * 1e-6;
+    }
 };
 
 
