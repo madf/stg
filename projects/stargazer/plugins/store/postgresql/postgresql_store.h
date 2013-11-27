@@ -43,6 +43,8 @@
 
 extern "C" STORE * GetStore();
 
+class STG_LOGGER;
+
 class POSTGRESQL_STORE : public STORE {
 public:
     POSTGRESQL_STORE();
@@ -158,6 +160,8 @@ private:
     int retries;
 
     PGconn * connection;
+
+    STG_LOGGER & WriteServLog;
 };
 
 extern const volatile time_t stgTime;

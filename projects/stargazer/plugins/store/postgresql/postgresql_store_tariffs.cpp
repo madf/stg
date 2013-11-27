@@ -121,9 +121,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -184,9 +184,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -248,9 +248,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -283,9 +283,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -301,8 +301,12 @@ query << "UPDATE tb_tariffs SET \
               fee = " << td.tariffConf.fee << ", \
               free = " << td.tariffConf.free << ", \
               passive_cost = " << td.tariffConf.passiveCost << ", \
-              traff_type = " << td.tariffConf.traffType << " \
-          WHERE pk_tariff = " << id;
+              traff_type = " << td.tariffConf.traffType;
+
+if (version > 6)
+    query << ", period = '" << TARIFF::PeriodToString(td.tariffConf.period) << "'";
+
+query << " WHERE pk_tariff = " << id;
 
 result = PQexec(connection, query.str().c_str());
 
@@ -417,9 +421,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -428,10 +432,14 @@ td->tariffConf.name = tariffName;
 std::stringstream query;
 query << "SELECT pk_tariff, \
                  fee, \
-		 free, \
-		 passive_cost, \
-		 traff_type \
-	  FROM tb_tariffs WHERE name = '" << ename << "'";
+                 free, \
+                 passive_cost, \
+                 traff_type";
+
+if (version > 6)
+    query << ", period";
+
+query << " FROM tb_tariffs WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
 
@@ -455,9 +463,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -475,21 +483,24 @@ tuple >> td->tariffConf.free;
 tuple >> td->tariffConf.passiveCost;
 tuple >> td->tariffConf.traffType;
 
+if (version > 6)
+    td->tariffConf.period = TARIFF::StringToPeriod(PQgetvalue(result, 0, 5));
+
 PQclear(result);
 
 query.str("");
 query << "SELECT dir_num, \
                  price_day_a, \
                  price_day_b, \
-		 price_night_a, \
-		 price_night_b, \
-		 threshold, \
-		 EXTRACT(hour FROM time_day_begins), \
-		 EXTRACT(minute FROM time_day_begins), \
-		 EXTRACT(hour FROM time_day_ends), \
-		 EXTRACT(minute FROM time_day_ends) \
-	  FROM tb_tariffs_params \
-	  WHERE fk_tariff = " << id;
+                 price_night_a, \
+                 price_night_b, \
+                 threshold, \
+                 EXTRACT(hour FROM time_day_begins), \
+                 EXTRACT(minute FROM time_day_begins), \
+                 EXTRACT(hour FROM time_day_ends), \
+                 EXTRACT(minute FROM time_day_ends) \
+          FROM tb_tariffs_params \
+          WHERE fk_tariff = " << id;
 
 result = PQexec(connection, query.str().c_str());
 
@@ -499,9 +510,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreTariff(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 

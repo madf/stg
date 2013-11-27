@@ -71,6 +71,7 @@ public:
     double  GetPassiveCost() const { return tariffData.tariffConf.passiveCost; }
     double  GetFee() const { return tariffData.tariffConf.fee; }
     double  GetFree() const { return tariffData.tariffConf.free; }
+    PERIOD  GetPeriod() const { return tariffData.tariffConf.period; }
 
     void    Print() const;
 

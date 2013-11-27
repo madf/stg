@@ -44,6 +44,8 @@ struct ToLower {
 
 extern "C" STORE * GetStore();
 
+class STG_LOGGER;
+
 class FIREBIRD_STORE : public STORE {
 public:
     FIREBIRD_STORE();
@@ -127,8 +129,11 @@ private:
     mutable pthread_mutex_t mutex;
     mutable IBPP::TIL til;
     mutable IBPP::TLR tlr;
+    int schemaVersion;
+    STG_LOGGER & WriteServLog;
 
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
+    int CheckVersion();
 };
 
 time_t ts2time_t(const IBPP::Timestamp & ts);

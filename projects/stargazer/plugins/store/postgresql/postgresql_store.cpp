@@ -46,6 +46,7 @@
 
 #include "stg/module_settings.h"
 #include "stg/plugin_creator.h"
+#include "stg/logger.h"
 #include "postgresql_store_utils.h"
 #include "postgresql_store.h"
 
@@ -70,7 +71,8 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       mutex(),
       version(0),
       retries(3),
-      connection(NULL)
+      connection(NULL),
+      WriteServLog(GetStgLogger())
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -230,6 +232,8 @@ if (CommitTransaction())
     printfd(__FILE__, "POSTGRESQL_STORE::CheckVersion(): '%s'\n", strError.c_str());
     return -1;
     }
+
+WriteServLog("POSTGRESQL_STORE: Current DB schema version: %d", version);
 
 return 0;
 }

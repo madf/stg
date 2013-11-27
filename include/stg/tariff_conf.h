@@ -27,11 +27,12 @@
 #ifndef TARIFF_CONF_H
 #define TARIFF_CONF_H
 
-#include <string>
-#include <vector>
-
+#include "tariff.h"
 #include "resetable.h"
 #include "const.h"
+
+#include <string>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 enum
@@ -135,18 +136,20 @@ struct DIRPRICE_DATA_RES
 //-----------------------------------------------------------------------------
 struct TARIFF_CONF
 {
-    double      fee;
-    double      free;
-    int         traffType;
-    double      passiveCost;
-    std::string name;
+    double         fee;
+    double         free;
+    int            traffType;
+    double         passiveCost;
+    std::string    name;
+    TARIFF::PERIOD period;
 
     TARIFF_CONF()
         : fee(0),
           free(0),
           traffType(TRAFF_UP_DOWN),
           passiveCost(0),
-          name()
+          name(),
+          period(TARIFF::MONTH)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -154,7 +157,8 @@ struct TARIFF_CONF
           free(0),
           traffType(TRAFF_UP_DOWN),
           passiveCost(0),
-          name(n)
+          name(n),
+          period(TARIFF::MONTH)
         {}
 };
 //-----------------------------------------------------------------------------
@@ -165,7 +169,8 @@ struct TARIFF_CONF_RES
           free(),
           traffType(),
           passiveCost(),
-          name()
+          name(),
+          period()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
@@ -175,6 +180,7 @@ struct TARIFF_CONF_RES
         traffType   = tc.traffType;
         passiveCost = tc.passiveCost;
         name        = tc.name;
+        period      = tc.period;
         return *this;
         }
 
@@ -186,14 +192,16 @@ struct TARIFF_CONF_RES
         tc.name        = name;
         tc.passiveCost = passiveCost;
         tc.traffType   = traffType;
+        tc.period      = period;
         return tc;
         }
 
-    RESETABLE<double>      fee;
-    RESETABLE<double>      free;
-    RESETABLE<int>         traffType;
-    RESETABLE<double>      passiveCost;
-    RESETABLE<std::string> name;
+    RESETABLE<double>         fee;
+    RESETABLE<double>         free;
+    RESETABLE<int>            traffType;
+    RESETABLE<double>         passiveCost;
+    RESETABLE<std::string>    name;
+    RESETABLE<TARIFF::PERIOD> period;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA

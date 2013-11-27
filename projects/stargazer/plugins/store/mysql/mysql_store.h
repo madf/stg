@@ -18,6 +18,7 @@
 using namespace std;
 //-----------------------------------------------------------------------------
 extern "C" STORE * GetStore();
+class STG_LOGGER;
 //-----------------------------------------------------------------------------
 class MYSQL_STORE_SETTINGS
 {
@@ -132,15 +133,18 @@ private:
     virtual int WriteLogString(const string & str, const string & login) const;
     int GetAllParams(vector<string> * ParamList, const string & table, const string & name) const;
     int CheckAllTables(MYSQL * sock);
+    int MakeUpdates(MYSQL * sock);
     bool IsTablePresent(const string & str,MYSQL * sock);
     mutable string          errorStr;
-    int                        MysqlQuery(const char* sQuery,MYSQL * sock) const;
+    int                     MysqlQuery(const char* sQuery,MYSQL * sock) const;
     int                     MysqlGetQuery(const char * Query,MYSQL * & sock) const;
     int                     MysqlSetQuery(const char * Query) const;
     MYSQL  *                MysqlConnect() const ;
     string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
     MODULE_SETTINGS         settings;
+    int                     schemaVersion;
+    STG_LOGGER &            WriteServLog;
 };
 //-----------------------------------------------------------------------------
 

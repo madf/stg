@@ -12,4 +12,4 @@ CREATE TABLE tb_info
     version INTEGER NOT NULL
 );
 
-INSERT INTO tb_info VALUES (5);
+INSERT INTO tb_info VALUES (1);

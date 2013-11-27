@@ -32,6 +32,7 @@
 
 #include "stg/ibpp.h"
 #include "stg/plugin_creator.h"
+#include "stg/logger.h"
 #include "firebird_store.h"
 
 using namespace std;
@@ -56,7 +57,9 @@ FIREBIRD_STORE::FIREBIRD_STORE()
       db(),
       mutex(),
       til(IBPP::ilConcurrency),
-      tlr(IBPP::lrWait)
+      tlr(IBPP::lrWait),
+      schemaVersion(0),
+      WriteServLog(GetStgLogger())
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -130,9 +133,46 @@ try
     {
     db = IBPP::DatabaseFactory(db_server, db_database, db_user, db_password, "", "KOI8U", "");
     db->Connect();
+    return CheckVersion();
     }
 catch (IBPP::Exception & ex)
     {
+    strError = "IBPP exception";
+    printfd(__FILE__, ex.what());
+    return -1;
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
+int FIREBIRD_STORE::CheckVersion()
+{
+IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
+IBPP::Statement st = IBPP::StatementFactory(db, tr);
+
+string name;
+
+try
+    {
+    tr->Start();
+    st->Execute("SELECT RDB$RELATION_NAME FROM RDB$RELATIONS WHERE RDB$SYSTEM_FLAG=0 AND RDB$RELATION_NAME = 'TB_INFO'");
+    if (!st->Fetch())
+        {
+        schemaVersion = 0;
+        }
+    else
+        {
+        st->Execute("SELECT version FROM tb_info");
+        while (st->Fetch())
+            st->Get(1, schemaVersion);
+        }
+    tr->Commit();
+    WriteServLog("FIREBIRD_STORE: Current DB schema version: %d", schemaVersion);
+    }
+
+catch (IBPP::Exception & ex)
+    {
+    tr->Rollback();
     strError = "IBPP exception";
     printfd(__FILE__, ex.what());
     return -1;

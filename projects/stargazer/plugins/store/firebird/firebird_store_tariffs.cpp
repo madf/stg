@@ -144,17 +144,36 @@ try
     }
     st->Get(1, id);
     st->Close();
-    st->Prepare("update tb_tariffs set \
-            fee = ?, \
-            free = ?, \
-            passive_cost = ?, \
-            traff_type = ? \
-            where pk_tariff = ?");
-    st->Set(1, td.tariffConf.fee);
-    st->Set(2, td.tariffConf.free);
-    st->Set(3, td.tariffConf.passiveCost);
-    st->Set(4, td.tariffConf.traffType);
-    st->Set(5, id);
+    if (schemaVersion > 0)
+        {
+        st->Prepare("update tb_tariffs set \
+                fee = ?, \
+                free = ?, \
+                passive_cost = ?, \
+                traff_type = ?, \
+                period = ? \
+                where pk_tariff = ?");
+        st->Set(1, td.tariffConf.fee);
+        st->Set(2, td.tariffConf.free);
+        st->Set(3, td.tariffConf.passiveCost);
+        st->Set(4, td.tariffConf.traffType);
+        st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
+        st->Set(6, id);
+        }
+    else
+        {
+        st->Prepare("update tb_tariffs set \
+                fee = ?, \
+                free = ?, \
+                passive_cost = ?, \
+                traff_type = ? \
+                where pk_tariff = ?");
+        st->Set(1, td.tariffConf.fee);
+        st->Set(2, td.tariffConf.free);
+        st->Set(3, td.tariffConf.passiveCost);
+        st->Set(4, td.tariffConf.traffType);
+        st->Set(5, id);
+        }
     st->Execute();
     st->Close();
 
@@ -198,7 +217,7 @@ try
             threshold = ?, \
             time_day_begins = ?, \
             time_day_ends = ? \
-             where fk_tariff = ? and dir_num = ?");
+            where fk_tariff = ? and dir_num = ?");
     st->Set(1, pda);
     st->Set(2, pdb);
     st->Set(3, pna);
@@ -244,7 +263,7 @@ td->tariffConf.name = tariffName;
 try
     {
     tr->Start();
-    st->Prepare("select * from tb_tariffs where name = ?");
+    st->Prepare("select * from tb_tariffs where name = ?"); // TODO: explicit field order!
     st->Set(1, tariffName);
     st->Execute();
     if (!st->Fetch())
@@ -259,6 +278,12 @@ try
     st->Get(4, td->tariffConf.free);
     st->Get(5, td->tariffConf.passiveCost);
     st->Get(6, td->tariffConf.traffType);
+    if (schemaVersion > 0)
+        {
+        std::string period;
+        st->Get(7, period);
+        td->tariffConf.period = TARIFF::StringToPeriod(period);
+        }
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);

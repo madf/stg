@@ -1231,6 +1231,9 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (passive.ConstData() || tariff == NULL)
     return;
 
+if (tariff->GetPeriod() != TARIFF::MONTH)
+    return;
+
 double fee = tariff->GetFee() / DaysInCurrentMonth();
 
 if (fee == 0.0)
@@ -1259,6 +1262,9 @@ void USER_IMPL::ProcessDayFee()
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 if (tariff == NULL)
+    return;
+
+if (tariff->GetPeriod() != TARIFF::MONTH)
     return;
 
 double passiveTimePart = 1.0;
@@ -1313,6 +1319,39 @@ switch (settings->GetFeeChargeType())
             }
         break;
     }
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::ProcessDailyFee()
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+if (passive.ConstData() || tariff == NULL)
+    return;
+
+if (tariff->GetPeriod() != TARIFF::DAY)
+    return;
+
+double fee = tariff->GetFee();
+
+if (fee == 0.0)
+    return;
+
+double c = cash;
+switch (settings->GetFeeChargeType())
+    {
+    case 0:
+        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 1:
+        if (c + credit >= 0)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 2:
+        if (c + credit >= fee)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    }
+ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPrepaidTraff()

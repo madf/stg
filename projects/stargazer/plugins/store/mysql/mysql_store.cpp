@@ -13,6 +13,7 @@
 #include "stg/user_stat.h"
 #include "stg/blowfish.h"
 #include "stg/plugin_creator.h"
+#include "stg/logger.h"
 #include "mysql_store.h"
 
 #define adm_enc_passwd "cjeifY8m3"
@@ -157,7 +158,9 @@ MYSQL_STORE::MYSQL_STORE()
     : errorStr(),
       version("mysql_store v.0.67"),
       storeSettings(),
-      settings()
+      settings(),
+      schemaVersion(0),
+      WriteServLog(GetStgLogger())
 {
 };
 //-----------------------------------------------------------------------------
@@ -230,12 +233,18 @@ else
                  }
                  ret = CheckAllTables(sock);
             }
-         }
-         else
-             ret = CheckAllTables(sock);
-         mysql_close(sock);
+        }
+        else
+        {
+            ret = CheckAllTables(sock);
+        }
+        if (!ret)
+        {
+            WriteServLog("MYSQL_STORE: Current DB schema version: %d", schemaVersion);
+            MakeUpdates(sock);
+        }
+        mysql_close(sock);
     }
-    
 }
 return ret;
 }
@@ -262,6 +271,43 @@ return (num_rows == 1);
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::CheckAllTables(MYSQL * sock)
 {
+//info-------------------------------------------------------------------------
+if(!IsTablePresent("info",sock))
+{
+    sprintf(qbuf,"CREATE TABLE info (version INTEGER NOT NULL)");
+
+    if(MysqlQuery(qbuf,sock))
+        {
+        errorStr = "Couldn't create info table With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+
+    sprintf(qbuf,"INSERT INTO info SET version=0");
+
+    if(MysqlQuery(qbuf,sock))
+        {
+        errorStr = "Couldn't write default version. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    schemaVersion = 0;
+}
+else
+{
+    std::vector<std::string> info;
+    if (GetAllParams(&info, "info", "version"))
+        schemaVersion = 0;
+    else
+    {
+        if (info.empty())
+            schemaVersion = 0;
+        else
+            GetInt(info.front(), &schemaVersion, 0);
+    }
+}
 //admins-----------------------------------------------------------------------
 if(!IsTablePresent("admins",sock))
 {
@@ -325,8 +371,9 @@ if(!IsTablePresent("tariffs",sock))
         res += param;
         }
     
-    res += "PassiveCost DOUBLE DEFAULT 0.0, Fee DOUBLE DEFAULT 0.0,"\
-        "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '')";
+    res += "PassiveCost DOUBLE DEFAULT 0.0, Fee DOUBLE DEFAULT 0.0,"
+        "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '',"
+        "period VARCHAR(32) NOT NULL DEFAULT 'month')";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -380,7 +427,7 @@ if(!IsTablePresent("tariffs",sock))
     
     res += "PassiveCost=0.0, Fee=10.0, Free=0,"\
         "SinglePrice0=1, SinglePrice1=1,PriceDayA1=0.75,PriceDayB1=0.75,"\
-        "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down'";
+        "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month'";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -389,6 +436,17 @@ if(!IsTablePresent("tariffs",sock))
         mysql_close(sock);
         return -1;
     }
+
+    sprintf(qbuf,"UPDATE info SET version=1");
+
+    if(MysqlQuery(qbuf,sock))
+    {
+        errorStr = "Couldn't write default version. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+    }
+    schemaVersion = 1;
 }
 
 //users-----------------------------------------------------------------------
@@ -520,6 +578,29 @@ if(!IsTablePresent("stat",sock))
 return 0;
 }
 //-----------------------------------------------------------------------------
+int MYSQL_STORE::MakeUpdates(MYSQL * sock)
+{
+if (schemaVersion  < 1)
+    {
+    if (MysqlQuery("ALTER TABLE tariffs ADD period VARCHAR(32) NOT NULL DEFAULT 'month'", sock))
+        {
+        errorStr = "Couldn't update tariffs table to version 1. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    if (MysqlQuery("UPDATE info SET version = 1", sock))
+        {
+        errorStr = "Couldn't update DB schema version to 1. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    schemaVersion = 1;
+    WriteServLog("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
+    }
+return 0;
+}
 //-----------------------------------------------------------------------------
 
 int MYSQL_STORE::GetAllParams(vector<string> * ParamList, 
@@ -1555,6 +1636,26 @@ else
                 return -1;
                 }
 
+if (schemaVersion > 0)
+{
+    str = row[5+8*DIR_NUM];
+    param = "Period";
+
+    if (str.length() == 0)
+        {
+        mysql_free_result(res);
+        errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
+        mysql_close(sock);
+        return -1;
+        }
+
+    td->tariffConf.period = TARIFF::StringToPeriod(str);
+    }
+else
+    {
+    td->tariffConf.period = TARIFF::MONTH;
+    }
+
 mysql_free_result(res);
 mysql_close(sock);
 return 0;
@@ -1632,12 +1733,16 @@ switch (td.tariffConf.traffType)
         res += " TraffType='max'";
         break;
     }
+
+if (schemaVersion > 0)
+    res += ", Period='" + TARIFF::PeriodToString(td.tariffConf.period) + "'";
+
 strprintf(&param, " WHERE name='%s' LIMIT 1", tariffName.c_str());
 res += param;
 
 if(MysqlSetQuery(res.c_str()))
 {
-    errorStr = "Couldn't save admin:\n";
+    errorStr = "Couldn't save tariff:\n";
     //errorStr += mysql_error(sock);
     return -1;
 }

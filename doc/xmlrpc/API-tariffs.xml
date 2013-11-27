@@ -114,6 +114,17 @@
                             </listitem>
                         </varlistentry>
                         <varlistentry>
+                            <term>string <parameter>period</parameter></term>
+                            <listitem>
+                                <para>Периодичность снятия абонплаты:
+                                    <simplelist type="vert">
+                                        <member>month &#151; ежемесячное снятие</member>
+                                        <member>day &#151; ежедневное снятие</member>
+                                    </simplelist>
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
                             <term>array of struct <parameter>dirprices</parameter></term>
                             <listitem>
                                 <para>Массив стурктур, описывающих тарификацию направлений:
@@ -273,6 +284,17 @@
                                         <member>1 &#151; подсчитывать только входящий трафик</member>
                                         <member>2 &#151; подсчитывать суммарно входящий и исходящий трафик</member>
                                         <member>3 &#151; подсчитывать максимальный из входящего и исходящего трафика</member>
+                                    </simplelist>
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <parameter>period</parameter></term>
+                            <listitem>
+                                <para>Периодичность снятия абонплаты:
+                                    <simplelist type="vert">
+                                        <member>month &#151; ежемесячное снятие</member>
+                                        <member>day &#151; ежедневное снятие</member>
                                     </simplelist>
                                 </para>
                             </listitem>
@@ -537,6 +559,17 @@
                                                 <member>1 &#151; подсчитывать только входящий трафик</member>
                                                 <member>2 &#151; подсчитывать суммарно входящий и исходящий трафик</member>
                                                 <member>3 &#151; подсчитывать максимальный из входящего и исходящего трафика</member>
+                                            </simplelist>
+                                        </para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <parameter>period</parameter></term>
+                                    <listitem>
+                                        <para>Периодичность снятия абонплаты:
+                                            <simplelist type="vert">
+                                                <member>month &#151; ежемесячное снятие</member>
+                                                <member>day &#151; ежедневное снятие</member>
                                             </simplelist>
                                         </para>
                                     </listitem>

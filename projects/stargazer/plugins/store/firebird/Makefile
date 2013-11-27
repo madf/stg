@@ -20,7 +20,10 @@ SRCS =	./firebird_store.cpp \
 STGLIBS = ibpp \
 	  common \
 	  locker \
+	  logger \
 	  crypto
+
+LIBS = -lfbclient
 
 include ../../Makefile.in
 
