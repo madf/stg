@@ -113,7 +113,8 @@ if [ "$OS" = "linux" ]
 then
     DEFS="$DEFS -DLINUX"
     PLUGINS="$PLUGINS
-             capture/ether_linux"
+             capture/ether_linux
+             capture/ipq_linux"
     LIB_THREAD=-lpthread
 else
     if [ "$OS" = "bsd" ]
