@@ -12,6 +12,7 @@ $Author: faust $
 #include <ctime>
 #include <string>
 #include <set>
+#include <map>
 #include <sstream>
 #include <iostream>
 
@@ -26,7 +27,6 @@ $Author: faust $
 
 extern volatile time_t stgTime;
 //-----------------------------------------------------------------------------
-//template<typename varT>
 class USER_PROPERTY_BASE {
 public:
     virtual std::string ToString() const = 0;
@@ -124,7 +124,7 @@ private:
     USER_STAT stat;
     USER_CONF conf;
 
-    std::map<std::string, USER_PROPERTY_BASE*> properties;
+    std::map<std::string, USER_PROPERTY_BASE *> properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
@@ -409,7 +409,7 @@ template<typename varT>
 inline
 std::string USER_PROPERTY<varT>::ToString() const
 {
-std::stringstream stream;
+std::ostringstream stream;
 stream << value;
 return stream.str();
 }
