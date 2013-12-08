@@ -211,7 +211,8 @@ public:
     void            ProcessNewMonth();
 
     bool            IsInetable();
-    std::string     GetEnabledDirs();
+
+    std::string     GetEnabledDirs() const;
 
     void            OnAdd();
     void            OnDelete();

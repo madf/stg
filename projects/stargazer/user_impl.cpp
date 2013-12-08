@@ -823,7 +823,7 @@ if (settings->GetShowFeeInCash() || tariff == NULL)
 return (cash - tariff->GetFee() >= -credit);
 }
 //-----------------------------------------------------------------------------
-std::string USER_IMPL::GetEnabledDirs()
+std::string USER_IMPL::GetEnabledDirs() const
 {
 //STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
@@ -1478,10 +1478,11 @@ if (name == "id")
     {
     std::ostringstream stream;
     stream << id;
-    return stream.str();;
+    return stream.str();
     }
 if (name == "login")        return login;
 if (name == "ip")           return currIP.ToString();
+if (name == "enabledDirs")  return GetEnabledDirs();
 return property.GetPropertyValue(name);
 }
 //-----------------------------------------------------------------------------

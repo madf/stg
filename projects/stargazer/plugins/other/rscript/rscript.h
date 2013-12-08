@@ -213,7 +213,7 @@ private:
 
     std::vector<uint32_t> IP2Routers(uint32_t ip);
     bool                GetUsers();
-    std::string         GetUserParam(USER_PTR u, const std::string & paramName) const;
+//    std::string         GetUserParam(USER_PTR u, const std::string & paramName) const;
 
     void                SetUserNotifiers(USER_PTR u);
     void                UnSetUserNotifiers(USER_PTR u);
