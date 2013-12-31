@@ -1474,16 +1474,24 @@ while (it != messages.end())
 //-----------------------------------------------------------------------------
 std::string USER_IMPL::GetParamValue(const std::string & name) const
 {
-if (name == "id")
+if (property.Exists(name))
     {
-    std::ostringstream stream;
-    stream << id;
-    return stream.str();
+    if (name == "id")
+        {
+        std::ostringstream stream;
+        stream << id;
+        return stream.str();
+        }
+    if (name == "login")        return login;
+    if (name == "ip")           return currIP.ToString();
+    if (name == "enabledDirs")  return GetEnabledDirs();
+    return property.GetPropertyValue(name);
     }
-if (name == "login")        return login;
-if (name == "ip")           return currIP.ToString();
-if (name == "enabledDirs")  return GetEnabledDirs();
-return property.GetPropertyValue(name);
+else
+    {
+    WriteServLog("Error getting parametr value", name.c_str());
+    return "";
+    }
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
