@@ -224,7 +224,7 @@ if (CommitTransaction())
     return -1;
     }
 
-WriteServLog("POSTGRESQL_STORE: Current DB schema version: %d", version);
+logger("POSTGRESQL_STORE: Current DB schema version: %d", version);
 
 return 0;
 }

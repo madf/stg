@@ -243,7 +243,7 @@ else
         }
         if (!ret)
         {
-            WriteServLog("MYSQL_STORE: Current DB schema version: %d", schemaVersion);
+            logger("MYSQL_STORE: Current DB schema version: %d", schemaVersion);
             MakeUpdates(sock);
         }
         mysql_close(sock);
@@ -600,7 +600,7 @@ if (schemaVersion  < 1)
         return -1;
         }
     schemaVersion = 1;
-    WriteServLog("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
+    logger("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
     }
 return 0;
 }
@@ -903,7 +903,7 @@ for (int i = 0; i < DIR_NUM; i++)
         mysql_close(sock);
         return -1;
         }
-    stat->down[i] = traff;
+    stat->monthDown[i] = traff;
 
     sprintf(s, "U%d", i);
     if (GetULongLongInt(row[startPos+i*2+1], &traff, 0) != 0)
@@ -913,7 +913,7 @@ for (int i = 0; i < DIR_NUM; i++)
         mysql_close(sock);
         return -1;
         }
-    stat->up[i] = traff;
+    stat->monthUp[i] = traff;
     }//for
 
 startPos += (2*DIR_NUM);
@@ -1033,10 +1033,10 @@ res = "UPDATE users SET";
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    strprintf(&param, " D%d=%lld,", i, stat.down[i]);
+    strprintf(&param, " D%d=%lld,", i, stat.monthDown[i]);
     res += param;
 
-    strprintf(&param, " U%d=%lld,", i, stat.up[i]);
+    strprintf(&param, " U%d=%lld,", i, stat.monthUp[i]);
     res += param;
     }
 
@@ -1196,10 +1196,10 @@ strprintf(&res, "INSERT INTO stat SET login='%s', month=%d, year=%d,",
     
 for (int i = 0; i < DIR_NUM; i++)
     {
-    strprintf(&param, " U%d=%lld,", i, stat.up[i]); 
+    strprintf(&param, " U%d=%lld,", i, stat.monthUp[i]); 
     res += param;
 
-    strprintf(&param, " D%d=%lld,", i, stat.down[i]);        
+    strprintf(&param, " D%d=%lld,", i, stat.monthDown[i]);        
     res += param;
     }
     
