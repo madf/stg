@@ -125,9 +125,11 @@ private:
     mutable pthread_mutex_t mutex;
     IBPP::TIL til;
     IBPP::TLR tlr;
+    int schemaVersion;
     PLUGIN_LOGGER logger;
 
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
+    int CheckVersion();
 };
 
 time_t ts2time_t(const IBPP::Timestamp & ts);

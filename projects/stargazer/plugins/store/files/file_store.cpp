@@ -1483,6 +1483,11 @@ else
                 printfd(__FILE__, "FILES_STORE::RestoreTariff - invalid trafftype for tariff '%s'\n", tariffName.c_str());
                 return -1;
                 }
+
+if (conf.ReadString("Period", &str, "month") < 0)
+    td->tariffConf.period = TARIFF::MONTH;
+else
+    td->tariffConf.period = TARIFF::StringToPeriod(str);
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1558,6 +1563,8 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
             cf.WriteString("TraffType", "max");
             break;
         }
+
+    cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     }
 
 return 0;
@@ -1851,7 +1858,7 @@ if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveTariff - rename failed. Message: '%s'\n", strerror(errno));
+    printfd(__FILE__, "FILES_STORE::EditMessage - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
 

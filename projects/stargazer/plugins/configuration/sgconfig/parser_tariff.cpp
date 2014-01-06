@@ -145,6 +145,8 @@ for (; it != dataList.end(); ++it)
             break;
         }
 
+    answerList->push_back("<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>");
+
     answerList->push_back("</tariff>");
     }
 answerList->push_back("</Tariffs>");
@@ -449,6 +451,12 @@ else
             td.tariffConf.traffType = TRAFF_MAX;
             return 0;
             }
+        return 0;
+        }
+
+    if (strcasecmp(el, "Period") == 0)
+        {
+        td.tariffConf.period = TARIFF::StringToPeriod(attr[1]);
         return 0;
         }
     }

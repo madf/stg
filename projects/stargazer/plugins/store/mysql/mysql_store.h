@@ -132,6 +132,7 @@ private:
     virtual int WriteLogString(const std::string & str, const std::string & login) const;
     int GetAllParams(std::vector<std::string> * ParamList, const std::string & table, const std::string & name) const;
     int CheckAllTables(MYSQL * sock);
+    int MakeUpdates(MYSQL * sock);
     bool IsTablePresent(const std::string & str,MYSQL * sock);
     mutable std::string          errorStr;
     int                        MysqlQuery(const char* sQuery,MYSQL * sock) const;
@@ -141,6 +142,7 @@ private:
     std::string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
     MODULE_SETTINGS         settings;
+    int                     schemaVersion;
 
     PLUGIN_LOGGER           logger;
 };
