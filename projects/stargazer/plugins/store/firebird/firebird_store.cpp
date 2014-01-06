@@ -140,7 +140,7 @@ int FIREBIRD_STORE::CheckVersion()
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string name;
+std::string name;
 
 try
     {
@@ -157,7 +157,7 @@ try
             st->Get(1, schemaVersion);
         }
     tr->Commit();
-    WriteServLog("FIREBIRD_STORE: Current DB schema version: %d", schemaVersion);
+    logger("FIREBIRD_STORE: Current DB schema version: %d", schemaVersion);
     }
 
 catch (IBPP::Exception & ex)

@@ -27,11 +27,12 @@
 #ifndef USER_TRAFF_H
 #define USER_TRAFF_H
 
-#include <iostream>
-#include <vector>
-
+#include "resetable.h"
 #include "const.h"
 #include "os_int.h"
+
+#include <iostream>
+#include <vector>
 
 enum TRAFF_DIRECTION {TRAFF_UPLOAD, TRAFF_DOWNLOAD};
 

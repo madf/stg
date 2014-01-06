@@ -247,7 +247,6 @@ private:
     int             id;
     bool            __connected;
     USER_PROPERTY<bool> connected;
-    std::string     lastDisconnectReason;
 
     bool            enabledDirs[DIR_NUM];
 
