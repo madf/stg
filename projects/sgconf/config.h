@@ -21,6 +21,7 @@
 #ifndef __STG_SGCONF_CONFIG_H__
 #define __STG_SGCONF_CONFIG_H__
 
+#include "stg/common.h"
 #include "stg/resetable.h"
 #include "stg/os_int.h"
 
@@ -36,6 +37,22 @@ struct CONFIG
     RESETABLE<uint16_t> port;
     RESETABLE<std::string> userName;
     RESETABLE<std::string> userPass;
+
+    std::string Serialize() const
+    {
+        std::string res("{ ");
+        if (!configFile.empty())
+            res += "configFile: '" + configFile.data() + "'";
+        if (!server.empty())
+            res += ", server: '" + server.data() + "'";
+        if (!port.empty())
+            res += ", port: " + x2str(port.data());
+        if (!userName.empty())
+            res += ", userName: '" + userName.data() + "'";
+        if (!userPass.empty())
+            res += ", userPass: '" + userPass.data() + "'";
+        return res + " }";
+    }
 };
 
 }
