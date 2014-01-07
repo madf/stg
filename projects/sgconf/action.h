@@ -49,13 +49,6 @@ class ACTION
         };
 };
 
-template <typename T>
-class ACTION_CLONE_MIXIN : public ACTION
-{
-    public:
-        virtual ACTION * Clone() const { return new T(*this); }
-};
-
 } // namespace SGCONF
 
 #endif
