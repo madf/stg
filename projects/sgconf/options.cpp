@@ -23,9 +23,46 @@
 #include "action.h"
 #include "parser_state.h"
 
+#include "stg/common.h"
+
+#include <fstream>
+#include <sstream>
 #include <iostream>
 #include <functional>
 #include <algorithm>
+
+#include <unistd.h>
+
+namespace
+{
+
+template <class C>
+void ReadConfigFile(const std::string & filePath, void (C::* callback)(const std::string&, const std::string&), C * obj)
+{
+std::ifstream stream(filePath.c_str());
+std::string line;
+size_t num = 0;
+while (std::getline(stream, line))
+    {
+    ++num;
+    line = Trim(line);
+    std::string::size_type pos = line.find_first_of('#');
+    if (pos != std::string::npos)
+        line = line.substr(0, pos);
+    if (line.empty())
+        continue;
+    pos = line.find_first_of('=');
+    if (pos == std::string::npos)
+        {
+        std::ostringstream error;
+        error << "Bad file format, missing '=' in '" << filePath << ":" << num << "'.";
+        throw std::runtime_error(error.str().c_str());
+        }
+    (obj->*callback)(Trim(line.substr(0, pos)), Trim(line.substr(pos + 1, line.length() - pos - 1)));
+    }
+}
+
+} // namespace anonymous
 
 using SGCONF::OPTION;
 using SGCONF::OPTION_BLOCK;
@@ -119,6 +156,20 @@ catch (const ACTION::ERROR & ex)
     }
 }
 
+void OPTION::ParseValue(const std::string & value)
+{
+if (!m_action)
+    throw ERROR("Option is not defined.");
+try
+    {
+    return m_action->ParseValue(value);
+    }
+catch (const ACTION::ERROR & ex)
+    {
+    throw ERROR(m_longName + ": " + ex.what());
+    }
+}
+
 OPTION_BLOCK & OPTION_BLOCK::Add(const std::string & shortName,
                                  const std::string & longName,
                                  ACTION * action,
@@ -159,6 +210,20 @@ while (state.argc > 0 && !state.stop)
     ++it;
     }
 return state;
+}
+
+void OPTION_BLOCK::ParseFile(const std::string & filePath)
+{
+if (access(filePath.c_str(), R_OK))
+    throw ERROR("File '" + filePath + "' does not exists.");
+ReadConfigFile(filePath, &OPTION_BLOCK::OptionCallback, this);
+}
+
+void OPTION_BLOCK::OptionCallback(const std::string & key, const std::string & value)
+{
+for (std::vector<OPTION>::iterator it = m_options.begin(); it != m_options.end(); ++it)
+    if (it->Name() == key)
+        it->ParseValue(value);
 }
 
 void OPTION_BLOCKS::Help(size_t level) const

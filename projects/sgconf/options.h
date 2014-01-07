@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <utility>
 #include <stdexcept>
 #include <cstddef> // size_t
 
@@ -50,7 +51,9 @@ class OPTION
 
         void Help(size_t level = 0) const;
         PARSER_STATE Parse(int argc, char ** argv);
+        void ParseValue(const std::string & value);
         bool Check(const char * arg) const;
+        const std::string & Name() const { return m_longName; }
 
         class ERROR : public std::runtime_error
         {
@@ -83,10 +86,20 @@ class OPTION_BLOCK
         void Help(size_t level) const;
 
         PARSER_STATE Parse(int argc, char ** argv);
+        void ParseFile(const std::string & filePath);
+
+        class ERROR : public std::runtime_error
+        {
+            public:
+                ERROR(const std::string & message)
+                    : std::runtime_error(message.c_str()) {}
+        };
 
     private:
         std::vector<OPTION> m_options;
         std::string m_description;
+
+        void OptionCallback(const std::string & key, const std::string & value);
 };
 
 class OPTION_BLOCKS

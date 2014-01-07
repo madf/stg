@@ -146,6 +146,28 @@ void UsageCorporations(bool full);
 
 void Version();
 
+void ReadUserConfigFile(SGCONF::OPTION_BLOCK & block)
+{
+std::vector<std::string> paths;
+const char * configHome = getenv("XDG_CONFIG_HOME");
+if (configHome == NULL)
+    {
+    const char * home = getenv("HOME");
+    if (home == NULL)
+        return;
+    paths.push_back(std::string(home) + "/.config/sgconf/sgconf.conf");
+    paths.push_back(std::string(home) + "/.sgconf/sgconf.conf");
+    }
+else
+    paths.push_back(std::string(configHome) + "/sgconf/sgconf.conf");
+for (std::vector<std::string>::const_iterator it = paths.begin(); it != paths.end(); ++it)
+    if (access(it->c_str(), R_OK) == 0)
+        {
+        block.ParseFile(*it);
+        return;
+        }
+}
+
 } // namespace anonymous
 
 namespace SGCONF
@@ -1211,7 +1233,7 @@ blocks.Add("General options")
       .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
       .Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
       .Add("v", "version", SGCONF::MakeFunc0Action(Version), "\t\tshow version information and exit");
-blocks.Add("Connection options")
+SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
       .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
       .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
@@ -1239,6 +1261,30 @@ if (state.argc > 0)
     std::cerr << "Unknown option: '" << *state.argv << "'\n";
     return -1;
     }
+
+try
+{
+SGCONF::CONFIG configOverride(config);
+
+if (config.configFile.empty())
+    {
+    const char * mainConfigFile = "/etc/sgconf/sgconf.conf";
+    if (access(mainConfigFile, R_OK) == 0)
+        block.ParseFile(mainConfigFile);
+    ReadUserConfigFile(block);
+    }
+else
+    {
+    block.ParseFile(config.configFile.data());
+    }
+
+config = configOverride;
+}
+catch (const SGCONF::OPTION::ERROR& ex)
+{
+std::cerr << ex.what() << "\n";
+return -1;
+}
 
 std::cerr << "Config: " << config.Serialize() << std::endl;
 

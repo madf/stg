@@ -840,6 +840,12 @@ std::string & Trim(std::string & val)
 return TrimR(TrimL(val));
 }
 //---------------------------------------------------------------------------
+std::string Trim(const std::string & val)
+{
+std::string res(val);
+return TrimR(TrimL(res));
+}
+//---------------------------------------------------------------------------
 std::string ToLower(const std::string & value)
 {
     std::string res;

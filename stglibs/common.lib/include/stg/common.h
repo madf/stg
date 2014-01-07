@@ -95,6 +95,7 @@ void            SwapBytes(int64_t & value);
 std::string &   TrimL(std::string & val);
 std::string &   TrimR(std::string & val);
 std::string &   Trim(std::string & val);
+std::string     Trim(const std::string & val);
 
 std::string     ToLower(const std::string & value);
 std::string     ToUpper(const std::string & value);

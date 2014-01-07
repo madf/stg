@@ -89,6 +89,7 @@ class PARAM_ACTION : public ACTION
         virtual std::string DefaultDescription() const;
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
         virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual void ParseValue(const std::string & value);
 
     private:
         RESETABLE<T> & m_param;
@@ -127,6 +128,25 @@ if (str2x(*argv, value))
     throw ERROR(std::string("Bad argument: '") + *argv + "'");
 m_param = value;
 return PARSER_STATE(false, --argc, ++argv);
+}
+
+template <typename T>
+inline
+void PARAM_ACTION<T>::ParseValue(const std::string & stringValue)
+{
+if (stringValue.empty())
+    throw ERROR("Missing value.");
+T value;
+if (str2x(stringValue, value))
+    throw ERROR(std::string("Bad value: '") + stringValue + "'");
+m_param = value;
+}
+
+template <>
+inline
+void PARAM_ACTION<std::string>::ParseValue(const std::string & stringValue)
+{
+m_param = stringValue;
 }
 
 template <>
