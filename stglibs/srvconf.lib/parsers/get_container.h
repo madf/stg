@@ -25,6 +25,8 @@
 
 #include <string>
 
+#include <strings.h>
+
 namespace STG
 {
 namespace GET_CONTAINER
