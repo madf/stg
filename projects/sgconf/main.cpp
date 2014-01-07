@@ -1280,7 +1280,7 @@ else
 
 config = configOverride;
 }
-catch (const SGCONF::OPTION::ERROR& ex)
+catch (const std::exception& ex)
 {
 std::cerr << ex.what() << "\n";
 return -1;
