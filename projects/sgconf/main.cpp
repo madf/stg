@@ -1240,6 +1240,8 @@ if (state.argc > 0)
     return -1;
     }
 
+std::cerr << "Config: " << config.Serialize() << std::endl;
+
 return 0;
 
 if (argc < 2)
