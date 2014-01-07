@@ -66,6 +66,15 @@ OPTION::~OPTION()
 delete m_action;
 }
 
+OPTION & OPTION::operator=(const OPTION & rhs)
+{
+m_shortName = rhs.m_shortName;
+m_longName = rhs.m_longName;
+m_action = rhs.m_action->Clone();
+m_description = rhs.m_description;
+return *this;
+}
+
 void OPTION::Help(size_t level) const
 {
 if (!m_action)
