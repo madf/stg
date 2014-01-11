@@ -138,7 +138,7 @@ public:
     void SetProperties(const USER_PROPERTIES & p) { stat = p.stat; conf = p.conf; }
 
     std::string GetPropertyValue(const std::string & name) const;
-    bool                  Exists(const std::string & name) const;
+    bool Exists(const std::string & name) const;
 
     USER_PROPERTY_LOGGED<double>            cash;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         up;
@@ -400,8 +400,7 @@ return it->second->ToString();
 inline
 bool USER_PROPERTIES::Exists(const std::string & name) const
 {
-if (properties.find(name)!=properties.end()) return true;
-return false;
+return properties.find(name) != properties.end();
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
