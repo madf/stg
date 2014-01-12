@@ -1239,6 +1239,14 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
+blocks.Add("Raw XML")
+      .Add("r", "raw", SGCONF::MakeConfAction(), "\t\tmake raw XML request")
+/*blocks.Add("Admins management options")
+      .Add("get-admins", SGCONF::MakeConfAction())
+      .Add("get-admin", SGCONF::MakeConfAction())
+      .Add("add-admin", SGCONF::MakeConfAction())
+      .Add("del-admin", SGCONF::MakeConfAction())
+      .Add("chg-admin", SGCONF::MakeConfAction());*/
 
 
 SGCONF::PARSER_STATE state(false, argc, argv);
