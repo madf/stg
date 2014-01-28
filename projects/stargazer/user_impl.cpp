@@ -1481,9 +1481,10 @@ std::string USER_IMPL::GetParamValue(const std::string & name) const
         return stream.str();
         }
     if (name == "login")       return login;
-    if (name == "ip")          return currIP.ToString();
+    if (name == "currIP")      return currIP.ToString();
     if (name == "enabledDirs") return GetEnabledDirs();
-    if (property.Exists(name)) return property.GetPropertyValue(name);
+    if (property.Exists(name)) 
+        return property.GetPropertyValue(name);
     else
         {
         WriteServLog("User’s parameter '%s' does not exist.", name.c_str());

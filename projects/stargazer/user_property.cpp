@@ -28,7 +28,7 @@ USER_PROPERTIES::USER_PROPERTIES(const std::string & sd)
       realName    (conf.realName,     "realName",     false, false, GetStgLogger(), sd, properties),
       credit      (conf.credit,       "credit",       false, false, GetStgLogger(), sd, properties),
       creditExpire(conf.creditExpire, "creditExpire", false, false, GetStgLogger(), sd, properties),
-      ips         (conf.ips,          "IP",           false, false, GetStgLogger(), sd, properties),
+      ips         (conf.ips,          "ips",          false, false, GetStgLogger(), sd, properties),
       userdata0   (conf.userdata[0],  "userdata0",    false, false, GetStgLogger(), sd, properties),
       userdata1   (conf.userdata[1],  "userdata1",    false, false, GetStgLogger(), sd, properties),
       userdata2   (conf.userdata[2],  "userdata2",    false, false, GetStgLogger(), sd, properties),
