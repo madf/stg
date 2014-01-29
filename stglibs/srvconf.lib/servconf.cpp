@@ -16,391 +16,368 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.8 $
- $Date: 2010/08/04 00:40:38 $
- $Author: faust $
- */
+#include "stg/servconf.h"
+
+#include "netunit.h"
+
+#include "parsers/simple.h"
+#include "parsers/get_container.h"
+
+#include "parsers/server_info.h"
+
+#include "parsers/get_admin.h"
+#include "parsers/chg_admin.h"
+
+#include "parsers/get_tariff.h"
+#include "parsers/chg_tariff.h"
+
+#include "parsers/auth_by.h"
+#include "parsers/get_user.h"
+#include "parsers/chg_user.h"
+
+#include "parsers/get_service.h"
+#include "parsers/chg_service.h"
+
+#include "parsers/get_corp.h"
+#include "parsers/chg_corp.h"
+
+#include "parsers/base.h"
+
+#include "stg/common.h"
 
 #include <cstdio>
 #include <cstring>
 
-#include "stg/common.h"
-#include "stg/servconf.h"
+#include <expat.h>
 
-using namespace std;
+using namespace STG;
 
-//-----------------------------------------------------------------------------
-int AnsRecv(void * data, list<string> * list1)
+class SERVCONF::IMPL
 {
-//NODE * node;
-SERVCONF * sc;
-char ans[ENC_MSG_LEN + 1];
-int len, done = 0;
+public:
+    IMPL(const std::string & server, uint16_t port,
+         const std::string & login, const std::string & password);
 
-sc = (SERVCONF*)data;
+    const std::string & GetStrError() const;
+    static void Start(void * data, const char * el, const char ** attr);
+    static void End(void * data, const char * el);
 
-XML_ParserReset(sc->parser, NULL);
-XML_SetElementHandler(sc->parser, Start, End);
-XML_SetUserData(sc->parser, data);
+    int RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data);
 
-//loop parsing
-list<string>::iterator node;
-node = list1->begin();
-
-if (node == list1->end())
+    template <class P, typename C>
+    int Exec(const std::string & request, C callback, void * data)
     {
-    return st_ok;
+        P cp(callback, data);
+        return ExecImpl(request, cp);
     }
 
-while (node != list1->end())
+    template <class P, typename C>
+    int Exec(const std::string & tag, const std::string & request, C callback, void * data)
     {
-    strncpy(ans, node->c_str(), ENC_MSG_LEN);
-    ans[ENC_MSG_LEN] = 0;
-       //printf("---> %s\n", ans);
-    len = strlen(ans);
-
-    if (XML_Parse(sc->parser, ans, len, done) == XML_STATUS_ERROR)
-        {
-        strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
-                  static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
-                  XML_ErrorString(XML_GetErrorCode(sc->parser)));
-        return st_xml_parse_error;
-        }
-    ++node;
-
+        P cp(tag, callback, data);
+        return ExecImpl(request, cp);
     }
 
-return 0;
-}
-//-----------------------------------------------------------------------------
-void Start(void *data, const char *el, const char **attr)
+private:
+    NETTRANSACT nt;
+
+    std::string errorMsg;
+    XML_Parser parser;
+
+    static bool ParserRecv(const std::string & chunk, bool final, void * data);
+    static bool SimpleRecv(const std::string & chunk, bool final, void * data);
+    int ExecImpl(const std::string & request, PARSER & cp);
+};
+
+bool SERVCONF::IMPL::ParserRecv(const std::string & chunk, bool final, void * data)
 {
-SERVCONF * sc;
-sc = (SERVCONF*)data;
-sc->Start(el, attr);
+SERVCONF::IMPL * sc = static_cast<SERVCONF::IMPL *>(data);
+
+if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ERROR)
+    {
+    strprintf(&sc->errorMsg, "XML parse error at line %d: %s",
+              static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
+              XML_ErrorString(XML_GetErrorCode(sc->parser)));
+    printf("%s\n", sc->errorMsg.c_str());
+    return false;
+    }
+
+return true;
 }
-//-----------------------------------------------------------------------------
-void End(void *data, const char *el)
+
+bool SERVCONF::IMPL::SimpleRecv(const std::string & chunk, bool /*final*/, void * data)
 {
-SERVCONF * sc;
-sc = (SERVCONF*)data;
-sc->End(el);
+*static_cast<std::string *>(data) += chunk;
+return true;
 }
+
+SERVCONF::SERVCONF(const std::string & server, uint16_t port,
+                   const std::string & login, const std::string & password)
+    : pImpl(new IMPL(server, port, login, password))
+{
+}
+
+SERVCONF::~SERVCONF()
+{
+delete pImpl;
+}
+
+int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
+{
+return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
+}
+
+int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
+{
+return pImpl->RawXML(request, f, data);
+}
+
+// -- Admins --
+
+int SERVCONF::GetAdmins(GET_CONTAINER::CALLBACK<GET_ADMIN::INFO>::TYPE f, void * data)
+{
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_ADMIN::PARSER> >("admins", "<GetAdmins/>", f, data);
+}
+
+int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+}
+
+int SERVCONF::AddAdmin(const std::string & login,
+                       const ADMIN_CONF_RES & conf,
+                       SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+}
+
+int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\"/>", f, data);
+}
+
+// -- Tariffs --
+
+int SERVCONF::GetTariffs(GET_CONTAINER::CALLBACK<GET_TARIFF::INFO>::TYPE f, void * data)
+{
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_TARIFF::PARSER> >("tariffs", "<GetTariffs/>", f, data);
+}
+
+int SERVCONF::GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_TARIFF::PARSER>("<GetTariff name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgTariff(const TARIFF_DATA_RES & tariffData, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+}
+
+int SERVCONF::AddTariff(const std::string & name,
+                       const TARIFF_DATA_RES & tariffData,
+                       SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddTariff", "<AddTariff name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + name + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+}
+
+int SERVCONF::DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelTariff", "<DelTariff name=\"" + name + "\"/>", f, data);
+}
+
+// -- Users --
+
+int SERVCONF::GetUsers(GET_CONTAINER::CALLBACK<GET_USER::INFO>::TYPE f, void * data)
+{
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_USER::PARSER> >("users", "<GetUsers/>", f, data);
+}
+
+int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::ChgUser(const std::string & login,
+                      const USER_CONF_RES & conf,
+                      const USER_STAT_RES & stat,
+                      SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat) + "</SetUser>", f, data);
+}
+
+int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelUser", "<DelUser login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
+}
+
+int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
+{
+return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
+}
+
+int SERVCONF::SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SendMessage", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
+}
+
+int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
+}
+
+// -- Services --
+
+int SERVCONF::GetServices(GET_CONTAINER::CALLBACK<GET_SERVICE::INFO>::TYPE f, void * data)
+{
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_SERVICE::PARSER> >("services", "<GetServices/>", f, data);
+}
+
+int SERVCONF::GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_SERVICE::PARSER>("<GetService name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + conf.name.data() + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+}
+
+int SERVCONF::AddService(const std::string & name,
+                         const SERVICE_CONF_RES & conf,
+                         SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+}
+
+int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + "\"/>", f, data);
+}
+
+// -- Corporations --
+
+int SERVCONF::GetCorporations(GET_CONTAINER::CALLBACK<GET_CORP::INFO>::TYPE f, void * data)
+{
+return pImpl->Exec<GET_CONTAINER::PARSER<GET_CORP::PARSER> >("corporations", "<GetCorporations/>", f, data);
+}
+
+int SERVCONF::GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data)
+{
+return pImpl->Exec<GET_CORP::PARSER>("<GetCorp name=\"" + name + "\"/>", f, data);
+}
+
+int SERVCONF::ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+}
+
+int SERVCONF::AddCorp(const std::string & name,
+                      const CORP_CONF_RES & conf,
+                      SIMPLE::CALLBACK f, void * data)
+{
+int res = pImpl->Exec<SIMPLE::PARSER>("AddCorp", "<AddCorp name=\"" + name + "\"/>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + name + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+}
+
+int SERVCONF::DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data)
+{
+return pImpl->Exec<SIMPLE::PARSER>("DelCorp", "<DelCorp name=\"" + name + "\"/>", f, data);
+}
+
+const std::string & SERVCONF::GetStrError() const
+{
+return pImpl->GetStrError();
+}
+
 //-----------------------------------------------------------------------------
-SERVCONF::SERVCONF()
-    : currParser(NULL),
-      parseDepth(0),
-      error(0),
-      RecvUserDataCb(NULL),
-      RecvGetUserDataCb(NULL),
-      RecvServerInfoDataCb(NULL),
-      RecvChgUserCb(NULL),
-      RecvCheckUserCb(NULL),
-      RecvSendMessageCb(NULL),
-      getUserDataDataCb(NULL),
-      getUsersDataDataCb(NULL),
-      getServerInfoDataCb(NULL),
-      chgUserDataCb(NULL),
-      checkUserDataCb(NULL),
-      sendMessageDataCb(NULL)
+SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
+                     const std::string & login, const std::string & password)
+    : nt( server, port, login, password )
 {
 parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetServer(const char * server)
+void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
 {
-nt.SetServer(server);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetPort(uint16_t port)
-{
-nt.SetServerPort(port);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetAdmLogin(const char * login)
-{
-nt.SetLogin(login);
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetAdmPassword(const char * password)
-{
-nt.SetPassword(password);
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::GetUser(const char * l)
-{
-char request[255];
-snprintf(request, 255, "<GetUser login=\"%s\"/>", l);
-int ret;
-
-currParser = &parserGetUser;
-((PARSER_GET_USER*)currParser)->SetUserDataRecvCb(RecvGetUserDataCb, getUserDataDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::GetUsers()
-{
-char request[] = "<GetUsers/>";
-int ret;
-
-currParser = &parserGetUsers;
-((PARSER_GET_USERS*)currParser)->SetUserDataRecvCb(RecvUserDataCb, getUsersDataDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::SendMessage(const char * login, const char * message, int prio)
-{
-char request[1000];
-char msg[500];
-Encode12(msg, message, strlen(message));
-snprintf(request, 1000, "<Message login=\"%s\" priority=\"%d\" text=\"%s\"/>", login, prio, msg);
-int ret;
-
-currParser = &parserSendMessage;
-parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::GetServerInfo()
-{
-char request[] = "<GetServerInfo/>";
-int ret;
-
-currParser = &parserServerInfo;
-((PARSER_GET_SERVER_INFO*)currParser)->SetServerInfoRecvCb(RecvServerInfoDataCb, getServerInfoDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::ChgUser(const char * request)
-{
-int ret;
-
-currParser = &parserChgUser;
-((PARSER_CHG_USER*)currParser)->SetChgUserRecvCb(RecvChgUserCb, chgUserDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-//  TODO: remove this shit!
-//-----------------------------------------------------------------------------
-int SERVCONF::MsgUser(const char * request)
-{
-int ret;
-
-currParser = &parserSendMessage;
-parserSendMessage.SetSendMessageRecvCb(RecvSendMessageCb, sendMessageDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::CheckUser(const char * login, const char * password)
-{
-char request[255];
-snprintf(request, 255, "<CheckUser login=\"%s\" password=\"%s\"/>", login, password);
-int ret;
-
-currParser = &parserCheckUser;
-((PARSER_CHECK_USER*)currParser)->SetCheckUserRecvCb(RecvCheckUserCb, checkUserDataCb);
-
-nt.Reset();
-nt.SetRxCallback(this, AnsRecv);
-
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Transact(request)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-if ((ret = nt.Disconnect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    return ret;
-    }
-
-return st_ok;
-}
-//-----------------------------------------------------------------------------
-int SERVCONF::Start(const char *el, const char **attr)
-{
+PARSER * currParser = static_cast<PARSER *>(data);
 currParser->ParseStart(el, attr);
-return 0;
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::End(const char *el)
+void SERVCONF::IMPL::End(void * data, const char * el)
 {
+PARSER * currParser = static_cast<PARSER *>(data);
 currParser->ParseEnd(el);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::SetUserDataRecvCb(RecvUserDataCb_t f, void * data)
-{
-RecvUserDataCb = f;
-getUsersDataDataCb = data;
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetGetUserDataRecvCb(RecvUserDataCb_t f, void * data)
-{
-RecvGetUserDataCb = f;            //GET_USER
-getUserDataDataCb = data;
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetServerInfoRecvCb(RecvServerInfoDataCb_t f, void * data)
-{
-RecvServerInfoDataCb = f;
-getServerInfoDataCb = data;
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetChgUserCb(RecvChgUserCb_t f, void * data)
-{
-RecvChgUserCb = f;
-chgUserDataCb = data;
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetCheckUserCb(RecvCheckUserCb_t f, void * data)
-{
-RecvCheckUserCb = f;
-checkUserDataCb = data;
-}
-//-----------------------------------------------------------------------------
-void SERVCONF::SetSendMessageCb(RecvSendMessageCb_t f, void * data)
-{
-RecvSendMessageCb = f;
-sendMessageDataCb = data;
-}
-//-----------------------------------------------------------------------------
-const std::string & SERVCONF::GetStrError() const
+const std::string & SERVCONF::IMPL::GetStrError() const
 {
 return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::GetError()
+int SERVCONF::IMPL::ExecImpl(const std::string & request, PARSER & cp)
 {
-int e = error;
-error = 0;
-return e;
+XML_ParserReset(parser, NULL);
+XML_SetElementHandler(parser, Start, End);
+XML_SetUserData(parser, &cp);
+
+int ret = 0;
+if ((ret = nt.Connect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+if ((ret = nt.Transact(request, ParserRecv, this)) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    return ret;
+    }
+
+nt.Disconnect();
+return st_ok;
 }
-//-----------------------------------------------------------------------------
+
+int SERVCONF::IMPL::RawXML(const std::string & request, RAW_XML::CALLBACK callback, void * data)
+{
+int ret = 0;
+if ((ret = nt.Connect()) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    callback(false, errorMsg, "", data);
+    return ret;
+    }
+std::string response;
+if ((ret = nt.Transact(request, SimpleRecv, &response)) != st_ok)
+    {
+    errorMsg = nt.GetError();
+    callback(false, errorMsg, "", data);
+    return ret;
+    }
+
+nt.Disconnect();
+callback(true, "", response, data);
+return st_ok;
+}

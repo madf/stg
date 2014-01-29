@@ -728,7 +728,7 @@ for (int i = 0; i < DIR_NUM; i++)
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - download stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
-    stat->down[i] = traff;
+    stat->monthDown[i] = traff;
 
     snprintf(s, 22, "U%d", i);
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
@@ -738,7 +738,7 @@ for (int i = 0; i < DIR_NUM; i++)
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - upload stat read failed for user '%s'\n", login.c_str());
         return -1;
         }
-    stat->up[i] = traff;
+    stat->monthUp[i] = traff;
     }
 
 if (cf.ReadDouble("Cash", &stat->cash, 0) != 0)
@@ -869,9 +869,9 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
     for (int i = 0; i < DIR_NUM; i++)
         {
         snprintf(s, 22, "D%d", i);
-        cfstat.WriteInt(s, stat.down[i]);
+        cfstat.WriteInt(s, stat.monthDown[i]);
         snprintf(s, 22, "U%d", i);
-        cfstat.WriteInt(s, stat.up[i]);
+        cfstat.WriteInt(s, stat.monthUp[i]);
         }
 
     cfstat.WriteDouble("Cash", stat.cash);
@@ -990,8 +990,8 @@ return WriteLog2String(logStr, login);
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::WriteUserDisconnect(const std::string & login,
-                                     const DIR_TRAFF & up,
-                                     const DIR_TRAFF & down,
+                                     const DIR_TRAFF & monthUp,
+                                     const DIR_TRAFF & monthDown,
                                      const DIR_TRAFF & sessionUp,
                                      const DIR_TRAFF & sessionDown,
                                      double cash,
@@ -1005,9 +1005,9 @@ logStr << "Disconnect, "
        << "\' session download: \'"
        << sessionDown
        << "\' month upload: \'"
-       << up
+       << monthUp
        << "\' month download: \'"
-       << down
+       << monthDown
        << "\' cash: \'"
        << cash
        << "\'";
@@ -1061,11 +1061,11 @@ for (size_t i = 0; i < DIR_NUM; i++)
     {
     char dirName[3];
     snprintf(dirName, 3, "U%llu", (unsigned long long)i);
-    s.WriteInt(dirName, stat.up[i]); // Classic
-    s2.WriteInt(dirName, stat.up[i]); // New
+    s.WriteInt(dirName, stat.monthUp[i]); // Classic
+    s2.WriteInt(dirName, stat.monthUp[i]); // New
     snprintf(dirName, 3, "D%llu", (unsigned long long)i);
-    s.WriteInt(dirName, stat.down[i]); // Classic
-    s2.WriteInt(dirName, stat.down[i]); // New
+    s.WriteInt(dirName, stat.monthDown[i]); // Classic
+    s2.WriteInt(dirName, stat.monthDown[i]); // New
     }
 
 // Classic
@@ -1483,6 +1483,11 @@ else
                 printfd(__FILE__, "FILES_STORE::RestoreTariff - invalid trafftype for tariff '%s'\n", tariffName.c_str());
                 return -1;
                 }
+
+if (conf.ReadString("Period", &str, "month") < 0)
+    td->tariffConf.period = TARIFF::MONTH;
+else
+    td->tariffConf.period = TARIFF::StringToPeriod(str);
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1558,6 +1563,8 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
             cf.WriteString("TraffType", "max");
             break;
         }
+
+    cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     }
 
 return 0;
@@ -1851,7 +1858,7 @@ if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
     STG_LOCKER lock(&mutex, __FILE__, __LINE__);
     errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
-    printfd(__FILE__, "FILES_STORE::SaveTariff - rename failed. Message: '%s'\n", strerror(errno));
+    printfd(__FILE__, "FILES_STORE::EditMessage - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
     }
 

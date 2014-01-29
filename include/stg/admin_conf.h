@@ -7,9 +7,10 @@
 #ifndef ADMIN_CONF_H
 #define ADMIN_CONF_H
 
-#include <string>
-
 #include "os_int.h"
+#include "resetable.h"
+
+#include <string>
 
 #define ADM_LOGIN_LEN   (32)
 #define ADM_PASSWD_LEN  (32)
@@ -75,6 +76,29 @@ struct ADMIN_CONF
     std::string   password;
 };
 //-----------------------------------------------------------------------------
+struct ADMIN_CONF_RES
+{
+    ADMIN_CONF_RES(const ADMIN_CONF & conf)
+        : priv(conf.priv),
+          login(conf.login),
+          password(conf.password)
+    {}
+    ADMIN_CONF_RES(const ADMIN_CONF_RES & rhs)
+        : priv(rhs.priv),
+          login(rhs.login),
+          password(rhs.password)
+    {}
+    ADMIN_CONF_RES & operator=(const ADMIN_CONF_RES & rhs)
+    {
+        priv = rhs.priv;
+        login = rhs.login;
+        password = rhs.password;
+        return *this;
+    }
+    RESETABLE<PRIV> priv;
+    RESETABLE<std::string> login;
+    RESETABLE<std::string> password;
+};
 
 #include "admin_conf.inc.h"
 

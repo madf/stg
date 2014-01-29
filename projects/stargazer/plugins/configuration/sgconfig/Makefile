@@ -11,7 +11,9 @@ SRCS = ./stgconfig.cpp \
        ./configproto.cpp \
        ./parser.cpp \
        ./parser_tariff.cpp \
-       ./parser_admin.cpp
+       ./parser_admin.cpp \
+       ./parser_auth_by.cpp \
+       ./parser_user_info.cpp
 
 LIBS += -lexpat \
 	$(LIB_THREAD)

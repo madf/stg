@@ -32,12 +32,9 @@
 #define _GNU_SOURCE
 #endif
 
-#include <pthread.h>
-#include <unistd.h> // access
-
-#include <cassert>
-#include <cstdlib>
-#include <cmath>
+#include "user_impl.h"
+#include "settings_impl.h"
+#include "stg_timer.h"
 
 #include "stg/users.h"
 #include "stg/common.h"
@@ -45,9 +42,16 @@
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
 #include "stg/admin.h"
-#include "user_impl.h"
-#include "settings_impl.h"
-#include "stg_timer.h"
+
+#include <algorithm>
+#include <functional>
+
+#include <cassert>
+#include <cstdlib>
+#include <cmath>
+
+#include <pthread.h>
+#include <unistd.h> // access
 
 #ifdef USE_ABSTRACT_SETTINGS
 USER_IMPL::USER_IMPL(const SETTINGS * s,
@@ -60,12 +64,9 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
-      login(),
       id(0),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
-      userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -74,11 +75,8 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       store(st),
       tariffs(t),
       tariff(NULL),
-      traffStat(),
-      traffStatSaved(),
       settings(s),
-      authorizedBy(),
-      messages(),
+      authorizedModificationTime(0),
       deleted(false),
       lastWriteStat(0),
       lastWriteDetailedStat(0),
@@ -116,14 +114,10 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
-      sessionUpload(),
-      sessionDownload(),
       passiveNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
@@ -153,12 +147,9 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
-      login(),
       id(0),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
-      userIDGenerator(),
       __currIP(0),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -167,11 +158,8 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       store(st),
       tariffs(t),
       tariff(NULL),
-      traffStat(),
-      traffStatSaved(),
       settings(s),
-      authorizedBy(),
-      messages(),
+      authorizedModificationTime(0),
       deleted(false),
       lastWriteStat(0),
       lastWriteDetailedStat(0),
@@ -209,15 +197,11 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       userdata7(property.userdata7),
       userdata8(property.userdata8),
       userdata9(property.userdata9),
-      sessionUpload(),
-      sessionDownload(),
       passiveNotifier(this),
       disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
@@ -248,7 +232,6 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       id(u.id),
       __connected(0),
       connected(__connected),
-      enabledDirs(),
       userIDGenerator(u.userIDGenerator),
       __currIP(u.__currIP),
       currIP(__currIP),
@@ -261,7 +244,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       traffStat(u.traffStat),
       traffStatSaved(u.traffStatSaved),
       settings(u.settings),
-      authorizedBy(),
+      authorizedModificationTime(u.authorizedModificationTime),
       messages(u.messages),
       deleted(u.deleted),
       lastWriteStat(u.lastWriteStat),
@@ -306,9 +289,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
-      ipNotifier(this),
-      mutex(),
-      errorStr()
+      ipNotifier(this)
 {
 if (&u == this)
     return;
@@ -535,6 +516,8 @@ else
         }
     }
 
+if (authorizedBy.empty())
+    authorizedModificationTime = stgTime;
 authorizedBy.insert(auth);
 
 ScanMessage();
@@ -542,7 +525,7 @@ ScanMessage();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Unauthorize(const AUTH * auth)
+void USER_IMPL::Unauthorize(const AUTH * auth, const std::string & reason)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 /*
@@ -553,6 +536,8 @@ if (!authorizedBy.erase(auth))
 
 if (authorizedBy.empty())
     {
+    authorizedModificationTime = stgTime;
+    lastDisconnectReason = reason;
     lastIPForDisconnect = currIP;
     currIP = 0; // DelUser in traffcounter
     return;
@@ -564,6 +549,13 @@ bool USER_IMPL::IsAuthorizedBy(const AUTH * auth) const
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 //  Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
+}
+//-----------------------------------------------------------------------------
+std::vector<std::string> USER_IMPL::GetAuthorizers() const
+{
+    std::vector<std::string> list;
+    std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), std::mem_fun(&AUTH::GetVersion));
+    return list;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::Connect(bool fakeConnect)
@@ -641,6 +633,7 @@ if (!lastIPForDisconnect)
 
 if (!fakeDisconnect)
     {
+    lastDisconnectReason = reason;
     std::string scriptOnDisonnect = settings->GetScriptsDir() + "/OnDisconnect";
 
     if (access(scriptOnDisonnect.c_str(), X_OK) == 0)
@@ -679,7 +672,12 @@ if (!fakeDisconnect)
     connected = false;
     }
 
-if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload, cash, freeMb, reason))
+std::string reasonMessage(reason);
+if (!lastDisconnectReason.empty())
+    reasonMessage += ": " + lastDisconnectReason;
+
+if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload,
+                               cash, freeMb, reasonMessage))
     {
     WriteServLog("Cannot write disconnect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -1255,6 +1253,9 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 if (passive.ConstData() || tariff == NULL)
     return;
 
+if (tariff->GetPeriod() != TARIFF::MONTH)
+    return;
+
 double fee = tariff->GetFee() / DaysInCurrentMonth();
 
 if (std::fabs(fee) < 1.0e-3)
@@ -1287,6 +1288,9 @@ void USER_IMPL::ProcessDayFee()
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 if (tariff == NULL)
+    return;
+
+if (tariff->GetPeriod() != TARIFF::MONTH)
     return;
 
 double passiveTimePart = 1.0;
@@ -1348,6 +1352,39 @@ switch (settings->GetFeeChargeType())
             }
         break;
     }
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::ProcessDailyFee()
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+
+if (passive.ConstData() || tariff == NULL)
+    return;
+
+if (tariff->GetPeriod() != TARIFF::DAY)
+    return;
+
+double fee = tariff->GetFee();
+
+if (fee == 0.0)
+    return;
+
+double c = cash;
+switch (settings->GetFeeChargeType())
+    {
+    case 0:
+        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 1:
+        if (c + credit >= 0)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    case 2:
+        if (c + credit >= fee)
+            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        break;
+    }
+ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPrepaidTraff()

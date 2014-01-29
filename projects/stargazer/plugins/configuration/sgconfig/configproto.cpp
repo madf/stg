@@ -28,10 +28,9 @@
  $Author: faust $
  */
 
+#include "configproto.h"
 
 #include <unistd.h>
-
-#include "configproto.h"
 
 //-----------------------------------------------------------------------------
 void ParseXMLStart(void *data, const char *el, const char **attr)
@@ -87,39 +86,15 @@ else
 }
 //-----------------------------------------------------------------------------
 CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
-    : answerList(),
-      requestList(),
-      adminIP(0),
-      adminLogin(),
-      adminPassword(),
+    : adminIP(0),
       port(0),
-      thrReciveSendConf(),
       nonstop(true),
       state(0),
       currAdmin(NULL),
       logger(l),
       listenSocket(-1),
-      parserGetServInfo(),
-      parserGetUsers(),
-      parserGetUser(),
-      parserChgUser(),
-      parserAddUser(),
-      parserDelUser(),
-      parserCheckUser(),
-      parserSendMessage(),
-      parserGetAdmins(),
-      parserAddAdmin(),
-      parserDelAdmin(),
-      parserChgAdmin(),
-      parserGetTariffs(),
-      parserAddTariff(),
-      parserDelTariff(),
-      parserChgTariff(),
       admins(NULL),
-      currParser(NULL),
-      dataParser(),
-      xmlParser(),
-      errorStr()
+      currParser(NULL)
 {
 dataParser.push_back(&parserGetServInfo);
 
@@ -130,6 +105,8 @@ dataParser.push_back(&parserAddUser);
 dataParser.push_back(&parserDelUser);
 dataParser.push_back(&parserCheckUser);
 dataParser.push_back(&parserSendMessage);
+dataParser.push_back(&parserAuthBy);
+dataParser.push_back(&parserUserInfo);
 
 dataParser.push_back(&parserGetTariffs);
 dataParser.push_back(&parserAddTariff);
@@ -210,51 +187,34 @@ while(nonstop)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void CONFIGPROTO::SetPort(uint16_t p)
-{
-port = p;
-}
-//-----------------------------------------------------------------------------
 void CONFIGPROTO::SetAdmins(ADMINS * a)
 {
 admins = a;
 for (size_t i = 0; i < dataParser.size(); i++)
-    {
     dataParser[i]->SetAdmins(a);
-    }
-
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetUsers(USERS * u)
 {
 for (size_t i = 0; i < dataParser.size(); i++)
-    {
     dataParser[i]->SetUsers(u);
-    }
-
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetTariffs(TARIFFS * t)
 {
 for (size_t i = 0; i < dataParser.size(); i++)
-    {
     dataParser[i]->SetTariffs(t);
-    }
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStore(STORE * s)
 {
 for (size_t i = 0; i < dataParser.size(); i++)
-    {
     dataParser[i]->SetStore(s);
-    }
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::SetStgSettings(const SETTINGS * s)
 {
 for (size_t i = 0; i < dataParser.size(); i++)
-    {
     dataParser[i]->SetStgSettings(s);
-    }
 }
 //-----------------------------------------------------------------------------

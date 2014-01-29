@@ -70,9 +70,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::GetUsersList(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::GetUsersList(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::GetUsersList(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -124,9 +124,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -141,9 +141,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddUser(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -188,9 +188,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -205,9 +205,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelUser(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -260,9 +260,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -284,9 +284,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -303,8 +303,8 @@ for (int dir = 0; dir < DIR_NUM; ++dir)
                 "'" << elogin << "', "
                 "CAST('" << date << "' AS DATE), "
                 "CAST(" << dir << " AS SMALLINT), "
-                "CAST(" << stat.up[dir] << " AS BIGINT), "
-                "CAST(" << stat.down[dir] << " AS BIGINT))";
+                "CAST(" << stat.monthUp[dir] << " AS BIGINT), "
+                "CAST(" << stat.monthDown[dir] << " AS BIGINT))";
 
     result = PQexec(connection, query.str().c_str());
 
@@ -363,9 +363,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -380,9 +380,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -394,9 +394,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -426,9 +426,9 @@ if (EscapeString(eaddress))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape address'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -436,9 +436,9 @@ if (EscapeString(eemail))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape email'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -446,9 +446,9 @@ if (EscapeString(egroup))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape group'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -456,9 +456,9 @@ if (EscapeString(enote))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape note'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -466,9 +466,9 @@ if (EscapeString(epassword))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape password'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -476,9 +476,9 @@ if (EscapeString(ephone))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape phone'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -486,9 +486,9 @@ if (EscapeString(erealname))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape real name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -496,9 +496,9 @@ if (EscapeString(etariffname))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape tariff name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -506,9 +506,9 @@ if (EscapeString(enexttariff))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape next tariff name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -516,9 +516,9 @@ if (EscapeString(ecorporation))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to escape corporation name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -556,9 +556,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -634,9 +634,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -657,9 +657,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -671,9 +671,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -710,9 +710,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -728,8 +728,8 @@ for (int i = 0; i < tuples; ++i)
     int dir;
 
     tuple >> dir;
-    tuple >> stat->up[dir];
-    tuple >> stat->down[dir];
+    tuple >> stat->monthUp[dir];
+    tuple >> stat->monthDown[dir];
     }
 
 PQclear(result);
@@ -774,9 +774,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -804,9 +804,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -818,9 +818,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -873,9 +873,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -903,9 +903,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -945,9 +945,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1026,9 +1026,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1036,9 +1036,9 @@ if (EscapeString(eadminLogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to escape admin's login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1046,9 +1046,9 @@ if (EscapeString(eparam))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to escape param's name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1056,9 +1056,9 @@ if (EscapeString(eold))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to escape old value'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1066,9 +1066,9 @@ if (EscapeString(enew))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to escape new value'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserChgLog(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1138,9 +1138,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserConnect(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserConnect(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserConnect(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1189,8 +1189,8 @@ return 0;
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::WriteUserDisconnect(const std::string & login,
-                    const DIR_TRAFF & up,
-                    const DIR_TRAFF & down,
+                    const DIR_TRAFF & monthUp,
+                    const DIR_TRAFF & monthDown,
                     const DIR_TRAFF & sessionUp,
                     const DIR_TRAFF & sessionDown,
                     double cash,
@@ -1224,9 +1224,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1236,9 +1236,9 @@ if (EscapeString(ereason))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to escape reason'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1285,9 +1285,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1299,9 +1299,9 @@ if (str2x(PQgetvalue(result, 0, 0), lid))
     printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteUserDisconnect(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1322,8 +1322,8 @@ for (int i = 0; i < DIR_NUM; ++i)
                 << i << ", "
                 << sessionUp[i] << ", "
                 << sessionDown[i] << ", "
-                << up[i] << ", "
-                << down[i] << ")";
+                << monthUp[i] << ", "
+                << monthDown[i] << ")";
 
     result = PQexec(connection, query.str().c_str());
 
@@ -1383,9 +1383,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteDetailedStat(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::WriteDetailedStat(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::WriteDetailedStat(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -1525,7 +1525,7 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
 
 PQclear(result);
 
-for (int i = 0; i < ips.Count(); ++i)
+for (size_t i = 0; i < ips.Count(); ++i)
     {
     std::ostringstream query;
     query << "INSERT INTO tb_allowed_ip "

@@ -4,14 +4,13 @@ USER_PROPERTIES::USER_PROPERTIES(const std::string & sd)
     : stat(),
       conf(),
       cash            (stat.cash,             "cash",             false, true, GetStgLogger(), sd, properties),
-      up              (stat.up,               "upload",           false, true, GetStgLogger(), sd, properties),
-      down            (stat.down,             "download",         false, true, GetStgLogger(), sd, properties),
+      up              (stat.monthUp,          "upload",           false, true, GetStgLogger(), sd, properties),
+      down            (stat.monthDown,        "download",         false, true, GetStgLogger(), sd, properties),
       lastCashAdd     (stat.lastCashAdd,      "lastCashAdd",      false, true, GetStgLogger(), sd, properties),
       passiveTime     (stat.passiveTime,      "passiveTime",      false, true, GetStgLogger(), sd, properties),
       lastCashAddTime (stat.lastCashAddTime,  "lastCashAddTime",  false, true, GetStgLogger(), sd, properties),
       freeMb          (stat.freeMb,           "freeMb",           false, true, GetStgLogger(), sd, properties),
       lastActivityTime(stat.lastActivityTime, "lastActivityTime", false, true, GetStgLogger(), sd, properties),
-
 
       password    (conf.password,     "password",     true,  false, GetStgLogger(), sd, properties),
       passive     (conf.passive,      "passive",      false, false, GetStgLogger(), sd, properties),

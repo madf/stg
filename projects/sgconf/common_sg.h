@@ -28,10 +28,14 @@
 #ifndef COMMON_SG_H
 #define COMMON_SG_H
 
+#include "stg/servconf.h"
+#include "stg/servconf_types.h"
+#include "request.h"
+
 #include <string>
 
-#include "stg/servconf.h"
-#include "request.h"
+struct USER_CONF_RES;
+struct USER_STAT_RES;
 
 void UsageConf();
 void UsageInfo();
@@ -45,20 +49,29 @@ int CheckLogin(const char * login);
 void ConvertFromKOI8(const std::string & src, std::string * dst);
 void ConvertToKOI8(const std::string & src, std::string * dst);
 
-int ProcessGetUser(const std::string &server,
-                   int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &login,
-                   void * data);
+bool ProcessGetUser(const std::string & server,
+                    int port,
+                    const std::string & admLogin,
+                    const std::string & admPasswd,
+                    const std::string & login,
+                    REQUEST & request);
 
-int ProcessSetUser(const std::string &server,
+bool ProcessAuthBy(const std::string & server,
                    int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &str,
-                   void * data,
-                   bool isMessage = false);
+                   const std::string & admLogin,
+                   const std::string & admPasswd,
+                   const std::string & login);
+
+bool ProcessSetUser(const std::string & server,
+                    int port,
+                    const std::string & admLogin,
+                    const std::string & admPasswd,
+                    const std::string & user,
+                    const USER_CONF_RES & conf,
+                    const USER_STAT_RES & stat);
+
+bool ProcessSendMessage(const std::string & server, uint16_t port,
+                        const std::string & login, const std::string & password,
+                        const std::string & user, const std::string & text);
 
 #endif
-

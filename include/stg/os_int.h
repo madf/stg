@@ -31,7 +31,7 @@
 #include <stdint.h>
 #endif
 
-#ifdef FREE_BSD5
+#if defined(FREE_BSD5) || defined(DARWIN)
 #include <inttypes.h>
 #endif
 

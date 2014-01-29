@@ -209,6 +209,7 @@ public:
     int             GetUserTimeout() const { return userTimeout; }
     uint16_t        GetUserPort() const { return port; }
     FREEMB          GetFreeMbShowType() const { return freeMbShowType; }
+    bool            LogProtocolErrors() const { return logProtocolErrors; }
 
 private:
     int             userDelay;
@@ -216,6 +217,7 @@ private:
     uint16_t        port;
     std::string     errorStr;
     FREEMB          freeMbShowType;
+    bool            logProtocolErrors;
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA;
@@ -266,7 +268,7 @@ private:
     int                 FinalizeNet();
     void                DelUser(USER_PTR u);
     int                 RecvData(char * buffer, int bufferSize);
-    int                 CheckHeader(const char * buffer, int * protoVer);
+    int                 CheckHeader(const char * buffer, uint32_t sip, int * protoVer);
     int                 PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
 
     int                 Process_CONN_SYN_6(CONN_SYN_6 * connSyn, IA_USER * iaUser, uint32_t sip);

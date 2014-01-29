@@ -77,7 +77,7 @@ struct USER_CONF_RES
           group(),
           credit(),
           nextTariff(),
-          userdata(USERDATA_NUM, RESETABLE<std::string>()),
+          userdata(USERDATA_NUM),
           creditExpire(),
           ips()
     {
@@ -100,37 +100,34 @@ struct USER_CONF_RES
         group        = uc.group;
         credit       = uc.credit;
         nextTariff   = uc.nextTariff;
-        for (int i = 0; i < USERDATA_NUM; i++)
-            {
-            userdata[i]  = uc.userdata[i];
-            }
+        for (size_t i = 0; i < USERDATA_NUM; i++) userdata[i]  = uc.userdata[i];
         creditExpire = uc.creditExpire;
         ips          = uc.ips;
         return *this;
     }
-    operator USER_CONF() const
+    USER_CONF GetData() const
     {
         USER_CONF uc;
-        uc.password     = password;
-        uc.passive      = passive;
-        uc.disabled     = disabled;
-        uc.disabledDetailStat = disabledDetailStat;
-        uc.alwaysOnline = alwaysOnline;
-        uc.tariffName   = tariffName;
-        uc.address      = address;
-        uc.phone        = phone;
-        uc.email        = email;
-        uc.note         = note;
-        uc.realName     = realName;
-        uc.group        = group;
-        uc.credit       = credit;
-        uc.nextTariff   = nextTariff;
+        uc.password     = password.data();
+        uc.passive      = passive.data();
+        uc.disabled     = disabled.data();
+        uc.disabledDetailStat = disabledDetailStat.data();
+        uc.alwaysOnline = alwaysOnline.data();
+        uc.tariffName   = tariffName.data();
+        uc.address      = address.data();
+        uc.phone        = phone.data();
+        uc.email        = email.data();
+        uc.note         = note.data();
+        uc.realName     = realName.data();
+        uc.group        = group.data();
+        uc.credit       = credit.data();
+        uc.nextTariff   = nextTariff.data();
         for (int i = 0; i < USERDATA_NUM; i++)
             {
-            uc.userdata[i]  = userdata[i];
+            uc.userdata[i]  = userdata[i].data();
             }
-        uc.creditExpire = creditExpire;
-        uc.ips          = ips;
+        uc.creditExpire = creditExpire.data();
+        uc.ips          = ips.data();
         return uc;
     }
     //-------------------------------------------------------------------------
@@ -155,4 +152,3 @@ struct USER_CONF_RES
 };
 //-----------------------------------------------------------------------------
 #endif
-

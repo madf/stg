@@ -88,23 +88,39 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByNameNonLock(const std::string & login, user_iter * user)
 {
-std::map<std::string, user_iter>::iterator iter;
-iter = loginIndex.find(login);
-if (iter != loginIndex.end())
-    {
-    if (user)
-        *user = iter->second;
-    return 0;
-    }
-return -1;
+const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+if (iter == loginIndex.end())
+    return -1;
+if (user)
+    *user = iter->second;
+return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::FindByNameNonLock(const std::string & login, const_user_iter * user) const
+{
+const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+if (iter == loginIndex.end())
+    return -1;
+if (user)
+    *user = iter->second;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByName(const std::string & login, USER_PTR * user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 user_iter u;
-int res = FindByNameNonLock(login, &u);
-if (res)
+if (FindByNameNonLock(login, &u))
+    return -1;
+*user = &(*u);
+return 0;
+}
+//-----------------------------------------------------------------------------
+int USERS_IMPL::FindByName(const std::string & login, CONST_USER_PTR * user) const
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+const_user_iter u;
+if (FindByNameNonLock(login, &u))
     return -1;
 *user = &(*u);
 return 0;
@@ -298,7 +314,9 @@ AddToIPIdx(iter);
 return true;
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::Unauthorize(const std::string & login, const AUTH * auth)
+bool USERS_IMPL::Unauthorize(const std::string & login,
+                             const AUTH * auth,
+                             const std::string & reason)
 {
 user_iter iter;
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
@@ -310,7 +328,7 @@ if (FindByNameNonLock(login, &iter))
 
 uint32_t ip = iter->GetCurrIP();
 
-iter->Unauthorize(auth);
+iter->Unauthorize(auth, reason);
 
 if (!iter->GetAuthorized())
     DelFromIPIdx(ip);
@@ -494,6 +512,8 @@ else
         for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDayFee));
         }
     }
+
+std::for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDailyFee));
 
 if (settings->GetDayFeeIsLastDay())
     {
@@ -693,6 +713,26 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 
 return it != ipIndex.end();
+}
+//-----------------------------------------------------------------------------
+bool USERS_IMPL::IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const
+{
+STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+std::list<USER_IMPL>::const_iterator iter;
+iter = users.begin();
+while (iter != users.end())
+    {
+    if (iter->GetLogin() != login &&
+        !iter->GetProperty().ips.Get().IsAnyIP() &&
+        iter->GetProperty().ips.Get().IsIPInIPS(ip))
+        {
+        if (user != NULL)
+            *user = &(*iter);
+        return true;
+        }
+    ++iter;
+    }
+return false;
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)

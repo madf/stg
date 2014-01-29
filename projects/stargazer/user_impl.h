@@ -27,14 +27,7 @@
 #ifndef USER_IMPL_H
 #define USER_IMPL_H
 
-#include <ctime>
-#include <list>
-#include <string>
-#include <set>
-
 #include "stg/user.h"
-#include "stg/os_int.h"
-#include "stg/const.h"
 #include "stg/user_stat.h"
 #include "stg/user_conf.h"
 #include "stg/user_ips.h"
@@ -42,6 +35,15 @@
 #include "stg/auth.h"
 #include "stg/message.h"
 #include "stg/noncopyable.h"
+#include "stg/os_int.h"
+#include "stg/const.h"
+
+#include <list>
+#include <vector>
+#include <string>
+#include <set>
+
+#include <ctime>
 
 //-----------------------------------------------------------------------------
 class TARIFF;
@@ -182,10 +184,14 @@ public:
 
     bool            GetConnected() const { return connected; }
     time_t          GetConnectedModificationTime() const { return connected.ModificationTime(); }
+    const std::string & GetLastDisconnectReason() const { return lastDisconnectReason; }
     int             GetAuthorized() const { return static_cast<int>(authorizedBy.size()); }
+    time_t          GetAuthorizedModificationTime() const { return authorizedModificationTime; }
     int             Authorize(uint32_t ip, uint32_t enabledDirs, const AUTH * auth);
-    void            Unauthorize(const AUTH * auth);
+    void            Unauthorize(const AUTH * auth,
+                                const std::string & reason = std::string());
     bool            IsAuthorizedBy(const AUTH * auth) const;
+    std::vector<std::string> GetAuthorizers() const;
 
     int             AddMessage(STG_MSG * msg);
 
@@ -209,6 +215,7 @@ public:
     void            ProcessDayFee();
     void            ProcessDayFeeSpread();
     void            ProcessNewMonth();
+    void            ProcessDailyFee();
 
     bool            IsInetable();
     std::string     GetEnabledDirs() const;
@@ -249,6 +256,7 @@ private:
     USER_PROPERTY<uint32_t> currIP;
 
     uint32_t        lastIPForDisconnect; // User's ip after unauth but before disconnect
+    std::string     lastDisconnectReason;
 
     time_t          pingTime;
 
@@ -268,6 +276,7 @@ private:
 #endif
 
     std::set<const AUTH *> authorizedBy;
+    time_t          authorizedModificationTime;
 
     std::list<STG_MSG> messages;
 

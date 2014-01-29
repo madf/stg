@@ -324,6 +324,9 @@ std::for_each(authorizedUsers.begin(),
               authorizedUsers.end(),
               UpdateRouter(*this));
 
+logger("%s reloaded successfully.", rsSettings.GetMapFileName().c_str());
+printfd(__FILE__, "REMOTE_SCRIPT::Reload() %s reloaded successfully.\n");
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -546,14 +549,25 @@ authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 void REMOTE_SCRIPT::DelRSU(USER_PTR user)
 {
 STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const std::map<uint32_t, RS::USER>::iterator it(
+std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
+while (it != authorizedUsers.end())
+    {
+    if (it->second.user == user)
+        {
+        Send(it->second, true);
+        authorizedUsers.erase(it);
+        return;
+        }
+    ++it;
+    }
+/*const std::map<uint32_t, RS::USER>::iterator it(
         authorizedUsers.find(user->GetCurrIP())
         );
 if (it != authorizedUsers.end())
     {
     Send(it->second, true);
     authorizedUsers.erase(it);
-    }
+    }*/
 }
 //-----------------------------------------------------------------------------
 void RS::IP_NOTIFIER::Notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)

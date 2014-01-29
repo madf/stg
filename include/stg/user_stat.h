@@ -29,6 +29,8 @@
 
 #include <ctime>
 #include <map>
+#include <utility>
+#include <string>
 
 #include "os_int.h"
 #include "resetable.h"
@@ -113,10 +115,11 @@ struct STAT_NODE
 //-----------------------------------------------------------------------------
 struct USER_STAT
 {
-    //USER_STAT & operator= (const USER_STAT_RES & usr);
     USER_STAT()
-        : up(),
-          down(),
+        : sessionUp(),
+          sessionDown(),
+          monthUp(),
+          monthDown(),
           cash(0),
           freeMb(0),
           lastCashAdd(0),
@@ -125,8 +128,10 @@ struct USER_STAT
           lastActivityTime(0)
     {}
 
-    DIR_TRAFF   up;
-    DIR_TRAFF   down;
+    DIR_TRAFF   sessionUp;
+    DIR_TRAFF   sessionDown;
+    DIR_TRAFF   monthUp;
+    DIR_TRAFF   monthDown;
     double      cash;
     double      freeMb;
     double      lastCashAdd;
@@ -137,6 +142,8 @@ struct USER_STAT
 //-----------------------------------------------------------------------------
 typedef std::map<IP_DIR_PAIR, STAT_NODE> TRAFF_STAT;
 //-----------------------------------------------------------------------------
+typedef std::pair<double, std::string> CASH_INFO;
+//-----------------------------------------------------------------------------
 struct USER_STAT_RES
 {
     USER_STAT_RES()
@@ -146,8 +153,10 @@ struct USER_STAT_RES
           lastCashAddTime(),
           passiveTime(),
           lastActivityTime(),
-          up(),
-          down()
+          sessionUp(),
+          sessionDown(),
+          monthUp(),
+          monthDown()
     {}
 
     USER_STAT_RES & operator= (const USER_STAT & us)
@@ -158,32 +167,40 @@ struct USER_STAT_RES
         lastCashAddTime  = us.lastCashAddTime;
         passiveTime      = us.passiveTime;
         lastActivityTime = us.lastActivityTime;
-        up = us.up;
-        down = us.down;
-        return * this;
+        sessionUp        = us.sessionUp;
+        sessionDown      = us.sessionDown;
+        monthUp          = us.monthUp;
+        monthDown        = us.monthDown;
+        return *this;
     }
-    operator USER_STAT() const
+    USER_STAT GetData() const
     {
         USER_STAT us;
-        us.cash             = cash;
-        us.freeMb           = freeMb;
-        us.lastCashAdd      = lastCashAdd;
-        us.lastCashAddTime  = lastCashAddTime;
-        us.passiveTime      = passiveTime;
-        us.lastActivityTime = lastActivityTime;
-        us.up               = up;
-        us.down             = down;
+        us.cash             = cash.data();
+        us.freeMb           = freeMb.data();
+        us.lastCashAdd      = lastCashAdd.data();
+        us.lastCashAddTime  = lastCashAddTime.data();
+        us.passiveTime      = passiveTime.data();
+        us.lastActivityTime = lastActivityTime.data();
+        us.sessionUp        = sessionUp.GetData();
+        us.sessionDown      = sessionDown.GetData();
+        us.monthUp          = monthUp.GetData();
+        us.monthDown        = monthDown.GetData();
         return us;
     }
 
     RESETABLE<double>      cash;
+    RESETABLE<CASH_INFO>   cashAdd;
+    RESETABLE<CASH_INFO>   cashSet;
     RESETABLE<double>      freeMb;
     RESETABLE<double>      lastCashAdd;
     RESETABLE<time_t>      lastCashAddTime;
     RESETABLE<time_t>      passiveTime;
     RESETABLE<time_t>      lastActivityTime;
-    RESETABLE<DIR_TRAFF>   up;
-    RESETABLE<DIR_TRAFF>   down;
+    DIR_TRAFF_RES          sessionUp;
+    DIR_TRAFF_RES          sessionDown;
+    DIR_TRAFF_RES          monthUp;
+    DIR_TRAFF_RES          monthDown;
 };
 //-----------------------------------------------------------------------------
 #endif

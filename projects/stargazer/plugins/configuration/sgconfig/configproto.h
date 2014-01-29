@@ -28,18 +28,21 @@
 #ifndef CONFIGPROTO_H
 #define CONFIGPROTO_H
 
-#include <expat.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-
-#include <string>
-#include <list>
+#include "parser_auth_by.h"
+#include "parser_user_info.h"
 
 #include "stg/users.h"
 #include "stg/admins.h"
 #include "stg/tariffs.h"
 #include "stg/logger.h"
 #include "parser.h"
+
+#include <string>
+#include <list>
+
+#include <expat.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
@@ -55,7 +58,7 @@ public:
     CONFIGPROTO(PLUGIN_LOGGER & l);
     ~CONFIGPROTO();
 
-    void            SetPort(uint16_t port);
+    void            SetPort(uint16_t p) { port = p; }
     void            SetAdmins(ADMINS * a);
     void            SetUsers(USERS * u);
     void            SetTariffs(TARIFFS * t);
@@ -107,6 +110,8 @@ private:
     PARSER_DEL_USER             parserDelUser;
     PARSER_CHECK_USER           parserCheckUser;
     PARSER_SEND_MESSAGE         parserSendMessage;
+    PARSER_AUTH_BY              parserAuthBy;
+    PARSER_USER_INFO            parserUserInfo;
 
     PARSER_GET_ADMINS           parserGetAdmins;
     PARSER_ADD_ADMIN            parserAddAdmin;

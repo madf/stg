@@ -204,8 +204,8 @@ try
                         upload = ?, \
                         download = ? \
                      where fk_stat = ? and dir_num = ?");
-        st->Set(1, (int64_t)stat.up[i]);
-        st->Set(2, (int64_t)stat.down[i]);
+        st->Set(1, (int64_t)stat.monthUp[i]);
+        st->Set(2, (int64_t)stat.monthDown[i]);
         st->Set(3, sid);
         st->Set(4, i);
         st->Execute();
@@ -337,7 +337,7 @@ try
     st->Execute();
 
     st->Prepare("insert into tb_allowed_ip (fk_user, ip, mask) values (?, ?, ?)");
-    for(i = 0; i < conf.ips.Count(); i++)
+    for(size_t i = 0; i < conf.ips.Count(); i++)
         {
         st->Set(1, uid);
         st->Set(2, (int32_t)conf.ips[i].ip);
@@ -421,8 +421,8 @@ try
         if (st->Fetch())
             {
             st->Get(3, dir);
-            st->Get(5, (int64_t &)stat->up[dir]);
-            st->Get(4, (int64_t &)stat->down[dir]);
+            st->Get(5, (int64_t &)stat->monthUp[dir]);
+            st->Get(4, (int64_t &)stat->monthDown[dir]);
             }
         else
             {

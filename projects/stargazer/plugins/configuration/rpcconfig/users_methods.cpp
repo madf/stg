@@ -39,7 +39,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
@@ -172,7 +172,7 @@ while (1)
 
     xmlrpc_c::value info;
 
-    USER_HELPER uhelper(u);
+    USER_HELPER uhelper(u, *users);
 
     uhelper.GetUserInfo(&info, hidePassword);
 
@@ -216,7 +216,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-USER_HELPER uhelper(u);
+USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
@@ -508,4 +508,37 @@ if (ipm.mask > 32)
 ipm.mask = htonl(0xffFFffFF << (32 - ipm.mask));
 
 return false;
+}
+
+void METHOD_GET_USER_AUTH_BY::execute(xmlrpc_c::paramList const & paramList,
+                                      xmlrpc_c::value *   const   retvalPtr)
+{
+std::string cookie = paramList.getString(0);
+std::string login = paramList.getString(1);
+paramList.verifyEnd(2);
+
+std::map<std::string, xmlrpc_c::value> structVal;
+ADMIN_INFO adminInfo;
+
+if (config->GetAdminInfo(cookie, &adminInfo))
+    {
+    structVal["result"] = xmlrpc_c::value_boolean(false);
+    *retvalPtr = xmlrpc_c::value_struct(structVal);
+    return;
+    }
+
+USER_PTR u;
+
+if (users->FindByName(login, &u))
+    {
+    structVal["result"] = xmlrpc_c::value_boolean(false);
+    *retvalPtr = xmlrpc_c::value_struct(structVal);
+    return;
+    }
+
+std::vector<std::string> list(u->GetAuthorizers());
+std::vector<xmlrpc_c::value> authList;
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    authList.push_back(xmlrpc_c::value_string(*it));
+*retvalPtr = xmlrpc_c::value_array(authList);
 }

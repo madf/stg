@@ -21,9 +21,9 @@
 #ifndef SERVICES_H
 #define SERVICES_H
 
-#include <string>
-
 #include "service_conf.h"
+
+#include <string>
 
 class ADMIN;
 

@@ -26,13 +26,16 @@
  *
  */
 
+#include "firebird_store.h"
+
+#include "stg/ibpp.h"
+#include "stg/plugin_creator.h"
+
 #include <string>
 #include <vector>
 #include <algorithm>
 
-#include "stg/ibpp.h"
-#include "stg/plugin_creator.h"
-#include "firebird_store.h"
+#include <cctype>
 
 namespace
 {
@@ -78,55 +81,41 @@ std::string s;
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
     s = i->param;
-    std::transform(s.begin(), s.end(), s.begin(), ToLower());
+
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+
     if (s == "server")
-        {
         db_server = *(i->value.begin());
-        }
+
     if (s == "database")
-        {
         db_database = *(i->value.begin());
-        }
+
     if (s == "user")
-        {
         db_user = *(i->value.begin());
-        }
+
     if (s == "password")
-        {
         db_password = *(i->value.begin());
-        }
 
     // Advanced settings block
 
     if (s == "isolationLevel")
         {
         if (*(i->value.begin()) == "Concurrency")
-            {
             til = IBPP::ilConcurrency;
-            }
         else if (*(i->value.begin()) == "DirtyRead")
-            {
             til = IBPP::ilReadDirty;
-            }
         else if (*(i->value.begin()) == "ReadCommitted")
-            {
             til = IBPP::ilReadCommitted;
-            }
         else if (*(i->value.begin()) == "Consistency")
-            {
             til = IBPP::ilConsistency;
-            }
         }
+
     if (s == "lockResolution")
         {
         if (*(i->value.begin()) == "Wait")
-            {
             tlr = IBPP::lrWait;
-            }
         else if (*(i->value.begin()) == "NoWait")
-            {
             tlr = IBPP::lrNoWait;
-            }
         }
     }
 
@@ -134,9 +123,46 @@ try
     {
     db = IBPP::DatabaseFactory(db_server, db_database, db_user, db_password, "", "KOI8U", "");
     db->Connect();
+    return CheckVersion();
     }
 catch (IBPP::Exception & ex)
     {
+    strError = "IBPP exception";
+    printfd(__FILE__, ex.what());
+    return -1;
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
+int FIREBIRD_STORE::CheckVersion()
+{
+IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
+IBPP::Statement st = IBPP::StatementFactory(db, tr);
+
+std::string name;
+
+try
+    {
+    tr->Start();
+    st->Execute("SELECT RDB$RELATION_NAME FROM RDB$RELATIONS WHERE RDB$SYSTEM_FLAG=0 AND RDB$RELATION_NAME = 'TB_INFO'");
+    if (!st->Fetch())
+        {
+        schemaVersion = 0;
+        }
+    else
+        {
+        st->Execute("SELECT version FROM tb_info");
+        while (st->Fetch())
+            st->Get(1, schemaVersion);
+        }
+    tr->Commit();
+    logger("FIREBIRD_STORE: Current DB schema version: %d", schemaVersion);
+    }
+
+catch (IBPP::Exception & ex)
+    {
+    tr->Rollback();
     strError = "IBPP exception";
     printfd(__FILE__, ex.what());
     return -1;

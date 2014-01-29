@@ -49,16 +49,19 @@ struct REQUEST
 REQUEST()
     : chgTariff(false),
       createUser(false),
-      deleteUser(false)
+      deleteUser(false),
+      authBy(false)
 {
     for (int i = 0; i < DIR_NUM; i++)
         {
-        u[i].reset();
-        d[i].reset();
+        sessionUpload[i].reset();
+        sessionDownload[i].reset();
+        monthUpload[i].reset();
+        monthDownload[i].reset();
         }
 
     for (int i = 0; i < USERDATA_NUM; i++)
-        ud[i].reset();
+        userData[i].reset();
 }
 
 RESETABLE<string>   server;
@@ -75,6 +78,7 @@ RESETABLE<double>   setCash;
 string              message;
 bool                createUser;
 bool                deleteUser;
+bool                authBy;
 
 RESETABLE<string>   usrMsg;
 RESETABLE<double>   credit;
@@ -86,10 +90,13 @@ RESETABLE<bool>     disableDetailStat;
 RESETABLE<bool>     alwaysOnline;
 RESETABLE<double>   prepaidTraff;
 
-RESETABLE<int64_t>  u[DIR_NUM];
-RESETABLE<int64_t>  d[DIR_NUM];
+RESETABLE<int64_t>  sessionUpload[DIR_NUM];
+RESETABLE<int64_t>  sessionDownload[DIR_NUM];
 
-RESETABLE<string>   ud[USERDATA_NUM];
+RESETABLE<int64_t>  monthUpload[DIR_NUM];
+RESETABLE<int64_t>  monthDownload[DIR_NUM];
+
+RESETABLE<string>   userData[USERDATA_NUM];
 
 RESETABLE<string>   note;
 RESETABLE<string>   name;

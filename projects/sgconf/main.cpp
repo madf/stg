@@ -16,39 +16,248 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
- /*
- $Author: faust $
- $Revision: 1.25 $
- $Date: 2010/03/25 14:37:43 $
- */
+#include "request.h"
+#include "common_sg.h"
+#include "sg_error_codes.h"
+
+#include "options.h"
+#include "actions.h"
+#include "config.h"
+
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/common.h"
+
+#include <cerrno>
+#include <clocale>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <sstream>
 
 #include <unistd.h>
 #include <getopt.h>
 #include <iconv.h>
 #include <langinfo.h>
 
-#include <cerrno>
-#include <clocale>
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <list>
-#include <sstream>
+namespace
+{
 
-#include "stg/common.h"
-#include "stg/netunit.h"
-#include "request.h"
-#include "common_sg.h"
-#include "sg_error_codes.h"
+template <typename T>
+struct ARRAY_TYPE
+{
+typedef typename T::value_type type;
+};
 
-using namespace std;
+template <typename T>
+struct ARRAY_TYPE<T[]>
+{
+typedef T type;
+};
+
+template <typename T, size_t N>
+struct ARRAY_TYPE<T[N]>
+{
+typedef T type;
+};
+
+template <typename T>
+struct nullary_function
+{
+typedef T result_type;
+};
+
+template <typename F>
+class binder0 : public nullary_function<typename F::result_type>
+{
+    public:
+        binder0(const F & func, const typename F::argument_type & arg)
+            : m_func(func), m_arg(arg) {}
+        typename F::result_type operator()() const { return m_func(m_arg); }
+    private:
+        F m_func;
+        typename F::argument_type m_arg;
+};
+
+template <typename F>
+inline
+binder0<F> bind0(const F & func, const typename F::argument_type & arg)
+{
+return binder0<F>(func, arg);
+}
+
+template <typename C, typename A, typename R>
+class METHOD1_ADAPTER : public std::unary_function<A, R>
+{
+    public:
+        METHOD1_ADAPTER(R (C::* func)(A), C & obj) : m_func(func), m_obj(obj) {}
+        R operator()(A arg) { return (m_obj.*m_func)(arg); }
+    private:
+        R (C::* m_func)(A);
+        C & m_obj;
+};
+
+template <typename C, typename A, typename R>
+class CONST_METHOD1_ADAPTER : public std::unary_function<A, R>
+{
+    public:
+        CONST_METHOD1_ADAPTER(R (C::* func)(A) const, C & obj) : m_func(func), m_obj(obj) {}
+        R operator()(A arg) const { return (m_obj.*m_func)(arg); }
+    private:
+        R (C::* m_func)(A) const;
+        C & m_obj;
+};
+
+template <typename C, typename A, typename R>
+METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A), C & obj)
+{
+return METHOD1_ADAPTER<C, A, R>(func, obj);
+}
+
+template <typename C, typename A, typename R>
+CONST_METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A) const, C & obj)
+{
+return CONST_METHOD1_ADAPTER<C, A, R>(func, obj);
+}
+
+template <typename T>
+bool SetArrayItem(T & array, const char * index, const typename ARRAY_TYPE<T>::type & value)
+{
+size_t pos = 0;
+if (str2x(index, pos))
+    return false;
+array[pos] = value;
+return true;
+}
+
+void Usage();
+void UsageAll();
+void UsageImpl(bool full);
+void UsageConnection();
+void UsageAdmins(bool full);
+void UsageTariffs(bool full);
+void UsageUsers(bool full);
+void UsageServices(bool full);
+void UsageCorporations(bool full);
+
+void Version();
+
+void ReadUserConfigFile(SGCONF::OPTION_BLOCK & block)
+{
+std::vector<std::string> paths;
+const char * configHome = getenv("XDG_CONFIG_HOME");
+if (configHome == NULL)
+    {
+    const char * home = getenv("HOME");
+    if (home == NULL)
+        return;
+    paths.push_back(std::string(home) + "/.config/sgconf/sgconf.conf");
+    paths.push_back(std::string(home) + "/.sgconf/sgconf.conf");
+    }
+else
+    paths.push_back(std::string(configHome) + "/sgconf/sgconf.conf");
+for (std::vector<std::string>::const_iterator it = paths.begin(); it != paths.end(); ++it)
+    if (access(it->c_str(), R_OK) == 0)
+        {
+        block.ParseFile(*it);
+        return;
+        }
+}
+
+} // namespace anonymous
+
+namespace SGCONF
+{
+
+class CONFIG_ACTION : public ACTION
+{
+    public:
+        CONFIG_ACTION(CONFIG & config,
+                      const std::string & paramDescription)
+            : m_config(config),
+              m_description(paramDescription)
+        {}
+
+        virtual ACTION * Clone() const { return new CONFIG_ACTION(*this); }
+
+        virtual std::string ParamDescription() const { return m_description; }
+        virtual std::string DefaultDescription() const { return ""; }
+        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
+        virtual PARSER_STATE Parse(int argc, char ** argv);
+
+    private:
+        CONFIG & m_config;
+        std::string m_description;
+        OPTION_BLOCK m_suboptions;
+
+        void ParseCredentials(const std::string & credentials);
+        void ParseHostAndPort(const std::string & hostAndPort);
+};
+
+PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
+{
+if (argc == 0 ||
+    argv == NULL ||
+    *argv == NULL)
+    throw ERROR("Missing argument.");
+char * pos = strchr(*argv, '@');
+if (pos != NULL)
+    {
+    ParseCredentials(std::string(*argv, pos));
+    ParseHostAndPort(std::string(pos + 1));
+    }
+else
+    {
+    ParseHostAndPort(std::string(*argv));
+    }
+return PARSER_STATE(false, --argc, ++argv);
+}
+
+void CONFIG_ACTION::ParseCredentials(const std::string & credentials)
+{
+std::string::size_type pos = credentials.find_first_of(':');
+if (pos != std::string::npos)
+    {
+    m_config.userName = credentials.substr(0, pos);
+    m_config.userPass = credentials.substr(pos + 1);
+    }
+else
+    {
+    m_config.userName = credentials;
+    }
+}
+
+void CONFIG_ACTION::ParseHostAndPort(const std::string & hostAndPort)
+{
+std::string::size_type pos = hostAndPort.find_first_of(':');
+if (pos != std::string::npos)
+    {
+    m_config.server = hostAndPort.substr(0, pos);
+    uint16_t port = 0;
+    if (str2x(hostAndPort.substr(pos + 1), port))
+        throw ERROR("Invalid port value: '" + hostAndPort.substr(pos + 1) + "'");
+    m_config.port = port;
+    }
+else
+    {
+    m_config.server = hostAndPort;
+    }
+}
+
+inline
+CONFIG_ACTION * MakeParamAction(CONFIG & config,
+                                const std::string & paramDescription)
+{
+return new CONFIG_ACTION(config, paramDescription);
+}
+
+} // namespace SGCONF
 
 time_t stgTime;
-
-int ParseReplyGet(void * data, list<string> * ans);
-//int ParseReplySet(void * data, list<string> * ans);
 
 struct option long_options_get[] = {
 {"server",      1, 0, 's'},  //Server
@@ -66,37 +275,12 @@ struct option long_options_get[] = {
 {"passive",     0, 0, 'i'},  //passive
 {"disable-stat",0, 0, 'S'},  //disable detail stat
 {"always-online",0, 0, 'O'}, //always online
-{"u0",          0, 0, 500},  //U0
-{"u1",          0, 0, 501},  //U1
-{"u2",          0, 0, 502},  //U2
-{"u3",          0, 0, 503},  //U3
-{"u4",          0, 0, 504},  //U4
-{"u5",          0, 0, 505},  //U5
-{"u6",          0, 0, 506},  //U6
-{"u7",          0, 0, 507},  //U7
-{"u8",          0, 0, 508},  //U8
-{"u9",          0, 0, 509},  //U9
-{"d0",          0, 0, 600},  //D0
-{"d1",          0, 0, 601},  //D1
-{"d2",          0, 0, 602},  //D2
-{"d3",          0, 0, 603},  //D3
-{"d4",          0, 0, 604},  //D4
-{"d5",          0, 0, 605},  //D5
-{"d6",          0, 0, 606},  //D6
-{"d7",          0, 0, 607},  //D7
-{"d8",          0, 0, 608},  //D8
-{"d9",          0, 0, 609},  //D9
+{"session-upload",   1, 0, 500},  //SU0
+{"session-download", 1, 0, 501},  //SD0
+{"month-upload",     1, 0, 502},  //MU0
+{"month-download",   1, 0, 503},  //MD0
 
-{"ud0",         0, 0, 700},  //UserData0
-{"ud1",         0, 0, 701},  //UserData1
-{"ud2",         0, 0, 702},  //UserData2
-{"ud3",         0, 0, 703},  //UserData3
-{"ud4",         0, 0, 704},  //UserData4
-{"ud5",         0, 0, 705},  //UserData5
-{"ud6",         0, 0, 706},  //UserData6
-{"ud7",         0, 0, 707},  //UserData7
-{"ud8",         0, 0, 708},  //UserData8
-{"ud9",         0, 0, 709},  //UserData9
+{"user-data",   1, 0, 700},  //UserData0
 
 {"prepaid",     0, 0, 'e'},  //prepaid traff
 {"create",      0, 0, 'n'},  //create
@@ -108,7 +292,8 @@ struct option long_options_get[] = {
 {"email",       0, 0, 'L'},  //emaiL
 {"phone",       0, 0, 'P'},  //phone
 {"group",       0, 0, 'G'},  //Group
-{"ip",		0, 0, 'I'},  //IP-address of user
+{"ip",          0, 0, 'I'},  //IP-address of user
+{"authorized-by",0, 0, 800}, //always online
 
 {0, 0, 0, 0}};
 
@@ -128,37 +313,12 @@ struct option long_options_set[] = {
 {"passive",     1, 0, 'i'},  //passive
 {"disable-stat",1, 0, 'S'},  //disable detail stat
 {"always-online",1, 0, 'O'},  //always online
-{"u0",          1, 0, 500},  //U0
-{"u1",          1, 0, 501},  //U1
-{"u2",          1, 0, 502},  //U2
-{"u3",          1, 0, 503},  //U3
-{"u4",          1, 0, 504},  //U4
-{"u5",          1, 0, 505},  //U5
-{"u6",          1, 0, 506},  //U6
-{"u7",          1, 0, 507},  //U7
-{"u8",          1, 0, 508},  //U8
-{"u9",          1, 0, 509},  //U9
-{"d0",          1, 0, 600},  //D0
-{"d1",          1, 0, 601},  //D1
-{"d2",          1, 0, 602},  //D2
-{"d3",          1, 0, 603},  //D3
-{"d4",          1, 0, 604},  //D4
-{"d5",          1, 0, 605},  //D5
-{"d6",          1, 0, 606},  //D6
-{"d7",          1, 0, 607},  //D7
-{"d8",          1, 0, 608},  //D8
-{"d9",          1, 0, 609},  //D9
+{"session-upload",   1, 0, 500},  //U0
+{"session-download", 1, 0, 501},  //U1
+{"month-upload",     1, 0, 502},  //U2
+{"month-download",   1, 0, 503},  //U3
 
-{"ud0",         1, 0, 700},  //UserData
-{"ud1",         1, 0, 701},  //UserData1
-{"ud2",         1, 0, 702},  //UserData2
-{"ud3",         1, 0, 703},  //UserData3
-{"ud4",         1, 0, 704},  //UserData4
-{"ud5",         1, 0, 705},  //UserData5
-{"ud6",         1, 0, 706},  //UserData6
-{"ud7",         1, 0, 707},  //UserData7
-{"ud8",         1, 0, 708},  //UserData8
-{"ud9",         1, 0, 709},  //UserData9
+{"user-data",        1, 0, 700},  //UserData
 
 {"prepaid",     1, 0, 'e'},  //prepaid traff
 {"create",      1, 0, 'n'},  //create
@@ -170,40 +330,33 @@ struct option long_options_set[] = {
 {"email",       1, 0, 'L'},  //emaiL
 {"phone",       1, 0, 'P'},  //phone
 {"group",       1, 0, 'G'},  //Group
-{"ip",		0, 0, 'I'},  //IP-address of user
+{"ip",          0, 0, 'I'},  //IP-address of user
 
 {0, 0, 0, 0}};
 
 //-----------------------------------------------------------------------------
-double ParseCash(const char * c, string * message)
+CASH_INFO ParseCash(const char * str)
 {
 //-c 123.45:log message
-double cash;
-char * msg;
-char * str;
-str = new char[strlen(c) + 1];
-
-strncpy(str, c, strlen(c));
-str[strlen(c)] = 0;
-
-msg = strchr(str, ':');
-
-if (msg)
+std::string cashString;
+std::string message;
+const char * pos = strchr(str, ':');
+if (pos != NULL)
     {
-    *message =  msg + 1;
-    str[msg - str] = 0;
+    cashString.append(str, pos);
+    message.append(pos + 1);
     }
 else
-    *message = "";
+    cashString = str;
 
-if (strtodouble2(str, cash) != 0)
+double cash = 0;
+if (strtodouble2(cashString, cash) != 0)
     {
-    printf("Incorrect cash value %s\n", c);
+    printf("Incorrect cash value %s\n", str);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-delete[] str;
-return cash;
+return CASH_INFO(cash, message);
 }
 //-----------------------------------------------------------------------------
 double ParseCredit(const char * c)
@@ -253,63 +406,24 @@ if (!(dp[1] == 0 && (dp[0] == '1' || dp[0] == '0')))
 return dp[0] - '0';
 }
 //-----------------------------------------------------------------------------
-string ParseTariff(const char * t, int &chgType)
+void ParseTariff(const char * str, RESETABLE<std::string> & tariffName, RESETABLE<std::string> & nextTariff)
 {
-int l = strlen(t);
-char * s;
-s = new char[l];
-char * s1, * s2;
-string ss;
-
-strcpy(s, t);
-
-s1 = strtok(s, ":");
-
-if (strlen(s1) >= TARIFF_NAME_LEN)
+const char * pos = strchr(str, ':');
+if (pos != NULL)
     {
-    printf("Tariff name too big %s\n", s1);
-    exit(PARAMETER_PARSING_ERR_CODE);
+    std::string tariff(str, pos);
+    if (strcmp(pos + 1, "now") == 0)
+        tariffName = tariff;
+    else if (strcmp(pos + 1, "delayed") == 0)
+        nextTariff = tariff;
+    else
+        {
+        printf("Incorrect tariff value '%s'. Should be '<tariff>', '<tariff>:now' or '<tariff>:delayed'.\n", str);
+        exit(PARAMETER_PARSING_ERR_CODE);
+        }
     }
-
-//*tariff = s;
-
-if (CheckLogin(s1))
-    {
-    printf("Incorrect tariff value %s\n", t);
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-
-s2 = strtok(NULL, ":");
-
-chgType = -1;
-
-if (s2 == NULL)
-    {
-    chgType = TARIFF_NOW;
-    ss = s;
-    delete[] s;
-    return ss;
-    }
-
-
-if (strcmp(s2, "now") == 0)
-    chgType = TARIFF_NOW;
-
-if (strcmp(s2, "delayed") == 0)
-    chgType = TARIFF_DEL;
-
-if (strcmp(s2, "recalc") == 0)
-    chgType = TARIFF_REC;
-
-if (chgType < 0)
-    {
-    printf("Incorrect tariff value %s\n", t);
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-
-ss = s;
-delete[] s;
-return ss;
+else
+    tariffName = str;
 }
 //-----------------------------------------------------------------------------
 time_t ParseCreditExpire(const char * str)
@@ -400,10 +514,10 @@ memset(str, 0, strLen);
 
 r[0] = 0;
 
-if (!req->usrMsg.res_empty())
+if (!req->usrMsg.empty())
     {
     string msg;
-    Encode12str(msg, req->usrMsg);
+    Encode12str(msg, req->usrMsg.data());
     sprintf(str, "<Message login=\"%s\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"%s\"/>", req->login.const_data().c_str(), msg.c_str());
     //sprintf(str, "<message login=\"%s\" priority=\"0\" text=\"%s\"/>\n", req->login, msg);
     strcat(r, str);
@@ -429,25 +543,25 @@ if (req->createUser)
 strcat(r, "<SetUser>\n");
 sprintf(str, "<login value=\"%s\"/>\n", req->login.const_data().c_str());
 strcat(r, str);
-if (!req->credit.res_empty())
+if (!req->credit.empty())
     {
     sprintf(str, "<credit value=\"%f\"/>\n", req->credit.const_data());
     strcat(r, str);
     }
 
-if (!req->creditExpire.res_empty())
+if (!req->creditExpire.empty())
     {
     sprintf(str, "<creditExpire value=\"%ld\"/>\n", req->creditExpire.const_data());
     strcat(r, str);
     }
 
-if (!req->prepaidTraff.res_empty())
+if (!req->prepaidTraff.empty())
     {
     sprintf(str, "<FreeMb value=\"%f\"/>\n", req->prepaidTraff.const_data());
     strcat(r, str);
     }
 
-if (!req->cash.res_empty())
+if (!req->cash.empty())
     {
     string msg;
     Encode12str(msg, req->message);
@@ -455,7 +569,7 @@ if (!req->cash.res_empty())
     strcat(r, str);
     }
 
-if (!req->setCash.res_empty())
+if (!req->setCash.empty())
     {
     string msg;
     Encode12str(msg, req->message);
@@ -463,38 +577,38 @@ if (!req->setCash.res_empty())
     strcat(r, str);
     }
 
-if (!req->usrPasswd.res_empty())
+if (!req->usrPasswd.empty())
     {
     sprintf(str, "<password value=\"%s\" />\n", req->usrPasswd.const_data().c_str());
     strcat(r, str);
     }
 
-if (!req->down.res_empty())
+if (!req->down.empty())
     {
     sprintf(str, "<down value=\"%d\" />\n", req->down.const_data());
     strcat(r, str);
     }
 
-if (!req->passive.res_empty())
+if (!req->passive.empty())
     {
     sprintf(str, "<passive value=\"%d\" />\n", req->passive.const_data());
     strcat(r, str);
     }
 
-if (!req->disableDetailStat.res_empty())
+if (!req->disableDetailStat.empty())
     {
     sprintf(str, "<disableDetailStat value=\"%d\" />\n", req->disableDetailStat.const_data());
     strcat(r, str);
     }
 
-if (!req->alwaysOnline.res_empty())
+if (!req->alwaysOnline.empty())
     {
     sprintf(str, "<aonline value=\"%d\" />\n", req->alwaysOnline.const_data());
     strcat(r, str);
     }
 
 // IP-address of user
-if (!req->ips.res_empty())
+if (!req->ips.empty())
     {
     sprintf(str, "<ip value=\"%s\" />\n", req->ips.const_data().c_str());
     strcat(r, str);
@@ -504,7 +618,7 @@ int uPresent = false;
 int dPresent = false;
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->u[i].res_empty())
+    if (!req->monthUpload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -514,12 +628,12 @@ for (int i = 0; i < DIR_NUM; i++)
             }
 
         stringstream ss;
-        ss << req->u[i].const_data();
+        ss << req->monthUpload[i].const_data();
         //sprintf(str, "MU%d=\"%lld\" ", i, req->u[i].const_data());
         sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
-    if (!req->d[i].res_empty())
+    if (!req->monthDownload[i].empty())
         {
         if (!uPresent && !dPresent)
             {
@@ -529,7 +643,36 @@ for (int i = 0; i < DIR_NUM; i++)
             }
 
         stringstream ss;
-        ss << req->d[i].const_data();
+        ss << req->monthDownload[i].const_data();
+        sprintf(str, "MD%d=\"%s\" ", i, ss.str().c_str());
+        strcat(r, str);
+        }
+    if (!req->sessionUpload[i].empty())
+        {
+        if (!uPresent && !dPresent)
+            {
+            sprintf(str, "<traff ");
+            strcat(r, str);
+            uPresent = true;
+            }
+
+        stringstream ss;
+        ss << req->sessionUpload[i].const_data();
+        //sprintf(str, "MU%d=\"%lld\" ", i, req->u[i].const_data());
+        sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
+        strcat(r, str);
+        }
+    if (!req->sessionDownload[i].empty())
+        {
+        if (!uPresent && !dPresent)
+            {
+            sprintf(str, "<traff ");
+            strcat(r, str);
+            dPresent = true;
+            }
+
+        stringstream ss;
+        ss << req->sessionDownload[i].const_data();
         sprintf(str, "MD%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
@@ -541,7 +684,7 @@ if (uPresent || dPresent)
 
 //printf("%s\n", r);
 
-if (!req->tariff.res_empty())
+if (!req->tariff.empty())
     {
     switch (req->chgTariff)
         {
@@ -561,60 +704,60 @@ if (!req->tariff.res_empty())
 
     }
 
-if (!req->note.res_empty())
+if (!req->note.empty())
     {
     string note;
-    Encode12str(note, req->note);
+    Encode12str(note, req->note.data());
     sprintf(str, "<note value=\"%s\"/>", note.c_str());
     strcat(r, str);
     }
 
-if (!req->name.res_empty())
+if (!req->name.empty())
     {
     string name;
-    Encode12str(name, req->name);
+    Encode12str(name, req->name.data());
     sprintf(str, "<name value=\"%s\"/>", name.c_str());
     strcat(r, str);
     }
 
-if (!req->address.res_empty())
+if (!req->address.empty())
     {
     string address;
-    Encode12str(address, req->address);
+    Encode12str(address, req->address.data());
     sprintf(str, "<address value=\"%s\"/>", address.c_str());
     strcat(r, str);
     }
 
-if (!req->email.res_empty())
+if (!req->email.empty())
     {
     string email;
-    Encode12str(email, req->email);
+    Encode12str(email, req->email.data());
     sprintf(str, "<email value=\"%s\"/>", email.c_str());
     strcat(r, str);
     }
 
-if (!req->phone.res_empty())
+if (!req->phone.empty())
     {
     string phone;
-    Encode12str(phone, req->phone);
+    Encode12str(phone, req->phone.data());
     sprintf(str, "<phone value=\"%s\"/>", phone.c_str());
     strcat(r, str);
     }
 
-if (!req->group.res_empty())
+if (!req->group.empty())
     {
     string group;
-    Encode12str(group, req->group);
+    Encode12str(group, req->group.data());
     sprintf(str, "<group value=\"%s\"/>", group.c_str());
     strcat(r, str);
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->ud[i].res_empty())
+    if (!req->userData[i].empty())
         {
         string ud;
-        Encode12str(ud, req->ud[i]);
+        Encode12str(ud, req->userData[i].data());
         sprintf(str, "<userdata%d value=\"%s\"/>", i, ud.c_str());
         strcat(r, str);
         }
@@ -625,30 +768,32 @@ strcat(r, "</SetUser>\n");
 //-----------------------------------------------------------------------------
 int CheckParameters(REQUEST * req)
 {
-int u = false;
-int d = false;
-int ud = false;
-int a = !req->admLogin.res_empty()
-    && !req->admPasswd.res_empty()
-    && !req->server.res_empty()
-    && !req->port.res_empty()
-    && !req->login.res_empty();
+bool su = false;
+bool sd = false;
+bool mu = false;
+bool md = false;
+bool ud = false;
+bool a = !req->admLogin.empty()
+    && !req->admPasswd.empty()
+    && !req->server.empty()
+    && !req->port.empty()
+    && !req->login.empty();
 
-int b = !req->cash.res_empty()
-    || !req->setCash.res_empty()
-    || !req->credit.res_empty()
-    || !req->prepaidTraff.res_empty()
-    || !req->tariff.res_empty()
-    || !req->usrMsg.res_empty()
-    || !req->usrPasswd.res_empty()
+bool b = !req->cash.empty()
+    || !req->setCash.empty()
+    || !req->credit.empty()
+    || !req->prepaidTraff.empty()
+    || !req->tariff.empty()
+    || !req->usrMsg.empty()
+    || !req->usrPasswd.empty()
 
-    || !req->note.res_empty()
-    || !req->name.res_empty()
-    || !req->address.res_empty()
-    || !req->email.res_empty()
-    || !req->phone.res_empty()
-    || !req->group.res_empty()
-    || !req->ips.res_empty()	// IP-address of user
+    || !req->note.empty()
+    || !req->name.empty()
+    || !req->address.empty()
+    || !req->email.empty()
+    || !req->phone.empty()
+    || !req->group.empty()
+    || !req->ips.empty() // IP-address of user
 
     || !req->createUser
     || !req->deleteUser;
@@ -656,25 +801,43 @@ int b = !req->cash.res_empty()
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->u[i].res_empty())
+    if (req->sessionUpload[i].empty())
         {
-        u = true;
+        su = true;
         break;
         }
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->d[i].res_empty())
+    if (req->sessionDownload[i].empty())
         {
-        d = true;
+        sd = true;
         break;
         }
     }
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (req->ud[i].res_empty())
+    if (req->monthUpload[i].empty())
+        {
+        mu = true;
+        break;
+        }
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (req->monthDownload[i].empty())
+        {
+        md = true;
+        break;
+        }
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (req->userData[i].empty())
         {
         ud = true;
         break;
@@ -683,7 +846,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 
 //printf("a=%d, b=%d, u=%d, d=%d ud=%d\n", a, b, u, d, ud);
-return a && (b || u || d || ud);
+return a && (b || su || sd || mu || md || ud);
 }
 //-----------------------------------------------------------------------------
 int CheckParametersGet(REQUEST * req)
@@ -696,7 +859,7 @@ int CheckParametersSet(REQUEST * req)
 return CheckParameters(req);
 }
 //-----------------------------------------------------------------------------
-int mainGet(int argc, char **argv)
+bool mainGet(int argc, char **argv)
 {
 int c;
 REQUEST req;
@@ -791,10 +954,10 @@ while (1)
         case 'G': //Group
             req.group = " ";
             break;
-	
-	case 'I': //IP-address of user
-	    req.ips = " ";
-	    break;
+
+        case 'I': //IP-address of user
+            req.ips = " ";
+            break;
 
         case 'S': //Detail stat status
             req.disableDetailStat = " ";
@@ -805,50 +968,33 @@ while (1)
             break;
 
         case 500: //U
-        case 501:
-        case 502:
-        case 503:
-        case 504:
-        case 505:
-        case 506:
-        case 507:
-        case 508:
-        case 509:
-            //printf("U%d\n", c - 500);
-            req.u[c - 500] = 1;
+            SetArrayItem(req.sessionUpload, optarg, 1);
+            //req.sessionUpload[optarg] = 1;
             break;
-
-        case 600: //D
-        case 601:
-        case 602:
-        case 603:
-        case 604:
-        case 605:
-        case 606:
-        case 607:
-        case 608:
-        case 609:
-            //printf("D%d\n", c - 600);
-            req.d[c - 600] = 1;
+        case 501:
+            SetArrayItem(req.sessionDownload, optarg, 1);
+            //req.sessionDownload[optarg] = 1;
+            break;
+        case 502:
+            SetArrayItem(req.monthUpload, optarg, 1);
+            //req.monthUpload[optarg] = 1;
+            break;
+        case 503:
+            SetArrayItem(req.monthDownload, optarg, 1);
+            //req.monthDownload[optarg] = 1;
             break;
 
         case 700: //UserData
-        case 701:
-        case 702:
-        case 703:
-        case 704:
-        case 705:
-        case 706:
-        case 707:
-        case 708:
-        case 709:
-            //printf("UD%d\n", c - 700);
-            req.ud[c - 700] = " ";
+            SetArrayItem(req.userData, optarg, std::string(" "));
+            //req.userData[optarg] = " ";
+            break;
+
+        case 800:
+            req.authBy = true;
             break;
 
         case '?':
         case ':':
-            //printf ("Unknown option \n");
             missedOptionArg = true;
             break;
 
@@ -873,10 +1019,13 @@ if (missedOptionArg || !CheckParametersGet(&req))
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-return ProcessGetUser(req.server, req.port, req.admLogin, req.admPasswd, req.login, &req);
+if (req.authBy)
+    return ProcessAuthBy(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data());
+else
+    return ProcessGetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), req);
 }
 //-----------------------------------------------------------------------------
-int mainSet(int argc, char **argv)
+bool mainSet(int argc, char **argv)
 {
 string str;
 
@@ -890,6 +1039,8 @@ const char * short_options_set = "s:p:a:w:u:c:r:t:m:o:d:i:e:v:nlN:A:D:L:P:G:I:S:
 
 int missedOptionArg = false;
 
+USER_CONF_RES conf;
+USER_STAT_RES stat;
 while (1)
     {
     int option_index = -1;
@@ -919,7 +1070,7 @@ while (1)
             break;
 
         case 'o': //change user password
-            req.usrPasswd = ParsePassword(optarg);
+            conf.password = ParsePassword(optarg);
             break;
 
         case 'u': //user
@@ -927,31 +1078,31 @@ while (1)
             break;
 
         case 'c': //add cash
-            req.cash = ParseCash(optarg, &req.message);
+            stat.cashAdd = ParseCash(optarg);
             break;
 
         case 'v': //set cash
-            req.setCash = ParseCash(optarg, &req.message);
+            stat.cashSet = ParseCash(optarg);
             break;
 
         case 'r': //credit
-            req.credit = ParseCredit(optarg);
+            conf.credit = ParseCredit(optarg);
             break;
 
         case 'E': //credit expire
-            req.creditExpire = ParseCreditExpire(optarg);
+            conf.creditExpire = ParseCreditExpire(optarg);
             break;
 
         case 'd': //down
-            req.down = ParseDownPassive(optarg);
+            conf.disabled = ParseDownPassive(optarg);
             break;
 
         case 'i': //passive
-            req.passive = ParseDownPassive(optarg);
+            conf.passive = ParseDownPassive(optarg);
             break;
 
         case 't': //tariff
-            req.tariff = ParseTariff(optarg, req.chgTariff);
+            ParseTariff(optarg, conf.tariffName, conf.nextTariff);
             break;
 
         case 'm': //message
@@ -961,7 +1112,7 @@ while (1)
             break;
 
         case 'e': //Prepaid Traffic
-            req.prepaidTraff = ParsePrepaidTraffic(optarg);
+            stat.freeMb = ParsePrepaidTraffic(optarg);
             break;
 
         case 'n': //Create User
@@ -974,98 +1125,70 @@ while (1)
 
         case 'N': //Note
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.note = str;
+            conf.note = str;
             break;
 
         case 'A': //nAme
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.name = str;
+            conf.realName = str;
             break;
 
         case 'D': //aDdress
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.address = str;
+            conf.address = str;
             break;
 
         case 'L': //emaiL
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.email = str;
-            //printf("EMAIL=%s\n", optarg);
+            conf.email = str;
             break;
 
         case 'P': //phone
             ParseAnyString(optarg, &str);
-            req.phone = str;
+            conf.phone = str;
             break;
 
         case 'G': //Group
             ParseAnyString(optarg, &str, "koi8-ru");
-            req.group = str;
+            conf.group = str;
             break;
 
         case 'I': //IP-address of user
             ParseAnyString(optarg, &str);
-            req.ips = str;
+            conf.ips = StrToIPS(str);
             break;
 
         case 'S':
-            req.disableDetailStat = ParseDownPassive(optarg);
+            conf.disabledDetailStat = ParseDownPassive(optarg);
             break;
 
         case 'O':
-            req.alwaysOnline = ParseDownPassive(optarg);
+            conf.alwaysOnline = ParseDownPassive(optarg);
             break;
 
         case 500: //U
-        case 501:
-        case 502:
-        case 503:
-        case 504:
-        case 505:
-        case 506:
-        case 507:
-        case 508:
-        case 509:
-            //printf("U%d\n", c - 500);
-            req.u[c - 500] = ParseTraff(optarg);
+            SetArrayItem(stat.sessionUp, optarg, ParseTraff(argv[optind++]));
             break;
-
-        case 600: //D
-        case 601:
-        case 602:
-        case 603:
-        case 604:
-        case 605:
-        case 606:
-        case 607:
-        case 608:
-        case 609:
-            //printf("D%d\n", c - 600);
-            req.d[c - 600] = ParseTraff(optarg);
+        case 501:
+            SetArrayItem(stat.sessionDown, optarg, ParseTraff(argv[optind++]));
+            break;
+        case 502:
+            SetArrayItem(stat.monthUp, optarg, ParseTraff(argv[optind++]));
+            break;
+        case 503:
+            SetArrayItem(stat.monthDown, optarg, ParseTraff(argv[optind++]));
             break;
 
         case 700: //UserData
-        case 701:
-        case 702:
-        case 703:
-        case 704:
-        case 705:
-        case 706:
-        case 707:
-        case 708:
-        case 709:
-            ParseAnyString(optarg, &str);
-            //printf("UD%d\n", c - 700);
-            req.ud[c - 700] = str;
+            ParseAnyString(argv[optind++], &str);
+            SetArrayItem(conf.userdata, optarg, str);
             break;
 
         case '?':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 
         case ':':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 
@@ -1094,12 +1217,85 @@ const int rLen = 20000;
 char rstr[rLen];
 memset(rstr, 0, rLen);
 
-CreateRequestSet(&req, rstr);
-return ProcessSetUser(req.server, req.port, req.admLogin, req.admPasswd, rstr, NULL, isMessage);
+if (isMessage)
+    return ProcessSendMessage(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), req.usrMsg.data());
+
+return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), conf, stat);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+SGCONF::CONFIG config;
+
+SGCONF::OPTION_BLOCKS blocks;
+blocks.Add("General options")
+      .Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file")
+      .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
+      .Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
+      .Add("v", "version", SGCONF::MakeFunc0Action(Version), "\t\tshow version information and exit");
+SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
+      .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
+      .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
+      .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
+      .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
+      .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
+
+
+SGCONF::PARSER_STATE state(false, argc, argv);
+
+try
+{
+state = blocks.Parse(--argc, ++argv); // Skipping self name
+}
+catch (const SGCONF::OPTION::ERROR& ex)
+{
+std::cerr << ex.what() << "\n";
+return -1;
+}
+
+if (state.stop)
+    return 0;
+
+if (state.argc > 0)
+    {
+    std::cerr << "Unknown option: '" << *state.argv << "'\n";
+    return -1;
+    }
+
+try
+{
+SGCONF::CONFIG configOverride(config);
+
+if (config.configFile.empty())
+    {
+    const char * mainConfigFile = "/etc/sgconf/sgconf.conf";
+    if (access(mainConfigFile, R_OK) == 0)
+        block.ParseFile(mainConfigFile);
+    ReadUserConfigFile(block);
+    }
+else
+    {
+    block.ParseFile(config.configFile.data());
+    }
+
+config = configOverride;
+}
+catch (const std::exception& ex)
+{
+std::cerr << ex.what() << "\n";
+return -1;
+}
+
+std::cerr << "Config: " << config.Serialize() << std::endl;
+
+return 0;
+
+if (argc < 2)
+    {
+    Usage();
+    return 1;
+    }
+
 if (argc <= 2)
     {
     UsageConf();
@@ -1114,7 +1310,9 @@ if (strcmp(argv[1], "get") == 0)
 else if (strcmp(argv[1], "set") == 0)
     {
     //printf("set\n");
-    return mainSet(argc - 1, argv + 1);
+    if (mainSet(argc - 1, argv + 1) )
+        return 0;
+    return -1;
     }
 else
     {
@@ -1125,3 +1323,213 @@ return UNKNOWN_ERR_CODE;
 }
 //-----------------------------------------------------------------------------
 
+namespace
+{
+
+void Usage()
+{
+UsageImpl(false);
+}
+
+void UsageAll()
+{
+UsageImpl(true);
+}
+
+void UsageImpl(bool full)
+{
+std::cout << "sgconf is the Stargazer management utility.\n\n"
+          << "Usage:\n"
+          << "\tsgconf [options]\n\n"
+          << "General options:\n"
+          << "\t-c, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\")\n"
+          << "\t-h, --help\t\t\t\tshow this help and exit\n"
+          << "\t--help-all\t\t\t\tshow full help and exit\n"
+          << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
+UsageConnection();
+UsageAdmins(full);
+UsageTariffs(full);
+UsageUsers(full);
+UsageServices(full);
+UsageCorporations(full);
+}
+//-----------------------------------------------------------------------------
+void UsageConnection()
+{
+std::cout << "Connection options:\n"
+          << "\t-s, --server <address>\t\t\thost to connect (ip or domain name, default: \"localhost\")\n"
+          << "\t-p, --port <port>\t\t\tport to connect (default: \"5555\")\n"
+          << "\t-u, --username <username>\t\tadministrative login (default: \"admin\")\n"
+          << "\t-w, --userpass <password>\t\tpassword for administrative login\n"
+          << "\t-a, --address <connection string>\tconnection params as a single string in format: <login>:<password>@<host>:<port>\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageAdmins(bool full)
+{
+std::cout << "Admins management options:\n"
+          << "\t--get-admins\t\t\t\tget a list of admins (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--login\t\t\t\tshow admin's login\n"
+              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
+std::cout << "\t--get-admin\t\t\t\tget the information about admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to show\n"
+              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
+std::cout << "\t--add-admin\t\t\t\tadd a new admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
+              << "\t\t--password <password>\t\tpassword of the admin to add\n"
+              << "\t\t--priv <priv number>\t\tpriviledges of the admin to add\n\n";
+std::cout << "\t--del-admin\t\t\t\tdelete an existing admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to delete\n\n";
+std::cout << "\t--chg-admin\t\t\t\tchange an existing admin\n";
+if (full)
+    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to change\n"
+              << "\t\t--priv <priv number>\t\tnew priviledges\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageTariffs(bool full)
+{
+std::cout << "Tariffs management options:\n"
+          << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow tariff's name\n"
+              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
+              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
+              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
+std::cout << "\t--get-tariff\t\t\t\tget the information about tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to show\n"
+              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
+              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
+              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
+std::cout << "\t--add-tariff\t\t\t\tadd a new tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to add\n"
+              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
+              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type <type>\t\twhat type of traffi will be accounted by the tariff\n"
+              << "\t\t--times <times>\t\t\tslash-separated list of \"day\" time-spans (in form \"hh:mm-hh:mm\") for each direction\n"
+              << "\t\t--prices-day-a <prices>\t\tslash-separated list of prices for \"day\" traffic before threshold for each direction\n"
+              << "\t\t--prices-night-a <prices>\tslash-separated list of prices for \"night\" traffic before threshold for each direction\n"
+              << "\t\t--prices-day-b <prices>\t\tslash-separated list of prices for \"day\" traffic after threshold for each direction\n"
+              << "\t\t--prices-night-b <prices>\tslash-separated list of prices for \"night\" traffic after threshold for each direction\n"
+              << "\t\t--single-prices <yes|no>\tslash-separated list of \"single price\" flags for each direction\n"
+              << "\t\t--no-discounts <yes|no>\t\tslash-separated list of \"no discount\" flags for each direction\n"
+              << "\t\t--thresholds <thresholds>\tslash-separated list of thresholds (in Mb) for each direction\n\n";
+std::cout << "\t--del-tariff\t\t\t\tdelete an existing tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to delete\n\n";
+std::cout << "\t--chg-tariff\t\t\t\tchange an existing tariff\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the tariff to change\n"
+              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
+              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
+              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
+              << "\t\t--traff-type <type>\t\twhat type of traffix will be accounted by the tariff\n"
+              << "\t\t--dir <N>\t\t\tnumber of direction data to change\n"
+              << "\t\t\t--time <time>\t\t\"day\" time-span (in form \"hh:mm-hh:mm\")\n"
+              << "\t\t\t--price-day-a <price>\tprice for \"day\" traffic before threshold\n"
+              << "\t\t\t--price-night-a <price>\tprice for \"night\" traffic before threshold\n"
+              << "\t\t\t--price-day-b <price>\tprice for \"day\" traffic after threshold\n"
+              << "\t\t\t--price-night-b <price>\tprice for \"night\" traffic after threshold\n"
+              << "\t\t\t--single-price <yes|no>\t\"single price\" flag\n"
+              << "\t\t\t--no-discount <yes|no>\t\"no discount\" flag\n"
+              << "\t\t\t--threshold <threshold>\tthreshold (in Mb)\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageUsers(bool full)
+{
+std::cout << "Users management options:\n"
+          << "\t--get-users\t\t\t\tget a list of users (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--get-user\t\t\t\tget the information about user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--add-user\t\t\t\tadd a new user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--del-user\t\t\t\tdelete an existing user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--chg-user\t\t\t\tchange an existing user\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--check-user\t\t\t\tcheck credentials is valid\n";
+if (full)
+    std::cout << "\n\n";
+std::cout << "\t--send-message\t\t\t\tsend a message to a user\n";
+if (full)
+    std::cout << "\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageServices(bool full)
+{
+std::cout << "Services management options:\n"
+          << "\t--get-services\t\t\t\tget a list of services (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow service's name\n"
+              << "\t\t--comment\t\t\tshow a comment to the service\n"
+              << "\t\t--cost\t\t\t\tshow service's cost\n"
+              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
+std::cout << "\t--get-service\t\t\t\tget the information about service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to show\n"
+              << "\t\t--comment\t\t\tshow a comment to the service\n"
+              << "\t\t--cost\t\t\t\tshow service's cost\n"
+              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
+std::cout << "\t--add-service\t\t\t\tadd a new service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to add\n"
+              << "\t\t--comment <comment>\t\ta comment to the service\n"
+              << "\t\t--cost <cost>\t\t\tservice's cost\n"
+              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
+std::cout << "\t--del-service\t\t\t\tdelete an existing service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to delete\n\n";
+std::cout << "\t--chg-service\t\t\t\tchange an existing service\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the service to change\n"
+              << "\t\t--comment <comment>\t\ta comment to the service\n"
+              << "\t\t--cost <cost>\t\t\tservice's cost\n"
+              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
+}
+//-----------------------------------------------------------------------------
+void UsageCorporations(bool full)
+{
+std::cout << "Corporations management options:\n"
+          << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n";
+if (full)
+    std::cout << "\t\t--name\t\t\t\tshow corporation's name\n"
+              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
+std::cout << "\t--get-corp\t\t\t\tget the information about corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to show\n"
+              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
+std::cout << "\t--add-corp\t\t\t\tadd a new corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to add\n"
+              << "\t\t--cash <cash>\t\t\tinitial corporation's cash (default: \"0\")\n\n";
+std::cout << "\t--del-corp\t\t\t\tdelete an existing corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to delete\n\n";
+std::cout << "\t--chg-corp\t\t\t\tchange an existing corporation\n";
+if (full)
+    std::cout << "\t\t--name <name>\t\t\tname of the corporation to change\n"
+              << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
+              << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n\n";
+}
+
+void Version()
+{
+std::cout << "sgconf, version: 2.0.0-alpha.\n";
+}
+
+} // namespace anonymous

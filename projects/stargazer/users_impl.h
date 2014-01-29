@@ -75,6 +75,7 @@ public:
     virtual ~USERS_IMPL();
 
     int             FindByName(const std::string & login, USER_PTR * user);
+    int             FindByName(const std::string & login, CONST_USER_PTR * user) const;
 
     bool            TariffInUse(const std::string & tariffName) const;
 
@@ -95,7 +96,9 @@ public:
 
     bool            Authorize(const std::string & login, uint32_t ip,
                               uint32_t enabledDirs, const AUTH * auth);
-    bool            Unauthorize(const std::string & login, const AUTH * auth);
+    bool            Unauthorize(const std::string & login,
+                                const AUTH * auth,
+                                const std::string & reason = std::string());
 
     int             ReadUsers();
     size_t          Count() const { return users.size(); }
@@ -103,6 +106,7 @@ public:
     int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
     int             FindByIPIdx(uint32_t ip, USER_IMPL ** user) const;
     bool            IsIPInIndex(uint32_t ip) const;
+    bool            IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const;
 
     int             OpenSearch();
     int             SearchNext(int handler, USER_PTR * user);
@@ -121,6 +125,7 @@ private:
     bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
 
     int             FindByNameNonLock(const std::string & login, user_iter * user);
+    int             FindByNameNonLock(const std::string & login, const_user_iter * user) const;
 
     void            RealDelUser();
     void            ProcessActions();

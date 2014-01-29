@@ -133,8 +133,7 @@ answerList->erase(answerList->begin(), answerList->end());
 
 if (users->FindByName(login, &u))
     {
-    s = "<user result=\"error\"/>";
-    answerList->push_back(s);
+    answerList->push_back("<user result=\"error\" reason=\"User not found.\"/>");
     return;
     }
 
@@ -284,6 +283,13 @@ strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->GetProperty().lastActivit
 answerList->push_back(s);
 
 strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
+answerList->push_back(s);
+
+s = "<AuthorizedBy>";
+std::vector<std::string> list(u->GetAuthorizers());
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    s += "<Auth name=\"" + *it + "\"/>";
+s += "</AuthorizedBy>";
 answerList->push_back(s);
 
 strprintf(&s, "</user>");
@@ -936,8 +942,6 @@ else
                 }
             j+=2;
             }
-        usr->down = dtd;
-        usr->up = dtu;
         return 0;
         }
 
@@ -1009,13 +1013,13 @@ if (users->FindByName(login, &u))
 
 bool check = false;
 bool alwaysOnline = u->GetProperty().alwaysOnline;
-if (!ucr->alwaysOnline.res_empty())
+if (!ucr->alwaysOnline.empty())
     {
     check = true;
     alwaysOnline = ucr->alwaysOnline.const_data();
     }
 bool onlyOneIP = u->GetProperty().ips.ConstData().OnlyOneIP();
-if (!ucr->ips.res_empty())
+if (!ucr->ips.empty())
     {
     check = true;
     onlyOneIP = ucr->ips.const_data().OnlyOneIP();
@@ -1025,52 +1029,66 @@ if (check && alwaysOnline && !onlyOneIP)
     {
     printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
     GetStgLogger()("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", currAdmin->GetLogStr().c_str());
+    res = -1;
     return -1;
     }
 
-if (!ucr->ips.res_empty())
+for (size_t i = 0; i < ucr->ips.const_data().Count(); ++i)
+    {
+    CONST_USER_PTR user;
+    uint32_t ip = ucr->ips.const_data().operator[](i).ip;
+    if (users->IsIPInUse(ip, login, &user))
+        {
+        printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+        GetStgLogger()("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", currAdmin->GetLogStr().c_str(), inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+        res = -1;
+        return -1;
+        }
+    }
+
+if (!ucr->ips.empty())
     if (!u->GetProperty().ips.Set(ucr->ips.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->alwaysOnline.res_empty())
+if (!ucr->alwaysOnline.empty())
     if (!u->GetProperty().alwaysOnline.Set(ucr->alwaysOnline.const_data(),
                                       currAdmin, login, store))
         res = -1;
 
-if (!ucr->address.res_empty())
+if (!ucr->address.empty())
     if (!u->GetProperty().address.Set(ucr->address.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->creditExpire.res_empty())
+if (!ucr->creditExpire.empty())
     if (!u->GetProperty().creditExpire.Set(ucr->creditExpire.const_data(),
                                       currAdmin, login, store))
         res = -1;
 
-if (!ucr->credit.res_empty())
+if (!ucr->credit.empty())
     if (!u->GetProperty().credit.Set(ucr->credit.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!usr->freeMb.res_empty())
+if (!usr->freeMb.empty())
     if (!u->GetProperty().freeMb.Set(usr->freeMb.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->disabled.res_empty())
+if (!ucr->disabled.empty())
     if (!u->GetProperty().disabled.Set(ucr->disabled.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->disabledDetailStat.res_empty())
+if (!ucr->disabledDetailStat.empty())
     if (!u->GetProperty().disabledDetailStat.Set(ucr->disabledDetailStat.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->email.res_empty())
+if (!ucr->email.empty())
     if (!u->GetProperty().email.Set(ucr->email.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->group.res_empty())
+if (!ucr->group.empty())
     if (!u->GetProperty().group.Set(ucr->group.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->note.res_empty())
+if (!ucr->note.empty())
     if (!u->GetProperty().note.Set(ucr->note.const_data(), currAdmin, login, store))
         res = -1;
 
@@ -1088,31 +1106,31 @@ userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
 for (int i = 0; i < (int)userdata.size(); i++)
     {
-    if (!ucr->userdata[i].res_empty())
+    if (!ucr->userdata[i].empty())
         {
         if(!userdata[i]->Set(ucr->userdata[i].const_data(), currAdmin, login, store))
             res = -1;
         }
     }
 
-if (!ucr->passive.res_empty())
+if (!ucr->passive.empty())
     if (!u->GetProperty().passive.Set(ucr->passive.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->password.res_empty())
+if (!ucr->password.empty())
     if (!u->GetProperty().password.Set(ucr->password.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->phone.res_empty())
+if (!ucr->phone.empty())
     if (!u->GetProperty().phone.Set(ucr->phone.const_data(), currAdmin, login, store))
         res = -1;
 
-if (!ucr->realName.res_empty())
+if (!ucr->realName.empty())
     if (!u->GetProperty().realName.Set(ucr->realName.const_data(), currAdmin, login, store))
         res = -1;
 
 
-if (!usr->cash.res_empty())
+if (!usr->cash.empty())
     {
     //if (*currAdmin->GetPriv()->userCash)
         {
@@ -1134,7 +1152,7 @@ if (!usr->cash.res_empty())
     }
 
 
-if (!ucr->tariffName.res_empty())
+if (!ucr->tariffName.empty())
     {
     if (tariffs->FindByName(ucr->tariffName.const_data()))
         {
@@ -1149,7 +1167,7 @@ if (!ucr->tariffName.res_empty())
         }
     }
 
-if (!ucr->nextTariff.res_empty())
+if (!ucr->nextTariff.empty())
     {
     if (tariffs->FindByName(ucr->nextTariff.const_data()))
         {
@@ -1169,14 +1187,14 @@ int upCount = 0;
 int downCount = 0;
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!upr[i].res_empty())
+    if (!upr[i].empty())
         {
-        up[i] = upr[i];
+        up[i] = upr[i].data();
         upCount++;
         }
-    if (!downr[i].res_empty())
+    if (!downr[i].empty())
         {
-        down[i] = downr[i];
+        down[i] = downr[i].data();
         downCount++;
         }
     }
@@ -1188,15 +1206,6 @@ if (upCount)
 if (downCount)
     if (!u->GetProperty().down.Set(down, currAdmin, login, store))
         res = -1;
-
-/*if (!usr->down.res_empty())
-    {
-    u->GetProperty().down.Set(usr->down.const_data(), currAdmin, login, store);
-    }
-if (!usr->up.res_empty())
-    {
-    u->GetProperty().up.Set(usr->up.const_data(), currAdmin, login, store);
-    }*/
 
 u->WriteConf();
 u->WriteStat();
@@ -1342,11 +1351,11 @@ switch (result)
         break;
     case res_params_error:
         printfd(__FILE__, "res_params_error\n");
-        answerList->push_back("<SendMessageResult value=\"Parameters error\"/>");
+        answerList->push_back("<SendMessageResult value=\"Parameters error.\"/>");
         break;
     case res_unknown:
         printfd(__FILE__, "res_unknown\n");
-        answerList->push_back("<SendMessageResult value=\"Unknown user\"/>");
+        answerList->push_back("<SendMessageResult value=\"Unknown user.\"/>");
         break;
     default:
         printfd(__FILE__, "res_default\n");
@@ -1400,30 +1409,17 @@ else
     answerList->push_back("<DelUser value=\"ok\"/>");
 }
 //-----------------------------------------------------------------------------
-/*void PARSERDELUSER::CreateAnswer(char * mes)
-{
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
-char str[255];
-sprintf(str, "<DelUser value=\"%s\"/>", mes);
-answerList->push_back(str);
-}*/
-//-----------------------------------------------------------------------------
 //  CHECK USER
 // <checkuser login="vasya" password=\"123456\"/>
 //-----------------------------------------------------------------------------
 int PARSER_CHECK_USER::ParseStart(void *, const char *el, const char **attr)
 {
-result = false;
-
 if (strcasecmp(el, "CheckUser") == 0)
     {
     if (attr[0] == NULL || attr[1] == NULL
      || attr[2] == NULL || attr[3] == NULL)
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("Invalid parameters.");
         printfd(__FILE__, "PARSER_CHECK_USER - attr err\n");
         return 0;
         }
@@ -1431,22 +1427,19 @@ if (strcasecmp(el, "CheckUser") == 0)
     USER_PTR user;
     if (users->FindByName(attr[1], &user))
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("User not found.");
         printfd(__FILE__, "PARSER_CHECK_USER - login err\n");
         return 0;
         }
 
     if (strcmp(user->GetProperty().password.Get().c_str(), attr[3]))
         {
-        result = false;
-        CreateAnswer();
+        CreateAnswer("Wrong password.");
         printfd(__FILE__, "PARSER_CHECK_USER - passwd err\n");
         return 0;
         }
 
-    result = true;
-    CreateAnswer();
+    CreateAnswer(NULL);
     return 0;
     }
 return -1;
@@ -1461,12 +1454,12 @@ if (strcasecmp(el, "CheckUser") == 0)
 return -1;
 }
 //-----------------------------------------------------------------------------
-void PARSER_CHECK_USER::CreateAnswer()
+void PARSER_CHECK_USER::CreateAnswer(const char * error)
 {
-if (result)
-    answerList->push_back("<CheckUser value=\"Ok\"/>");
+if (error)
+    answerList->push_back(std::string("<CheckUser value=\"Err\" reason=\"") + error + "\"/>");
 else
-    answerList->push_back("<CheckUser value=\"Err\"/>");
+    answerList->push_back("<CheckUser value=\"Ok\"/>");
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

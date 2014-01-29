@@ -347,6 +347,20 @@ for (size_t i = 0; i < src.length() / 2; i++)
     }
 }
 //---------------------------------------------------------------------------
+std::string Encode12str(const std::string & src)
+{
+std::string res;
+Encode12str(res, src);
+return res;
+}
+//---------------------------------------------------------------------------
+std::string Decode21str(const std::string & src)
+{
+std::string res;
+Decode21str(res, src);
+return res;
+}
+//---------------------------------------------------------------------------
 void Encode12(char * dst, const char * src, size_t srcLen)
 {
 for (size_t i = 0; i <= srcLen; i++)
@@ -790,6 +804,13 @@ const std::string & x2str(uint64_t x, std::string & s)
 return unsigned2str(x, s);
 }
 //---------------------------------------------------------------------------
+const std::string & x2str(double x, std::string & s)
+{
+char buf[256];
+s = snprintf(buf, sizeof(buf), "%f", x);
+return s;
+}
+//---------------------------------------------------------------------------
 std::string & TrimL(std::string & val)
 {
 size_t pos = val.find_first_not_of(" \t");
@@ -817,6 +838,28 @@ return val;
 std::string & Trim(std::string & val)
 {
 return TrimR(TrimL(val));
+}
+//---------------------------------------------------------------------------
+std::string Trim(const std::string & val)
+{
+std::string res(val);
+return TrimR(TrimL(res));
+}
+//---------------------------------------------------------------------------
+std::string ToLower(const std::string & value)
+{
+    std::string res;
+    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
+        res += tolower(value[pos]);
+    return res;
+}
+//---------------------------------------------------------------------------
+std::string ToUpper(const std::string & value)
+{
+    std::string res;
+    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
+        res += toupper(value[pos]);
+    return res;
 }
 //---------------------------------------------------------------------------
 #ifdef WIN32

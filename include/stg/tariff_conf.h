@@ -27,11 +27,12 @@
 #ifndef TARIFF_CONF_H
 #define TARIFF_CONF_H
 
-#include <string>
-#include <vector>
-
+#include "tariff.h"
 #include "resetable.h"
 #include "const.h"
+
+#include <string>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 enum
@@ -102,21 +103,21 @@ struct DIRPRICE_DATA_RES
         return *this;
         }
 
-    DIRPRICE_DATA GetData()
+    DIRPRICE_DATA GetData() const
         {
         DIRPRICE_DATA dd;
-        dd.hDay        = hDay;
-        dd.hNight      = hNight;
-        dd.mDay        = mDay;
-        dd.mNight      = mNight;
-        dd.noDiscount  = noDiscount;
-        dd.priceDayA   = priceDayA;
-        dd.priceDayB   = priceDayB;
+        dd.hDay        = hDay.data();
+        dd.hNight      = hNight.data();
+        dd.mDay        = mDay.data();
+        dd.mNight      = mNight.data();
+        dd.noDiscount  = noDiscount.data();
+        dd.priceDayA   = priceDayA.data();
+        dd.priceDayB   = priceDayB.data();
 
-        dd.priceNightA = priceNightA;
-        dd.priceNightB = priceNightB;
-        dd.singlePrice = singlePrice;
-        dd.threshold   = threshold;
+        dd.priceNightA = priceNightA.data();
+        dd.priceNightB = priceNightB.data();
+        dd.singlePrice = singlePrice.data();
+        dd.threshold   = threshold.data();
         return dd;
         }
 
@@ -135,18 +136,20 @@ struct DIRPRICE_DATA_RES
 //-----------------------------------------------------------------------------
 struct TARIFF_CONF
 {
-    double      fee;
-    double      free;
-    int         traffType;
-    double      passiveCost;
-    std::string name;
+    double         fee;
+    double         free;
+    int            traffType;
+    double         passiveCost;
+    std::string    name;
+    TARIFF::PERIOD period;
 
     TARIFF_CONF()
         : fee(0),
           free(0),
           traffType(TRAFF_UP_DOWN),
           passiveCost(0),
-          name()
+          name(),
+          period(TARIFF::MONTH)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -154,7 +157,8 @@ struct TARIFF_CONF
           free(0),
           traffType(TRAFF_UP_DOWN),
           passiveCost(0),
-          name(n)
+          name(n),
+          period(TARIFF::MONTH)
         {}
 };
 //-----------------------------------------------------------------------------
@@ -165,7 +169,8 @@ struct TARIFF_CONF_RES
           free(),
           traffType(),
           passiveCost(),
-          name()
+          name(),
+          period()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
@@ -175,25 +180,28 @@ struct TARIFF_CONF_RES
         traffType   = tc.traffType;
         passiveCost = tc.passiveCost;
         name        = tc.name;
+        period      = tc.period;
         return *this;
         }
 
-    TARIFF_CONF GetData()
+    TARIFF_CONF GetData() const
         {
         TARIFF_CONF tc;
-        tc.fee         = fee;
-        tc.free        = free;
-        tc.name        = name;
-        tc.passiveCost = passiveCost;
-        tc.traffType   = traffType;
+        tc.fee         = fee.data();
+        tc.free        = free.data();
+        tc.name        = name.data();
+        tc.passiveCost = passiveCost.data();
+        tc.traffType   = traffType.data();
+        tc.period      = period.data();
         return tc;
         }
 
-    RESETABLE<double>      fee;
-    RESETABLE<double>      free;
-    RESETABLE<int>         traffType;
-    RESETABLE<double>      passiveCost;
-    RESETABLE<std::string> name;
+    RESETABLE<double>         fee;
+    RESETABLE<double>         free;
+    RESETABLE<int>            traffType;
+    RESETABLE<double>         passiveCost;
+    RESETABLE<std::string>    name;
+    RESETABLE<TARIFF::PERIOD> period;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
@@ -234,7 +242,7 @@ struct TARIFF_DATA_RES
           dirPrice(DIR_NUM)
         {}
 
-    TARIFF_DATA GetData()
+    TARIFF_DATA GetData() const
         {
         TARIFF_DATA td;
         td.tariffConf = tariffConf.GetData();

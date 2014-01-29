@@ -26,14 +26,15 @@
 *
 *******************************************************************/
 
-#include <unistd.h> // close
+#include "configproto.h"
+
+#include "stg/blowfish.h"
 
 #include <cerrno>
 #include <csignal>
 #include <cstdio> // snprintf
 
-#include "stg/blowfish.h"
-#include "configproto.h"
+#include <unistd.h> // close
 
 #ifndef ENODATA
 // FreeBSD 4.* - suxx
@@ -147,13 +148,11 @@ while (nonstop)
                              &outerAddrLen);
 
     if (!nonstop)
-        {
         break;
-        }
 
     if (outerSocket < 0)
         {
-	logger("accept error: %s", strerror(errno));
+        logger("accept error: %s", strerror(errno));
         printfd(__FILE__, "accept failed\n");
         continue;
         }
@@ -256,8 +255,8 @@ while (pos < stgHdrLen)
     ssize_t ret = recv(sock, &buf[pos], static_cast<int>(stgHdrLen) - static_cast<int>(pos), 0);
     if (ret <= 0)
         {
-	if (ret < 0)
-	    logger("recv error: %s", strerror(errno));
+        if (ret < 0)
+            logger("recv error: %s", strerror(errno));
         state = confHdr;
         return -1;
         }
@@ -319,7 +318,7 @@ while (pos < ADM_LOGIN_LEN) {
     if (ret <= 0)
         {
         // Error in network
-	logger("recv error: %s", strerror(errno));
+        logger("recv error: %s", strerror(errno));
         state = confHdr;
         return ENODATA;
         }
@@ -370,7 +369,7 @@ while (pos < ADM_LOGIN_LEN)
         {
         // Network error
         printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
-	logger("recv error: %s", strerror(errno));
+        logger("recv error: %s", strerror(errno));
         state = confHdr;
         return ENODATA;
         }
@@ -389,9 +388,7 @@ EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 char login[ADM_LOGIN_LEN + 1];
 for (size_t i = 0; i < ADM_LOGIN_LEN / 8; i++)
-    {
     DecodeString(login + i * 8, loginS + i * 8, &ctx);
-    }
 
 if (currAdmin == admins->GetNoAdmin())
     {
@@ -456,7 +453,7 @@ while (1)
         if (ret < 0)
             {
             // Network error
-	    logger("recv error: %s", strerror(errno));
+            logger("recv error: %s", strerror(errno));
             printfd(__FILE__, "recv error: '%s'\n", strerror(errno));
             return -1;
             }
@@ -514,11 +511,8 @@ while (li != answerList.end())
         if (n % 8 == 0)
             {
             EncodeString(buffS, buff, &ctx);
-            int ret = static_cast<int>(send(sock, buffS, 8, 0));
-            if (ret < 0)
-                {
+            if (send(sock, buffS, 8, 0) < 0)
                 return -1;
-                }
             }
         }
     k = 0;// new node

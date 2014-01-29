@@ -27,11 +27,12 @@
 #ifndef USER_TRAFF_H
 #define USER_TRAFF_H
 
-#include <iostream>
-#include <vector>
-
+#include "resetable.h"
 #include "const.h"
 #include "os_int.h"
+
+#include <iostream>
+#include <vector>
 
 enum TRAFF_DIRECTION {TRAFF_UPLOAD, TRAFF_DOWNLOAD};
 
@@ -43,64 +44,23 @@ public:
     typedef std::vector<uint64_t> ContainerType;
     typedef ContainerType::size_type IndexType;
 
-    //-------------------------------------------------------------------------
-    DIR_TRAFF();
-    DIR_TRAFF(const DIR_TRAFF & ts);
-    DIR_TRAFF & operator=(const DIR_TRAFF & ts);
-    ~DIR_TRAFF();
-    uint64_t operator[](IndexType idx) const;
-    uint64_t & operator[](IndexType idx);
-    DIR_TRAFF operator+(const DIR_TRAFF & ts);
+    DIR_TRAFF() : traff(DIR_NUM) {}
+    DIR_TRAFF(const DIR_TRAFF & ts) : traff(ts.traff) {}
+    DIR_TRAFF & operator=(const DIR_TRAFF & ts) { traff = ts.traff; return *this; }
+    const uint64_t & operator[](IndexType idx) const { return traff[idx]; }
+    uint64_t & operator[](IndexType idx) { return traff[idx]; }
+    IndexType size() const { return traff.size(); }
 
 private:
     ContainerType traff;
 };
-//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-inline DIR_TRAFF::DIR_TRAFF()
-    : traff(DIR_NUM, 0)
-{
-}
-//-----------------------------------------------------------------------------
-inline DIR_TRAFF::DIR_TRAFF(const DIR_TRAFF & ts)
-    : traff(ts.traff)
-{
-}
-//-----------------------------------------------------------------------------
-inline DIR_TRAFF::~DIR_TRAFF()
-{
-}
-//-----------------------------------------------------------------------------
-inline DIR_TRAFF & DIR_TRAFF::operator=(const DIR_TRAFF & ts)
-{
-traff = ts.traff;
-return *this;
-}
-//-----------------------------------------------------------------------------
-inline uint64_t & DIR_TRAFF::operator[](IndexType idx)
-{
-return traff[idx];
-}
-//-----------------------------------------------------------------------------
-inline uint64_t DIR_TRAFF::operator[](IndexType idx) const
-{
-return traff[idx];
-}
-//-----------------------------------------------------------------------------
-inline DIR_TRAFF DIR_TRAFF::operator+(const DIR_TRAFF & ts)
-{
-for (IndexType i = 0; i < DIR_NUM; i++)
-    {
-    traff[i] = traff[i] + ts.traff[i];
-    }
-return *this;
-}
-//-----------------------------------------------------------------------------
-inline std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
+inline
+std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
 {
 bool first = true;
-for (DIR_TRAFF::IndexType i = 0; i < DIR_NUM; ++i)
+for (DIR_TRAFF::IndexType i = 0; i < traff.size(); ++i)
     {
     if (first)
         first = false;
@@ -110,5 +70,36 @@ for (DIR_TRAFF::IndexType i = 0; i < DIR_NUM; ++i)
     }
 return o;
 }
-//-----------------------------------------------------------------------------
+
+class DIR_TRAFF_RES
+{
+public:
+    typedef RESETABLE<uint64_t> value_type;
+    typedef RESETABLE<uint64_t> ValueType;
+    typedef std::vector<ValueType> ContainerType;
+    typedef ContainerType::size_type IndexType;
+
+    DIR_TRAFF_RES() : traff(DIR_NUM) {}
+    DIR_TRAFF_RES(const DIR_TRAFF & ts)
+        : traff(ts.size())
+    {
+    for (IndexType i = 0; i < ts.size(); ++i)
+        traff[i] = ts[i];
+    }
+    const ValueType & operator[](IndexType idx) const { return traff[idx]; }
+    ValueType & operator[](IndexType idx) { return traff[idx]; }
+    IndexType size() const { return traff.size(); }
+    DIR_TRAFF GetData() const
+    {
+    DIR_TRAFF res;
+    for (IndexType i = 0; i < traff.size(); ++i)
+        if (!traff[i].empty())
+            res[i] = traff[i].data();
+    return res;
+    }
+
+private:
+    ContainerType traff;
+};
+
 #endif

@@ -161,6 +161,18 @@ if ((it = structVal.find("ips")) != structVal.end())
     {
     USER_IPS ips;
     ips = StrToIPS(xmlrpc_c::value_string(it->second));
+
+    for (size_t i = 0; i < ips.Count(); ++i)
+        {
+        CONST_USER_PTR user;
+        uint32_t ip = ips[i].ip;
+        if (users.IsIPInUse(ip, login, &user))
+            {
+            printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
+            return true;
+            }
+        }
+
     if (!ptr->GetProperty().ips.Set(ips,
                                 admin,
                                 login,

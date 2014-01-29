@@ -25,21 +25,25 @@
  */
 
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <locale.h>
-#include <langinfo.h>
-#include <iostream>
-#include <iconv.h>
-
-#include "stg/common.h"
 #include "sg_error_codes.h"
 #include "common_sg.h"
 #include "version_sg.h"
 
-using namespace std;
+#include "stg/common.h"
+
+#include <iostream>
+#include <vector>
+
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cerrno>
+#include <clocale>
+
+#include <langinfo.h>
+#include <iconv.h>
+
+using namespace STG;
 
 const int usageConf = 0;
 const int usageInfo = 1;
@@ -47,18 +51,26 @@ const int usageInfo = 1;
 const int TO_KOI8 = 0;
 const int FROM_KOI8 = 1;
 //-----------------------------------------------------------------------------
-struct GetUserCbData
+struct ResultData
 {
-    void * data;
-    bool * result;
+    bool result;
+    std::string reason;
+};
+//-----------------------------------------------------------------------------
+struct GetUserData
+{
+    GetUserData(REQUEST & req, bool res) : request(req), result(res) {}
+    REQUEST & request;
+    bool result;
+    std::string reason;
 };
 //---------------------------------------------------------------------------
 struct HelpParams
 {
-    string setActionName;
-    string getActionName;
-    string valueName;
-    string valueParam;
+    std::string setActionName;
+    std::string getActionName;
+    std::string valueName;
+    std::string valueParam;
 };
 //---------------------------------------------------------------------------
 void Usage(int usageType)
@@ -84,7 +96,7 @@ HelpParams hp[] =
     {"set credit expire",       "get credit expire",    "-E",   "<credit_expire_date>"},
     {"set password",            "get password",         "-o",   "<new_password>"},
     {"set prepaid traffic",     "get prepaid traffic",  "-e",   "<prepaid>"},
-    {"set IP-addresses",	"get IP-addresses",	"-I",	"<*|ip_addr[,ip_addr...]>"},
+    {"set IP-addresses",        "get IP-addresses",     "-I",   "<*|ip_addr[,ip_addr...]>"},
     {"set name",                "get name",             "-A",   "<name>"},
     {"set note",                "get note",             "-N",   "<note>"},
     {"set street address",      "get street address",   "-D",   "<address>"},
@@ -121,6 +133,9 @@ printf("To set userdata<0...9> use:\n");
 printf("sgconf set -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --ud0 <userdata> [--ud1<userdata> ...]\n");
 printf("To get userdata<0...9> use:\n");
 printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --ud0 [--ud1 ...]\n\n");
+
+printf("To get user's authorizers list use:\n");
+printf("sgconf get -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> --authorized-by\n\n");
 
 printf("To send message use:\n");
 printf("sgconf set -s <server> -p <port> -a <admin> -w <admin_pass> -u <user> -m <message>\n\n");
@@ -164,7 +179,7 @@ short int ParseServerPort(const char * p)
 int port;
 if (str2x(p, port) != 0)
     {
-    printf("Incorresct server port %s\n", p);
+    printf("Incorrect server port %s\n", p);
     exit(NETWORK_ERR_CODE);
     }
 return (short)port;
@@ -174,7 +189,7 @@ char * ParseAdminLogin(char * adm)
 {
 if (CheckLogin(adm))
     {
-    printf("Incorresct admin login %s\n", adm);
+    printf("Incorrect admin login %s\n", adm);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 return adm;
@@ -195,13 +210,13 @@ char * ParseUser(char * usr)
 {
 if (CheckLogin(usr))
     {
-    printf("Incorresct user login %s\n", usr);
+    printf("Incorrect user login %s\n", usr);
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 return usr;
 }
 //-----------------------------------------------------------------------------
-void ConvertKOI8(const string & src, string * dst, int encType)
+void ConvertKOI8(const std::string & src, std::string * dst, int encType)
 {
 iconv_t cd;
 char * ob = new char[src.size() * 2 + 1];
@@ -276,67 +291,68 @@ delete[] ob;
 delete[] ib;
 }
 //-----------------------------------------------------------------------------
-void ConvertFromKOI8(const string & src, string * dst)
+void ConvertFromKOI8(const std::string & src, std::string * dst)
 {
 ConvertKOI8(src, dst, FROM_KOI8);
 }
 //-----------------------------------------------------------------------------
-void ConvertToKOI8(const string & src, string * dst)
+void ResultCallback(bool result, const std::string & reason, void * d)
 {
-ConvertKOI8(src, dst, TO_KOI8);
+ResultData * data = static_cast<ResultData *>(d);
+data->result = result;
+data->reason = reason;
 }
 //-----------------------------------------------------------------------------
-int RecvSetUserAnswer(const char * ans, void * d)
+void RecvAuthByData(bool result, const std::string & reason,
+                    const AUTH_BY::INFO & list, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
+ResultData * data = static_cast<ResultData *>(d);
+data->result = result;
+data->reason = reason;
 
-bool * result = gucbd->result;
+if (!result)
+    return;
 
-//REQUEST * req = (REQUEST *)gucbd->data;
+for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    std::cout << *it << "\n";
 
-//printf("ans=%s\n", ans);
-if (strcasecmp("Ok", ans) == 0)
-    *result = true;
-else
-    *result = false;
-
-return 0;
+std::cout << std::endl;
 }
 //-----------------------------------------------------------------------------
 struct StringReqParams
 {
-    string name;
-    RESETABLE<string> reqParam;
-    string * value;
+    std::string name;
+    RESETABLE<std::string> reqParam;
+    const std::string * value;
 };
 //-----------------------------------------------------------------------------
-void RecvUserData(USERDATA * ud, void * d)
+void GetUserCallback(bool result, const std::string& reason, const GET_USER::INFO & info, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
+GetUserData * data = static_cast<GetUserData *>(d);
+data->result = false;
+data->reason = reason;
 
-bool * result = gucbd->result;
+if (!result)
+    return;
 
-REQUEST * req = (REQUEST *)gucbd->data;
-
-if (ud->login == "")
+if (info.login == "")
     {
-    *result = false;
+    data->result = false;
+    data->reason = "Invalid login.";
     return;
     }
 
-if (!req->cash.res_empty())
-    cout << "cash=" << ud->cash << endl;
+if (!data->request.cash.empty())
+    cout << "cash = " << info.cash << endl;
 
-if (!req->credit.res_empty())
-    cout << "credit=" << ud->credit << endl;
+if (!data->request.credit.empty())
+    cout << "credit = " << info.credit << endl;
 
-if (!req->creditExpire.res_empty())
+if (!data->request.creditExpire.empty())
     {
     char buf[32];
     struct tm brokenTime;
-    time_t tt = ud->creditExpire;
+    time_t tt = info.creditExpire;
 
     brokenTime.tm_wday = 0;
     brokenTime.tm_yday = 0;
@@ -349,151 +365,172 @@ if (!req->creditExpire.res_empty())
 
     strftime(buf, 32, "%Y-%m-%d", &brokenTime);
 
-    cout << "creditExpire=" << buf << endl;
+    cout << "creditExpire = " << buf << endl;
     }
 
-if (!req->down.res_empty())
-    cout << "down=" << ud->down << endl;
+if (!data->request.down.empty())
+    cout << "down = " << info.down << endl;
 
-if (!req->passive.res_empty())
-    cout << "passive=" << ud->passive << endl;
+if (!data->request.passive.empty())
+    cout << "passive = " << info.passive << endl;
 
-if (!req->disableDetailStat.res_empty())
-    cout << "disableDetailStat=" << ud->disableDetailStat << endl;
+if (!data->request.disableDetailStat.empty())
+    cout << "disableDetailStat = " << info.disableDetailStat << endl;
 
-if (!req->alwaysOnline.res_empty())
-    cout << "alwaysOnline=" << ud->alwaysOnline << endl;
+if (!data->request.alwaysOnline.empty())
+    cout << "alwaysOnline = " << info.alwaysOnline << endl;
 
-if (!req->prepaidTraff.res_empty())
-    cout << "prepaidTraff=" << ud->prepaidTraff << endl;
+if (!data->request.prepaidTraff.empty())
+    cout << "prepaidTraff = " << info.prepaidTraff << endl;
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->u[i].res_empty())
-        cout << "u" << i << "=" << ud->stat.mu[i] << endl;
-    if (!req->d[i].res_empty())
-        cout << "d" << i << "=" << ud->stat.md[i] << endl;
+    if (!data->request.sessionUpload[i].empty())
+        cout << "session upload for dir " << i << " = " << info.stat.su[i] << endl;
+    if (!data->request.sessionDownload[i].empty())
+        cout << "session download for dir " << i << "=" << info.stat.sd[i] << endl;
+    }
+
+for (int i = 0; i < DIR_NUM; i++)
+    {
+    if (!data->request.monthUpload[i].empty())
+        cout << "month upload for dir " << i << " = " << info.stat.mu[i] << endl;
+    if (!data->request.monthDownload[i].empty())
+        cout << "month download for dir " << i << " = " << info.stat.md[i] << endl;
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->ud[i].res_empty())
+    if (!data->request.userData[i].empty())
         {
-        string str;
-        ConvertFromKOI8(ud->userData[i], &str);
-        cout << "userdata" << i << "=" << str << endl;
+        std::string str;
+        ConvertFromKOI8(info.userData[i], &str);
+        cout << "user data " << i << " = " << str << endl;
         }
     }
 
 StringReqParams strReqParams[] =
 {
-    {"note",     req->note,        &ud->note},
-    {"name",     req->name,        &ud->name},
-    {"address",  req->address,     &ud->address},
-    {"email",    req->email,       &ud->email},
-    {"phone",    req->phone,       &ud->phone},
-    {"group",    req->group,       &ud->group},
-    {"tariff",   req->tariff,      &ud->tariff},
-    {"password", req->usrPasswd,   &ud->password},
-    {"ip",	 req->ips,	   &ud->ips}	// IP-address of user
+    {"note",     data->request.note,        &info.note},
+    {"name",     data->request.name,        &info.name},
+    {"address",  data->request.address,     &info.address},
+    {"email",    data->request.email,       &info.email},
+    {"phone",    data->request.phone,       &info.phone},
+    {"group",    data->request.group,       &info.group},
+    {"tariff",   data->request.tariff,      &info.tariff},
+    {"password", data->request.usrPasswd,   &info.password},
+    {"ip",       data->request.ips,         &info.ips} // IP-address of user
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
-    if (!strReqParams[i].reqParam.res_empty())
+    if (!strReqParams[i].reqParam.empty())
         {
         string str;
         ConvertFromKOI8(*strReqParams[i].value, &str);
-        cout << strReqParams[i].name << "=" << str << endl;
+        cout << strReqParams[i].name << " = " << str << endl;
         }
     }
-*result = true;
+data->result = true;
 }
 //-----------------------------------------------------------------------------
-int ProcessSetUser(const std::string &server,
+bool ProcessSetUser(const std::string & server,
+                    int port,
+                    const std::string & login,
+                    const std::string & password,
+                    const std::string & user,
+                    const USER_CONF_RES & conf,
+                    const USER_STAT_RES & stat)
+{
+SERVCONF sc(server, port, login, password);
+
+ResultData data;
+int res = sc.ChgUser(user, conf, stat, ResultCallback, &data);
+
+if (res == st_ok && data.result)
+    {
+    printf("Ok\n");
+    return false;
+    }
+
+printf("Error\n");
+if (res != st_ok)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return true;
+}
+//-----------------------------------------------------------------------------
+bool ProcessSendMessage(const std::string & server, uint16_t port,
+                        const std::string & login, const std::string & password,
+                        const std::string & user, const std::string & text)
+{
+SERVCONF sc(server, port, login, password);
+
+ResultData data;
+int res = sc.SendMessage(user, text, ResultCallback, &data);
+
+if (res == st_ok && data.result)
+    {
+    printf("Ok\n");
+    return true;
+    }
+
+printf("Error\n");
+if (res != st_ok)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return false;
+}
+//-----------------------------------------------------------------------------
+bool ProcessGetUser(const std::string &server,
+                    int port,
+                    const std::string &admLogin,
+                    const std::string &admPasswd,
+                    const std::string &login,
+                    REQUEST & request)
+{
+SERVCONF sc(server, port, admLogin, admPasswd);
+
+GetUserData data(request, false);
+bool res = (sc.GetUser(login.c_str(), GetUserCallback, &data) == st_ok);
+
+if (res && data.result)
+    {
+    printf("Ok\n");
+    return true;
+    }
+
+printf("Error\n");
+if (!res)
+    printf("%s\n", sc.GetStrError().c_str());
+else
+    printf("%s\n", data.reason.c_str());
+return false;
+}
+//-----------------------------------------------------------------------------
+bool ProcessAuthBy(const std::string &server,
                    int port,
                    const std::string &admLogin,
                    const std::string &admPasswd,
-                   const std::string &str,
-                   void * data,
-                   bool isMessage)
+                   const std::string &login)
 {
-SERVCONF sc;
+SERVCONF sc(server, port, admLogin, admPasswd);
 
-bool result = false;
+ResultData data;
+bool res = (sc.AuthBy(login.c_str(), RecvAuthByData, &data) == st_ok);
 
-
-sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
-sc.SetPort(port);           // админский порт серверапорт
-sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
-sc.SetAdmPassword(admPasswd.c_str());
-
-// TODO Good variable name :)
-GetUserCbData gucbd;
-
-gucbd.data = data;
-gucbd.result = &result;
-
-if (isMessage)
-    {
-    sc.SetSendMessageCb(RecvSetUserAnswer, &gucbd);
-    sc.MsgUser(str.c_str());
-    }
-else
-    {
-    sc.SetChgUserCb(RecvSetUserAnswer, &gucbd);
-    sc.ChgUser(str.c_str());
-    }
-
-if (result)
+if (res && data.result)
     {
     printf("Ok\n");
-    return 0;
+    return true;
     }
+
+printf("Error\n");
+if (!res)
+    printf("%s\n", sc.GetStrError().c_str());
 else
-    {
-    printf("Error\n");
-    return -1;
-    }
-
-return 0;
-}
-//-----------------------------------------------------------------------------
-int ProcessGetUser(const std::string &server,
-                   int port,
-                   const std::string &admLogin,
-                   const std::string &admPasswd,
-                   const std::string &login,
-                   void * data)
-{
-SERVCONF sc;
-
-bool result = false;
-
-sc.SetServer(server.c_str());  // Устанавливаем имя сервера с которго забирать инфу
-sc.SetPort(port);           // админский порт серверапорт
-sc.SetAdmLogin(admLogin.c_str());    // Выставляем логин и пароль админа
-sc.SetAdmPassword(admPasswd.c_str());
-
-// TODO Good variable name :)
-GetUserCbData gucbd;
-
-gucbd.data = data;
-gucbd.result = &result;
-
-sc.SetGetUserDataRecvCb(RecvUserData, &gucbd);
-sc.GetUser(login.c_str());
-
-if (result)
-    {
-    printf("Ok\n");
-    return 0;
-    }
-else
-    {
-    printf("Error\n");
-    return -1;
-    }
-
-return 0;
+    printf("%s\n", data.reason.c_str());
+return false;
 }
 //-----------------------------------------------------------------------------

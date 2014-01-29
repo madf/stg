@@ -19,6 +19,7 @@ $Author: faust $
 #include "stg/logger.h"
 #include "stg/locker.h"
 #include "stg/scriptexecuter.h"
+#include "stg/common.h"
 
 #include "store.h"
 #include "admin.h"
@@ -288,7 +289,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
       name(n),
       scriptsDir(sd)
 {
-properties.insert(std::make_pair(name, this));
+properties.insert(std::make_pair(ToLower(name), this));
 }
 //-------------------------------------------------------------------------
 template <typename varT>

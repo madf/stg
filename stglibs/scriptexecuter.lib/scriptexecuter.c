@@ -40,7 +40,7 @@ if (msgsnd(msgid, (void *)&sd, MAX_SCRIPT_LEN, 0) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 void Executer(int msgID, pid_t pid, char * procName)
 #else
 void Executer(int msgID, pid_t pid)
@@ -56,7 +56,7 @@ if (pid)
     return;
 nonstop = 1;
 
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 memset(procName, 0, strlen(procName));
 strcpy(procName, "stg-exec");
 #else

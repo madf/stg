@@ -8,10 +8,10 @@ PROG = mod_auth_ao.so
 
 SRCS = ./ao.cpp
 
-STGLIBS = common \
+STGLIBS = scriptexecuter \
 	  logger \
 	  locker \
-	  scriptexecuter
+	  common
 
 include ../../Makefile.in
 
