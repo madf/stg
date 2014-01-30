@@ -392,7 +392,7 @@ else
 inline
 std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
 {
-std::map<std::string, USER_PROPERTY_BASE*>::const_iterator it = properties.find(name);
+std::map<std::string, USER_PROPERTY_BASE*>::const_iterator it = properties.find(ToLower(name));
 if (it == properties.end())
     return "";
 return it->second->ToString();
@@ -401,7 +401,7 @@ return it->second->ToString();
 inline
 bool USER_PROPERTIES::Exists(const std::string & name) const
 {
-return properties.find(name) != properties.end();
+return properties.find(ToLower(name)) != properties.end();
 }
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------

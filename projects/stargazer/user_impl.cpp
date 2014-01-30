@@ -1511,15 +1511,15 @@ while (it != messages.end())
 //-----------------------------------------------------------------------------
 std::string USER_IMPL::GetParamValue(const std::string & name) const
 {
-    if (name == "id")
+    if (ToLower(name) == "id")
         {
         std::ostringstream stream;
         stream << id;
         return stream.str();
         }
-    if (name == "login")       return login;
-    if (name == "currIP")      return currIP.ToString();
-    if (name == "enabledDirs") return GetEnabledDirs();
+    if (ToLower(name) == "login")       return login;
+    if (ToLower(name) == "currip")      return currIP.ToString();
+    if (ToLower(name) == "enableddirs") return GetEnabledDirs();
     if (property.Exists(name)) 
         return property.GetPropertyValue(name);
     else
