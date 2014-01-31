@@ -1511,17 +1511,18 @@ while (it != messages.end())
 //-----------------------------------------------------------------------------
 std::string USER_IMPL::GetParamValue(const std::string & name) const
 {
-    if (ToLower(name) == "id")
+    std::string lowerName = ToLower(name);
+    if (lowerName == "id")
         {
         std::ostringstream stream;
         stream << id;
         return stream.str();
         }
-    if (ToLower(name) == "login")       return login;
-    if (ToLower(name) == "currip")      return currIP.ToString();
-    if (ToLower(name) == "enableddirs") return GetEnabledDirs();
-    if (property.Exists(name)) 
-        return property.GetPropertyValue(name);
+    if (lowerName == "login")       return login;
+    if (lowerName == "currip")      return currIP.ToString();
+    if (lowerName == "enableddirs") return GetEnabledDirs();
+    if (property.Exists(lowerName)) 
+        return property.GetPropertyValue(lowerName);
     else
         {
         WriteServLog("User’s parameter '%s' does not exist.", name.c_str());
