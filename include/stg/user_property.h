@@ -121,11 +121,13 @@ class USER_PROPERTIES : private NONCOPYABLE {
  начале идет закрытая секция
  * */
 
+public:
+    typedef std::map<std::string, USER_PROPERTY_BASE *> REGISTRY;
 private:
     USER_STAT stat;
     USER_CONF conf;
 
-    std::map<std::string, USER_PROPERTY_BASE *> properties;
+    REGISTRY properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
@@ -280,7 +282,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
                                                  const std::string & sd,
-                                                 std::map<std::string, USER_PROPERTY_BASE*> & properties)
+                                                 USER_PROPERTIES::REGISTRY & properties)
 
     : USER_PROPERTY<varT>(val),
       stgLogger(logger),
@@ -392,7 +394,7 @@ else
 inline
 std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
 {
-std::map<std::string, USER_PROPERTY_BASE*>::const_iterator it = properties.find(ToLower(name));
+REGISTRY::const_iterator it = properties.find(ToLower(name));
 if (it == properties.end())
     return "";
 return it->second->ToString();
