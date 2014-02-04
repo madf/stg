@@ -33,6 +33,8 @@ public:
     virtual std::string ToString() const = 0;
 };
 //-----------------------------------------------------------------------------
+typedef std::map<std::string, USER_PROPERTY_BASE *> REGISTRY;
+//-----------------------------------------------------------------------------
 template<typename varT>
 class USER_PROPERTY : public USER_PROPERTY_BASE {
 public:
@@ -121,8 +123,6 @@ class USER_PROPERTIES : private NONCOPYABLE {
  начале идет закрытая секция
  * */
 
-public:
-    typedef std::map<std::string, USER_PROPERTY_BASE *> REGISTRY;
 private:
     USER_STAT stat;
     USER_CONF conf;
@@ -282,7 +282,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
                                                  const std::string & sd,
-                                                 USER_PROPERTIES::REGISTRY & properties)
+                                                 REGISTRY & properties)
 
     : USER_PROPERTY<varT>(val),
       stgLogger(logger),
