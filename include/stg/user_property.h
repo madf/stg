@@ -77,7 +77,7 @@ public:
                          bool isStat,
                          STG_LOGGER & logger,
                          const std::string & sd,
-                         std::map<std::string, USER_PROPERTY_BASE*> & properties);
+                         REGISTRY & properties);
     virtual ~USER_PROPERTY_LOGGED() {}
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw() { return this; }
