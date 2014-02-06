@@ -9,7 +9,8 @@ PROG = sgconf
 SRCS = ./main.cpp \
        ./common_sg.cpp \
        ./options.cpp \
-       ./actions.cpp
+       ./actions.cpp \
+       ./xml.cpp
 
 STGLIBS = conffiles \
           srvconf \

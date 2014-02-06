@@ -60,6 +60,7 @@ class SERVCONF::IMPL
 public:
     IMPL(const std::string & server, uint16_t port,
          const std::string & login, const std::string & password);
+    ~IMPL() { XML_ParserFree(parser); }
 
     const std::string & GetStrError() const;
     static void Start(void * data, const char * el, const char ** attr);

@@ -23,6 +23,7 @@
 #include "common_sg.h"
 #include "sg_error_codes.h"
 
+#include "xml.h"
 #include "options.h"
 #include "actions.h"
 #include "config.h"
@@ -132,6 +133,16 @@ if (str2x(index, pos))
     return false;
 array[pos] = value;
 return true;
+}
+
+void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * data)
+{
+if (!result)
+    {
+    std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
+    return;
+    }
+PrintXML(response);
 }
 
 void Usage();
@@ -1240,7 +1251,7 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeConfAction(), "\t\tmake raw XML request")
+      .Add("r", "raw", SGCONF::MakeFunc1Action(), "\t\tmake raw XML request")
 /*blocks.Add("Admins management options")
       .Add("get-admins", SGCONF::MakeConfAction())
       .Add("get-admin", SGCONF::MakeConfAction())
