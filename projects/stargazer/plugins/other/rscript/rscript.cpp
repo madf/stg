@@ -430,10 +430,10 @@ for(it = rsSettings.GetUserParams().begin();
     ++it)
     {
     std::string parameter;
-    if (it->c_str() == "tariffName") 
+    if (*it == "tariffName") 
         parameter = rsu.user->GetParamValue("tariff");
     else 
-        parameter = rsu.user->GetParamValue(it->c_str());
+        parameter = rsu.user->GetParamValue(*it);
     if (params.length() + parameter.length() > RS_PARAMS_LEN - 1)
         break;
     params += parameter + " ";
