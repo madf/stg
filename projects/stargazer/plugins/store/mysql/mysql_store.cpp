@@ -500,8 +500,13 @@ if(!IsTablePresent("users",sock))
     res = "INSERT INTO users SET login='test',Address='',AlwaysOnline=0,"\
         "Credit=0.0,CreditExpire=0,Down=0,Email='',DisabledDetailStat=0,"\
         "StgGroup='',IP='192.168.1.1',Note='',Passive=0,Password='123456',"\
-        "Phone='', RealName='',Tariff='tariff',TariffChange='',Userdata0='',"\
-        "Userdata1='',";
+        "Phone='', RealName='',Tariff='tariff',TariffChange='',NAS='',";
+    
+    for (int i = 0; i < USERDATA_NUM; i++)
+        {
+        strprintf(&param, " Userdata%d='',", i);
+        res += param;
+        }
     
     for (int i = 0; i < DIR_NUM; i++)
         {
@@ -676,9 +681,12 @@ return 0;
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::AddUser(const std::string & login) const
 {
-sprintf(qbuf,"INSERT INTO users SET login='%s'", login.c_str());
-    
-if(MysqlSetQuery(qbuf))
+std::string query = "INSERT INTO users SET login='" + login + "',Note='',NAS=''";
+
+for (int i = 0; i < USERDATA_NUM; i++)
+    query += ",Userdata" + x2str(i) + "=''";
+
+if(MysqlSetQuery(query.c_str()))
 {
     errorStr = "Couldn't add user:\n";
     //errorStr += mysql_error(sock);
