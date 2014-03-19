@@ -430,12 +430,15 @@ for(it = rsSettings.GetUserParams().begin();
     ++it)
     {
     std::string parameter;
-    if (*it == "tariffName") 
+    if (*it == "tariffName")
         parameter = rsu.user->GetParamValue("tariff");
-    else 
+    else
         parameter = rsu.user->GetParamValue(*it);
     if (params.length() + parameter.length() > RS_PARAMS_LEN - 1)
+    {
+        logger("Script params string length %i exceeds the limit of %i symbols.", params.length() + parameter.length(), RS_PARAMS_LEN);
         break;
+    }
     params += parameter + " ";
     }
 strncpy((char *)packetTail.params, params.c_str(), RS_PARAMS_LEN);
