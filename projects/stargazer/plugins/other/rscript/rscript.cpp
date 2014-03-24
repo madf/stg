@@ -436,7 +436,7 @@ for(it = rsSettings.GetUserParams().begin();
         parameter = rsu.user->GetParamValue(*it);
     if (params.length() + parameter.length() > RS_PARAMS_LEN - 1)
     {
-        logger("Script params string length %i exceeds the limit of %i symbols.", params.length() + parameter.length(), RS_PARAMS_LEN);
+        logger("Script params string length %d exceeds the limit of %d symbols.", params.length() + parameter.length(), RS_PARAMS_LEN);
         break;
     }
     params += parameter + " ";
