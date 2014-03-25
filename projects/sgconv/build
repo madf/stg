@@ -21,6 +21,7 @@ if [ "$1" = "debug" ]
 then
    DEFS="$DEFS -DDEBUG"
    MAKEOPTS="$MAKEOPTS -j1"
+   CFLAGS="$CFLAGS -ggdb3 -W -Wall -Wextra"
    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
    DEBUG="yes"
 else
@@ -28,6 +29,7 @@ else
    DEBUG="no"
 fi
 
+CFLAGS="$CFLAGS -ggdb3 -W -Wall -I/usr/local/include"
 CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -I/usr/local/include"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
