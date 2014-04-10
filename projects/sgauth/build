@@ -20,6 +20,7 @@ if [ "$1" = "debug" ]
 then
    DEFS="$DEFS -DDEBUG"
    MAKEOPTS="$MAKEOPTS -j1"
+   CFLAGS="$CFLAGS -ggdb3 -W -Wall -Wextra"
    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
    DEBUG="yes"
 else
@@ -27,8 +28,9 @@ else
    DEBUG="no"
 fi
 
+CFLAGS="$CFLAGS -I/usr/local/include"
 CXXFLAGS="$CXXFLAGS -I/usr/local/include"
-LDFLAGS="$CXXFLAGS -L/usr/local/lib"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
 if [ "$sys" = "Linux" ]
 then

@@ -209,6 +209,66 @@ class CONFIG_ACTION : public ACTION
         void ParseHostAndPort(const std::string & hostAndPort);
 };
 
+class COMMAND_FUNCTOR
+{
+    public:
+        virtual ~COMMAND_FUNCTOR() {}
+        virtual bool operator()(const std::string& arg, const std::map<std::string, std::string>& options) = 0;
+};
+
+class COMMAND_ACTION : public ACTION
+{
+    public:
+        COMMAND_ACTION(CONFIG & config,
+                       const std::string & paramDescription,
+                       bool needArgument,
+                       const OPTION_BLOCK& suboptions,
+                       COMMAND_FUNCTOR* funPtr)
+            : m_config(config),
+              m_description(paramDescription),
+              m_argument(needArgument),
+              m_suboptions(suboptions),
+              m_funPtr(funPtr)
+        {}
+
+        virtual ACTION * Clone() const { return new COMMAND_ACTION(*this); }
+
+        virtual std::string ParamDescription() const { return m_description; }
+        virtual std::string DefaultDescription() const { return ""; }
+        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
+        virtual PARSER_STATE Parse(int argc, char ** argv)
+        {
+        PARSER_STATE state(false, argc, argv);
+        if (m_argument)
+            {
+            if (argc == 0 ||
+                argv == NULL ||
+                *argv == NULL)
+                throw ERROR("Missing argument.");
+            m_argument = *argv;
+            --state.argc;
+            ++state.argv;
+            }
+        std::list<OPTION_BLOCK>::iterator it(m_suboptions.begin());
+        while (!state.stop && it != m_suboptions.end())
+            {
+            state = it->Parse(state.argc, state.argv);
+            ++it;
+            }
+        m_funPtr(m_argument, m_params);
+        return state;
+        }
+
+    private:
+        CONFIG & m_config;
+        std::string m_description;
+        bool m_needArgument;
+        std::string m_argument;
+        OPTION_BLOCK m_suboptions;
+        std::map<std::string, std::string> m_params;
+        COMMAND_FUNCTOR* m_funPtr;
+};
+
 PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
 {
 if (argc == 0 ||
