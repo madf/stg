@@ -1521,7 +1521,7 @@ std::string USER_IMPL::GetParamValue(const std::string & name) const
     if (lowerName == "login")       return login;
     if (lowerName == "currip")      return currIP.ToString();
     if (lowerName == "enableddirs") return GetEnabledDirs();
-    if (lowerName == "tariffname")  return property.GetPropertyValue("tarrif");
+    if (lowerName == "tariff")      return property.tariffName;
     if (property.Exists(lowerName))
         return property.GetPropertyValue(lowerName);
     else
