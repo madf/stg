@@ -17,7 +17,7 @@ USER_PROPERTIES::USER_PROPERTIES(const std::string & sd)
       disabled    (conf.disabled,     "disabled",     false, false, GetStgLogger(), sd, properties),
       disabledDetailStat(conf.disabledDetailStat, "DisabledDetailStat", false, false, GetStgLogger(), sd, properties),
       alwaysOnline(conf.alwaysOnline, "alwaysOnline", false, false, GetStgLogger(), sd, properties),
-      tariffName  (conf.tariffName,   "tariffName",       false, false, GetStgLogger(), sd, properties),
+      tariffName  (conf.tariffName,   "tariffName",   false, false, GetStgLogger(), sd, properties),
       nextTariff  (conf.nextTariff,   "nextTariff",   false, false, GetStgLogger(), sd, properties),
       address     (conf.address,      "address",      false, false, GetStgLogger(), sd, properties),
       note        (conf.note,         "note",         false, false, GetStgLogger(), sd, properties),
