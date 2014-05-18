@@ -44,15 +44,13 @@ then
         5) OS=bsd5;;
         6) OS=bsd5;;
         7) OS=bsd7;;
-        8) OS=bsd7;;
-        9) OS=bsd7;;
-        *) OS=unknown;;
+        *) OS=bsd7;;
     esac
     MAKE="gmake"
 fi
 
 if [ "$OS" = "unknown" ]
-then 
+then
     printf "#############################################################################\n"
     printf "# Sorry, but rlm_stg currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
     printf "#############################################################################\n"

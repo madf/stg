@@ -66,9 +66,7 @@ then
         5) OS=bsd5;;
         6) OS=bsd5;;
         7) OS=bsd7;;
-        8) OS=bsd7;;
-        9) OS=bsd7;;
-        *) OS=unknown;;
+        *) OS=bsd7;;
     esac
     ETC_DIR="./inst/freebsd/etc/stargazer"
     MAKE="gmake"
@@ -82,7 +80,7 @@ then
 fi
 
 if [ "$OS" = "unknown" ]
-then 
+then
     printf "#############################################################################\n"
     printf "# Sorry, but stargazer currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
     printf "#############################################################################\n"
@@ -93,14 +91,14 @@ printf "########################################################################
 printf "       Building STG 2.4 for $sys $release\n"
 printf "#############################################################################\n"
 
-STG_LIBS="logger.lib 
+STG_LIBS="logger.lib
           locker.lib
-	  crypto.lib 
-	  common.lib 
-	  scriptexecuter.lib 
-	  conffiles.lib
-	  pinger.lib 
-	  dotconfpp.lib
+          crypto.lib
+          common.lib
+          scriptexecuter.lib
+          conffiles.lib
+          pinger.lib
+          dotconfpp.lib
           smux.lib"
 
 PLUGINS="authorization/ao

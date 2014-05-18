@@ -47,15 +47,13 @@ then
         5) OS=bsd5;;
         6) OS=bsd5;;
         7) OS=bsd7;;
-        8) OS=bsd7;;
-        9) OS=bsd7;;
-        *) OS=unknown;;
+        *) OS=bsd7;;
     esac
     MAKE="gmake"
 fi
 
 if [ "$OS" = "unknown" ]
-then 
+then
     printf "#############################################################################\n"
     printf "# Sorry, but sgconv currently supported by Linux, FreeBSD 4.x, 5.x, 6.x     #\n"
     printf "#############################################################################\n"
@@ -66,12 +64,12 @@ printf "########################################################################
 printf "       Building sgconv for $sys $release\n"
 printf "#############################################################################\n"
 
-STG_LIBS="logger.lib 
+STG_LIBS="logger.lib
           locker.lib
-	  crypto.lib 
-	  common.lib 
-	  conffiles.lib
-	  dotconfpp.lib"
+          crypto.lib
+          common.lib
+          conffiles.lib
+          dotconfpp.lib"
 
 PLUGINS="store/files"
 
