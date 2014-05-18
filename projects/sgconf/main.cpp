@@ -135,14 +135,14 @@ array[pos] = value;
 return true;
 }
 
-void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * data)
+void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * /*data*/)
 {
 if (!result)
     {
     std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
     return;
     }
-PrintXML(response);
+SGCONF::PrintXML(response);
 }
 
 void Usage();
@@ -187,7 +187,7 @@ namespace SGCONF
 class CONFIG_ACTION : public ACTION
 {
     public:
-        CONFIG_ACTION(CONFIG & config,
+        CONFIG_ACTION(SGCONF::CONFIG & config,
                       const std::string & paramDescription)
             : m_config(config),
               m_description(paramDescription)
@@ -201,7 +201,7 @@ class CONFIG_ACTION : public ACTION
         virtual PARSER_STATE Parse(int argc, char ** argv);
 
     private:
-        CONFIG & m_config;
+        SGCONF::CONFIG & m_config;
         std::string m_description;
         OPTION_BLOCK m_suboptions;
 
@@ -213,23 +213,100 @@ class COMMAND_FUNCTOR
 {
     public:
         virtual ~COMMAND_FUNCTOR() {}
-        virtual bool operator()(const std::string& arg, const std::map<std::string, std::string>& options) = 0;
+        virtual bool operator()(const SGCONF::CONFIG & config,
+                                const std::string & arg,
+                                const std::map<std::string, std::string> & options) = 0;
+        virtual COMMAND_FUNCTOR * Clone() = 0;
+};
+
+class COMMAND
+{
+    public:
+        COMMAND(COMMAND_FUNCTOR * funPtr,
+                const std::string & arg,
+                const std::map<std::string, std::string> & options)
+            : m_funPtr(funPtr->Clone()),
+              m_arg(arg),
+              m_options(options)
+        {}
+        COMMAND(const COMMAND & rhs)
+            : m_funPtr(rhs.m_funPtr->Clone()),
+              m_arg(rhs.m_arg),
+              m_options(rhs.m_options)
+        {}
+        ~COMMAND()
+        {
+            delete m_funPtr;
+        }
+        bool Execute(const SGCONF::CONFIG & config) const
+        {
+            return (*m_funPtr)(config, m_arg, m_options);
+        }
+
+    private:
+        COMMAND_FUNCTOR * m_funPtr;
+        std::string m_arg;
+        std::map<std::string, std::string> m_options;
+};
+
+class COMMANDS
+{
+    public:
+        void Add(COMMAND_FUNCTOR * funPtr,
+                 const std::string & arg,
+                 const std::map<std::string, std::string> & options) { m_commands.push_back(COMMAND(funPtr, arg, options)); }
+        bool Execute(const SGCONF::CONFIG & config) const
+        {
+            std::list<COMMAND>::const_iterator it(m_commands.begin());
+            bool res = true;
+            while (it != m_commands.end() && res)
+            {
+                res = res && it->Execute(config);
+                ++it;
+            }
+            return res;
+        }
+    private:
+        std::list<COMMAND> m_commands;
 };
 
 class COMMAND_ACTION : public ACTION
 {
     public:
-        COMMAND_ACTION(CONFIG & config,
+        COMMAND_ACTION(COMMANDS & commands,
                        const std::string & paramDescription,
                        bool needArgument,
                        const OPTION_BLOCK& suboptions,
                        COMMAND_FUNCTOR* funPtr)
-            : m_config(config),
+            : m_commands(commands),
               m_description(paramDescription),
-              m_argument(needArgument),
+              m_argument(needArgument ? "1" : ""), // Hack
               m_suboptions(suboptions),
               m_funPtr(funPtr)
         {}
+        COMMAND_ACTION(COMMANDS & commands,
+                       const std::string & paramDescription,
+                       bool needArgument,
+                       COMMAND_FUNCTOR* funPtr)
+            : m_commands(commands),
+              m_description(paramDescription),
+              m_argument(needArgument ? "1" : ""), // Hack
+              m_funPtr(funPtr)
+        {}
+        COMMAND_ACTION(const COMMAND_ACTION& rhs)
+            : m_commands(rhs.m_commands),
+              m_description(rhs.m_description),
+              m_argument(rhs.m_argument),
+              m_suboptions(rhs.m_suboptions),
+              m_params(rhs.m_params),
+              m_funPtr(rhs.m_funPtr->Clone())
+        {
+        }
+
+        ~COMMAND_ACTION()
+        {
+            delete m_funPtr;
+        }
 
         virtual ACTION * Clone() const { return new COMMAND_ACTION(*this); }
 
@@ -239,7 +316,7 @@ class COMMAND_ACTION : public ACTION
         virtual PARSER_STATE Parse(int argc, char ** argv)
         {
         PARSER_STATE state(false, argc, argv);
-        if (m_argument)
+        if (!m_argument.empty())
             {
             if (argc == 0 ||
                 argv == NULL ||
@@ -249,20 +326,14 @@ class COMMAND_ACTION : public ACTION
             --state.argc;
             ++state.argv;
             }
-        std::list<OPTION_BLOCK>::iterator it(m_suboptions.begin());
-        while (!state.stop && it != m_suboptions.end())
-            {
-            state = it->Parse(state.argc, state.argv);
-            ++it;
-            }
-        m_funPtr(m_argument, m_params);
+        m_suboptions.Parse(state.argc, state.argv);
+        m_commands.Add(m_funPtr, m_argument, m_params);
         return state;
         }
 
     private:
-        CONFIG & m_config;
+        COMMANDS & m_commands;
         std::string m_description;
-        bool m_needArgument;
         std::string m_argument;
         OPTION_BLOCK m_suboptions;
         std::map<std::string, std::string> m_params;
@@ -320,11 +391,36 @@ else
 }
 
 inline
-CONFIG_ACTION * MakeParamAction(CONFIG & config,
+CONFIG_ACTION * MakeParamAction(SGCONF::CONFIG & config,
                                 const std::string & paramDescription)
 {
 return new CONFIG_ACTION(config, paramDescription);
 }
+
+inline
+ACTION * MakeCommandAction(COMMANDS & commands,
+                           const std::string & paramDescription,
+                           bool needArgument,
+                           COMMAND_FUNCTOR * funPtr)
+{
+return new COMMAND_ACTION(commands, paramDescription, needArgument, funPtr);
+}
+
+class RAW_XML_FUNCTOR : public COMMAND_FUNCTOR
+{
+    public:
+        virtual bool operator()(const SGCONF::CONFIG & config,
+                                const std::string & arg,
+                                const std::map<std::string, std::string> & /*options*/)
+        {
+            STG::SERVCONF proto(config.server.data(),
+                                config.port.data(),
+                                config.userName.data(),
+                                config.userPass.data());
+            return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
+        }
+        virtual COMMAND_FUNCTOR * Clone() { return new RAW_XML_FUNCTOR(*this); }
+};
 
 } // namespace SGCONF
 
@@ -1297,6 +1393,7 @@ return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), r
 int main(int argc, char **argv)
 {
 SGCONF::CONFIG config;
+SGCONF::COMMANDS commands;
 
 SGCONF::OPTION_BLOCKS blocks;
 blocks.Add("General options")
@@ -1311,7 +1408,7 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeFunc1Action(), "\t\tmake raw XML request")
+      .Add("r", "raw", SGCONF::MakeCommandAction(commands, "<xml>", true, new SGCONF::RAW_XML_FUNCTOR()), "\t\tmake raw XML request");
 /*blocks.Add("Admins management options")
       .Add("get-admins", SGCONF::MakeConfAction())
       .Add("get-admin", SGCONF::MakeConfAction())
@@ -1366,8 +1463,9 @@ return -1;
 }
 
 std::cerr << "Config: " << config.Serialize() << std::endl;
+return commands.Execute(config) ? 0 : -1;
 
-return 0;
+/*return 0;
 
 if (argc < 2)
     {
@@ -1398,7 +1496,7 @@ else
     UsageConf();
     exit(PARAMETER_PARSING_ERR_CODE);
     }
-return UNKNOWN_ERR_CODE;
+return UNKNOWN_ERR_CODE;*/
 }
 //-----------------------------------------------------------------------------
 

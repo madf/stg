@@ -1,5 +1,7 @@
 #include "xml.h"
 
+#include <iostream>
+
 #include <expat.h>
 
 namespace
@@ -10,7 +12,7 @@ struct ParserState
 size_t level;
 };
 
-std::string Indent(size_t size)
+std::string Indent(size_t level)
 {
 return std::string(level * 4, ' ');
 }
@@ -34,16 +36,16 @@ void Start(void * data, const char * el, const char ** attr)
 {
 ParserState * state = static_cast<ParserState *>(data);
 if (el != NULL)
-    std::cout << Indent(state->level) << "<" << el << PrintAttrs(attr) << ">\n";
+    std::cout << Indent(state->level) << "<" << el << PrintAttr(attr) << ">\n";
 ++state->level;
 }
 
 void End(void * data, const char * el)
 {
 ParserState * state = static_cast<ParserState *>(data);
+--state->level;
 if (el != NULL)
     std::cout << Indent(state->level) << "</" << el << ">\n";
---state->level;
 }
 
 }
@@ -58,8 +60,8 @@ XML_SetElementHandler(parser, Start, End);
 XML_SetUserData(parser, &state);
 
 if (XML_Parse(parser, xml.c_str(), xml.length(), true) == XML_STATUS_ERROR)
-    std::cerr << "XML parse error at line " << XML_GetCurrentLineNumber(sc->parser)
-              << ": '" << XML_ErrorString(XML_GetErrorCode(sc->parser)) << "'"
+    std::cerr << "XML parse error at line " << XML_GetCurrentLineNumber(parser)
+              << ": '" << XML_ErrorString(XML_GetErrorCode(parser)) << "'"
               << std::endl;
 
 XML_ParserFree(parser);
