@@ -1408,7 +1408,7 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeCommandAction(commands, "<xml>", true, new SGCONF::RAW_XML_FUNCTOR()), "\t\tmake raw XML request");
+      .Add("r", "raw", SGCONF::MakeCommandAction(commands, "<xml>", true, new SGCONF::RAW_XML_FUNCTOR()), "\tmake raw XML request");
 /*blocks.Add("Admins management options")
       .Add("get-admins", SGCONF::MakeConfAction())
       .Add("get-admin", SGCONF::MakeConfAction())
