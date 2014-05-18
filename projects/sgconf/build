@@ -46,9 +46,7 @@ then
         5) OS=bsd5;;
         6) OS=bsd5;;
         7) OS=bsd7;;
-        8) OS=bsd7;;
-        9) OS=bsd7;;
-        *) OS=unknown;;
+        *) OS=bsd7;;
     esac
     MAKE="gmake"
 fi
@@ -61,7 +59,7 @@ then
 fi
 
 if [ "$OS" = "unknown" ]
-then 
+then
     printf "#############################################################################\n"
     printf "# Sorry, but sgconf currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
     printf "#############################################################################\n"
@@ -73,9 +71,9 @@ printf "       Building sgconf for $sys $release\n"
 printf "#############################################################################\n"
 
 STG_LIBS="conffiles.lib
-	  crypto.lib 
-	  common.lib 
-	  srvconf.lib"
+          crypto.lib
+          common.lib
+          srvconf.lib"
 
 if [ "$OS" = "linux" ]
 then
