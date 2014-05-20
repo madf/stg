@@ -209,42 +209,27 @@ class CONFIG_ACTION : public ACTION
         void ParseHostAndPort(const std::string & hostAndPort);
 };
 
-class COMMAND_FUNCTOR
-{
-    public:
-        virtual ~COMMAND_FUNCTOR() {}
-        virtual bool operator()(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & options) = 0;
-        virtual COMMAND_FUNCTOR * Clone() = 0;
-};
+typedef bool (* API_FUNCTION) (const SGCONF::CONFIG &,
+                               const std::string &,
+                               const std::map<std::string, std::string> &);
 
 class COMMAND
 {
     public:
-        COMMAND(COMMAND_FUNCTOR * funPtr,
+        COMMAND(API_FUNCTION funPtr,
                 const std::string & arg,
                 const std::map<std::string, std::string> & options)
-            : m_funPtr(funPtr->Clone()),
+            : m_funPtr(funPtr),
               m_arg(arg),
               m_options(options)
         {}
-        COMMAND(const COMMAND & rhs)
-            : m_funPtr(rhs.m_funPtr->Clone()),
-              m_arg(rhs.m_arg),
-              m_options(rhs.m_options)
-        {}
-        ~COMMAND()
-        {
-            delete m_funPtr;
-        }
         bool Execute(const SGCONF::CONFIG & config) const
         {
-            return (*m_funPtr)(config, m_arg, m_options);
+            return m_funPtr(config, m_arg, m_options);
         }
 
     private:
-        COMMAND_FUNCTOR * m_funPtr;
+        API_FUNCTION m_funPtr;
         std::string m_arg;
         std::map<std::string, std::string> m_options;
 };
@@ -252,7 +237,7 @@ class COMMAND
 class COMMANDS
 {
     public:
-        void Add(COMMAND_FUNCTOR * funPtr,
+        void Add(API_FUNCTION funPtr,
                  const std::string & arg,
                  const std::map<std::string, std::string> & options) { m_commands.push_back(COMMAND(funPtr, arg, options)); }
         bool Execute(const SGCONF::CONFIG & config) const
@@ -270,45 +255,31 @@ class COMMANDS
         std::list<COMMAND> m_commands;
 };
 
-class COMMAND_ACTION : public ACTION
+class API_ACTION : public ACTION
 {
     public:
-        COMMAND_ACTION(COMMANDS & commands,
-                       const std::string & paramDescription,
-                       bool needArgument,
-                       const OPTION_BLOCK& suboptions,
-                       COMMAND_FUNCTOR* funPtr)
+        API_ACTION(COMMANDS & commands,
+                   const std::string & paramDescription,
+                   bool needArgument,
+                   const OPTION_BLOCK& suboptions,
+                   API_FUNCTION funPtr)
             : m_commands(commands),
               m_description(paramDescription),
               m_argument(needArgument ? "1" : ""), // Hack
               m_suboptions(suboptions),
               m_funPtr(funPtr)
         {}
-        COMMAND_ACTION(COMMANDS & commands,
-                       const std::string & paramDescription,
-                       bool needArgument,
-                       COMMAND_FUNCTOR* funPtr)
+        API_ACTION(COMMANDS & commands,
+                   const std::string & paramDescription,
+                   bool needArgument,
+                   API_FUNCTION funPtr)
             : m_commands(commands),
               m_description(paramDescription),
               m_argument(needArgument ? "1" : ""), // Hack
               m_funPtr(funPtr)
         {}
-        COMMAND_ACTION(const COMMAND_ACTION& rhs)
-            : m_commands(rhs.m_commands),
-              m_description(rhs.m_description),
-              m_argument(rhs.m_argument),
-              m_suboptions(rhs.m_suboptions),
-              m_params(rhs.m_params),
-              m_funPtr(rhs.m_funPtr->Clone())
-        {
-        }
 
-        ~COMMAND_ACTION()
-        {
-            delete m_funPtr;
-        }
-
-        virtual ACTION * Clone() const { return new COMMAND_ACTION(*this); }
+        virtual ACTION * Clone() const { return new API_ACTION(*this); }
 
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const { return ""; }
@@ -337,7 +308,7 @@ class COMMAND_ACTION : public ACTION
         std::string m_argument;
         OPTION_BLOCK m_suboptions;
         std::map<std::string, std::string> m_params;
-        COMMAND_FUNCTOR* m_funPtr;
+        API_FUNCTION m_funPtr;
 };
 
 PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
@@ -398,29 +369,24 @@ return new CONFIG_ACTION(config, paramDescription);
 }
 
 inline
-ACTION * MakeCommandAction(COMMANDS & commands,
-                           const std::string & paramDescription,
-                           bool needArgument,
-                           COMMAND_FUNCTOR * funPtr)
+ACTION * MakeAPIAction(COMMANDS & commands,
+                       const std::string & paramDescription,
+                       bool needArgument,
+                       API_FUNCTION funPtr)
 {
-return new COMMAND_ACTION(commands, paramDescription, needArgument, funPtr);
+return new API_ACTION(commands, paramDescription, needArgument, funPtr);
 }
 
-class RAW_XML_FUNCTOR : public COMMAND_FUNCTOR
+bool RawXMLFunction(const SGCONF::CONFIG & config,
+                    const std::string & arg,
+                    const std::map<std::string, std::string> & /*options*/)
 {
-    public:
-        virtual bool operator()(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & /*options*/)
-        {
-            STG::SERVCONF proto(config.server.data(),
-                                config.port.data(),
-                                config.userName.data(),
-                                config.userPass.data());
-            return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
-        }
-        virtual COMMAND_FUNCTOR * Clone() { return new RAW_XML_FUNCTOR(*this); }
-};
+    STG::SERVCONF proto(config.server.data(),
+                        config.port.data(),
+                        config.userName.data(),
+                        config.userPass.data());
+    return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
+}
 
 } // namespace SGCONF
 
@@ -1408,7 +1374,7 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeCommandAction(commands, "<xml>", true, new SGCONF::RAW_XML_FUNCTOR()), "\tmake raw XML request");
+      .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, SGCONF::RawXMLFunction), "\tmake raw XML request");
 /*blocks.Add("Admins management options")
       .Add("get-admins", SGCONF::MakeConfAction())
       .Add("get-admin", SGCONF::MakeConfAction())
