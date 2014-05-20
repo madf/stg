@@ -57,15 +57,15 @@ struct CONFIG
     {
     std::string res("{ ");
     if (!configFile.empty())
-        res += "configFile: '" + configFile.data() + "'";
+        res += "configFile: '" + configFile.data() + "',";
     if (!server.empty())
-        res += ", server: '" + server.data() + "'";
+        res += " server: '" + server.data() + "',";
     if (!port.empty())
-        res += ", port: " + x2str(port.data());
+        res += " port: " + x2str(port.data()) + ",";
     if (!userName.empty())
-        res += ", userName: '" + userName.data() + "'";
+        res += " userName: '" + userName.data() + "',";
     if (!userPass.empty())
-        res += ", userPass: '" + userPass.data() + "'";
+        res += " userPass: '" + userPass.data() + "'";
     return res + " }";
     }
 };
