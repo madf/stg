@@ -178,7 +178,11 @@ if (strcasecmp(el, "tariff") == 0)
                 error = "Tariff not found.";
             }
         else
+            {
             parsingAnswer = true;
+            if (strcasecmp(attr[0], "name") == 0)
+                info.tariffConf.name = attr[1];
+            }
         }
     else
         parsingAnswer = true;
@@ -188,5 +192,5 @@ if (strcasecmp(el, "tariff") == 0)
 void GET_TARIFF::PARSER::ParseTariffParams(const char * el, const char ** attr)
 {
 if (!TryParse(propertyParsers, ToLower(el), attr))
-    error = "Invalid parameter.";
+    error = std::string("Invalid parameter '") + el + "'.";
 }

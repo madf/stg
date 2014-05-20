@@ -114,6 +114,8 @@ bool WaitPackets(int sd);
 //-----------------------------------------------------------------------------
 int str2x(const std::string & str, int32_t & x);
 int str2x(const std::string & str, uint32_t & x);
+inline
+int str2x(const std::string & str, double & x) { return strtodouble2(str.c_str(), x); }
 #ifndef WIN32
 int str2x(const std::string & str, int64_t & x);
 int str2x(const std::string & str, uint64_t & x);

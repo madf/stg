@@ -126,6 +126,8 @@ bool SGCONF::AddAdminFunction(const SGCONF::CONFIG & config,
                               const std::string & arg,
                               const std::map<std::string, std::string> & /*options*/)
 {
+// TODO
+std::cerr << "Unimplemented.\n";
 return false;
 }
 
@@ -133,5 +135,7 @@ bool SGCONF::ChgAdminFunction(const SGCONF::CONFIG & config,
                               const std::string & arg,
                               const std::map<std::string, std::string> & options)
 {
+// TODO
+std::cerr << "Unimplemented.\n";
 return false;
 }

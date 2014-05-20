@@ -25,6 +25,7 @@
 
 #include "xml.h"
 #include "admins.h"
+#include "tariffs.h"
 #include "options.h"
 #include "actions.h"
 #include "config.h"
@@ -1383,12 +1384,18 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
       .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, SGCONF::RawXMLFunction), "\tmake raw XML request");
-blocks.Add("Admins management options")
+blocks.Add("Admin management options")
       .Add("get-admins", SGCONF::MakeAPIAction(commands, SGCONF::GetAdminsFunction), "\tget admin list")
       .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetAdminFunction), "\tget admin")
       .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddAdminFunction), "\tadd admin")
       .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelAdminFunction), "\tdel admin")
       .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgAdminFunction), "\tchange admin");
+blocks.Add("Tariff management options")
+      .Add("get-tariffs", SGCONF::MakeAPIAction(commands, SGCONF::GetTariffsFunction), "\tget tariff list")
+      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetTariffFunction), "\tget tariff")
+      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddTariffFunction), "\tadd tariff")
+      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelTariffFunction), "\tdel tariff")
+      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgTariffFunction), "\tchange tariff");
 
 
 SGCONF::PARSER_STATE state(false, argc, argv);

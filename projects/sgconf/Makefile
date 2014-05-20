@@ -11,6 +11,7 @@ SRCS = ./main.cpp \
        ./options.cpp \
        ./actions.cpp \
        ./admins.cpp \
+       ./tariffs.cpp \
        ./xml.cpp
 
 STGLIBS = conffiles \
