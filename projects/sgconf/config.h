@@ -70,6 +70,6 @@ struct CONFIG
     }
 };
 
-}
+} // namespace SGCONF
 
 #endif

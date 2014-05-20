@@ -10,6 +10,7 @@ SRCS = ./main.cpp \
        ./common_sg.cpp \
        ./options.cpp \
        ./actions.cpp \
+       ./admins.cpp \
        ./xml.cpp
 
 STGLIBS = conffiles \

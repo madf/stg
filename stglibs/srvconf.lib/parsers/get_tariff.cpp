@@ -39,7 +39,7 @@ class AOS_PARSER : public BASE_PROPERTY_PARSER
     public:
         typedef bool (* FUNC)(const char **, A &, T A::value_type:: *);
         AOS_PARSER(A & a, T A::value_type:: * fld, FUNC f) : array(a), field(fld), func(f) {}
-        virtual bool Parse(const char ** attr) { return func(attr, array, field); }
+        virtual bool Parse(const char ** attr, const std::string & /*attrName*/) { return func(attr, array, field); }
     private:
         A & array;
         T A::value_type:: * field;
@@ -53,13 +53,13 @@ void AddAOSParser(PROPERTY_PARSERS & parsers, const std::string & name, A & arra
     parsers.insert(std::make_pair(ToLower(name), new AOS_PARSER<A, T>(array, field, func)));
 }
 
-bool GetTimeSpan(const char ** attr, DIRPRICE_DATA & value)
+bool GetTimeSpan(const char ** attr, DIRPRICE_DATA & value, const std::string & attrName)
 {
 int hb = 0;
 int mb = 0;
 int he = 0;
 int me = 0;
-if (CheckValue(attr))
+if (CheckValue(attr, attrName))
     if (ParseTariffTimeStr(attr[1], hb, mb, he, me) == 0)
         {
         value.hDay = hb;
@@ -72,9 +72,9 @@ return false;
 }
 
 template <typename T>
-bool GetTraffType(const char ** attr, T & value)
+bool GetTraffType(const char ** attr, T & value, const std::string & attrName)
 {
-if (!CheckValue(attr))
+if (!CheckValue(attr, attrName))
     return false;
 std::string type(attr[1]);
 if (type == "up")
@@ -93,7 +93,7 @@ return true;
 template <typename A, typename T>
 bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
 {
-if (!CheckValue(attr))
+if (!CheckValue(attr, "value"))
     return false;
 const char * start = attr[1];
 size_t item = 0;

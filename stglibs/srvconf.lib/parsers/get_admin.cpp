@@ -34,10 +34,10 @@ namespace STG
 
 template <>
 inline
-bool GetValue<PRIV>(const char ** attr, PRIV & value)
+bool GetValue<PRIV>(const char ** attr, PRIV & value, const std::string & attrName)
 {
 uint32_t priv;
-if (!GetValue(attr, priv))
+if (!GetValue(attr, priv, attrName))
     return false;
 value = priv;
 return true;
@@ -69,8 +69,8 @@ depth++;
 if (depth == 1)
     ParseAdmin(el, attr);
 
-if (depth == 2 && parsingAnswer)
-    ParseAdminParams(el, attr);
+/*if (depth == 2 && parsingAnswer)
+    ParseAdminParams(el, attr);*/
 
 return 0;
 }
@@ -101,15 +101,23 @@ if (strcasecmp(el, "admin") == 0)
                 error = "Admin not found.";
             }
         else
+            {
             parsingAnswer = true;
+            for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
+                if (!TryParse(propertyParsers, ToLower(*pos), pos, *pos))
+                    {
+                    error = "Invalid parameter.";
+                    break;
+                    }
+            }
         }
     else
         parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_ADMIN::PARSER::ParseAdminParams(const char * el, const char ** attr)
+/*void GET_ADMIN::PARSER::ParseAdminParams(const char * el, const char ** attr)
 {
 if (!TryParse(propertyParsers, ToLower(el), attr))
     error = "Invalid parameter.";
-}
+}*/

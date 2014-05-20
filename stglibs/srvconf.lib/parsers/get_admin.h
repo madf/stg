@@ -54,7 +54,7 @@ private:
     std::string error;
 
     void ParseAdmin(const char * el, const char ** attr);
-    void ParseAdminParams(const char * el, const char ** attr);
+    //void ParseAdminParams(const char * el, const char ** attr);
 };
 
 } // namespace GET_ADMIN

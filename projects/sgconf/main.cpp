@@ -24,6 +24,7 @@
 #include "sg_error_codes.h"
 
 #include "xml.h"
+#include "admins.h"
 #include "options.h"
 #include "actions.h"
 #include "config.h"
@@ -375,6 +376,13 @@ ACTION * MakeAPIAction(COMMANDS & commands,
                        API_FUNCTION funPtr)
 {
 return new API_ACTION(commands, paramDescription, needArgument, funPtr);
+}
+
+inline
+ACTION * MakeAPIAction(COMMANDS & commands,
+                       API_FUNCTION funPtr)
+{
+return new API_ACTION(commands, "", false, funPtr);
 }
 
 bool RawXMLFunction(const SGCONF::CONFIG & config,
@@ -1375,12 +1383,12 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
 blocks.Add("Raw XML")
       .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, SGCONF::RawXMLFunction), "\tmake raw XML request");
-/*blocks.Add("Admins management options")
-      .Add("get-admins", SGCONF::MakeConfAction())
-      .Add("get-admin", SGCONF::MakeConfAction())
-      .Add("add-admin", SGCONF::MakeConfAction())
-      .Add("del-admin", SGCONF::MakeConfAction())
-      .Add("chg-admin", SGCONF::MakeConfAction());*/
+blocks.Add("Admins management options")
+      .Add("get-admins", SGCONF::MakeAPIAction(commands, SGCONF::GetAdminsFunction), "\tget admin list")
+      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetAdminFunction), "\tget admin")
+      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddAdminFunction), "\tadd admin")
+      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelAdminFunction), "\tdel admin")
+      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgAdminFunction), "\tchange admin");
 
 
 SGCONF::PARSER_STATE state(false, argc, argv);

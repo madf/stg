@@ -33,16 +33,16 @@ class BASE_PROPERTY_PARSER
 {
     public:
         virtual ~BASE_PROPERTY_PARSER() {}
-        virtual bool Parse(const char ** attr) = 0;
+        virtual bool Parse(const char ** attr, const std::string & attrName) = 0;
 };
 
 template <typename T>
 class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
 {
     public:
-        typedef bool (* FUNC)(const char **, T &);
+        typedef bool (* FUNC)(const char **, T &, const std::string &);
         PROPERTY_PARSER(T & v, FUNC f) : value(v), func(f) {}
-        virtual bool Parse(const char ** attr) { return func(attr, value); }
+        virtual bool Parse(const char ** attr, const std::string & attrName) { return func(attr, value, attrName); }
     private:
         T & value;
         FUNC func;
@@ -50,13 +50,13 @@ class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
 
 typedef std::map<std::string, BASE_PROPERTY_PARSER *> PROPERTY_PARSERS;
 
-bool CheckValue(const char ** attr);
+bool CheckValue(const char ** attr, const std::string & attrName);
 
 template <typename T>
 inline
-bool GetValue(const char ** attr, T & value)
+bool GetValue(const char ** attr, T & value, const std::string & attrName)
 {
-if (CheckValue(attr))
+if (CheckValue(attr, attrName))
     if (str2x(attr[1], value) < 0)
         return false;
 return true;
@@ -64,9 +64,9 @@ return true;
 
 template <>
 inline
-bool GetValue<std::string>(const char ** attr, std::string & value)
+bool GetValue<std::string>(const char ** attr, std::string & value, const std::string & attrName)
 {
-if (!CheckValue(attr))
+if (!CheckValue(attr, attrName))
     return false;
 value = attr[1];
 return true;
@@ -74,17 +74,17 @@ return true;
 
 template <>
 inline
-bool GetValue<double>(const char ** attr, double & value)
+bool GetValue<double>(const char ** attr, double & value, const std::string & attrName)
 {
-if (CheckValue(attr))
+if (CheckValue(attr, attrName))
     if (strtodouble2(attr[1], value))
         return false;
 return true;
 }
 
-bool GetEncodedValue(const char ** attr, std::string & value);
+bool GetEncodedValue(const char ** attr, std::string & value, const std::string & attrName);
 
-bool GetIPValue(const char ** attr, uint32_t& value);
+bool GetIPValue(const char ** attr, uint32_t& value, const std::string & attrName);
 
 template <typename T>
 void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = GetValue<T>);
@@ -96,7 +96,7 @@ void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, 
     parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func)));
 }
 
-bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr);
+bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & attrName = "value");
 
 } // namespace STG
 

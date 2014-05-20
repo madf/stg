@@ -34,7 +34,7 @@ namespace STG
 {
 
 template <>
-bool GetValue<GET_USER::STAT>(const char ** attr, GET_USER::STAT & value)
+bool GetValue<GET_USER::STAT>(const char ** attr, GET_USER::STAT & value, const std::string & /*attrName*/)
 {
 if (!attr)
     return false;
