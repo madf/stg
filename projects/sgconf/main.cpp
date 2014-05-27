@@ -94,6 +94,16 @@ binder0<F> bind0(const F & func, const typename F::argument_type & arg)
 return binder0<F>(func, arg);
 }
 
+template <typename A, typename R>
+class FUNC1_ADAPTER : public std::unary_function<A, R>
+{
+    public:
+        FUNC1_ADAPTER(R (*func)(A)) : m_func(func) {}
+        const R operator()(A arg) const { return (m_func)(arg); }
+    private:
+        R (*m_func)(A);
+};
+
 template <typename C, typename A, typename R>
 class METHOD1_ADAPTER : public std::unary_function<A, R>
 {
@@ -115,6 +125,12 @@ class CONST_METHOD1_ADAPTER : public std::unary_function<A, R>
         R (C::* m_func)(A) const;
         C & m_obj;
 };
+
+template <typename A, typename R>
+FUNC1_ADAPTER<A, R> Func1Adapt(R (func)(A))
+{
+return FUNC1_ADAPTER<A, R>(func);
+}
 
 template <typename C, typename A, typename R>
 METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A), C & obj)
@@ -148,17 +164,10 @@ if (!result)
 SGCONF::PrintXML(response);
 }
 
-void Usage();
-void UsageAll();
-void UsageImpl(bool full);
-void UsageConnection();
-void UsageAdmins(bool full);
-void UsageTariffs(bool full);
-void UsageUsers(bool full);
-void UsageServices(bool full);
-void UsageCorporations(bool full);
-
-void Version();
+void Version(const std::string & self)
+{
+std::cout << self << ", version: 2.0.0-alpha.\n";
+}
 
 void ReadUserConfigFile(SGCONF::OPTION_BLOCK & block)
 {
@@ -405,6 +414,7 @@ time_t stgTime;
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+std::string self(basename(argv[0]));
 SGCONF::CONFIG config;
 SGCONF::COMMANDS commands;
 
@@ -412,8 +422,8 @@ SGCONF::OPTION_BLOCKS blocks;
 blocks.Add("General options")
       .Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file")
       .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
-      .Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
-      .Add("v", "version", SGCONF::MakeFunc0Action(Version), "\t\tshow version information and exit");
+      //.Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
+      .Add("v", "version", SGCONF::MakeFunc0Action(bind0(Func1Adapt(Version), self)), "\t\tshow version information and exit");
 SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
       .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
@@ -502,109 +512,13 @@ return -1;
 
 std::cerr << "Config: " << config.Serialize() << std::endl;
 return commands.Execute(config) ? 0 : -1;
-
-/*return 0;
-
-if (argc < 2)
-    {
-    Usage();
-    return 1;
-    }
-
-if (argc <= 2)
-    {
-    UsageConf();
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-
-if (strcmp(argv[1], "get") == 0)
-    {
-    //printf("get\n");
-    return mainGet(argc - 1, argv + 1);
-    }
-else if (strcmp(argv[1], "set") == 0)
-    {
-    //printf("set\n");
-    if (mainSet(argc - 1, argv + 1) )
-        return 0;
-    return -1;
-    }
-else
-    {
-    UsageConf();
-    exit(PARAMETER_PARSING_ERR_CODE);
-    }
-return UNKNOWN_ERR_CODE;*/
 }
 //-----------------------------------------------------------------------------
 
 namespace
 {
 
-void Usage()
-{
-UsageImpl(false);
-}
-
-void UsageAll()
-{
-UsageImpl(true);
-}
-
-void UsageImpl(bool full)
-{
-std::cout << "sgconf is the Stargazer management utility.\n\n"
-          << "Usage:\n"
-          << "\tsgconf [options]\n\n"
-          << "General options:\n"
-          << "\t-c, --config <config file>\t\toverride default config file (default: \"~/.config/stg/sgconf.conf\")\n"
-          << "\t-h, --help\t\t\t\tshow this help and exit\n"
-          << "\t--help-all\t\t\t\tshow full help and exit\n"
-          << "\t-v, --version\t\t\t\tshow version information and exit\n\n";
-UsageConnection();
-UsageAdmins(full);
-UsageTariffs(full);
-UsageUsers(full);
-UsageServices(full);
-UsageCorporations(full);
-}
-//-----------------------------------------------------------------------------
-void UsageConnection()
-{
-std::cout << "Connection options:\n"
-          << "\t-s, --server <address>\t\t\thost to connect (ip or domain name, default: \"localhost\")\n"
-          << "\t-p, --port <port>\t\t\tport to connect (default: \"5555\")\n"
-          << "\t-u, --username <username>\t\tadministrative login (default: \"admin\")\n"
-          << "\t-w, --userpass <password>\t\tpassword for administrative login\n"
-          << "\t-a, --address <connection string>\tconnection params as a single string in format: <login>:<password>@<host>:<port>\n\n";
-}
-//-----------------------------------------------------------------------------
-void UsageAdmins(bool full)
-{
-std::cout << "Admins management options:\n"
-          << "\t--get-admins\t\t\t\tget a list of admins (subsequent options will define what to show)\n";
-if (full)
-    std::cout << "\t\t--login\t\t\t\tshow admin's login\n"
-              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
-std::cout << "\t--get-admin\t\t\t\tget the information about admin\n";
-if (full)
-    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to show\n"
-              << "\t\t--priv\t\t\t\tshow admin's priviledges\n\n";
-std::cout << "\t--add-admin\t\t\t\tadd a new admin\n";
-if (full)
-    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to add\n"
-              << "\t\t--password <password>\t\tpassword of the admin to add\n"
-              << "\t\t--priv <priv number>\t\tpriviledges of the admin to add\n\n";
-std::cout << "\t--del-admin\t\t\t\tdelete an existing admin\n";
-if (full)
-    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to delete\n\n";
-std::cout << "\t--chg-admin\t\t\t\tchange an existing admin\n";
-if (full)
-    std::cout << "\t\t--login <login>\t\t\tlogin of the admin to change\n"
-              << "\t\t--priv <priv number>\t\tnew priviledges\n\n";
-}
-//-----------------------------------------------------------------------------
-void UsageTariffs(bool full)
+/*void UsageTariffs(bool full)
 {
 std::cout << "Tariffs management options:\n"
           << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n";
@@ -740,11 +654,6 @@ if (full)
     std::cout << "\t\t--name <name>\t\t\tname of the corporation to change\n"
               << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
               << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n\n";
-}
-
-void Version()
-{
-std::cout << "sgconf, version: 2.0.0-alpha.\n";
-}
+}*/
 
 } // namespace anonymous
