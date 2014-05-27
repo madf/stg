@@ -424,36 +424,36 @@ blocks.Add("Raw XML")
       .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, SGCONF::RawXMLFunction), "\tmake raw XML request");
 blocks.Add("Admin management options")
       .Add("get-admins", SGCONF::MakeAPIAction(commands, SGCONF::GetAdminsFunction), "\tget admin list")
-      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetAdminFunction), "\tget admin")
-      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddAdminFunction), "\tadd admin")
-      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelAdminFunction), "\tdel admin")
-      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgAdminFunction), "\tchange admin");
+      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetAdminFunction), "get admin")
+      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddAdminFunction), "add admin")
+      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelAdminFunction), "del admin")
+      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgAdminFunction), "change admin");
 blocks.Add("Tariff management options")
       .Add("get-tariffs", SGCONF::MakeAPIAction(commands, SGCONF::GetTariffsFunction), "\tget tariff list")
-      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetTariffFunction), "\tget tariff")
-      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddTariffFunction), "\tadd tariff")
-      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelTariffFunction), "\tdel tariff")
-      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgTariffFunction), "\tchange tariff");
+      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetTariffFunction), "get tariff")
+      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddTariffFunction), "add tariff")
+      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelTariffFunction), "del tariff")
+      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgTariffFunction), "change tariff");
 blocks.Add("User management options")
       .Add("get-users", SGCONF::MakeAPIAction(commands, SGCONF::GetUsersFunction), "\tget user list")
-      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetUserFunction), "\tget user")
-      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddUserFunction), "\tadd user")
-      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelUserFunction), "\tdel user")
-      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgUserFunction), "\tchange user")
-      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::CheckUserFunction), "\tcheck user existance and credentials")
-      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::SendMessageFunction), "\tsend message");
+      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetUserFunction), "get user")
+      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddUserFunction), "add user")
+      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelUserFunction), "del user")
+      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgUserFunction), "change user")
+      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::CheckUserFunction), "check user existance and credentials")
+      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::SendMessageFunction), "send message");
 blocks.Add("Service management options")
       .Add("get-services", SGCONF::MakeAPIAction(commands, SGCONF::GetServicesFunction), "\tget service list")
-      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetServiceFunction), "\tget service")
-      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddServiceFunction), "\tadd service")
-      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelServiceFunction), "\tdel service")
-      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgServiceFunction), "\tchange service");
+      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetServiceFunction), "get service")
+      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddServiceFunction), "add service")
+      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelServiceFunction), "del service")
+      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgServiceFunction), "change service");
 blocks.Add("Corporation management options")
       .Add("get-corps", SGCONF::MakeAPIAction(commands, SGCONF::GetCorpsFunction), "\tget corporation list")
-      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetCorpFunction), "\tget corporation")
-      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddCorpFunction), "\tadd corporation")
-      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelCorpFunction), "\tdel corporation")
-      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgCorpFunction), "\tchange corporation");
+      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetCorpFunction), "get corporation")
+      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddCorpFunction), "add corporation")
+      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelCorpFunction), "del corporation")
+      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgCorpFunction), "change corporation");
 
 SGCONF::PARSER_STATE state(false, argc, argv);
 

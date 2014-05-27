@@ -117,7 +117,7 @@ void OPTION::Help(size_t level) const
 if (!m_action)
     throw ERROR("Option is not defined.");
 std::string indent(level, '\t');
-std::cout << indent << "\t";
+std::cout << indent;
 if (!m_shortName.empty())
     std::cout << "-" << m_shortName << ", ";
 std::cout << "--" << m_longName << " " << m_action->ParamDescription()
