@@ -21,6 +21,7 @@
 #ifndef __STG_STGLIBS_SRVCONF_TYPES_H__
 #define __STG_STGLIBS_SRVCONF_TYPES_H__
 
+#include "stg/array.h"
 #include "stg/const.h" // DIR_NUM
 #include "stg/os_int.h" // uint32_t, etc...
 
@@ -107,7 +108,7 @@ struct INFO
     int         usersNum;
     std::string uname;
     int         dirNum;
-    std::string dirName[DIR_NUM];
+    ARRAY<std::string, DIR_NUM> dirName;
 };
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
@@ -125,11 +126,11 @@ namespace GET_USER
 
 struct STAT
 {
-    long long  su[DIR_NUM];
-    long long  sd[DIR_NUM];
-    long long  mu[DIR_NUM];
-    long long  md[DIR_NUM];
-    double     freeMb;
+    ARRAY<long long, DIR_NUM> su;
+    ARRAY<long long, DIR_NUM> sd;
+    ARRAY<long long, DIR_NUM> mu;
+    ARRAY<long long, DIR_NUM> md;
+    double freeMb;
 };
 
 struct INFO
@@ -156,7 +157,7 @@ struct INFO
     std::string address;
     std::string phone;
     STAT        stat;
-    std::string userData[USERDATA_NUM];
+    ARRAY<std::string, USERDATA_NUM> userData;
 };
 
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);

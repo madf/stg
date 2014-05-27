@@ -77,6 +77,7 @@ int             DaysInCurrentMonth();
 int             Min8(int a);
 std::string     inet_ntostring(uint32_t);
 uint32_t        inet_strington(const std::string & value);
+std::string     TimeToString(time_t time);
 int             strprintf(std::string * str, const char * fmt, ...);
 int             ParseTariffTimeStr(const char * str, int &h1, int &m1, int &h2, int &m2);
 uint32_t        CalcMask(uint32_t msk);

@@ -69,6 +69,7 @@ public:
         parsingAnswer = false;
         }
     }
+    void Failure(const std::string & reason) { callback(false, reason, info, data); }
 
 private:
     std::string tag;

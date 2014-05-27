@@ -349,11 +349,13 @@ int ret = 0;
 if ((ret = nt.Connect()) != st_ok)
     {
     errorMsg = nt.GetError();
+    cp.Failure(errorMsg);
     return ret;
     }
 if ((ret = nt.Transact(request, ParserRecv, this)) != st_ok)
     {
     errorMsg = nt.GetError();
+    cp.Failure(errorMsg);
     return ret;
     }
 

@@ -12,11 +12,12 @@ SRCS = ./main.cpp \
        ./actions.cpp \
        ./admins.cpp \
        ./tariffs.cpp \
+       ./users.cpp \
        ./xml.cpp
 
 STGLIBS = conffiles \
           srvconf \
-	  crypto \
+          crypto \
           common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
@@ -27,7 +28,7 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) -lexpat $(LIB_THREAD)
 ifeq ($(OS),linux)
 else
 LIBS += -lc \
-	-liconv
+        -liconv
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -96,7 +97,7 @@ endif
 endif
 endif
 
-deps:	$(SRCS) ../../Makefile.conf
+deps: $(SRCS) ../../Makefile.conf
 	$(MAKE) -C $(DIR_LIBSRC)
 	@>deps ;\
 	for file in $(SRCS); do\

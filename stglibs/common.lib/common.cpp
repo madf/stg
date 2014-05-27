@@ -531,6 +531,22 @@ uint32_t inet_strington(const std::string & value)
     return result;
 }
 //-----------------------------------------------------------------------------
+std::string TimeToString(time_t time)
+{
+struct tm brokenTime;
+
+brokenTime.tm_wday = 0;
+brokenTime.tm_yday = 0;
+brokenTime.tm_isdst = 0;
+
+gmtime_r(&time, &brokenTime);
+
+char buf[32];
+strftime(buf, 32, "%Y-%m-%d %H:%M:%S", &brokenTime);
+
+return buf;
+}
+//-----------------------------------------------------------------------------
 int ParseTariffTimeStr(const char * str, int &h1, int &m1, int &h2, int &m2)
 {
 char hs1[10], ms1[10], hs2[10], ms2[10];

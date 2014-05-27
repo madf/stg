@@ -131,8 +131,7 @@ for (size_t i = 0; i < info.size(); ++i)
         PrintTariff(info[i]);
 }
 
-}
-
+} // namespace anonymous
 
 bool SGCONF::GetTariffsFunction(const SGCONF::CONFIG & config,
                                 const std::string & /*arg*/,

@@ -83,7 +83,7 @@ for (size_t i = 0; i < info.size(); ++i)
         PrintAdmin(info[i]);
 }
 
-}
+} // namespace anonymous
 
 
 bool SGCONF::GetAdminsFunction(const SGCONF::CONFIG & config,

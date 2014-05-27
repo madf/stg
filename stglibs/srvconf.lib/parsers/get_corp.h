@@ -43,6 +43,7 @@ public:
     virtual ~PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
+    void Failure(const std::string & reason) { callback(false, reason, info, data); }
 
 private:
     PROPERTY_PARSERS propertyParsers;

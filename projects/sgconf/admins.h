@@ -7,7 +7,7 @@
 namespace SGCONF
 {
 
-class CONFIG;
+struct CONFIG;
 
 bool GetAdminsFunction(const CONFIG & config,
                        const std::string & /*arg*/,
