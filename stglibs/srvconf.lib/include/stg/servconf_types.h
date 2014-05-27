@@ -162,6 +162,7 @@ struct INFO
     time_t      pingTime;
     time_t      lastActivityTime;
     ARRAY<std::string, USERDATA_NUM> userData;
+    std::vector<std::string> authBy;
 };
 
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);

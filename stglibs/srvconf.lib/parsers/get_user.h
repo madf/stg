@@ -56,6 +56,7 @@ private:
 
     void ParseUser(const char * el, const char ** attr);
     void ParseUserParams(const char * el, const char ** attr);
+    void ParseAuthBy(const char * el, const char ** attr);
 };
 
 } // namespace GET_USER

@@ -112,6 +112,9 @@ if (depth == 1)
 if (depth == 2 && parsingAnswer)
     ParseUserParams(el, attr);
 
+if (depth == 3 && parsingAnswer)
+    ParseAuthBy(el, attr);
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -149,6 +152,17 @@ if (strcasecmp(el, "user") == 0)
 //-----------------------------------------------------------------------------
 void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr))
+if (strcasecmp(el, "AuthorizedBy") != 0 &&
+    !TryParse(propertyParsers, ToLower(el), attr))
     error = "Invalid parameter.";
+}
+//-----------------------------------------------------------------------------
+void GET_USER::PARSER::ParseAuthBy(const char * el, const char ** attr)
+{
+if (strcasecmp(el, "Auth") == 0 &&
+    attr && attr[0] && attr[1] &&
+    strcasecmp(attr[0], "name") == 0)
+    info.authBy.push_back(attr[1]);
+else
+    error = "Invalid auth description.";
 }

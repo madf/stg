@@ -57,6 +57,12 @@ for (size_t i = 0; i < DIR_NUM; ++i)
 std::cout << Indent(level)       << "user data:\n";
 for (size_t i = 0; i < USERDATA_NUM; ++i)
     std::cout << Indent(level + 1, true) << "user data " << i << ": " << info.userData[i] << "\n";
+if (!info.authBy.empty())
+    {
+    std::cout << Indent(level) << "auth by:\n";
+    for (size_t i = 0; i < info.authBy.size(); ++i)
+        std::cout << Indent(level + 1, true) << info.authBy[i] << "\n";
+    }
 }
 
 void SimpleCallback(bool result,
