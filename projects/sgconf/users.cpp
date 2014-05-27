@@ -1,5 +1,7 @@
 #include "users.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -7,6 +9,8 @@
 #include "stg/common.h"
 
 #include <iostream>
+#include <string>
+#include <map>
 
 namespace
 {
@@ -105,11 +109,9 @@ if (!result)
 PrintUser(info);
 }
 
-} // namespace anonymous
-
-bool SGCONF::GetUsersFunction(const SGCONF::CONFIG & config,
-                                const std::string & /*arg*/,
-                                const std::map<std::string, std::string> & /*options*/)
+bool GetUsersFunction(const SGCONF::CONFIG & config,
+                      const std::string & /*arg*/,
+                      const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -118,9 +120,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetUsers(GetUsersCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::GetUserFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+bool GetUserFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -129,9 +131,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetUser(arg, GetUserCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::DelUserFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+bool DelUserFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -140,38 +142,52 @@ STG::SERVCONF proto(config.server.data(),
 return proto.DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::AddUserFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & /*options*/)
+bool AddUserFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::ChgUserFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & options)
+bool ChgUserFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::CheckUserFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & options)
+bool CheckUserFunction(const SGCONF::CONFIG & config,
+                       const std::string & arg,
+                       const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::SendMessageFunction(const SGCONF::CONFIG & config,
-                                 const std::string & arg,
-                                 const std::map<std::string, std::string> & options)
+bool SendMessageFunction(const SGCONF::CONFIG & config,
+                         const std::string & arg,
+                         const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
+}
+
+} // namespace anonymous
+
+void SGCONF::AppendUsersOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("User management options")
+      .Add("get-users", SGCONF::MakeAPIAction(commands, GetUsersFunction), "\tget user list")
+      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, GetUserFunction), "get user")
+      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, AddUserFunction), "add user")
+      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, DelUserFunction), "del user")
+      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, ChgUserFunction), "change user")
+      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, CheckUserFunction), "check user existance and credentials")
+      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SendMessageFunction), "send message");
 }

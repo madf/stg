@@ -1,5 +1,7 @@
 #include "corps.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -8,6 +10,8 @@
 #include "stg/common.h"
 
 #include <iostream>
+#include <string>
+#include <map>
 
 namespace
 {
@@ -65,11 +69,9 @@ if (!result)
 PrintCorp(info);
 }
 
-} // namespace anonymous
-
-bool SGCONF::GetCorpsFunction(const SGCONF::CONFIG & config,
-                              const std::string & /*arg*/,
-                              const std::map<std::string, std::string> & /*options*/)
+bool GetCorpsFunction(const SGCONF::CONFIG & config,
+                      const std::string & /*arg*/,
+                      const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -78,9 +80,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetCorporations(GetCorpsCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::GetCorpFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & /*options*/)
+bool GetCorpFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -89,9 +91,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetCorp(arg, GetCorpCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::DelCorpFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & /*options*/)
+bool DelCorpFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -100,20 +102,32 @@ STG::SERVCONF proto(config.server.data(),
 return proto.DelCorp(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::AddCorpFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & /*options*/)
+bool AddCorpFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::ChgCorpFunction(const SGCONF::CONFIG & config,
-                             const std::string & arg,
-                             const std::map<std::string, std::string> & options)
+bool ChgCorpFunction(const SGCONF::CONFIG & config,
+                     const std::string & arg,
+                     const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
+}
+
+} // namespace anonymous
+
+void SGCONF::AppendCorpsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("Corporation management options")
+      .Add("get-corps", SGCONF::MakeAPIAction(commands, GetCorpsFunction), "\tget corporation list")
+      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, GetCorpFunction), "get corporation")
+      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, AddCorpFunction), "add corporation")
+      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, DelCorpFunction), "del corporation")
+      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, ChgCorpFunction), "change corporation");
 }

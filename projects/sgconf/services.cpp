@@ -1,5 +1,7 @@
 #include "services.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -8,6 +10,8 @@
 #include "stg/common.h"
 
 #include <iostream>
+#include <string>
+#include <map>
 
 namespace
 {
@@ -67,11 +71,9 @@ if (!result)
 PrintService(info);
 }
 
-} // namespace anonymous
-
-bool SGCONF::GetServicesFunction(const SGCONF::CONFIG & config,
-                                 const std::string & /*arg*/,
-                                 const std::map<std::string, std::string> & /*options*/)
+bool GetServicesFunction(const SGCONF::CONFIG & config,
+                         const std::string & /*arg*/,
+                         const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -80,9 +82,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetServices(GetServicesCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::GetServiceFunction(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & /*options*/)
+bool GetServiceFunction(const SGCONF::CONFIG & config,
+                        const std::string & arg,
+                        const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -91,9 +93,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetService(arg, GetServiceCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::DelServiceFunction(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & /*options*/)
+bool DelServiceFunction(const SGCONF::CONFIG & config,
+                        const std::string & arg,
+                        const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -102,20 +104,32 @@ STG::SERVCONF proto(config.server.data(),
 return proto.DelService(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::AddServiceFunction(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & /*options*/)
+bool AddServiceFunction(const SGCONF::CONFIG & config,
+                        const std::string & arg,
+                        const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::ChgServiceFunction(const SGCONF::CONFIG & config,
-                                const std::string & arg,
-                                const std::map<std::string, std::string> & options)
+bool ChgServiceFunction(const SGCONF::CONFIG & config,
+                        const std::string & arg,
+                        const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
+}
+
+} // namespace anonymous
+
+void SGCONF::AppendServicesOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("Service management options")
+      .Add("get-services", SGCONF::MakeAPIAction(commands, GetServicesFunction), "\tget service list")
+      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, GetServiceFunction), "get service")
+      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, AddServiceFunction), "add service")
+      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, DelServiceFunction), "del service")
+      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, ChgServiceFunction), "change service");
 }

@@ -1,5 +1,7 @@
 #include "tariffs.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -9,6 +11,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <map>
 #include <cassert>
 
 namespace
@@ -131,11 +135,9 @@ for (size_t i = 0; i < info.size(); ++i)
         PrintTariff(info[i]);
 }
 
-} // namespace anonymous
-
-bool SGCONF::GetTariffsFunction(const SGCONF::CONFIG & config,
-                                const std::string & /*arg*/,
-                                const std::map<std::string, std::string> & /*options*/)
+bool GetTariffsFunction(const SGCONF::CONFIG & config,
+                        const std::string & /*arg*/,
+                        const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -144,9 +146,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetTariffs(GetTariffsCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::GetTariffFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+bool GetTariffFunction(const SGCONF::CONFIG & config,
+                       const std::string & arg,
+                       const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -158,9 +160,9 @@ std::string name(arg);
 return proto.GetTariffs(GetTariffCallback, &name) == STG::st_ok;
 }
 
-bool SGCONF::DelTariffFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+bool DelTariffFunction(const SGCONF::CONFIG & config,
+                       const std::string & arg,
+                       const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -169,20 +171,32 @@ STG::SERVCONF proto(config.server.data(),
 return proto.DelTariff(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::AddTariffFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+bool AddTariffFunction(const SGCONF::CONFIG & config,
+                       const std::string & arg,
+                       const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::ChgTariffFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & options)
+bool ChgTariffFunction(const SGCONF::CONFIG & config,
+                       const std::string & arg,
+                       const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
+}
+
+} // namespace anonymous
+
+void SGCONF::AppendTariffsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("Tariff management options")
+      .Add("get-tariffs", SGCONF::MakeAPIAction(commands, GetTariffsFunction), "\tget tariff list")
+      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, GetTariffFunction), "get tariff")
+      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, AddTariffFunction), "add tariff")
+      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, DelTariffFunction), "del tariff")
+      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, ChgTariffFunction), "change tariff");
 }

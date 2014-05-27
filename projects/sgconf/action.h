@@ -22,6 +22,7 @@
 #define __STG_SGCONF_ACTION_H__
 
 #include <string>
+#include <map>
 #include <stdexcept>
 
 namespace SGCONF
@@ -29,6 +30,7 @@ namespace SGCONF
 
 class OPTION_BLOCK;
 struct PARSER_STATE;
+struct CONFIG;
 
 class ACTION
 {

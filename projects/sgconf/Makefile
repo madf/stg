@@ -8,6 +8,7 @@ PROG = sgconf
 
 SRCS = ./main.cpp \
        ./options.cpp \
+       ./api_action.cpp \
        ./actions.cpp \
        ./admins.cpp \
        ./tariffs.cpp \

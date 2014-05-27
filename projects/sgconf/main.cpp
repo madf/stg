@@ -26,6 +26,7 @@
 #include "services.h"
 #include "corps.h"
 
+#include "api_action.h"
 #include "options.h"
 #include "actions.h"
 #include "config.h"
@@ -173,107 +174,6 @@ class CONFIG_ACTION : public ACTION
         void ParseHostAndPort(const std::string & hostAndPort);
 };
 
-typedef bool (* API_FUNCTION) (const SGCONF::CONFIG &,
-                               const std::string &,
-                               const std::map<std::string, std::string> &);
-
-class COMMAND
-{
-    public:
-        COMMAND(API_FUNCTION funPtr,
-                const std::string & arg,
-                const std::map<std::string, std::string> & options)
-            : m_funPtr(funPtr),
-              m_arg(arg),
-              m_options(options)
-        {}
-        bool Execute(const SGCONF::CONFIG & config) const
-        {
-            return m_funPtr(config, m_arg, m_options);
-        }
-
-    private:
-        API_FUNCTION m_funPtr;
-        std::string m_arg;
-        std::map<std::string, std::string> m_options;
-};
-
-class COMMANDS
-{
-    public:
-        void Add(API_FUNCTION funPtr,
-                 const std::string & arg,
-                 const std::map<std::string, std::string> & options) { m_commands.push_back(COMMAND(funPtr, arg, options)); }
-        bool Execute(const SGCONF::CONFIG & config) const
-        {
-            std::list<COMMAND>::const_iterator it(m_commands.begin());
-            bool res = true;
-            while (it != m_commands.end() && res)
-            {
-                res = res && it->Execute(config);
-                ++it;
-            }
-            return res;
-        }
-    private:
-        std::list<COMMAND> m_commands;
-};
-
-class API_ACTION : public ACTION
-{
-    public:
-        API_ACTION(COMMANDS & commands,
-                   const std::string & paramDescription,
-                   bool needArgument,
-                   const OPTION_BLOCK& suboptions,
-                   API_FUNCTION funPtr)
-            : m_commands(commands),
-              m_description(paramDescription),
-              m_argument(needArgument ? "1" : ""), // Hack
-              m_suboptions(suboptions),
-              m_funPtr(funPtr)
-        {}
-        API_ACTION(COMMANDS & commands,
-                   const std::string & paramDescription,
-                   bool needArgument,
-                   API_FUNCTION funPtr)
-            : m_commands(commands),
-              m_description(paramDescription),
-              m_argument(needArgument ? "1" : ""), // Hack
-              m_funPtr(funPtr)
-        {}
-
-        virtual ACTION * Clone() const { return new API_ACTION(*this); }
-
-        virtual std::string ParamDescription() const { return m_description; }
-        virtual std::string DefaultDescription() const { return ""; }
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv)
-        {
-        PARSER_STATE state(false, argc, argv);
-        if (!m_argument.empty())
-            {
-            if (argc == 0 ||
-                argv == NULL ||
-                *argv == NULL)
-                throw ERROR("Missing argument.");
-            m_argument = *argv;
-            --state.argc;
-            ++state.argv;
-            }
-        m_suboptions.Parse(state.argc, state.argv);
-        m_commands.Add(m_funPtr, m_argument, m_params);
-        return state;
-        }
-
-    private:
-        COMMANDS & m_commands;
-        std::string m_description;
-        std::string m_argument;
-        OPTION_BLOCK m_suboptions;
-        std::map<std::string, std::string> m_params;
-        API_FUNCTION m_funPtr;
-};
 
 PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
 {
@@ -332,25 +232,7 @@ CONFIG_ACTION * MakeParamAction(SGCONF::CONFIG & config,
 return new CONFIG_ACTION(config, paramDescription);
 }
 
-inline
-ACTION * MakeAPIAction(COMMANDS & commands,
-                       const std::string & paramDescription,
-                       bool needArgument,
-                       API_FUNCTION funPtr)
-{
-return new API_ACTION(commands, paramDescription, needArgument, funPtr);
-}
-
-inline
-ACTION * MakeAPIAction(COMMANDS & commands,
-                       API_FUNCTION funPtr)
-{
-return new API_ACTION(commands, "", false, funPtr);
-}
-
 } // namespace SGCONF
-
-time_t stgTime;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
@@ -371,40 +253,12 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
-blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, SGCONF::RawXMLFunction), "\tmake raw XML request");
-blocks.Add("Admin management options")
-      .Add("get-admins", SGCONF::MakeAPIAction(commands, SGCONF::GetAdminsFunction), "\tget admin list")
-      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetAdminFunction), "get admin")
-      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddAdminFunction), "add admin")
-      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelAdminFunction), "del admin")
-      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgAdminFunction), "change admin");
-blocks.Add("Tariff management options")
-      .Add("get-tariffs", SGCONF::MakeAPIAction(commands, SGCONF::GetTariffsFunction), "\tget tariff list")
-      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetTariffFunction), "get tariff")
-      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddTariffFunction), "add tariff")
-      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelTariffFunction), "del tariff")
-      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgTariffFunction), "change tariff");
-blocks.Add("User management options")
-      .Add("get-users", SGCONF::MakeAPIAction(commands, SGCONF::GetUsersFunction), "\tget user list")
-      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetUserFunction), "get user")
-      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddUserFunction), "add user")
-      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelUserFunction), "del user")
-      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgUserFunction), "change user")
-      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::CheckUserFunction), "check user existance and credentials")
-      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::SendMessageFunction), "send message");
-blocks.Add("Service management options")
-      .Add("get-services", SGCONF::MakeAPIAction(commands, SGCONF::GetServicesFunction), "\tget service list")
-      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetServiceFunction), "get service")
-      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddServiceFunction), "add service")
-      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelServiceFunction), "del service")
-      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgServiceFunction), "change service");
-blocks.Add("Corporation management options")
-      .Add("get-corps", SGCONF::MakeAPIAction(commands, SGCONF::GetCorpsFunction), "\tget corporation list")
-      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetCorpFunction), "get corporation")
-      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddCorpFunction), "add corporation")
-      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelCorpFunction), "del corporation")
-      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgCorpFunction), "change corporation");
+SGCONF::AppendXMLOptionBlock(commands, blocks);
+SGCONF::AppendAdminsOptionBlock(commands, blocks);
+SGCONF::AppendTariffsOptionBlock(commands, blocks);
+SGCONF::AppendUsersOptionBlock(commands, blocks);
+SGCONF::AppendServicesOptionBlock(commands, blocks);
+SGCONF::AppendCorpsOptionBlock(commands, blocks);
 
 SGCONF::PARSER_STATE state(false, argc, argv);
 

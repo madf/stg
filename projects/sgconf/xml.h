@@ -21,19 +21,13 @@
 #ifndef __STG_SGCONF_XML_H__
 #define __STG_SGCONF_XML_H__
 
-#include <string>
-#include <map>
-
 namespace SGCONF
 {
 
-struct CONFIG;
+class OPTION_BLOCKS;
+class COMMANDS;
 
-void PrintXML(const std::string& xml);
-
-bool RawXMLFunction(const SGCONF::CONFIG & config,
-                    const std::string & arg,
-                    const std::map<std::string, std::string> & /*options*/);
+void AppendXMLOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks);
 
 }
 

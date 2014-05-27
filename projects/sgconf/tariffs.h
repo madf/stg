@@ -1,33 +1,13 @@
 #ifndef __STG_SGCONF_TARIFFS_H__
 #define __STG_SGCONF_TARIFFS_H__
 
-#include <string>
-#include <map>
-
 namespace SGCONF
 {
 
-struct CONFIG;
+class OPTION_BLOCKS;
+class COMMANDS;
 
-bool GetTariffsFunction(const CONFIG & config,
-                        const std::string & /*arg*/,
-                        const std::map<std::string, std::string> & /*options*/);
-
-bool GetTariffFunction(const CONFIG & config,
-                       const std::string & arg,
-                       const std::map<std::string, std::string> & /*options*/);
-
-bool DelTariffFunction(const CONFIG & config,
-                       const std::string & arg,
-                       const std::map<std::string, std::string> & /*options*/);
-
-bool AddTariffFunction(const CONFIG & config,
-                       const std::string & arg,
-                       const std::map<std::string, std::string> & options);
-
-bool ChgTariffFunction(const CONFIG & config,
-                       const std::string & arg,
-                       const std::map<std::string, std::string> & options);
+void AppendTariffsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks);
 
 } // namespace SGCONF
 

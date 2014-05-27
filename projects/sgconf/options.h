@@ -107,6 +107,7 @@ class OPTION_BLOCKS
     public:
         OPTION_BLOCK & Add(const std::string & description)
         { m_blocks.push_back(OPTION_BLOCK(description)); return m_blocks.back(); }
+        void Add(const OPTION_BLOCK & block) { m_blocks.push_back(block); }
         void Help(size_t level) const;
         PARSER_STATE Parse(int argc, char ** argv);
 

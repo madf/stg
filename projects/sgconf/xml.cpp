@@ -1,10 +1,14 @@
 #include "xml.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
 
 #include <iostream>
+#include <string>
+#include <map>
 
 #include <expat.h>
 
@@ -52,19 +56,7 @@ if (el != NULL)
     std::cout << Indent(state->level) << "</" << el << ">\n";
 }
 
-void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * /*data*/)
-{
-if (!result)
-    {
-    std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
-    return;
-    }
-SGCONF::PrintXML(response);
-}
-
-}
-
-void SGCONF::PrintXML(const std::string& xml)
+void PrintXML(const std::string& xml)
 {
 ParserState state = { 0 };
 
@@ -81,13 +73,31 @@ if (XML_Parse(parser, xml.c_str(), xml.length(), true) == XML_STATUS_ERROR)
 XML_ParserFree(parser);
 }
 
-bool SGCONF::RawXMLFunction(const SGCONF::CONFIG & config,
-                            const std::string & arg,
-                            const std::map<std::string, std::string> & /*options*/)
+void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * /*data*/)
 {
-    STG::SERVCONF proto(config.server.data(),
-                        config.port.data(),
-                        config.userName.data(),
-                        config.userPass.data());
-    return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
+if (!result)
+    {
+    std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
+    return;
+    }
+PrintXML(response);
+}
+
+bool RawXMLFunction(const SGCONF::CONFIG & config,
+                    const std::string & arg,
+                    const std::map<std::string, std::string> & /*options*/)
+{
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
+}
+
+}
+
+void SGCONF::AppendXMLOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("Raw XML")
+      .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, RawXMLFunction), "\tmake raw XML request");
 }

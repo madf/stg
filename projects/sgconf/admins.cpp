@@ -1,5 +1,7 @@
 #include "admins.h"
 
+#include "api_action.h"
+#include "options.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -7,6 +9,8 @@
 #include "stg/os_int.h"
 
 #include <iostream>
+#include <string>
+#include <map>
 #include <cassert>
 
 namespace
@@ -83,12 +87,10 @@ for (size_t i = 0; i < info.size(); ++i)
         PrintAdmin(info[i]);
 }
 
-} // namespace anonymous
 
-
-bool SGCONF::GetAdminsFunction(const SGCONF::CONFIG & config,
-                               const std::string & /*arg*/,
-                               const std::map<std::string, std::string> & /*options*/)
+bool GetAdminsFunction(const SGCONF::CONFIG & config,
+                       const std::string & /*arg*/,
+                       const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -97,9 +99,9 @@ STG::SERVCONF proto(config.server.data(),
 return proto.GetAdmins(GetAdminsCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::GetAdminFunction(const SGCONF::CONFIG & config,
-                              const std::string & arg,
-                              const std::map<std::string, std::string> & /*options*/)
+bool GetAdminFunction(const SGCONF::CONFIG & config,
+                      const std::string & arg,
+                      const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -111,9 +113,9 @@ std::string login(arg);
 return proto.GetAdmins(GetAdminCallback, &login) == STG::st_ok;
 }
 
-bool SGCONF::DelAdminFunction(const SGCONF::CONFIG & config,
-                              const std::string & arg,
-                              const std::map<std::string, std::string> & /*options*/)
+bool DelAdminFunction(const SGCONF::CONFIG & config,
+                      const std::string & arg,
+                      const std::map<std::string, std::string> & /*options*/)
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
@@ -122,20 +124,32 @@ STG::SERVCONF proto(config.server.data(),
 return proto.DelAdmin(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
-bool SGCONF::AddAdminFunction(const SGCONF::CONFIG & config,
-                              const std::string & arg,
-                              const std::map<std::string, std::string> & /*options*/)
+bool AddAdminFunction(const SGCONF::CONFIG & config,
+                      const std::string & arg,
+                      const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
 }
 
-bool SGCONF::ChgAdminFunction(const SGCONF::CONFIG & config,
-                              const std::string & arg,
-                              const std::map<std::string, std::string> & options)
+bool ChgAdminFunction(const SGCONF::CONFIG & config,
+                      const std::string & arg,
+                      const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
 return false;
+}
+
+} // namespace anonymous
+
+void SGCONF::AppendAdminsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
+{
+blocks.Add("Admin management options")
+      .Add("get-admins", SGCONF::MakeAPIAction(commands, GetAdminsFunction), "\tget admin list")
+      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, GetAdminFunction), "get admin")
+      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, AddAdminFunction), "add admin")
+      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, DelAdminFunction), "del admin")
+      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, ChgAdminFunction), "change admin");
 }
