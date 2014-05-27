@@ -1,5 +1,9 @@
 #include "xml.h"
 
+#include "config.h"
+
+#include "stg/servconf.h"
+
 #include <iostream>
 
 #include <expat.h>
@@ -48,6 +52,16 @@ if (el != NULL)
     std::cout << Indent(state->level) << "</" << el << ">\n";
 }
 
+void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * /*data*/)
+{
+if (!result)
+    {
+    std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
+    return;
+    }
+SGCONF::PrintXML(response);
+}
+
 }
 
 void SGCONF::PrintXML(const std::string& xml)
@@ -65,4 +79,15 @@ if (XML_Parse(parser, xml.c_str(), xml.length(), true) == XML_STATUS_ERROR)
               << std::endl;
 
 XML_ParserFree(parser);
+}
+
+bool SGCONF::RawXMLFunction(const SGCONF::CONFIG & config,
+                            const std::string & arg,
+                            const std::map<std::string, std::string> & /*options*/)
+{
+    STG::SERVCONF proto(config.server.data(),
+                        config.port.data(),
+                        config.userName.data(),
+                        config.userPass.data());
+    return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
 }

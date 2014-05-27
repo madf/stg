@@ -30,44 +30,16 @@
 #include "actions.h"
 #include "config.h"
 
-#include "stg/servconf.h"
-#include "stg/user_conf.h"
-#include "stg/user_stat.h"
-#include "stg/common.h"
-
-#include <cerrno>
-#include <clocale>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <string>
-#include <sstream>
+#include <iostream>
 
-#include <unistd.h>
-#include <getopt.h>
-#include <iconv.h>
-#include <langinfo.h>
+#include <cstdlib> // getenv
+#include <cstring> // basename
+
+#include <unistd.h> // access
 
 namespace
 {
-
-template <typename T>
-struct ARRAY_TYPE
-{
-typedef typename T::value_type type;
-};
-
-template <typename T>
-struct ARRAY_TYPE<T[]>
-{
-typedef T type;
-};
-
-template <typename T, size_t N>
-struct ARRAY_TYPE<T[N]>
-{
-typedef T type;
-};
 
 template <typename T>
 struct nullary_function
@@ -142,26 +114,6 @@ template <typename C, typename A, typename R>
 CONST_METHOD1_ADAPTER<C, A, R> Method1Adapt(R (C::* func)(A) const, C & obj)
 {
 return CONST_METHOD1_ADAPTER<C, A, R>(func, obj);
-}
-
-template <typename T>
-bool SetArrayItem(T & array, const char * index, const typename ARRAY_TYPE<T>::type & value)
-{
-size_t pos = 0;
-if (str2x(index, pos))
-    return false;
-array[pos] = value;
-return true;
-}
-
-void RawXMLCallback(bool result, const std::string & reason, const std::string & response, void * /*data*/)
-{
-if (!result)
-    {
-    std::cerr << "Failed to get raw XML response. Reason: '" << reason << "'." << std::endl;
-    return;
-    }
-SGCONF::PrintXML(response);
 }
 
 void Version(const std::string & self)
@@ -394,17 +346,6 @@ ACTION * MakeAPIAction(COMMANDS & commands,
                        API_FUNCTION funPtr)
 {
 return new API_ACTION(commands, "", false, funPtr);
-}
-
-bool RawXMLFunction(const SGCONF::CONFIG & config,
-                    const std::string & arg,
-                    const std::map<std::string, std::string> & /*options*/)
-{
-    STG::SERVCONF proto(config.server.data(),
-                        config.port.data(),
-                        config.userName.data(),
-                        config.userPass.data());
-    return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
 }
 
 } // namespace SGCONF
