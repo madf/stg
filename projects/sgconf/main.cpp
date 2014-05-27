@@ -19,10 +19,6 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "request.h"
-#include "common_sg.h"
-#include "sg_error_codes.h"
-
 #include "xml.h"
 #include "admins.h"
 #include "tariffs.h"
@@ -31,6 +27,7 @@
 #include "actions.h"
 #include "config.h"
 
+#include "stg/servconf.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
 #include "stg/common.h"

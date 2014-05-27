@@ -72,11 +72,12 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "credit", info.credit);
     AddParser(propertyParsers, "creditExpire", info.creditExpire);
     AddParser(propertyParsers, "lastCash", info.lastCash);
-    AddParser(propertyParsers, "prepaidTraff", info.prepaidTraff);
-    AddParser(propertyParsers, "down", info.down);
+    AddParser(propertyParsers, "lastTimeCash", info.lastCash);
+    AddParser(propertyParsers, "freeMb", info.prepaidTraff);
+    AddParser(propertyParsers, "down", info.disabled);
     AddParser(propertyParsers, "passive", info.passive);
     AddParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
-    AddParser(propertyParsers, "connected", info.connected);
+    AddParser(propertyParsers, "status", info.connected);
     AddParser(propertyParsers, "aonline", info.alwaysOnline);
     AddParser(propertyParsers, "currIP", info.ip, GetIPValue);
     AddParser(propertyParsers, "ip", info.ips);
@@ -88,6 +89,8 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "address", info.address, GetEncodedValue);
     AddParser(propertyParsers, "phone", info.phone, GetEncodedValue);
     AddParser(propertyParsers, "traff", info.stat);
+    AddParser(propertyParsers, "pingTime", info.pingTime);
+    AddParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
         AddParser(propertyParsers, "userData" + unsigned2str(i), info.userData[i], GetEncodedValue);

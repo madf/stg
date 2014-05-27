@@ -141,8 +141,9 @@ struct INFO
     double      credit;
     time_t      creditExpire;
     double      lastCash;
+    time_t      lastTimeCash;
     double      prepaidTraff;
-    int         down;
+    int         disabled;
     int         passive;
     int         disableDetailStat;
     int         connected;
@@ -157,6 +158,8 @@ struct INFO
     std::string address;
     std::string phone;
     STAT        stat;
+    time_t      pingTime;
+    time_t      lastActivityTime;
     ARRAY<std::string, USERDATA_NUM> userData;
 };
 
