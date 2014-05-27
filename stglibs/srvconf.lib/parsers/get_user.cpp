@@ -139,14 +139,11 @@ if (strcasecmp(el, "user") == 0)
                 error = attr[3];
             else
                 error = "User not found.";
-            return;
             }
         else if (strcasecmp(attr[0], "login") == 0 && attr[1])
             info.login = attr[1];
-        parsingAnswer = true;
         }
-    else
-        parsingAnswer = true;
+    parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
