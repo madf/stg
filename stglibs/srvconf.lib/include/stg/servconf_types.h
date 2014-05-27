@@ -140,7 +140,8 @@ struct INFO
     double      cash;
     double      credit;
     time_t      creditExpire;
-    double      lastCash;
+    double      lastCashAdd;
+    double      lastCashAddTime;
     time_t      lastTimeCash;
     double      prepaidTraff;
     int         disabled;

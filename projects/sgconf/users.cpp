@@ -25,7 +25,8 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "cash: " << info.cash << "\n"
           << Indent(level)       << "credit: " << info.credit << "\n"
           << Indent(level)       << "credit expire: " << TimeToString(info.creditExpire) << "\n"
-          << Indent(level)       << "last cash add: " << info.lastCash << "\n"
+          << Indent(level)       << "last cash add: " << info.lastCashAdd << "\n"
+          << Indent(level)       << "last cash add time: " << TimeToString(info.lastCashAddTime) << "\n"
           << Indent(level)       << "prepaid traffic: " << info.prepaidTraff << "\n"
           << Indent(level)       << "disabled: " << (info.disabled ? "t" : "f") << "\n"
           << Indent(level)       << "passive: " << (info.passive ? "t" : "f") << "\n"
@@ -42,6 +43,8 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "address: " << info.address << "\n"
           << Indent(level)       << "phone: " << info.phone << "\n"
           << Indent(level)       << "free mb: " << info.stat.freeMb << "\n"
+          << Indent(level)       << "last ping time: " << TimeToString(info.pingTime) << "\n"
+          << Indent(level)       << "last activity time: " << TimeToString(info.lastActivityTime) << "\n"
           << Indent(level)       << "traffic:\n";
 for (size_t i = 0; i < DIR_NUM; ++i)
     {

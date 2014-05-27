@@ -71,8 +71,8 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "cash", info.cash);
     AddParser(propertyParsers, "credit", info.credit);
     AddParser(propertyParsers, "creditExpire", info.creditExpire);
-    AddParser(propertyParsers, "lastCash", info.lastCash);
-    AddParser(propertyParsers, "lastTimeCash", info.lastCash);
+    AddParser(propertyParsers, "lastCash", info.lastCashAdd);
+    AddParser(propertyParsers, "lastTimeCash", info.lastCashAddTime);
     AddParser(propertyParsers, "freeMb", info.prepaidTraff);
     AddParser(propertyParsers, "down", info.disabled);
     AddParser(propertyParsers, "passive", info.passive);
@@ -139,9 +139,11 @@ if (strcasecmp(el, "user") == 0)
                 error = attr[3];
             else
                 error = "User not found.";
+            return;
             }
-        else
-            parsingAnswer = true;
+        else if (strcasecmp(attr[0], "login") == 0 && attr[1])
+            info.login = attr[1];
+        parsingAnswer = true;
         }
     else
         parsingAnswer = true;
