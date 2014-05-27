@@ -1,4 +1,0 @@
-#!/bin/bash
-
-LD_LIBRARY_PATH=../../lib ./sgconf get -s localhost -p5555 -aadmin -w123456 $*
-

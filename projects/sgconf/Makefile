@@ -14,8 +14,7 @@ SRCS = ./main.cpp \
        ./users.cpp \
        ./xml.cpp
 
-STGLIBS = conffiles \
-          srvconf \
+STGLIBS = srvconf \
           crypto \
           common
 
