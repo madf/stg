@@ -23,6 +23,9 @@
 #include "admins.h"
 #include "tariffs.h"
 #include "users.h"
+#include "services.h"
+#include "corps.h"
+
 #include "options.h"
 #include "actions.h"
 #include "config.h"
@@ -433,10 +436,24 @@ blocks.Add("Tariff management options")
       .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgTariffFunction), "\tchange tariff");
 blocks.Add("User management options")
       .Add("get-users", SGCONF::MakeAPIAction(commands, SGCONF::GetUsersFunction), "\tget user list")
-      .Add("get-user", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetUserFunction), "\tget user")
-      .Add("add-user", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddUserFunction), "\tadd user")
-      .Add("del-user", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelUserFunction), "\tdel user")
-      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgUserFunction), "\tchange user");
+      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::GetUserFunction), "\tget user")
+      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::AddUserFunction), "\tadd user")
+      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::DelUserFunction), "\tdel user")
+      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::ChgUserFunction), "\tchange user")
+      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::CheckUserFunction), "\tcheck user existance and credentials")
+      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SGCONF::SendMessageFunction), "\tsend message");
+blocks.Add("Service management options")
+      .Add("get-services", SGCONF::MakeAPIAction(commands, SGCONF::GetServicesFunction), "\tget service list")
+      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetServiceFunction), "\tget service")
+      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddServiceFunction), "\tadd service")
+      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelServiceFunction), "\tdel service")
+      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgServiceFunction), "\tchange service");
+blocks.Add("Corporation management options")
+      .Add("get-corps", SGCONF::MakeAPIAction(commands, SGCONF::GetCorpsFunction), "\tget corporation list")
+      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::GetCorpFunction), "\tget corporation")
+      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::AddCorpFunction), "\tadd corporation")
+      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::DelCorpFunction), "\tdel corporation")
+      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, SGCONF::ChgCorpFunction), "\tchange corporation");
 
 SGCONF::PARSER_STATE state(false, argc, argv);
 

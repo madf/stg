@@ -141,8 +141,8 @@ return proto.DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool SGCONF::AddUserFunction(const SGCONF::CONFIG & config,
-                               const std::string & arg,
-                               const std::map<std::string, std::string> & /*options*/)
+                             const std::string & arg,
+                             const std::map<std::string, std::string> & /*options*/)
 {
 // TODO
 std::cerr << "Unimplemented.\n";
@@ -150,8 +150,26 @@ return false;
 }
 
 bool SGCONF::ChgUserFunction(const SGCONF::CONFIG & config,
+                             const std::string & arg,
+                             const std::map<std::string, std::string> & options)
+{
+// TODO
+std::cerr << "Unimplemented.\n";
+return false;
+}
+
+bool SGCONF::CheckUserFunction(const SGCONF::CONFIG & config,
                                const std::string & arg,
                                const std::map<std::string, std::string> & options)
+{
+// TODO
+std::cerr << "Unimplemented.\n";
+return false;
+}
+
+bool SGCONF::SendMessageFunction(const SGCONF::CONFIG & config,
+                                 const std::string & arg,
+                                 const std::map<std::string, std::string> & options)
 {
 // TODO
 std::cerr << "Unimplemented.\n";

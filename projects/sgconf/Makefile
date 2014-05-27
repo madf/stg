@@ -12,6 +12,8 @@ SRCS = ./main.cpp \
        ./admins.cpp \
        ./tariffs.cpp \
        ./users.cpp \
+       ./services.cpp \
+       ./corps.cpp \
        ./xml.cpp
 
 STGLIBS = srvconf \
@@ -61,11 +63,7 @@ $(PROG): $(OBJS)
 	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $(PROG)
 
 clean:
-	rm -f deps $(PROG) *.o tags *.*~ .OS
-	rm -f .OS
-	rm -f .store
-	rm -f .db.sql
-	rm -f core*
+	rm -f deps $(PROG) *.o
 	$(MAKE) -C $(DIR_LIBSRC) clean
 
 distclean: clean

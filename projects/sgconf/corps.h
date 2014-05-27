@@ -1,5 +1,5 @@
-#ifndef __STG_SGCONF_USERS_H__
-#define __STG_SGCONF_USERS_H__
+#ifndef __STG_SGCONF_CORPS_H__
+#define __STG_SGCONF_CORPS_H__
 
 #include <string>
 #include <map>
@@ -9,34 +9,26 @@ namespace SGCONF
 
 struct CONFIG;
 
-bool GetUsersFunction(const CONFIG & config,
+bool GetCorpsFunction(const CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/);
 
-bool GetUserFunction(const CONFIG & config,
+bool GetCorpFunction(const CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/);
 
-bool DelUserFunction(const CONFIG & config,
+bool DelCorpFunction(const CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/);
 
-bool AddUserFunction(const CONFIG & config,
+bool AddCorpFunction(const CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options);
 
-bool ChgUserFunction(const CONFIG & config,
+bool ChgCorpFunction(const CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options);
 
-bool CheckUserFunction(const CONFIG & config,
-                       const std::string & arg,
-                       const std::map<std::string, std::string> & options);
-
-bool SendMessageFunction(const CONFIG & config,
-                         const std::string & arg,
-                         const std::map<std::string, std::string> & options);
-
-}
+} // namespace SGCONF
 
 #endif
