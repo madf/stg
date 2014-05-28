@@ -43,6 +43,13 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "priviledges: " << PrivToString(info.priv) << "\n";
 }
 
+std::vector<SGCONF::API_ACTION::PARAM> GetAdminParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"priv", "<priv>", "priviledges"});
+return params;
+}
+
 void SimpleCallback(bool result,
                     const std::string & reason,
                     void * /*data*/)
@@ -146,10 +153,11 @@ return false;
 
 void SGCONF::AppendAdminsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
+std::vector<API_ACTION::PARAM> params(GetAdminParams());
 blocks.Add("Admin management options")
       .Add("get-admins", SGCONF::MakeAPIAction(commands, GetAdminsFunction), "\tget admin list")
-      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", true, GetAdminFunction), "get admin")
-      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", true, AddAdminFunction), "add admin")
-      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", true, DelAdminFunction), "del admin")
-      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", true, ChgAdminFunction), "change admin");
+      .Add("get-admin", SGCONF::MakeAPIAction(commands, "<login>", GetAdminFunction), "get admin")
+      .Add("add-admin", SGCONF::MakeAPIAction(commands, "<login>", params, AddAdminFunction), "add admin")
+      .Add("del-admin", SGCONF::MakeAPIAction(commands, "<login>", DelAdminFunction), "del admin")
+      .Add("chg-admin", SGCONF::MakeAPIAction(commands, "<login>", params, ChgAdminFunction), "change admin");
 }

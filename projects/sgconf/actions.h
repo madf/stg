@@ -178,6 +178,50 @@ PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param,
 return new PARAM_ACTION<T>(param, paramDescription);
 }
 
+class KV_ACTION : public ACTION
+{
+    public:
+        KV_ACTION(const std::string & name,
+                  std::map<std::string, std::string> & kvs,
+                  const std::string & paramDescription)
+            : m_name(name),
+              m_kvs(kvs),
+              m_description(paramDescription)
+        {}
+
+        virtual ACTION * Clone() const { return new KV_ACTION(*this); }
+
+        virtual std::string ParamDescription() const { return m_description; }
+        virtual std::string DefaultDescription() const { return ""; }
+        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
+        virtual PARSER_STATE Parse(int argc, char ** argv);
+
+    private:
+        std::string m_name;
+        std::map<std::string, std::string> & m_kvs;
+        std::string m_description;
+        OPTION_BLOCK m_suboptions;
+};
+
+inline
+PARSER_STATE KV_ACTION::Parse(int argc, char ** argv)
+{
+if (argc == 0 ||
+    argv == NULL ||
+    *argv == NULL)
+    throw ERROR("Missing argument.");
+m_kvs[m_name] = *argv;
+return PARSER_STATE(false, --argc, ++argv);
+}
+
+inline
+KV_ACTION * MakeKVAction(const std::string & name,
+                         std::map<std::string, std::string> & kvs,
+                         const std::string & paramDescription)
+{
+return new KV_ACTION(name, kvs, paramDescription);
+}
+
 } // namespace SGCONF
 
 #endif

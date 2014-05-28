@@ -91,6 +91,21 @@ for (size_t i = 0; i < info.dirPrice.size(); ++i)
     PrintDirPriceData(i, info.dirPrice[i], level + 1);
 }
 
+std::vector<SGCONF::API_ACTION::PARAM> GetTariffParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"fee", "<fee>", "\t\ttariff fee"});
+params.push_back({"free", "<free mb>", "\tprepaid traff"});
+params.push_back({"passive-cost", "<cost>", "\tpassive cost"});
+params.push_back({"traff-type", "<type>", "\ttraff type (up, dow, up+down, max)"});
+params.push_back({"period", "<period>", "\ttarification period (daily, monthly)"});
+params.push_back({"times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"});
+params.push_back({"day-prices", "<price/price, ...>", "coma-separated day prices for each direction"});
+params.push_back({"night-prices", "<price/price, ...>", "coma-separated day prices for each direction"});
+params.push_back({"thresholds", "<threshold, ...>", "coma-separated thresholds for each direction"});
+return params;
+}
+
 void SimpleCallback(bool result,
                     const std::string & reason,
                     void * /*data*/)
@@ -193,10 +208,11 @@ return false;
 
 void SGCONF::AppendTariffsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
+std::vector<API_ACTION::PARAM> params(GetTariffParams());
 blocks.Add("Tariff management options")
       .Add("get-tariffs", SGCONF::MakeAPIAction(commands, GetTariffsFunction), "\tget tariff list")
-      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, GetTariffFunction), "get tariff")
-      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, AddTariffFunction), "add tariff")
-      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, DelTariffFunction), "del tariff")
-      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", true, ChgTariffFunction), "change tariff");
+      .Add("get-tariff", SGCONF::MakeAPIAction(commands, "<name>", GetTariffFunction), "get tariff")
+      .Add("add-tariff", SGCONF::MakeAPIAction(commands, "<name>", params, AddTariffFunction), "add tariff")
+      .Add("del-tariff", SGCONF::MakeAPIAction(commands, "<name>", DelTariffFunction), "del tariff")
+      .Add("chg-tariff", SGCONF::MakeAPIAction(commands, "<name>", params, ChgTariffFunction), "change tariff");
 }

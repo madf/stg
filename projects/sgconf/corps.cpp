@@ -126,8 +126,8 @@ void SGCONF::AppendCorpsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
 blocks.Add("Corporation management options")
       .Add("get-corps", SGCONF::MakeAPIAction(commands, GetCorpsFunction), "\tget corporation list")
-      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", true, GetCorpFunction), "get corporation")
-      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", true, AddCorpFunction), "add corporation")
-      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", true, DelCorpFunction), "del corporation")
-      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", true, ChgCorpFunction), "change corporation");
+      .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", GetCorpFunction), "get corporation")
+      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", AddCorpFunction), "add corporation")
+      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", DelCorpFunction), "del corporation")
+      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", ChgCorpFunction), "change corporation");
 }

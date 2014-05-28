@@ -184,10 +184,10 @@ void SGCONF::AppendUsersOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
 blocks.Add("User management options")
       .Add("get-users", SGCONF::MakeAPIAction(commands, GetUsersFunction), "\tget user list")
-      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", true, GetUserFunction), "get user")
-      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", true, AddUserFunction), "add user")
-      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", true, DelUserFunction), "del user")
-      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", true, ChgUserFunction), "change user")
-      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", true, CheckUserFunction), "check user existance and credentials")
-      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", true, SendMessageFunction), "send message");
+      .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", GetUserFunction), "get user")
+      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", AddUserFunction), "add user")
+      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", DelUserFunction), "del user")
+      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", ChgUserFunction), "change user")
+      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", CheckUserFunction), "check user existance and credentials")
+      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", SendMessageFunction), "send message");
 }

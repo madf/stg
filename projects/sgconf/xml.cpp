@@ -99,5 +99,5 @@ return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
 void SGCONF::AppendXMLOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
 blocks.Add("Raw XML")
-      .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", true, RawXMLFunction), "\tmake raw XML request");
+      .Add("r", "raw", SGCONF::MakeAPIAction(commands, "<xml>", RawXMLFunction), "\tmake raw XML request");
 }

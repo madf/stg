@@ -128,8 +128,8 @@ void SGCONF::AppendServicesOptionBlock(COMMANDS & commands, OPTION_BLOCKS & bloc
 {
 blocks.Add("Service management options")
       .Add("get-services", SGCONF::MakeAPIAction(commands, GetServicesFunction), "\tget service list")
-      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", true, GetServiceFunction), "get service")
-      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", true, AddServiceFunction), "add service")
-      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", true, DelServiceFunction), "del service")
-      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", true, ChgServiceFunction), "change service");
+      .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", GetServiceFunction), "get service")
+      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", AddServiceFunction), "add service")
+      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", DelServiceFunction), "del service")
+      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", ChgServiceFunction), "change service");
 }

@@ -122,7 +122,7 @@ if (!m_shortName.empty())
     std::cout << "-" << m_shortName << ", ";
 std::cout << "--" << m_longName << " " << m_action->ParamDescription()
           << "\t" << m_description << m_action->DefaultDescription() << "\n";
-m_action->Suboptions().Help(level + 1);
+m_action->Suboptions().Help(level);
 }
 
 bool OPTION::Check(const char * arg) const
@@ -152,7 +152,8 @@ catch (const ACTION::ERROR & ex)
     if (m_longName.empty())
         throw ERROR("-" + m_shortName + ": " + ex.what());
     else
-        throw ERROR("--" + m_longName + ", -" + m_shortName + ": " + ex.what());
+        throw m_shortName.empty() ? ERROR("--" + m_longName + ": " + ex.what())
+                                  : ERROR("--" + m_longName + ", -" + m_shortName + ": " + ex.what());
     }
 }
 
@@ -191,7 +192,8 @@ void OPTION_BLOCK::Help(size_t level) const
 {
 if (m_options.empty())
     return;
-std::cout << m_description << ":\n";
+if (!m_description.empty())
+    std::cout << m_description << ":\n";
 std::for_each(m_options.begin(),
               m_options.end(),
               std::bind2nd(std::mem_fun_ref(&OPTION::Help), level + 1));

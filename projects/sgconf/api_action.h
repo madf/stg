@@ -61,17 +61,18 @@ class COMMANDS
 class API_ACTION : public ACTION
 {
     public:
+        struct PARAM
+        {
+            std::string name;
+            std::string shortDescr;
+            std::string longDescr;
+        };
+
         API_ACTION(COMMANDS & commands,
                    const std::string & paramDescription,
                    bool needArgument,
-                   const OPTION_BLOCK& suboptions,
-                   API_FUNCTION funPtr)
-            : m_commands(commands),
-              m_description(paramDescription),
-              m_argument(needArgument ? "1" : ""), // Hack
-              m_suboptions(suboptions),
-              m_funPtr(funPtr)
-        {}
+                   const std::vector<PARAM> & params,
+                   API_FUNCTION funPtr);
         API_ACTION(COMMANDS & commands,
                    const std::string & paramDescription,
                    bool needArgument,
@@ -101,10 +102,18 @@ class API_ACTION : public ACTION
 inline
 ACTION * MakeAPIAction(COMMANDS & commands,
                        const std::string & paramDescription,
-                       bool needArgument,
+                       const std::vector<API_ACTION::PARAM> & params,
                        API_FUNCTION funPtr)
 {
-return new API_ACTION(commands, paramDescription, needArgument, funPtr);
+return new API_ACTION(commands, paramDescription, true, params, funPtr);
+}
+
+inline
+ACTION * MakeAPIAction(COMMANDS & commands,
+                       const std::string & paramDescription,
+                       API_FUNCTION funPtr)
+{
+return new API_ACTION(commands, paramDescription, true, funPtr);
 }
 
 inline
