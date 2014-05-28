@@ -50,7 +50,7 @@ class OPTION
         OPTION & operator=(const OPTION & rhs);
 
         void Help(size_t level = 0) const;
-        PARSER_STATE Parse(int argc, char ** argv);
+        PARSER_STATE Parse(int argc, char ** argv, void * data);
         void ParseValue(const std::string & value);
         bool Check(const char * arg) const;
         const std::string & Name() const { return m_longName; }
@@ -85,7 +85,7 @@ class OPTION_BLOCK
 
         void Help(size_t level) const;
 
-        PARSER_STATE Parse(int argc, char ** argv);
+        PARSER_STATE Parse(int argc, char ** argv, void * data = NULL);
         void ParseFile(const std::string & filePath);
 
         class ERROR : public std::runtime_error

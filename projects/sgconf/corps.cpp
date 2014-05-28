@@ -32,7 +32,7 @@ std::cout << Indent(level, true) << "name: " << info.name << "\n"
 std::vector<SGCONF::API_ACTION::PARAM> GetCorpParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"cash", "<cash>", "\tcorporation's cash"});
+params.push_back(SGCONF::API_ACTION::PARAM("cash", "<cash>", "\tcorporation's cash"));
 return params;
 }
 

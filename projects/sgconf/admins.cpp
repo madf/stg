@@ -3,6 +3,7 @@
 #include "api_action.h"
 #include "options.h"
 #include "config.h"
+#include "utils.h"
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
@@ -46,8 +47,26 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
 std::vector<SGCONF::API_ACTION::PARAM> GetAdminParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"priv", "<priv>", "priviledges"});
+params.push_back(SGCONF::API_ACTION::PARAM("password", "<password>", "password"));
+params.push_back(SGCONF::API_ACTION::PARAM("priv", "<priv>", "priviledges"));
 return params;
+}
+
+void ConvPriv(const std::string & value, RESETABLE<PRIV> & res)
+{
+if (value.length() != 9)
+    throw SGCONF::ACTION::ERROR("Priviledges value should be a 9-digits length binary number.");
+PRIV priv;
+priv.corpChg = (value[0] == '0' ? 0 : 1);
+priv.serviceChg = (value[1] == '0' ? 0 : 1);
+priv.tariffChg = (value[2] == '0' ? 0 : 1);
+priv.adminChg = (value[3] == '0' ? 0 : 1);
+priv.userAddDel = (value[4] == '0' ? 0 : 1);
+priv.userPasswd = (value[5] == '0' ? 0 : 1);
+priv.userCash = (value[6] == '0' ? 0 : 1);
+priv.userConf = (value[7] == '0' ? 0 : 1);
+priv.userStat = (value[8] == '0' ? 0 : 1);
+res = priv;
 }
 
 void SimpleCallback(bool result,
@@ -133,11 +152,17 @@ return proto.DelAdmin(arg, SimpleCallback, NULL) == STG::st_ok;
 
 bool AddAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
-                      const std::map<std::string, std::string> & /*options*/)
+                      const std::map<std::string, std::string> & options)
 {
 // TODO
-std::cerr << "Unimplemented.\n";
-return false;
+ADMIN_CONF_RES conf;
+conf.login = arg;
+SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AddAdmin(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgAdminFunction(const SGCONF::CONFIG & config,

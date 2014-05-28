@@ -63,6 +63,13 @@ class API_ACTION : public ACTION
     public:
         struct PARAM
         {
+            PARAM(const std::string & n,
+                  const std::string & s,
+                  const std::string & l)
+                : name(n),
+                  shortDescr(s),
+                  longDescr(l)
+            {}
             std::string name;
             std::string shortDescr;
             std::string longDescr;
@@ -88,7 +95,7 @@ class API_ACTION : public ACTION
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const { return ""; }
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
 
     private:
         COMMANDS & m_commands;

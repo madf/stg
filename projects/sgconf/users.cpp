@@ -71,42 +71,42 @@ if (!info.authBy.empty())
 std::vector<SGCONF::API_ACTION::PARAM> GetUserParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"password", "<password>", "\tuser's password"});
-params.push_back({"cash", "<cash>", "\t\tuser's cash"});
-params.push_back({"credit", "<amount>", "\tuser's credit"});
-params.push_back({"credit-expire", "<date>", "\tcredit expiration"});
-params.push_back({"free", "<free mb>", "\tprepaid traffic"});
-params.push_back({"disabled", "<flag>", "\tdisable user (y|n)"});
-params.push_back({"passive", "<flag>", "\tmake user passive (y|n)"});
-params.push_back({"disable-detail-stat", "<flag>", "disable detail stat (y|n)"});
-params.push_back({"always-online", "<flag>", "\tmake user always online (y|n)"});
-params.push_back({"ips", "<ips>", "\t\tcoma-separated list of ips"});
-params.push_back({"tariff", "<tariff name>", "\tcurrent tariff"});
-params.push_back({"next-tariff", "<tariff name>", "tariff starting from the next month"});
-params.push_back({"group", "<group>", "\t\tuser's group"});
-params.push_back({"note", "<note>", "\t\tuser's note"});
-params.push_back({"email", "<email>", "\t\tuser's email"});
-params.push_back({"name", "<real name>", "\tuser's real name"});
-params.push_back({"address", "<address>", "\tuser's postal address"});
-params.push_back({"phone", "<phone>", "\t\tuser's phone number"});
-params.push_back({"session-traffic", "<up/dn, ...>", "coma-separated session upload and download"});
-params.push_back({"month-traffic", "<up/dn, ...>", "coma-separated month upload and download"});
-params.push_back({"user-data", "<value, ...>", "coma-separated user data values"});
+params.push_back(SGCONF::API_ACTION::PARAM("password", "<password>", "\tuser's password"));
+params.push_back(SGCONF::API_ACTION::PARAM("cash", "<cash>", "\t\tuser's cash"));
+params.push_back(SGCONF::API_ACTION::PARAM("credit", "<amount>", "\tuser's credit"));
+params.push_back(SGCONF::API_ACTION::PARAM("credit-expire", "<date>", "\tcredit expiration"));
+params.push_back(SGCONF::API_ACTION::PARAM("free", "<free mb>", "\tprepaid traffic"));
+params.push_back(SGCONF::API_ACTION::PARAM("disabled", "<flag>", "\tdisable user (y|n)"));
+params.push_back(SGCONF::API_ACTION::PARAM("passive", "<flag>", "\tmake user passive (y|n)"));
+params.push_back(SGCONF::API_ACTION::PARAM("disable-detail-stat", "<flag>", "disable detail stat (y|n)"));
+params.push_back(SGCONF::API_ACTION::PARAM("always-online", "<flag>", "\tmake user always online (y|n)"));
+params.push_back(SGCONF::API_ACTION::PARAM("ips", "<ips>", "\t\tcoma-separated list of ips"));
+params.push_back(SGCONF::API_ACTION::PARAM("tariff", "<tariff name>", "\tcurrent tariff"));
+params.push_back(SGCONF::API_ACTION::PARAM("next-tariff", "<tariff name>", "tariff starting from the next month"));
+params.push_back(SGCONF::API_ACTION::PARAM("group", "<group>", "\t\tuser's group"));
+params.push_back(SGCONF::API_ACTION::PARAM("note", "<note>", "\t\tuser's note"));
+params.push_back(SGCONF::API_ACTION::PARAM("email", "<email>", "\t\tuser's email"));
+params.push_back(SGCONF::API_ACTION::PARAM("name", "<real name>", "\tuser's real name"));
+params.push_back(SGCONF::API_ACTION::PARAM("address", "<address>", "\tuser's postal address"));
+params.push_back(SGCONF::API_ACTION::PARAM("phone", "<phone>", "\t\tuser's phone number"));
+params.push_back(SGCONF::API_ACTION::PARAM("session-traffic", "<up/dn, ...>", "coma-separated session upload and download"));
+params.push_back(SGCONF::API_ACTION::PARAM("month-traffic", "<up/dn, ...>", "coma-separated month upload and download"));
+params.push_back(SGCONF::API_ACTION::PARAM("user-data", "<value, ...>", "coma-separated user data values"));
 return params;
 }
 
 std::vector<SGCONF::API_ACTION::PARAM> GetCheckParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"password", "<password>", "\tuser's password"});
+params.push_back(SGCONF::API_ACTION::PARAM("password", "<password>", "\tuser's password"));
 return params;
 }
 
 std::vector<SGCONF::API_ACTION::PARAM> GetMessageParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"logins", "<login, ...>", "\tlist of logins to send a message"});
-params.push_back({"text", "<text>", "\t\tmessage text"});
+params.push_back(SGCONF::API_ACTION::PARAM("logins", "<login, ...>", "\tlist of logins to send a message"));
+params.push_back(SGCONF::API_ACTION::PARAM("text", "<text>", "\t\tmessage text"));
 return params;
 }
 

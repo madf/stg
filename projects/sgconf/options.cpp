@@ -134,18 +134,20 @@ if (*arg++ != '-')
     return false;
 
 if (*arg == '-')
+{
     return m_longName == arg + 1;
+}
 
 return m_shortName == arg;
 }
 
-PARSER_STATE OPTION::Parse(int argc, char ** argv)
+PARSER_STATE OPTION::Parse(int argc, char ** argv, void * data)
 {
 if (!m_action)
     throw ERROR("Option is not defined.");
 try
     {
-    return m_action->Parse(argc, argv);
+    return m_action->Parse(argc, argv, data);
     }
 catch (const ACTION::ERROR & ex)
     {
@@ -199,14 +201,16 @@ std::for_each(m_options.begin(),
               std::bind2nd(std::mem_fun_ref(&OPTION::Help), level + 1));
 }
 
-PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv)
+PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv, void * data)
 {
 PARSER_STATE state(false, argc, argv);
+if (state.argc == 0)
+    return state;
 while (state.argc > 0 && !state.stop)
     {
     std::vector<OPTION>::iterator it = std::find_if(m_options.begin(), m_options.end(), std::bind2nd(std::mem_fun_ref(&OPTION::Check), *state.argv));
     if (it != m_options.end())
-        state = it->Parse(--state.argc, ++state.argv);
+        state = it->Parse(--state.argc, ++state.argv, data);
     else
         break;
     ++it;
@@ -243,7 +247,7 @@ PARSER_STATE OPTION_BLOCKS::Parse(int argc, char ** argv)
 {
 PARSER_STATE state(false, argc, argv);
 std::list<OPTION_BLOCK>::iterator it(m_blocks.begin());
-while (!state.stop && it != m_blocks.end())
+while (state.argc > 0 && !state.stop && it != m_blocks.end())
     {
     state = it->Parse(state.argc, state.argv);
     ++it;

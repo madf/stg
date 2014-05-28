@@ -163,7 +163,7 @@ class CONFIG_ACTION : public ACTION
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const { return ""; }
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
 
     private:
         SGCONF::CONFIG & m_config;
@@ -175,7 +175,7 @@ class CONFIG_ACTION : public ACTION
 };
 
 
-PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv)
+PARSER_STATE CONFIG_ACTION::Parse(int argc, char ** argv, void * /*data*/)
 {
 if (argc == 0 ||
     argv == NULL ||
@@ -298,15 +298,15 @@ else
     }
 
 config = configOverride;
+
+std::cerr << "Config: " << config.Serialize() << std::endl;
+return commands.Execute(config) ? 0 : -1;
 }
 catch (const std::exception& ex)
 {
 std::cerr << ex.what() << "\n";
 return -1;
 }
-
-std::cerr << "Config: " << config.Serialize() << std::endl;
-return commands.Execute(config) ? 0 : -1;
 }
 //-----------------------------------------------------------------------------
 

@@ -30,6 +30,8 @@
 
 #include <string>
 
+#include <cassert>
+
 namespace SGCONF
 {
 
@@ -46,7 +48,7 @@ class FUNC0_ACTION : public ACTION
         virtual std::string ParamDescription() const { return ""; }
         virtual std::string DefaultDescription() const { return ""; }
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv)
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/)
         {
         m_func();
         return PARSER_STATE(true, argc, argv);
@@ -88,7 +90,7 @@ class PARAM_ACTION : public ACTION
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const;
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
         virtual void ParseValue(const std::string & value);
 
     private:
@@ -117,7 +119,7 @@ return m_hasDefault ? " (default: '" + m_defaltValue + "')"
 
 template <typename T>
 inline
-PARSER_STATE PARAM_ACTION<T>::Parse(int argc, char ** argv)
+PARSER_STATE PARAM_ACTION<T>::Parse(int argc, char ** argv, void * /*data*/)
 {
 if (argc == 0 ||
     argv == NULL ||
@@ -151,7 +153,7 @@ m_param = stringValue;
 
 template <>
 inline
-PARSER_STATE PARAM_ACTION<std::string>::Parse(int argc, char ** argv)
+PARSER_STATE PARAM_ACTION<std::string>::Parse(int argc, char ** argv, void * /*data*/)
 {
 if (argc == 0 ||
     argv == NULL ||
@@ -182,10 +184,8 @@ class KV_ACTION : public ACTION
 {
     public:
         KV_ACTION(const std::string & name,
-                  std::map<std::string, std::string> & kvs,
                   const std::string & paramDescription)
             : m_name(name),
-              m_kvs(kvs),
               m_description(paramDescription)
         {}
 
@@ -194,32 +194,32 @@ class KV_ACTION : public ACTION
         virtual std::string ParamDescription() const { return m_description; }
         virtual std::string DefaultDescription() const { return ""; }
         virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv);
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * data);
 
     private:
         std::string m_name;
-        std::map<std::string, std::string> & m_kvs;
         std::string m_description;
         OPTION_BLOCK m_suboptions;
 };
 
 inline
-PARSER_STATE KV_ACTION::Parse(int argc, char ** argv)
+PARSER_STATE KV_ACTION::Parse(int argc, char ** argv, void * data)
 {
 if (argc == 0 ||
     argv == NULL ||
     *argv == NULL)
     throw ERROR("Missing argument.");
-m_kvs[m_name] = *argv;
+assert(data != NULL && "Expecting container pointer.");
+std::map<std::string, std::string> & kvs = *static_cast<std::map<std::string, std::string>*>(data);
+kvs[m_name] = *argv;
 return PARSER_STATE(false, --argc, ++argv);
 }
 
 inline
 KV_ACTION * MakeKVAction(const std::string & name,
-                         std::map<std::string, std::string> & kvs,
                          const std::string & paramDescription)
 {
-return new KV_ACTION(name, kvs, paramDescription);
+return new KV_ACTION(name, paramDescription);
 }
 
 } // namespace SGCONF

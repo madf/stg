@@ -41,7 +41,7 @@ class ACTION
         virtual std::string ParamDescription() const = 0;
         virtual std::string DefaultDescription() const = 0;
         virtual OPTION_BLOCK & Suboptions() = 0;
-        virtual PARSER_STATE Parse(int argc, char ** argv) = 0;
+        virtual PARSER_STATE Parse(int argc, char ** argv, void * data = NULL) = 0;
         virtual void ParseValue(const std::string &) {}
 
         class ERROR : public std::runtime_error

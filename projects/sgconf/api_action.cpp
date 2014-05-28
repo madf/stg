@@ -3,7 +3,7 @@
 #include "actions.h"
 #include "parser_state.h"
 
-SGCONF::PARSER_STATE SGCONF::API_ACTION::Parse(int argc, char ** argv)
+SGCONF::PARSER_STATE SGCONF::API_ACTION::Parse(int argc, char ** argv, void * /*data*/)
 {
 PARSER_STATE state(false, argc, argv);
 if (!m_argument.empty())
@@ -16,7 +16,7 @@ if (!m_argument.empty())
     --state.argc;
     ++state.argv;
     }
-m_suboptions.Parse(state.argc, state.argv);
+state = m_suboptions.Parse(state.argc, state.argv, &m_params);
 m_commands.Add(m_funPtr, m_argument, m_params);
 return state;
 }
@@ -34,7 +34,7 @@ SGCONF::API_ACTION::API_ACTION(COMMANDS & commands,
 std::vector<PARAM>::const_iterator it(params.begin());
 while (it != params.end())
     {
-    m_suboptions.Add(it->name, MakeKVAction(it->name, m_params, it->shortDescr), it->longDescr);
+    m_suboptions.Add(it->name, MakeKVAction(it->name, it->shortDescr), it->longDescr);
     ++it;
     }
 }

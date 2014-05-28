@@ -34,9 +34,9 @@ std::cout << Indent(level, true) << "name: " << info.name << "\n"
 std::vector<SGCONF::API_ACTION::PARAM> GetServiceParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
-params.push_back({"cost", "<cost>", "\tcost of the service"});
-params.push_back({"pay-day", "<month day>", "payment day"});
-params.push_back({"comment", "<text>", "comment"});
+params.push_back(SGCONF::API_ACTION::PARAM("cost", "<cost>", "\tcost of the service"));
+params.push_back(SGCONF::API_ACTION::PARAM("pay-day", "<month day>", "payment day"));
+params.push_back(SGCONF::API_ACTION::PARAM("comment", "<text>", "comment"));
 return params;
 }
 
