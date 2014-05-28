@@ -110,6 +110,14 @@ return new API_ACTION(commands, paramDescription, true, params, funPtr);
 
 inline
 ACTION * MakeAPIAction(COMMANDS & commands,
+                       const std::vector<API_ACTION::PARAM> & params,
+                       API_FUNCTION funPtr)
+{
+return new API_ACTION(commands, "", false, params, funPtr);
+}
+
+inline
+ACTION * MakeAPIAction(COMMANDS & commands,
                        const std::string & paramDescription,
                        API_FUNCTION funPtr)
 {

@@ -46,7 +46,6 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "name: " << info.name << "\n"
           << Indent(level)       << "address: " << info.address << "\n"
           << Indent(level)       << "phone: " << info.phone << "\n"
-          << Indent(level)       << "free mb: " << info.stat.freeMb << "\n"
           << Indent(level)       << "last ping time: " << TimeToString(info.pingTime) << "\n"
           << Indent(level)       << "last activity time: " << TimeToString(info.lastActivityTime) << "\n"
           << Indent(level)       << "traffic:\n";
@@ -67,6 +66,48 @@ if (!info.authBy.empty())
     for (size_t i = 0; i < info.authBy.size(); ++i)
         std::cout << Indent(level + 1, true) << info.authBy[i] << "\n";
     }
+}
+
+std::vector<SGCONF::API_ACTION::PARAM> GetUserParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"password", "<password>", "\tuser's password"});
+params.push_back({"cash", "<cash>", "\t\tuser's cash"});
+params.push_back({"credit", "<amount>", "\tuser's credit"});
+params.push_back({"credit-expire", "<date>", "\tcredit expiration"});
+params.push_back({"free", "<free mb>", "\tprepaid traffic"});
+params.push_back({"disabled", "<flag>", "\tdisable user (y|n)"});
+params.push_back({"passive", "<flag>", "\tmake user passive (y|n)"});
+params.push_back({"disable-detail-stat", "<flag>", "disable detail stat (y|n)"});
+params.push_back({"always-online", "<flag>", "\tmake user always online (y|n)"});
+params.push_back({"ips", "<ips>", "\t\tcoma-separated list of ips"});
+params.push_back({"tariff", "<tariff name>", "\tcurrent tariff"});
+params.push_back({"next-tariff", "<tariff name>", "tariff starting from the next month"});
+params.push_back({"group", "<group>", "\t\tuser's group"});
+params.push_back({"note", "<note>", "\t\tuser's note"});
+params.push_back({"email", "<email>", "\t\tuser's email"});
+params.push_back({"name", "<real name>", "\tuser's real name"});
+params.push_back({"address", "<address>", "\tuser's postal address"});
+params.push_back({"phone", "<phone>", "\t\tuser's phone number"});
+params.push_back({"session-traffic", "<up/dn, ...>", "coma-separated session upload and download"});
+params.push_back({"month-traffic", "<up/dn, ...>", "coma-separated month upload and download"});
+params.push_back({"user-data", "<value, ...>", "coma-separated user data values"});
+return params;
+}
+
+std::vector<SGCONF::API_ACTION::PARAM> GetCheckParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"password", "<password>", "\tuser's password"});
+return params;
+}
+
+std::vector<SGCONF::API_ACTION::PARAM> GetMessageParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"logins", "<login, ...>", "\tlist of logins to send a message"});
+params.push_back({"text", "<text>", "\t\tmessage text"});
+return params;
 }
 
 void SimpleCallback(bool result,
@@ -182,12 +223,13 @@ return false;
 
 void SGCONF::AppendUsersOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
+std::vector<API_ACTION::PARAM> params(GetUserParams());
 blocks.Add("User management options")
       .Add("get-users", SGCONF::MakeAPIAction(commands, GetUsersFunction), "\tget user list")
       .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", GetUserFunction), "get user")
-      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", AddUserFunction), "add user")
+      .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", params, AddUserFunction), "add user")
       .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", DelUserFunction), "del user")
-      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", ChgUserFunction), "change user")
-      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", CheckUserFunction), "check user existance and credentials")
-      .Add("send-message", SGCONF::MakeAPIAction(commands, "<login>", SendMessageFunction), "send message");
+      .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", params, ChgUserFunction), "change user")
+      .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", GetCheckParams(), CheckUserFunction), "check user existance and credentials")
+      .Add("send-message", SGCONF::MakeAPIAction(commands, GetMessageParams(), SendMessageFunction), "send message");
 }

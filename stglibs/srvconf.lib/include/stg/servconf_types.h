@@ -130,7 +130,6 @@ struct STAT
     ARRAY<long long, DIR_NUM> sd;
     ARRAY<long long, DIR_NUM> mu;
     ARRAY<long long, DIR_NUM> md;
-    double freeMb;
 };
 
 struct INFO
