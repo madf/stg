@@ -31,6 +31,15 @@ std::cout << Indent(level, true) << "name: " << info.name << "\n"
           << Indent(level)       << "comment: " << info.comment << "\n";
 }
 
+std::vector<SGCONF::API_ACTION::PARAM> GetServiceParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"cost", "<cost>", "\tcost of the service"});
+params.push_back({"pay-day", "<month day>", "payment day"});
+params.push_back({"comment", "<text>", "comment"});
+return params;
+}
+
 void SimpleCallback(bool result,
                     const std::string & reason,
                     void * /*data*/)
@@ -126,10 +135,11 @@ return false;
 
 void SGCONF::AppendServicesOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
+std::vector<API_ACTION::PARAM> params(GetServiceParams());
 blocks.Add("Service management options")
       .Add("get-services", SGCONF::MakeAPIAction(commands, GetServicesFunction), "\tget service list")
       .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", GetServiceFunction), "get service")
-      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", AddServiceFunction), "add service")
+      .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", params, AddServiceFunction), "add service")
       .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", DelServiceFunction), "del service")
-      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", ChgServiceFunction), "change service");
+      .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", params, ChgServiceFunction), "change service");
 }

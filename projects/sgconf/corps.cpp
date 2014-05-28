@@ -29,6 +29,13 @@ std::cout << Indent(level, true) << "name: " << info.name << "\n"
           << Indent(level)       << "cash: " << info.cash << "\n";
 }
 
+std::vector<SGCONF::API_ACTION::PARAM> GetCorpParams()
+{
+std::vector<SGCONF::API_ACTION::PARAM> params;
+params.push_back({"cash", "<cash>", "\tcorporation's cash"});
+return params;
+}
+
 void SimpleCallback(bool result,
                     const std::string & reason,
                     void * /*data*/)
@@ -124,10 +131,11 @@ return false;
 
 void SGCONF::AppendCorpsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
 {
+std::vector<API_ACTION::PARAM> params(GetCorpParams());
 blocks.Add("Corporation management options")
       .Add("get-corps", SGCONF::MakeAPIAction(commands, GetCorpsFunction), "\tget corporation list")
       .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", GetCorpFunction), "get corporation")
-      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", AddCorpFunction), "add corporation")
+      .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", params, AddCorpFunction), "add corporation")
       .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", DelCorpFunction), "del corporation")
-      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", ChgCorpFunction), "change corporation");
+      .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", params, ChgCorpFunction), "change corporation");
 }
