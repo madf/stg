@@ -121,6 +121,21 @@ struct DIRPRICE_DATA_RES
         return dd;
         }
 
+    void Splice(const DIRPRICE_DATA_RES & rhs)
+        {
+        hDay.splice(rhs.hDay);
+        mDay.splice(rhs.mDay);
+        hNight.splice(rhs.hNight);
+        mNight.splice(rhs.mNight);
+        priceDayA.splice(rhs.priceDayA);
+        priceNightA.splice(rhs.priceNightA);
+        priceDayB.splice(rhs.priceDayB);
+        priceNightB.splice(rhs.priceNightB);
+        threshold.splice(rhs.threshold);
+        singlePrice.splice(rhs.singlePrice);
+        noDiscount.splice(rhs.noDiscount);
+        }
+
     RESETABLE<int>    hDay;
     RESETABLE<int>    mDay;
     RESETABLE<int>    hNight;
