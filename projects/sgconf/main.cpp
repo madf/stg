@@ -35,9 +35,10 @@
 #include <iostream>
 
 #include <cstdlib> // getenv
-#include <cstring> // basename
+#include <cstring> // str*
 
 #include <unistd.h> // access
+#include <libgen.h> // basename
 
 namespace
 {
