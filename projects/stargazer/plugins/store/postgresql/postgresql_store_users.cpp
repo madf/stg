@@ -564,7 +564,7 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
 
 PQclear(result);
 
-if (SaveUserServices(uid, conf.service))
+if (SaveUserServices(uid, conf.services))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveUserConf(): 'Failed to save user's services'\n");
     if (RollbackTransaction())
@@ -883,7 +883,7 @@ tuples = PQntuples(result);
 
 for (int i = 0; i < tuples; ++i)
     {
-    conf->service.push_back(PQgetvalue(result, i, 0));
+    conf->services.push_back(PQgetvalue(result, i, 0));
     }
 
 PQclear(result);
