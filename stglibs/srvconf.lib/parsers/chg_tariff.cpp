@@ -68,6 +68,13 @@ if (!data.tariffConf.traffType.empty())
         case TRAFF_MAX: stream << "<traffType value=\"max\"/>"; break;
         }
 
+if (!data.tariffConf.period.empty())
+    switch (data.tariffConf.period.data())
+        {
+        case TARIFF::DAY: stream << "<period value=\"day\"/>"; break;
+        case TARIFF::MONTH: stream << "<period value=\"month\"/>"; break;
+        }
+
 for (size_t i = 0; i < DIR_NUM; ++i)
     if (!data.dirPrice[i].hDay.empty() &&
         !data.dirPrice[i].mDay.empty() &&
