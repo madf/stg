@@ -237,7 +237,7 @@ return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", 
 
 int SERVCONF::SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SendMessage", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SendMessageResult", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
 }
 
 int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)

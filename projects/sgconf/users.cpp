@@ -216,12 +216,25 @@ return proto.CheckUser(arg, it->second, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool SendMessageFunction(const SGCONF::CONFIG & config,
-                         const std::string & arg,
+                         const std::string & /*arg*/,
                          const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+std::map<std::string, std::string>::const_iterator it(options.find("logins"));
+if (it == options.end())
+    throw SGCONF::ACTION::ERROR("Logins are not specified.");
+std::string logins = it->second;
+for (size_t i = 0; i < logins.length(); ++i)
+    if (logins[i] == ',')
+        logins[i] = ':';
+it = options.find("text");
+if (it == options.end())
+    throw SGCONF::ACTION::ERROR("Message text is not specified.");
+std::string text = it->second;
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.SendMessage(logins, text, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous
