@@ -84,7 +84,8 @@ std::vector<SGCONF::API_ACTION::PARAM> GetUserParams()
 {
 std::vector<SGCONF::API_ACTION::PARAM> params;
 params.push_back(SGCONF::API_ACTION::PARAM("password", "<password>", "\tuser's password"));
-params.push_back(SGCONF::API_ACTION::PARAM("cash", "<cash>", "\t\tuser's cash"));
+params.push_back(SGCONF::API_ACTION::PARAM("cash-add", "<cash[:message]>", "cash to add (with optional comment)"));
+params.push_back(SGCONF::API_ACTION::PARAM("cash-set", "<cash[:message]>", "cash to set (with optional comment)"));
 params.push_back(SGCONF::API_ACTION::PARAM("credit", "<amount>", "\tuser's credit"));
 params.push_back(SGCONF::API_ACTION::PARAM("credit-expire", "<date>", "\tcredit expiration"));
 params.push_back(SGCONF::API_ACTION::PARAM("free", "<free mb>", "\tprepaid traffic"));
@@ -101,7 +102,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("email", "<email>", "\t\tuser's email
 params.push_back(SGCONF::API_ACTION::PARAM("name", "<real name>", "\tuser's real name"));
 params.push_back(SGCONF::API_ACTION::PARAM("address", "<address>", "\tuser's postal address"));
 params.push_back(SGCONF::API_ACTION::PARAM("phone", "<phone>", "\t\tuser's phone number"));
-params.push_back(SGCONF::API_ACTION::PARAM("corp", "<corp name>", "\t\tcorporation name"));
+params.push_back(SGCONF::API_ACTION::PARAM("corp", "<corp name>", "\tcorporation name"));
 params.push_back(SGCONF::API_ACTION::PARAM("session-traffic", "<up/dn, ...>", "coma-separated session upload and download"));
 params.push_back(SGCONF::API_ACTION::PARAM("month-traffic", "<up/dn, ...>", "coma-separated month upload and download"));
 params.push_back(SGCONF::API_ACTION::PARAM("user-data", "<value, ...>", "coma-separated user data values"));
@@ -143,6 +144,12 @@ void ConvStringList(std::string value, std::vector<RESETABLE<std::string> > & re
 {
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 Splice(res, Split<std::vector<RESETABLE<std::string> > >(value, ',', ConvString));
+}
+
+void ConvServices(std::string value, RESETABLE<std::vector<std::string> > & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+res = Split<std::vector<std::string> >(value, ',');
 }
 
 void ConvCreditExpire(const std::string & value, RESETABLE<time_t> & res)
@@ -202,6 +209,24 @@ for (size_t i = 0; i < DIR_NUM; ++i)
     res.monthUp[i] = traff[i].up;
     res.monthDown[i] = traff[i].down;
     }
+}
+
+void ConvCashInfo(const std::string & value, RESETABLE<CASH_INFO> & res)
+{
+CASH_INFO info;
+size_t pos = value.find_first_of(':');
+if (pos == std::string::npos)
+    {
+    if (str2x(value, info.first) < 0)
+        throw SGCONF::ACTION::ERROR("Cash should be a double value. Got: '" + value + "'");
+    }
+else
+    {
+    if (str2x(value.substr(0, pos), info.first) < 0)
+        throw SGCONF::ACTION::ERROR("Cash should be a double value. Got: '" + value + "'");
+    info.second = value.substr(pos + 1);
+    }
+res = info;
 }
 
 void SimpleCallback(bool result,
@@ -294,14 +319,14 @@ SGCONF::MaybeSet(options, "email", conf.email);
 SGCONF::MaybeSet(options, "note", conf.note);
 SGCONF::MaybeSet(options, "name", conf.realName);
 SGCONF::MaybeSet(options, "corp", conf.corp);
-SGCONF::MaybeSet(options, "services", conf.services, ConvStringList);
+SGCONF::MaybeSet(options, "services", conf.services, ConvServices);
 SGCONF::MaybeSet(options, "group", conf.group);
 SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
 SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
 SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
 SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
 USER_STAT_RES stat;
-SGCONF::MaybeSet(options, "cash", stat.cash);
+SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
@@ -329,14 +354,15 @@ SGCONF::MaybeSet(options, "email", conf.email);
 SGCONF::MaybeSet(options, "note", conf.note);
 SGCONF::MaybeSet(options, "name", conf.realName);
 SGCONF::MaybeSet(options, "corp", conf.corp);
-SGCONF::MaybeSet(options, "services", conf.services, ConvStringList);
+SGCONF::MaybeSet(options, "services", conf.services, ConvServices);
 SGCONF::MaybeSet(options, "group", conf.group);
 SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
 SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
 SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
 SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
 USER_STAT_RES stat;
-SGCONF::MaybeSet(options, "cash", stat.cash);
+SGCONF::MaybeSet(options, "cash-add", stat.cashAdd, ConvCashInfo);
+SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);

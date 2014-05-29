@@ -104,8 +104,7 @@ struct USER_CONF_RES
         credit       = uc.credit;
         nextTariff   = uc.nextTariff;
         for (size_t i = 0; i < USERDATA_NUM; i++) userdata[i]  = uc.userdata[i];
-        services.resize(uc.services.size());
-        for (size_t i = 0; i < uc.services.size(); ++i) services[i]  = uc.services[i];
+        services     = uc.services;
         creditExpire = uc.creditExpire;
         ips          = uc.ips;
         return *this;
@@ -132,9 +131,7 @@ struct USER_CONF_RES
             {
             uc.userdata[i]  = userdata[i].data();
             }
-        uc.services.resize(services.size());
-        for (size_t i = 0; i < services.size(); ++i)
-            uc.services[i] = services[i].data();
+        uc.services     = services.data();
         uc.creditExpire = creditExpire.data();
         uc.ips          = ips.data();
         return uc;
@@ -157,7 +154,7 @@ struct USER_CONF_RES
     RESETABLE<double>                    credit;
     RESETABLE<std::string>               nextTariff;
     std::vector<RESETABLE<std::string> > userdata;
-    std::vector<RESETABLE<std::string> > services;
+    RESETABLE<std::vector<std::string> > services;
     RESETABLE<time_t>                    creditExpire;
     RESETABLE<USER_IPS>                  ips;
 };

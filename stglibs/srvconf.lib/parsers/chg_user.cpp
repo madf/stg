@@ -25,12 +25,27 @@
 
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
+#include "stg/common.h"
 
 #include <sstream>
+#include <iostream>
 
 #include <strings.h>
 
 using namespace STG;
+
+namespace
+{
+
+RESETABLE<std::string> MaybeEncode(const RESETABLE<std::string> & value)
+{
+RESETABLE<std::string> res;
+if (!value.empty())
+    res = Encode12str(value.data());
+return res;
+}
+
+}
 
 CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
     : callback(f),
@@ -89,22 +104,31 @@ if (!conf.nextTariff.empty())
 else if (!conf.tariffName.empty())
     stream << "<tariff now=\"" << conf.nextTariff.data() << "\"/>";
 
-appendResetable(stream, "note", conf.note);
-appendResetable(stream, "name", conf.realName); // TODO: name -> realName
-appendResetable(stream, "address", conf.address);
-appendResetable(stream, "email", conf.email);
-appendResetable(stream, "phone", conf.phone);
-appendResetable(stream, "group", conf.group);
+appendResetable(stream, "note", MaybeEncode(conf.note));
+appendResetable(stream, "name", MaybeEncode(conf.realName)); // TODO: name -> realName
+appendResetable(stream, "address", MaybeEncode(conf.address));
+appendResetable(stream, "email", MaybeEncode(conf.email));
+appendResetable(stream, "phone", MaybeEncode(conf.phone));
+appendResetable(stream, "group", MaybeEncode(conf.group));
+appendResetable(stream, "corp", conf.group);
 
 for (size_t i = 0; i < conf.userdata.size(); ++i)
-    appendResetable(stream, "userdata", i, conf.userdata[i]);
+    appendResetable(stream, "userdata", i, MaybeEncode(conf.userdata[i]));
+
+if (!conf.services.empty())
+    {
+    stream << "<services>";
+    for (size_t i = 0; i < conf.services.data().size(); ++i)
+        stream << "<service name=\"" << conf.services.data()[i] << "\"/>";
+    stream << "</services>";
+    }
 
 // Stat
 
 if (!stat.cashAdd.empty())
-    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << stat.cashAdd.data().second << "\"/>";
+    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << Encode12str(stat.cashAdd.data().second) << "\"/>";
 else if (!stat.cashSet.empty())
-    stream << "<cash set=\"" << stat.cashAdd.data().first << "\" msg=\"" << stat.cashAdd.data().second << "\"/>";
+    stream << "<cash set=\"" << stat.cashAdd.data().first << "\" msg=\"" << Encode12str(stat.cashAdd.data().second) << "\"/>";
 
 appendResetable(stream, "freeMb", stat.freeMb);
 
@@ -126,5 +150,6 @@ std::string traffData = traff.str();
 if (!traffData.empty())
     stream << "<traff" << traffData << "/>";
 
+std::cerr << stream.str() << "\n";
 return stream.str();
 }
