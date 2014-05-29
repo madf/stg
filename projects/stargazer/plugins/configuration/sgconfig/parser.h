@@ -39,6 +39,7 @@ public:
     virtual ~BASE_PARSER() {}
     virtual int ParseStart(void *data, const char *el, const char **attr) = 0;
     virtual int ParseEnd(void *data, const char *el) = 0;
+    virtual void Reset() { answerList->clear(); depth = 0; }
 
     void SetAnswerList(std::list<std::string> * ansList) { answerList = ansList; }
 
@@ -50,7 +51,6 @@ public:
 
     void SetCurrAdmin(ADMIN & cua) { currAdmin = &cua; }
     std::string & GetStrError() { return strError; }
-    void Reset() { answerList->clear(); depth = 0; }
 
 protected:
     BASE_PARSER(const BASE_PARSER & rvalue);
