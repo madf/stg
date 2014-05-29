@@ -154,7 +154,6 @@ bool AddAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & options)
 {
-// TODO
 ADMIN_CONF_RES conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
@@ -170,9 +169,15 @@ bool ChgAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+ADMIN_CONF_RES conf;
+conf.login = arg;
+SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
+SGCONF::MaybeSet(options, "password", conf.password);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.ChgAdmin(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous
