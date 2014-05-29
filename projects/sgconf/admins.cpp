@@ -158,6 +158,7 @@ bool AddAdminFunction(const SGCONF::CONFIG & config,
 ADMIN_CONF_RES conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
+SGCONF::MaybeSet(options, "password", conf.password);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
                     config.userName.data(),
