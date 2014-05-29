@@ -3,13 +3,16 @@
 #include "api_action.h"
 #include "options.h"
 #include "config.h"
+#include "utils.h"
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
 #include "stg/tariff_conf.h"
+#include "stg/common.h"
 #include "stg/os_int.h"
 
 #include <iostream>
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <map>
@@ -51,6 +54,137 @@ switch (traffType)
         return "max(upload, download)";
     }
 return "unknown";
+}
+
+void ConvPeriod(const std::string & value, RESETABLE<TARIFF::PERIOD> & res)
+{
+std::string lowered = ToLower(value);
+if (lowered == "daily")
+    res = TARIFF::DAY;
+else if (lowered == "monthly")
+    res = TARIFF::MONTH;
+else
+    throw SGCONF::ACTION::ERROR("Period should be 'daily' or 'monthly'. Got: '" + value + "'");
+}
+
+void ConvTraffType(const std::string & value, RESETABLE<int> & res)
+{
+std::string lowered = ToLower(value);
+lowered.erase(std::remove(lowered.begin(), lowered.end(), ' '), lowered.end());
+if (lowered == "upload")
+    res = TRAFF_UP;
+else if (lowered == "download")
+    res = TRAFF_DOWN;
+else if (lowered == "upload+download")
+    res = TRAFF_UP_DOWN;
+else if (lowered.substr(0, 3) == "max")
+    res = TRAFF_MAX;
+else
+    throw SGCONF::ACTION::ERROR("Traff type should be 'upload', 'download', 'upload + download' or 'max'. Got: '" + value + "'");
+}
+
+DIRPRICE_DATA_RES ConvTimeSpan(const std::string & value)
+{
+size_t dashPos = value.find_first_of('-');
+if (dashPos == std::string::npos)
+    throw SGCONF::ACTION::ERROR("Time span should be in format 'hh:mm-hh:mm'. Got: '" + value + "'");
+size_t fromColon = value.find_first_of(':');
+if (fromColon == std::string::npos || fromColon > dashPos)
+    throw SGCONF::ACTION::ERROR("Time span should be in format 'hh:mm-hh:mm'. Got: '" + value + "'");
+size_t toColon = value.find_first_of(':', dashPos);
+if (toColon == std::string::npos)
+    throw SGCONF::ACTION::ERROR("Time span should be in format 'hh:mm-hh:mm'. Got: '" + value + "'");
+DIRPRICE_DATA_RES res;
+res.hDay = FromString<int>(value.substr(0, fromColon));
+if (res.hDay.data() < 0 || res.hDay.data() > 23)
+    throw SGCONF::ACTION::ERROR("Invalid 'from' hours. Got: '" + value.substr(0, fromColon) + "'");
+res.mDay = FromString<int>(value.substr(fromColon + 1, dashPos - fromColon - 1));
+if (res.mDay.data() < 0 || res.mDay.data() > 59)
+    throw SGCONF::ACTION::ERROR("Invalid 'from' minutes. Got: '" + value.substr(fromColon + 1, dashPos - fromColon - 1) + "'");
+res.hNight = FromString<int>(value.substr(dashPos + 1, toColon - dashPos - 1));
+if (res.hNight.data() < 0 || res.hNight.data() > 23)
+    throw SGCONF::ACTION::ERROR("Invalid 'to' hours. Got: '" + value.substr(dashPos + 1, toColon - dashPos - 1) + "'");
+res.mNight = FromString<int>(value.substr(toColon + 1, value.length() - toColon));
+if (res.mNight.data() < 0 || res.mNight.data() > 59)
+    throw SGCONF::ACTION::ERROR("Invalid 'to' minutes. Got: '" + value.substr(toColon + 1, value.length() - toColon) + "'");
+return res;
+}
+
+void Splice(std::vector<DIRPRICE_DATA_RES> & lhs, const std::vector<DIRPRICE_DATA_RES> & rhs)
+{
+for (size_t i = 0; i < lhs.size(); ++i)
+    lhs[i].Splice(rhs[i]);
+}
+
+void ConvTimes(std::string value, std::vector<DIRPRICE_DATA_RES> & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+Splice(res, Split<std::vector<DIRPRICE_DATA_RES> >(value, ',', ConvTimeSpan));
+}
+
+struct ConvPrice : public std::unary_function<std::string, DIRPRICE_DATA_RES>
+{
+    typedef RESETABLE<double> (DIRPRICE_DATA_RES::* MemPtr);
+    ConvPrice(MemPtr before, MemPtr after)
+        : m_before(before), m_after(after)
+    {}
+
+    DIRPRICE_DATA_RES operator()(const std::string & value)
+    {
+    DIRPRICE_DATA_RES res;
+    size_t slashPos = value.find_first_of('/');
+    if (slashPos == std::string::npos)
+        {
+        double price = 0;
+        if (str2x(value, price) < 0)
+            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value + "'");
+        (res.*m_before) = (res.*m_after) = price;
+        res.noDiscount = true;
+        }
+    else
+        {
+        double price = 0;
+        if (str2x(value.substr(0, slashPos), price) < 0)
+            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(0, slashPos) + "'");
+        (res.*m_before) = price;
+        if (str2x(value.substr(slashPos + 1, value.length() - slashPos), price) < 0)
+            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(slashPos + 1, value.length() - slashPos) + "'");
+        (res.*m_after) = price;
+        res.noDiscount = false;
+        }
+    return res;
+    }
+
+    MemPtr m_before;
+    MemPtr m_after;
+};
+
+void ConvDayPrices(std::string value, std::vector<DIRPRICE_DATA_RES> & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+Splice(res, Split<std::vector<DIRPRICE_DATA_RES> >(value, ',', ConvPrice(&DIRPRICE_DATA_RES::priceDayA, &DIRPRICE_DATA_RES::priceDayB)));
+}
+
+void ConvNightPrices(std::string value, std::vector<DIRPRICE_DATA_RES> & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+Splice(res, Split<std::vector<DIRPRICE_DATA_RES> >(value, ',', ConvPrice(&DIRPRICE_DATA_RES::priceNightA, &DIRPRICE_DATA_RES::priceNightB)));
+}
+
+DIRPRICE_DATA_RES ConvThreshold(std::string value)
+{
+DIRPRICE_DATA_RES res;
+double threshold = 0;
+if (str2x(value, threshold) < 0)
+    throw SGCONF::ACTION::ERROR("Threshold should be a floating point value. Got: '" + value + "'");
+res.threshold = threshold;
+return res;
+}
+
+void ConvThresholds(std::string value, std::vector<DIRPRICE_DATA_RES> & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+Splice(res, Split<std::vector<DIRPRICE_DATA_RES> >(value, ',', ConvThreshold));
 }
 
 std::string TimeToString(int h, int m)
@@ -188,20 +322,64 @@ return proto.DelTariff(arg, SimpleCallback, NULL) == STG::st_ok;
 
 bool AddTariffFunction(const SGCONF::CONFIG & config,
                        const std::string & arg,
-                       const std::map<std::string, std::string> & /*options*/)
+                       const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+TARIFF_DATA_RES conf;
+conf.tariffConf.name = arg;
+SGCONF::MaybeSet(options, "fee", conf.tariffConf.fee);
+SGCONF::MaybeSet(options, "free", conf.tariffConf.free);
+SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
+SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
+SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
+SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
+SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
+SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
+SGCONF::MaybeSet(options, "thresholds", conf.dirPrice, ConvThresholds);
+for (size_t i = 0; i < conf.dirPrice.size(); ++i)
+    {
+    if (!conf.dirPrice[i].priceDayA.empty() &&
+        !conf.dirPrice[i].priceNightA.empty() &&
+        !conf.dirPrice[i].priceDayB.empty() &&
+        !conf.dirPrice[i].priceNightB.empty())
+        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.data() == conf.dirPrice[i].priceNightA.data() &&
+                                       conf.dirPrice[i].priceDayB.data() == conf.dirPrice[i].priceNightB.data();
+    }
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AddTariff(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgTariffFunction(const SGCONF::CONFIG & config,
                        const std::string & arg,
                        const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+TARIFF_DATA_RES conf;
+conf.tariffConf.name = arg;
+SGCONF::MaybeSet(options, "fee", conf.tariffConf.fee);
+SGCONF::MaybeSet(options, "free", conf.tariffConf.free);
+SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
+SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
+SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
+SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
+SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
+SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
+SGCONF::MaybeSet(options, "thresholds", conf.dirPrice, ConvThresholds);
+for (size_t i = 0; i < conf.dirPrice.size(); ++i)
+    {
+    if (!conf.dirPrice[i].priceDayA.empty() &&
+        !conf.dirPrice[i].priceNightA.empty() &&
+        !conf.dirPrice[i].priceDayB.empty() &&
+        !conf.dirPrice[i].priceNightB.empty())
+        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.data() == conf.dirPrice[i].priceNightA.data() &&
+                                       conf.dirPrice[i].priceDayB.data() == conf.dirPrice[i].priceNightB.data();
+    }
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.ChgTariff(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

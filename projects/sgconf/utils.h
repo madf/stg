@@ -25,7 +25,7 @@ res = value;
 
 template <typename T, typename F>
 inline
-void MaybeSet(const std::map<std::string, std::string> & options, const std::string & name, RESETABLE<T> & res, F conv)
+void MaybeSet(const std::map<std::string, std::string> & options, const std::string & name, T & res, F conv)
 {
 std::map<std::string, std::string>::const_iterator it(options.find(name));
 if (it == options.end())
