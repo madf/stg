@@ -103,6 +103,7 @@ std::string     ToLower(const std::string & value);
 std::string     ToUpper(const std::string & value);
 
 template <typename C, typename F>
+inline
 C Split(const std::string & value, char delim, F conv)
 {
 C res;
@@ -119,6 +120,7 @@ return res;
 }
 
 template <typename T>
+inline
 T FromString(const std::string & value)
 {
 T res;
@@ -127,10 +129,18 @@ stream >> res;
 return res;
 }
 
+template <>
+inline
+std::string FromString<std::string>(const std::string & value)
+{
+return value;
+}
+
 template <typename C>
+inline
 C Split(const std::string & value, char delim)
 {
-    return Split<C>(value, delim, FromString);
+    return Split<C>(value, delim, FromString<typename C::value_type>);
 }
 
 std::string IconvString(const std::string & source, const std::string & from, const std::string & to);

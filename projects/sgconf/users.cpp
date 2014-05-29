@@ -3,12 +3,17 @@
 #include "api_action.h"
 #include "options.h"
 #include "config.h"
+#include "utils.h"
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/user_ips.h"
 #include "stg/common.h"
 
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <map>
 
@@ -46,6 +51,7 @@ std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "name: " << info.name << "\n"
           << Indent(level)       << "address: " << info.address << "\n"
           << Indent(level)       << "phone: " << info.phone << "\n"
+          << Indent(level)       << "corporation: " << info.corp << "\n"
           << Indent(level)       << "last ping time: " << TimeToString(info.pingTime) << "\n"
           << Indent(level)       << "last activity time: " << TimeToString(info.lastActivityTime) << "\n"
           << Indent(level)       << "traffic:\n";
@@ -60,6 +66,12 @@ for (size_t i = 0; i < DIR_NUM; ++i)
 std::cout << Indent(level)       << "user data:\n";
 for (size_t i = 0; i < USERDATA_NUM; ++i)
     std::cout << Indent(level + 1, true) << "user data " << i << ": " << info.userData[i] << "\n";
+if (!info.services.empty())
+    {
+    std::cout << Indent(level) << "services:\n";
+    for (size_t i = 0; i < info.services.size(); ++i)
+        std::cout << Indent(level + 1, true) << info.services[i] << "\n";
+    }
 if (!info.authBy.empty())
     {
     std::cout << Indent(level) << "auth by:\n";
@@ -89,6 +101,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("email", "<email>", "\t\tuser's email
 params.push_back(SGCONF::API_ACTION::PARAM("name", "<real name>", "\tuser's real name"));
 params.push_back(SGCONF::API_ACTION::PARAM("address", "<address>", "\tuser's postal address"));
 params.push_back(SGCONF::API_ACTION::PARAM("phone", "<phone>", "\t\tuser's phone number"));
+params.push_back(SGCONF::API_ACTION::PARAM("corp", "<corp name>", "\t\tcorporation name"));
 params.push_back(SGCONF::API_ACTION::PARAM("session-traffic", "<up/dn, ...>", "coma-separated session upload and download"));
 params.push_back(SGCONF::API_ACTION::PARAM("month-traffic", "<up/dn, ...>", "coma-separated month upload and download"));
 params.push_back(SGCONF::API_ACTION::PARAM("user-data", "<value, ...>", "coma-separated user data values"));
@@ -108,6 +121,87 @@ std::vector<SGCONF::API_ACTION::PARAM> params;
 params.push_back(SGCONF::API_ACTION::PARAM("logins", "<login, ...>", "\tlist of logins to send a message"));
 params.push_back(SGCONF::API_ACTION::PARAM("text", "<text>", "\t\tmessage text"));
 return params;
+}
+
+void ConvBool(const std::string & value, RESETABLE<int> & res)
+{
+res = !value.empty() && value[0] == 'y';
+}
+
+void Splice(std::vector<RESETABLE<std::string> > & lhs, const std::vector<RESETABLE<std::string> > & rhs)
+{
+for (size_t i = 0; i < lhs.size(); ++i)
+    lhs[i].splice(rhs[i]);
+}
+
+RESETABLE<std::string> ConvString(const std::string & value)
+{
+return value;
+}
+
+void ConvStringList(std::string value, std::vector<RESETABLE<std::string> > & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+Splice(res, Split<std::vector<RESETABLE<std::string> > >(value, ',', ConvString));
+}
+
+void ConvCreditExpire(const std::string & value, RESETABLE<time_t> & res)
+{
+struct tm brokenTime;
+if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
+    throw SGCONF::ACTION::ERROR("Credit expiration should be in format 'YYYY-MM-DD HH:MM:SS'. Got: '" + value + "'");
+res = stg_timegm(&brokenTime);
+}
+
+void ConvIPs(const std::string & value, RESETABLE<USER_IPS> & res)
+{
+res = StrToIPS(value);
+}
+
+struct TRAFF
+{
+    uint64_t up;
+    uint64_t down;
+};
+
+TRAFF ConvTraff(const std::string & value)
+{
+TRAFF res;
+size_t slashPos = value.find_first_of('/');
+if (slashPos == std::string::npos)
+    throw SGCONF::ACTION::ERROR("Traffic record should be in format 'upload/download'. Got: '" + value + "'");
+
+if (str2x(value.substr(0, slashPos), res.up) < 0)
+    throw SGCONF::ACTION::ERROR("Traffic value should be an integer. Got: '" + value.substr(0, slashPos) + "'");
+if (str2x(value.substr(slashPos + 1, value.length() - slashPos), res.down) < 0)
+    throw SGCONF::ACTION::ERROR("Traffic value should be an integer. Got: '" + value.substr(slashPos + 1, value.length() - slashPos) + "'");
+return res;
+}
+
+void ConvSessionTraff(std::string value, USER_STAT_RES & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
+if (traff.size() != DIR_NUM)
+    throw SGCONF::ACTION::ERROR("There should be prcisely " + x2str(DIR_NUM) + " records of session traffic.");
+for (size_t i = 0; i < DIR_NUM; ++i)
+    {
+    res.sessionUp[i] = traff[i].up;
+    res.sessionDown[i] = traff[i].down;
+    }
+}
+
+void ConvMonthTraff(std::string value, USER_STAT_RES & res)
+{
+value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
+std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
+if (traff.size() != DIR_NUM)
+    throw SGCONF::ACTION::ERROR("There should be prcisely " + x2str(DIR_NUM) + " records of month traffic.");
+for (size_t i = 0; i < DIR_NUM; ++i)
+    {
+    res.monthUp[i] = traff[i].up;
+    res.monthDown[i] = traff[i].down;
+    }
 }
 
 void SimpleCallback(bool result,
@@ -185,20 +279,72 @@ return proto.DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
 
 bool AddUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
-                     const std::map<std::string, std::string> & /*options*/)
+                     const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+USER_CONF_RES conf;
+SGCONF::MaybeSet(options, "password", conf.password);
+SGCONF::MaybeSet(options, "passive", conf.passive, ConvBool);
+SGCONF::MaybeSet(options, "disabled", conf.disabled, ConvBool);
+SGCONF::MaybeSet(options, "disable-detail-stat", conf.disabledDetailStat, ConvBool);
+SGCONF::MaybeSet(options, "always-online", conf.alwaysOnline, ConvBool);
+SGCONF::MaybeSet(options, "tariff", conf.tariffName);
+SGCONF::MaybeSet(options, "address", conf.address);
+SGCONF::MaybeSet(options, "phone", conf.phone);
+SGCONF::MaybeSet(options, "email", conf.email);
+SGCONF::MaybeSet(options, "note", conf.note);
+SGCONF::MaybeSet(options, "name", conf.realName);
+SGCONF::MaybeSet(options, "corp", conf.corp);
+SGCONF::MaybeSet(options, "services", conf.services, ConvStringList);
+SGCONF::MaybeSet(options, "group", conf.group);
+SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
+SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
+SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
+SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
+USER_STAT_RES stat;
+SGCONF::MaybeSet(options, "cash", stat.cash);
+SGCONF::MaybeSet(options, "free", stat.freeMb);
+SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
+SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AddUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+USER_CONF_RES conf;
+SGCONF::MaybeSet(options, "password", conf.password);
+SGCONF::MaybeSet(options, "passive", conf.passive, ConvBool);
+SGCONF::MaybeSet(options, "disabled", conf.disabled, ConvBool);
+SGCONF::MaybeSet(options, "disable-detail-stat", conf.disabledDetailStat, ConvBool);
+SGCONF::MaybeSet(options, "always-online", conf.alwaysOnline, ConvBool);
+SGCONF::MaybeSet(options, "tariff", conf.tariffName);
+SGCONF::MaybeSet(options, "address", conf.address);
+SGCONF::MaybeSet(options, "phone", conf.phone);
+SGCONF::MaybeSet(options, "email", conf.email);
+SGCONF::MaybeSet(options, "note", conf.note);
+SGCONF::MaybeSet(options, "name", conf.realName);
+SGCONF::MaybeSet(options, "corp", conf.corp);
+SGCONF::MaybeSet(options, "services", conf.services, ConvStringList);
+SGCONF::MaybeSet(options, "group", conf.group);
+SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
+SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
+SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
+SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
+USER_STAT_RES stat;
+SGCONF::MaybeSet(options, "cash", stat.cash);
+SGCONF::MaybeSet(options, "free", stat.freeMb);
+SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
+SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.ChgUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool CheckUserFunction(const SGCONF::CONFIG & config,

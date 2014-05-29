@@ -72,7 +72,10 @@ public:
                 const USER_STAT_RES & stat,
                 SIMPLE::CALLBACK f, void * data);
     int DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
-    int AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
+    int AddUser(const std::string & login,
+                const USER_CONF_RES & conf,
+                const USER_STAT_RES & stat,
+                SIMPLE::CALLBACK f, void * data);
     int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
     int SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data);
     int CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data);

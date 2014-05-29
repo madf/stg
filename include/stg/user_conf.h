@@ -30,7 +30,7 @@ struct USER_CONF
           note(),
           realName(),
           corp(),
-          service(),
+          services(),
           group(),
           credit(0),
           nextTariff(),
@@ -51,7 +51,7 @@ struct USER_CONF
     std::string              note;
     std::string              realName;
     std::string              corp;
-    std::vector<std::string> service;
+    std::vector<std::string> services;
     std::string              group;
     double                   credit;
     std::string              nextTariff;
@@ -74,10 +74,12 @@ struct USER_CONF_RES
           email(),
           note(),
           realName(),
+          corp(),
           group(),
           credit(),
           nextTariff(),
           userdata(USERDATA_NUM),
+          services(),
           creditExpire(),
           ips()
     {
@@ -97,10 +99,13 @@ struct USER_CONF_RES
         email        = uc.email;
         note         = uc.note;
         realName     = uc.realName;
+        corp         = uc.corp;
         group        = uc.group;
         credit       = uc.credit;
         nextTariff   = uc.nextTariff;
         for (size_t i = 0; i < USERDATA_NUM; i++) userdata[i]  = uc.userdata[i];
+        services.resize(uc.services.size());
+        for (size_t i = 0; i < uc.services.size(); ++i) services[i]  = uc.services[i];
         creditExpire = uc.creditExpire;
         ips          = uc.ips;
         return *this;
@@ -119,13 +124,17 @@ struct USER_CONF_RES
         uc.email        = email.data();
         uc.note         = note.data();
         uc.realName     = realName.data();
+        uc.corp         = corp.data();
         uc.group        = group.data();
         uc.credit       = credit.data();
         uc.nextTariff   = nextTariff.data();
-        for (int i = 0; i < USERDATA_NUM; i++)
+        for (size_t i = 0; i < USERDATA_NUM; i++)
             {
             uc.userdata[i]  = userdata[i].data();
             }
+        uc.services.resize(services.size());
+        for (size_t i = 0; i < services.size(); ++i)
+            uc.services[i] = services[i].data();
         uc.creditExpire = creditExpire.data();
         uc.ips          = ips.data();
         return uc;
@@ -143,10 +152,12 @@ struct USER_CONF_RES
     RESETABLE<std::string>               email;
     RESETABLE<std::string>               note;
     RESETABLE<std::string>               realName;
+    RESETABLE<std::string>               corp;
     RESETABLE<std::string>               group;
     RESETABLE<double>                    credit;
     RESETABLE<std::string>               nextTariff;
     std::vector<RESETABLE<std::string> > userdata;
+    std::vector<RESETABLE<std::string> > services;
     RESETABLE<time_t>                    creditExpire;
     RESETABLE<USER_IPS>                  ips;
 };

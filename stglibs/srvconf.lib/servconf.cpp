@@ -225,9 +225,15 @@ int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data
 return pImpl->Exec<SIMPLE::PARSER>("DelUser", "<DelUser login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::AddUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+int SERVCONF::AddUser(const std::string & login,
+                      const USER_CONF_RES & conf,
+                      const USER_STAT_RES & stat,
+                      SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
+int res = pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
+if (res != st_ok)
+    return res;
+return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat) + "</SetUser>", f, data);
 }
 
 int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)

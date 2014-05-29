@@ -88,6 +88,7 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "name", info.name, GetEncodedValue);
     AddParser(propertyParsers, "address", info.address, GetEncodedValue);
     AddParser(propertyParsers, "phone", info.phone, GetEncodedValue);
+    AddParser(propertyParsers, "corp", info.corp);
     AddParser(propertyParsers, "traff", info.stat);
     AddParser(propertyParsers, "pingTime", info.pingTime);
     AddParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
@@ -113,7 +114,10 @@ if (depth == 2 && parsingAnswer)
     ParseUserParams(el, attr);
 
 if (depth == 3 && parsingAnswer)
+    {
     ParseAuthBy(el, attr);
+    ParseServices(el, attr);
+    }
 
 return 0;
 }
@@ -155,6 +159,9 @@ void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
 if (strcasecmp(el, "AuthorizedBy") != 0 &&
     !TryParse(propertyParsers, ToLower(el), attr))
     error = "Invalid parameter.";
+else if (strcasecmp(el, "Services") != 0 &&
+    !TryParse(propertyParsers, ToLower(el), attr))
+    error = "Invalid parameter.";
 }
 //-----------------------------------------------------------------------------
 void GET_USER::PARSER::ParseAuthBy(const char * el, const char ** attr)
@@ -163,6 +170,12 @@ if (strcasecmp(el, "Auth") == 0 &&
     attr && attr[0] && attr[1] &&
     strcasecmp(attr[0], "name") == 0)
     info.authBy.push_back(attr[1]);
-else
-    error = "Invalid auth description.";
+}
+//-----------------------------------------------------------------------------
+void GET_USER::PARSER::ParseServices(const char * el, const char ** attr)
+{
+if (strcasecmp(el, "Service") == 0 &&
+    attr && attr[0] && attr[1] &&
+    strcasecmp(attr[0], "name") == 0)
+    info.services.push_back(attr[1]);
 }

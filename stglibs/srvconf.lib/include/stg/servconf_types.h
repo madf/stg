@@ -157,10 +157,12 @@ struct INFO
     std::string name;
     std::string address;
     std::string phone;
+    std::string corp;
     STAT        stat;
     time_t      pingTime;
     time_t      lastActivityTime;
     ARRAY<std::string, USERDATA_NUM> userData;
+    std::vector<std::string> services;
     std::vector<std::string> authBy;
 };
 
