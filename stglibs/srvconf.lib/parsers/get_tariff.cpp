@@ -90,6 +90,21 @@ else
 return true;
 }
 
+template <typename T>
+bool GetPeriod(const char ** attr, T & value, const std::string & attrName)
+{
+if (!CheckValue(attr, attrName))
+    return false;
+std::string type(attr[1]);
+if (type == "day")
+    value = TARIFF::DAY;
+else if (type == "month")
+    value = TARIFF::MONTH;
+else
+    return false;
+return true;
+}
+
 template <typename A, typename T>
 bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
 {
@@ -122,6 +137,7 @@ GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "passiveCost", info.tariffConf.passiveCost);
     AddParser(propertyParsers, "free", info.tariffConf.free);
     AddParser(propertyParsers, "traffType", info.tariffConf.traffType, GetTraffType);
+    AddParser(propertyParsers, "period", info.tariffConf.period, GetPeriod);
     for (size_t i = 0; i < DIR_NUM; ++i)
         AddParser(propertyParsers, "time" + unsigned2str(i), info.dirPrice[i], GetTimeSpan);
     AddAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DIRPRICE_DATA::priceDayA, GetSlashedValue);
