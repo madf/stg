@@ -3,6 +3,7 @@
 #include "api_action.h"
 #include "options.h"
 #include "config.h"
+#include "utils.h"
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
@@ -111,20 +112,30 @@ return proto.DelCorp(arg, SimpleCallback, NULL) == STG::st_ok;
 
 bool AddCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
-                     const std::map<std::string, std::string> & /*options*/)
+                     const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+CORP_CONF_RES conf;
+conf.name = arg;
+SGCONF::MaybeSet(options, "cash", conf.cash);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AddCorp(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+CORP_CONF_RES conf;
+conf.name = arg;
+SGCONF::MaybeSet(options, "cash", conf.cash);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.ChgCorp(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

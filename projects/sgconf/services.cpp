@@ -3,6 +3,7 @@
 #include "api_action.h"
 #include "options.h"
 #include "config.h"
+#include "utils.h"
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
@@ -115,20 +116,34 @@ return proto.DelService(arg, SimpleCallback, NULL) == STG::st_ok;
 
 bool AddServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
-                        const std::map<std::string, std::string> & /*options*/)
+                        const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+SERVICE_CONF_RES conf;
+conf.name = arg;
+SGCONF::MaybeSet(options, "cost", conf.cost);
+SGCONF::MaybeSet(options, "pay-day", conf.payDay);
+SGCONF::MaybeSet(options, "comment", conf.comment);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AddService(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
                         const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+SERVICE_CONF_RES conf;
+conf.name = arg;
+SGCONF::MaybeSet(options, "cost", conf.cost);
+SGCONF::MaybeSet(options, "pay-day", conf.payDay);
+SGCONF::MaybeSet(options, "comment", conf.comment);
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.ChgService(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous
