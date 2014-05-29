@@ -205,9 +205,14 @@ bool CheckUserFunction(const SGCONF::CONFIG & config,
                        const std::string & arg,
                        const std::map<std::string, std::string> & options)
 {
-// TODO
-std::cerr << "Unimplemented.\n";
-return false;
+std::map<std::string, std::string>::const_iterator it(options.find("password"));
+if (it == options.end())
+    throw SGCONF::ACTION::ERROR("Password is not specified.");
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.CheckUser(arg, it->second, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool SendMessageFunction(const SGCONF::CONFIG & config,
