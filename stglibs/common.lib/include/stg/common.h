@@ -107,7 +107,7 @@ while (pos != std::string::npos)
     {
     res.push_back(conv(value.substr(startPos, pos - startPos)));
     startPos = pos + 1;
-    pos = value.find_first_of(delim, pos);
+    pos = value.find_first_of(delim, pos + 1);
     }
 res.push_back(conv(value.substr(startPos, pos - startPos)));
 return res;
