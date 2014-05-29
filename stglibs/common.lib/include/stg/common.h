@@ -33,6 +33,7 @@
 #include <ctime>
 #endif
 #include <string>
+#include <sstream>
 
 #include "stg/os_int.h"
 #include "stg/const.h"
@@ -101,7 +102,38 @@ std::string     Trim(const std::string & val);
 std::string     ToLower(const std::string & value);
 std::string     ToUpper(const std::string & value);
 
-std::string     IconvString(const std::string & source, const std::string & from, const std::string & to);
+template <typename C, typename F>
+C Split(const std::string & value, char delim, F conv)
+{
+C res;
+size_t startPos = 0;
+size_t pos = value.find_first_of(delim);
+while (pos != std::string::npos)
+    {
+    res.push_back(conv(value.substr(startPos, pos - startPos)));
+    startPos = pos + 1;
+    pos = value.find_first_of(delim, pos);
+    }
+res.push_back(conv(value.substr(startPos, pos - startPos)));
+return res;
+}
+
+template <typename T>
+T FromString(const std::string & value)
+{
+T res;
+std::istringstream stream(value);
+stream >> res;
+return res;
+}
+
+template <typename C>
+C Split(const std::string & value, char delim)
+{
+    return Split<C>(value, delim, FromString);
+}
+
+std::string IconvString(const std::string & source, const std::string & from, const std::string & to);
 
 int ParseInt(const std::string & str, int * val);
 int ParseUnsigned(const std::string & str, unsigned * val);
