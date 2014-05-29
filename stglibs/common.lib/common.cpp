@@ -823,7 +823,8 @@ return unsigned2str(x, s);
 const std::string & x2str(double x, std::string & s)
 {
 char buf[256];
-s = snprintf(buf, sizeof(buf), "%f", x);
+snprintf(buf, sizeof(buf), "%f", x);
+s = buf;
 return s;
 }
 //---------------------------------------------------------------------------
