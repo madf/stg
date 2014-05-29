@@ -102,7 +102,7 @@ appendResetable(stream, "ip", conf.ips); // TODO: ip -> ips
 if (!conf.nextTariff.empty())
     stream << "<tariff delayed=\"" << conf.nextTariff.data() << "\"/>";
 else if (!conf.tariffName.empty())
-    stream << "<tariff now=\"" << conf.nextTariff.data() << "\"/>";
+    stream << "<tariff now=\"" << conf.tariffName.data() << "\"/>";
 
 appendResetable(stream, "note", MaybeEncode(conf.note));
 appendResetable(stream, "name", MaybeEncode(conf.realName)); // TODO: name -> realName

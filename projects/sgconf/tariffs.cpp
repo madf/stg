@@ -112,7 +112,7 @@ return res;
 
 void Splice(std::vector<DIRPRICE_DATA_RES> & lhs, const std::vector<DIRPRICE_DATA_RES> & rhs)
 {
-for (size_t i = 0; i < lhs.size(); ++i)
+for (size_t i = 0; i < lhs.size() && i < rhs.size(); ++i)
     lhs[i].Splice(rhs[i]);
 }
 

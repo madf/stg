@@ -131,7 +131,7 @@ res = !value.empty() && value[0] == 'y';
 
 void Splice(std::vector<RESETABLE<std::string> > & lhs, const std::vector<RESETABLE<std::string> > & rhs)
 {
-for (size_t i = 0; i < lhs.size(); ++i)
+for (size_t i = 0; i < lhs.size() && i < rhs.size(); ++i)
     lhs[i].splice(rhs[i]);
 }
 
@@ -142,7 +142,6 @@ return value;
 
 void ConvStringList(std::string value, std::vector<RESETABLE<std::string> > & res)
 {
-value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 Splice(res, Split<std::vector<RESETABLE<std::string> > >(value, ',', ConvString));
 }
 
