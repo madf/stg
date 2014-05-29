@@ -128,7 +128,7 @@ if (!conf.services.empty())
 if (!stat.cashAdd.empty())
     stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << Encode12str(stat.cashAdd.data().second) << "\"/>";
 else if (!stat.cashSet.empty())
-    stream << "<cash set=\"" << stat.cashAdd.data().first << "\" msg=\"" << Encode12str(stat.cashAdd.data().second) << "\"/>";
+    stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << Encode12str(stat.cashSet.data().second) << "\"/>";
 
 appendResetable(stream, "freeMb", stat.freeMb);
 
