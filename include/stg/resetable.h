@@ -42,6 +42,14 @@ public:
     const T & data() const throw() { return value; }
     bool empty() const throw() { return !is_set; }
     void reset() throw() { is_set = false; }
+    void splice(const RESETABLE<T> & rhs)
+    {
+        if (rhs.is_set)
+        {
+            value = rhs.value;
+            is_set = true;
+        }
+    }
 
 private:
     value_type value;
