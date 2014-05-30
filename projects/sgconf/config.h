@@ -35,6 +35,8 @@ struct CONFIG
     RESETABLE<std::string> configFile;
     RESETABLE<std::string> server;
     RESETABLE<uint16_t> port;
+    RESETABLE<std::string> localAddress;
+    RESETABLE<uint16_t> localPort;
     RESETABLE<std::string> userName;
     RESETABLE<std::string> userPass;
 
@@ -46,6 +48,10 @@ struct CONFIG
         server = rhs.server;
     if (!rhs.port.empty())
         port = rhs.port;
+    if (!rhs.localAddress.empty())
+        localAddress = rhs.localAddress;
+    if (!rhs.localPort.empty())
+        localPort = rhs.localPort;
     if (!rhs.userName.empty())
         userName = rhs.userName;
     if (!rhs.userPass.empty())
@@ -62,6 +68,10 @@ struct CONFIG
         res += " server: '" + server.data() + "',";
     if (!port.empty())
         res += " port: " + x2str(port.data()) + ",";
+    if (!localAddress.empty())
+        res += " local address: '" + localAddress.data() + "',";
+    if (!localPort.empty())
+        res += " local port: " + x2str(localPort.data()) + ",";
     if (!userName.empty())
         res += " userName: '" + userName.data() + "',";
     if (!userPass.empty())

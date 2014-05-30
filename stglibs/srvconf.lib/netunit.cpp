@@ -53,6 +53,7 @@ const std::string::size_type MAX_XML_CHUNK_LENGTH = 2048;
 #define RECV_DATA_ANSWER_ERROR      "Recv data answer error!"
 #define UNKNOWN_ERROR               "Unknown error!"
 #define CONNECT_FAILED              "Connect failed!"
+#define BIND_FAILED                 "Bind failed!"
 #define INCORRECT_LOGIN             "Incorrect login!"
 #define INCORRECT_HEADER            "Incorrect header!"
 #define SEND_LOGIN_ERROR            "Send login error!"
@@ -73,6 +74,19 @@ NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
 {
 }
 //---------------------------------------------------------------------------
+NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
+                         const std::string & la, uint16_t lp,
+                         const std::string & l, const std::string & pwd)
+    : server(s),
+      port(p),
+      localAddress(la),
+      localPort(lp),
+      login(l),
+      password(pwd),
+      outerSocket(-1)
+{
+}
+//---------------------------------------------------------------------------
 int NETTRANSACT::Connect()
 {
 outerSocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -80,6 +94,41 @@ if (outerSocket < 0)
     {
     errorMsg = CREATE_SOCKET_ERROR;
     return st_conn_fail;
+    }
+
+if (!localAddress.empty())
+    {
+    if (localPort == 0)
+        localPort = port;
+
+    unsigned long ip = inet_addr(localAddress.c_str());
+
+    if (ip == INADDR_NONE)
+        {
+        struct hostent * phe = gethostbyname(localAddress.c_str());
+        if (phe == NULL)
+            {
+            errorMsg = "DNS error.\nCan not reslove " + localAddress;
+            return st_dns_err;
+            }
+
+        struct hostent he;
+        memcpy(&he, phe, sizeof(he));
+        ip = *((long *)he.h_addr_list[0]);
+        }
+
+    struct sockaddr_in localAddr;
+    memset(&localAddr, 0, sizeof(localAddr));
+    localAddr.sin_family = AF_INET;
+    localAddr.sin_port = htons(localPort);
+    localAddr.sin_addr.s_addr = ip;
+
+    if (bind(outerSocket, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0)
+        {
+        errorMsg = BIND_FAILED;
+        close(outerSocket);
+        return st_conn_fail;
+        }
     }
 
 struct sockaddr_in outerAddr;

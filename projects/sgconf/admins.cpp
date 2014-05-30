@@ -120,6 +120,8 @@ bool GetAdminsFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetAdmins(GetAdminsCallback, NULL) == STG::st_ok;
@@ -131,6 +133,8 @@ bool GetAdminFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 // STG currently doesn't support <GetAdmin login="..."/>.
@@ -145,6 +149,8 @@ bool DelAdminFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.DelAdmin(arg, SimpleCallback, NULL) == STG::st_ok;
@@ -160,6 +166,8 @@ SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.AddAdmin(arg, conf, SimpleCallback, NULL) == STG::st_ok;
@@ -175,6 +183,8 @@ SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.ChgAdmin(conf, SimpleCallback, NULL) == STG::st_ok;

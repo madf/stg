@@ -32,6 +32,9 @@ public:
 
     NETTRANSACT(const std::string & server, uint16_t port,
                 const std::string & login, const std::string & password);
+    NETTRANSACT(const std::string & server, uint16_t port,
+                const std::string & localAddress, uint16_t localPort,
+                const std::string & login, const std::string & password);
     int Transact(const std::string & request, CALLBACK f, void * data);
     const std::string & GetError() const { return errorMsg; }
 

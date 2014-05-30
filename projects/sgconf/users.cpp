@@ -274,6 +274,8 @@ bool GetUsersFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetUsers(GetUsersCallback, NULL) == STG::st_ok;
@@ -285,6 +287,8 @@ bool GetUserFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetUser(arg, GetUserCallback, NULL) == STG::st_ok;
@@ -296,6 +300,8 @@ bool DelUserFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
@@ -332,6 +338,8 @@ SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.AddUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
@@ -369,6 +377,8 @@ SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.ChgUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
@@ -383,6 +393,8 @@ if (it == options.end())
     throw SGCONF::ACTION::ERROR("Password is not specified.");
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.CheckUser(arg, it->second, SimpleCallback, NULL) == STG::st_ok;
@@ -405,6 +417,8 @@ if (it == options.end())
 std::string text = it->second;
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.SendMessage(logins, text, SimpleCallback, NULL) == STG::st_ok;

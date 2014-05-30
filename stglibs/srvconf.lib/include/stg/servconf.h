@@ -43,6 +43,9 @@ class SERVCONF
 public:
     SERVCONF(const std::string & server, uint16_t port,
              const std::string & login, const std::string & password);
+    SERVCONF(const std::string & server, uint16_t port,
+             const std::string & localAddress, uint16_t localPort,
+             const std::string & login, const std::string & password);
     ~SERVCONF();
 
     int ServerInfo(SERVER_INFO::CALLBACK f, void * data);

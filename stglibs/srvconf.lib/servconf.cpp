@@ -60,6 +60,9 @@ class SERVCONF::IMPL
 public:
     IMPL(const std::string & server, uint16_t port,
          const std::string & login, const std::string & password);
+    IMPL(const std::string & server, uint16_t port,
+         const std::string & localAddress, uint16_t localPort,
+         const std::string & login, const std::string & password);
     ~IMPL() { XML_ParserFree(parser); }
 
     const std::string & GetStrError() const;
@@ -118,6 +121,13 @@ return true;
 SERVCONF::SERVCONF(const std::string & server, uint16_t port,
                    const std::string & login, const std::string & password)
     : pImpl(new IMPL(server, port, login, password))
+{
+}
+
+SERVCONF::SERVCONF(const std::string & server, uint16_t port,
+                   const std::string & localAddress, uint16_t localPort,
+                   const std::string & login, const std::string & password)
+    : pImpl(new IMPL(server, port, localAddress, localPort, login, password))
 {
 }
 
@@ -323,7 +333,15 @@ return pImpl->GetStrError();
 //-----------------------------------------------------------------------------
 SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
                      const std::string & login, const std::string & password)
-    : nt( server, port, login, password )
+    : nt(server, port, login, password)
+{
+parser = XML_ParserCreate(NULL);
+}
+//-----------------------------------------------------------------------------
+SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
+                     const std::string & localAddress, uint16_t localPort,
+                     const std::string & login, const std::string & password)
+    : nt(server, port, localAddress, localPort, login, password)
 {
 parser = XML_ParserCreate(NULL);
 }

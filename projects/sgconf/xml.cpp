@@ -89,6 +89,8 @@ bool RawXMLFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;

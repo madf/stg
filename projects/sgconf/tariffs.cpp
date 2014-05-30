@@ -290,6 +290,8 @@ bool GetTariffsFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetTariffs(GetTariffsCallback, NULL) == STG::st_ok;
@@ -301,6 +303,8 @@ bool GetTariffFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 // STG currently doesn't support <GetTariff name="..."/>.
@@ -315,6 +319,8 @@ bool DelTariffFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.DelTariff(arg, SimpleCallback, NULL) == STG::st_ok;
@@ -346,6 +352,8 @@ for (size_t i = 0; i < conf.dirPrice.size(); ++i)
     }
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.AddTariff(arg, conf, SimpleCallback, NULL) == STG::st_ok;
@@ -377,6 +385,8 @@ for (size_t i = 0; i < conf.dirPrice.size(); ++i)
     }
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.ChgTariff(conf, SimpleCallback, NULL) == STG::st_ok;

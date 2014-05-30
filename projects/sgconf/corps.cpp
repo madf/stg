@@ -83,6 +83,8 @@ bool GetCorpsFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetCorporations(GetCorpsCallback, NULL) == STG::st_ok;
@@ -94,6 +96,8 @@ bool GetCorpFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetCorp(arg, GetCorpCallback, NULL) == STG::st_ok;
@@ -105,6 +109,8 @@ bool DelCorpFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.DelCorp(arg, SimpleCallback, NULL) == STG::st_ok;
@@ -119,6 +125,8 @@ conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.AddCorp(arg, conf, SimpleCallback, NULL) == STG::st_ok;
@@ -133,6 +141,8 @@ conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.ChgCorp(conf, SimpleCallback, NULL) == STG::st_ok;

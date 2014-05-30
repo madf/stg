@@ -87,6 +87,8 @@ bool GetServicesFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetServices(GetServicesCallback, NULL) == STG::st_ok;
@@ -98,6 +100,8 @@ bool GetServiceFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.GetService(arg, GetServiceCallback, NULL) == STG::st_ok;
@@ -109,6 +113,8 @@ bool DelServiceFunction(const SGCONF::CONFIG & config,
 {
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.DelService(arg, SimpleCallback, NULL) == STG::st_ok;
@@ -125,6 +131,8 @@ SGCONF::MaybeSet(options, "pay-day", conf.payDay);
 SGCONF::MaybeSet(options, "comment", conf.comment);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.AddService(arg, conf, SimpleCallback, NULL) == STG::st_ok;
@@ -141,6 +149,8 @@ SGCONF::MaybeSet(options, "pay-day", conf.payDay);
 SGCONF::MaybeSet(options, "comment", conf.comment);
 STG::SERVCONF proto(config.server.data(),
                     config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
                     config.userName.data(),
                     config.userPass.data());
 return proto.ChgService(conf, SimpleCallback, NULL) == STG::st_ok;
