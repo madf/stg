@@ -235,7 +235,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("traff-type", "<type>", "\ttraffic ty
 params.push_back(SGCONF::API_ACTION::PARAM("period", "<period>", "\ttarification period (daily, monthly)"));
 params.push_back(SGCONF::API_ACTION::PARAM("times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("day-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
-params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
+params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated night prices for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("thresholds", "<threshold, ...>", "coma-separated thresholds for each direction"));
 return params;
 }
