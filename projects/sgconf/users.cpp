@@ -419,7 +419,7 @@ blocks.Add("User management options")
       .Add("get-users", SGCONF::MakeAPIAction(commands, GetUsersFunction), "\tget user list")
       .Add("get-user", SGCONF::MakeAPIAction(commands, "<login>", GetUserFunction), "get user")
       .Add("add-user", SGCONF::MakeAPIAction(commands, "<login>", params, AddUserFunction), "add user")
-      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", DelUserFunction), "del user")
+      .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", DelUserFunction), "delete user")
       .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", params, ChgUserFunction), "change user")
       .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", GetCheckParams(), CheckUserFunction), "check user existance and credentials")
       .Add("send-message", SGCONF::MakeAPIAction(commands, GetMessageParams(), SendMessageFunction), "send message");
