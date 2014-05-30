@@ -155,6 +155,6 @@ blocks.Add("Service management options")
       .Add("get-services", SGCONF::MakeAPIAction(commands, GetServicesFunction), "\tget service list")
       .Add("get-service", SGCONF::MakeAPIAction(commands, "<name>", GetServiceFunction), "get service")
       .Add("add-service", SGCONF::MakeAPIAction(commands, "<name>", params, AddServiceFunction), "add service")
-      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", DelServiceFunction), "del service")
+      .Add("del-service", SGCONF::MakeAPIAction(commands, "<name>", DelServiceFunction), "delete service")
       .Add("chg-service", SGCONF::MakeAPIAction(commands, "<name>", params, ChgServiceFunction), "change service");
 }

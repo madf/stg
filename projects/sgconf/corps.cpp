@@ -147,6 +147,6 @@ blocks.Add("Corporation management options")
       .Add("get-corps", SGCONF::MakeAPIAction(commands, GetCorpsFunction), "\tget corporation list")
       .Add("get-corp", SGCONF::MakeAPIAction(commands, "<name>", GetCorpFunction), "get corporation")
       .Add("add-corp", SGCONF::MakeAPIAction(commands, "<name>", params, AddCorpFunction), "add corporation")
-      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", DelCorpFunction), "del corporation")
+      .Add("del-corp", SGCONF::MakeAPIAction(commands, "<name>", DelCorpFunction), "delete corporation")
       .Add("chg-corp", SGCONF::MakeAPIAction(commands, "<name>", params, ChgCorpFunction), "change corporation");
 }

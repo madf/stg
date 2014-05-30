@@ -52,6 +52,8 @@ private:
 
     std::string server;
     uint16_t  port;
+    std::string localAddress;
+    uint16_t localPort;
     std::string login;
     std::string password;
     int outerSocket;
