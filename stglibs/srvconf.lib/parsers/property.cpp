@@ -46,10 +46,10 @@ if (value == 0 && ip != "0.0.0.0")
 return true;
 }
 
-bool STG::TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & attrName)
+bool STG::TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & fromEncoding, const std::string & attrName)
 {
     PROPERTY_PARSERS::iterator it(parsers.find(name));
     if (it != parsers.end())
-        return it->second->Parse(attr, attrName);
+        return it->second->Parse(attr, attrName, fromEncoding);
     return true; // Assume that non-existing params are ok.
 }

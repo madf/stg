@@ -33,7 +33,7 @@ class BASE_PROPERTY_PARSER
 {
     public:
         virtual ~BASE_PROPERTY_PARSER() {}
-        virtual bool Parse(const char ** attr, const std::string & attrName) = 0;
+        virtual bool Parse(const char ** attr, const std::string & attrName, const std::string & fromEncoding) = 0;
 };
 
 template <typename T>
@@ -42,11 +42,29 @@ class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
     public:
         typedef bool (* FUNC)(const char **, T &, const std::string &);
         PROPERTY_PARSER(T & v, FUNC f) : value(v), func(f) {}
-        virtual bool Parse(const char ** attr, const std::string & attrName) { return func(attr, value, attrName); }
+        PROPERTY_PARSER(T & v, FUNC f, const std::string & e) : value(v), func(f), encoding(e) {}
+        virtual bool Parse(const char ** attr, const std::string & attrName, const std::string & /*fromEncoding*/) { return func(attr, value, attrName); }
     private:
         T & value;
         FUNC func;
+        std::string encoding;
 };
+
+template <>
+inline
+bool PROPERTY_PARSER<std::string>::Parse(const char ** attr, const std::string & attrName, const std::string & fromEncoding)
+{
+if (!encoding.empty() && !fromEncoding.empty())
+    {
+    std::string tmp;
+    if (!func(attr, value, attrName))
+        return false;
+    value = IconvString(tmp, fromEncoding, encoding);
+    return true;
+    }
+else
+    return func(attr, value, attrName);
+}
 
 typedef std::map<std::string, BASE_PROPERTY_PARSER *> PROPERTY_PARSERS;
 
@@ -87,16 +105,20 @@ bool GetEncodedValue(const char ** attr, std::string & value, const std::string 
 bool GetIPValue(const char ** attr, uint32_t& value, const std::string & attrName);
 
 template <typename T>
-void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = GetValue<T>);
-
-template <typename T>
 inline
-void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func)
+void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const typename PROPERTY_PARSER<T>::FUNC & func = GetValue<T>)
 {
     parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func)));
 }
 
-bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & attrName = "value");
+template <typename T>
+inline
+void AddParser(PROPERTY_PARSERS & parsers, const std::string & name, T & value, const std::string & toEncoding, const typename PROPERTY_PARSER<T>::FUNC & func = GetValue<T>)
+{
+    parsers.insert(std::make_pair(ToLower(name), new PROPERTY_PARSER<T>(value, func, toEncoding)));
+}
+
+bool TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & fromEncoding, const std::string & attrName = "value");
 
 } // namespace STG
 

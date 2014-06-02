@@ -74,20 +74,21 @@ public:
     template <class P, typename C>
     int Exec(const std::string & request, C callback, void * data)
     {
-        P cp(callback, data);
+        P cp(callback, data, encoding);
         return ExecImpl(request, cp);
     }
 
     template <class P, typename C>
     int Exec(const std::string & tag, const std::string & request, C callback, void * data)
     {
-        P cp(tag, callback, data);
+        P cp(tag, callback, data, encoding);
         return ExecImpl(request, cp);
     }
 
 private:
     NETTRANSACT nt;
 
+    std::string encoding;
     std::string errorMsg;
     XML_Parser parser;
 
@@ -160,7 +161,7 @@ return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, 
 
 int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf, encoding) + "/>", f, data);
 }
 
 int SERVCONF::AddAdmin(const std::string & login,
@@ -170,7 +171,7 @@ int SERVCONF::AddAdmin(const std::string & login,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf) + "/>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf, encoding) + "/>", f, data);
 }
 
 int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)
@@ -192,7 +193,7 @@ return pImpl->Exec<GET_TARIFF::PARSER>("<GetTariff name=\"" + name + "\"/>", f, 
 
 int SERVCONF::ChgTariff(const TARIFF_DATA_RES & tariffData, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + CHG_TARIFF::Serialize(tariffData, encoding) + "</SetTariff>", f, data);
 }
 
 int SERVCONF::AddTariff(const std::string & name,
@@ -202,7 +203,7 @@ int SERVCONF::AddTariff(const std::string & name,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddTariff", "<AddTariff name=\"" + name + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + name + "\">" + CHG_TARIFF::Serialize(tariffData) + "</SetTariff>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + name + "\">" + CHG_TARIFF::Serialize(tariffData, encoding) + "</SetTariff>", f, data);
 }
 
 int SERVCONF::DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data)
@@ -227,7 +228,7 @@ int SERVCONF::ChgUser(const std::string & login,
                       const USER_STAT_RES & stat,
                       SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat) + "</SetUser>", f, data);
+return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat, encoding) + "</SetUser>", f, data);
 }
 
 int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
@@ -243,7 +244,7 @@ int SERVCONF::AddUser(const std::string & login,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat) + "</SetUser>", f, data);
+return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat, encoding) + "</SetUser>", f, data);
 }
 
 int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
@@ -275,7 +276,7 @@ return pImpl->Exec<GET_SERVICE::PARSER>("<GetService name=\"" + name + "\"/>", f
 
 int SERVCONF::ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + conf.name.data() + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + conf.name.data() + "\">" + CHG_SERVICE::Serialize(conf, encoding) + "</SetService>", f, data);
 }
 
 int SERVCONF::AddService(const std::string & name,
@@ -285,7 +286,7 @@ int SERVCONF::AddService(const std::string & name,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + "\">" + CHG_SERVICE::Serialize(conf) + "</SetService>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + "\">" + CHG_SERVICE::Serialize(conf, encoding) + "</SetService>", f, data);
 }
 
 int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
@@ -307,7 +308,7 @@ return pImpl->Exec<GET_CORP::PARSER>("<GetCorp name=\"" + name + "\"/>", f, data
 
 int SERVCONF::ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + CHG_CORP::Serialize(conf, encoding) + "</SetCorp>", f, data);
 }
 
 int SERVCONF::AddCorp(const std::string & name,
@@ -317,7 +318,7 @@ int SERVCONF::AddCorp(const std::string & name,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddCorp", "<AddCorp name=\"" + name + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + name + "\">" + CHG_CORP::Serialize(conf) + "</SetCorp>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + name + "\">" + CHG_CORP::Serialize(conf, encoding) + "</SetCorp>", f, data);
 }
 
 int SERVCONF::DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data)
@@ -335,6 +336,8 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
                      const std::string & login, const std::string & password)
     : nt(server, port, login, password)
 {
+setlocale(LC_ALL, "");
+encoding = nl_langinfo(CODESET);
 parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
@@ -343,6 +346,8 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
                      const std::string & login, const std::string & password)
     : nt(server, port, localAddress, localPort, login, password)
 {
+setlocale(LC_ALL, "");
+encoding = nl_langinfo(CODESET);
 parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
