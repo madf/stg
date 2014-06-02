@@ -38,9 +38,10 @@ const size_t DIRNAME_LEN  = 16;
 
 }
 
-SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d)
+SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {
@@ -66,7 +67,7 @@ if (depth == 1)
 else
     {
     if (depth == 2 && parsingAnswer)
-        if (!TryParse(propertyParsers, ToLower(el), attr))
+        if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
             error = "Invalid parameter.";
     }
 return 0;

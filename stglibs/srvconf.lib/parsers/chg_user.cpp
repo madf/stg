@@ -45,6 +45,14 @@ if (!value.empty())
 return res;
 }
 
+RESETABLE<std::string> MaybeIconv(const RESETABLE<std::string> & value, const std::string & fromEncoding, const std::string & toEncoding)
+{
+RESETABLE<std::string> res;
+if (!value.empty())
+    res = IconvString(value.data(), fromEncoding, toEncoding);
+return res;
+}
+
 }
 
 CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
@@ -84,7 +92,7 @@ else
     callback(false, "Invalid response.", data);
 }
 
-std::string CHG_USER::Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat)
+std::string CHG_USER::Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat, const std::string & encoding)
 {
 std::ostringstream stream;
 
@@ -104,16 +112,16 @@ if (!conf.nextTariff.empty())
 else if (!conf.tariffName.empty())
     stream << "<tariff now=\"" << conf.tariffName.data() << "\"/>";
 
-appendResetable(stream, "note", MaybeEncode(conf.note));
-appendResetable(stream, "name", MaybeEncode(conf.realName)); // TODO: name -> realName
-appendResetable(stream, "address", MaybeEncode(conf.address));
-appendResetable(stream, "email", MaybeEncode(conf.email));
-appendResetable(stream, "phone", MaybeEncode(conf.phone));
-appendResetable(stream, "group", MaybeEncode(conf.group));
-appendResetable(stream, "corp", conf.group);
+appendResetable(stream, "note", MaybeIconv(MaybeEncode(conf.note), "koi8-ru", encoding));
+appendResetable(stream, "name", MaybeIconv(MaybeEncode(conf.realName), "koi8-ru", encoding)); // TODO: name -> realName
+appendResetable(stream, "address", MaybeIconv(MaybeEncode(conf.address), "koi8-ru", encoding));
+appendResetable(stream, "email", MaybeIconv(MaybeEncode(conf.email), "koi8-ru", encoding));
+appendResetable(stream, "phone", MaybeIconv(MaybeEncode(conf.phone), "koi8-ru", encoding));
+appendResetable(stream, "group", MaybeIconv(MaybeEncode(conf.group), "koi8-ru", encoding));
+appendResetable(stream, "corp", conf.corp);
 
 for (size_t i = 0; i < conf.userdata.size(); ++i)
-    appendResetable(stream, "userdata", i, MaybeEncode(conf.userdata[i]));
+    appendResetable(stream, "userdata", i, MaybeIconv(MaybeEncode(conf.userdata[i]), "koi8-ru", encoding));
 
 if (!conf.services.empty())
     {
@@ -126,9 +134,9 @@ if (!conf.services.empty())
 // Stat
 
 if (!stat.cashAdd.empty())
-    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << Encode12str(stat.cashAdd.data().second) << "\"/>";
+    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashAdd.data().second), "koi8-ru", encoding) << "\"/>";
 else if (!stat.cashSet.empty())
-    stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << Encode12str(stat.cashSet.data().second) << "\"/>";
+    stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.data().second), "koi8-ru", encoding) << "\"/>";
 
 appendResetable(stream, "freeMb", stat.freeMb);
 

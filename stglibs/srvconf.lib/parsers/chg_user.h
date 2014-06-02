@@ -50,7 +50,7 @@ private:
     void ParseAnswer(const char * el, const char ** attr);
 };
 
-std::string Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat);
+std::string Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat, const std::string & encoding);
 
 } // namespace CHG_USER
 } // namespace STG

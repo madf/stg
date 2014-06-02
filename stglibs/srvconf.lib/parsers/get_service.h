@@ -38,7 +38,7 @@ class PARSER: public STG::PARSER
 {
 public:
     typedef GET_SERVICE::INFO INFO;
-    PARSER(CALLBACK f, void * data);
+    PARSER(CALLBACK f, void * data, const std::string & encoding);
     virtual ~PARSER();
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
@@ -49,6 +49,7 @@ private:
     CALLBACK callback;
     void * data;
     INFO info;
+    std::string encoding;
     int depth;
     bool parsingAnswer;
     std::string error;

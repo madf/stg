@@ -60,9 +60,10 @@ return true;
 
 }
 
-GET_USER::PARSER::PARSER(CALLBACK f, void * d)
+GET_USER::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {
@@ -82,19 +83,19 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d)
     AddParser(propertyParsers, "currIP", info.ip, GetIPValue);
     AddParser(propertyParsers, "ip", info.ips);
     AddParser(propertyParsers, "tariff", info.tariff);
-    AddParser(propertyParsers, "group", info.group, GetEncodedValue);
-    AddParser(propertyParsers, "note", info.note, GetEncodedValue);
-    AddParser(propertyParsers, "email", info.email, GetEncodedValue);
-    AddParser(propertyParsers, "name", info.name, GetEncodedValue);
-    AddParser(propertyParsers, "address", info.address, GetEncodedValue);
-    AddParser(propertyParsers, "phone", info.phone, GetEncodedValue);
+    AddParser(propertyParsers, "group", info.group, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "note", info.note, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "email", info.email, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "name", info.name, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "address", info.address, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "phone", info.phone, "koi8-ru", GetEncodedValue);
     AddParser(propertyParsers, "corp", info.corp);
     AddParser(propertyParsers, "traff", info.stat);
     AddParser(propertyParsers, "pingTime", info.pingTime);
     AddParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        AddParser(propertyParsers, "userData" + unsigned2str(i), info.userData[i], GetEncodedValue);
+        AddParser(propertyParsers, "userData" + unsigned2str(i), info.userData[i], "koi8-ru", GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 GET_USER::PARSER::~PARSER()
@@ -157,10 +158,10 @@ if (strcasecmp(el, "user") == 0)
 void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
 {
 if (strcasecmp(el, "AuthorizedBy") != 0 &&
-    !TryParse(propertyParsers, ToLower(el), attr))
+    !TryParse(propertyParsers, ToLower(el), attr, encoding))
     error = "Invalid parameter.";
 else if (strcasecmp(el, "Services") != 0 &&
-    !TryParse(propertyParsers, ToLower(el), attr))
+    !TryParse(propertyParsers, ToLower(el), attr, encoding))
     error = "Invalid parameter.";
 }
 //-----------------------------------------------------------------------------

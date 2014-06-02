@@ -28,9 +28,10 @@
 
 using namespace STG;
 
-GET_CORP::PARSER::PARSER(CALLBACK f, void * d)
+GET_CORP::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {
@@ -92,6 +93,6 @@ if (strcasecmp(el, "corp") == 0)
 //-----------------------------------------------------------------------------
 void GET_CORP::PARSER::ParseCorpParams(const char * el, const char ** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr))
+if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
     error = "Invalid parameter.";
 }

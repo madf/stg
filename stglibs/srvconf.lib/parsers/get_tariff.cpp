@@ -39,7 +39,7 @@ class AOS_PARSER : public BASE_PROPERTY_PARSER
     public:
         typedef bool (* FUNC)(const char **, A &, T A::value_type:: *);
         AOS_PARSER(A & a, T A::value_type:: * fld, FUNC f) : array(a), field(fld), func(f) {}
-        virtual bool Parse(const char ** attr, const std::string & /*attrName*/) { return func(attr, array, field); }
+        virtual bool Parse(const char ** attr, const std::string & /*attrName*/, const std::string & /*fromEncoding*/) { return func(attr, array, field); }
     private:
         A & array;
         T A::value_type:: * field;
@@ -127,9 +127,10 @@ return true;
 
 } // namespace anonymous
 
-GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d)
+GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {
@@ -207,6 +208,6 @@ if (strcasecmp(el, "tariff") == 0)
 //-----------------------------------------------------------------------------
 void GET_TARIFF::PARSER::ParseTariffParams(const char * el, const char ** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr))
+if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
     error = std::string("Invalid parameter '") + el + "'.";
 }
