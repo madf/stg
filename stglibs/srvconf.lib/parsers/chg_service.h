@@ -34,7 +34,7 @@ namespace STG
 namespace CHG_SERVICE
 {
 
-std::string Serialize(const SERVICE_CONF_RES & conf);
+std::string Serialize(const SERVICE_CONF_RES & conf, const std::string & encoding);
 
 } // namespace CHG_SERVICE
 } // namespace STG

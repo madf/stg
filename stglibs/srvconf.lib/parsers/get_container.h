@@ -38,9 +38,9 @@ class PARSER: public STG::PARSER
 public:
     typedef std::vector<typename ELEMENT_PARSER::INFO> INFO;
     typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-    PARSER(const std::string & t, CALLBACK f, void * d)
-        : tag(t), callback(f), data(d),
-          elementParser(&PARSER<ELEMENT_PARSER>::ElementCallback, this),
+    PARSER(const std::string & t, CALLBACK f, void * d, const std::string & e)
+        : tag(t), callback(f), data(d), encoding(e),
+          elementParser(&PARSER<ELEMENT_PARSER>::ElementCallback, this, e),
           depth(0), parsingAnswer(false)
     {}
     int  ParseStart(const char * el, const char ** attr)
@@ -75,6 +75,7 @@ private:
     std::string tag;
     CALLBACK callback;
     void * data;
+    std::string encoding;
     ELEMENT_PARSER elementParser;
     INFO info;
     int depth;

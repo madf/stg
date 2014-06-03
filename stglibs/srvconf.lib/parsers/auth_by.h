@@ -35,7 +35,7 @@ namespace AUTH_BY
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER(CALLBACK f, void * data);
+    PARSER(CALLBACK f, void * data, const std::string & encoding);
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void Failure(const std::string & reason) { callback(false, reason, info, data); }
@@ -43,6 +43,7 @@ public:
 private:
     CALLBACK callback;
     void * data;
+    std::string encoding;
     int depth;
     bool parsingAnswer;
     INFO info;

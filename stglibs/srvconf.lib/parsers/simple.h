@@ -35,7 +35,7 @@ namespace SIMPLE
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER(const std::string & tag, CALLBACK f, void * data);
+    PARSER(const std::string & tag, CALLBACK f, void * data, const std::string & encoding);
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void Failure(const std::string & reason) { callback(false, reason, data); }
@@ -44,6 +44,7 @@ private:
     std::string tag;
     CALLBACK callback;
     void * data;
+    std::string encoding;
     int depth;
 
     void ParseAnswer(const char * el, const char ** attr);

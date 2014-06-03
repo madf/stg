@@ -34,30 +34,10 @@
 
 using namespace STG;
 
-namespace
-{
-
-RESETABLE<std::string> MaybeEncode(const RESETABLE<std::string> & value)
-{
-RESETABLE<std::string> res;
-if (!value.empty())
-    res = Encode12str(value.data());
-return res;
-}
-
-RESETABLE<std::string> MaybeIconv(const RESETABLE<std::string> & value, const std::string & fromEncoding, const std::string & toEncoding)
-{
-RESETABLE<std::string> res;
-if (!value.empty())
-    res = IconvString(value.data(), fromEncoding, toEncoding);
-return res;
-}
-
-}
-
-CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d)
+CHG_USER::PARSER::PARSER(SIMPLE::CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0)
 {
 }

@@ -24,10 +24,11 @@
 
 using namespace STG;
 
-SIMPLE::PARSER::PARSER(const std::string & t, CALLBACK f, void * d)
+SIMPLE::PARSER::PARSER(const std::string & t, CALLBACK f, void * d, const std::string & e)
     : tag(t),
       callback(f),
       data(d),
+      encoding(e),
       depth(0)
 {
 }

@@ -51,7 +51,7 @@ stream << "<" << name << " value=\"" << res << "\"/>";
 
 } // namespace anonymous
 
-std::string CHG_TARIFF::Serialize(const TARIFF_DATA_RES & data)
+std::string CHG_TARIFF::Serialize(const TARIFF_DATA_RES & data, const std::string & /*encoding*/)
 {
 std::ostringstream stream;
 

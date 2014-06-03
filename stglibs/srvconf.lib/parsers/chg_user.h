@@ -37,7 +37,7 @@ namespace CHG_USER
 class PARSER: public STG::PARSER
 {
 public:
-    PARSER(SIMPLE::CALLBACK f, void * data);
+    PARSER(SIMPLE::CALLBACK f, void * data, const std::string & encoding);
     int  ParseStart(const char * el, const char ** attr);
     void ParseEnd(const char * el);
     void Failure(const std::string & reason) { callback(false, reason, data); }
@@ -45,6 +45,7 @@ public:
 private:
     SIMPLE::CALLBACK callback;
     void * data;
+    std::string encoding;
     int depth;
 
     void ParseAnswer(const char * el, const char ** attr);

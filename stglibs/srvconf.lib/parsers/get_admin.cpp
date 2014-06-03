@@ -45,9 +45,10 @@ return true;
 
 } // namespace STG
 
-GET_ADMIN::PARSER::PARSER(CALLBACK f, void * d)
+GET_ADMIN::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {

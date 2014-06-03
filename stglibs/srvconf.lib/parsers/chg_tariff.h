@@ -34,7 +34,7 @@ namespace STG
 namespace CHG_TARIFF
 {
 
-std::string Serialize(const TARIFF_DATA_RES & data);
+std::string Serialize(const TARIFF_DATA_RES & data, const std::string & encoding);
 
 } // namespace CHG_TARIFF
 } // namespace STG

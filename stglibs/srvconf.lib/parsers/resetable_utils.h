@@ -22,6 +22,7 @@
 #define __STG_STGLIBS_SRVCONF_RESETABLE_UTILS_H__
 
 #include "stg/resetable.h"
+#include "stg/common.h"
 
 #include <string>
 #include <ostream>
@@ -30,6 +31,7 @@ namespace STG
 {
 
 template <typename T>
+inline
 void appendResetable(std::ostream & stream, const std::string & name, const T & value)
 {
 if (!value.empty())
@@ -37,10 +39,29 @@ if (!value.empty())
 }
 
 template <typename T>
+inline
 void appendResetable(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
 {
 if (!value.empty())
     stream << "<" << name << suffix << " value=\"" << value.data() << "\"/>";
+}
+
+inline
+RESETABLE<std::string> MaybeEncode(const RESETABLE<std::string> & value)
+{
+RESETABLE<std::string> res;
+if (!value.empty())
+    res = Encode12str(value.data());
+return res;
+}
+
+inline
+RESETABLE<std::string> MaybeIconv(const RESETABLE<std::string> & value, const std::string & fromEncoding, const std::string & toEncoding)
+{
+RESETABLE<std::string> res;
+if (!value.empty())
+    res = IconvString(value.data(), fromEncoding, toEncoding);
+return res;
 }
 
 } // namespace STG

@@ -27,7 +27,7 @@
 
 using namespace STG;
 
-std::string CHG_ADMIN::Serialize(const ADMIN_CONF_RES & conf)
+std::string CHG_ADMIN::Serialize(const ADMIN_CONF_RES & conf, const std::string & /*encoding*/)
 {
 std::string params;
 if (!conf.login.empty())

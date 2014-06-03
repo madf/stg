@@ -34,7 +34,7 @@ namespace STG
 namespace CHG_CORP
 {
 
-std::string Serialize(const CORP_CONF_RES & conf);
+std::string Serialize(const CORP_CONF_RES & conf, const std::string & encoding);
 
 } // namespace CHG_CORP
 } // namespace STG

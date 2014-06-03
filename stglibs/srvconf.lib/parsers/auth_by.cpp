@@ -24,9 +24,10 @@
 
 using namespace STG;
 
-AUTH_BY::PARSER::PARSER(CALLBACK f, void * d)
+AUTH_BY::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
+      encoding(e),
       depth(0),
       parsingAnswer(false)
 {

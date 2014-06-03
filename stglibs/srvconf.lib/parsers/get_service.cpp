@@ -36,7 +36,7 @@ GET_SERVICE::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
       parsingAnswer(false)
 {
     AddParser(propertyParsers, "name", info.name);
-    AddParser(propertyParsers, "comment", info.comment);
+    AddParser(propertyParsers, "comment", info.comment, "koi8-ru", GetEncodedValue);
     AddParser(propertyParsers, "cost", info.cost);
     AddParser(propertyParsers, "payDay", info.payDay);
 }

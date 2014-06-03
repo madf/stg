@@ -29,7 +29,7 @@
 
 using namespace STG;
 
-std::string CHG_CORP::Serialize(const CORP_CONF_RES & conf)
+std::string CHG_CORP::Serialize(const CORP_CONF_RES & conf, const std::string & /*encoding*/)
 {
 std::ostringstream stream;
 

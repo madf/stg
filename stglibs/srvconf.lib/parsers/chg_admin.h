@@ -34,7 +34,7 @@ namespace STG
 namespace CHG_ADMIN
 {
 
-std::string Serialize(const ADMIN_CONF_RES & conf);
+std::string Serialize(const ADMIN_CONF_RES & conf, const std::string & encoding);
 
 } // namespace CHG_ADMIN
 } // namespace STG
