@@ -88,7 +88,7 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "email", info.email, "koi8-ru", GetEncodedValue);
     AddParser(propertyParsers, "name", info.name, "koi8-ru", GetEncodedValue);
     AddParser(propertyParsers, "address", info.address, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "phone", info.phone, "koi8-ru", GetEncodedValue);
+    AddParser(propertyParsers, "phone", info.phone, "cp1251", GetEncodedValue);
     AddParser(propertyParsers, "corp", info.corp);
     AddParser(propertyParsers, "traff", info.stat);
     AddParser(propertyParsers, "pingTime", info.pingTime);

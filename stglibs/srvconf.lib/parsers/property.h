@@ -52,14 +52,14 @@ class PROPERTY_PARSER : public BASE_PROPERTY_PARSER
 
 template <>
 inline
-bool PROPERTY_PARSER<std::string>::Parse(const char ** attr, const std::string & attrName, const std::string & fromEncoding)
+bool PROPERTY_PARSER<std::string>::Parse(const char ** attr, const std::string & attrName, const std::string & toEncoding)
 {
-if (!encoding.empty() && !fromEncoding.empty())
+if (!encoding.empty() && !toEncoding.empty())
     {
     std::string tmp;
-    if (!func(attr, value, attrName))
+    if (!func(attr, tmp, attrName))
         return false;
-    value = IconvString(tmp, fromEncoding, encoding);
+    value = IconvString(tmp, encoding, toEncoding);
     return true;
     }
 else

@@ -92,16 +92,16 @@ if (!conf.nextTariff.empty())
 else if (!conf.tariffName.empty())
     stream << "<tariff now=\"" << conf.tariffName.data() << "\"/>";
 
-appendResetable(stream, "note", MaybeIconv(MaybeEncode(conf.note), "koi8-ru", encoding));
-appendResetable(stream, "name", MaybeIconv(MaybeEncode(conf.realName), "koi8-ru", encoding)); // TODO: name -> realName
-appendResetable(stream, "address", MaybeIconv(MaybeEncode(conf.address), "koi8-ru", encoding));
-appendResetable(stream, "email", MaybeIconv(MaybeEncode(conf.email), "koi8-ru", encoding));
-appendResetable(stream, "phone", MaybeIconv(MaybeEncode(conf.phone), "koi8-ru", encoding));
-appendResetable(stream, "group", MaybeIconv(MaybeEncode(conf.group), "koi8-ru", encoding));
+appendResetable(stream, "note", MaybeEncode(MaybeIconv(conf.note, encoding, "koi8-ru")));
+appendResetable(stream, "name", MaybeEncode(MaybeIconv(conf.realName, encoding, "koi8-ru"))); // TODO: name -> realName
+appendResetable(stream, "address", MaybeEncode(MaybeIconv(conf.address, encoding, "koi8-ru")));
+appendResetable(stream, "email", MaybeEncode(MaybeIconv(conf.email, encoding, "koi8-ru")));
+appendResetable(stream, "phone", MaybeEncode(MaybeIconv(conf.phone, encoding, "cp1251")));
+appendResetable(stream, "group", MaybeEncode(MaybeIconv(conf.group, encoding, "koi8-ru")));
 appendResetable(stream, "corp", conf.corp);
 
 for (size_t i = 0; i < conf.userdata.size(); ++i)
-    appendResetable(stream, "userdata", i, MaybeIconv(MaybeEncode(conf.userdata[i]), "koi8-ru", encoding));
+    appendResetable(stream, "userdata", i, MaybeEncode(MaybeIconv(conf.userdata[i], encoding, "koi8-ru")));
 
 if (!conf.services.empty())
     {
@@ -114,9 +114,9 @@ if (!conf.services.empty())
 // Stat
 
 if (!stat.cashAdd.empty())
-    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashAdd.data().second), "koi8-ru", encoding) << "\"/>";
+    stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashAdd.data().second), encoding, "koi8-ru") << "\"/>";
 else if (!stat.cashSet.empty())
-    stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.data().second), "koi8-ru", encoding) << "\"/>";
+    stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.data().second), encoding, "koi8-ru") << "\"/>";
 
 appendResetable(stream, "freeMb", stat.freeMb);
 

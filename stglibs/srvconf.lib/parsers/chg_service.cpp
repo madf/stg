@@ -29,12 +29,12 @@
 
 using namespace STG;
 
-std::string CHG_SERVICE::Serialize(const SERVICE_CONF_RES & conf, const std::string & encoding)
+std::string CHG_SERVICE::Serialize(const SERVICE_CONF_RES & conf, const std::string & /*encoding*/)
 {
 std::ostringstream stream;
 
 appendResetable(stream, "name", conf.name);
-appendResetable(stream, "comment", MaybeIconv(conf.comment, "koi8-ru", encoding));
+appendResetable(stream, "comment", MaybeEncode(conf.comment));
 appendResetable(stream, "cost", conf.cost);
 appendResetable(stream, "payDay", conf.payDay);
 
