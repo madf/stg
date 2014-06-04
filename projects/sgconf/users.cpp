@@ -268,6 +268,21 @@ if (!result)
 PrintUser(info);
 }
 
+void AuthByCallback(bool result,
+                    const std::string & reason,
+                    const std::vector<std::string> & info,
+                    void * /*data*/)
+{
+if (!result)
+    {
+    std::cerr << "Failed to get authorizer list. Reason: '" << reason << "'." << std::endl;
+    return;
+    }
+std::cout << "Authorized by:\n";
+for (size_t i = 0; i < info.size(); ++i)
+    std::cout << Indent(1, true) << info[i] << "\n";
+}
+
 bool GetUsersFunction(const SGCONF::CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/)
@@ -424,6 +439,19 @@ STG::SERVCONF proto(config.server.data(),
 return proto.SendMessage(logins, text, SimpleCallback, NULL) == STG::st_ok;
 }
 
+bool AuthByFunction(const SGCONF::CONFIG & config,
+                    const std::string & arg,
+                    const std::map<std::string, std::string> & /*options*/)
+{
+STG::SERVCONF proto(config.server.data(),
+                    config.port.data(),
+                    config.localAddress.data(),
+                    config.localPort.data(),
+                    config.userName.data(),
+                    config.userPass.data());
+return proto.AuthBy(arg, AuthByCallback, NULL) == STG::st_ok;
+}
+
 } // namespace anonymous
 
 void SGCONF::AppendUsersOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks)
@@ -436,5 +464,6 @@ blocks.Add("User management options")
       .Add("del-user", SGCONF::MakeAPIAction(commands, "<login>", DelUserFunction), "delete user")
       .Add("chg-user", SGCONF::MakeAPIAction(commands, "<login>", params, ChgUserFunction), "change user")
       .Add("check-user", SGCONF::MakeAPIAction(commands, "<login>", GetCheckParams(), CheckUserFunction), "check user existance and credentials")
-      .Add("send-message", SGCONF::MakeAPIAction(commands, GetMessageParams(), SendMessageFunction), "send message");
+      .Add("send-message", SGCONF::MakeAPIAction(commands, GetMessageParams(), SendMessageFunction), "send message")
+      .Add("auth-by", SGCONF::MakeAPIAction(commands, "<login>", AuthByFunction), "a list of authorizers user authorized by");
 }
