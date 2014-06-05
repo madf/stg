@@ -79,7 +79,7 @@ devices.erase(devices.begin(), devices.end());
 if (settings.moduleParams.empty())
     {
     devices.push_back(DEV());
-    logger("Defaulting to pseudo-device 'all'.");
+    logger("Defaulting to pseudo-device 'any'.");
     return 0;
     }
 
