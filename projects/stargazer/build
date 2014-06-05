@@ -342,6 +342,18 @@ else
     fi
 fi
 
+printf "Checking for -lpcap... "
+$CC $CFLAGS $LDFLAGS build_check.c -lpcap -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_PCAP=no
+    printf "no\n"
+else
+    CHECK_PCAP=yes
+    printf "yes\n"
+fi
+rm -f fake
+
 if [ "$OS" = "linux" ]
 then
     printf "Checking for linux/netfilter_ipv4/ip_queue.h... "
@@ -397,6 +409,12 @@ then
              configuration/rpcconfig"
 fi
 
+if [ "$CHECK_PCAP" = "yes" ]
+then
+    PLUGINS="$PLUGINS
+             capture/pcap"
+fi
+
 printf "OS=$OS\n" > $CONFFILE
 printf "STG_TIME=yes\n" >> $CONFFILE
 printf "DEBUG=$DEBUG\n" >> $CONFFILE
@@ -412,6 +430,7 @@ printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
 printf "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT\n" >> $CONFFILE
 printf "CHECK_PQ=$CHECK_PQ\n" >> $CONFFILE
 printf "CHECK_XMLRPC=$CHECK_XMLRPC\n" >> $CONFFILE
+printf "CHECK_PCAP=$CHECK_PCAP\n" >> $CONFFILE
 printf "DEFS=$DEFS\n" >> $CONFFILE
 printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS

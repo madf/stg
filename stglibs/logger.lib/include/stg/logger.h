@@ -30,6 +30,7 @@ public:
     ~STG_LOGGER();
     void SetLogFileName(const std::string & fn);
     void operator()(const char * fmt, ...) const;
+    void operator()(const std::string & line) const { LogString(line.c_str()); }
 
 private:
     STG_LOGGER();
@@ -37,6 +38,7 @@ private:
     STG_LOGGER & operator=(const STG_LOGGER & rvalue);
 
     const char * LogDate(time_t t) const;
+    void LogString(const char * str) const;
 
     std::string fileName;
     mutable pthread_mutex_t mutex;
@@ -49,6 +51,7 @@ friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::strin
 public:
     PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs);
     void operator()(const char * fmt, ...) const;
+    void operator()(const std::string & line) const;
 
 private:
     PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn);

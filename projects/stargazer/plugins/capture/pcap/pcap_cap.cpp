@@ -25,6 +25,8 @@
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 
+#include <signal.h>
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -32,7 +34,16 @@ namespace
 {
 PLUGIN_CREATOR<PCAP_CAP> pcc;
 
-const size_t SNAP_LEN 1518;
+const size_t SNAP_LEN = 1518;
+const size_t ETHER_ADDR_LEN = 6;
+
+struct ETH
+{
+u_char     ether_dhost[ETHER_ADDR_LEN];    /* destination host address */
+u_char     ether_shost[ETHER_ADDR_LEN];    /* source host address */
+u_short    ether_type;                     /* IP? ARP? RARP? etc */
+};
+
 }
 
 extern "C" PLUGIN * GetPlugin();
@@ -56,10 +67,41 @@ PCAP_CAP::PCAP_CAP()
       thread(),
       nonstop(false),
       isRunning(false),
-      handle(NULL),
       traffCnt(NULL),
       logger(GetPluginLogger(GetStgLogger(), "cap_pcap"))
 {
+}
+//-----------------------------------------------------------------------------
+int PCAP_CAP::ParseSettings()
+{
+devices.erase(devices.begin(), devices.end());
+
+if (settings.moduleParams.empty())
+    {
+    devices.push_back(DEV());
+    logger("Defaulting to pseudo-device 'all'.");
+    return 0;
+    }
+
+for (size_t i = 0; i < settings.moduleParams.size(); i++)
+    if (settings.moduleParams[i].param == "interfaces")
+        for (size_t j = 0; j < settings.moduleParams[i].value.size(); j++)
+            devices.push_back(DEV(settings.moduleParams[i].value[j]));
+
+for (size_t i = 0; i < settings.moduleParams.size(); i++)
+    if (settings.moduleParams[i].param == "filters")
+        for (size_t j = 0; j < settings.moduleParams[i].value.size(); j++)
+            if (j < devices.size())
+                devices[j].filterExpression = settings.moduleParams[i].value[j];
+
+if (devices.empty())
+    {
+    devices.push_back(DEV());
+    logger("Defaulting to pseudo-device 'all'.");
+    return 0;
+    }
+
+return 0;
 }
 //-----------------------------------------------------------------------------
 int PCAP_CAP::Start()
@@ -67,7 +109,7 @@ int PCAP_CAP::Start()
 if (isRunning)
     return 0;
 
-DEV_MAP::const_iterator it(devices.begin());
+DEV_MAP::iterator it(devices.begin());
 while (it != devices.end())
     {
     bpf_u_int32 mask;
@@ -84,7 +126,7 @@ while (it != devices.end())
         }
 
     /* open capture device */
-    it->handle = pcap_open_live(dev, SNAP_LEN, 1, 1000, errbuf);
+    it->handle = pcap_open_live(it->device.c_str(), SNAP_LEN, 1, 1000, errbuf);
     if (it->handle == NULL)
         {
         errorStr = "Couldn't open device " + it->device + ": " + errbuf;
@@ -131,13 +173,13 @@ while (it != devices.end())
     it->fd = pcap_get_selectable_fd(it->handle);
     if (it->fd == -1)
         {
-        {
         errorStr = "Couldn't get a file descriptor for " + it->device + ": " + pcap_geterr(it->handle);
         logger(errorStr);
         printfd(__FILE__, "%s\n", errorStr.c_str());
         return -1;
         }
-        }
+
+    ++it;
     }
 
 nonstop = true;
@@ -187,10 +229,14 @@ if (isRunning)
         printfd(__FILE__, "Cannot stop thread\n");
         return -1;
         }
-    else
-        {
-        pthread_join(thread, NULL);
-        }
+    }
+
+pthread_join(thread, NULL);
+
+for (DEV_MAP::iterator it(devices.begin()); it != devices.end(); ++it)
+    {
+    pcap_freecode(&it->filter);
+    pcap_close(it->handle);
     }
 
 return 0;
@@ -205,32 +251,50 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 PCAP_CAP * dc = static_cast<PCAP_CAP *>(d);
 dc->isRunning = true;
 
-struct ETH_IP
-{
-uint16_t    ethHdr[8];
-RAW_PACKET  rp;
-char        padding[4];
-char        padding1[8];
-};
-
-char ethip[sizeof(ETH_IP)];
-
-memset(&ethip, 0, sizeof(ETH_IP));
-
-ETH_IP * ethIP = static_cast<ETH_IP *>(static_cast<void *>(&ethip));
-ethIP->rp.dataLen = -1;
-
-char * iface = NULL;
+fd_set fds;
+FD_ZERO(&fds);
+int maxFd = 0;
+for (DEV_MAP::const_iterator it(dc->devices.begin()); it != dc->devices.end(); ++it)
+    {
+    FD_SET(it->fd, &fds);
+    maxFd = std::max(maxFd, it->fd);
+    }
 
 while (dc->nonstop)
     {
+    fd_set rfds = fds;
+    struct timeval tv = {0, 500000};
 
-    if (ethIP->ethHdr[7] != 0x8)
-        continue;
-
-    dc->traffCnt->Process(ethIP->rp);
+    if (select(maxFd + 1, &rfds, NULL, NULL, &tv) > 0)
+        dc->TryRead(rfds);
     }
 
 dc->isRunning = false;
 return NULL;
+}
+
+void PCAP_CAP::TryRead(const fd_set & set)
+{
+for (DEV_MAP::const_iterator it(devices.begin()); it != devices.end(); ++it)
+    if (FD_ISSET(it->fd, &set))
+        TryReadDev(*it);
+}
+
+void PCAP_CAP::TryReadDev(const DEV & dev)
+{
+struct pcap_pkthdr * header;
+const u_char * packet;
+if (pcap_next_ex(dev.handle, &header, &packet) == -1)
+    {
+    printfd(__FILE__, "Failed to read data from '%s': %s\n", dev.device.c_str(), pcap_geterr(dev.handle));
+    return;
+    }
+
+const ETH * eth = reinterpret_cast<const ETH *>(packet);
+if (eth->ether_type != 0x8)
+    return;
+
+RAW_PACKET ip;
+memcpy(&ip.rawPacket, packet + 14, sizeof(ip.rawPacket));
+traffCnt->Process(ip);
 }

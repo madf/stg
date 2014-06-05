@@ -30,6 +30,7 @@
 
 #include <pcap.h>
 #include <pthread.h>
+#include <sys/select.h>
 
 class USERS;
 class TARIFFS;
@@ -41,6 +42,11 @@ class TRAFFCOUNTER;
 
 struct DEV
 {
+    DEV() : device("any"), filterExpression("ip"), handle(NULL), fd(-1) {}
+    DEV(const std::string & d) : device(d), filterExpression("ip"), handle(NULL), fd(-1) {}
+    DEV(const std::string & d, const std::string & f)
+        : device(d), filterExpression(f), handle(NULL), fd(-1) {}
+
     std::string device;
     std::string filterExpression;
     pcap_t * handle;
@@ -62,7 +68,9 @@ public:
     int                 Reload() { return 0; }
     bool                IsRunning() { return isRunning; }
 
-    int                 ParseSettings() { return 0; }
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
+    int                 ParseSettings();
+
     const std::string & GetStrError() const { return errorStr; }
     std::string         GetVersion() const;
     uint16_t            GetStartPosition() const { return 40; }
@@ -72,6 +80,9 @@ private:
     PCAP_CAP(const PCAP_CAP & rvalue);
     PCAP_CAP & operator=(const PCAP_CAP & rvalue);
 
+    void TryRead(const fd_set & set);
+    void TryReadDev(const DEV & dev);
+
     static void *       Run(void *);
 
     mutable std::string errorStr;
@@ -79,6 +90,7 @@ private:
     pthread_t           thread;
     bool                nonstop;
     bool                isRunning;
+    MODULE_SETTINGS     settings;
     DEV_MAP             devices;
 
     TRAFFCOUNTER *      traffCnt;

@@ -43,35 +43,7 @@ va_start(vl, fmt);
 vsnprintf(buff, sizeof(buff), fmt, vl);
 va_end(vl);
 
-FILE * f;
-if (!fileName.empty())
-    {
-    f = fopen(fileName.c_str(), "at");
-    if (f)
-        {
-        #ifdef STG_TIME
-        fprintf(f, "%s", LogDate(stgTime));
-        #else
-        fprintf(f, "%s", LogDate(time(NULL)));
-        #endif
-        fprintf(f, " -- ");
-        fprintf(f, "%s", buff);
-        fprintf(f, "\n");
-        fclose(f);
-        }
-    else
-        {
-        openlog("stg", LOG_NDELAY, LOG_USER);
-        syslog(LOG_CRIT, "%s", buff);
-        closelog();
-        }
-    }
-else
-    {
-    openlog("stg", LOG_NDELAY, LOG_USER);
-    syslog(LOG_CRIT, "%s", buff);
-    closelog();
-    }
+LogString(buff);
 }
 //-----------------------------------------------------------------------------
 const char * STG_LOGGER::LogDate(time_t t) const
@@ -91,6 +63,38 @@ snprintf(s, 32, "%d-%s%d-%s%d %s%d:%s%d:%s%d",
          tt->tm_sec     < 10 ? "0" : "", tt->tm_sec);
 
 return s;
+}
+//-----------------------------------------------------------------------------
+void STG_LOGGER::LogString(const char * str) const
+{
+if (!fileName.empty())
+    {
+    FILE * f = fopen(fileName.c_str(), "at");
+    if (f)
+        {
+        #ifdef STG_TIME
+        fprintf(f, "%s", LogDate(stgTime));
+        #else
+        fprintf(f, "%s", LogDate(time(NULL)));
+        #endif
+        fprintf(f, " -- ");
+        fprintf(f, "%s", str);
+        fprintf(f, "\n");
+        fclose(f);
+        }
+    else
+        {
+        openlog("stg", LOG_NDELAY, LOG_USER);
+        syslog(LOG_CRIT, "%s", str);
+        closelog();
+        }
+    }
+else
+    {
+    openlog("stg", LOG_NDELAY, LOG_USER);
+    syslog(LOG_CRIT, "%s", str);
+    closelog();
+    }
 }
 //-----------------------------------------------------------------------------
 PLUGIN_LOGGER::PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn)
@@ -117,6 +121,11 @@ vsnprintf(buff, sizeof(buff), fmt, vl);
 va_end(vl);
 
 STG_LOGGER::operator()("[%s] %s", pluginName.c_str(), buff);
+}
+//-----------------------------------------------------------------------------
+void PLUGIN_LOGGER::operator()(const std::string & line) const
+{
+STG_LOGGER::operator()("[%s] %s", pluginName.c_str(), line.c_str());
 }
 //-----------------------------------------------------------------------------
 PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName)
