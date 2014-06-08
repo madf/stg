@@ -38,6 +38,9 @@ class SETTINGS;
 
 class TRAFFCOUNTER;
 
+struct nfq_handle;
+struct nfq_q_handle;
+
 class NFQ_CAP : public PLUGIN {
 public:
     NFQ_CAP();
@@ -58,6 +61,8 @@ public:
     uint16_t            GetStartPosition() const { return 40; }
     uint16_t            GetStopPosition() const { return 40; }
 
+    void                Process(const RAW_PACKET & packet) { traffCnt->Process(packet); }
+
 private:
     NFQ_CAP(const NFQ_CAP & rvalue);
     NFQ_CAP & operator=(const NFQ_CAP & rvalue);
@@ -70,6 +75,9 @@ private:
     bool                nonstop;
     bool                isRunning;
     MODULE_SETTINGS     settings;
+
+    struct nfq_handle * nfqHandle;
+    struct nfq_q_handle * queueHandle;
 
     TRAFFCOUNTER *      traffCnt;
 
