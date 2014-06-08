@@ -117,7 +117,7 @@ return iface[num];
 //-----------------------------------------------------------------------------
 std::string BPF_CAP::GetVersion() const
 {
-return "bpf_cap v.1.0";
+return "cap_bpf v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
@@ -131,7 +131,7 @@ BPF_CAP::BPF_CAP()
       capSock(-1),
       settings(),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_ether"))
+      logger(GetPluginLogger(GetStgLogger(), "cap_bpf"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ if (isRunning)
     if (pthread_kill(thread, SIGINT))
         {
         errorStr = "Cannot kill thread.";
-	logger("Cannot send signal to thread.");
+        logger("Cannot send signal to thread.");
         printfd(__FILE__, "Cannot kill thread\n");
         return -1;
         }
@@ -347,7 +347,7 @@ if (bd->canRead)
     bd->r = read(bd->fd, bd->buffer, BUFF_LEN);
     if (bd->r < 0)
         {
-	logger("read error: %s", strerror(errno));
+        logger("read error: %s", strerror(errno));
         struct timespec ts = {0, 20000000};
         nanosleep(&ts, NULL);
         return -1;

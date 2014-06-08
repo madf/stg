@@ -80,7 +80,7 @@ return dcc.GetPlugin();
 //-----------------------------------------------------------------------------
 std::string DIVERT_CAP::GetVersion() const
 {
-return "Divert_cap v.1.0";
+return "cap_divert v.1.0";
 }
 //-----------------------------------------------------------------------------
 DIVERT_CAP::DIVERT_CAP()
@@ -147,7 +147,7 @@ if (isRunning)
     if (pthread_kill(thread, SIGINT))
         {
         errorStr = "Cannot kill thread.";
-	logger("Cannot send signal to thread.");
+        logger("Cannot send signal to thread.");
         printfd(__FILE__, "Cannot kill thread\n");
         return -1;
         }
@@ -262,10 +262,10 @@ if ((bytes = recvfrom (cddiv.sock, buf, BUFF_LEN,
         *iface = cddiv.iface;
 
     if (!disableForwarding)
-    	{
+        {
         if (sendto(cddiv.sock, buf, bytes, 0, (struct sockaddr*)&divertaddr, divertaddrSize) < 0)
-	    logger("sendto error: %s", strerror(errno));
-	}
+            logger("sendto error: %s", strerror(errno));
+        }
     }
 else
     {

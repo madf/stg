@@ -39,7 +39,7 @@ $Author: faust $
 
 #include <vector>
 
-#include "stg/common.h" 
+#include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/traffcounter.h"
 #include "stg/plugin_creator.h"
@@ -123,7 +123,7 @@ if (portU > 0)
         runningUDP = false;
         CloseUDP();
         errorStr = "Cannot create UDP thread";
-	logger("Cannot create UDP thread.");
+        logger("Cannot create UDP thread.");
         printfd(__FILE__, "Error: Cannot create UDP thread\n");
         return -1;
         }
@@ -139,7 +139,7 @@ if (portT > 0)
         {
         runningTCP = false;
         CloseTCP();
-	logger("Cannot create TCP thread.");
+        logger("Cannot create TCP thread.");
         errorStr = "Cannot create TCP thread";
         printfd(__FILE__, "Error: Cannot create TCP thread\n");
         return -1;
@@ -168,7 +168,7 @@ if (portU && !stoppedUDP)
         if (pthread_kill(tidUDP, SIGUSR1))
             {
             errorStr = "Error sending signal to UDP thread";
-	    logger("Error sending sugnal to UDP thread.");
+            logger("Error sending sugnal to UDP thread.");
             printfd(__FILE__, "Error: Error sending signal to UDP thread\n");
             return -1;
             }
@@ -193,12 +193,12 @@ if (portT && !stoppedTCP)
         if (pthread_kill(tidTCP, SIGUSR1))
             {
             errorStr = "Error sending signal to TCP thread";
-	    logger("Error sending signal to TCP thread.");
+            logger("Error sending signal to TCP thread.");
             printfd(__FILE__, "Error: Error sending signal to TCP thread\n");
             return -1;
             }
         printfd(__FILE__, "TCP thread NOT stopped\n");
-	logger("Cannot stop TCP thread.");
+        logger("Cannot stop TCP thread.");
         }
     }
 return 0;
@@ -283,10 +283,10 @@ while (cap->runningUDP)
         break;
 
     if (res < 0)
-    	{
-	cap->logger("recvfrom error: %s", strerror(errno));
-	continue;
-	}
+        {
+        cap->logger("recvfrom error: %s", strerror(errno));
+        continue;
+        }
 
     if (res == 0) // EOF
         {
@@ -334,7 +334,7 @@ while (cap->runningTCP)
     if (sd <= 0)
         {
         if (sd < 0)
-	    cap->logger("accept error: %s", strerror(errno));
+            cap->logger("accept error: %s", strerror(errno));
         continue;
         }
 
