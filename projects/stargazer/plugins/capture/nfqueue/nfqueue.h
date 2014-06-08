@@ -35,6 +35,7 @@ class TARIFFS;
 class ADMINS;
 class TRAFFCOUNTER;
 class SETTINGS;
+class RAW_PACKET;
 
 class TRAFFCOUNTER;
 
@@ -61,7 +62,7 @@ public:
     uint16_t            GetStartPosition() const { return 40; }
     uint16_t            GetStopPosition() const { return 40; }
 
-    void                Process(const RAW_PACKET & packet) { traffCnt->Process(packet); }
+    void                Process(const RAW_PACKET & packet);
 
 private:
     NFQ_CAP(const NFQ_CAP & rvalue);
@@ -75,6 +76,8 @@ private:
     bool                nonstop;
     bool                isRunning;
     MODULE_SETTINGS     settings;
+
+    size_t              queueNumber;
 
     struct nfq_handle * nfqHandle;
     struct nfq_q_handle * queueHandle;
