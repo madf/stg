@@ -1,12 +1,12 @@
-#include <pthread.h>
+#include "stg_timer.h"
+
+#include "stg/common.h"
 
 #include <ctime>
 #include <cstring>
 #include <csignal>
 
-#include "stg/common.h"
-
-#include "stg_timer.h"
+#include <pthread.h>
 
 void * StgTimer(void *);
 
@@ -15,6 +15,7 @@ static pthread_t thrStgTimer;
 static bool isTimerRunning = false;
 volatile time_t stgTime;
 
+#ifdef STG_TIMER_DEBUG
 const int TIME_SPEED = 1;
 /*
  1  - 1x  speed
@@ -29,6 +30,7 @@ const int START_TIME = 0;
  1 - start before new day (3 min before)   29.11.2005 23:57:00
  2 - start before new month (3 min before) 30.11.2005 23:57:00
  */
+#endif
 
 //-----------------------------------------------------------------------------
 void * StgTimer(void *)
