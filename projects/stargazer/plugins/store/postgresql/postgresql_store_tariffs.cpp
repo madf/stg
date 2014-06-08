@@ -288,13 +288,14 @@ if (tuples != 1)
     return -1;
     }
 
+int32_t id;
+
     {
     std::stringstream tuple;
     tuple << PQgetvalue(result, 0, 0);
 
     PQclear(result);
 
-    int32_t id;
     tuple >> id;
     }
 

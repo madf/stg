@@ -342,7 +342,7 @@ else
     fi
 fi
 
-printf "Checking for -lnfnetlink "
+printf "Checking for -lnfnetlink... "
 $CC $CFLAGS $LDFLAGS build_check.c -lnfnetlink -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
@@ -354,7 +354,7 @@ else
 fi
 rm -f fake
 
-printf "Checking for -lnetfilter_queue "
+printf "Checking for -lnetfilter_queue... "
 $CC $CFLAGS $LDFLAGS build_check.c -lnetfilter_queue -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
