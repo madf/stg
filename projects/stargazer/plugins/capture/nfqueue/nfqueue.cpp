@@ -32,8 +32,12 @@ extern "C" {
 
 }
 
+#include <cerrno>
+#include <csignal>
+
 #include <arpa/inet.h> // ntohl
-#include <signal.h>
+
+#include <unistd.h> // read
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -43,7 +47,7 @@ namespace
 
 PLUGIN_CREATOR<NFQ_CAP> ncc;
 
-int callback(struct nfq_q_handle * /*queueHandle*/, struct nfgenmsg * /*msg*/,
+int Callback(struct nfq_q_handle * queueHandle, struct nfgenmsg * /*msg*/,
              struct nfq_data * nfqData, void *data)
 {
 int id = 0;
@@ -56,18 +60,18 @@ id = ntohl(packetHeader->packet_id);
 
 unsigned char * payload = NULL;
 
-if (nfq_get_payload(nfqData) < 0)
+if (nfq_get_payload(nfqData, &payload) < 0 || payload == NULL)
     return id;
 
 RAW_PACKET packet;
 
-memcpy(&packet.rawPacket, payload, sizeof(ip.rawPacket));
+memcpy(&packet.rawPacket, payload, sizeof(packet.rawPacket));
 
 NFQ_CAP * cap = static_cast<NFQ_CAP *>(data);
 
 cap->Process(packet);
 
-return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+return nfq_set_verdict(queueHandle, id, NF_ACCEPT, 0, NULL);
 }
 
 }
@@ -93,6 +97,7 @@ NFQ_CAP::NFQ_CAP()
       thread(),
       nonstop(false),
       isRunning(false),
+      queueNumber(0),
       traffCnt(NULL),
       logger(GetPluginLogger(GetStgLogger(), "cap_nfqueue"))
 {
@@ -100,6 +105,14 @@ NFQ_CAP::NFQ_CAP()
 //-----------------------------------------------------------------------------
 int NFQ_CAP::ParseSettings()
 {
+for (size_t i = 0; i < settings.moduleParams.size(); i++)
+    if (settings.moduleParams[i].param == "queueNumber")
+        if (str2x(settings.moduleParams[i].param, queueNumber) < 0)
+            {
+            errorStr = "Queue number should be a number. Got: '" + settings.moduleParams[i].param + "'";
+            logger(errorStr);
+            return -1;
+            }
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -211,7 +224,7 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 NFQ_CAP * dc = static_cast<NFQ_CAP *>(d);
 dc->isRunning = true;
 
-int fd = nfq_fd(nfqHandle);
+int fd = nfq_fd(dc->nfqHandle);
 char buf[4096];
 
 while (dc->nonstop)
@@ -219,16 +232,21 @@ while (dc->nonstop)
         if (!WaitPackets(fd))
             continue;
 
-        int rv = read(fd, buf, sizeof(buf), 0);
+        int rv = read(fd, buf, sizeof(buf));
         if (rv < 0)
             {
-            errorStr = "Read error: " + strerror(errno);
-            logger(errorStr);
+            dc->errorStr = std::string("Read error: ") + strerror(errno);
+            dc->logger(dc->errorStr);
             break;
             }
-        nfq_handle_packet(nfqHandle, buf, rv);
+        nfq_handle_packet(dc->nfqHandle, buf, rv);
     }
 
 dc->isRunning = false;
 return NULL;
+}
+//-----------------------------------------------------------------------------
+void NFQ_CAP::Process(const RAW_PACKET & packet)
+{
+traffCnt->Process(packet);
 }
