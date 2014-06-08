@@ -261,7 +261,7 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-RADIUS * rad = (RADIUS *)d;
+RADIUS * rad = static_cast<RADIUS *>(d);
 RAD_PACKET packet;
 
 rad->isRunning = true;
@@ -540,11 +540,6 @@ int RADIUS::ProcessAcctOtherPacket(RAD_PACKET * packet)
 // Fake. May be use it later
 packet->packetType = RAD_ACCEPT_PACKET;
 return 0;
-}
-//-----------------------------------------------------------------------------
-void RADIUS::PrintServices(const std::list<std::string> & svcs)
-{
-for_each(svcs.begin(), svcs.end(), Printer());
 }
 //-----------------------------------------------------------------------------
 bool RADIUS::FindUser(USER_PTR * ui, const std::string & login) const

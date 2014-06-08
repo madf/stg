@@ -77,7 +77,8 @@ AUTH_IA_SETTINGS::AUTH_IA_SETTINGS()
       userTimeout(0),
       port(0),
       errorStr(),
-      freeMbShowType(freeMbCash)
+      freeMbShowType(freeMbCash),
+      logProtocolErrors(false)
 {
 }
 //-----------------------------------------------------------------------------
@@ -282,15 +283,6 @@ void IA_PHASE::SetPhase4()
 WritePhaseChange(4);
 #endif
 phase = 4;
-gettimeofday(&phaseTime, NULL);
-}
-//-----------------------------------------------------------------------------
-void IA_PHASE::SetPhase5()
-{
-#ifdef IA_PHASE_DEBUG
-WritePhaseChange(5);
-#endif
-phase = 5;
 gettimeofday(&phaseTime, NULL);
 }
 //-----------------------------------------------------------------------------
@@ -696,11 +688,10 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 
 std::map<uint32_t, IA_USER>::iterator it;
 it = ip2user.begin();
-uint32_t sip;
 
 while (it != ip2user.end())
     {
-    sip = it->first;
+    uint32_t sip = it->first;
 
     static UTIME currTime;
     gettimeofday(&currTime, NULL);
@@ -1170,7 +1161,7 @@ int AUTH_IA::Process_CONN_SYN_8(CONN_SYN_8 * connSyn, IA_USER * iaUser, uint32_t
 #ifdef ARCH_BE
 SwapBytes(connSyn->dirs);
 #endif
-int ret = Process_CONN_SYN_6((CONN_SYN_6*)connSyn, iaUser, sip);
+int ret = Process_CONN_SYN_6(reinterpret_cast<CONN_SYN_6 *>(connSyn), iaUser, sip);
 enabledDirs = connSyn->dirs;
 return ret;
 }

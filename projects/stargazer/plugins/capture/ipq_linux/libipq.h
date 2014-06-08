@@ -71,15 +71,11 @@ ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf);
 
 int ipq_message_type(const unsigned char *buf);
 
-int ipq_get_msgerr(const unsigned char *buf);
-
 int ipq_set_verdict(const struct ipq_handle *h,
                     ipq_id_t id,
                     unsigned int verdict,
                     size_t data_len,
                     unsigned char *buf);
-
-int ipq_ctl(const struct ipq_handle *h, int request, ...);
 
 char *ipq_errstr(void);
 //void ipq_perror(const char *s);

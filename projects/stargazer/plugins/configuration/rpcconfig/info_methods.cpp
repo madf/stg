@@ -77,8 +77,6 @@ void METHOD_LOGOUT::execute(xmlrpc_c::paramList const & paramList,
 std::string cookie = paramList.getString(0);
 paramList.verifyEnd(1);
 
-std::map<std::string, xmlrpc_c::value> structVal;
-
 if (config->LogoutAdmin(cookie))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);

@@ -86,7 +86,6 @@ parse_depth--;
 int ParseReply(void * data, list<string> * ans)
 {
 int done = 0;
-int len;
 
 parse_depth = 0;
 parser = XML_ParserCreate(NULL);
@@ -103,7 +102,7 @@ XML_SetElementHandler(parser, StartElement, EndElement);
 list<string>::iterator n = ans->begin();
 while (n != ans->end())
     {
-    len = strlen(n->c_str());
+    size_t len = strlen(n->c_str());
 
     if (++n == ans->end())
         done = 1;

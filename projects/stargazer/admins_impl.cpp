@@ -201,17 +201,6 @@ for (unsigned int i = 0; i < adminsList.size(); i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void ADMINS_IMPL::PrintAdmins() const
-{
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
-const_admin_iter ai(data.begin());
-while (ai != data.end())
-    {
-    ai->Print();
-    ai++;
-    }
-}
-//-----------------------------------------------------------------------------
 bool ADMINS_IMPL::Find(const string & l, ADMIN ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");

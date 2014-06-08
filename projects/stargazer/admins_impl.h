@@ -53,7 +53,6 @@ public:
     int           Add(const std::string & login, const ADMIN * admin);
     int           Del(const std::string & login, const ADMIN * admin);
     int           Change(const ADMIN_CONF & ac, const ADMIN * admin);
-    void          PrintAdmins() const;
     const ADMIN * GetSysAdmin() const { return &stg; }
     const ADMIN * GetNoAdmin() const { return &noAdmin; }
     bool          Find(const std::string & l, ADMIN ** admin);

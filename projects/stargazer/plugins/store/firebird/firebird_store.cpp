@@ -63,6 +63,7 @@ FIREBIRD_STORE::FIREBIRD_STORE()
       mutex(),
       til(IBPP::ilConcurrency),
       tlr(IBPP::lrWait),
+      schemaVersion(0),
       logger(GetPluginLogger(GetStgLogger(), "store_firebird"))
 {
 pthread_mutex_init(&mutex, NULL);
@@ -139,8 +140,6 @@ int FIREBIRD_STORE::CheckVersion()
 {
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
-
-std::string name;
 
 try
     {

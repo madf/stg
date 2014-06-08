@@ -68,6 +68,7 @@ NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,
                          const std::string & l, const std::string & pwd)
     : server(s),
       port(p),
+      localPort(0),
       login(l),
       password(pwd),
       outerSocket(-1)

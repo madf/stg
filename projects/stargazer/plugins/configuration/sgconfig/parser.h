@@ -97,7 +97,6 @@ public:
 private:
     std::string adminToDel;
 
-    int CheckAttr(const char **attr);
     void CreateAnswer();
 };
 //-----------------------------------------------------------------------------

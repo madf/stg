@@ -55,11 +55,12 @@ void AddAOSParser(PROPERTY_PARSERS & parsers, const std::string & name, A & arra
 
 bool GetTimeSpan(const char ** attr, DIRPRICE_DATA & value, const std::string & attrName)
 {
-int hb = 0;
-int mb = 0;
-int he = 0;
-int me = 0;
 if (CheckValue(attr, attrName))
+    {
+    int hb = 0;
+    int mb = 0;
+    int he = 0;
+    int me = 0;
     if (ParseTariffTimeStr(attr[1], hb, mb, he, me) == 0)
         {
         value.hDay = hb;
@@ -68,6 +69,7 @@ if (CheckValue(attr, attrName))
         value.mNight = me;
         return true;
         }
+    }
 return false;
 }
 

@@ -73,7 +73,7 @@ int GetTime(const std::string & str, time_t * val, time_t defaultVal)
 }
 
 //-----------------------------------------------------------------------------
-std::string ReplaceStr(std::string source, const std::string symlist, const char chgsym)
+std::string ReplaceStr(std::string source, const std::string & symlist, const char chgsym)
 {
     std::string::size_type pos=0;
 
@@ -116,7 +116,8 @@ MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
       dbUser(),
       dbPass(),
       dbName(),
-      dbHost()
+      dbHost(),
+      schemaVersion(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -191,7 +192,6 @@ int MYSQL_STORE::ParseSettings()
 {
 int ret = storeSettings.ParseSettings(settings);
 MYSQL mysql;
-MYSQL * sock;
 mysql_init(&mysql);
 if (ret)
     errorStr = storeSettings.GetStrError();
@@ -202,7 +202,7 @@ else
         errorStr = "Database password must be not empty. Please read Manual.";
         return -1;
     }
-    
+    MYSQL * sock;
     if (!(sock = mysql_real_connect(&mysql,storeSettings.GetDBHost().c_str(),
             storeSettings.GetDBUser().c_str(),storeSettings.GetDBPassword().c_str(),
             0,0,NULL,0)))
@@ -757,8 +757,6 @@ if (mysql_num_rows(res) != 1)
 
 row = mysql_fetch_row(res);
 
-std::string param;
-
 conf->password = row[1];
 
 if (conf->password.empty())
@@ -1306,9 +1304,7 @@ char password[ADM_PASSWD_LEN + 1];
 char passwordE[2*ADM_PASSWD_LEN + 2];
 BLOWFISH_CTX ctx;
 
-memset(pass, 0, sizeof(pass));
 memset(password, 0, sizeof(password));
-memset(passwordE, 0, sizeof(passwordE));
 
 std::string p;
 MYSQL_RES *res;

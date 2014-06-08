@@ -71,13 +71,13 @@ DOTCONFDocument::DOTCONFDocument(DOTCONFDocument::CaseSensitive caseSensitivity)
 
 DOTCONFDocument::~DOTCONFDocument()
 {
-    for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i != nodeTree.end(); i++){
+    for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i != nodeTree.end(); ++i){
         delete(*i);
     }
-    for(std::list<char*>::iterator i = requiredOptions.begin(); i != requiredOptions.end(); i++){
+    for(std::list<char*>::iterator i = requiredOptions.begin(); i != requiredOptions.end(); ++i){
         free(*i);
     }
-    for(std::list<char*>::iterator i = processedFiles.begin(); i != processedFiles.end(); i++){
+    for(std::list<char*>::iterator i = processedFiles.begin(); i != processedFiles.end(); ++i){
         free(*i);
     }
     free(fileName);
@@ -188,7 +188,7 @@ int DOTCONFDocument::parseLine()
     DOTCONFDocumentNode * tagNode = NULL;
     bool newNode = false;
 
-    for(std::list<char*>::iterator i = words.begin(); i != words.end(); i++) {
+    for(std::list<char*>::iterator i = words.begin(); i != words.end(); ++i) {
         word = *i;
 
         if(*word == '<'){
@@ -217,7 +217,7 @@ int DOTCONFDocument::parseLine()
                 } else { //closing tag
                     nodeName+=2;
                     std::list<DOTCONFDocumentNode*>::reverse_iterator i=nodeTree.rbegin();
-                    for(; i!=nodeTree.rend(); i++){
+                    for(; i!=nodeTree.rend(); ++i){
                         if(!cmp_func(nodeName, (*i)->name) && !(*i)->closed){
                             (*i)->closed = true;
                             curParent = (*i)->parentNode;
@@ -270,11 +270,10 @@ int DOTCONFDocument::parseFile(DOTCONFDocumentNode * _parent)
     curParent = _parent;
 
     quoted = false;
-    size_t slen = 0;
 
     while(fgets(str, 511, file)){
         curLine++;
-	slen = strlen(str);
+	size_t slen = strlen(str);
         if( slen >= 510 ){
             error(curLine, fileName, "warning: line too long");
         }
@@ -304,16 +303,14 @@ int DOTCONFDocument::checkConfig(const std::list<DOTCONFDocumentNode*>::iterator
 {
     int ret = 0;
 
-    DOTCONFDocumentNode * tagNode = NULL;
-    int vi = 0;
-    for(std::list<DOTCONFDocumentNode*>::iterator i = from; i != nodeTree.end(); i++){
-        tagNode = *i;
+    for(std::list<DOTCONFDocumentNode*>::iterator i = from; i != nodeTree.end(); ++i){
+        DOTCONFDocumentNode * tagNode = *i;
         if(!tagNode->closed){
             error(tagNode->lineNum, tagNode->fileName, "unclosed tag %s", tagNode->name);
             ret = -1;
             break;
         }
-        vi = 0;
+        int vi = 0;
         while( vi < tagNode->valuesCount ){
             //if((tagNode->values[vi])[0] == '$' && (tagNode->values[vi])[1] == '{' && strchr(tagNode->values[vi], '}') ){
             if(strstr(tagNode->values[vi], "${") && strchr(tagNode->values[vi], '}') ){
@@ -378,7 +375,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
         std::list<DOTCONFDocumentNode*>::iterator from;
         DOTCONFDocumentNode * tagNode = NULL;
         int vi = 0;
-        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); i++){
+        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); ++i){
             tagNode = *i;
             if(!cmp_func("IncludeFile", tagNode->name)){
                 vi = 0;
@@ -426,7 +423,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                             }
 
                             bool processed = false;
-                            for(std::list<char*>::const_iterator itInode = processedFiles.begin(); itInode != processedFiles.end(); itInode++){
+                            for(std::list<char*>::const_iterator itInode = processedFiles.begin(); itInode != processedFiles.end(); ++itInode){
                                 if(!strcmp(*itInode, realpathBuf)){
                                     processed = true;
                                     break;
@@ -445,7 +442,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                             }
                             //free(fileName);
                             fileName = strdup(realpathBuf);
-                            from = nodeTree.end(); from--;
+                            from = nodeTree.end(); --from;
                             
                             if(tagNode->parentNode){
                                 DOTCONFDocumentNode * nd = tagNode->parentNode->childNode;
@@ -488,9 +485,9 @@ int DOTCONFDocument::setContent(const char * _fileName)
 
 int DOTCONFDocument::checkRequiredOptions()
 {
-    for(std::list<char*>::const_iterator ci = requiredOptions.begin(); ci != requiredOptions.end(); ci++){
+    for(std::list<char*>::const_iterator ci = requiredOptions.begin(); ci != requiredOptions.end(); ++ci){
         bool matched = false;
-        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); i++){            
+        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); ++i){            
             if(!cmp_func((*i)->name, *ci)){
                 matched = true;
                 break;
@@ -565,9 +562,8 @@ char * DOTCONFDocument::getSubstitution(char * macro, int lineNum)
         buf = mempool->strdup(subs);
     } else {
         std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin();
-        DOTCONFDocumentNode * tagNode = NULL;
-        for(; i!=nodeTree.end(); i++){            
-            tagNode = *i;
+        for(; i!=nodeTree.end(); ++i){            
+            DOTCONFDocumentNode * tagNode = *i;
             if(!cmp_func(tagNode->name, variable)){
                 if(tagNode->valuesCount != 0){
                     buf = mempool->strdup(tagNode->values[0]);
@@ -641,12 +637,12 @@ const DOTCONFDocumentNode * DOTCONFDocument::findNode(const char * nodeName, con
 
     if(startNode != NULL){
         while( i != nodeTree.end() && (*i) != startNode ){
-            i++;
+            ++i;
         }
-        if( i != nodeTree.end() ) i++;
+        if( i != nodeTree.end() ) ++i;
     }
 
-    for(; i!=nodeTree.end(); i++){
+    for(; i!=nodeTree.end(); ++i){
         //if(parentNode != NULL && (*i)->parentNode != parentNode){
 	if((*i)->parentNode != parentNode){
             continue;

@@ -45,17 +45,16 @@ answerList->push_back("<Admins>");
 ADMIN_CONF ac;
 int h = admins->OpenSearch();
 
-unsigned int p;
 while (admins->SearchNext(h, &ac) == 0)
     {
     //memcpy(&p, &ac.priv, sizeof(unsigned int));
-    p = (ac.priv.userStat << 0) +
-        (ac.priv.userConf << 2) +
-        (ac.priv.userCash << 4) +
-        (ac.priv.userPasswd << 6) +
-        (ac.priv.userAddDel << 8) +
-        (ac.priv.adminChg << 10) +
-        (ac.priv.tariffChg << 12);
+    unsigned int p = (ac.priv.userStat << 0) +
+                     (ac.priv.userConf << 2) +
+                     (ac.priv.userCash << 4) +
+                     (ac.priv.userPasswd << 6) +
+                     (ac.priv.userAddDel << 8) +
+                     (ac.priv.adminChg << 10) +
+                     (ac.priv.tariffChg << 12);
     strprintf(&s, "<admin login=\"%s\" priv=\"%d\"/>", ac.login.c_str(), p);
     answerList->push_back(s);
     }
@@ -103,20 +102,6 @@ else
     strprintf(&s, "<DelAdmin Result=\"Error. %s\"/>", admins->GetStrError().c_str());
     answerList->push_back(s);
     }
-}
-//-----------------------------------------------------------------------------
-int PARSER_DEL_ADMIN::CheckAttr(const char **attr)
-{
-/*  <DelAdmin login=\"admin\">
- *  attr[0] = "login" (word login)
- *  attr[1] = login, value of login
- *  attr[2] = NULL                  */
-
-if (strcasecmp(attr[0], "login") == 0 && attr[1] && !attr[2])
-    {
-    return 0;
-    }
-return -1;
 }
 //-----------------------------------------------------------------------------
 //  ADD ADMIN

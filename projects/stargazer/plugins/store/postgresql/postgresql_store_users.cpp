@@ -1369,8 +1369,6 @@ if (PQstatus(connection) != CONNECTION_OK)
         }
     }
 
-PGresult * result;
-
 if (StartTransaction())
     {
     printfd(__FILE__, "POSTGRESQL_STORE::WriteDetailedStat(): 'Failed to start transaction'\n");
@@ -1408,7 +1406,7 @@ for (it = statTree.begin(); it != statTree.end(); ++it)
                 << it->second.up << ", "
                 << it->second.cash << ")";
 
-    result = PQexec(connection, query.str().c_str());
+    PGresult * result = PQexec(connection, query.str().c_str());
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
         {

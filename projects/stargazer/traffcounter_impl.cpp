@@ -566,7 +566,6 @@ while (ln != rules.end())
             foundU = true;
             *dirU = ln->dir;
             //printfd(__FILE__, "Up rule ok! %d\n", ln->dir);
-            //PrintRule(ln->rule);
             }
 
         } //if (!foundU)
@@ -613,7 +612,6 @@ while (ln != rules.end())
             foundD = true;
             *dirD = ln->dir;
             //printfd(__FILE__, "Down rule ok! %d\n", ln->dir);
-            //PrintRule(ln->rule);
             }
         } //if (!foundD)
 
@@ -625,11 +623,6 @@ if (!foundU)
 
 if (!foundD)
     *dirD = DIR_NUM;
-}
-//-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::SetRulesFile(const std::string & fn)
-{
-rulesFileName = fn;
 }
 //-----------------------------------------------------------------------------
 bool TRAFFCOUNTER_IMPL::ReadRules(bool test)
@@ -704,7 +697,6 @@ while (fgets(str, 1023, f))
         }
     if (!test)
         rules.push_back(rul);
-    //PrintRule(rul);
     }
 
 fclose(f);
@@ -719,8 +711,6 @@ rul.proto = all;
 
 if (!test)
     rules.push_back(rul);
-
-//PrintRule(rul);
 
 return false;
 }
@@ -873,33 +863,6 @@ return htonl(0xFFffFFff << (32 - msk));
 void TRAFFCOUNTER_IMPL::FreeRules()
 {
 rules.clear();
-}
-//-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::PrintRule(RULE rule) const
-{
-printf("%15s   ", inet_ntostring(rule.ip).c_str());
-printf("mask=%08X ", rule.mask);
-printf("port1=%5d ", rule.port1);
-printf("port2=%5d ", rule.port2);
-switch (rule.proto)
-    {
-    case 0:
-        printf("TCP     ");
-        break;
-    case 1:
-        printf("UDP     ");
-        break;
-    case 2:
-        printf("ICMP    ");
-        break;
-    case 3:
-        printf("TCP_UDP ");
-        break;
-    case 4:
-        printf("ALL     ");
-        break;
-    }
-printf("dir=%u \n", static_cast<unsigned>(rule.dir));
 }
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & dir)

@@ -274,10 +274,9 @@ return str;
 //---------------------------------------------------------------------------
 void KOIToWin(const char * s1, char * s2, int l)
 {
-unsigned char t;
 for (int j = 0; j < l; j++)
     {
-    t = s1[j];
+    unsigned char t = s1[j];
     s2[j] = koi2win[t];
 
     if (s1[j] == 0)
@@ -287,10 +286,9 @@ for (int j = 0; j < l; j++)
 //---------------------------------------------------------------------------
 void WinToKOI(const char * s1, char * s2, int l)
 {
-unsigned char t;
 for (int j = 0; j < l; j++)
     {
-    t = s1[j];
+    unsigned char t = s1[j];
     s2[j] = win2koi[t];
 
     if (s1[j] == 0)
@@ -301,11 +299,10 @@ for (int j = 0; j < l; j++)
 void KOIToWin(const std::string & s1, std::string * s2)
 {
 s2->erase(s2->begin(), s2->end());
-unsigned char t;
 s2->reserve(s1.length());
 for (int j = 0; j < (int)s1.length(); j++)
     {
-    t = s1[j];
+    unsigned char t = s1[j];
     s2->push_back(koi2win[t]);
     }
 }
@@ -313,11 +310,10 @@ for (int j = 0; j < (int)s1.length(); j++)
 void WinToKOI(const std::string & s1, std::string * s2)
 {
 s2->erase(s2->begin(), s2->end());
-unsigned char t;
 s2->reserve(s1.length());
 for (int j = 0; j < (int)s1.length(); j++)
     {
-    t = s1[j];
+    unsigned char t = s1[j];
     s2->push_back(win2koi[t]);
     }
 }
@@ -414,11 +410,10 @@ int ParseIPString(const char * str, uint32_t * ips, int maxIP)
  */
 
 char p[255];
-char * p1, *pp;
 int n = 0;
 
 strncpy(p, str, 254);
-pp = p;
+char * pp = p;
 
 memset(ips, 0xFF, sizeof(unsigned long) * maxIP);
 
@@ -430,7 +425,7 @@ if (str[0] == '*' && strlen(str) == 1)
 
 for (int i = 0; i < maxIP; i++)
     {
-    p1 = strtok(pp, ",\n ");
+    char * p1 = strtok(pp, ",\n ");
     pp = NULL;
 
     if (p1 == NULL && n == 0)// указатель нуль и прочитано адресов тоже ноль
@@ -693,20 +688,18 @@ strcpy(str, stren);
 //---------------------------------------------------------------------------
 void DecodeStr(char * str, unsigned long serial, int useHDD)
 {
-int len = strlen(str);
+size_t len = strlen(str);
 char strdc[100];
-int i, j = 0;
-char c1, c2;
 char serial_c[sizeof(serial)];
 memcpy(serial_c, &serial, sizeof(serial));
 
-for (i = 0; i < len; i += 2)
+for (size_t i = 0; i < len; i += 2)
     {
-    c1 = (str[i] - 50);
-    c2 = (str[i+1] - 50)<<4;
+    char c1 = (str[i] - 50);
+    char c2 = (str[i+1] - 50)<<4;
     strdc[i/2] = c1+c2;
     }
-for (i = 0; i < len/2; i++)
+for (size_t i = 0; i < len/2; i++)
     {
     if (!useHDD)
         strdc[i] = strdc[i]^49;

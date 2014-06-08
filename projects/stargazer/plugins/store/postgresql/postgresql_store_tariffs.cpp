@@ -255,10 +255,6 @@ if (EscapeString(ename))
     return -1;
     }
 
-int32_t id, i;
-double pda, pdb, pna, pnb;
-int threshold;
-
     {
     std::ostringstream query;
     query << "SELECT pk_tariff FROM tb_tariffs WHERE name = '" << ename << "'";
@@ -298,6 +294,7 @@ if (tuples != 1)
 
     PQclear(result);
 
+    int32_t id;
     tuple >> id;
     }
 
@@ -331,11 +328,12 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
 
 PQclear(result);
 
-for(i = 0; i < DIR_NUM; i++)
+for(int i = 0; i < DIR_NUM; i++)
     {
-
-    pda = td.dirPrice[i].priceDayA * 1024 * 1024;
-    pdb = td.dirPrice[i].priceDayB * 1024 * 1024;
+    double pda = td.dirPrice[i].priceDayA * 1024 * 1024;
+    double pdb = td.dirPrice[i].priceDayB * 1024 * 1024;
+    double pna = 0;
+    double pnb = 0;
 
     if (td.dirPrice[i].singlePrice)
         {
@@ -348,6 +346,7 @@ for(i = 0; i < DIR_NUM; i++)
         pnb = td.dirPrice[i].priceNightB * 1024 * 1024;
         }
 
+    int threshold = 0;
     if (td.dirPrice[i].noDiscount)
         {
         threshold = 0xffFFffFF;

@@ -297,7 +297,7 @@ if (res == -1)
 
 #ifdef WIN32
 unsigned long arg = 1;
-res = ioctlsocket(sockr, FIONBIO, &arg);
+ioctlsocket(sockr, FIONBIO, &arg);
 #else
 if (0 != fcntl(sockr, F_SETFL, O_NONBLOCK))
     {
