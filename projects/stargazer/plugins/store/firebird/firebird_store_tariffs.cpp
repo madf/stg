@@ -127,8 +127,6 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-int32_t id, i;
-
 try
     {
     tr->Start();
@@ -142,6 +140,7 @@ try
     printfd(__FILE__, "Tariff '%s' not found in database\n", tariffName.c_str());
     return -1;
     }
+    int32_t id;
     st->Get(1, id);
     st->Close();
     if (schemaVersion > 0)
@@ -180,7 +179,7 @@ try
     IBPP::Time tb;
     IBPP::Time te;
 
-    for(i = 0; i < DIR_NUM; i++)
+    for(int i = 0; i < DIR_NUM; i++)
         {
 
         tb.SetTime(td.dirPrice[i].hDay, td.dirPrice[i].mDay, 0);
