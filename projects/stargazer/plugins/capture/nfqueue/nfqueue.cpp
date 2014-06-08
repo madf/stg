@@ -25,6 +25,14 @@
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 
+extern "C" {
+
+#include <linux/netfilter.h>  /* Defines verdicts (NF_ACCEPT, etc) */
+#include <libnetfilter_queue/libnetfilter_queue.h>
+
+}
+
+#include <arpa/inet.h> // ntohl
 #include <signal.h>
 
 //-----------------------------------------------------------------------------
@@ -32,7 +40,36 @@
 //-----------------------------------------------------------------------------
 namespace
 {
+
 PLUGIN_CREATOR<NFQ_CAP> ncc;
+
+int callback(struct nfq_q_handle * /*queueHandle*/, struct nfgenmsg * /*msg*/,
+             struct nfq_data * nfqData, void *data)
+{
+int id = 0;
+
+struct nfqnl_msg_packet_hdr * packetHeader = nfq_get_msg_packet_hdr(nfqData);
+if (packetHeader == NULL)
+    return 0;
+
+id = ntohl(packetHeader->packet_id);
+
+unsigned char * payload = NULL;
+
+if (nfq_get_payload(nfqData) < 0)
+    return id;
+
+RAW_PACKET packet;
+
+memcpy(&packet.rawPacket, payload, sizeof(ip.rawPacket));
+
+NFQ_CAP * cap = static_cast<NFQ_CAP *>(data);
+
+cap->Process(packet);
+
+return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
+}
+
 }
 
 extern "C" PLUGIN * GetPlugin();
@@ -70,6 +107,43 @@ int NFQ_CAP::Start()
 {
 if (isRunning)
     return 0;
+
+nfqHandle = nfq_open();
+if (nfqHandle == NULL)
+    {
+    errorStr = "Failed to initialize netfilter queue.";
+    logger(errorStr);
+    return -1;
+    }
+
+if (nfq_unbind_pf(nfqHandle, AF_INET) < 0)
+    {
+    errorStr = "Failed to unbind netfilter queue from IP handling.";
+    logger(errorStr);
+    return -1;
+    }
+
+if (nfq_bind_pf(nfqHandle, AF_INET) < 0)
+    {
+    errorStr = "Failed to bind netfilter queue to IP handling.";
+    logger(errorStr);
+    return -1;
+    }
+
+queueHandle = nfq_create_queue(nfqHandle, queueNumber, &Callback, this);
+if (queueHandle == NULL)
+    {
+    errorStr = "Failed to create queue " + x2str(queueNumber) + ".";
+    logger(errorStr);
+    return -1;
+    }
+
+if (nfq_set_mode(queueHandle, NFQNL_COPY_PACKET, 0xffFF) < 0)
+    {
+    errorStr = "Failed to set queue " + x2str(queueNumber) + " mode.";
+    logger(errorStr);
+    return -1;
+    }
 
 nonstop = true;
 
@@ -122,6 +196,9 @@ if (isRunning)
 
 pthread_join(thread, NULL);
 
+nfq_destroy_queue(queueHandle);
+nfq_close(nfqHandle);
+
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -134,8 +211,22 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 NFQ_CAP * dc = static_cast<NFQ_CAP *>(d);
 dc->isRunning = true;
 
+int fd = nfq_fd(nfqHandle);
+char buf[4096];
+
 while (dc->nonstop)
     {
+        if (!WaitPackets(fd))
+            continue;
+
+        int rv = read(fd, buf, sizeof(buf), 0);
+        if (rv < 0)
+            {
+            errorStr = "Read error: " + strerror(errno);
+            logger(errorStr);
+            break;
+            }
+        nfq_handle_packet(nfqHandle, buf, rv);
     }
 
 dc->isRunning = false;
