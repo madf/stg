@@ -141,7 +141,7 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-STG_CONFIG * stgConf = (STG_CONFIG *)d;
+STG_CONFIG * stgConf = static_cast<STG_CONFIG *>(d);
 stgConf->isRunning = true;
 
 stgConf->config.Run();

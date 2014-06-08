@@ -49,10 +49,9 @@ LISTENER::LISTENER()
       receiverStopped(true),
       processorStopped(true),
       userTimeout(0),
-      listenSocket(0)
+      listenSocket(0),
+      version("rscriptd listener v.1.2")
 {
-version = "rscriptd listener v.1.2";
-
 pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------

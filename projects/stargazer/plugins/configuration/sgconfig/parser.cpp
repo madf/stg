@@ -921,13 +921,12 @@ else
     if (strcasecmp(el, "traff") == 0)
         {
         int j = 0;
-        int dir;
         DIR_TRAFF dtu;
         DIR_TRAFF dtd;
         uint64_t t = 0;
         while (attr[j])
             {
-            dir = attr[j][2] - '0';
+            int dir = attr[j][2] - '0';
 
             if (strncasecmp(attr[j], "md", 2) == 0)
                 {

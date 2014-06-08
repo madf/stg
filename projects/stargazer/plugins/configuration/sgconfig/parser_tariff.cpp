@@ -304,7 +304,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int PARSER_CHG_TARIFF::ParseStart(void *, const char * el, const char ** attr)
 {
-char st[50];
 double price[DIR_NUM];
 int t[DIR_NUM];
 depth++;
@@ -387,6 +386,7 @@ else
 
     for (int j = 0; j < DIR_NUM; j++)
         {
+        char st[50];
         snprintf(st, 50, "Time%d", j);
         if (strcasecmp(el, st) == 0)
             {

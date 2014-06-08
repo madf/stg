@@ -186,8 +186,6 @@ public:
     TRAFFCOUNTER_IMPL(USERS_IMPL * users, const std::string & rulesFileName);
     ~TRAFFCOUNTER_IMPL();
 
-    void        SetRulesFile(const std::string & rulesFileName);
-
     int         Reload();
     int         Start();
     int         Stop();
@@ -204,7 +202,6 @@ private:
     bool        ParseAddress(const char * ta, RULE * rule) const;
     uint32_t    CalcMask(uint32_t msk) const;
     void        FreeRules();
-    void        PrintRule(RULE rule) const;
     bool        ReadRules(bool test = false);
 
     static void * Run(void * data);

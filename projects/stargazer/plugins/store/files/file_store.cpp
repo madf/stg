@@ -577,7 +577,6 @@ int FILES_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login, co
 {
 CONFIGFILE cf(fileName);
 int e = cf.Error();
-std::string str;
 
 if (e)
     {
@@ -850,7 +849,6 @@ return 0;
 //-----------------------------------------------------------------------------
 int FILES_STORE::SaveUserStat(const USER_STAT & stat, const std::string & login) const
 {
-char s[22];
 std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
@@ -868,6 +866,7 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
     for (int i = 0; i < DIR_NUM; i++)
         {
+        char s[22];
         snprintf(s, 22, "D%d", i);
         cfstat.WriteInt(s, stat.monthDown[i]);
         snprintf(s, 22, "U%d", i);
@@ -1115,10 +1114,6 @@ return 0;
 //-----------------------------------------------------------------------------*/
 int FILES_STORE::SaveAdmin(const ADMIN_CONF & ac) const
 {
-char passwordE[2 * ADM_PASSWD_LEN + 2];
-char pass[ADM_PASSWD_LEN + 1];
-char adminPass[ADM_PASSWD_LEN + 1];
-
 std::string fileName;
 
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login.c_str());
@@ -1136,7 +1131,10 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
         return -1;
         }
 
+    char pass[ADM_PASSWD_LEN + 1];
     memset(pass, 0, sizeof(pass));
+
+    char adminPass[ADM_PASSWD_LEN + 1];
     memset(adminPass, 0, sizeof(adminPass));
 
     BLOWFISH_CTX ctx;
@@ -1151,6 +1149,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
         }
 
     pass[ADM_PASSWD_LEN - 1] = 0;
+    char passwordE[2 * ADM_PASSWD_LEN + 2];
     Encode12(passwordE, pass, ADM_PASSWD_LEN);
 
     cf.WriteString("password", passwordE);
@@ -1833,7 +1832,7 @@ if (!msgFile)
     }
 
 bool res = true;
-res &= (fprintf(msgFile, "%d\n", msg.header.type) >= 0);
+res &= (fprintf(msgFile, "%u\n", msg.header.type) >= 0);
 res &= (fprintf(msgFile, "%u\n", msg.header.lastSendTime) >= 0);
 res &= (fprintf(msgFile, "%u\n", msg.header.creationTime) >= 0);
 res &= (fprintf(msgFile, "%u\n", msg.header.showTime) >= 0);

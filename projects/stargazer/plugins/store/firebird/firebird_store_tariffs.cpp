@@ -128,8 +128,6 @@ IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
 int32_t id, i;
-double pda, pdb, pna, pnb;
-int threshold;
 
 try
     {
@@ -185,11 +183,13 @@ try
     for(i = 0; i < DIR_NUM; i++)
         {
 
-    tb.SetTime(td.dirPrice[i].hDay, td.dirPrice[i].mDay, 0);
-    te.SetTime(td.dirPrice[i].hNight, td.dirPrice[i].mNight, 0);
+        tb.SetTime(td.dirPrice[i].hDay, td.dirPrice[i].mDay, 0);
+        te.SetTime(td.dirPrice[i].hNight, td.dirPrice[i].mNight, 0);
 
-        pda = td.dirPrice[i].priceDayA * 1024 * 1024;
-        pdb = td.dirPrice[i].priceDayB * 1024 * 1024;
+        double pda = td.dirPrice[i].priceDayA * 1024 * 1024;
+        double pdb = td.dirPrice[i].priceDayB * 1024 * 1024;
+        double pna = 0;
+        double pnb = 0;
 
         if (td.dirPrice[i].singlePrice)
             {
@@ -202,6 +202,7 @@ try
             pnb = td.dirPrice[i].priceNightB;
             }
 
+        int threshold = 0;
         if (td.dirPrice[i].noDiscount)
             {
             threshold = 0xffFFffFF;
@@ -211,26 +212,26 @@ try
             threshold = td.dirPrice[i].threshold;
             }
 
-    st->Prepare("update tb_tariffs_params set \
-            price_day_a = ?, \
-            price_day_b = ?, \
-            price_night_a = ?, \
-            price_night_b = ?, \
-            threshold = ?, \
-            time_day_begins = ?, \
-            time_day_ends = ? \
-            where fk_tariff = ? and dir_num = ?");
-    st->Set(1, pda);
-    st->Set(2, pdb);
-    st->Set(3, pna);
-    st->Set(4, pnb);
-    st->Set(5, threshold);
-    st->Set(6, tb);
-    st->Set(7, te);
-    st->Set(8, id);
-    st->Set(9, i);
-    st->Execute();
-    st->Close();
+        st->Prepare("update tb_tariffs_params set \
+                price_day_a = ?, \
+                price_day_b = ?, \
+                price_night_a = ?, \
+                price_night_b = ?, \
+                threshold = ?, \
+                time_day_begins = ?, \
+                time_day_ends = ? \
+                where fk_tariff = ? and dir_num = ?");
+        st->Set(1, pda);
+        st->Set(2, pdb);
+        st->Set(3, pna);
+        st->Set(4, pnb);
+        st->Set(5, threshold);
+        st->Set(6, tb);
+        st->Set(7, te);
+        st->Set(8, id);
+        st->Set(9, i);
+        st->Execute();
+        st->Close();
         }
     tr->Commit();
     }
@@ -254,11 +255,6 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-int32_t id;
-int16_t dir;
-int i;
-IBPP::Time tb, te;
-int h, m, s;
 
 td->tariffConf.name = tariffName;
 
@@ -275,6 +271,7 @@ try
         tr->Rollback();
         return -1;
         }
+    int32_t id;
     st->Get(1, id);
     st->Get(3, td->tariffConf.fee);
     st->Get(4, td->tariffConf.free);
@@ -290,7 +287,7 @@ try
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);
     st->Execute();
-    i = 0;
+    int i = 0;
     while (st->Fetch())
     {
     i++;
@@ -301,6 +298,7 @@ try
         tr->Rollback();
         return -1;
         }
+    int16_t dir;
     st->Get(3, dir);
     st->Get(4, td->dirPrice[dir].priceDayA);
     td->dirPrice[dir].priceDayA /= 1024*1024;
@@ -329,8 +327,11 @@ try
 
         td->dirPrice[dir].noDiscount = false;
         }
+    IBPP::Time tb;
     st->Get(9, tb);
+    IBPP::Time te;
     st->Get(10, te);
+    int h, m, s;
     tb.GetTime(h, m, s);
     td->dirPrice[dir].hDay = h;
     td->dirPrice[dir].mDay = m;

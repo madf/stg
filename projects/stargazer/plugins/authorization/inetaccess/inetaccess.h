@@ -92,7 +92,6 @@ public:
     void    SetPhase2();
     void    SetPhase3();
     void    SetPhase4();
-    void    SetPhase5();
     int     GetPhase() const;
 
     void    UpdateTime();

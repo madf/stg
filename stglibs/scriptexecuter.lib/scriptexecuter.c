@@ -46,7 +46,6 @@ void Executer(int msgID, pid_t pid, char * procName)
 void Executer(int msgID, pid_t pid)
 #endif
 {
-int ret;
 struct SCRIPT_DATA sd;
 struct sigaction newsa, oldsa;
 sigset_t sigmask;
@@ -94,7 +93,7 @@ sigaction(SIGUSR1, &newsa, &oldsa);
 while (nonstop)
     {
     sd.mtype = 1;
-    ret = msgrcv(msgid, &sd, MAX_SCRIPT_LEN, 0, 0);
+    int ret = msgrcv(msgid, &sd, MAX_SCRIPT_LEN, 0, 0);
 
     if (ret < 0)
         {

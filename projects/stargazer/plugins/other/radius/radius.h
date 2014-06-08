@@ -133,21 +133,12 @@ private:
     bool                CanAcctService(const std::string & svc) const;
     bool                IsAllowedService(const std::string & svc) const;
 
-    void                PrintServices(const std::list<std::string> & svcs);
-
-    struct Printer : public std::unary_function<std::string, void>
-    { 
-        void operator()(const std::string & line)
-        { 
-            printfd("radius.cpp", "'%s'\n", line.c_str()); 
-        } 
-    };
     struct SPrinter : public std::unary_function<std::pair<std::string, RAD_SESSION>, void>
-    { 
+    {
         void operator()(const std::pair<std::string, RAD_SESSION> & it)
-        { 
-            printfd("radius.cpp", "%s - ('%s', '%s')\n", it.first.c_str(), it.second.userName.c_str(), it.second.serviceType.c_str()); 
-        } 
+        {
+            printfd("radius.cpp", "%s - ('%s', '%s')\n", it.first.c_str(), it.second.userName.c_str(), it.second.serviceType.c_str());
+        }
     };
 
     BLOWFISH_CTX        ctx;

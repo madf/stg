@@ -323,13 +323,6 @@ int ipq_message_type(const unsigned char *buf)
     return((struct nlmsghdr*)buf)->nlmsg_type;
 }
 //-----------------------------------------------------------------------------
-int ipq_get_msgerr(const unsigned char *buf)
-{
-    struct nlmsghdr *h = (struct nlmsghdr *)buf;
-    struct nlmsgerr *err = (struct nlmsgerr*)NLMSG_DATA(h);
-    return -err->error;
-}
-//-----------------------------------------------------------------------------
 ipq_packet_msg_t *ipq_get_packet(const unsigned char *buf)
 {
     return(ipq_packet_msg_t *)(NLMSG_DATA((struct nlmsghdr *)(buf)));
@@ -378,12 +371,6 @@ int ipq_set_verdict(const struct ipq_handle *h,
     msg.msg_flags = 0;
     nlh.nlmsg_len = tlen;
     return ipq_netlink_sendmsg(h, &msg, 0);
-}
-//-----------------------------------------------------------------------------
-/* Not implemented yet */
-int ipq_ctl(const struct ipq_handle __attribute__((unused)) * handle, int __attribute__((unused)) request, ...)
-{
-    return 1;
 }
 //-----------------------------------------------------------------------------
 char *ipq_errstr(void)

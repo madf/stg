@@ -140,6 +140,7 @@ struct USER {
     USER(const std::vector<uint32_t> & r, USER_PTR it)
         : user(it),
           routers(r),
+          shortPacketsCount(0),
           ip(user->GetCurrIP())
     {}
 

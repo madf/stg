@@ -57,7 +57,6 @@ enum
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::Prepare()
 {
-std::list<std::string> ansList; //Сюда будет помещен ответ для менеджера клиентов
 int res;
 struct sockaddr_in listenAddr;
 

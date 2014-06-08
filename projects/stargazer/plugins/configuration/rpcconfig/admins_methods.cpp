@@ -95,7 +95,6 @@ std::string cookie = paramList.getString(0);
 std::string login = paramList.getString(1);
 paramList.verifyEnd(2);
 
-std::map<std::string, xmlrpc_c::value> structVal;
 ADMIN_INFO adminInfo;
 
 if (config->GetAdminInfo(cookie, &adminInfo))

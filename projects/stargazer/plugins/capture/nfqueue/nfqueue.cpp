@@ -98,6 +98,8 @@ NFQ_CAP::NFQ_CAP()
       nonstop(false),
       isRunning(false),
       queueNumber(0),
+      nfqHandle(NULL),
+      queueHandle(NULL),
       traffCnt(NULL),
       logger(GetPluginLogger(GetStgLogger(), "cap_nfqueue"))
 {

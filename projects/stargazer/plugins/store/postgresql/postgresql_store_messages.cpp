@@ -242,7 +242,6 @@ if (PQstatus(connection) != CONNECTION_OK)
         }
     }
 
-std::string login;
 PGresult * result;
 
 if (StartTransaction())

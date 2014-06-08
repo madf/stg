@@ -131,15 +131,8 @@ int FIREBIRD_STORE::SaveStat(const USER_STAT & stat,
                                  int year,
                                  int month) const
 {
-
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
-
-IBPP::Timestamp actTime;
-IBPP::Timestamp addTime;
-IBPP::Date dt;
-int i;
-int32_t sid, uid;
 
 try
     {
@@ -166,11 +159,15 @@ try
     printfd(__FILE__, "No stat info for user '%s'\n", login.c_str());
     return -1;
     }
+    int32_t sid;
     st->Get(1, sid);
     st->Close();
 
+    IBPP::Timestamp actTime;
     time_t2ts(stat.lastActivityTime, &actTime);
+    IBPP::Timestamp addTime;
     time_t2ts(stat.lastCashAddTime, &addTime);
+    IBPP::Date dt;
     if (year != 0)
         ym2date(year, month, &dt);
     else
@@ -198,7 +195,7 @@ try
     st->Execute();
     st->Close();
 
-    for(i = 0; i < DIR_NUM; i++)
+    for(int i = 0; i < DIR_NUM; i++)
         {
         st->Prepare("update tb_stats_traffic set \
                         upload = ?, \
@@ -234,11 +231,6 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-int i;
-int32_t uid;
-IBPP::Timestamp creditExpire;
-std::vector<std::string>::const_iterator it;
-
 try
     {
     tr->Start();
@@ -252,9 +244,11 @@ try
         tr->Rollback();
         return -1;
         }
+    int32_t uid;
     st->Get(1, uid);
     st->Close();
 
+    IBPP::Timestamp creditExpire;
     time_t2ts(conf.creditExpire, &creditExpire);
 
     st->Prepare("update tb_users set \
@@ -308,7 +302,7 @@ try
     st->Prepare("insert into tb_users_services (fk_user, fk_service) \
                     values (?, (select pk_service from tb_services \
                                 where name = ?))");
-    for(it = conf.service.begin(); it != conf.service.end(); ++it)
+    for(std::vector<std::string>::const_iterator it = conf.service.begin(); it != conf.service.end(); ++it)
         {
         st->Set(1, uid);
         st->Set(2, *it);
@@ -321,9 +315,9 @@ try
     st->Execute();
     st->Close();
 
-    i = 0;
+    int i = 0;
     st->Prepare("insert into tb_users_data (fk_user, data, num) values (?, ?, ?)");
-    for (it = conf.userdata.begin(); it != conf.userdata.end(); ++it)
+    for (std::vector<std::string>::const_iterator it = conf.userdata.begin(); it != conf.userdata.end(); ++it)
         {
         st->Set(1, uid);
         st->Set(2, *it);
@@ -346,7 +340,6 @@ try
         }
     tr->Commit();
     }
-
 catch (IBPP::Exception & ex)
     {
     tr->Rollback();
@@ -366,10 +359,6 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-IBPP::Timestamp actTime, addTime;
-int i, dir;
-int32_t uid, sid, passiveTime;
-
 try
     {
     tr->Start();
@@ -382,6 +371,7 @@ try
         printfd(__FILE__, "User '%s' not found in database\n", login.c_str());
         return -1;
         }
+    int32_t uid;
     st->Get(1, uid);
     st->Close();
 
@@ -398,12 +388,16 @@ try
         return -1;
         }
 
+    int32_t sid;
     st->Get(1, sid);
     st->Get(2, stat->cash);
     st->Get(3, stat->freeMb);
+    IBPP::Timestamp actTime;
     st->Get(4, actTime);
     st->Get(5, stat->lastCashAdd);
+    IBPP::Timestamp addTime;
     st->Get(6, addTime);
+    int32_t passiveTime;
     st->Get(7, passiveTime);
 
     stat->passiveTime = passiveTime;
@@ -416,10 +410,11 @@ try
     st->Prepare("select * from tb_stats_traffic where fk_stat = ?");
     st->Set(1, sid);
     st->Execute();
-    for(i = 0; i < DIR_NUM; i++)
+    for(int i = 0; i < DIR_NUM; i++)
         {
         if (st->Fetch())
             {
+            int dir;
             st->Get(3, dir);
             st->Get(5, (int64_t &)stat->monthUp[dir]);
             st->Get(4, (int64_t &)stat->monthDown[dir]);
@@ -451,13 +446,6 @@ STG_LOCKER lock(&mutex, __FILE__, __LINE__);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-int32_t uid;
-int i;
-IBPP::Timestamp timestamp;
-IP_MASK im;
-std::string name;
-bool test;
-
 try
     {
     tr->Start();
@@ -482,12 +470,15 @@ try
         tr->Rollback();
         return -1;
         }
+    int32_t uid;
     st->Get(1, uid);
     // Getting base config
     st->Get(2, conf->address);
+    bool test;
     st->Get(3, test);
     conf->alwaysOnline = test;
     st->Get(4, conf->credit);
+    IBPP::Timestamp timestamp;
     st->Get(5, timestamp);
 
     conf->creditExpire = ts2time_t(timestamp);
@@ -523,6 +514,7 @@ try
     st->Execute();
     while (st->Fetch())
         {
+        std::string name;
         st->Get(1, name);
         conf->service.push_back(name);
         }
@@ -534,6 +526,7 @@ try
     st->Execute();
     while (st->Fetch())
         {
+        int i;
         st->Get(2, i);
         st->Get(1, conf->userdata[i]);
         }
@@ -547,6 +540,7 @@ try
     conf->ips.Erase();
     while (st->Fetch())
         {
+        IP_MASK im;
         st->Get(1, (int32_t &)im.ip);
         st->Get(2, (int32_t &)im.mask);
         conf->ips.Add(im);
@@ -554,7 +548,6 @@ try
 
     tr->Commit();
     }
-
 catch (IBPP::Exception & ex)
     {
     tr->Rollback();
@@ -678,9 +671,6 @@ IBPP::Statement st = IBPP::StatementFactory(db, tr);
 IBPP::Timestamp now;
 now.Now();
 
-int32_t id;
-int i;
-
 try
     {
     tr->Start();
@@ -688,12 +678,13 @@ try
     st->Set(1, login);
     st->Set(2, now);
     st->Execute();
+    int32_t id;
     st->Get(1, id);
     st->Prepare("insert into tb_sessions_data \
                     (fk_session_log, dir_num, session_upload, \
                      session_download, month_upload, month_download) \
                  values (?, ?, ?, ?, ?, ?)");
-    for(i = 0; i < DIR_NUM; i++)
+    for(int i = 0; i < DIR_NUM; i++)
         {
         st->Set(1, id);
         st->Set(2, i);
@@ -780,8 +771,6 @@ IBPP::Timestamp now;
 IBPP::Date nowDate;
 nowDate.Today();
 now.Now();
-int32_t id;
-int i;
 
 if (SaveStat(stat, login, year, month))
     {
@@ -799,6 +788,7 @@ try
     st->Set(4, nowDate);
 
     st->Execute();
+    int32_t id;
     st->Get(1, id);
     st->Close();
 
@@ -806,7 +796,7 @@ try
                     (fk_stat, dir_num, upload, download) \
                  values (?, ?, 0, 0)");
 
-    for(i = 0; i < DIR_NUM; i++)
+    for(int i = 0; i < DIR_NUM; i++)
         {
         st->Set(1, id);
         st->Set(2, i);
@@ -815,7 +805,6 @@ try
 
     tr->Commit();
     }
-
 catch (IBPP::Exception & ex)
     {
     tr->Rollback();

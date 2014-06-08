@@ -165,11 +165,11 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
 dc->isRunning = true;
 
-char buffer[64];
+char buffer[pcktSize + 14];
 while (dc->nonstop)
     {
     RAW_PACKET rp;
-    dc->DivertCapRead(buffer, 64, NULL);
+    dc->DivertCapRead(buffer, sizeof(buffer), NULL);
 
     if (buffer[12] != 0x8)
         continue;
