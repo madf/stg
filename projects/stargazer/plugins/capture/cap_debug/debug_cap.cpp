@@ -81,7 +81,7 @@ RAW_PACKET MakeTCPPacket(const char * src,
                          uint16_t len);
 std::string DEBUG_CAP::GetVersion() const
 {
-return "Debug_cap v.0.01a";
+return "cap_debug v.0.01a";
 }
 //-----------------------------------------------------------------------------
 DEBUG_CAP::DEBUG_CAP()

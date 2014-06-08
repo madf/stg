@@ -71,10 +71,10 @@ return ecc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------        
+//-----------------------------------------------------------------------------
 std::string ETHER_CAP::GetVersion() const
 {
-return "Ether_cap v.1.2";
+return "cap_ether v.1.2";
 }
 //-----------------------------------------------------------------------------
 ETHER_CAP::ETHER_CAP()
@@ -132,7 +132,7 @@ if (isRunning)
     if (pthread_kill(thread, SIGUSR1))
         {
         errorStr = "Cannot kill thread.";
-	logger("Cannot send signal to thread.");
+        logger("Cannot send signal to thread.");
         return -1;
         }
     for (int i = 0; i < 25 && isRunning; ++i)
@@ -143,7 +143,7 @@ if (isRunning)
     if (isRunning)
         {
         errorStr = "ETHER_CAP not stopped.";
-	logger("Cannot stop thread.");
+        logger("Cannot stop thread.");
         printfd(__FILE__, "Cannot stop thread\n");
         return -1;
         }

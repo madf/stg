@@ -39,7 +39,7 @@ $Author: faust $
 #include "stg/module_settings.h"
 #include "stg/logger.h"
 
-#define VERSION "CAP_NF v. 0.4"
+#define VERSION "cap_nf v. 0.4"
 #define START_POS 40
 #define STOP_POS 40
 

@@ -68,7 +68,7 @@ PCAP_CAP::PCAP_CAP()
       nonstop(false),
       isRunning(false),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_pcap"))
+      logger(GetPluginLogger(GetStgLogger(), "pcap_cap"))
 {
 }
 //-----------------------------------------------------------------------------
