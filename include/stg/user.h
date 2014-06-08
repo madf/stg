@@ -98,7 +98,7 @@ public:
     virtual time_t              GetLastWriteStatTime() const = 0;
 
     virtual bool                IsInetable() = 0;
-    virtual std::string         GetEnabledDirs() = 0;
+    virtual std::string         GetEnabledDirs() const = 0;
 
     virtual void                OnAdd() = 0;
     virtual void                OnDelete() = 0;

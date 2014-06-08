@@ -12,12 +12,14 @@ $Author: faust $
 #include <ctime>
 #include <string>
 #include <set>
+#include <map>
 #include <sstream>
 #include <iostream>
 
 #include "stg/logger.h"
 #include "stg/locker.h"
 #include "stg/scriptexecuter.h"
+#include "stg/common.h"
 
 #include "store.h"
 #include "admin.h"
@@ -25,10 +27,16 @@ $Author: faust $
 #include "noncopyable.h"
 
 extern volatile time_t stgTime;
-
+//-----------------------------------------------------------------------------
+class USER_PROPERTY_BASE {
+public:
+    virtual std::string ToString() const = 0;
+};
+//-----------------------------------------------------------------------------
+typedef std::map<std::string, USER_PROPERTY_BASE *> REGISTRY;
 //-----------------------------------------------------------------------------
 template<typename varT>
-class USER_PROPERTY {
+class USER_PROPERTY : public USER_PROPERTY_BASE {
 public:
     USER_PROPERTY(varT & val);
     virtual ~USER_PROPERTY();
@@ -68,7 +76,8 @@ public:
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
-                         const std::string & sd);
+                         const std::string & sd,
+                         REGISTRY & properties);
     virtual ~USER_PROPERTY_LOGGED() {}
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw() { return this; }
@@ -118,6 +127,7 @@ private:
     USER_STAT stat;
     USER_CONF conf;
 
+    REGISTRY properties;
 public:
     USER_PROPERTIES(const std::string & sd);
 
@@ -129,6 +139,9 @@ public:
     void SetConf(const USER_CONF & c) { conf = c; }
 
     void SetProperties(const USER_PROPERTIES & p) { stat = p.stat; conf = p.conf; }
+
+    std::string GetPropertyValue(const std::string & name) const;
+    bool Exists(const std::string & name) const;
 
     USER_PROPERTY_LOGGED<double>            cash;
     USER_PROPERTY_LOGGED<DIR_TRAFF>         up;
@@ -268,7 +281,8 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
-                                                 const std::string & sd)
+                                                 const std::string & sd,
+                                                 REGISTRY & properties)
 
     : USER_PROPERTY<varT>(val),
       stgLogger(logger),
@@ -277,6 +291,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
       name(n),
       scriptsDir(sd)
 {
+properties.insert(std::make_pair(ToLower(name), this));
 }
 //-------------------------------------------------------------------------
 template <typename varT>
@@ -376,6 +391,23 @@ else
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
+inline
+std::string USER_PROPERTIES::GetPropertyValue(const std::string & name) const
+{
+REGISTRY::const_iterator it = properties.find(ToLower(name));
+if (it == properties.end())
+    return "";
+return it->second->ToString();
+}
+//-----------------------------------------------------------------------------
+inline
+bool USER_PROPERTIES::Exists(const std::string & name) const
+{
+return properties.find(ToLower(name)) != properties.end();
+}
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------
 template<typename varT>
 inline
 std::ostream & operator<< (std::ostream & stream, const USER_PROPERTY<varT> & value)
@@ -384,9 +416,10 @@ return stream << value.ConstData();
 }
 //-----------------------------------------------------------------------------
 template<typename varT>
+inline
 std::string USER_PROPERTY<varT>::ToString() const
 {
-std::stringstream stream;
+std::ostringstream stream;
 stream << value;
 return stream.str();
 }

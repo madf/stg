@@ -429,9 +429,12 @@ for(it = rsSettings.GetUserParams().begin();
     it != rsSettings.GetUserParams().end();
     ++it)
     {
-    std::string parameter(GetUserParam(rsu.user, *it));
+    std::string parameter(rsu.user->GetParamValue(it->c_str()));
     if (params.length() + parameter.length() > RS_PARAMS_LEN - 1)
+    {
+        logger("Script params string length %d exceeds the limit of %d symbols.", params.length() + parameter.length(), RS_PARAMS_LEN);
         break;
+    }
     params += parameter + " ";
     }
 strncpy((char *)packetTail.params, params.c_str(), RS_PARAMS_LEN);
@@ -516,86 +519,6 @@ for (size_t i = 0; i < netRouters.size(); ++i)
         }
     }
 return std::vector<uint32_t>();
-}
-//-----------------------------------------------------------------------------
-std::string REMOTE_SCRIPT::GetUserParam(USER_PTR u, const std::string & paramName) const
-{
-std::string value = "";
-if (strcasecmp(paramName.c_str(), "cash") == 0)
-    strprintf(&value, "%f", u->GetProperty().cash.Get());
-else
-if (strcasecmp(paramName.c_str(), "freeMb") == 0)
-    strprintf(&value, "%f", u->GetProperty().freeMb.Get());
-else
-if (strcasecmp(paramName.c_str(), "passive") == 0)
-    strprintf(&value, "%d", u->GetProperty().passive.Get());
-else
-if (strcasecmp(paramName.c_str(), "disabled") == 0)
-    strprintf(&value, "%d", u->GetProperty().disabled.Get());
-else
-if (strcasecmp(paramName.c_str(), "alwaysOnline") == 0)
-    strprintf(&value, "%d", u->GetProperty().alwaysOnline.Get());
-else
-if (strcasecmp(paramName.c_str(), "tariffName") == 0 ||
-    strcasecmp(paramName.c_str(), "tariff") == 0)
-    value = "\"" + u->GetProperty().tariffName.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "nextTariff") == 0)
-    value = "\"" + u->GetProperty().nextTariff.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "address") == 0)
-    value = "\"" + u->GetProperty().address.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "note") == 0)
-    value = "\"" + u->GetProperty().note.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "group") == 0)
-    value = "\"" + u->GetProperty().group.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "email") == 0)
-    value = "\"" + u->GetProperty().email.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "realName") == 0)
-    value = "\"" + u->GetProperty().realName.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "credit") == 0)
-    strprintf(&value, "%f", u->GetProperty().credit.Get());
-else
-if (strcasecmp(paramName.c_str(), "userdata0") == 0)
-    value = "\"" + u->GetProperty().userdata0.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata1") == 0)
-    value = "\"" + u->GetProperty().userdata1.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata2") == 0)
-    value = "\"" + u->GetProperty().userdata2.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata3") == 0)
-    value = "\"" + u->GetProperty().userdata3.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata4") == 0)
-    value = "\"" + u->GetProperty().userdata4.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata5") == 0)
-    value = "\"" + u->GetProperty().userdata5.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata6") == 0)
-    value = "\"" + u->GetProperty().userdata6.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata7") == 0)
-    value = "\"" + u->GetProperty().userdata7.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata8") == 0)
-    value = "\"" + u->GetProperty().userdata8.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "userdata9") == 0)
-    value = "\"" + u->GetProperty().userdata9.Get() + "\"";
-else
-if (strcasecmp(paramName.c_str(), "enabledDirs") == 0)
-    value = u->GetEnabledDirs();
-else
-    printfd(__FILE__, "Unknown value name: %s\n", paramName.c_str());
-return value;
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::SetUserNotifiers(USER_PTR u)

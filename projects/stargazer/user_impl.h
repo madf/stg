@@ -218,7 +218,7 @@ public:
     void            ProcessDailyFee();
 
     bool            IsInetable();
-    std::string     GetEnabledDirs();
+    std::string     GetEnabledDirs() const;
 
     void            OnAdd();
     void            OnDelete();
