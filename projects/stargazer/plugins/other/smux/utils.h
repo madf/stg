@@ -8,7 +8,6 @@
 #include "stg/GetResponse-PDU.h"
 
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi);
-std::string OI2String(OBJECT_IDENTIFIER_t * oi);
 bool SendOpenPDU(int fd);
 bool SendClosePDU(int fd);
 bool SendRReqPDU(int fd);

@@ -67,28 +67,6 @@ pkt_free(struct packet *pkt)
 
 /*
 <++doc++>
-@name int pkt_set_actptr(struct packet *pkt, unsigned int bytepos)
-@desc This function sets the active pointer position inside the packet.
-@param pkt the packet whose active ptr is to be set
-@param bytepos the byte position where to set the active ptr to, starting from 0
-<--doc-->
-*/
-
-int
-pkt_set_actptr(struct packet *pkt, unsigned int bytepos)
-{
-	if (!pkt)
-		return EPKTINVALPTR;
-	if (bytepos > pkt->pkt_size) {
-		return EPKTRANGE;
-	} else {
-		pkt->pkt_ptr = pkt->pkt + bytepos;
-		return PKTOK;
-	}
-}
-
-/*
-<++doc++>
 @name int pkt_move_actptr(struct packet *pkt, int relmov) 
 @desc This function moves the active pointer inside the packet.
 @param pkt the packet whose active ptr is to be moved
@@ -107,55 +85,4 @@ pkt_move_actptr(struct packet *pkt, int relmov)
 		pkt->pkt_ptr += relmov;
 		return PKTOK;
 	}
-}
-
-/*
-<++doc++>
-@name int pkt_add_data(struct packet *pkt, char *data, size_t data_len)
-@desc Adds supplied data at the current active ptr position of the given packet.This basically is a memcpy() wrapper function.
-@param pkt data will be written into this packet
-@param data a pointer to the data that shall be copied into the packet
-@param data_len the amount of data (in bytes) that will be copied
-<--doc-->
-*/
-int
-pkt_add_data(struct packet *pkt, char *data, size_t data_len)
-{
-	if (!pkt || !data)
-		return EPKTINVALPTR;
-	if (pkt->pkt_size >= (pkt->pkt_pos + data_len)) {
-		memcpy(pkt->pkt_ptr, data, data_len);
-		return 0;
-	} else
-		return EPKTRANGE;
-}
-
-/*
-<++doc++>
-@name int pkt_resize(struct packet *pkt, unsigned int newsize)
-@desc The given packet will be resized to newsize
-@param pkt the packet to resize
-@param newsize the new size of the packet
-<--doc-->
-*/
-int
-pkt_resize(struct packet *pkt, unsigned int newsize)
-{
-	unsigned char *newpkt;
-
-	if (!pkt)
-		return EPKTINVALPTR;
-
-	if ((newpkt = (unsigned char *) malloc(newsize)) != NULL) {
-		memset(newpkt, 0, newsize);
-		memcpy(newpkt, pkt->pkt, (pkt->pkt_size < newsize ? pkt->pkt_size : newsize));
-		pkt->pkt_size = newsize;
-		pkt->pkt_ptr = newpkt;
-		pkt->pkt_pos = 0;
-		/* free old mem */
-		free (pkt->pkt);
-		pkt->pkt = newpkt;
-		return 0;
-	} else
-		return EERRNO;
 }

@@ -593,7 +593,6 @@ OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 	char *p = scratch;
 	uint8_t *buf;
 	uint8_t *end;
-	size_t i;
 
 	if(!st || !st->buf)
 		_ASN_ENCODE_FAILED;
@@ -620,6 +619,7 @@ OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		_ASN_CALLBACK(scratch, p-scratch);	/* Dump the rest */
 		er.encoded += p - scratch;
 	} else {
+		size_t i;
 		for(i = 0; buf < end; buf++, i++) {
 			if(!(i % 16) && (i || st->size > 16)) {
 				_ASN_CALLBACK(scratch, p-scratch);
@@ -1315,12 +1315,13 @@ OCTET_STRING_encode_uper(asn_TYPE_descriptor_t *td,
 	asn_enc_rval_t er;
 	int ct_extensible = ct->flags & APC_EXTENSIBLE;
 	int inext = 0;		/* Lies not within extension root */
-	int sizeinunits = st->size;
+	int sizeinunits = 0;
 	const uint8_t *buf;
 	int ret;
 
 	if(!st || !st->buf)
 		_ASN_ENCODE_FAILED;
+	sizeinunits = st->size;
 
 	if(unit_bits == 1) {
 		ASN_DEBUG("BIT STRING of %d bytes, %d bits unused",
@@ -1458,7 +1459,7 @@ OCTET_STRING_print_utf8(asn_TYPE_descriptor_t *td, const void *sptr,
 void
 OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only) {
 	OCTET_STRING_t *st = (OCTET_STRING_t *)sptr;
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
+	asn_OCTET_STRING_specifics_t *specs = td && td->specifics
 				? (asn_OCTET_STRING_specifics_t *)td->specifics
 				: &asn_DEF_OCTET_STRING_specs;
 	asn_struct_ctx_t *ctx = (asn_struct_ctx_t *)

@@ -182,7 +182,6 @@ OBJECT_IDENTIFIER__dump_arc(uint8_t *arcbuf, int arclen, int add,
 		asn_app_consume_bytes_f *cb, void *app_key) {
 	char scratch[64];	/* Conservative estimate */
 	unsigned long accum;	/* Bits accumulator */
-	char *p;		/* Position in the scratch buffer */
 
 	if(OBJECT_IDENTIFIER_get_single_arc(arcbuf, arclen, add,
 			&accum, sizeof(accum)))
@@ -190,9 +189,8 @@ OBJECT_IDENTIFIER__dump_arc(uint8_t *arcbuf, int arclen, int add,
 
 	if(accum) {
 		ssize_t len;
+		char *p = scratch + sizeof(scratch);		/* Position in the scratch buffer */
 
-		/* Fill the scratch buffer in reverse. */
-		p = scratch + sizeof(scratch);
 		for(; accum; accum /= 10)
 			*(--p) = (char)(accum % 10) + 0x30; /* Put a digit */
 

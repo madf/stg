@@ -46,6 +46,7 @@ class AUTH_STRESS;
 template <typename varParamType>
 class CHG_BEFORE_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
+    CHG_BEFORE_NOTIFIER() : auth(NULL) {}
     void Notify(const varParamType & oldValue, const varParamType & newValue);
     void        SetUser(USER_PTR u) { user = u; }
     USER_PTR    GetUser() {return user; }
@@ -59,6 +60,7 @@ private:
 template <typename varParamType>
 class CHG_AFTER_NOTIFIER: public PROPERTY_NOTIFIER_BASE<varParamType> {
 public:
+    CHG_AFTER_NOTIFIER() : auth(NULL) {}
     void        Notify(const varParamType & oldValue, const varParamType & newValue);
     void        SetUser(USER_PTR u) { user = u; }
     USER_PTR    GetUser() {return user; }
@@ -132,7 +134,7 @@ private:
 
     class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        ADD_USER_NONIFIER() {}
+        ADD_USER_NONIFIER() : auth(NULL) {}
         virtual ~ADD_USER_NONIFIER() {}
 
         void SetAuthorizator(AUTH_STRESS * a) { auth = a; }
@@ -147,7 +149,7 @@ private:
 
     class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        DEL_USER_NONIFIER() {}
+        DEL_USER_NONIFIER() : auth(NULL) {}
         virtual ~DEL_USER_NONIFIER() {}
 
         void SetAuthorizator(AUTH_STRESS * a) { auth = a; }

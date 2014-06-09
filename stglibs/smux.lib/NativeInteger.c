@@ -283,14 +283,13 @@ int
 NativeInteger_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 	asn_app_consume_bytes_f *cb, void *app_key) {
 	const long *native = (const long *)sptr;
-	char scratch[32];	/* Enough for 64-bit int */
-	int ret;
 
 	(void)td;	/* Unused argument */
 	(void)ilevel;	/* Unused argument */
 
 	if(native) {
-		ret = snprintf(scratch, sizeof(scratch), "%ld", *native);
+		char scratch[32];	/* Enough for 64-bit int */
+		int ret = snprintf(scratch, sizeof(scratch), "%ld", *native);
 		assert(ret > 0 && (size_t)ret < sizeof(scratch));
 		return (cb(scratch, ret, app_key) < 0) ? -1 : 0;
 	} else {

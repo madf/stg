@@ -8,13 +8,9 @@ PROG = mod_cap_debug.so
 
 SRCS = ./debug_cap.cpp \
        ./checksum.c \
-       ./icmp.c \
        ./ip.c \
-       ./misc.c \
        ./packet.c \
-       ./socket.c \
-       ./tcp.c \
-       ./udp.c
+       ./tcp.c
 
 STGLIBS = common
 
