@@ -103,8 +103,6 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
  */
 static int stg_authorize(void *, REQUEST *request)
 {
-    VALUE_PAIR * pwd;
-    VALUE_PAIR * svc;
     const STG_PAIR * pairs;
     const STG_PAIR * pair;
     size_t count = 0;
@@ -120,7 +118,7 @@ static int stg_authorize(void *, REQUEST *request)
         DEBUG("rlm_stg: stg_authorize() request password field: '%s'", request->password->vp_strvalue);
     }
     // Here we need to define Framed-Protocol
-    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     if (svc) {
         DEBUG("rlm_stg: stg_authorize() Service-Type defined as '%s'", svc->vp_strvalue);
         pairs = stgAuthorizeImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
@@ -135,7 +133,7 @@ static int stg_authorize(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->config_items, pwd);
         DEBUG("Adding pair '%s': '%s'", pair->key, pair->value);
         ++pair;
@@ -154,8 +152,6 @@ static int stg_authorize(void *, REQUEST *request)
  */
 static int stg_authenticate(void *, REQUEST *request)
 {
-    VALUE_PAIR * svc;
-    VALUE_PAIR * pwd;
     const STG_PAIR * pairs;
     const STG_PAIR * pair;
     size_t count = 0;
@@ -164,7 +160,7 @@ static int stg_authenticate(void *, REQUEST *request)
 
     DEBUG("rlm_stg: stg_authenticate()");
 
-    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
     if (svc) {
         DEBUG("rlm_stg: stg_authenticate() Service-Type defined as '%s'", svc->vp_strvalue);
         pairs = stgAuthenticateImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
@@ -179,7 +175,7 @@ static int stg_authenticate(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->reply->vps, pwd);
         ++pair;
         ++count;
@@ -209,10 +205,6 @@ static int stg_preacct(void *, REQUEST *)
  */
 static int stg_accounting(void *, REQUEST * request)
 {
-    VALUE_PAIR * sttype;
-    VALUE_PAIR * svc;
-    VALUE_PAIR * sessid;
-    VALUE_PAIR * pwd;
     const STG_PAIR * pairs;
     const STG_PAIR * pair;
     size_t count = 0;
@@ -221,9 +213,9 @@ static int stg_accounting(void *, REQUEST * request)
 
     DEBUG("rlm_stg: stg_accounting()");
 
-    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
-    sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
-    sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
+    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR * sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
+    VALUE_PAIR * sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
 
     if (!sessid) {
         DEBUG("rlm_stg: stg_accounting() Acct-Session-ID undefined");
@@ -237,7 +229,7 @@ static int stg_accounting(void *, REQUEST * request)
             pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
         } else {
             DEBUG("rlm_stg: stg_accounting() Service-Type undefined");
-            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
+            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, "", (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
         }
     } else {
         DEBUG("rlm_stg: stg_accounting() Acct-Status-Type := NULL");
@@ -250,7 +242,7 @@ static int stg_accounting(void *, REQUEST * request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->reply->vps, pwd);
         ++pair;
         ++count;
@@ -286,8 +278,6 @@ static int stg_checksimul(void *, REQUEST *request)
 
 static int stg_postauth(void *, REQUEST *request)
 {
-    VALUE_PAIR * svc;
-    VALUE_PAIR * pwd;
     const STG_PAIR * pairs;
     const STG_PAIR * pair;
     size_t count = 0;
@@ -296,7 +286,7 @@ static int stg_postauth(void *, REQUEST *request)
 
     DEBUG("rlm_stg: stg_postauth()");
 
-    svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
 
     if (svc) {
         DEBUG("rlm_stg: stg_postauth() Service-Type defined as '%s'", svc->vp_strvalue);
@@ -312,7 +302,7 @@ static int stg_postauth(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->reply->vps, pwd);
         ++pair;
         ++count;

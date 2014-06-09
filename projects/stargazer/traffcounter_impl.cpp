@@ -654,7 +654,7 @@ while (fgets(str, 1023, f))
         continue;
         }
 
-    r = sscanf(str,"%s %s %s", tp, ta, td);
+    r = sscanf(str,"%100s %100s %100s", tp, ta, td);
     if (r != 3)
         {
         printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. There must be 3 parameters.\n", rulesFileName.c_str(), lineNumber);

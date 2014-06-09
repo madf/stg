@@ -25,10 +25,10 @@ const STG_PAIR * stgPostAuthImpl(const char * userName, const char * serviceType
     return STG_CLIENT_ST::Get().PostAuth(userName, serviceType);
 }
 
-const STG_PAIR * stgPreAcctImpl(const char * userName, const char * serviceType)
+/*const STG_PAIR * stgPreAcctImpl(const char * userName, const char * serviceType)
 {
     return STG_CLIENT_ST::Get().PreAcct(userName, serviceType);
-}
+}*/
 
 const STG_PAIR * stgAccountingImpl(const char * userName, const char * serviceType, const char * statusType, const char * sessionId)
 {

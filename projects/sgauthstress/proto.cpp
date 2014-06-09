@@ -389,11 +389,8 @@ bool PROTO::INFO_Proc(const void * buffer, USER * user)
 return true;
 }
 
-bool PROTO::ERR_Proc(const void * buffer, USER * user)
+bool PROTO::ERR_Proc(const void * /*buffer*/, USER * user)
 {
-const ERR_8 * packet = static_cast<const ERR_8 *>(buffer);
-const char * ptr = static_cast<const char *>(buffer);
-
 //uint32_t len = packet->len;
 
 #ifdef ARCH_BE
@@ -510,7 +507,6 @@ hdr.protoVer[0] = 0;
 hdr.protoVer[1] = 8; // IA_PROTO_VER
 
 unsigned char buffer[2048];
-memset(buffer, 0, sizeof(buffer));
 memcpy(buffer, packet, length);
 memcpy(buffer, &hdr, sizeof(hdr));
 

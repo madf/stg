@@ -28,19 +28,24 @@ $Date: 2009/03/19 20:03:35 $
 $Author: faust $
 */
 
-#include <stdio.h>
+#include "debug_cap.h"
+
+#include "libpal.h"
+
+#include "stg/plugin_creator.h"
+#include "stg/traffcounter.h"
+#include "stg/common.h"
+
+#include <cstdio>
+#include <csignal>
+
 #include <unistd.h>
-#include <signal.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "libpal.h"
-#include "stg/plugin_creator.h"
-#include "stg/traffcounter.h"
-#include "debug_cap.h"
+extern volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 void WriteStat(uint32_t u, uint32_t d)
@@ -61,11 +66,11 @@ namespace
 PLUGIN_CREATOR<DEBUG_CAP> cdc;
 }
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
 return cdc.GetPlugin();
 }
@@ -85,9 +90,10 @@ return "cap_debug v.0.01a";
 }
 //-----------------------------------------------------------------------------
 DEBUG_CAP::DEBUG_CAP()
+    : nonstop(false),
+      isRunning(false),
+      traffCnt(NULL)
 {
-isRunning = false;
-nonstop = false;
 }
 //-----------------------------------------------------------------------------
 void DEBUG_CAP::SetTraffcounter(TRAFFCOUNTER * tc)
@@ -132,7 +138,7 @@ for (i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    stgUsleep(200000);
+    usleep(200000);
     //printf(".");
     }
 
@@ -162,7 +168,7 @@ void * DEBUG_CAP::Run1(void * data)
 {
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 
-DEBUG_CAP * dc = (DEBUG_CAP *)data;
+DEBUG_CAP * dc = static_cast<DEBUG_CAP *>(data);
 dc->isRunning = true;
 
 RAW_PACKET rp;
@@ -183,24 +189,20 @@ int dsize;
 t = stgTime;
 tm = localtime(&t);
 int min = tm->tm_min;
-int sec = tm->tm_sec;
 
 char cliIP[20];
 char srvIP[20];
-char trashIP1[20];
-char trashIP2[20];
 
 while (dc->nonstop)
     {
     for (int i = 8; i <= 252; i++)
         {
-		
         usize = random()%100 + 100;
-		dsize = random()%500 + 900;
-		
+        dsize = random()%500 + 900;
+
         for (int j = 2; j < 11; j++)
             {
-			sprintf(cliIP, "192.168.%d.%d", j, i);
+            sprintf(cliIP, "192.168.%d.%d", j, i);
             sprintf(srvIP, "10.1.%d.%d", random()%8, 1);
 
             rp = MakeTCPPacket(srvIP, cliIP, 80, random()%2 + 2000, dsize);
@@ -235,7 +237,7 @@ void * DEBUG_CAP::Run2(void * data)
 {
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 
-DEBUG_CAP * dc = (DEBUG_CAP *)data;
+DEBUG_CAP * dc = static_cast<DEBUG_CAP *>(data);
 dc->isRunning = true;
 
 RAW_PACKET rp;
@@ -315,7 +317,7 @@ void * DEBUG_CAP::Run3(void * data)
 {
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 
-DEBUG_CAP * dc = (DEBUG_CAP *)data;
+DEBUG_CAP * dc = static_cast<DEBUG_CAP *>(data);
 dc->isRunning = true;
 
 RAW_PACKET rp;
@@ -323,7 +325,6 @@ rp = MakeTCPPacket("192.168.1.1", "192.168.1.21", 255, 255, 200);
 int a = 0;
 sleep(3);
 
-struct tm * tm;
 time_t t;
 uint32_t u = 0;
 uint32_t d = 0;
@@ -334,7 +335,6 @@ int usize = 200;
 int dsize = 1500;
 
 t = stgTime;
-tm = localtime(&t);
 
 char cliIP[20];
 char srvIP1[20];
@@ -497,7 +497,6 @@ if (pkt_free(&pkt))
     printfd(__FILE__, "pkt_free error!\n");
     }
 rp.dataLen = -1;
-strcpy(rp.iface, "eth0");
 return rp;
 }
 //-----------------------------------------------------------------------------

@@ -109,7 +109,6 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 	signed long accum;
 	ssize_t wrote = 0;
 	char *p;
-	int ret;
 
 	/*
 	 * Advance buf pointer until the start of the value's body.
@@ -130,6 +129,7 @@ INTEGER__dump(asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_by
 	if((size_t)(buf_end - buf) <= sizeof(accum)) {
 		const asn_INTEGER_enum_map_t *el;
 		size_t scrsize;
+		int ret;
 		char *scr;
 
 		if(buf == buf_end) {

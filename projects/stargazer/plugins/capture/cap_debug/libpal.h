@@ -78,46 +78,15 @@ int pkt_init(struct packet *pkt, unsigned long type, unsigned int size);
 int pkt_free(struct packet *pkt);
 
 /* pointer movement */
-int pkt_set_actptr(struct packet *pkt, unsigned int bytepos);	
 int pkt_move_actptr(struct packet *pkt, int relmov);
-
-/* raw data */
-int pkt_add_systimestamp(struct packet *pkt);
-int pkt_add_data(struct packet *pkt, char *data, size_t data_len);
-int pkt_resize(struct packet *pkt, unsigned int newsize);
-
-/* socket operations */
-int pkt_socket_open(struct pkt_socket *sck, int type);
-int pkt_socket_close(struct pkt_socket *sck);
-int pkt_socket_prepare(struct pkt_socket *sck, char *daddr);
-int pkt_socket_setopt(struct pkt_socket *sck, int level, int optname, void *optval, socklen_t optlen);
-
-/* sending */
-int pkt_send(struct packet *pkt, struct pkt_socket *sck);
 
 /* IP */
 int pkt_ip_header(struct packet *pkt, unsigned int iphdr_len, unsigned int version, unsigned char tos, unsigned short int total_len, unsigned short int id, unsigned short int frag_off /* 3bit flag, 13bit offset */, unsigned char ttl, unsigned char protocol, unsigned short int cksum, unsigned int saddr, unsigned int daddr);
-int pkt_ip_cksum(struct packet *pkt);
-int pkt_ip_option_header(struct packet *pkt, unsigned char type, unsigned char len, unsigned char ptr, unsigned char oflw_flg, void *optval, size_t optlen);
 
 /* TCP */
 int pkt_tcp_header(struct packet *pkt, unsigned short int sport, unsigned short int dport, unsigned int seq, unsigned int ackseq, unsigned char headerlen, unsigned char reserved, unsigned char flags, unsigned short window, unsigned short int checksum, unsigned short int urgent);
 int pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr, unsigned int tcp_pkt_size);
 int pkt_tcp_option(struct packet *pkt, unsigned char kind, unsigned char len, void *optval, size_t optlen);
-
-/* UDP */
-int pkt_udp_header(struct packet *pkt, unsigned short int sport, unsigned short int dport, unsigned short int udp_total_len, unsigned short int checksum);
-int pkt_udp_cksum(struct packet *pkt, char *saddr, char *daddr, unsigned int udp_total_len);
-
-/* ICMP */
-int pkt_icmp_header(struct packet *pkt, unsigned char type, unsigned char code, unsigned short int checksum);
-int pkt_icmp_cksum(struct packet *pkt, unsigned int len);
-int pkt_icmp_addr_mask(struct packet *pkt, unsigned short int id, unsigned short int seqno, unsigned int mask, char *cmask);
-int pkt_icmp_dest_unreach(struct packet *pkt, unsigned int unused);
-int pkt_icmp_source_quench(struct packet *pkt, unsigned int unused);
-int pkt_icmp_redirect(struct packet *pkt, unsigned int routerip, char *crouterip);
-int pkt_icmp_echo(struct packet *pkt, unsigned short int id, unsigned short int seqno, void *data, size_t data_len);
-int pkt_icmp_timestamp(struct packet *pkt, unsigned short int id, unsigned short int seqno, unsigned int ts_otime, unsigned int ts_rtime, unsigned int ts_ttime);
 
 /* functions that might be useful and might be added some day ... 
 int pkt_shift_data(struct packet *pkt, unsigned int from, unsigned int to, unsigned int len);

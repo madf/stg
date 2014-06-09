@@ -648,7 +648,6 @@ SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		ssize_t ch_size;		/* Chunk size */
 		xer_check_tag_e tcv;		/* Tag check value */
 		asn_TYPE_member_t *elm;
-		int n;
 
 		/*
 		 * Go inside the inner member of a sequence.
@@ -775,6 +774,7 @@ SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				edx_end = edx + elements[edx].optional + 1;
 				if(edx_end > td->elements_count)
 					edx_end = td->elements_count;
+				int n;
 				for(n = edx; n < edx_end; n++) {
 					elm = &td->elements[n];
 					tcv = xer_check_tag(buf_ptr,

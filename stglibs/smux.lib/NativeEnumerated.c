@@ -142,7 +142,7 @@ NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
 	asn_INTEGER_specifics_t *specs = (asn_INTEGER_specifics_t *)td->specifics;
 	asn_enc_rval_t er;
 	long native, value;
-	asn_per_constraint_t *ct;
+	asn_per_constraint_t *ct = NULL;
 	int inext = 0;
 	asn_INTEGER_enum_map_t key;
 	asn_INTEGER_enum_map_t *kf;
@@ -170,13 +170,13 @@ NativeEnumerated_encode_uper(asn_TYPE_descriptor_t *td,
 	}
 	value = kf - specs->value2enum;
 
-	if(ct->range_bits >= 0) {
+	if(ct && ct->range_bits >= 0) {
 		int cmpWith = specs->extension
 				? specs->extension - 1 : specs->map_count;
 		if(value >= cmpWith)
 			inext = 1;
 	}
-	if(ct->flags & APC_EXTENSIBLE) {
+	if(ct && ct->flags & APC_EXTENSIBLE) {
 		if(per_put_few_bits(po, inext, 0))
 			_ASN_ENCODE_FAILED;
 		ct = 0;

@@ -158,7 +158,7 @@ users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
     Authorize(*users_iter);
-    users_iter++;
+    ++users_iter;
     }
 
 //isRunning = true;
@@ -331,7 +331,7 @@ while (users_iter != usersList.end())
         printfd(__FILE__, "User removed from list %s\n", u->GetLogin().c_str());
         break;
         }
-    users_iter++;
+    ++users_iter;
     }
 }
 //-----------------------------------------------------------------------------
@@ -343,8 +343,7 @@ return -1;
 //-----------------------------------------------------------------------------
 void * AUTH_STRESS::Run(void * d)
 {
-AUTH_STRESS * ia;
-ia = (AUTH_STRESS *)d;
+AUTH_STRESS * ia = static_cast<AUTH_STRESS *>(d);
 
 ia->isRunning = true;
 
@@ -367,7 +366,7 @@ while (ia->nonstop)
             printfd(__FILE__, "AUTH_STRESS::Unauthorize - user: '%s'\n", (*users_iter)->GetLogin().c_str());
             }
 
-        users_iter++;
+        ++users_iter;
         }
 
     sleep(1);
