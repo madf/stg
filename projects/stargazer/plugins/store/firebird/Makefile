@@ -19,7 +19,6 @@ SRCS =	./firebird_store.cpp \
 
 STGLIBS = ibpp \
 	  common \
-	  locker \
 	  logger \
 	  crypto
 

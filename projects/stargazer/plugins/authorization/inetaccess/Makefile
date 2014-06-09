@@ -13,7 +13,6 @@ SRCS = ./inetaccess.cpp
 STGLIBS = common \
 	  crypto \
 	  logger \
-	  locker \
 	  scriptexecuter
 
 include ../../Makefile.in

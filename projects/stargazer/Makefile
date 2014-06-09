@@ -26,7 +26,6 @@ SRCS = ./admin_impl.cpp \
 
 STGLIBS = scriptexecuter \
           dotconfpp \
-	  locker \
 	  logger \
 	  common
 

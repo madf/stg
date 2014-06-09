@@ -63,7 +63,7 @@ printfd(__FILE__, "EVENT_LOOP::Runner - Before start\n");
 while (_running)
     {
         {
-        STG_LOCKER lock(&_mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&_mutex);
         // Check for any actions...
         if (empty())
             {
@@ -101,7 +101,7 @@ EVENT_LOOP & EVENT_LOOP_SINGLETON::GetInstance()
 // Double-checking technique
 if (!_instance)
     {
-    STG_LOCKER lock(&singletonMutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&singletonMutex);
     if (!_instance)
         {
         CreateInstance();

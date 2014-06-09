@@ -26,7 +26,7 @@ ACTIONS_LIST::~ACTIONS_LIST()
 {
 
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
 
     parent::iterator it(parent::begin());
     while (it != parent::end()) 
@@ -41,49 +41,49 @@ pthread_mutex_destroy(&mutex);
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::begin()
 { 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::begin();
 }
 
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::end()
 { 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::end();
 }
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::begin() const
 { 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::begin();
 }
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::end() const
 { 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::end();
 }
 
 inline
 bool ACTIONS_LIST::empty() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::empty();
 }
 
 inline
 size_t ACTIONS_LIST::size() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 return parent::size();
 }
 
 inline
 void ACTIONS_LIST::swap(ACTIONS_LIST & list)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 parent::swap(list);
 }
 
@@ -93,14 +93,14 @@ void ACTIONS_LIST::Enqueue(ACTIVE_CLASS & ac,
                            typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
                            DATA_TYPE d)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 push_back(new ACTION<ACTIVE_CLASS, DATA_TYPE>(ac, a, d));
 }
 
 inline
 void ACTIONS_LIST::InvokeAll()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::for_each(
         parent::begin(),
         parent::end(),

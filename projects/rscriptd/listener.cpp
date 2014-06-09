@@ -311,7 +311,7 @@ else if (packetHead.packetType == RS_DISCONNECT_PACKET)
         }
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 pending.push_back(data);
 
 return false;
@@ -411,7 +411,7 @@ while (it != pending.end() && count < 256)
     ++it;
     ++count;
     }
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 pending.erase(pending.begin(), it);
 }
 //-----------------------------------------------------------------------------

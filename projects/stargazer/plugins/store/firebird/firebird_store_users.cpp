@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetUsersList(std::vector<std::string> * usersList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -65,7 +65,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddUser(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -93,7 +93,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelUser(const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -121,7 +121,7 @@ return 0;
 int FIREBIRD_STORE::SaveUserStat(const USER_STAT & stat,
                                  const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 return SaveStat(stat, login);
 }
@@ -226,7 +226,7 @@ return 0;
 int FIREBIRD_STORE::SaveUserConf(const USER_CONF & conf,
                                  const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -354,7 +354,7 @@ return 0;
 int FIREBIRD_STORE::RestoreUserStat(USER_STAT * stat,
                                     const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -441,7 +441,7 @@ return 0;
 int FIREBIRD_STORE::RestoreUserConf(USER_CONF * conf,
                                     const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -567,7 +567,7 @@ int FIREBIRD_STORE::WriteUserChgLog(const std::string & login,
                                     const std::string & newValue,
                                     const std::string & message = "") const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -627,7 +627,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::WriteUserConnect(const std::string & login, uint32_t ip) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -664,7 +664,7 @@ int FIREBIRD_STORE::WriteUserDisconnect(const std::string & login,
                     double /*freeMb*/,
                     const std::string & /*reason*/) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -712,7 +712,7 @@ int FIREBIRD_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & s
                                       time_t lastStat,
                                       const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -762,7 +762,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);

@@ -684,7 +684,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::Timeouter()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 std::map<uint32_t, IA_USER>::iterator it;
 it = ip2user.begin();
@@ -771,7 +771,7 @@ int AUTH_IA::PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t
 std::string login(user->GetLogin());
 const size_t offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
 if (it == ip2user.end())
@@ -958,7 +958,7 @@ if (!ip)
 
 std::map<uint32_t, IA_USER>::iterator it;
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {
@@ -1046,7 +1046,7 @@ printfd(__FILE__, "SendMessage userIP=%s\n", inet_ntostring(ip).c_str());
 
 std::map<uint32_t, IA_USER>::iterator it;
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {

@@ -108,7 +108,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByName(const std::string & login, USER_PTR * user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 user_iter u;
 if (FindByNameNonLock(login, &u))
     return -1;
@@ -118,7 +118,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByName(const std::string & login, CONST_USER_PTR * user) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const_user_iter u;
 if (FindByNameNonLock(login, &u))
     return -1;
@@ -128,7 +128,7 @@ return 0;
 //-----------------------------------------------------------------------------
 bool USERS_IMPL::TariffInUse(const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::list<USER_IMPL>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
@@ -142,7 +142,7 @@ return false;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::Add(const std::string & login, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->userAddDel)
@@ -233,7 +233,7 @@ if (!priv->userAddDel)
 
 
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
 
     if (FindByNameNonLock(login, &u))
         {
@@ -265,7 +265,7 @@ if (!priv->userAddDel)
     }
 
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
 
     u->OnDelete();
 
@@ -286,7 +286,7 @@ bool USERS_IMPL::Authorize(const std::string & login, uint32_t ip,
                            uint32_t enabledDirs, const AUTH * auth)
 {
 user_iter iter;
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (FindByNameNonLock(login, &iter))
     {
     WriteServLog("Attempt to authorize non-existant user '%s'", login.c_str());
@@ -319,7 +319,7 @@ bool USERS_IMPL::Unauthorize(const std::string & login,
                              const std::string & reason)
 {
 user_iter iter;
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (FindByNameNonLock(login, &iter))
     {
     WriteServLog("Attempt to unauthorize non-existant user '%s'", login.c_str());
@@ -606,7 +606,7 @@ return 0;
 //-----------------------------------------------------------------------------
 void USERS_IMPL::RealDelUser()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 printfd(__FILE__, "RealDelUser() users to del: %d\n", usersToDelete.size());
 
@@ -641,7 +641,7 @@ uint32_t ip = user->GetCurrIP();
 if (!ip)
     return; // User has disconnected
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 const std::map<uint32_t, user_iter>::iterator it(
         ipIndex.lower_bound(ip)
@@ -657,7 +657,7 @@ void USERS_IMPL::DelFromIPIdx(uint32_t ip)
 printfd(__FILE__, "USERS: Del IP Idx\n");
 assert(ip && "User has non-null ip");
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 const std::map<uint32_t, user_iter>::iterator it(
         ipIndex.find(ip)
@@ -680,7 +680,7 @@ return true;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_PTR * usr) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 user_iter iter;
 if (FindByIPIdx(ip, iter))
@@ -694,7 +694,7 @@ return -1;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_IMPL ** usr) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 user_iter iter;
 if (FindByIPIdx(ip, iter))
@@ -708,7 +708,7 @@ return -1;
 //-----------------------------------------------------------------------------
 bool USERS_IMPL::IsIPInIndex(uint32_t ip) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 
@@ -717,7 +717,7 @@ return it != ipIndex.end();
 //-----------------------------------------------------------------------------
 bool USERS_IMPL::IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::list<USER_IMPL>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
@@ -737,55 +737,55 @@ return false;
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onAddNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onAddNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onDelNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onAddNotifiersImpl.insert(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onAddNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onDelNotifiersImpl.insert(n);
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 onDelNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
 int USERS_IMPL::OpenSearch()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 handle++;
 searchDescriptors[handle] = users.begin();
 return handle;
@@ -802,7 +802,7 @@ int USERS_IMPL::SearchNext(int h, USER_PTR * user)
 //-----------------------------------------------------------------------------
 int USERS_IMPL::SearchNext(int h, USER_IMPL ** user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
@@ -831,7 +831,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int USERS_IMPL::CloseSearch(int h)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));
@@ -844,13 +844,13 @@ return -1;
 //-----------------------------------------------------------------------------
 void USERS_IMPL::AddUserIntoIndexes(user_iter user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 loginIndex.insert(make_pair(user->GetLogin(), user));
 }
 //-----------------------------------------------------------------------------
 void USERS_IMPL::DelUserFromIndexes(user_iter user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 loginIndex.erase(user->GetLogin());
 }
 //-----------------------------------------------------------------------------

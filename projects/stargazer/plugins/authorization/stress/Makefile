@@ -12,7 +12,6 @@ LIBS += $(LIB_THREAD)
 
 STGLIBS = common \
 	  logger \
-	  locker \
 	  scriptexecuter
 
 include ../../Makefile.in

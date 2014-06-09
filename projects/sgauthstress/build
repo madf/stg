@@ -60,7 +60,7 @@ then
 fi
 
 if [ "$OS" = "unknown" ]
-then 
+then
     printf "################################################################################\n"
     printf "# Sorry, but sgauthstress currently supported by Linux, FreeBSD 4.x-8.x        #\n"
     printf "################################################################################\n"
@@ -72,9 +72,8 @@ printf "       Building sgauthstress for $sys $release\n"
 printf "#############################################################################\n"
 
 STG_LIBS="logger.lib
-          locker.lib
-          crypto.lib 
-	  common.lib 
+          crypto.lib
+	  common.lib
           conffiles.lib
           dotconfpp.lib"
 

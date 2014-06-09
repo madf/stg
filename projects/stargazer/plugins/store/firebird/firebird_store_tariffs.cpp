@@ -34,7 +34,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -66,7 +66,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -94,7 +94,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -122,7 +122,7 @@ return 0;
 int FIREBIRD_STORE::SaveTariff(const TARIFF_DATA & td,
                                const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -249,7 +249,7 @@ return 0;
 int FIREBIRD_STORE::RestoreTariff(TARIFF_DATA * td,
                                   const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);

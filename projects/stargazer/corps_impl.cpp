@@ -43,7 +43,7 @@ Read();
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::Add(const CORP_CONF & corp, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
@@ -81,7 +81,7 @@ return -1;
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::Del(const std::string & name, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
@@ -125,7 +125,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::Change(const CORP_CONF & corp, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->corpChg)
@@ -161,7 +161,7 @@ return 0;
 //-----------------------------------------------------------------------------
 bool CORPORATIONS_IMPL::Read()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::vector<std::string> corpsList;
 if (store->GetCorpsList(&corpsList) < 0)
     {
@@ -188,7 +188,7 @@ bool CORPORATIONS_IMPL::Find(const std::string & name, CORP_CONF * corp)
 {
 assert(corp != NULL && "Pointer to corporation is not null");
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     return false;
 
@@ -205,7 +205,7 @@ return true;
 //-----------------------------------------------------------------------------
 bool CORPORATIONS_IMPL::Exists(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
@@ -222,7 +222,7 @@ return false;
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::OpenSearch() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 handle++;
 searchDescriptors[handle] = data.begin();
 return handle;
@@ -230,7 +230,7 @@ return handle;
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::SearchNext(int h, CORP_CONF * corp) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
     WriteServLog("CORPORATIONS. Incorrect search handle.");
@@ -247,7 +247,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int CORPORATIONS_IMPL::CloseSearch(int h) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));

@@ -123,19 +123,19 @@ return 0;
 //-----------------------------------------------------------------------------
 void STG_PINGER::AddIP(uint32_t ip)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 ipToAdd.push_back(ip);
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::DelIP(uint32_t ip)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 ipToDel.push_back(ip);
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::RealAddIP()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 std::list<uint32_t>::iterator iter;
 iter = ipToAdd.begin();
@@ -149,7 +149,7 @@ ipToAdd.erase(ipToAdd.begin(), ipToAdd.end());
 //-----------------------------------------------------------------------------
 void STG_PINGER::RealDelIP()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 std::list<uint32_t>::iterator iter;
 std::multimap<uint32_t, time_t>::iterator treeIter;
@@ -167,7 +167,7 @@ ipToDel.erase(ipToDel.begin(), ipToDel.end());
 //-----------------------------------------------------------------------------
 void STG_PINGER::PrintAllIP()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::multimap<uint32_t, time_t>::iterator iter;
 iter = pingIP.begin();
 while (iter != pingIP.end())
@@ -184,7 +184,7 @@ while (iter != pingIP.end())
 //-----------------------------------------------------------------------------
 int STG_PINGER::GetIPTime(uint32_t ip, time_t * t) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::multimap<uint32_t, time_t>::const_iterator treeIter;
 
 treeIter = pingIP.find(ip);

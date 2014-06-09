@@ -313,7 +313,7 @@ if (nrMapParser.ReadFile(rsSettings.GetMapFileName()))
     }
 
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
 
     printfd(__FILE__, "REMOTE_SCRIPT::Reload()\n");
 
@@ -353,7 +353,7 @@ return false;
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::PeriodicSend()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
@@ -510,7 +510,7 @@ return false;
 //-----------------------------------------------------------------------------
 std::vector<uint32_t> REMOTE_SCRIPT::IP2Routers(uint32_t ip)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 for (size_t i = 0; i < netRouters.size(); ++i)
     {
     if ((ip & netRouters[i].subnetMask) == (netRouters[i].subnetIP & netRouters[i].subnetMask))
@@ -545,13 +545,13 @@ void REMOTE_SCRIPT::AddRSU(USER_PTR user)
 RS::USER rsu(IP2Routers(user->GetCurrIP()), user);
 Send(rsu);
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::DelRSU(USER_PTR user)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
     {

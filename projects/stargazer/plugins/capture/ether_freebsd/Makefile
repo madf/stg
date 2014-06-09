@@ -6,7 +6,7 @@ include ../../../../../Makefile.conf
 
 PROG = mod_cap_bpf.so
 
-SRCS = ./ether_cap.cpp 
+SRCS = ./ether_cap.cpp
 
 LIBS += $(LIB_THREAD)
 

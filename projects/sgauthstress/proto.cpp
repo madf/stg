@@ -134,7 +134,7 @@ return true;
 
 void PROTO::AddUser(const USER & user, bool connect)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 users.push_back(std::make_pair(user.GetIP(), user));
 users.back().second.InitNetwork();
 
@@ -153,7 +153,7 @@ if (connect)
 bool PROTO::Connect(uint32_t ip)
 {
 std::list<std::pair<uint32_t, USER> >::iterator it;
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 it = std::find_if(users.begin(), users.end(), HasIP(ip));
 if (it == users.end())
     return false;
@@ -166,7 +166,7 @@ return RealConnect(&it->second);
 bool PROTO::Disconnect(uint32_t ip)
 {
 std::list<std::pair<uint32_t, USER> >::iterator it;
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 it = std::find_if(users.begin(), users.end(), HasIP(ip));
 if (it == users.end())
     return false;
@@ -182,7 +182,7 @@ while (running)
     {
     int res;
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         res = poll(&pollFds.front(), pollFds.size(), timeout);
         }
     if (res < 0)
@@ -205,7 +205,7 @@ stopped = true;
 
 void PROTO::CheckTimeouts()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::list<std::pair<uint32_t, USER> >::iterator it;
 for (it = users.begin(); it != users.end(); ++it)
     {
@@ -230,7 +230,7 @@ bool PROTO::RecvPacket()
 bool result = true;
 std::vector<struct pollfd>::iterator it;
 std::list<std::pair<uint32_t, USER> >::iterator userIt;
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 for (it = pollFds.begin(), userIt = users.begin(); it != pollFds.end() && userIt != users.end(); ++it, ++userIt)
     {
     if (it->revents)

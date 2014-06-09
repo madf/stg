@@ -41,7 +41,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetUsersList(std::vector<std::string> * usersList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -97,7 +97,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddUser(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -161,7 +161,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelUser(const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -225,7 +225,7 @@ return 0;
 int POSTGRESQL_STORE::SaveUserStat(const USER_STAT & stat,
                                    const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 return SaveStat(stat, login);
 }
@@ -336,7 +336,7 @@ return 0;
 int POSTGRESQL_STORE::SaveUserConf(const USER_CONF & conf,
                                  const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -607,7 +607,7 @@ return 0;
 int POSTGRESQL_STORE::RestoreUserStat(USER_STAT * stat,
                                     const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -747,7 +747,7 @@ return 0;
 int POSTGRESQL_STORE::RestoreUserConf(USER_CONF * conf,
                                     const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -994,7 +994,7 @@ int POSTGRESQL_STORE::WriteUserChgLog(const std::string & login,
                                     const std::string & newValue,
                                     const std::string & message = "") const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -1111,7 +1111,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::WriteUserConnect(const std::string & login, uint32_t ip) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -1197,7 +1197,7 @@ int POSTGRESQL_STORE::WriteUserDisconnect(const std::string & login,
                     double freeMb,
                     const std::string & reason) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -1356,7 +1356,7 @@ int POSTGRESQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> &
                                       time_t lastStat,
                                       const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -1435,7 +1435,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 return SaveStat(stat, login, year, month);
 }

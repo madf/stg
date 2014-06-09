@@ -97,7 +97,7 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 int TRAFFCOUNTER_IMPL::Start()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (!stopped)
     return 0;
@@ -212,7 +212,7 @@ if (monitoring && (touchTimeP + MONITOR_TIME_DELAY_SEC <= stgTime))
     TouchFile(monFile.c_str());
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 //printfd(__FILE__, "TRAFFCOUNTER::Process()\n");
 //TODO replace find with lower_bound.
@@ -290,7 +290,7 @@ if (ed.userUPresent ||
 //-----------------------------------------------------------------------------
 void TRAFFCOUNTER_IMPL::FlushAndRemove()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 Packets::size_type oldPacketsSize = packets.size();
 Index::size_type oldIp2packetsSize = ip2packets.size();
@@ -377,7 +377,7 @@ printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
 std::pair<ip2p_iter, ip2p_iter> pi;
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 // Find all packets with IP belongs to this user
 pi = ip2packets.equal_range(uip);
 
@@ -414,7 +414,7 @@ void TRAFFCOUNTER_IMPL::DelUser(uint32_t uip)
 printfd(__FILE__, "DelUser: %s \n", inet_ntostring(uip).c_str());
 std::pair<ip2p_iter, ip2p_iter> pi;
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 pi = ip2packets.equal_range(uip);
 
 while (pi.first != pi.second)
@@ -717,7 +717,7 @@ return false;
 //-----------------------------------------------------------------------------
 int TRAFFCOUNTER_IMPL::Reload()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (ReadRules(true))
     {

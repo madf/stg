@@ -10,7 +10,6 @@ SRCS = ./ao.cpp
 
 STGLIBS = scriptexecuter \
 	  logger \
-	  locker \
 	  common
 
 include ../../Makefile.in
