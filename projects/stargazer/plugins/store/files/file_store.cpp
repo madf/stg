@@ -358,7 +358,7 @@ int FILES_STORE::ParseSettings()
 int ret = storeSettings.ParseSettings(settings);
 if (ret)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = storeSettings.GetStrError();
     }
 return ret;
@@ -370,12 +370,12 @@ std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetUsersDir(), S_IFDIR, ""))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Failed to open '" + storeSettings.GetUsersDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 userList->swap(files);
 
@@ -388,12 +388,12 @@ std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetAdminsDir(), S_IFREG, ".adm"))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Failed to open '" + storeSettings.GetAdminsDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 adminList->swap(files);
 
@@ -406,12 +406,12 @@ std::vector<std::string> files;
 
 if (GetFileList(&files, storeSettings.GetTariffsDir(), S_IFREG, ".tf"))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Failed to open '" + storeSettings.GetTariffsDir() + "': " + std::string(strerror(errno));
     return -1;
     }
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 tariffList->swap(files);
 
@@ -448,7 +448,7 @@ while ((entry = readdir(d)))
         {
         if (unlink(str.c_str()))
             {
-            STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+            STG_LOCKER lock(&mutex);
             errorStr = "unlink failed. Message: '";
             errorStr += strerror(errno);
             errorStr += "'";
@@ -473,7 +473,7 @@ closedir(d);
 
 if (rmdir(path))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "rmdir failed. Message: '";
     errorStr += strerror(errno);
     errorStr += "'";
@@ -492,7 +492,7 @@ strprintf(&fileName, "%s%s", storeSettings.GetUsersDir().c_str(), login.c_str())
 
 if (mkdir(fileName.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == -1)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = std::string("mkdir failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::AddUser - mkdir failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -501,7 +501,7 @@ if (mkdir(fileName.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 
 strprintf(&fileName, "%s%s/conf", storeSettings.GetUsersDir().c_str(), login.c_str());
 if (Touch(fileName))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file \"" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -510,7 +510,7 @@ if (Touch(fileName))
 strprintf(&fileName, "%s%s/stat", storeSettings.GetUsersDir().c_str(), login.c_str());
 if (Touch(fileName))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file \"" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::AddUser - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -528,7 +528,7 @@ if (access(dirName.c_str(), F_OK) != 0)
     {
     if (mkdir(dirName.c_str(), 0700) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Directory '" + dirName + "' cannot be created.";
         printfd(__FILE__, "FILES_STORE::DelUser - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
@@ -541,7 +541,7 @@ if (access(dirName.c_str(), F_OK) == 0)
     strprintf(&dirName1, "%s/%s", storeSettings.GetUsersDir().c_str(), login.c_str());
     if (rename(dirName1.c_str(), dirName.c_str()))
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Error moving dir from " + dirName1 + " to " + dirName;
         printfd(__FILE__, "FILES_STORE::DelUser - rename failed. Message: '%s'\n", strerror(errno));
         return -1;
@@ -580,7 +580,7 @@ int e = cf.Error();
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - conf read failed for user '%s'\n", login.c_str());
     return -1;
@@ -588,14 +588,14 @@ if (e)
 
 if (cf.ReadString("Password", &conf->password, "") < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter Password.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - password read failed for user '%s'\n", login.c_str());
     return -1;
     }
 if (conf->password.empty())
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' password is blank.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - password is blank for user '%s'\n", login.c_str());
     return -1;
@@ -603,14 +603,14 @@ if (conf->password.empty())
 
 if (cf.ReadString("tariff", &conf->tariffName, "") < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter Tariff.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - tariff read failed for user '%s'\n", login.c_str());
     return -1;
     }
 if (conf->tariffName.empty())
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' tariff is blank.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - tariff is blank for user '%s'\n", login.c_str());
     return -1;
@@ -625,7 +625,7 @@ try
     }
 catch (const std::string & s)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter IP address. " + s;
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - ip read failed for user '%s'\n", login.c_str());
     return -1;
@@ -634,7 +634,7 @@ conf->ips = ips;
 
 if (cf.ReadInt("alwaysOnline", &conf->alwaysOnline, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter AlwaysOnline.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - alwaysonline read failed for user '%s'\n", login.c_str());
     return -1;
@@ -642,7 +642,7 @@ if (cf.ReadInt("alwaysOnline", &conf->alwaysOnline, 0) != 0)
 
 if (cf.ReadInt("down", &conf->disabled, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter Down.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - down read failed for user '%s'\n", login.c_str());
     return -1;
@@ -650,7 +650,7 @@ if (cf.ReadInt("down", &conf->disabled, 0) != 0)
 
 if (cf.ReadInt("passive", &conf->passive, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter Passive.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - passive read failed for user '%s'\n", login.c_str());
     return -1;
@@ -675,7 +675,7 @@ for (int i = 0; i < USERDATA_NUM; i++)
 
 if (cf.ReadDouble("Credit", &conf->credit, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' data not read. Parameter Credit.";
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - credit read failed for user '%s'\n", login.c_str());
     return -1;
@@ -708,7 +708,7 @@ int e = cf.Error();
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "User \'" + login + "\' stat not read. Cannot open file " + fileName + ".";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - stat read failed for user '%s'\n", login.c_str());
     return -1;
@@ -722,7 +722,7 @@ for (int i = 0; i < DIR_NUM; i++)
     snprintf(s, 22, "D%d", i);
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - download stat read failed for user '%s'\n", login.c_str());
         return -1;
@@ -732,7 +732,7 @@ for (int i = 0; i < DIR_NUM; i++)
     snprintf(s, 22, "U%d", i);
     if (cf.ReadULongLongInt(s, &traff, 0) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr =   "User \'" + login + "\' stat not read. Parameter " + std::string(s);
         printfd(__FILE__, "FILES_STORE::RestoreUserStat - upload stat read failed for user '%s'\n", login.c_str());
         return -1;
@@ -742,7 +742,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 if (cf.ReadDouble("Cash", &stat->cash, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter Cash";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - cash read failed for user '%s'\n", login.c_str());
     return -1;
@@ -750,7 +750,7 @@ if (cf.ReadDouble("Cash", &stat->cash, 0) != 0)
 
 if (cf.ReadDouble("FreeMb", &stat->freeMb, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter FreeMb";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - freemb read failed for user '%s'\n", login.c_str());
     return -1;
@@ -758,7 +758,7 @@ if (cf.ReadDouble("FreeMb", &stat->freeMb, 0) != 0)
 
 if (cf.ReadTime("LastCashAddTime", &stat->lastCashAddTime, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter LastCashAddTime";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - lastcashaddtime read failed for user '%s'\n", login.c_str());
     return -1;
@@ -766,7 +766,7 @@ if (cf.ReadTime("LastCashAddTime", &stat->lastCashAddTime, 0) != 0)
 
 if (cf.ReadTime("PassiveTime", &stat->passiveTime, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter PassiveTime";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - passivetime read failed for user '%s'\n", login.c_str());
     return -1;
@@ -774,7 +774,7 @@ if (cf.ReadTime("PassiveTime", &stat->passiveTime, 0) != 0)
 
 if (cf.ReadDouble("LastCashAdd", &stat->lastCashAdd, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter LastCashAdd";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - lastcashadd read failed for user '%s'\n", login.c_str());
     return -1;
@@ -782,7 +782,7 @@ if (cf.ReadDouble("LastCashAdd", &stat->lastCashAdd, 0) != 0)
 
 if (cf.ReadTime("LastActivityTime", &stat->lastActivityTime, 0) != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr =   "User \'" + login + "\' stat not read. Parameter LastActivityTime";
     printfd(__FILE__, "FILES_STORE::RestoreUserStat - lastactivitytime read failed for user '%s'\n", login.c_str());
     return -1;
@@ -802,7 +802,7 @@ int e = cfstat.Error();
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = std::string("User \'") + login + "\' conf not written\n";
     printfd(__FILE__, "FILES_STORE::SaveUserConf - conf write failed for user '%s'\n", login.c_str());
     return -1;
@@ -813,7 +813,7 @@ e += chown(fileName.c_str(), storeSettings.GetConfUID(), storeSettings.GetConfGI
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::SaveUserConf - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -858,7 +858,7 @@ fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
 
     if (e)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = std::string("User \'") + login + "\' stat not written\n";
         printfd(__FILE__, "FILES_STORE::SaveUserStat - stat write failed for user '%s'\n", login.c_str());
         return -1;
@@ -886,7 +886,7 @@ e += chown(fileName.c_str(), storeSettings.GetStatUID(), storeSettings.GetStatGI
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::SaveUserStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -911,7 +911,7 @@ if (f)
     }
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot open \'" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::WriteLogString - log write failed for user '%s'\n", login.c_str());
     return -1;
@@ -922,7 +922,7 @@ e += chown(fileName.c_str(), storeSettings.GetLogUID(), storeSettings.GetLogGID(
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteLogString - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -947,7 +947,7 @@ if (f)
     }
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot open \'" + fileName + "\'";
     printfd(__FILE__, "FILES_STORE::WriteLogString - log write failed for user '%s'\n", login.c_str());
     return -1;
@@ -958,7 +958,7 @@ e += chown(fileName.c_str(), storeSettings.GetLogUID(), storeSettings.GetLogGID(
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteLogString - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -1035,7 +1035,7 @@ CONFIGFILE s(stat1, true);
 
 if (s.Error())
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file '" + stat1 + "'";
     printfd(__FILE__, "FILES_STORE::SaveMonthStat - month stat write failed for user '%s'\n", login.c_str());
     return -1;
@@ -1050,7 +1050,7 @@ CONFIGFILE s2(stat2, true);
 
 if (s2.Error())
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file '" + stat2 + "'";
     printfd(__FILE__, "FILES_STORE::SaveMonthStat - month stat write failed for user '%s'\n", login.c_str());
     return -1;
@@ -1088,7 +1088,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_
 
 if (Touch(fileName))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file " + fileName;
     printfd(__FILE__, "FILES_STORE::AddAdmin - failed to add admin '%s'\n", login.c_str());
     return -1;
@@ -1103,7 +1103,7 @@ std::string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
 if (unlink(fileName.c_str()))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "unlink failed. Message: '";
     errorStr += strerror(errno);
     errorStr += "'";
@@ -1125,7 +1125,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
 
     if (e)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot write admin " + ac.login + ". " + fileName;
         printfd(__FILE__, "FILES_STORE::SaveAdmin - failed to save admin '%s'\n", ac.login.c_str());
         return -1;
@@ -1181,7 +1181,7 @@ std::string p;
 
 if (cf.Error())
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot open " + fileName;
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - failed to restore admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1189,7 +1189,7 @@ if (cf.Error())
 
 if (cf.ReadString("password", &p, "*"))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter password";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - password read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1223,7 +1223,7 @@ if (cf.ReadUShortInt("ChgConf", &a, 0) == 0)
     ac->priv.userConf = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgConf";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgconf read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1233,7 +1233,7 @@ if (cf.ReadUShortInt("ChgPassword", &a, 0) == 0)
     ac->priv.userPasswd = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgPassword";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgpassword read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1243,7 +1243,7 @@ if (cf.ReadUShortInt("ChgStat", &a, 0) == 0)
     ac->priv.userStat = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgStat";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgstat read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1253,7 +1253,7 @@ if (cf.ReadUShortInt("ChgCash", &a, 0) == 0)
     ac->priv.userCash = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgCash";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgcash read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1263,7 +1263,7 @@ if (cf.ReadUShortInt("UsrAddDel", &a, 0) == 0)
     ac->priv.userAddDel = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter UsrAddDel";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - usradddel read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1273,7 +1273,7 @@ if (cf.ReadUShortInt("ChgAdmin", &a, 0) == 0)
     ac->priv.adminChg = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgAdmin";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgadmin read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1283,7 +1283,7 @@ if (cf.ReadUShortInt("ChgTariff", &a, 0) == 0)
     ac->priv.tariffChg = a;
 else
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error in parameter ChgTariff";
     printfd(__FILE__, "FILES_STORE::RestoreAdmin - chgtariff read failed for admin '%s'\n", ac->login.c_str());
     return -1;
@@ -1308,7 +1308,7 @@ std::string fileName;
 strprintf(&fileName, "%s/%s.tf", storeSettings.GetTariffsDir().c_str(), name.c_str());
 if (Touch(fileName))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot create file " + fileName;
     printfd(__FILE__, "FILES_STORE::AddTariff - failed to add tariff '%s'\n", name.c_str());
     return -1;
@@ -1322,7 +1322,7 @@ std::string fileName;
 strprintf(&fileName, "%s/%s.tf", storeSettings.GetTariffsDir().c_str(), name.c_str());
 if (unlink(fileName.c_str()))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "unlink failed. Message: '";
     errorStr += strerror(errno);
     errorStr += "'";
@@ -1340,7 +1340,7 @@ td->tariffConf.name = tariffName;
 
 if (conf.Error() != 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot read file " + fileName;
     printfd(__FILE__, "FILES_STORE::RestoreTariff - failed to read tariff '%s'\n", tariffName.c_str());
     return -1;
@@ -1352,7 +1352,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "Time%d", i);
     if (conf.ReadString(param, &str, "00:00-00:00") < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - time%d read failed for tariff '%s'\n", i, tariffName.c_str());
         return -1;
@@ -1367,7 +1367,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "PriceDayA%d", i);
     if (conf.ReadDouble(param, &td->dirPrice[i].priceDayA, 0.0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - pricedaya read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1377,7 +1377,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "PriceDayB%d", i);
     if (conf.ReadDouble(param, &td->dirPrice[i].priceDayB, 0.0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - pricedayb read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1387,7 +1387,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "PriceNightA%d", i);
     if (conf.ReadDouble(param, &td->dirPrice[i].priceNightA, 0.0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - pricenighta read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1397,7 +1397,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "PriceNightB%d", i);
     if (conf.ReadDouble(param, &td->dirPrice[i].priceNightB, 0.0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - pricenightb read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1407,7 +1407,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "Threshold%d", i);
     if (conf.ReadInt(param, &td->dirPrice[i].threshold, 0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - threshold read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1416,7 +1416,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "SinglePrice%d", i);
     if (conf.ReadInt(param, &td->dirPrice[i].singlePrice, 0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - singleprice read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1425,7 +1425,7 @@ for (int i = 0; i<DIR_NUM; i++)
     strprintf(&param, "NoDiscount%d", i);
     if (conf.ReadInt(param, &td->dirPrice[i].noDiscount, 0) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - nodiscount read failed for tariff '%s'\n", tariffName.c_str());
         return -1;
@@ -1434,7 +1434,7 @@ for (int i = 0; i<DIR_NUM; i++)
 
 if (conf.ReadDouble("Fee", &td->tariffConf.fee, 0) < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot read tariff " + tariffName + ". Parameter Fee";
     printfd(__FILE__, "FILES_STORE::RestoreTariff - fee read failed for tariff '%s'\n", tariffName.c_str());
     return -1;
@@ -1442,7 +1442,7 @@ if (conf.ReadDouble("Fee", &td->tariffConf.fee, 0) < 0)
 
 if (conf.ReadDouble("Free", &td->tariffConf.free, 0) < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot read tariff " + tariffName + ". Parameter Free";
     printfd(__FILE__, "FILES_STORE::RestoreTariff - free read failed for tariff '%s'\n", tariffName.c_str());
     return -1;
@@ -1450,7 +1450,7 @@ if (conf.ReadDouble("Free", &td->tariffConf.free, 0) < 0)
 
 if (conf.ReadDouble("PassiveCost", &td->tariffConf.passiveCost, 0) < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot read tariff " + tariffName + ". Parameter PassiveCost";
     printfd(__FILE__, "FILES_STORE::RestoreTariff - passivecost read failed for tariff '%s'\n", tariffName.c_str());
     return -1;
@@ -1458,7 +1458,7 @@ if (conf.ReadDouble("PassiveCost", &td->tariffConf.passiveCost, 0) < 0)
 
 if (conf.ReadString("TraffType", &str, "") < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Cannot read tariff " + tariffName + ". Parameter TraffType";
     printfd(__FILE__, "FILES_STORE::RestoreTariff - trafftype read failed for tariff '%s'\n", tariffName.c_str());
     return -1;
@@ -1477,7 +1477,7 @@ else
                 td->tariffConf.traffType = TRAFF_MAX;
             else
                 {
-                STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+                STG_LOCKER lock(&mutex);
                 errorStr = "Cannot read tariff " + tariffName + ". Parameter TraffType incorrect";
                 printfd(__FILE__, "FILES_STORE::RestoreTariff - invalid trafftype for tariff '%s'\n", tariffName.c_str());
                 return -1;
@@ -1501,7 +1501,7 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 
     if (e)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Error writing tariff " + tariffName;
         printfd(__FILE__, "FILES_STORE::RestoreTariff - failed to save tariff '%s'\n", tariffName.c_str());
         return e;
@@ -1586,7 +1586,7 @@ if (access(dn, F_OK) != 0)
     {
     if (mkdir(dn, 0700) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
@@ -1598,7 +1598,7 @@ e += chmod(dn, storeSettings.GetStatModeDir());
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -1619,7 +1619,7 @@ if (access(dn, F_OK) != 0)
     {
     if (mkdir(dn, 0700) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
@@ -1631,7 +1631,7 @@ e += chmod(dn, storeSettings.GetStatModeDir());
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -1645,7 +1645,7 @@ if (access(dn, F_OK) != 0)
     {
     if (mkdir(dn, 0700) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Directory \'" + std::string(dn) + "\' cannot be created.";
         printfd(__FILE__, "FILES_STORE::WriteDetailStat - mkdir failed. Message: '%s'\n", strerror(errno));
         return -1;
@@ -1657,7 +1657,7 @@ e += chmod(dn, storeSettings.GetStatModeDir());
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -1667,7 +1667,7 @@ statFile = fopen (fn, "at");
 
 if (!statFile)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "File \'" + std::string(fn) + "\' cannot be written.";
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -1694,7 +1694,7 @@ s2 = lt2->tm_sec;
 if (fprintf(statFile, "-> %02d.%02d.%02d - %02d.%02d.%02d\n",
             h1, m1, s1, h2, m2, s2) < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = std::string("fprint failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - fprintf failed. Message: '%s'\n", strerror(errno));
     fclose(statFile);
@@ -1718,7 +1718,7 @@ while (stIter != statTree.end())
                 u.c_str(),
                 stIter->second.cash) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "fprint failed. Message: '";
         errorStr += strerror(errno);
         errorStr += "'";
@@ -1734,7 +1734,7 @@ while (stIter != statTree.end())
                 u.c_str(),
                 stIter->second.cash) < 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = std::string("fprint failed. Message: '");
         errorStr += strerror(errno);
         errorStr += "'";
@@ -1754,7 +1754,7 @@ e += chmod(fn, storeSettings.GetStatMode());
 
 if (e)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
@@ -1772,7 +1772,7 @@ if (access(dn.c_str(), F_OK) != 0)
     {
     if (mkdir(dn.c_str(), 0700) != 0)
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Directory \'";
         errorStr += dn;
         errorStr += "\' cannot be created.";
@@ -1790,7 +1790,7 @@ strprintf(&fn, "%s/%lld", dn.c_str(), msg->header.id);
 
 if (Touch(fn))
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "File \'";
     errorStr += fn;
     errorStr += "\' cannot be writen.";
@@ -1812,7 +1812,7 @@ if (access(fileName.c_str(), F_OK) != 0)
     {
     std::string idstr;
     x2str(msg.header.id, idstr);
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Message for user \'";
     errorStr += login + "\' with ID \'";
     errorStr += idstr + "\' does not exist.";
@@ -1825,7 +1825,7 @@ Touch(fileName + ".new");
 msgFile = fopen((fileName + ".new").c_str(), "wt");
 if (!msgFile)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "File \'" + fileName + "\' cannot be writen.";
     printfd(__FILE__, "FILES_STORE::EditMessage - fopen failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -1842,7 +1842,7 @@ res &= (fprintf(msgFile, "%s", msg.text.c_str()) >= 0);
 
 if (!res)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = std::string("fprintf failed. Message: '") + strerror(errno) + "'";
     printfd(__FILE__, "FILES_STORE::EditMessage - fprintf failed. Message: '%s'\n", strerror(errno));
     fclose(msgFile);
@@ -1855,7 +1855,7 @@ chmod((fileName + ".new").c_str(), storeSettings.GetConfMode());
 
 if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "Error moving dir from " + fileName + ".new to " + fileName;
     printfd(__FILE__, "FILES_STORE::EditMessage - rename failed. Message: '%s'\n", strerror(errno));
     return -1;
@@ -1900,7 +1900,7 @@ for (unsigned i = 0; i < messages.size(); i++)
         {
         if (unlink((dn + messages[i]).c_str()))
             {
-            STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+            STG_LOCKER lock(&mutex);
             errorStr = std::string("unlink failed. Message: '") + strerror(errno) + "'";
             printfd(__FILE__, "FILES_STORE::GetMessageHdrs - unlink failed. Message: '%s'\n", strerror(errno));
             return -1;
@@ -1918,7 +1918,7 @@ for (unsigned i = 0; i < messages.size(); i++)
         {
         if (unlink((dn + messages[i]).c_str()))
             {
-            STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+            STG_LOCKER lock(&mutex);
             errorStr = std::string("unlink failed. Message: '") + strerror(errno) + "'";
             printfd(__FILE__, "FILES_STORE::GetMessageHdrs - unlink failed. Message: '%s'\n", strerror(errno));
             return -1;
@@ -1940,7 +1940,7 @@ FILE * msgFile;
 msgFile = fopen(fileName.c_str(), "rt");
 if (!msgFile)
     {
-    STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+    STG_LOCKER lock(&mutex);
     errorStr = "File \'";
     errorStr += fileName;
     errorStr += "\' cannot be openned.";
@@ -1961,7 +1961,7 @@ memset(p, 0, sizeof(p));
 for (int pos = 0; pos < 6; pos++)
     {
     if (fgets(p, sizeof(p) - 1, msgFile) == NULL) {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read file \'";
         errorStr += fileName;
         errorStr += "\'. Missing data.";
@@ -1979,7 +1979,7 @@ for (int pos = 0; pos < 6; pos++)
 
     if (feof(msgFile))
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read file \'";
         errorStr += fileName;
         errorStr += "\'. Missing data.";
@@ -1991,7 +1991,7 @@ for (int pos = 0; pos < 6; pos++)
 
     if (str2x(p, *(d[pos])))
         {
-        STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&mutex);
         errorStr = "Cannot read file \'";
         errorStr += fileName;
         errorStr += "\'. Incorrect value. \'";

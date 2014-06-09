@@ -10,7 +10,6 @@ SRCS = ./file_store.cpp
 
 STGLIBS = conffiles \
 	  common \
-	  locker \
 	  logger \
 	  crypto
 

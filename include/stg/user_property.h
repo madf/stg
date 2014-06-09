@@ -214,7 +214,7 @@ template <typename varT>
 inline
 void USER_PROPERTY<varT>::Set(const varT & rvalue)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
+STG_LOCKER locker(&mutex);
 
 typename std::set<PROPERTY_NOTIFIER_BASE<varT> *>::iterator ni;
 
@@ -244,7 +244,7 @@ template <typename varT>
 inline
 void USER_PROPERTY<varT>::AddBeforeNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
+STG_LOCKER locker(&mutex);
 beforeNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
@@ -252,7 +252,7 @@ template <typename varT>
 inline
 void USER_PROPERTY<varT>::DelBeforeNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
+STG_LOCKER locker(&mutex);
 beforeNotifiers.erase(const_cast<PROPERTY_NOTIFIER_BASE<varT> *>(n));
 }
 //-----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ template <typename varT>
 inline
 void USER_PROPERTY<varT>::AddAfterNotifier(PROPERTY_NOTIFIER_BASE<varT> * n)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
+STG_LOCKER locker(&mutex);
 afterNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
@@ -268,7 +268,7 @@ template <typename varT>
 inline
 void USER_PROPERTY<varT>::DelAfterNotifier(const PROPERTY_NOTIFIER_BASE<varT> * n)
 {
-STG_LOCKER locker(&mutex, __FILE__, __LINE__);
+STG_LOCKER locker(&mutex);
 afterNotifiers.erase(const_cast<PROPERTY_NOTIFIER_BASE<varT> *>(n));
 }
 //-----------------------------------------------------------------------------

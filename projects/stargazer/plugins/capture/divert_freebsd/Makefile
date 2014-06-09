@@ -6,7 +6,7 @@ include ../../../../../Makefile.conf
 
 PROG = mod_cap_divert.so
 
-SRCS = ./divert_cap.cpp 
+SRCS = ./divert_cap.cpp
 
 LIBS += $(LIB_THREAD)
 

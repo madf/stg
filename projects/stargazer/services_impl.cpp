@@ -43,7 +43,7 @@ Read();
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::Add(const SERVICE_CONF & service, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->serviceChg)
@@ -81,7 +81,7 @@ return -1;
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::Del(const std::string & name, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->serviceChg)
@@ -125,7 +125,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::Change(const SERVICE_CONF & service, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->serviceChg)
@@ -161,7 +161,7 @@ return 0;
 //-----------------------------------------------------------------------------
 bool SERVICES_IMPL::Read()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 std::vector<std::string> servicesList;
 if (store->GetServicesList(&servicesList) < 0)
     {
@@ -188,7 +188,7 @@ bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service)
 {
 assert(service != NULL && "Pointer to service is not null");
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     return false;
 
@@ -205,7 +205,7 @@ return true;
 //-----------------------------------------------------------------------------
 bool SERVICES_IMPL::Exists(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
@@ -222,7 +222,7 @@ return false;
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::OpenSearch() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 handle++;
 searchDescriptors[handle] = data.begin();
 return handle;
@@ -230,7 +230,7 @@ return handle;
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::SearchNext(int h, SERVICE_CONF * service) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
     WriteServLog("SERVICES. Incorrect search handle.");
@@ -247,7 +247,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int SERVICES_IMPL::CloseSearch(int h) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));

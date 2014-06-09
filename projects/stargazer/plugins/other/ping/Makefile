@@ -12,7 +12,6 @@ SRCS = ./ping.cpp
 
 STGLIBS = pinger \
 	  common \
-	  locker \
 	  logger \
 	  scriptexecuter
 

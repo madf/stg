@@ -53,7 +53,7 @@ void EVENT_LOOP::Enqueue(ACTIVE_CLASS & ac,
                          typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
                          DATA_TYPE d)
 {
-STG_LOCKER lock(&_mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&_mutex);
 // Add new action
 ACTIONS_LIST::Enqueue(ac, a, d);
 // Signal about new action

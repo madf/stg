@@ -42,7 +42,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetAdminsList(std::vector<std::string> * adminsList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -98,7 +98,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveAdmin(const ADMIN_CONF & ac) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -197,7 +197,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -318,7 +318,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -388,7 +388,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

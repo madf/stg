@@ -18,7 +18,6 @@ LIBS += -lexpat \
 	$(LIB_THREAD)
 
 STGLIBS = common \
-	  locker \
 	  logger \
 	  crypto \
 	  scriptexecuter

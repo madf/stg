@@ -13,7 +13,6 @@ SRCS = ./rscript.cpp \
 
 STGLIBS = common \
 	  crypto \
-	  locker \
 	  logger \
 	  scriptexecuter
 

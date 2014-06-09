@@ -9,7 +9,6 @@ SRCS = main.cpp \
        proto.cpp
 
 STGLIBS = dotconfpp \
-	  locker \
 	  crypto \
 	  common
 
@@ -40,7 +39,7 @@ all: libs plugins $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-plugins: libs 
+plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS)

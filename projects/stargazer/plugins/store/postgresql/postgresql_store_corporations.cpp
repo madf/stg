@@ -38,7 +38,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -94,7 +94,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveCorp(const CORP_CONF & cc) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -160,7 +160,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreCorp(CORP_CONF * cc, const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -243,7 +243,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -310,7 +310,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

@@ -13,7 +13,6 @@ SRCS = ./main.cpp \
 STGLIBS = scriptexecuter \
           conffiles \
 	  logger \
-	  locker \
 	  crypto \
           common
 

@@ -57,7 +57,7 @@ Read();
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::Add(const string & login, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
@@ -96,7 +96,7 @@ return -1;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::Del(const string & login, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 ADMIN_IMPL adm(0, login, "");
 const PRIV * priv = admin->GetPriv();
 
@@ -141,7 +141,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::Change(const ADMIN_CONF & ac, const ADMIN * admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
@@ -178,7 +178,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::Read()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 vector<string> adminsList;
 if (store->GetAdminsList(&adminsList) < 0)
     {
@@ -205,7 +205,7 @@ bool ADMINS_IMPL::Find(const string & l, ADMIN ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");
 
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     {
     printfd(__FILE__, "No admin in system!\n");
@@ -227,7 +227,7 @@ return true;
 //-----------------------------------------------------------------------------
 bool ADMINS_IMPL::Exists(const string & login) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
@@ -245,7 +245,7 @@ return false;
 //-----------------------------------------------------------------------------
 bool ADMINS_IMPL::Correct(const string & login, const std::string & password, ADMIN ** admin)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
@@ -272,7 +272,7 @@ return true;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::OpenSearch() const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 handle++;
 searchDescriptors[handle] = data.begin();
 return handle;
@@ -280,7 +280,7 @@ return handle;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::SearchNext(int h, ADMIN_CONF * ac) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
     WriteServLog("ADMINS. Incorrect search handle.");
@@ -299,7 +299,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int ADMINS_IMPL::CloseSearch(int h) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));

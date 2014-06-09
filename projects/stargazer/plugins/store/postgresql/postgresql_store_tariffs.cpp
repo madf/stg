@@ -39,7 +39,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -95,7 +95,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -158,7 +158,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -222,7 +222,7 @@ return 0;
 int POSTGRESQL_STORE::SaveTariff(const TARIFF_DATA & td,
                                  const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -403,7 +403,7 @@ return 0;
 int POSTGRESQL_STORE::RestoreTariff(TARIFF_DATA * td,
                                   const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

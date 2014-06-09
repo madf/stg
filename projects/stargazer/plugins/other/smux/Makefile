@@ -14,7 +14,6 @@ SRCS =  smux.cpp \
 STGLIBS = common \
 	  smux \
 	  logger \
-	  locker \
 	  scriptexecuter
 
 CFLAGS += -I ../../../../../stglibs/smux.lib/include/stg

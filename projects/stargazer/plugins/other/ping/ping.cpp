@@ -124,7 +124,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int PING::Stop()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 if (!isRunning)
     return 0;
@@ -178,7 +178,7 @@ while (ping->nonstop)
     {
     std::list<USER_PTR>::iterator iter = ping->usersList.begin();
         {
-        STG_LOCKER lock(&ping->mutex, __FILE__, __LINE__);
+        STG_LOCKER lock(&ping->mutex);
         while (iter != ping->usersList.end())
             {
             if ((*iter)->GetProperty().ips.ConstData().OnlyOneIP())
@@ -268,7 +268,7 @@ if (IPIter != ChgIPNotifierList.end())
 //-----------------------------------------------------------------------------
 void PING::GetUsers()
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 USER_PTR u;
 int h = users->OpenSearch();
@@ -297,7 +297,7 @@ users->CloseSearch(h);
 //-----------------------------------------------------------------------------
 void PING::AddUser(USER_PTR u)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 SetUserNotifiers(u);
 usersList.push_back(u);
@@ -305,7 +305,7 @@ usersList.push_back(u);
 //-----------------------------------------------------------------------------
 void PING::DelUser(USER_PTR u)
 {
-STG_LOCKER lock(&mutex, __FILE__, __LINE__);
+STG_LOCKER lock(&mutex);
 
 UnSetUserNotifiers(u);
 

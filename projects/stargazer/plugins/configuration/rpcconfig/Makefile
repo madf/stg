@@ -25,7 +25,6 @@ LIBS += -liconv
 endif
 
 STGLIBS = common \
-	  locker \
 	  logger \
 	  scriptexecuter
 

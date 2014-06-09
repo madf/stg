@@ -30,66 +30,25 @@
 
 #include <pthread.h>
 
-#ifdef DEBUG_LOCKER
-
-#include <iostream>
-#include <string>
-#include <pthread.h>
-
-#endif
-
 //-----------------------------------------------------------------------------
 class STG_LOCKER
 {
 public:
-    #ifdef DEBUG_LOCKER
-    STG_LOCKER(pthread_mutex_t * m, const char * __file__, int __line__)
-        : mutex(m),
-          file(__file__),
-          line(__line__),
-          lockerMutex(),
-          lockID(0)
-    #else
-    STG_LOCKER(pthread_mutex_t * m, const char *, int)
+    STG_LOCKER(pthread_mutex_t * m)
         : mutex(m)
-    #endif
         {
-        mutex = m;
-        #ifdef DEBUG_LOCKER
-        pthread_mutex_lock(&lockerMutex);
-        file = __file__;
-        line = __line__;
-        if (id == 0)
-            pthread_mutex_init(&lockerMutex, NULL);
-
-        lockID = ++id;
-        std::cout << "Lock: " << lockID << " " << file << ":" << line << " " << mutex << " " << pthread_self() << std::endl;
-        pthread_mutex_unlock(&lockerMutex);
-        #endif
         pthread_mutex_lock(mutex);
         }
 
     ~STG_LOCKER()
         {
         pthread_mutex_unlock(mutex);
-        #ifdef DEBUG_LOCKER
-        pthread_mutex_lock(&lockerMutex);
-        std::cout << "Unlock: " << lockID << " " << file << ":" << line << " " << mutex << " " << pthread_self() << std::endl;
-        pthread_mutex_unlock(&lockerMutex);
-        #endif
         }
 private:
     STG_LOCKER(const STG_LOCKER & rvalue);
     STG_LOCKER & operator=(const STG_LOCKER & rvalue);
 
     pthread_mutex_t * mutex;
-    #ifdef DEBUG_LOCKER
-    std::string file;
-    int line;
-    static pthread_mutex_t lockerMutex;
-    static long long id;
-    long long lockID;
-    #endif
 };
 //-----------------------------------------------------------------------------
 
