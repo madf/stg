@@ -612,7 +612,7 @@ if (users->FindByName(login, &user))
            login,
            inet_ntostring(sip).c_str());
     printfd(__FILE__, "User '%s' NOT found!\n", login);
-    SendError(sip, sport, protoVer, "Неправильный логин!");
+    SendError(sip, sport, protoVer, IconvString("п²п╣п©я─п╟п╡п╦п╩я▄п╫я▀п╧ п╩п╬пЁп╦п╫.", "utf8", "koi8-ru"));
     return -1;
     }
 
@@ -621,14 +621,14 @@ printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
 if (user->GetProperty().disabled.Get())
     {
     logger("Cannont authorize '%s', user is disabled.", login);
-    SendError(sip, sport, protoVer, "Учетная запись заблокирована");
+    SendError(sip, sport, protoVer, IconvString("пёя┤п╣я┌п╫п╟я▐ п╥п╟п©п╦я│я▄ п╥п╟п╠п╩п╬п╨п╦я─п╬п╡п╟п╫п╟.", "utf8", "koi8-ru"));
     return 0;
     }
 
 if (user->GetProperty().passive.Get())
     {
     logger("Cannont authorize '%s', user is passive.", login);
-    SendError(sip, sport, protoVer, "Учетная запись заморожена");
+    SendError(sip, sport, protoVer, IconvString("пёя┤п╣я┌п╫п╟я▐ п╥п╟п©п╦я│я▄ п╥п╟п╪п╬я─п╬п╤п╣п╫п╟.", "utf8", "koi8-ru"));
     return 0;
     }
 
@@ -638,7 +638,7 @@ if (!user->GetProperty().ips.Get().IsIPInIPS(sip))
             user->GetLogin().c_str(), inet_ntostring(sip).c_str());
     logger("User %s. IP address is incorrect. IP %s",
            user->GetLogin().c_str(), inet_ntostring(sip).c_str());
-    SendError(sip, sport, protoVer, "Пользователь не опознан! Проверьте IP адрес.");
+    SendError(sip, sport, protoVer, IconvString("п÷п╬п╩я▄п╥п╬п╡п╟я┌п╣п╩я▄ п╫п╣ п╬п©п╬п╥п╫п╟п╫. п÷я─п╬п╡п╣я─я▄я┌п╣ IP-п╟п╢я─п╣я│.", "utf8", "koi8-ru"));
     return 0;
     }
 
@@ -649,11 +649,9 @@ int AUTH_IA::CheckHeader(const char * buffer, uint32_t sip, int * protoVer)
 {
 if (strncmp(IA_ID, buffer, strlen(IA_ID)) != 0)
     {
-    //SendError(userIP, updateMsg);
     printfd(__FILE__, "update needed - IA_ID\n");
     if (iaSettings.LogProtocolErrors())
         logger("IP: %s. Header: invalid packed signature.", inet_ntostring(sip).c_str());
-    //SendError(userIP, "Incorrect header!");
     return -1;
     }
 
@@ -662,14 +660,12 @@ if (buffer[6] != 0) //proto[0] shoud be 0
     printfd(__FILE__, "update needed - PROTO major: %d\n", buffer[6]);
     if (iaSettings.LogProtocolErrors())
         logger("IP: %s. Header: invalid protocol major version: %d.", inet_ntostring(sip).c_str(), buffer[6]);
-    //SendError(userIP, updateMsg);
     return -1;
     }
 
 if (buffer[7] < 6)
     {
     // need update
-    //SendError(userIP, updateMsg);
     printfd(__FILE__, "update needed - PROTO minor: %d\n", buffer[7]);
     if (iaSettings.LogProtocolErrors())
         logger("IP: %s. Header: invalid protocol minor version: %d.", inet_ntostring(sip).c_str(), buffer[7]);
@@ -789,7 +785,7 @@ if (it == ip2user.end())
                    userPtr->GetLogin().c_str(),
                    inet_ntostring(sip).c_str(),
                    login.c_str());
-            SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
+            SendError(sip, sport, protoVer, IconvString("IP-п╟п╢я─п╣я│ я┐п╤п╣ я│п╦п©п╬п╩я▄п╥я┐п╣я┌я│я▐.", "utf8", "koi8-ru"));
             return 0;
             }
         }
@@ -814,7 +810,7 @@ else if (user->GetID() != it->second.user->GetID())
            it->second.user->GetLogin().c_str(),
            inet_ntostring(sip).c_str(),
            user->GetLogin().c_str());
-    SendError(sip, sport, protoVer, "Ваш IP адрес уже используется!");
+    SendError(sip, sport, protoVer, IconvString("IP-п╟п╢я─п╣я│ я┐п╤п╣ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐.", "utf8", "koi8-ru"));
     return 0;
     }
 
@@ -835,7 +831,7 @@ packetName[IA_MAX_TYPE_LEN - 1] = 0;
 std::map<std::string, int>::iterator pi(packetTypes.find(packetName));
 if (pi == packetTypes.end())
     {
-    SendError(sip, sport, protoVer, "Неправильный логин или пароль!");
+    SendError(sip, sport, protoVer, IconvString("п²п╣п©я─п╟п╡п╦п╩я▄п╫я▀п╧ п╩п╬пЁп╦п╫ п╦п╩п╦ п©п╟я─п╬п╩я▄.", "utf8", "koi8-ru"));
     printfd(__FILE__, "Login or password is wrong!\n");
     logger("User's connect failed. User: '%s', ip %s. Wrong login or password",
            login.c_str(),
@@ -853,7 +849,7 @@ if (user->IsAuthorizedBy(this) && user->GetCurrIP() != sip)
            login.c_str(),
            inet_ntostring(user->GetCurrIP()).c_str(),
            inet_ntostring(sip).c_str());
-    SendError(sip, sport, protoVer, "Ваш логин уже используется!");
+    SendError(sip, sport, protoVer, IconvString("п⌡п╬пЁп╦п╫ я┐п╤п╣ п╦я│п©п╬п╩я▄п╥я┐п╣я┌я│я▐.", "utf8", "koi8-ru"));
     ip2user.erase(it);
     return 0;
     }
