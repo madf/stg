@@ -1,13 +1,12 @@
-#include <unistd.h>
-
-#include <csignal>
-#include <algorithm>
-
-#include "stg/tariffs.h"
-#include "stg/admins.h"
-#include "stg/users.h"
-#include "stg/plugin_creator.h"
 #include "stgconfig.h"
+
+#include "stg/plugin_creator.h"
+#include "stg/common.h"
+
+#include <algorithm>
+#include <csignal>
+
+#include <unistd.h>
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -63,12 +62,7 @@ STG_CONFIG::STG_CONFIG()
       isRunning(false),
       logger(GetPluginLogger(GetStgLogger(), "conf_sg")),
       config(logger),
-      users(NULL),
-      admins(NULL),
-      tariffs(NULL),
-      store(NULL),
-      settings(),
-      stgSettings(NULL)
+      settings()
 {
 }
 //-----------------------------------------------------------------------------
@@ -88,11 +82,6 @@ if (isRunning)
 nonstop = true;
 
 config.SetPort(stgConfigSettings.GetPort());
-config.SetAdmins(admins);
-config.SetUsers(users);
-config.SetTariffs(tariffs);
-config.SetStgSettings(stgSettings);
-config.SetStore(store);
 
 if (config.Prepare())
     {

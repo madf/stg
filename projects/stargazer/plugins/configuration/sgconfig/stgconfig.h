@@ -1,14 +1,14 @@
 #ifndef STGCONFIG_H
 #define STGCONFIG_H
 
-#include <pthread.h>
+#include "configproto.h"
+
+#include "stg/plugin.h"
+#include "stg/logger.h"
 
 #include <string>
 
-#include "stg/plugin.h"
-#include "stg/store.h"
-#include "stg/logger.h"
-#include "configproto.h"
+#include <pthread.h>
 
 class STG_CONFIG_SETTINGS {
 public:
@@ -27,11 +27,11 @@ public:
     STG_CONFIG();
     virtual ~STG_CONFIG(){}
 
-    void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS * t) { tariffs = t; }
-    void                SetAdmins(ADMINS * a) { admins = a; }
-    void                SetStore(STORE * s) { store = s; }
-    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
+    void                SetUsers(USERS * users) { config.SetUsers(users); }
+    void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
+    void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
+    void                SetStore(STORE * store) { config.SetStore(store); }
+    void                SetStgSettings(const SETTINGS * settings) { config.SetStgSettings(settings); }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
@@ -58,12 +58,7 @@ private:
     bool                isRunning;
     PLUGIN_LOGGER       logger;
     CONFIGPROTO         config;
-    USERS *             users;
-    ADMINS *            admins;
-    TARIFFS *           tariffs;
-    STORE *             store;
     MODULE_SETTINGS     settings;
-    const SETTINGS *    stgSettings;
 };
 //-----------------------------------------------------------------------------
 
