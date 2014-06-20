@@ -119,8 +119,7 @@ if (!isRunning)
 config.Stop();
 
 //5 seconds to thread stops itself
-int i;
-for (i = 0; i < 25; i++)
+for (int i = 0; i < 25; i++)
     {
     if (!isRunning)
         break;

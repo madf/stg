@@ -29,6 +29,15 @@
  */
 
 
+#include "parser.h"
+#include "parser_auth_by.h"
+#include "parser_user_info.h"
+
+#include "stg/users.h"
+#include "stg/admins.h"
+#include "stg/tariffs.h"
+#include "stg/logger.h"
+
 #include <unistd.h>
 
 #include "configproto.h"
@@ -122,26 +131,27 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       xmlParser(),
       errorStr()
 {
-dataParser.push_back(&parserGetServInfo);
+dataParser.push_back(new PARSER_GET_SERVER_INFO);
 
-dataParser.push_back(&parserGetUsers);
-dataParser.push_back(&parserGetUser);
-dataParser.push_back(&parserChgUser);
-dataParser.push_back(&parserAddUser);
-dataParser.push_back(&parserDelUser);
-dataParser.push_back(&parserCheckUser);
-dataParser.push_back(&parserSendMessage);
-dataParser.push_back(&parserAuthBy);
+dataParser.push_back(new PARSER_GET_USERS);
+dataParser.push_back(new PARSER_GET_USER);
+dataParser.push_back(new PARSER_CHG_USER);
+dataParser.push_back(new PARSER_ADD_USER);
+dataParser.push_back(new PARSER_DEL_USER);
+dataParser.push_back(new PARSER_CHECK_USER);
+dataParser.push_back(new PARSER_SEND_MESSAGE);
+dataParser.push_back(new PARSER_AUTH_BY);
+dataParser.push_back(new PARSER_USER_INFO);
 
-dataParser.push_back(&parserGetTariffs);
-dataParser.push_back(&parserAddTariff);
-dataParser.push_back(&parserDelTariff);
-dataParser.push_back(&parserChgTariff);
+dataParser.push_back(new PARSER_GET_TARIFFS);
+dataParser.push_back(new PARSER_ADD_TARIFF);
+dataParser.push_back(new PARSER_DEL_TARIFF);
+dataParser.push_back(new PARSER_CHG_TARIFF);
 
-dataParser.push_back(&parserGetAdmins);
-dataParser.push_back(&parserChgAdmin);
-dataParser.push_back(&parserDelAdmin);
-dataParser.push_back(&parserAddAdmin);
+dataParser.push_back(new PARSER_GET_ADMINS);
+dataParser.push_back(new PARSER_CHG_ADMIN);
+dataParser.push_back(new PARSER_DEL_ADMIN);
+dataParser.push_back(new PARSER_ADD_ADMIN);
 
 xmlParser = XML_ParserCreate(NULL);
 
@@ -155,6 +165,8 @@ if (!xmlParser)
 //-----------------------------------------------------------------------------
 CONFIGPROTO::~CONFIGPROTO()
 {
+for (size_t i = 0; i < dataParser.size(); ++i)
+    delete dataParser[i];
 XML_ParserFree(xmlParser);
 }
 //-----------------------------------------------------------------------------
