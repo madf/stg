@@ -20,6 +20,7 @@
 
 #include "parser_user_info.h"
 
+#include "stg/users.h"
 #include "stg/user.h"
 #include "stg/common.h"
 

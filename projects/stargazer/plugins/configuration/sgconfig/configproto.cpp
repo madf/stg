@@ -38,6 +38,7 @@
 #include "stg/admins.h"
 #include "stg/tariffs.h"
 #include "stg/logger.h"
+#include "stg/common.h"
 
 #include <unistd.h>
 
