@@ -81,6 +81,7 @@ public:
     virtual ~USER_PROPERTY_LOGGED() {}
 
     USER_PROPERTY_LOGGED<varT> * GetPointer() throw() { return this; }
+    const USER_PROPERTY_LOGGED<varT> * GetPointer() const throw() { return this; }
     const varT & Get() const { return USER_PROPERTY<varT>::ConstData(); }
     const std::string & GetName() const { return name; }
     bool Set(const varT & val,
