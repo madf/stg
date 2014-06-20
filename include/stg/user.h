@@ -70,6 +70,8 @@ public:
 
     virtual const DIR_TRAFF &   GetSessionUpload() const = 0;
     virtual const DIR_TRAFF &   GetSessionDownload() const = 0;
+    virtual time_t              GetSessionUploadModificationTime() const = 0;
+    virtual time_t              GetSessionDownloadModificationTime() const = 0;
 
     virtual bool                GetConnected() const = 0;
     virtual time_t              GetConnectedModificationTime() const = 0;
