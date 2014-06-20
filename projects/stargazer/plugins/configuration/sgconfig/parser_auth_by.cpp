@@ -1,5 +1,8 @@
 #include "parser_auth_by.h"
 
+#include "stg/users.h"
+#include "stg/user.h"
+
 int PARSER_AUTH_BY::ParseStart(void * /*data*/, const char *el, const char **attr)
 {
 if (strcasecmp(el, "GetUserAuthBy") == 0)

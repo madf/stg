@@ -1,7 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "parser.h"
+
+#include "stg/admins.h"
+#include "stg/common.h"
+
+#include <strings.h> // strcasecmp
 
 //-----------------------------------------------------------------------------
 //  GET ADMINS

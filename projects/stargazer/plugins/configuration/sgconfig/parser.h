@@ -1,25 +1,43 @@
- /*
- $Revision: 1.20 $
- $Date: 2010/10/04 20:26:10 $
- $Author: faust $
+/*
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation; either version 2 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
 #ifndef PARSER_H
 #define PARSER_H
 
+#include "stg/message.h"
+#include "stg/tariff_conf.h"
 #include "stg/resetable.h"
 #include "stg/const.h"
-#include "stg/store.h"
-#include "stg/admins.h"
-#include "stg/admin.h"
-#include "stg/users.h"
-#include "stg/message.h"
 
 #include <string>
 #include <vector>
 
 class TARIFFS;
 class SETTINGS;
+class STORE;
+class ADMINS;
+class ADMIN;
+class USERS;
+class USER;
+class USER_STAT_RES;
+class USER_CONF_RES;
 
 //-----------------------------------------------------------------------------
 class BASE_PARSER {

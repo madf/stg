@@ -14,22 +14,15 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*******************************************************************
-*
-*    DESCRIPTION: Файл с основными функциями для сетевого обмена данными
-*    с менеджером клиентов. Прием, передача и шифрование сообщений.
-*
-*    AUTHOR: Boris Mikhailenko <stg34@stargazer.dp.ua>
-*
-*    $Revision: 1.24 $
-*    $Date: 2010/10/04 20:24:54 $
-*
-*******************************************************************/
+/*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ */
 
 #include "configproto.h"
 
 #include "parser.h"
 
+#include "stg/admins.h"
 #include "stg/logger.h"
 #include "stg/common.h"
 #include "stg/blowfish.h"
