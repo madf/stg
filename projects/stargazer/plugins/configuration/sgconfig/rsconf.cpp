@@ -28,7 +28,8 @@
 
 #include "configproto.h"
 
-#include "stg/admins.h"
+#include "parser.h"
+
 #include "stg/logger.h"
 #include "stg/common.h"
 #include "stg/blowfish.h"
@@ -258,7 +259,7 @@ while (pos < stgHdrLen)
     if (!WaitPackets(sock))
         {
         state = confHdr;
-        SendError("Bad request");
+        SendError(sock, "Bad request");
         return -1;
         }
     ssize_t ret = recv(sock, &buf[pos], static_cast<int>(stgHdrLen) - static_cast<int>(pos), 0);
@@ -279,7 +280,7 @@ if (0 == strncmp(buf, STG_HEADER, strlen(STG_HEADER)))
     }
 else
     {
-    SendError("Bad request");
+    SendError(sock, "Bad request");
     }
 
 state = confHdr;
@@ -488,69 +489,40 @@ while (1)
         {
         // End of data
         if (ParseCommand())
-            {
-            SendError("Bad command");
-            }
-        return SendDataAnswer(sock);
+            return SendError(sock, "Bad command");
+        else
+            return SendDataAnswer(sock, currParser->GetAnswer());
         }
     }
 //return 0;
 }
 //-----------------------------------------------------------------------------
-int CONFIGPROTO::SendDataAnswer(int sock)
+int CONFIGPROTO::SendDataAnswer(int sock, const std::string & answer)
 {
-std::list<std::string>::iterator li;
-li = answerList.begin();
+if (answer.empty())
+    return 0;
 
 BLOWFISH_CTX ctx;
-
-char buff[8];
-char buffS[8];
-int n = 0;
-int k = 0;
-
 EnDecodeInit(adminPassword.c_str(), ADM_PASSWD_LEN, &ctx);
 
-while (li != answerList.end())
+std::string::size_type pos = 0;
+std::string::size_type length = answer.length();
+while (pos < length)
     {
-    while ((*li).c_str()[k])
-        {
-        buff[n % 8] = (*li).c_str()[k];
-        n++;
-        k++;
-
-        if (n % 8 == 0)
-            {
-            EncodeString(buffS, buff, &ctx);
-            int ret = static_cast<int>(send(sock, buffS, 8, 0));
-            if (ret < 0)
-                {
-                return -1;
-                }
-            }
-        }
-    k = 0;// new node
-    ++li;
+    char buffer[1024];
+    std::string::size_type chunkLength = std::min(length - pos, sizeof(buffer));
+    EncodeFullString(buffer, answer.c_str() + pos, chunkLength, ctx);
+    if (send(sock, buffer, chunkLength, 0) < 0)
+        return -1;
+    pos += chunkLength;
     }
 
-if (answerList.empty()) {
-    return 0;
-}
-
-buff[n % 8] = 0;
-EncodeString(buffS, buff, &ctx);
-
-answerList.clear();
-
-return static_cast<int>(send(sock, buffS, 8, 0));
+return 1;
 }
 //-----------------------------------------------------------------------------
-void CONFIGPROTO::SendError(const char * text)
+int CONFIGPROTO::SendError(int sock, const std::string & text)
 {
-char s[255];
-answerList.clear();
-snprintf(s, 255, "<Error value=\"%s\"/>", text);
-answerList.push_back(s);
+return SendDataAnswer(sock, "<Error value=\"" + text + "\"/>");
 }
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)

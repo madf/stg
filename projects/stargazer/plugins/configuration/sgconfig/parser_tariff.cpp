@@ -29,127 +29,131 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_TARIFFS::CreateAnswer()
 {
-std::string s;
-char vs[100];
-int hd, hn, md, mn;
-
-answerList->erase(answerList->begin(), answerList->end());
-
-answerList->push_back("<Tariffs>");
+answer = "<Tariffs>";
 
 std::list<TARIFF_DATA> dataList;
 tariffs->GetTariffsData(&dataList);
 std::list<TARIFF_DATA>::const_iterator it = dataList.begin();
 for (; it != dataList.end(); ++it)
     {
-    s = "<tariff name=\"" + it->tariffConf.name + "\">";
-    answerList->push_back(s);
+    answer += "<tariff name=\"" + it->tariffConf.name + "\">";
 
-    for (int j = 0; j < DIR_NUM; j++)
+    for (size_t i = 0; i < DIR_NUM; i++)
+        answer += "<Time" + x2str(i) + " value=\"" +
+            x2str(it->dirPrice[i].hDay)   + ":" + x2str(it->dirPrice[i].mDay)   + "-" +
+            x2str(it->dirPrice[i].hNight) + ":" + x2str(it->dirPrice[i].mNight) + "\"/>";
+
+    answer += "<PriceDayA value=\"";
+    bool first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        hd = it->dirPrice[j].hDay;
-        md = it->dirPrice[j].mDay;
-
-        hn = it->dirPrice[j].hNight;
-        mn = it->dirPrice[j].mNight;
-
-        strprintf(&s, "<Time%d value=\"%d:%d-%d:%d\"/>", j, hd, md, hn, mn);
-        answerList->push_back(s);
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += x2str(it->dirPrice[i].priceDayA * pt_mega);
         }
+    answer += "\"/>";
 
-    strprintf(&s, "    <PriceDayA value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<PriceDayB value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%.5f%s", it->dirPrice[i].priceDayA * pt_mega, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += x2str(it->dirPrice[i].priceDayB * pt_mega);
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <PriceDayB value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<PriceNightA value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%.5f%s", it->dirPrice[i].priceDayB * pt_mega, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += x2str(it->dirPrice[i].priceNightA * pt_mega);
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <PriceNightA value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<PriceNightB value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%.5f%s", it->dirPrice[i].priceNightA * pt_mega, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += x2str(it->dirPrice[i].priceNightB * pt_mega);
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <PriceNightB value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<Threshold value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%.5f%s", it->dirPrice[i].priceNightB * pt_mega, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += x2str(it->dirPrice[i].threshold);
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <Threshold value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<SinglePrice value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%d%s", it->dirPrice[i].threshold, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += (it->dirPrice[i].singlePrice ? "1" : "0");
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <SinglePrice value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
+    answer += "<NoDiscount value=\"";
+    first = true;
+    for (size_t i = 0; i < DIR_NUM; i++)
         {
-        snprintf(vs, 100, "%d%s", it->dirPrice[i].singlePrice, i+1 == DIR_NUM?"":"/");
-        s += vs;
+        if (first)
+            first = false;
+        else
+            answer += "/";
+        answer += (it->dirPrice[i].noDiscount ? "1" : "0");
         }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "\"/>";
 
-    strprintf(&s, "    <NoDiscount value=\"");
-    for (int i = 0; i < DIR_NUM; i++)
-        {
-        snprintf(vs, 100, "%d%s", it->dirPrice[i].noDiscount, i+1 == DIR_NUM?"":"/");
-        s += vs;
-        }
-    s += "\"/>";
-    answerList->push_back(s);
+    answer += "<Fee value=\"" + x2str(it->tariffConf.fee) + "\"/>";
 
-    strprintf(&s, "    <Fee value=\"%.5f\"/>", it->tariffConf.fee);
-    answerList->push_back(s);
+    answer += "<PassiveCost value=\"" + x2str(it->tariffConf.passiveCost) + "\"/>";
 
-    strprintf(&s, "    <PassiveCost value=\"%.5f\"/>", it->tariffConf.passiveCost);
-    answerList->push_back(s);
-
-    strprintf(&s, "    <Free value=\"%.5f\"/>", it->tariffConf.free);
-    answerList->push_back(s);
+    answer += "<Free value=\"" + x2str(it->tariffConf.free) + "\"/>";
 
     switch (it->tariffConf.traffType)
         {
         case TRAFF_UP:
-            answerList->push_back("<TraffType value=\"up\"/>");
+            answer += "<TraffType value=\"up\"/>";
             break;
         case TRAFF_DOWN:
-            answerList->push_back("<TraffType value=\"down\"/>");
+            answer += "<TraffType value=\"down\"/>";
             break;
         case TRAFF_UP_DOWN:
-            answerList->push_back("<TraffType value=\"up+down\"/>");
+            answer += "<TraffType value=\"up+down\"/>";
             break;
         case TRAFF_MAX:
-            answerList->push_back("<TraffType value=\"max\"/>");
+            answer += "<TraffType value=\"max\"/>";
             break;
         }
 
-    answerList->push_back("<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>");
+    answer += "<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>";
 
-    answerList->push_back("</tariff>");
+    answer += "</tariff>";
     }
-answerList->push_back("</Tariffs>");
+answer += "</Tariffs>";
 }
 //-----------------------------------------------------------------------------
 //  ADD TARIFF
@@ -179,19 +183,10 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_ADD_TARIFF::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (tariffs->Add(tariffToAdd, currAdmin) == 0)
-    {
-    answerList->push_back("<AddTariff Result=\"Ok\"/>");
-    }
+    answer = "<AddTariff Result=\"Ok\"/>";
 else
-    {
-    std::string s;
-    strprintf(&s, "<AddTariff Result=\"Error. %s\"/>", tariffs->GetStrError().c_str());
-    answerList->push_back(s);
-    }
+    answer = "<AddTariff Result=\"Error. " + tariffs->GetStrError() + "\"/>";
 }
 //-----------------------------------------------------------------------------
 //  DEL TARIFF
@@ -219,27 +214,12 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_DEL_TARIFF::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (users->TariffInUse(tariffToDel))
-    {
-    std::string s;
-    strprintf(&s, "<DelTariff Result=\"Error. Tariff \'%s\' cannot be deleted. Tariff in use.\"/>", tariffToDel.c_str());
-    answerList->push_back(s);
-    return;
-    }
-
-if (tariffs->Del(tariffToDel, currAdmin) == 0)
-    {
-    answerList->push_back("<DelTariff Result=\"Ok\"/>");
-    }
+    answer = "<DelTariff Result=\"Error. Tariff \'" + tariffToDel + "\' cannot be deleted. Tariff in use.\"/>";
+else if (tariffs->Del(tariffToDel, currAdmin) == 0)
+    answer = "<DelTariff Result=\"Ok\"/>";
 else
-    {
-    std::string s;
-    strprintf(&s, "<DelTariff Result=\"Error. %s\"/>", tariffs->GetStrError().c_str());
-    answerList->push_back(s);
-    }
+    answer = "<DelTariff Result=\"Error. " + tariffs->GetStrError() + "\"/>";
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -481,24 +461,20 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_CHG_TARIFF::CreateAnswer()
 {
-answerList->erase(answerList->begin(), answerList->end());
-
 if (!td.tariffConf.name.data().empty())
     {
     TARIFF_DATA tariffData = td.GetData();
     if (tariffs->Chg(tariffData, currAdmin) == 0)
         {
-        answerList->push_back("<SetTariff Result=\"ok\"/>");
+        answer = "<SetTariff Result=\"ok\"/>";
         return;
         }
     else
         {
-        std::string s;
-        strprintf(&s, "<SetTariff Result=\"Change tariff error! %s\"/>", tariffs->GetStrError().c_str());
-        answerList->push_back(s);
+        answer = "<SetTariff Result=\"Change tariff error! " + tariffs->GetStrError() + "\"/>";
         return;
         }
     }
-answerList->push_back("<SetTariff Result=\"Change tariff error!\"/>");
+answer = "<SetTariff Result=\"Change tariff error!\"/>";
 }
 //-----------------------------------------------------------------------------
