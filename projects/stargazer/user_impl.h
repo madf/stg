@@ -181,6 +181,8 @@ public:
 
     const DIR_TRAFF & GetSessionUpload() const { return sessionUpload; }
     const DIR_TRAFF & GetSessionDownload() const { return sessionDownload; }
+    time_t GetSessionUploadModificationTime() const { return sessionUploadModTime; }
+    time_t GetSessionDownloadModificationTime() const { return sessionDownloadModTime; }
 
     bool            GetConnected() const { return connected; }
     time_t          GetConnectedModificationTime() const { return connected.ModificationTime(); }
@@ -325,6 +327,8 @@ private:
 
     DIR_TRAFF                sessionUpload;
     DIR_TRAFF                sessionDownload;
+    time_t                   sessionUploadModTime;
+    time_t                   sessionDownloadModTime;
 
     CHG_PASSIVE_NOTIFIER     passiveNotifier;
     CHG_DISABLED_NOTIFIER    disabledNotifier;

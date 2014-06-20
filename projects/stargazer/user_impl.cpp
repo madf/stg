@@ -690,6 +690,8 @@ DIR_TRAFF zeroSesssion;
 
 sessionUpload = zeroSesssion;
 sessionDownload = zeroSesssion;
+sessionUploadModTime = stgTime;
+sessionDownloadModTime = stgTime;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::PrintUser() const
@@ -895,6 +897,7 @@ if (tt == TRAFF_UP ||
 
 up = dt;
 sessionUpload[dir] += len;
+sessionUploadModTime = stgTime;
 
 //Add detailed stat
 
@@ -986,6 +989,7 @@ if (tt == TRAFF_DOWN ||
 
 down = dt;
 sessionDownload[dir] += len;
+sessionDownloadModTime = stgTime;
 
 //Add detailed stat
 
