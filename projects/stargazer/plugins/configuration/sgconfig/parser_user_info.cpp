@@ -49,22 +49,19 @@ return 0;
 
 void PARSER_USER_INFO::CreateAnswer()
 {
-answerList->clear();
-
 CONST_USER_PTR u;
 if (users->FindByName(login, &u))
     {
-    answerList->push_back("<UserInfo result=\"error\"/>");
+    answer = "<UserInfo result=\"error\"/>";
     return;
     }
 
-std::string s = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
-                " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
-                " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
-                " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
+answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
+         " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
+         " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
+         " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
 std::vector<std::string> list(u->GetAuthorizers());
 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-    s += "<Auth name=\"" + *it + "\"/>";
-s += "</UserInfo>";
-answerList->push_back(s);
+    answer += "<Auth name=\"" + *it + "\"/>";
+answer += "</UserInfo>";
 }

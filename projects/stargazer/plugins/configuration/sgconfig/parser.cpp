@@ -17,12 +17,142 @@
 #include "parser.h"
 
 #define  UNAME_LEN      (256)
+
+namespace
+{
+
+std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_t lastTime = 0)
+{
+std::string answer;
+
+if (loginInStart)
+    answer += "<User result=\"ok\">";
+else
+    answer += "<User result=\"ok\" login=\"" + user.GetLogin() + "\">";
+
+answer += "<Login value=\"" + user.GetLogin() + "\"/>";
+
+if (user.GetProperty().password.ModificationTime() > lastTime)
+    {
+    if (showPass)
+        answer += "<Password value=\"" + user.GetProperty().password.Get() + "\" />";
+    else
+        answer += "<Password value=\"++++++\"/>";
+    }
+
+if (user.GetProperty().cash.ModificationTime() > lastTime)
+    answer += "<Cash value=\"" + x2str(user.GetProperty().cash.Get()) + "\"/>";
+if (user.GetProperty().freeMb.ModificationTime() > lastTime)
+    answer += "<FreeMb value=\"" + x2str(user.GetProperty().freeMb.Get()) + "\"/>";
+if (user.GetProperty().credit.ModificationTime() > lastTime)
+    answer += "<Credit value=\"" + x2str(user.GetProperty().credit.Get()) + "\"/>";
+
+if (user.GetProperty().nextTariff.Get() != "")
+    {
+    if (user.GetProperty().tariffName.ModificationTime() > lastTime ||
+        user.GetProperty().nextTariff.ModificationTime() > lastTime)
+        answer += "<Tariff value=\"" + user.GetProperty().tariffName.Get() + "/" + user.GetProperty().nextTariff.Get() + "\"/>";
+    }
+else
+    {
+    if (user.GetProperty().tariffName.ModificationTime() > lastTime)
+        answer += "<Tariff value=\"" + user.GetProperty().tariffName.Get() + "\"/>";
+    }
+
+if (user.GetProperty().note.ModificationTime() > lastTime)
+    answer += "<Note value=\"" + Encode12str(user.GetProperty().note) + "\"/>";
+if (user.GetProperty().phone.ModificationTime() > lastTime)
+    answer += "<Phone value=\"" + Encode12str(user.GetProperty().phone) + "\"/>";
+if (user.GetProperty().address.ModificationTime() > lastTime)
+    answer += "<Address value=\"" + Encode12str(user.GetProperty().address) + "\"/>";
+if (user.GetProperty().email.ModificationTime() > lastTime)
+    answer += "<Email value=\"" + Encode12str(user.GetProperty().email) + "\"/>";
+
+std::vector<const USER_PROPERTY_LOGGED<std::string> *> userdata;
+userdata.push_back(user.GetProperty().userdata0.GetPointer());
+userdata.push_back(user.GetProperty().userdata1.GetPointer());
+userdata.push_back(user.GetProperty().userdata2.GetPointer());
+userdata.push_back(user.GetProperty().userdata3.GetPointer());
+userdata.push_back(user.GetProperty().userdata4.GetPointer());
+userdata.push_back(user.GetProperty().userdata5.GetPointer());
+userdata.push_back(user.GetProperty().userdata6.GetPointer());
+userdata.push_back(user.GetProperty().userdata7.GetPointer());
+userdata.push_back(user.GetProperty().userdata8.GetPointer());
+userdata.push_back(user.GetProperty().userdata9.GetPointer());
+
+for (size_t i = 0; i < userdata.size(); i++)
+    if (userdata[i]->ModificationTime() > lastTime)
+        answer += "<UserData" + x2str(i) + " value=\"" + Encode12str(userdata[i]->Get()) + "\" />";
+
+if (user.GetProperty().realName.ModificationTime() > lastTime)
+    answer += "<Name value=\"" + Encode12str(user.GetProperty().realName) + "\"/>";
+if (user.GetProperty().group.ModificationTime() > lastTime)
+    answer += "<Group value=\"" + Encode12str(user.GetProperty().group) + "\"/>";
+if (user.GetConnectedModificationTime() > lastTime)
+    answer += std::string("<Status value=\"") + (user.GetConnected() ? "1" : "0") + "\"/>";
+if (user.GetProperty().alwaysOnline.ModificationTime() > lastTime)
+    answer += std::string("<AOnline value=\"") + (user.GetProperty().alwaysOnline.Get() ? "1" : "0") + "\"/>";
+if (user.GetCurrIPModificationTime() > lastTime)
+    answer += "<CurrIP value=\"" + inet_ntostring(user.GetCurrIP()) + "\"/>";
+if (user.GetPingTime() > lastTime)
+    answer += "<PingTime value=\"" + x2str(user.GetPingTime()) + "\"/>";
+if (user.GetProperty().ips.ModificationTime() > lastTime)
+    answer += "<IP value=\"" + user.GetProperty().ips.Get().GetIpStr() + "\"/>";
+
+answer += "<Traff";
+const DIR_TRAFF & upload(user.GetProperty().down.Get());
+const DIR_TRAFF & download(user.GetProperty().up.Get());
+if (user.GetProperty().up.ModificationTime() > lastTime)
+    for (size_t j = 0; j < DIR_NUM; j++)
+        answer += " MU" + x2str(j) + "=\"" + x2str(upload[j]) + "\"";
+if (user.GetProperty().down.ModificationTime() > lastTime)
+    for (size_t j = 0; j < DIR_NUM; j++)
+        answer += " MD" + x2str(j) + "=\"" + x2str(download[j]) + "\"";
+if (user.GetSessionUploadModificationTime() > lastTime)
+    for (size_t j = 0; j < DIR_NUM; j++)
+        answer += " SU" + x2str(j) + "=\"" + x2str(user.GetSessionUpload()[j]) + "\"";
+if (user.GetSessionDownloadModificationTime() > lastTime)
+    for (size_t j = 0; j < DIR_NUM; j++)
+        answer += " SD" + x2str(j) + "=\"" + x2str(user.GetSessionDownload()[j]) + "\"";
+answer += "/>";
+
+if (user.GetProperty().disabled.ModificationTime() > lastTime)
+    answer += std::string("<Down value=\"") + (user.GetProperty().disabled.Get() ? "1" : "0") + "\"/>";
+if (user.GetProperty().disabledDetailStat.ModificationTime() > lastTime)
+    answer += std::string("<DisableDetailStat value=\"") + (user.GetProperty().disabledDetailStat.Get() ? "1" : "0") + "\"/>";
+if (user.GetProperty().passive.ModificationTime() > lastTime)
+    answer += std::string("<Passive value=\"") + (user.GetProperty().passive.Get() ? "1" : "0") + "\"/>";
+if (user.GetProperty().lastCashAdd.ModificationTime() > lastTime)
+    answer += "<LastCash value=\"" + x2str(user.GetProperty().lastCashAdd.Get()) + "\"/>";
+if (user.GetProperty().lastCashAddTime.ModificationTime() > lastTime)
+    answer += "<LastTimeCash value=\"" + x2str(user.GetProperty().lastCashAddTime.Get()) + "\"/>";
+if (user.GetProperty().lastActivityTime.ModificationTime() > lastTime)
+    answer += "<LastActivityTime value=\"" + x2str(user.GetProperty().lastActivityTime.Get()) + "\"/>";
+if (user.GetProperty().creditExpire.ModificationTime() > lastTime)
+    answer += "<CreditExpire value=\"" + x2str(user.GetProperty().creditExpire.Get()) + "\"/>";
+
+if (lastTime == 0)
+    {
+    answer += "<AuthorizedBy>";
+    std::vector<std::string> list(user.GetAuthorizers());
+    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+        answer += "<Auth name=\"" + *it + "\"/>";
+    answer += "</AuthorizedBy>";
+    }
+
+answer += "</User>";
+
+return answer;
+}
+
+} // namespace anonymous
+
 //-----------------------------------------------------------------------------
 //  GET SERVER INFO
 //-----------------------------------------------------------------------------
 int PARSER_GET_SERVER_INFO::ParseStart(void *, const char *el, const char **)
 {
-answerList->erase(answerList->begin(), answerList->end());
+answer.clear();
 if (strcasecmp(el, "GetServerInfo") == 0)
     {
     return 0;
@@ -42,7 +172,6 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_SERVER_INFO::CreateAnswer()
 {
-char s[UNAME_LEN + 128];
 char un[UNAME_LEN];
 struct utsname utsn;
 
@@ -57,40 +186,20 @@ strcat(un, utsn.machine);
 strcat(un, " ");
 strcat(un, utsn.nodename);
 
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-answerList->push_back("<ServerInfo>");
+answer.clear();
+answer += "<ServerInfo>";
+answer += std::string("<version value=\"") + SERVER_VERSION + "\"/>";
+answer += "<tariff_num value=\"" + x2str(tariffs->Count()) + "\"/>";
+answer += "<tariff value=\"2\"/>";
+answer += "<user_num value=\"" + x2str(users->Count()) + "\"/>";
+answer += std::string("<uname value=\"") + un + "\"/>";
+answer += "<dir_num value=\"" + x2str(DIR_NUM) + "\"/>";
+answer += "<day_fee value=\"" + x2str(settings->GetDayFee()) + "\"/>";
 
-sprintf(s, "<version value=\"%s\"/>", SERVER_VERSION);
-answerList->push_back(s);
+for (size_t i = 0; i< DIR_NUM; i++)
+    answer += "<dir_name_" + x2str(i) + " value=\"" + Encode12str(settings->GetDirName(i)) + "\"/>";
 
-sprintf(s, "<tariff_num value=\"%llu\"/>", static_cast<unsigned long long>(tariffs->Count()));
-answerList->push_back(s);
-
-sprintf(s, "<tariff value=\"%d\"/>", 2);
-answerList->push_back(s);
-
-sprintf(s, "<users_num value=\"%llu\"/>", static_cast<unsigned long long>(users->Count()));
-answerList->push_back(s);
-
-sprintf(s, "<uname value=\"%s\"/>", un);
-answerList->push_back(s);
-
-sprintf(s, "<dir_num value=\"%d\"/>", DIR_NUM);
-answerList->push_back(s);
-
-sprintf(s, "<day_fee value=\"%d\"/>", settings->GetDayFee());
-answerList->push_back(s);
-
-for (int i = 0; i< DIR_NUM; i++)
-    {
-    std::string dn2e;
-    Encode12str(dn2e, settings->GetDirName(i));
-    sprintf(s, "<dir_name_%d value=\"%s\"/>", i, dn2e.c_str());
-    answerList->push_back(s);
-    }
-
-answerList->push_back("</ServerInfo>");
+answer += "</ServerInfo>";
 }
 //-----------------------------------------------------------------------------
 //  GET USER
@@ -124,176 +233,17 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_USER::CreateAnswer()
 {
-std::string s;
-std::string enc;
-
 USER_PTR u;
 
-answerList->erase(answerList->begin(), answerList->end());
+answer.clear();
 
 if (users->FindByName(login, &u))
     {
-    answerList->push_back("<user result=\"error\" reason=\"User not found.\"/>");
+    answer = "<User result=\"error\" reason=\"User not found.\"/>";
     return;
     }
 
-s = "<user result=\"ok\">";
-answerList->push_back(s);
-
-s = "<login value=\"" + u->GetLogin() + "\"/>";
-answerList->push_back(s);
-
-if (currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd)
-    s = "<password value=\"" + u->GetProperty().password.Get() + "\" />";
-else
-    s = "<password value=\"++++++\"/>";
-answerList->push_back(s);
-
-strprintf(&s, "<cash value=\"%f\" />", u->GetProperty().cash.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<freemb value=\"%f\" />", u->GetProperty().freeMb.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<credit value=\"%f\" />", u->GetProperty().credit.Get());
-answerList->push_back(s);
-
-if (u->GetProperty().nextTariff.Get() != "")
-    {
-    strprintf(&s, "<tariff value=\"%s/%s\" />",
-              u->GetProperty().tariffName.Get().c_str(),
-              u->GetProperty().nextTariff.Get().c_str());
-    }
-else
-    {
-    strprintf(&s, "<tariff value=\"%s\" />",
-              u->GetProperty().tariffName.Get().c_str());
-    }
-
-answerList->push_back(s);
-
-Encode12str(enc, u->GetProperty().note);
-s = "<note value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-Encode12str(enc, u->GetProperty().phone);
-s = "<phone value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-Encode12str(enc, u->GetProperty().address);
-s = "<address value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-Encode12str(enc, u->GetProperty().email);
-s = "<email value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-
-std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
-userdata.push_back(u->GetProperty().userdata0.GetPointer());
-userdata.push_back(u->GetProperty().userdata1.GetPointer());
-userdata.push_back(u->GetProperty().userdata2.GetPointer());
-userdata.push_back(u->GetProperty().userdata3.GetPointer());
-userdata.push_back(u->GetProperty().userdata4.GetPointer());
-userdata.push_back(u->GetProperty().userdata5.GetPointer());
-userdata.push_back(u->GetProperty().userdata6.GetPointer());
-userdata.push_back(u->GetProperty().userdata7.GetPointer());
-userdata.push_back(u->GetProperty().userdata8.GetPointer());
-userdata.push_back(u->GetProperty().userdata9.GetPointer());
-
-std::string tmpI;
-for (unsigned i = 0; i < userdata.size(); i++)
-    {
-    Encode12str(enc, userdata[i]->Get());
-    s = "<UserData" + x2str(i, tmpI) + " value=\"" + enc + "\" />";
-    answerList->push_back(s);
-    }
-
-Encode12str(enc, u->GetProperty().realName);
-s = "<name value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-Encode12str(enc, u->GetProperty().group);
-s = "<GROUP value=\"" + enc + "\" />";
-answerList->push_back(s);
-
-strprintf(&s, "<status value=\"%d\" />", u->GetConnected());
-answerList->push_back(s);
-
-strprintf(&s, "<aonline value=\"%d\" />", u->GetProperty().alwaysOnline.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<currip value=\"%s\" />", inet_ntostring(u->GetCurrIP()).c_str());
-answerList->push_back(s);
-
-strprintf(&s, "<PingTime value=\"%lu\" />", u->GetPingTime());
-answerList->push_back(s);
-
-std::ostringstream sstr;
-sstr << u->GetProperty().ips.Get();
-strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
-answerList->push_back(s);
-
-char * ss;
-ss = new char[DIR_NUM*25*4 + 50];
-char st[50];
-sprintf(ss, "<traff");
-DIR_TRAFF upload;
-DIR_TRAFF download;
-download = u->GetProperty().down.Get();
-upload = u->GetProperty().up.Get();
-
-for (int j = 0; j < DIR_NUM; j++)
-    {
-    std::string s;
-    x2str(upload[j], s);
-    sprintf(st, " MU%d=\"%s\"", j, s.c_str());
-    strcat(ss, st);
-
-    x2str(download[j], s);
-    sprintf(st, " MD%d=\"%s\"", j, s.c_str());
-    strcat(ss, st);
-
-    sprintf(st, " SU%d=\"0\"", j);
-    strcat(ss, st);
-
-    sprintf(st, " SD%d=\"0\"", j);
-    strcat(ss, st);
-    }
-strcat(ss, " />");
-answerList->push_back(ss);
-delete[] ss;
-
-strprintf(&s, "<down value=\"%d\" />", u->GetProperty().disabled.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->GetProperty().disabledDetailStat.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<passive value=\"%d\" />", u->GetProperty().passive.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<LastCash value=\"%f\" />", u->GetProperty().lastCashAdd.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->GetProperty().lastCashAddTime.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->GetProperty().lastActivityTime.Get());
-answerList->push_back(s);
-
-strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
-answerList->push_back(s);
-
-s = "<AuthorizedBy>";
-std::vector<std::string> list(u->GetAuthorizers());
-for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-    s += "<Auth name=\"" + *it + "\"/>";
-s += "</AuthorizedBy>";
-answerList->push_back(s);
-
-strprintf(&s, "</user>");
-answerList->push_back(s);
+answer = UserToXML(*u, false, currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd);
 }
 //-----------------------------------------------------------------------------
 //  GET USERS
@@ -346,20 +296,7 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_GET_USERS::CreateAnswer()
 {
-answerList->erase(answerList->begin(), answerList->end());
-
-std::string s;
-std::string userStart;
-std::string traffStart;
-std::string traffMiddle;
-std::string traffFinish;
-std::string middle;
-std::string userFinish;
-
-
-std::string enc;
-
-USER_PTR u;
+answer.clear();
 
 int h = users->OpenSearch();
 if (!h)
@@ -368,273 +305,20 @@ if (!h)
     users->CloseSearch(h);
     return;
     }
-std::string updateTime;
-x2str(time(NULL), updateTime);
 
 if (lastUpdateFound)
-    answerList->push_back("<Users LastUpdate=\"" + updateTime + "\">");
+    answer += "<Users LastUpdate=\"" + x2str(time(NULL)) + "\">";
 else
-    answerList->push_back("<Users>");
+    answer += "<Users>";
 
-while (1)
-    {
-    if (users->SearchNext(h, &u))
-        {
-        break;
-        }
-    userStart = "<user login=\"" + u->GetLogin() + "\">";
-    middle = "";
+USER_PTR u;
 
-    if (u->GetProperty().password.ModificationTime() > lastUserUpdateTime)
-        {
-        if (currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd)
-            s = "<password value=\"" + u->GetProperty().password.Get() + "\" />";
-        else
-            s = "<password value=\"++++++\"/>";
-        middle += s;
-        }
-
-
-    if (u->GetProperty().cash.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<cash value=\"%f\" />", u->GetProperty().cash.Get());
-        middle += s;
-        //printfd(__FILE__, "cash value=\"%f\"\n", u->GetProperty().cash.Get());
-        }
-
-
-    if (u->GetProperty().freeMb.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<freemb value=\"%f\" />", u->GetProperty().freeMb.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().credit.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<credit value=\"%f\" />", u->GetProperty().credit.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().nextTariff.Get() != "")
-        {
-        if (u->GetProperty().tariffName.ModificationTime() > lastUserUpdateTime
-            || u->GetProperty().nextTariff.ModificationTime() > lastUserUpdateTime)
-            {
-            strprintf(&s, "<tariff value=\"%s/%s\" />",
-                      u->GetProperty().tariffName.Get().c_str(),
-                      u->GetProperty().nextTariff.Get().c_str());
-            middle += s;
-            }
-        }
-    else
-        {
-        if (u->GetProperty().tariffName.ModificationTime() > lastUserUpdateTime)
-            {
-            strprintf(&s, "<tariff value=\"%s\" />",
-                      u->GetProperty().tariffName.Get().c_str());
-            middle += s;
-            }
-        }
-
-    if (u->GetProperty().note.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().note);
-        strprintf(&s, "<note value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    if (u->GetProperty().phone.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().phone);
-        strprintf(&s, "<phone value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    if (u->GetProperty().address.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().address);
-        strprintf(&s, "<address value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    if (u->GetProperty().email.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().email);
-        strprintf(&s, "<email value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
-    userdata.push_back(u->GetProperty().userdata0.GetPointer());
-    userdata.push_back(u->GetProperty().userdata1.GetPointer());
-    userdata.push_back(u->GetProperty().userdata2.GetPointer());
-    userdata.push_back(u->GetProperty().userdata3.GetPointer());
-    userdata.push_back(u->GetProperty().userdata4.GetPointer());
-    userdata.push_back(u->GetProperty().userdata5.GetPointer());
-    userdata.push_back(u->GetProperty().userdata6.GetPointer());
-    userdata.push_back(u->GetProperty().userdata7.GetPointer());
-    userdata.push_back(u->GetProperty().userdata8.GetPointer());
-    userdata.push_back(u->GetProperty().userdata9.GetPointer());
-
-    std::string tmpI;
-    for (unsigned i = 0; i < userdata.size(); i++)
-        {
-        if (userdata[i]->ModificationTime() > lastUserUpdateTime)
-            {
-            Encode12str(enc, userdata[i]->Get());
-            s = "<UserData" + x2str(i, tmpI) + " value=\"" + enc + "\" />";
-            middle += s;
-            }
-        }
-
-    if (u->GetProperty().realName.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().realName);
-        strprintf(&s, "<name value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    if (u->GetProperty().group.ModificationTime() > lastUserUpdateTime)
-        {
-        Encode12str(enc, u->GetProperty().group);
-        strprintf(&s, "<GROUP value=\"%s\" />", enc.c_str());
-        middle += s;
-        }
-
-    if (u->GetProperty().alwaysOnline.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<aonline value=\"%d\" />", u->GetProperty().alwaysOnline.Get());
-        middle += s;
-        }
-
-    if (u->GetCurrIPModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<currip value=\"%s\" />", inet_ntostring(u->GetCurrIP()).c_str());
-        middle += s;
-        }
-
-
-    if (u->GetConnectedModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<status value=\"%d\" />", u->GetConnected());
-        middle += s;
-        }
-
-    if (u->GetPingTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<PingTime value=\"%lu\" />", u->GetPingTime());
-        middle += s;
-        }
-
-    if (u->GetProperty().ips.ModificationTime() > lastUserUpdateTime)
-        {
-        std::ostringstream sstr;
-        sstr << u->GetProperty().ips.Get();
-        strprintf(&s, "<ip value=\"%s\" />", sstr.str().c_str());
-        middle += s;
-        }
-
-    char st[50];
-    traffStart = "<traff";
-    DIR_TRAFF upload;
-    DIR_TRAFF download;
-    download = u->GetProperty().down.Get();
-    upload = u->GetProperty().up.Get();
-    traffMiddle = "";
-
-    if (u->GetProperty().up.ModificationTime() > lastUserUpdateTime)
-        {
-        for (int j = 0; j < DIR_NUM; j++)
-            {
-            std::string s;
-            x2str(upload[j], s);
-            sprintf(st, " MU%d=\"%s\" ", j, s.c_str());
-            traffMiddle += st;
-            }
-        }
-
-    if (u->GetProperty().down.ModificationTime() > lastUserUpdateTime)
-        {
-        for (int j = 0; j < DIR_NUM; j++)
-            {
-            x2str(download[j], s);
-            sprintf(st, " MD%d=\"%s\" ", j, s.c_str());
-            traffMiddle += st;
-            }
-        }
-
-    traffFinish = " />";
-    if (traffMiddle.length() > 0)
-        {
-        middle += traffStart;
-        middle += traffMiddle;
-        middle += traffFinish;
-        }
-
-    if (u->GetProperty().disabled.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<down value=\"%d\" />", u->GetProperty().disabled.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().disabledDetailStat.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<DisableDetailStat value=\"%d\" />", u->GetProperty().disabledDetailStat.Get());
-        middle += s;
-        }
-
-    //printfd(__FILE__, ">>>>> %s\n", s.c_str());
-
-    if (u->GetProperty().passive.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<passive value=\"%d\" />", u->GetProperty().passive.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().lastCashAdd.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<LastCash value=\"%f\" />", u->GetProperty().lastCashAdd.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().lastCashAddTime.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<LastTimeCash value=\"%ld\" />", u->GetProperty().lastCashAddTime.Get());
-        middle += s;
-        }
-
-
-    if (u->GetProperty().lastActivityTime.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<LastActivityTime value=\"%ld\" />", u->GetProperty().lastActivityTime.Get());
-        middle += s;
-        }
-
-    if (u->GetProperty().creditExpire.ModificationTime() > lastUserUpdateTime)
-        {
-        strprintf(&s, "<CreditExpire value=\"%ld\" />", u->GetProperty().creditExpire.Get());
-        middle += s;
-        }
-
-
-    userFinish = "</user>";
-
-    if (middle.length() > 0)
-        {
-        /*printfd(__FILE__, "login: %s\n", u->GetLogin().c_str());
-        printfd(__FILE__, "middle: %s\n", middle.c_str());*/
-
-        answerList->push_back(userStart);
-        answerList->push_back(middle);
-        answerList->push_back(userFinish);
-        }
-    }
+while (users->SearchNext(h, &u) == 0)
+    answer += UserToXML(*u, true, currAdmin->GetPriv()->userConf || currAdmin->GetPriv()->userPasswd, lastUserUpdateTime);
 
 users->CloseSearch(h);
 
-//answerList->push_back("</Users>");
-
-answerList->push_back("</Users>");
+answer += "</Users>";
 }
 //-----------------------------------------------------------------------------
 //  ADD USER
@@ -685,17 +369,10 @@ depth = 0;
 //-----------------------------------------------------------------------------
 void PARSER_ADD_USER::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (CheckUserData() == 0)
-    {
-    answerList->push_back("<AddUser result=\"ok\"/>");
-    }
+    answer = "<AddUser result=\"ok\"/>";
 else
-    {
-    answerList->push_back("<AddUser result=\"error\" reason=\"Access denied\"/>");
-    }
+    answer = "<AddUser result=\"error\" reason=\"Access denied\"/>";
 }
 //-----------------------------------------------------------------------------
 int PARSER_ADD_USER::CheckUserData()
@@ -977,22 +654,19 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_CHG_USER::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 switch (res)
     {
     case 0:
-        answerList->push_back("<SetUser result=\"ok\"/>");
+        answer = "<SetUser result=\"ok\"/>";
         break;
     case -1:
-        answerList->push_back("<SetUser result=\"error\"/>");
+        answer = "<SetUser result=\"error\"/>";
         break;
     case -2:
-        answerList->push_back("<SetUser result=\"error\"/>");
+        answer = "<SetUser result=\"error\"/>";
         break;
     default:
-        answerList->push_back("<SetUser result=\"error\"/>");
+        answer = "<SetUser result=\"error\"/>";
         break;
     }
 
@@ -1339,22 +1013,18 @@ return 0;
 //-----------------------------------------------------------------------------
 void PARSER_SEND_MESSAGE::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-//answerList->push_back("<SendMessageResult value=\"ok\"/>");
-//
 switch (result)
     {
     case res_ok:
-        answerList->push_back("<SendMessageResult value=\"ok\"/>");
+        answer = "<SendMessageResult value=\"ok\"/>";
         break;
     case res_params_error:
         printfd(__FILE__, "res_params_error\n");
-        answerList->push_back("<SendMessageResult value=\"Parameters error.\"/>");
+        answer = "<SendMessageResult value=\"Parameters error.\"/>";
         break;
     case res_unknown:
         printfd(__FILE__, "res_unknown\n");
-        answerList->push_back("<SendMessageResult value=\"Unknown user.\"/>");
+        answer = "<SendMessageResult value=\"Unknown user.\"/>";
         break;
     default:
         printfd(__FILE__, "res_default\n");
@@ -1403,9 +1073,9 @@ return -1;
 void PARSER_DEL_USER::CreateAnswer()
 {
 if (res)
-    answerList->push_back("<DelUser value=\"error\" reason=\"User not found\"/>");
+    answer = "<DelUser value=\"error\" reason=\"User not found\"/>";
 else
-    answerList->push_back("<DelUser value=\"ok\"/>");
+    answer = "<DelUser value=\"ok\"/>";
 }
 //-----------------------------------------------------------------------------
 //  CHECK USER
@@ -1456,9 +1126,9 @@ return -1;
 void PARSER_CHECK_USER::CreateAnswer(const char * error)
 {
 if (error)
-    answerList->push_back(std::string("<CheckUser value=\"Err\" reason=\"") + error + "\"/>");
+    answer = std::string("<CheckUser value=\"Err\" reason=\"") + error + "\"/>";
 else
-    answerList->push_back("<CheckUser value=\"Ok\"/>");
+    answer = "<CheckUser value=\"Ok\"/>";
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

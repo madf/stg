@@ -84,13 +84,12 @@ private:
     int             RecvLoginS(int sock);
     int             SendLoginSAnswer(int sock, int err);
     int             RecvData(int sock);
-    int             SendDataAnswer(int sock);
-    void            SendError(const char * text);
+    int             SendDataAnswer(int sock, const std::string & answer);
+    int             SendError(int sock, const std::string & text);
     void            WriteLogAccessFailed(uint32_t ip);
 
     int             ParseCommand();
 
-    std::list<std::string>      answerList;
     std::list<std::string>      requestList;
     uint32_t                    adminIP;
     std::string                 adminLogin;

@@ -30,24 +30,18 @@ void PARSER_GET_ADMINS::CreateAnswer()
 const PRIV * priv = currAdmin->GetPriv();
 if (!priv->adminChg)
     {
-    //answerList->clear();
-    answerList->erase(answerList->begin(), answerList->end());
-
-    answerList->push_back("<Error Result=\"Error. Access denied.\"/>");
+    answer = "<Error Result=\"Error. Access denied.\"/>";
     return;
     }
 
-std::string s;
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
+answer.clear();
 
-answerList->push_back("<Admins>");
+answer += "<Admins>";
 ADMIN_CONF ac;
 int h = admins->OpenSearch();
 
 while (admins->SearchNext(h, &ac) == 0)
     {
-    //memcpy(&p, &ac.priv, sizeof(unsigned int));
     unsigned int p = (ac.priv.userStat << 0) +
                      (ac.priv.userConf << 2) +
                      (ac.priv.userCash << 4) +
@@ -55,11 +49,10 @@ while (admins->SearchNext(h, &ac) == 0)
                      (ac.priv.userAddDel << 8) +
                      (ac.priv.adminChg << 10) +
                      (ac.priv.tariffChg << 12);
-    strprintf(&s, "<admin login=\"%s\" priv=\"%d\"/>", ac.login.c_str(), p);
-    answerList->push_back(s);
+    answer += "<admin login=\"" + ac.login + "\" priv=\"" + x2str(p) + "\"/>";
     }
 admins->CloseSearch(h);
-answerList->push_back("</Admins>");
+answer += "</Admins>";
 }
 //-----------------------------------------------------------------------------
 
@@ -89,19 +82,10 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_DEL_ADMIN::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (admins->Del(adminToDel, currAdmin) == 0)
-    {
-    answerList->push_back("<DelAdmin Result=\"Ok\"/>");
-    }
+    answer = "<DelAdmin Result=\"Ok\"/>";
 else
-    {
-    std::string s;
-    strprintf(&s, "<DelAdmin Result=\"Error. %s\"/>", admins->GetStrError().c_str());
-    answerList->push_back(s);
-    }
+    answer = "<DelAdmin Result=\"Error. " + admins->GetStrError() + "\"/>";
 }
 //-----------------------------------------------------------------------------
 //  ADD ADMIN
@@ -118,9 +102,6 @@ return -1;
 //-----------------------------------------------------------------------------
 int PARSER_ADD_ADMIN::ParseEnd(void *, const char *el)
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (strcasecmp(el, "AddAdmin") == 0)
     {
     CreateAnswer();
@@ -131,19 +112,10 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_ADD_ADMIN::CreateAnswer()
 {
-//answerList->clear();
-answerList->erase(answerList->begin(), answerList->end());
-
 if (admins->Add(adminToAdd, currAdmin) == 0)
-    {
-    answerList->push_back("<AddAdmin Result=\"Ok\"/>");
-    }
+    answer = "<AddAdmin Result=\"Ok\"/>";
 else
-    {
-    std::string s;
-    strprintf(&s, "<AddAdmin Result=\"Error. %s\"/>", admins->GetStrError().c_str());
-    answerList->push_back(s);
-    }
+    answer = "<AddAdmin Result=\"Error. " + admins->GetStrError() + "\"/>";
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -195,16 +167,13 @@ return -1;
 //-----------------------------------------------------------------------------
 void PARSER_CHG_ADMIN::CreateAnswer()
 {
-answerList->erase(answerList->begin(), answerList->end());
-
-
 if (!login.empty())
     {
     ADMIN * origAdmin = NULL;
 
     if (admins->Find(login.data(), &origAdmin))
         {
-        answerList->push_back(std::string("<ChgAdmin Result = \"Admin '") + login.data() + "' is not found.\"/>");
+        answer = "<ChgAdmin Result = \"Admin '" + login.data() + "' is not found.\"/>";
         return;
         }
 
@@ -218,7 +187,7 @@ if (!login.empty())
         int p = 0;
         if (str2x(privAsString.data().c_str(), p) < 0)
             {
-            answerList->push_back("<ChgAdmin Result = \"Incorrect parameter Priv.\"/>");
+            answer = "<ChgAdmin Result = \"Incorrect parameter Priv.\"/>";
             return;
             }
 
@@ -226,20 +195,10 @@ if (!login.empty())
         }
 
     if (admins->Change(conf, currAdmin) != 0)
-        {
-        std::string s;
-        strprintf(&s, "<ChgAdmin Result = \"%s\"/>", admins->GetStrError().c_str());
-        answerList->push_back(s);
-        }
+        answer = "<ChgAdmin Result = \"" + admins->GetStrError() + "\"/>";
     else
-        {
-        answerList->push_back("<ChgAdmin Result = \"Ok\"/>");
-        }
+        answer = "<ChgAdmin Result = \"Ok\"/>";
     }
 else
-    {
-    answerList->push_back("<ChgAdmin Result = \"Incorrect parameter login.\"/>");
-    }
+    answer = "<ChgAdmin Result = \"Incorrect parameter login.\"/>";
 }
-//-----------------------------------------------------------------------------*/
-

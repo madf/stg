@@ -15,7 +15,6 @@
 #include "stg/users.h"
 #include "stg/message.h"
 
-#include <list>
 #include <string>
 #include <vector>
 
@@ -33,15 +32,12 @@ public:
           store(NULL),
           settings(NULL),
           currAdmin(NULL),
-          depth(0),
-          answerList(NULL)
+          depth(0)
     {}
     virtual ~BASE_PARSER() {}
     virtual int ParseStart(void *data, const char *el, const char **attr) = 0;
     virtual int ParseEnd(void *data, const char *el) = 0;
-    virtual void Reset() { answerList->clear(); depth = 0; }
-
-    void SetAnswerList(std::list<std::string> * ansList) { answerList = ansList; }
+    virtual void Reset() { answer.clear(); depth = 0; }
 
     void SetUsers(USERS * u) { users = u; }
     void SetAdmins(ADMINS * a) { admins = a; }
@@ -50,7 +46,8 @@ public:
     void SetStgSettings(const SETTINGS * s) { settings = s; }
 
     void SetCurrAdmin(ADMIN & cua) { currAdmin = &cua; }
-    std::string & GetStrError() { return strError; }
+    const std::string & GetStrError() const { return strError; }
+    const std::string & GetAnswer() const { return answer; }
 
 protected:
     BASE_PARSER(const BASE_PARSER & rvalue);
@@ -64,7 +61,7 @@ protected:
     const SETTINGS * settings;
     ADMIN          * currAdmin;
     int              depth;
-    std::list<std::string> * answerList;
+    std::string      answer;
 };
 //-----------------------------------------------------------------------------
 class PARSER_GET_ADMINS: public BASE_PARSER {

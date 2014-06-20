@@ -48,7 +48,6 @@ CONFIGPROTO * cp = static_cast<CONFIGPROTO *>(data);
 
 if (cp->currParser)
     {
-    cp->currParser->SetAnswerList(&cp->answerList);
     cp->currParser->SetCurrAdmin(*cp->currAdmin);
     cp->currParser->ParseStart(data, el, attr);
     }
@@ -56,7 +55,6 @@ else
     {
     for (size_t i = 0; i < cp->dataParser.size(); i++)
         {
-        cp->dataParser[i]->SetAnswerList(&cp->answerList);
         cp->dataParser[i]->SetCurrAdmin(*cp->currAdmin);
         cp->dataParser[i]->Reset();
         if (cp->dataParser[i]->ParseStart(data, el, attr) == 0)

@@ -28,19 +28,17 @@ return -1;
 
 void PARSER_AUTH_BY::CreateAnswer()
 {
-answerList->erase(answerList->begin(), answerList->end());
-
 USER_PTR u;
 if (users->FindByName(login, &u))
     {
-    answerList->push_back("<AuthorizedBy result=\"error\" reason=\"User not found.\"/>");
+    answer = "<AuthorizedBy result=\"error\" reason=\"User not found.\"/>";
     return;
     }
 
-std::string s = "<AuthorizedBy result=\"ok\">";
+answer.clear();
+answer += "<AuthorizedBy result=\"ok\">";
 std::vector<std::string> list(u->GetAuthorizers());
 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-    s += "<Auth name=\"" + *it + "\"/>";
-s += "</AuthorizedBy>";
-answerList->push_back(s);
+    answer += "<Auth name=\"" + *it + "\"/>";
+answer += "</AuthorizedBy>";
 }
