@@ -32,6 +32,7 @@
 #include <list>
 #include <vector>
 
+#include "stg/module_settings.h"
 #include "stg/os_int.h"
 
 #include <expat.h>
