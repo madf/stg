@@ -10,10 +10,6 @@
 #include "stg/logger.h"
 #include "configproto.h"
 
-extern "C" PLUGIN * GetPlugin();
-
-class STG_CONFIG;
-
 class STG_CONFIG_SETTINGS {
 public:
                     STG_CONFIG_SETTINGS() : errorStr(), port(0) {}

@@ -28,13 +28,21 @@
 
 #include "configproto.h"
 
+#include "stg/admins.h"
+#include "stg/logger.h"
+#include "stg/common.h"
 #include "stg/blowfish.h"
 
 #include <cerrno>
 #include <csignal>
 #include <cstdio> // snprintf
+#include <cstring> // strerror
 
 #include <unistd.h> // close
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #ifndef ENODATA
 // FreeBSD 4.* - suxx

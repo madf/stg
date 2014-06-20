@@ -28,21 +28,14 @@
 #ifndef CONFIGPROTO_H
 #define CONFIGPROTO_H
 
-#include "parser_auth_by.h"
-#include "parser_user_info.h"
-
-#include "stg/users.h"
-#include "stg/admins.h"
-#include "stg/tariffs.h"
-#include "stg/logger.h"
-#include "parser.h"
-
 #include <string>
 #include <list>
+#include <vector>
+
+#include "stg/os_int.h"
 
 #include <expat.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <pthread.h>
 
 #define  STG_HEADER     "SG04"
 #define  OK_HEADER      "OKHD"
@@ -51,6 +44,15 @@
 #define  ERR_LOGIN      "ERLG"
 #define  OK_LOGINS      "OKLS"
 #define  ERR_LOGINS     "ERLS"
+
+class BASE_PARSER;
+class USERS;
+class ADMINS;
+class ADMIN;
+class TARIFFS;
+class PLUGIN_LOGGER;
+class STORE;
+class SETTINGS;
 
 //-----------------------------------------------------------------------------
 class CONFIGPROTO {
@@ -100,28 +102,6 @@ private:
     PLUGIN_LOGGER &             logger;
 
     int                         listenSocket;
-
-    PARSER_GET_SERVER_INFO      parserGetServInfo;
-
-    PARSER_GET_USERS            parserGetUsers;
-    PARSER_GET_USER             parserGetUser;
-    PARSER_CHG_USER             parserChgUser;
-    PARSER_ADD_USER             parserAddUser;
-    PARSER_DEL_USER             parserDelUser;
-    PARSER_CHECK_USER           parserCheckUser;
-    PARSER_SEND_MESSAGE         parserSendMessage;
-    PARSER_AUTH_BY              parserAuthBy;
-    PARSER_USER_INFO            parserUserInfo;
-
-    PARSER_GET_ADMINS           parserGetAdmins;
-    PARSER_ADD_ADMIN            parserAddAdmin;
-    PARSER_DEL_ADMIN            parserDelAdmin;
-    PARSER_CHG_ADMIN            parserChgAdmin;
-
-    PARSER_GET_TARIFFS          parserGetTariffs;
-    PARSER_ADD_TARIFF           parserAddTariff;
-    PARSER_DEL_TARIFF           parserDelTariff;
-    PARSER_CHG_TARIFF           parserChgTariff;
 
     ADMINS *                    admins;
 
