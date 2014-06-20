@@ -31,7 +31,7 @@
 
 #define N 16
 
-static uint32_t F(BLOWFISH_CTX *ctx, uint32_t x);
+static uint32_t F(const BLOWFISH_CTX *ctx, uint32_t x);
 static const uint32_t ORIG_P[16 + 2] = {
 0x243F6A88L, 0x85A308D3L, 0x13198A2EL, 0x03707344L,
 0xA4093822L, 0x299F31D0L, 0x082EFA98L, 0xEC4E6C89L,
@@ -302,7 +302,7 @@ static const uint32_t ORIG_S[4][256] = {
     0xB74E6132L, 0xCE77E25BL, 0x578FDFE3L, 0x3AC372E6L}
 };
 //-----------------------------------------------------------------------------
-uint32_t F(BLOWFISH_CTX *ctx, uint32_t x) 
+uint32_t F(const BLOWFISH_CTX *ctx, uint32_t x) 
 {
 unsigned short a, b, c, d;
 uint32_t  y = 0;
@@ -326,7 +326,7 @@ y = y + ctx->S[3][d];
 return y;
 }
 //-----------------------------------------------------------------------------
-void Blowfish_Encrypt(BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr)
+void Blowfish_Encrypt(const BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr)
 {
 uint32_t  Xl;
 uint32_t  Xr;
@@ -354,7 +354,7 @@ Xl = Xl ^ ctx->P[N + 1];
 *xr = Xr;
 }
 //-----------------------------------------------------------------------------
-void Blowfish_Decrypt(BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr)
+void Blowfish_Decrypt(const BLOWFISH_CTX *ctx, uint32_t *xl, uint32_t *xr)
 {
 uint32_t  Xl;
 uint32_t  Xr;
@@ -467,7 +467,7 @@ void block2bytes(uint32_t t, char * c)
     *c = t >> 24 & 0x000000FF;
 }
 //-----------------------------------------------------------------------------
-void DecodeString(char * d, const char * s, BLOWFISH_CTX *ctx)
+void DecodeString(char * d, const char * s, const BLOWFISH_CTX *ctx)
 {
 uint32_t a = bytes2block(s);
 uint32_t b = bytes2block(s + 4);
@@ -478,7 +478,7 @@ block2bytes(a, d);
 block2bytes(b, d + 4);
 }
 //-----------------------------------------------------------------------------
-void EncodeString(char * d, const char * s, BLOWFISH_CTX *ctx)
+void EncodeString(char * d, const char * s, const BLOWFISH_CTX *ctx)
 {
 uint32_t a = bytes2block(s);
 uint32_t b = bytes2block(s + 4);
@@ -487,5 +487,27 @@ Blowfish_Encrypt(ctx, &a, &b);
 
 block2bytes(a, d);
 block2bytes(b, d + 4);
+}
+//-----------------------------------------------------------------------------
+void DecodeFullString(void * d, const void * s, size_t length, const BLOWFISH_CTX &ctx)
+{
+size_t pos = 0;
+while (pos < length)
+    {
+    size_t chunkLength = std::min(length - pos, sizeof(buf));
+    DecodeString(d + pos, s + pos, &ctx);
+    pos += chunkLength;
+    }
+}
+//-----------------------------------------------------------------------------
+void EncodeFullString(void * d, const void * s, size_t length, const BLOWFISH_CTX &ctx)
+{
+size_t pos = 0;
+while (pos < length)
+    {
+    size_t chunkLength = std::min(length - pos, sizeof(buf));
+    EncodeString(d + pos, s + pos, &ctx);
+    pos += chunkLength;
+    }
 }
 //-----------------------------------------------------------------------------
