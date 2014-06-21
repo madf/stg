@@ -7,6 +7,8 @@ class TEST_USERS : public USERS {
 
         int  FindByName(const std::string & /*login*/, USER_PTR * /*user*/)
         { return -1; }
+        int  FindByName(const std::string & /*login*/, CONST_USER_PTR * /*user*/) const
+        { return -1; }
 
         bool TariffInUse(const std::string & /*tariffName*/) const
         { return -1; }
@@ -23,7 +25,7 @@ class TEST_USERS : public USERS {
 
         bool Authorize(const std::string &, uint32_t, uint32_t, const AUTH *)
         { return false; }
-        bool Unauthorize(const std::string &, const AUTH *)
+        bool Unauthorize(const std::string &, const AUTH *, const std::string &)
         { return false; }
 
         int  ReadUsers() { return 0; }
@@ -32,6 +34,7 @@ class TEST_USERS : public USERS {
         int  FindByIPIdx(uint32_t /*ip*/, USER_PTR * /*user*/) const
         { return -1; }
         bool IsIPInIndex(uint32_t /*ip*/) const { return false; }
+        bool IsIPInUse(uint32_t, const std::string &, CONST_USER_PTR *) const { return false; }
 
         int  OpenSearch() { return 0; }
         int  SearchNext(int /*handle*/, USER_PTR * /*u*/) { return -1; }
