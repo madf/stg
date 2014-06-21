@@ -21,7 +21,7 @@ class TEST_AUTH : public AUTH {
         int Reload() { return 0; }
         bool IsRunning() { return true; }
         const std::string & GetStrError() const { return strError; }
-        const std::string   GetVersion() const { return ""; }
+        std::string GetVersion() const { return ""; }
         uint16_t GetStartPosition() const { return 0; }
         uint16_t GetStopPosition() const { return 0; }
 

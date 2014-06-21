@@ -10,7 +10,7 @@ class TEST_ADMIN : public ADMIN {
         const std::string & GetPassword() const { return password; }
         const std::string & GetLogin() const { return login; }
         PRIV const *        GetPriv() const { return &priv; }
-        uint16_t            GetPrivAsInt() const { return priv.ToInt(); }
+        uint32_t            GetPrivAsInt() const { return priv.ToInt(); }
         const ADMIN_CONF &  GetConf() const { return conf; }
         uint32_t            GetIP() const { return ip; }
         std::string         GetIPStr() const { return inet_ntostring(ip); }

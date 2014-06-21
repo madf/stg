@@ -24,11 +24,13 @@ class TEST_SETTINGS : public SETTINGS {
         bool                GetReconnectOnTariffChange() const { return false; }
         const std::string & GetMonitorDir() const { return monitorDir; }
         bool                GetMonitoring() const { return false; }
+        const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
 
     private:
         std::string dirName;
         std::string scriptsDir;
         std::string monitorDir;
+        std::vector<std::string> scriptParams;
 };
 
 #endif

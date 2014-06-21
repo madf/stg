@@ -62,7 +62,7 @@ namespace tut
         set_test_name("Check empty lines and comments");
 
         {
-            ofstream f("/tmp/test.cf");
+            std::ofstream f("/tmp/test.cf");
 
             ensure("Correct construction (part 3)", f);
 

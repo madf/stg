@@ -42,7 +42,7 @@ class TEST_STORE : public STORE {
         int EditMessage(const STG_MSG & /*msg*/, const std::string & /*login*/) const { return 0; }
         int GetMessage(uint64_t /*id*/, STG_MSG * /*msg*/, const std::string & /*login*/) const { return 0; }
         int DelMessage(uint64_t /*id*/, const std::string & /*login*/) const { return 0; }
-        int GetMessageHdrs(vector<STG_MSG_HDR> * /*hdrsList*/, const std::string & /*login*/) const { return 0; }
+        int GetMessageHdrs(std::vector<STG_MSG_HDR> * /*hdrsList*/, const std::string & /*login*/) const { return 0; }
 
         int SaveMonthStat(const USER_STAT & /*stat*/, int /*month*/, int /*year*/, const std::string & /*login*/) const { return 0; }
 
