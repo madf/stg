@@ -291,22 +291,14 @@ char ct[ENC_MSG_LEN];
 int ret;
 
 memset(loginZ, 0, ADM_LOGIN_LEN);
-strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
-
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
-
-for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
+EncryptString(loginZ, login.c_str(), std::min(login.length(), ADM_LOGIN_LEN), &ctx);
+if (send(outerSocket, loginZ, ADM_LOGIN_LEN, 0) <= 0)
     {
-    Encrypt(ct, loginZ + j*ENC_MSG_LEN, &ctx);
-    ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-    if (ret <= 0)
-        {
-        errorMsg = SEND_LOGIN_ERROR;
-        return st_send_fail;
-        }
+    errorMsg = SEND_LOGIN_ERROR;
+    return st_send_fail;
     }
-
 return st_ok;
 }
 //---------------------------------------------------------------------------
@@ -352,34 +344,14 @@ int n = strlen(text) / ENC_MSG_LEN;
 int r = strlen(text) % ENC_MSG_LEN;
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
-
-for (j = 0; j < n; j++)
-    {
-    strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
-    Encrypt(ct, textZ, &ctx);
-    ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-    if (ret <= 0)
-        {
-        errorMsg = SEND_DATA_ERROR;
-        return st_send_fail;
-        }
-    }
-
-memset(textZ, 0, ENC_MSG_LEN);
-if (r)
-    strncpy(textZ, text + j*ENC_MSG_LEN, ENC_MSG_LEN);
-
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
-
-Encrypt(ct, textZ, &ctx);
-ret = send(outerSocket, ct, ENC_MSG_LEN, 0);
-if (ret <= 0)
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
+char buffer[text.length()];
+EncryptString(buffer, text.c_str(), text.length(), &ctx);
+if (send(outerSocket, buffer, text.length(), 0) <= 0)
     {
     errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
     }
-
 return st_ok;
 }
 //---------------------------------------------------------------------------
@@ -398,7 +370,7 @@ if (strlen(data)%ENC_MSG_LEN)
     l++;
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(passwd, PASSWD_LEN, &ctx);
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
 
 for (int j = 0; j < l; j++)
     {

@@ -387,13 +387,11 @@ if (currAdmin->GetLogin().empty())
     }
 
 BLOWFISH_CTX ctx;
-EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+InitContext(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 char login[ADM_LOGIN_LEN + 1];
 for (size_t i = 0; i < ADM_LOGIN_LEN / 8; i++)
-    {
-    DecodeString(login + i * 8, loginS + i * 8, &ctx);
-    }
+    DecryptBlock(login + i * 8, loginS + i * 8, &ctx);
 
 if (currAdmin == admins->GetNoAdmin())
     {
@@ -439,7 +437,7 @@ int CONFIGPROTO::RecvData(int sock)
 requestList.clear();
 BLOWFISH_CTX ctx;
 
-EnDecodeInit(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+InitContext(currAdmin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
 
 while (1)
     {
@@ -475,7 +473,7 @@ while (1)
     char buffer[8];
     buffer[7] = 0;
 
-    DecodeString(buffer, bufferS, &ctx);
+    DecryptBlock(buffer, bufferS, &ctx);
     requestList.push_back(std::string(buffer, pos));
 
     if (done || memchr(buffer, 0, pos) != NULL)
@@ -496,7 +494,7 @@ if (answer.empty())
     return 0;
 
 BLOWFISH_CTX ctx;
-EnDecodeInit(adminPassword.c_str(), ADM_PASSWD_LEN, &ctx);
+InitContext(adminPassword.c_str(), ADM_PASSWD_LEN, &ctx);
 
 std::string::size_type pos = 0;
 std::string::size_type length = answer.length();
@@ -504,7 +502,7 @@ while (pos < length)
     {
     char buffer[1024];
     std::string::size_type chunkLength = std::min(length - pos, sizeof(buffer));
-    EncodeFullString(buffer, answer.c_str() + pos, chunkLength, ctx);
+    EncryptString(buffer, answer.c_str() + pos, chunkLength, &ctx);
     if (send(sock, buffer, chunkLength, 0) < 0)
         return -1;
     pos += chunkLength;

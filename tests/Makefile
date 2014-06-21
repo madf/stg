@@ -3,8 +3,8 @@ INCS = -I . \
        -I ../stglibs/common.lib/include \
        -I ../stglibs/conffiles.lib/include \
        -I ../stglibs/logger.lib/include \
-       -I ../stglibs/locker.lib/include \
        -I ../stglibs/scriptexecuter.lib/include \
+       -I ../stglibs/crypto.lib/include \
        -I ../projects/stargazer
 DEFS = -DLINUX \
        -DUSE_ABSTRACT_SETTINGS
@@ -20,13 +20,16 @@ SOURCES = main.cpp \
 	  test_conffiles.cpp \
 	  test_fee_charge_rules.cpp \
 	  test_reconnect_on_tariff_change.cpp \
+	  test_crypto.cpp \
 	  ../projects/stargazer/tariff_impl.cpp \
 	  ../projects/stargazer/user_impl.cpp \
 	  ../projects/stargazer/user_property.cpp \
 	  ../stglibs/conffiles.lib/conffiles.cpp \
 	  ../stglibs/common.lib/common.cpp \
 	  ../stglibs/logger.lib/logger.cpp \
-	  ../stglibs/scriptexecuter.lib/scriptexecuter.cpp
+	  ../stglibs/scriptexecuter.lib/scriptexecuter.cpp \
+	  ../stglibs/crypto.lib/bfstream.cpp \
+	  ../stglibs/crypto.lib/blowfish.c
 
 .PHONY: all clean
 
