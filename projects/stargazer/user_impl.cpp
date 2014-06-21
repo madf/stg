@@ -115,6 +115,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       userdata8(property.userdata8),
       userdata9(property.userdata9),
       passiveNotifier(this),
+      disabledNotifier(this),
       tariffNotifier(this),
       cashNotifier(this),
       ipNotifier(this)

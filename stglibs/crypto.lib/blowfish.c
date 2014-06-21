@@ -437,7 +437,7 @@ for (i = 0; i < 4; ++i)
     }
 }
 //-----------------------------------------------------------------------------
-void EnDecodeInit(const char * passwd, size_t length, BLOWFISH_CTX *ctx)
+void InitContext(const char * passwd, size_t length, BLOWFISH_CTX * ctx)
 {
 unsigned char keyL[PASSWD_LEN];
 
@@ -467,7 +467,7 @@ void block2bytes(uint32_t t, char * c)
     *c = t >> 24 & 0x000000FF;
 }
 //-----------------------------------------------------------------------------
-void DecodeString(char * d, const char * s, const BLOWFISH_CTX *ctx)
+void DecryptBlock(void * d, const void * s, const BLOWFISH_CTX *ctx)
 {
 uint32_t a = bytes2block(s);
 uint32_t b = bytes2block(s + 4);
@@ -478,7 +478,7 @@ block2bytes(a, d);
 block2bytes(b, d + 4);
 }
 //-----------------------------------------------------------------------------
-void EncodeString(char * d, const char * s, const BLOWFISH_CTX *ctx)
+void EncryptBlock(void * d, const void * s, const BLOWFISH_CTX *ctx)
 {
 uint32_t a = bytes2block(s);
 uint32_t b = bytes2block(s + 4);
@@ -489,25 +489,23 @@ block2bytes(a, d);
 block2bytes(b, d + 4);
 }
 //-----------------------------------------------------------------------------
-void DecodeFullString(void * d, const void * s, size_t length, const BLOWFISH_CTX &ctx)
+void DecryptString(void * d, const void * s, size_t length, const BLOWFISH_CTX * ctx)
 {
 size_t pos = 0;
 while (pos < length)
     {
-    size_t chunkLength = std::min(length - pos, sizeof(buf));
-    DecodeString(d + pos, s + pos, &ctx);
-    pos += chunkLength;
+    DecryptBlock(d + pos, s + pos, ctx);
+    pos += 8;
     }
 }
 //-----------------------------------------------------------------------------
-void EncodeFullString(void * d, const void * s, size_t length, const BLOWFISH_CTX &ctx)
+void EncryptString(void * d, const void * s, size_t length, const BLOWFISH_CTX * ctx)
 {
 size_t pos = 0;
 while (pos < length)
     {
-    size_t chunkLength = std::min(length - pos, sizeof(buf));
-    EncodeString(d + pos, s + pos, &ctx);
-    pos += chunkLength;
+    EncryptBlock(d + pos, s + pos, ctx);
+    pos += 8;
     }
 }
 //-----------------------------------------------------------------------------

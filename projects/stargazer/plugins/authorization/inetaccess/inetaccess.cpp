@@ -57,8 +57,6 @@ namespace
 PLUGIN_CREATOR<AUTH_IA> iac;
 
 void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
-void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8);
-void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8);
 }
 
 extern "C" PLUGIN * GetPlugin();
@@ -334,7 +332,7 @@ AUTH_IA::AUTH_IA()
       onDelUserNotifier(*this),
       logger(GetPluginLogger(GetStgLogger(), "auth_ia"))
 {
-InitEncrypt(&ctxS, "pr7Hhen");
+InitContext("pr7Hhen", 7, &ctxS);
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -603,7 +601,7 @@ if (CheckHeader(buffer, sip, &protoVer))
 char login[PASSWD_LEN];  //TODO why PASSWD_LEN ?
 memset(login, 0, PASSWD_LEN);
 
-Decrypt(&ctxS, login, buffer + 8, PASSWD_LEN / 8);
+DecryptString(login, buffer + 8, PASSWD_LEN, &ctxS);
 
 USER_PTR user;
 if (users->FindByName(login, &user))
@@ -818,11 +816,12 @@ IA_USER * iaUser = &(it->second);
 
 if (iaUser->password != user->GetProperty().password.Get())
     {
-    InitEncrypt(&iaUser->ctx, user->GetProperty().password.Get());
+    const std::string & password = user->GetProperty().password.Get();
+    InitContext(password.c_str(), password.length(), &iaUser->ctx);
     iaUser->password = user->GetProperty().password.Get();
     }
 
-Decrypt(&iaUser->ctx, static_cast<char *>(buff) + offset, static_cast<char *>(buff) + offset, (dataLen - offset) / 8);
+DecryptString(static_cast<char *>(buff) + offset, static_cast<char *>(buff) + offset, (dataLen - offset), &iaUser->ctx);
 
 char packetName[IA_MAX_TYPE_LEN];
 strncpy(packetName,  static_cast<char *>(buff) + offset + 4, IA_MAX_TYPE_LEN);
@@ -1073,7 +1072,7 @@ SwapBytes(info.len);
 
 char buffer[256];
 memcpy(buffer, &info, sizeof(INFO_6));
-Encrypt(&user.ctx, buffer, buffer, len / 8);
+EncryptString(buffer, buffer, len, &user.ctx);
 return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
@@ -1102,7 +1101,7 @@ info.text[MAX_MSG_LEN - 1] = 0;
 char buffer[300];
 memcpy(buffer, &info, sizeof(INFO_7));
 
-Encrypt(&user.ctx, buffer, buffer, len / 8);
+EncryptString(buffer, buffer, len, &user.ctx);
 return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
@@ -1131,7 +1130,7 @@ SwapBytes(info.sendTime);
 char buffer[1500];
 memcpy(buffer, &info, sizeof(INFO_8));
 
-Encrypt(&user.ctx, buffer, buffer, len / 8);
+EncryptString(buffer, buffer, len, &user.ctx);
 return Send(ip, user.port, buffer, len);
 }
 //-----------------------------------------------------------------------------
@@ -1410,7 +1409,7 @@ SwapBytes(connSynAck6.userTimeOut);
 SwapBytes(connSynAck6.aliveDelay);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&connSynAck6, (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6))/8);
+EncryptString((char*)&connSynAck6, (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)), &iaUser->ctx);
 return Send(sip, iaSettings.GetUserPort(), (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)));;
 }
 //-----------------------------------------------------------------------------
@@ -1452,7 +1451,7 @@ SwapBytes(connSynAck8.userTimeOut);
 SwapBytes(connSynAck8.aliveDelay);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&connSynAck8, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8))/8);
+EncryptString((char*)&connSynAck8, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)), &iaUser->ctx);
 return Send(sip, iaUser->port, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)));
 }
 //-----------------------------------------------------------------------------
@@ -1533,7 +1532,7 @@ for (int i = 0; i < DIR_NUM; ++i)
     }
 #endif
 
-Encrypt(&(iaUser->ctx), (char*)&aliveSyn6, (char*)&aliveSyn6, Min8(sizeof(aliveSyn6))/8);
+EncryptString((char*)&aliveSyn6, (char*)&aliveSyn6, Min8(sizeof(aliveSyn6)), &iaUser->ctx);
 return Send(sip, iaSettings.GetUserPort(), (char*)&aliveSyn6, Min8(sizeof(aliveSyn6)));
 }
 //-----------------------------------------------------------------------------
@@ -1626,7 +1625,7 @@ for (int i = 0; i < DIR_NUM; ++i)
     }
 #endif
 
-Encrypt(&(iaUser->ctx), (char*)&aliveSyn8, (char*)&aliveSyn8, Min8(sizeof(aliveSyn8))/8);
+EncryptString((char*)&aliveSyn8, (char*)&aliveSyn8, Min8(sizeof(aliveSyn8)), &iaUser->ctx);
 return Send(sip, iaUser->port, (char*)&aliveSyn8, Min8(sizeof(aliveSyn8)));
 }
 //-----------------------------------------------------------------------------
@@ -1641,7 +1640,7 @@ SwapBytes(disconnSynAck6.len);
 SwapBytes(disconnSynAck6.rnd);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&disconnSynAck6, (char*)&disconnSynAck6, Min8(sizeof(disconnSynAck6))/8);
+EncryptString((char*)&disconnSynAck6, (char*)&disconnSynAck6, Min8(sizeof(disconnSynAck6)), &iaUser->ctx);
 return Send(sip, iaSettings.GetUserPort(), (char*)&disconnSynAck6, Min8(sizeof(disconnSynAck6)));
 }
 //-----------------------------------------------------------------------------
@@ -1665,7 +1664,7 @@ SwapBytes(disconnSynAck8.len);
 SwapBytes(disconnSynAck8.rnd);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&disconnSynAck8, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8))/8);
+EncryptString((char*)&disconnSynAck8, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8)), &iaUser->ctx);
 return Send(sip, iaUser->port, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8)));
 }
 //-----------------------------------------------------------------------------
@@ -1679,7 +1678,7 @@ strcpy((char*)fin6.ok, "OK");
 SwapBytes(fin6.len);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&fin6, (char*)&fin6, Min8(sizeof(fin6))/8);
+EncryptString((char*)&fin6, (char*)&fin6, Min8(sizeof(fin6)), &iaUser->ctx);
 
 users->Unauthorize(iaUser->login, this);
 
@@ -1709,7 +1708,7 @@ strcpy((char*)fin8.ok, "OK");
 SwapBytes(fin8.len);
 #endif
 
-Encrypt(&iaUser->ctx, (char*)&fin8, (char*)&fin8, Min8(sizeof(fin8))/8);
+EncryptString((char*)&fin8, (char*)&fin8, Min8(sizeof(fin8)), &iaUser->ctx);
 
 users->Unauthorize(iaUser->login, this);
 
@@ -1729,20 +1728,6 @@ unsigned char keyL[PASSWD_LEN];
 memset(keyL, 0, PASSWD_LEN);
 strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
 Blowfish_Init(ctx, keyL, PASSWD_LEN);
-}
-//-----------------------------------------------------------------------------
-inline
-void Decrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8)
-{
-for (size_t i = 0; i < len8; i++)
-    DecodeString(static_cast<char *>(dst) + i * 8, static_cast<const char *>(src) + i * 8, ctx);
-}
-//-----------------------------------------------------------------------------
-inline
-void Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8)
-{
-for (size_t i = 0; i < len8; i++)
-    EncodeString(static_cast<char *>(dst) + i * 8, static_cast<const char *>(src) + i * 8, ctx);
 }
 //-----------------------------------------------------------------------------
 }

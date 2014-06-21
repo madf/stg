@@ -1260,14 +1260,14 @@ memset(pass, 0, sizeof(pass));
 memset(adminPass, 0, sizeof(adminPass));
 
 BLOWFISH_CTX ctx;
-EnDecodeInit(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
+InitContext(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
 
 strncpy(adminPass, ac.password.c_str(), ADM_PASSWD_LEN);
 adminPass[ADM_PASSWD_LEN - 1] = 0;
 
 for (int i = 0; i < ADM_PASSWD_LEN/8; i++)
     {
-    EncodeString(pass + 8*i, adminPass + 8*i, &ctx);
+    EncryptBlock(pass + 8*i, adminPass + 8*i, &ctx);
     }
 
 pass[ADM_PASSWD_LEN - 1] = 0;
@@ -1356,11 +1356,11 @@ memset(pass, 0, sizeof(pass));
 if (passwordE[0] != 0)
     {
     Decode21(pass, passwordE);
-    EnDecodeInit(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
+    InitContext(adm_enc_passwd, strlen(adm_enc_passwd), &ctx);
 
     for (int i = 0; i < ADM_PASSWD_LEN/8; i++)
         {
-        DecodeString(password + 8*i, pass + 8*i, &ctx);
+        DecryptBlock(password + 8*i, pass + 8*i, &ctx);
         }
     }
 else

@@ -314,22 +314,14 @@ int NETTRANSACT::TxLoginS()
 {
 char loginZ[ADM_LOGIN_LEN];
 memset(loginZ, 0, ADM_LOGIN_LEN);
-strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
-
 BLOWFISH_CTX ctx;
-EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
-
-for (int j = 0; j < ADM_LOGIN_LEN / ENC_MSG_LEN; j++)
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
+EncryptString(loginZ, login.c_str(), std::min(login.length(), ADM_LOGIN_LEN), &ctx);
+if (send(outerSocket, loginZ, ADM_LOGIN_LEN, 0) <= 0)
     {
-    char ct[ENC_MSG_LEN];
-    EncodeString(ct, loginZ + j * ENC_MSG_LEN, &ctx);
-    if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
-        {
-        errorMsg = SEND_LOGIN_ERROR;
-        return st_send_fail;
-        }
+    errorMsg = SEND_LOGIN_ERROR;
+    return st_send_fail;
     }
-
 return st_ok;
 }
 //---------------------------------------------------------------------------
@@ -366,32 +358,21 @@ else
 int NETTRANSACT::TxData(const std::string & text)
 {
 BLOWFISH_CTX ctx;
-EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
-
-size_t pos = 0;
-while (pos < text.size())
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
+char buffer[text.length()];
+EncryptString(buffer, text.c_str(), text.length(), &ctx);
+if (send(outerSocket, buffer, text.length(), 0) <= 0)
     {
-    char textZ[ENC_MSG_LEN];
-    if (text.size() - pos < ENC_MSG_LEN)
-        memset(textZ, 0, ENC_MSG_LEN);
-    strncpy(textZ, text.c_str() + pos, std::min(ENC_MSG_LEN, (int)(text.size() - pos)));
-    char ct[ENC_MSG_LEN];
-    EncodeString(ct, textZ, &ctx);
-    if (send(outerSocket, ct, ENC_MSG_LEN, 0) <= 0)
-        {
-        errorMsg = SEND_DATA_ERROR;
-        return st_send_fail;
-        }
-    pos += ENC_MSG_LEN;
+    errorMsg = SEND_DATA_ERROR;
+    return st_send_fail;
     }
-
 return st_ok;
 }
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxDataAnswer(CALLBACK callback, void * data)
 {
 BLOWFISH_CTX ctx;
-EnDecodeInit(password.c_str(), PASSWD_LEN, &ctx);
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
 
 std::string chunk;
 while (true)
@@ -412,7 +393,7 @@ while (true)
         }
 
     char buffer[ENC_MSG_LEN];
-    DecodeString(buffer, bufferS, &ctx);
+    DecryptBlock(buffer, bufferS, &ctx);
 
     bool final = false;
     size_t pos = 0;

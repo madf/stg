@@ -351,18 +351,11 @@ if (!isNetPrepared)
     }
 
 int db = sizeof(HDR_8);
-for (int i = 0; i < IA_LOGIN_LEN/8; i++)
-    {
-    EncodeString(buffer + db + i * 8, buffer + db + i * 8, &ctxHdr);
-    }
+EncryptString(buffer + db, buffer + db, IA_LOGIN_LEN, &ctxHdr);
 
 db += IA_LOGIN_LEN;
-int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN)/8;
-for (int i = 0; i < encLen; i++)
-    {
-    EncodeString(buffer + db, buffer + db, &ctxPass);
-    db += 8;
-    }
+int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN);
+EncryptString(buffer + db, buffer + db, encLen, &ctxPass);
 
 return sendto(sockr, buffer, len, 0, (struct sockaddr*)&servAddr, sizeof(servAddr));
 }
@@ -383,10 +376,7 @@ if (res == -1)
     return res;
 
 if (strcmp(buffer + 4 + sizeof(HDR_8), "ERR"))
-    {
-    for (int i = 0; i < len / 8; i++)
-        DecodeString(buffer + i * 8, buffer + i * 8, &ctxPass);
-    }
+    DecryptString(buffer, buffer, len, &ctxPass);
 
 return 0;
 }
