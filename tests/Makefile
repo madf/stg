@@ -21,6 +21,7 @@ SOURCES = main.cpp \
 	  test_fee_charge_rules.cpp \
 	  test_reconnect_on_tariff_change.cpp \
 	  test_crypto.cpp \
+	  test_bfstream.cpp \
 	  ../projects/stargazer/tariff_impl.cpp \
 	  ../projects/stargazer/user_impl.cpp \
 	  ../projects/stargazer/user_property.cpp \
