@@ -423,11 +423,12 @@ namespace tut
 
         BLOWFISH_CTX ctx;
         InitContext("pr7Hhen", 7, &ctx);
-        char longTest[] = "abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        EncryptString(longTest, longTest, sizeof(longTest), &ctx);
+        std::string source("abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        char longTest[source.length() + 8];
+        EncryptString(longTest, source.c_str(), source.length() + 1, &ctx);
         DecryptString(longTest, longTest, sizeof(longTest), &ctx);
 
-        ensure("DecryptString(EncryptString(longTest)) == longTest", equalString(longTest, "abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ", sizeof(longTest)));
+        ensure_equals("DecryptString(EncryptString(longTest)) == longTest", source, std::string(longTest));
     }
 
 }
