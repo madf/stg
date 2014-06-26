@@ -316,7 +316,7 @@ char loginZ[ADM_LOGIN_LEN];
 memset(loginZ, 0, ADM_LOGIN_LEN);
 BLOWFISH_CTX ctx;
 InitContext(password.c_str(), PASSWD_LEN, &ctx);
-EncryptString(loginZ, login.c_str(), std::min(login.length(), ADM_LOGIN_LEN), &ctx);
+EncryptString(loginZ, login.c_str(), std::min(login.length() + 1, ADM_LOGIN_LEN), &ctx);
 if (send(outerSocket, loginZ, ADM_LOGIN_LEN, 0) <= 0)
     {
     errorMsg = SEND_LOGIN_ERROR;
@@ -359,9 +359,9 @@ int NETTRANSACT::TxData(const std::string & text)
 {
 BLOWFISH_CTX ctx;
 InitContext(password.c_str(), PASSWD_LEN, &ctx);
-char buffer[text.length()];
-EncryptString(buffer, text.c_str(), text.length(), &ctx);
-if (send(outerSocket, buffer, text.length(), 0) <= 0)
+char buffer[text.length() + 9];
+EncryptString(buffer, text.c_str(), text.length() + 1, &ctx);
+if (send(outerSocket, buffer, sizeof(buffer), 0) <= 0)
     {
     errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
