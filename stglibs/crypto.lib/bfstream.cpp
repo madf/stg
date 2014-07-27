@@ -26,6 +26,7 @@ class COMMON
               m_proc(proc)
         {
         InitContext(key.c_str(), key.length(), &m_ctx);
+        memset(m_buffer, 0, sizeof(m_buffer));
         }
 
         void Put(const void * data, size_t size, bool last)
@@ -35,7 +36,7 @@ class COMMON
             {
             memcpy(m_ptr, data, sizeof(m_buffer) - dataSize); // Fill buffer
             size -= sizeof(m_buffer) - dataSize; // Adjust size
-            data += sizeof(m_buffer) - dataSize; // Adjust data pointer
+            data = static_cast<const char *>(data) + sizeof(m_buffer) - dataSize; // Adjust data pointer
             m_proc(m_buffer, m_buffer, sizeof(m_buffer), &m_ctx); // Process
             m_callback(m_buffer, sizeof(m_buffer), m_data); // Consume
             m_ptr = m_buffer;

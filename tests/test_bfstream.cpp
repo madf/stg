@@ -122,6 +122,7 @@ namespace tut
         STG::ENCRYPT_STREAM estream("pr7Hhen", Callback, &tracker);
         std::string source = "This is a test long string for checking stream encryption/decryption. \"abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ\"";
         char buffer[source.length() + 9];
+        memset(buffer, 0, sizeof(buffer));
 
         estream.Put(source.c_str(), source.length() + 1, true);
         ensure("Encryption long string LastSize()", tracker.LastSize() >= source.length() + 1);
