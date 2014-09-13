@@ -1067,3 +1067,35 @@ if (res == 0) // Timeout
 
 return true;
 }
+
+bool ReadAll(int sd, void * dest, size_t size)
+{
+size_t done = 0;
+char * ptr = static_cast<char *>(dest);
+while (done < size)
+    {
+    if (!WaitPackets(sd))
+        return false;
+    ssize_t res = read(sd, ptr + done, size - done);
+    if (res < 0)
+        return false;
+    if (res == 0)
+        return true;
+    done += res;
+    }
+return true;
+}
+
+bool WriteAll(int sd, const void * source, size_t size)
+{
+size_t done = 0;
+const char * ptr = static_cast<const char *>(source);
+while (done < size)
+    {
+    ssize_t res = write(sd, ptr + done, size - done);
+    if (res <= 0)
+        return false;
+    done += res;
+    }
+return true;
+}
