@@ -504,7 +504,16 @@ void EncryptString(void * d, const void * s, size_t length, const BLOWFISH_CTX *
 size_t pos = 0;
 while (pos < length)
     {
-    EncryptBlock(d + pos, s + pos, ctx);
+    if (pos + 8 < length)
+        EncryptBlock(d + pos, s + pos, ctx);
+    else
+        {
+        // Short string, use 0-padded buffer.
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        memcpy(buf, s + pos, length - pos);
+        EncryptBlock(d + pos, buf, ctx);
+        }
     pos += 8;
     }
 }
