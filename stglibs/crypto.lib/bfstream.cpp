@@ -16,14 +16,15 @@ const size_t BUFFER_SIZE = BFSTREAM_BUF_SIZE;
 class COMMON
 {
     public:
-        typedef void (* CALLBACK)(const void * block, size_t size, void * data);
+        typedef bool (* CALLBACK)(const void * block, size_t size, void * data);
         typedef void (* PROC)(void * dest, const void * source, size_t length, const BLOWFISH_CTX * ctx);
 
         COMMON(const std::string & key, CALLBACK callback, void * data, PROC proc)
             : m_ptr(m_buffer),
               m_callback(callback),
               m_data(data),
-              m_proc(proc)
+              m_proc(proc),
+              m_ok(true)
         {
         InitContext(key.c_str(), key.length(), &m_ctx);
         memset(m_buffer, 0, sizeof(m_buffer));
@@ -38,13 +39,17 @@ class COMMON
             size -= sizeof(m_buffer) - dataSize; // Adjust size
             data = static_cast<const char *>(data) + sizeof(m_buffer) - dataSize; // Adjust data pointer
             m_proc(m_buffer, m_buffer, sizeof(m_buffer), &m_ctx); // Process
-            m_callback(m_buffer, sizeof(m_buffer), m_data); // Consume
+            m_ok = m_ok && m_callback(m_buffer, sizeof(m_buffer), m_data); // Consume
             m_ptr = m_buffer;
             }
+        if (!m_ok)
+            return;
         memcpy(m_ptr, data, size);
         m_ptr += size;
         m_tryConsume(last);
         }
+
+        bool isOk() const { return m_ok; }
 
     private:
         char m_buffer[BUFFER_SIZE];
@@ -53,6 +58,7 @@ class COMMON
         void * m_data;
         BLOWFISH_CTX m_ctx;
         PROC m_proc;
+        bool m_ok;
 
         void m_tryConsume(bool last)
         {
@@ -66,7 +72,9 @@ class COMMON
         if (dataSize == 0)
             return;
         m_proc(m_buffer, m_buffer, dataSize, &m_ctx);
-        m_callback(m_buffer, dataSize, m_data);
+        m_ok = m_ok && m_callback(m_buffer, dataSize, m_data);
+        if (!m_ok)
+            return;
         if (remainder > 0)
             memmove(m_buffer, m_buffer + dataSize, remainder);
         m_ptr = m_buffer + remainder;
@@ -108,6 +116,11 @@ void ENCRYPT_STREAM::Put(const void * data, size_t size, bool last)
 m_impl->Put(data, size, last);
 }
 
+bool ENCRYPT_STREAM::isOk() const
+{
+return m_impl->isOk();
+}
+
 DECRYPT_STREAM::DECRYPT_STREAM(const std::string & key, CALLBACK callback, void * data)
     : m_impl(new IMPL(key, callback, data))
 {}
@@ -120,4 +133,9 @@ delete m_impl;
 void DECRYPT_STREAM::Put(const void * data, size_t size, bool last)
 {
 m_impl->Put(data, size, last);
+}
+
+bool DECRYPT_STREAM::isOk() const
+{
+return m_impl->isOk();
 }

@@ -5,9 +5,11 @@
 LIB_NAME = stgcrypto
 
 SRCS = ag_md5.c \
-	blowfish.c
+	blowfish.c \
+	bfstream.cpp
 
 INCS = ag_md5.h \
-	blowfish.h
+	blowfish.h \
+	bfstream.h
 
 include ../Makefile.in

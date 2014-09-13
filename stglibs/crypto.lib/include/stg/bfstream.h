@@ -10,11 +10,13 @@ namespace STG
 class ENCRYPT_STREAM
 {
     public:
-        typedef void (* CALLBACK)(const void * block, size_t size, void * data);
+        typedef bool (* CALLBACK)(const void * block, size_t size, void * data);
 
         ENCRYPT_STREAM(const std::string & key, CALLBACK callback, void * data);
         ~ENCRYPT_STREAM();
         void Put(const void * data, size_t size, bool last = false);
+
+        bool isOk() const;
 
     private:
         class IMPL;
@@ -25,11 +27,13 @@ class ENCRYPT_STREAM
 class DECRYPT_STREAM
 {
     public:
-        typedef void (* CALLBACK)(const void * block, size_t size, void * data);
+        typedef bool (* CALLBACK)(const void * block, size_t size, void * data);
 
         DECRYPT_STREAM(const std::string & key, CALLBACK callback, void * data);
         ~DECRYPT_STREAM();
         void Put(const void * data, size_t size, bool last = false);
+
+        bool isOk() const;
 
     private:
         class IMPL;
