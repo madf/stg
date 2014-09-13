@@ -79,6 +79,7 @@ if (cp->currParser)
     {
     if (cp->currParser->ParseEnd(data, el) == 0)
         {
+        cp->dataAnswer = cp->currParser->GetAnswer();
         cp->currParser = NULL;
         }
     }
@@ -88,6 +89,8 @@ else
         {
         if (cp->dataParser[i]->ParseEnd(data, el) == 0)
             {
+            cp->dataAnswer = cp->currParser->GetAnswer();
+            cp->currParser = NULL;
             break;
             }
         }

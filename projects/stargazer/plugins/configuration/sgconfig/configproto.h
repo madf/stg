@@ -87,6 +87,7 @@ private:
     int             SendDataAnswer(int sock, const std::string & answer);
     int             SendError(int sock, const std::string & text);
     void            WriteLogAccessFailed(uint32_t ip);
+    const std::string & GetDataAnswer() const { return dataAnswer; }
 
     int             ParseCommand();
 
@@ -100,6 +101,7 @@ private:
     int                         state;
     ADMIN *                     currAdmin;
     PLUGIN_LOGGER &             logger;
+    std::string                 dataAnswer;
 
     int                         listenSocket;
 
