@@ -482,7 +482,7 @@ while (1)
         if (ParseCommand())
             return SendError(sock, "Bad command");
         else
-            return SendDataAnswer(sock, currParser->GetAnswer());
+            return SendDataAnswer(sock, GetDataAnswer());
         }
     }
 //return 0;
@@ -497,13 +497,13 @@ BLOWFISH_CTX ctx;
 InitContext(adminPassword.c_str(), ADM_PASSWD_LEN, &ctx);
 
 std::string::size_type pos = 0;
-std::string::size_type length = answer.length();
+std::string::size_type length = answer.length() + 1;
 while (pos < length)
     {
     char buffer[1024];
     std::string::size_type chunkLength = std::min(length - pos, sizeof(buffer));
     EncryptString(buffer, answer.c_str() + pos, chunkLength, &ctx);
-    if (send(sock, buffer, chunkLength, 0) < 0)
+    if (send(sock, buffer, (chunkLength & ~7) < chunkLength ? chunkLength + 8 : chunkLength, 0) < 0) // Need to send data adjusted to the 8-byte boundary.
         return -1;
     pos += chunkLength;
     }
