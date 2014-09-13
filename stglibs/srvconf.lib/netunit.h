@@ -35,6 +35,7 @@ public:
     NETTRANSACT(const std::string & server, uint16_t port,
                 const std::string & localAddress, uint16_t localPort,
                 const std::string & login, const std::string & password);
+    ~NETTRANSACT();
     int Transact(const std::string & request, CALLBACK f, void * data);
     const std::string & GetError() const { return errorMsg; }
 
@@ -59,8 +60,11 @@ private:
     uint16_t localPort;
     std::string login;
     std::string password;
-    int outerSocket;
+    int sock;
     std::string errorMsg;
+
+    static bool TxCrypto(const void * block, size_t size, void * data);
+    static bool RxCrypto(const void * block, size_t size, void * data);
 };
 
 #endif
