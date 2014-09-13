@@ -15,7 +15,7 @@ class TRACKER
     public:
         TRACKER() : m_lastSize(0), m_callCount(0), m_lastBlock(NULL) {}
         ~TRACKER() { delete[] m_lastBlock; }
-        void Call(const void * block, size_t size)
+        bool Call(const void * block, size_t size)
         {
         delete[] m_lastBlock;
         if (size > 0)
@@ -27,6 +27,7 @@ class TRACKER
             m_lastBlock = NULL;
         m_lastSize = size;
         ++m_callCount;
+        return true;
         }
         size_t LastSize() const { return m_lastSize; }
         size_t CallCount() const { return m_callCount; }
@@ -38,10 +39,10 @@ class TRACKER
         char * m_lastBlock;
 };
 
-void Callback(const void * block, size_t size, void * data)
+bool Callback(const void * block, size_t size, void * data)
 {
 TRACKER & tracker = *static_cast<TRACKER *>(data);
-tracker.Call(block, size);
+return tracker.Call(block, size);
 }
 
 }
