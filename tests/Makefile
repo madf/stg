@@ -9,7 +9,7 @@ INCS = -I . \
 DEFS = -DLINUX \
        -DUSE_ABSTRACT_SETTINGS
 CFLAGS += -g3 -Wall -W -Wextra $(INCS) $(DEFS)
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS += $(CFLAGS)
 LIBS = -lpthread
 PROG = tests
 
