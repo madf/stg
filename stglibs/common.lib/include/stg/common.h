@@ -139,6 +139,9 @@ int ParseYesNo(const std::string & str, bool * val);
 
 bool WaitPackets(int sd);
 
+bool ReadAll(int sd, void * dest, size_t size);
+bool WriteAll(int sd, const void * source, size_t size);
+
 //-----------------------------------------------------------------------------
 int str2x(const std::string & str, int32_t & x);
 int str2x(const std::string & str, uint32_t & x);
