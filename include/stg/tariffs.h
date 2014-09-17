@@ -48,7 +48,7 @@ public:
     virtual void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
     virtual void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
 
-    virtual void GetTariffsData(std::list<TARIFF_DATA> * tdl) = 0;
+    virtual void GetTariffsData(std::list<TARIFF_DATA> * tdl) const = 0;
 
     virtual size_t Count() const = 0;
 
