@@ -15,31 +15,38 @@
  */
 
 /*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_PARSER_USER_INFO_H__
-#define __STG_PARSER_USER_INFO_H__
+#ifndef __STG_SGCONFIG_PARSER_SERVER_INFO_H__
+#define __STG_SGCONFIG_PARSER_SERVER_INFO_H__
 
 #include "parser.h"
 
-#include <string>
+class ADMIN;
 
 namespace STG
 {
 namespace PARSER
 {
 
-class USER_INFO : public BASE_PARSER
-{
+class GET_SERVER_INFO: public BASE_PARSER {
     public:
-        USER_INFO(const ADMIN & admin, const USERS & users)
-            : BASE_PARSER(admin, "GetUserInfo"), m_users(users) {}
-        int Start(void * data, const char * el, const char ** attr);
+        GET_SERVER_INFO(const ADMIN & admin,
+                        const SETTINGS & settings,
+                        const USERS & users,
+                        const TARIFFS & tariffs)
+            : BASE_PARSER(admin, "GetServerInfo"),
+              m_settings(settings),
+              m_users(users),
+              m_tariffs(tariffs)
+        {}
 
     private:
+        const SETTINGS & m_settings;
         const USERS & m_users;
-        std::string m_login;
+        const TARIFFS & m_tariffs;
 
         void CreateAnswer();
 };

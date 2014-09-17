@@ -15,32 +15,44 @@
  */
 
 /*
+ *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_PARSER_USER_INFO_H__
-#define __STG_PARSER_USER_INFO_H__
+#ifndef __STG_SGCONFIG_PARSER_USERS_H__
+#define __STG_SGCONFIG_PARSER_USERS_H__
 
 #include "parser.h"
 
+#include "stg/message.h"
+
+#include <vector>
 #include <string>
+
+class USERS;
+class USER;
 
 namespace STG
 {
 namespace PARSER
 {
 
-class USER_INFO : public BASE_PARSER
+class SEND_MESSAGE: public BASE_PARSER
 {
     public:
-        USER_INFO(const ADMIN & admin, const USERS & users)
-            : BASE_PARSER(admin, "GetUserInfo"), m_users(users) {}
-        int Start(void * data, const char * el, const char ** attr);
+        SEND_MESSAGE(const ADMIN & admin, USERS & users)
+            : BASE_PARSER(admin, "Message"), m_users(users), m_result(res_ok), m_user(NULL) {}
+        int Start(void *data, const char *el, const char **attr);
+        int End(void *data, const char *el);
 
     private:
-        const USERS & m_users;
-        std::string m_login;
+        USERS & m_users;
+        std::vector<std::string> m_logins;
+        enum { res_ok, res_params_error, res_unknown } m_result;
+        STG_MSG m_msg;
+        USER * m_user;
 
+        int ParseLogins(const char * logins);
         void CreateAnswer();
 };
 

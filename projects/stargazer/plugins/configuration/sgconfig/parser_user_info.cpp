@@ -26,43 +26,35 @@
 
 #include <strings.h> // strcasecmp
 
-int PARSER_USER_INFO::ParseStart(void * /*data*/, const char *el, const char **attr)
+using STG::PARSER::USER_INFO;
+
+int USER_INFO::Start(void * /*data*/, const char *el, const char **attr)
 {
-login.clear();
-if (strcasecmp(el, "GetUserInfo") != 0)
-    return -1;
+    if (strcasecmp(el, tag.c_str()) != 0)
+        return -1;
 
-if (!attr[0] || !attr[1] || strcasecmp(attr[0], "login") != 0)
-    return -1;
+    if (!attr[1])
+        return -1;
 
-login = attr[1];
-return 0;
+    m_login = attr[1];
+    return 0;
 }
 
-int PARSER_USER_INFO::ParseEnd(void * /*data*/, const char *el)
+void USER_INFO::CreateAnswer()
 {
-if (strcasecmp(el, "GetUserInfo") != 0)
-    return -1;
-
-CreateAnswer();
-return 0;
-}
-
-void PARSER_USER_INFO::CreateAnswer()
-{
-CONST_USER_PTR u;
-if (users->FindByName(login, &u))
+    CONST_USER_PTR u;
+    if (m_users.FindByName(m_login, &u))
     {
-    answer = "<UserInfo result=\"error\"/>";
-    return;
+        answer = "<UserInfo result=\"error\"/>";
+        return;
     }
 
-answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
-         " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
-         " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
-         " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
-std::vector<std::string> list(u->GetAuthorizers());
-for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-    answer += "<Auth name=\"" + *it + "\"/>";
-answer += "</UserInfo>";
+    answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
+             " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
+             " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
+             " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
+    std::vector<std::string> list(u->GetAuthorizers());
+    for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+        answer += "<Auth name=\"" + *it + "\"/>";
+    answer += "</UserInfo>";
 }
