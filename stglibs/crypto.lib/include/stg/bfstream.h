@@ -16,7 +16,7 @@ class ENCRYPT_STREAM
         ~ENCRYPT_STREAM();
         void Put(const void * data, size_t size, bool last = false);
 
-        bool isOk() const;
+        bool IsOk() const;
 
     private:
         class IMPL;
@@ -33,7 +33,7 @@ class DECRYPT_STREAM
         ~DECRYPT_STREAM();
         void Put(const void * data, size_t size, bool last = false);
 
-        bool isOk() const;
+        bool IsOk() const;
 
     private:
         class IMPL;
