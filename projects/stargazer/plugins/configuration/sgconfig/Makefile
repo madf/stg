@@ -8,10 +8,13 @@ PROG = mod_conf_sg.so
 
 SRCS = ./stgconfig.cpp \
        ./rsconf.cpp \
+       ./conn.cpp \
        ./configproto.cpp \
        ./parser.cpp \
-       ./parser_tariff.cpp \
-       ./parser_admin.cpp \
+       ./parser_tariffs.cpp \
+       ./parser_admins.cpp \
+       ./parser_users.cpp \
+       ./parser_message.cpp \
        ./parser_auth_by.cpp \
        ./parser_user_info.cpp
 
