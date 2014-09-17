@@ -16,40 +16,42 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
+
+#ifndef __STG_SGCONFIG_PARSER_SERVER_INFO_H__
+#define __STG_SGCONFIG_PARSER_SERVER_INFO_H__
 
 #include "parser.h"
 
-#include "stg/tariffs.h"
-#include "stg/admin.h"
-#include "stg/users.h"
-#include "stg/user_property.h"
-#include "stg/settings.h"
-#include "stg/logger.h"
-#include "stg/version.h"
-#include "stg/store.h"
+class ADMIN;
 
-#include <cstring>
-#include <cstdio> // sprintf
-
-//-----------------------------------------------------------------------------
-//  BASE PARSER
-//-----------------------------------------------------------------------------
-int BASE_PARSER::Start(void *, const char *el, const char **)
+namespace STG
 {
-if (strcasecmp(el, tag.c_str()) == 0)
-    return 0;
-
-return -1;
-}
-//-----------------------------------------------------------------------------
-int BASE_PARSER::End(void *, const char *el)
+namespace PARSER
 {
-if (strcasecmp(el, tag.c_str()) == 0)
-    {
-    CreateAnswer();
-    return 0;
-    }
 
-return -1;
+class GET_SERVER_INFO: public BASE_PARSER {
+    public:
+        GET_SERVER_INFO(const ADMIN & admin,
+                        const SETTINGS & settings,
+                        const USERS & users,
+                        const TARIFFS & tariffs)
+            : BASE_PARSER(admin, "GetServerInfo"),
+              m_settings(settings),
+              m_users(users),
+              m_tariffs(tariffs)
+        {}
+
+    private:
+        const SETTINGS & m_settings;
+        const USERS & m_users;
+        const TARIFFS & m_tariffs;
+
+        void CreateAnswer();
+};
+
 }
+}
+
+#endif
