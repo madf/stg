@@ -29,7 +29,6 @@
 
 #include <cerrno>
 #include <csignal>
-#include <cstdio> // snprintf
 #include <cstring> // strerror
 
 #include <unistd.h> // close
@@ -60,9 +59,6 @@ enum
 //-----------------------------------------------------------------------------
 int CONFIGPROTO::Prepare()
 {
-int res;
-struct sockaddr_in listenAddr;
-
 sigset_t sigmask, oldmask;
 sigemptyset(&sigmask);
 sigaddset(&sigmask, SIGINT);
@@ -75,11 +71,12 @@ listenSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 if (listenSocket < 0)
     {
-    errorStr = "Create NET_CONFIGURATOR socket failed.";
+    errorStr = "Create socket failed.";
     logger("Cannot create a socket: %s", strerror(errno));
     return -1;
     }
 
+struct sockaddr_in listenAddr;
 listenAddr.sin_family = PF_INET;
 listenAddr.sin_port = htons(port);
 listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
@@ -93,17 +90,14 @@ if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
     return -1;
     }
 
-res = bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr));
-
-if (res == -1)
+if (bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr)) == -1)
     {
     errorStr = "Bind admin socket failed";
     logger("Cannot bind the socket: %s", strerror(errno));
     return -1;
     }
 
-res = listen(listenSocket, 0);
-if (res == -1)
+if (listen(listenSocket, 0) == -1)
     {
     errorStr = "Listen admin socket failed";
     logger("Cannot listen the socket: %s", strerror(errno));
@@ -118,18 +112,18 @@ return 0;
 int CONFIGPROTO::Stop()
 {
 nonstop = false;
+shutdown(listenSocket, SHUT_RDWR);
 close(listenSocket);
 //TODO: Idiotism
-int                 sock;
 struct sockaddr_in  addr;
-socklen_t           addrLen;
 addr.sin_family = PF_INET;
 addr.sin_port = htons(port);
 addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-addrLen = sizeof(addr);
-sock = socket(PF_INET, SOCK_STREAM, 0);
+socklen_t addrLen = sizeof(addr);
+int sock = socket(PF_INET, SOCK_STREAM, 0);
 connect(sock, (sockaddr*)&addr, addrLen);
+shutdown(sock, SHUT_RDWR);
 close(sock);
 //Idiotism end
 return 0;
@@ -137,8 +131,6 @@ return 0;
 //-----------------------------------------------------------------------------
 void CONFIGPROTO::Run()
 {
-state = confHdr;
-
 while (nonstop)
     {
     state = confHdr;
@@ -166,6 +158,7 @@ while (nonstop)
         {
         if (RecvHdr(outerSocket) < 0)
             {
+            shutdown(outerSocket, SHUT_RDWR);
             close(outerSocket);
             continue;
             }
@@ -173,11 +166,13 @@ while (nonstop)
             {
             if (SendHdrAnswer(outerSocket, ans_ok) < 0)
                 {
+                shutdown(outerSocket, SHUT_RDWR);
                 close(outerSocket);
                 continue;
                 }
             if (RecvLogin(outerSocket) < 0)
                 {
+                shutdown(outerSocket, SHUT_RDWR);
                 close(outerSocket);
                 continue;
                 }
@@ -185,11 +180,13 @@ while (nonstop)
                 {
                 if (SendLoginAnswer(outerSocket) < 0)
                     {
+                    shutdown(outerSocket, SHUT_RDWR);
                     close(outerSocket);
                     continue;
                     }
                 if (RecvLoginS(outerSocket) < 0)
                     {
+                    shutdown(outerSocket, SHUT_RDWR);
                     close(outerSocket);
                     continue;
                     }
@@ -197,11 +194,13 @@ while (nonstop)
                     {
                     if (SendLoginSAnswer(outerSocket, ans_ok) < 0)
                         {
+                        shutdown(outerSocket, SHUT_RDWR);
                         close(outerSocket);
                         continue;
                         }
                     if (RecvData(outerSocket) < 0)
                         {
+                        shutdown(outerSocket, SHUT_RDWR);
                         close(outerSocket);
                         continue;
                         }
@@ -211,6 +210,7 @@ while (nonstop)
                     {
                     if (SendLoginSAnswer(outerSocket, ans_err) < 0)
                         {
+                        shutdown(outerSocket, SHUT_RDWR);
                         close(outerSocket);
                         continue;
                         }
@@ -227,6 +227,7 @@ while (nonstop)
             WriteLogAccessFailed(adminIP);
             if (SendHdrAnswer(outerSocket, ans_err) < 0)
                 {
+                shutdown(outerSocket, SHUT_RDWR);
                 close(outerSocket);
                 continue;
                 }
@@ -237,6 +238,7 @@ while (nonstop)
         WriteLogAccessFailed(adminIP);
         }
     printfd(__FILE__, "Successfull connection from %s\n", inet_ntostring(outerAddr.sin_addr.s_addr).c_str());
+    shutdown(outerSocket, SHUT_RDWR);
     close(outerSocket);
     }
 }
