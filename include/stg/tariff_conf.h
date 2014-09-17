@@ -35,14 +35,6 @@
 #include <vector>
 
 //-----------------------------------------------------------------------------
-enum
-{
-    TRAFF_UP = 0,
-    TRAFF_DOWN,
-    TRAFF_UP_DOWN,
-    TRAFF_MAX
-};
-//-----------------------------------------------------------------------------
 struct DIRPRICE_DATA
 {
     DIRPRICE_DATA()
@@ -151,17 +143,17 @@ struct DIRPRICE_DATA_RES
 //-----------------------------------------------------------------------------
 struct TARIFF_CONF
 {
-    double         fee;
-    double         free;
-    int            traffType;
-    double         passiveCost;
-    std::string    name;
-    TARIFF::PERIOD period;
+    double             fee;
+    double             free;
+    TARIFF::TRAFF_TYPE traffType;
+    double             passiveCost;
+    std::string        name;
+    TARIFF::PERIOD     period;
 
     TARIFF_CONF()
         : fee(0),
           free(0),
-          traffType(TRAFF_UP_DOWN),
+          traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(),
           period(TARIFF::MONTH)
@@ -170,7 +162,7 @@ struct TARIFF_CONF
     TARIFF_CONF(const std::string & n)
         : fee(0),
           free(0),
-          traffType(TRAFF_UP_DOWN),
+          traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(n),
           period(TARIFF::MONTH)
@@ -211,12 +203,12 @@ struct TARIFF_CONF_RES
         return tc;
         }
 
-    RESETABLE<double>         fee;
-    RESETABLE<double>         free;
-    RESETABLE<int>            traffType;
-    RESETABLE<double>         passiveCost;
-    RESETABLE<std::string>    name;
-    RESETABLE<TARIFF::PERIOD> period;
+    RESETABLE<double>             fee;
+    RESETABLE<double>             free;
+    RESETABLE<TARIFF::TRAFF_TYPE> traffType;
+    RESETABLE<double>             passiveCost;
+    RESETABLE<std::string>        name;
+    RESETABLE<TARIFF::PERIOD>     period;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
