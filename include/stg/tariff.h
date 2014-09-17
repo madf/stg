@@ -26,6 +26,7 @@
 #include <string>
 #include <cstring>
 #include <ctime>
+#include <istream>
 
 struct TARIFF_DATA;
 
@@ -33,8 +34,13 @@ class TARIFF {
 public:
     enum PERIOD { DAY = 0, MONTH };
 
+    enum TRAFF_TYPE { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
+
     static std::string PeriodToString(PERIOD period);
     static PERIOD StringToPeriod(const std::string& value);
+
+    static std::string TraffTypeToString(TRAFF_TYPE type);
+    static TRAFF_TYPE StringToTraffType(const std::string& value);
 
     virtual ~TARIFF() {}
     virtual double  GetPriceWithTraffType(uint64_t up,
@@ -73,6 +79,42 @@ TARIFF::PERIOD TARIFF::StringToPeriod(const std::string& value)
 if (strcasecmp(value.c_str(), "day") == 0)
     return DAY;
 return MONTH; // Classic behaviour.
+}
+
+inline
+std::string TARIFF::TraffTypeToString(TARIFF::TRAFF_TYPE type)
+{
+switch (type)
+    {
+    case TRAFF_UP: return "up";
+    case TRAFF_DOWN: return "down";
+    case TRAFF_UP_DOWN: return "up+down";
+    case TRAFF_MAX: return "max";
+    }
+return "up+down";
+}
+
+inline
+TARIFF::TRAFF_TYPE TARIFF::StringToTraffType(const std::string& value)
+{
+if (strcasecmp(value.c_str(), "up") == 0)
+    return TRAFF_UP;
+if (strcasecmp(value.c_str(), "down") == 0)
+    return TRAFF_DOWN;
+if (strcasecmp(value.c_str(), "up+down") == 0)
+    return TRAFF_UP_DOWN;
+if (strcasecmp(value.c_str(), "max") == 0)
+    return TRAFF_MAX;
+return TRAFF_UP_DOWN;
+}
+
+inline
+std::istream & operator>>(std::istream & stream, TARIFF::TRAFF_TYPE & traffType)
+{
+    unsigned val;
+    stream >> val;
+    traffType = static_cast<TARIFF::TRAFF_TYPE>(val);
+    return stream;
 }
 
 #endif
