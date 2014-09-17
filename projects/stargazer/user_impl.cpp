@@ -854,10 +854,10 @@ int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
 dt[dir] += len;
 
 int tt = tariff->GetTraffType();
-if (tt == TRAFF_UP ||
-    tt == TRAFF_UP_DOWN ||
+if (tt == TARIFF::TRAFF_UP ||
+    tt == TARIFF::TRAFF_UP_DOWN ||
     // Check NEW traff data
-    (tt == TRAFF_MAX && dt[dir] > down.ConstData()[dir]))
+    (tt == TARIFF::TRAFF_MAX && dt[dir] > down.ConstData()[dir]))
     {
     double dc = 0;
     if (traff < threshold &&
@@ -947,10 +947,10 @@ int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
 dt[dir] += len;
 
 int tt = tariff->GetTraffType();
-if (tt == TRAFF_DOWN ||
-    tt == TRAFF_UP_DOWN ||
+if (tt == TARIFF::TRAFF_DOWN ||
+    tt == TARIFF::TRAFF_UP_DOWN ||
     // Check NEW traff data
-    (tt == TRAFF_MAX && up.ConstData()[dir] <= dt[dir]))
+    (tt == TARIFF::TRAFF_MAX && up.ConstData()[dir] <= dt[dir]))
     {
     double dc = 0;
     if (traff < threshold &&
