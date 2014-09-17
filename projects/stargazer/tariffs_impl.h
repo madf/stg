@@ -63,7 +63,7 @@ public:
     void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
     void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
 
-    void GetTariffsData(std::list<TARIFF_DATA> * tdl);
+    void GetTariffsData(std::list<TARIFF_DATA> * tdl) const;
 
     const std::string & GetStrError() const { return strError; }
 

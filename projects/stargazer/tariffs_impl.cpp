@@ -253,7 +253,7 @@ WriteServLog("%s Tariff \'%s\' added.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::GetTariffsData(std::list<TARIFF_DATA> * tdl)
+void TARIFFS_IMPL::GetTariffsData(std::list<TARIFF_DATA> * tdl) const
 {
 assert(tdl != NULL && "Tariffs data list is not null");
 STG_LOCKER lock(&mutex);
