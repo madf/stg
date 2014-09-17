@@ -63,7 +63,7 @@ if ((it = structVal.find("passivecost")) != structVal.end())
 
 if ((it = structVal.find("traffType")) != structVal.end())
     {
-    data.tariffConf.traffType = xmlrpc_c::value_int(it->second);
+    data.tariffConf.traffType = static_cast<TARIFF::TRAFF_TYPE>(xmlrpc_c::value_int(it->second).cvalue());
     }
 
 if ((it = structVal.find("period")) != structVal.end())

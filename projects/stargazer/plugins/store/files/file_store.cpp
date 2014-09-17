@@ -1464,24 +1464,7 @@ if (conf.ReadString("TraffType", &str, "") < 0)
     return -1;
     }
 
-if (!strcasecmp(str.c_str(), "up"))
-    td->tariffConf.traffType = TRAFF_UP;
-else
-    if (!strcasecmp(str.c_str(), "down"))
-        td->tariffConf.traffType = TRAFF_DOWN;
-    else
-        if (!strcasecmp(str.c_str(), "up+down"))
-            td->tariffConf.traffType = TRAFF_UP_DOWN;
-        else
-            if (!strcasecmp(str.c_str(), "max"))
-                td->tariffConf.traffType = TRAFF_MAX;
-            else
-                {
-                STG_LOCKER lock(&mutex);
-                errorStr = "Cannot read tariff " + tariffName + ". Parameter TraffType incorrect";
-                printfd(__FILE__, "FILES_STORE::RestoreTariff - invalid trafftype for tariff '%s'\n", tariffName.c_str());
-                return -1;
-                }
+td->tariffConf.traffType = TARIFF::StringToTraffType(str);
 
 if (conf.ReadString("Period", &str, "month") < 0)
     td->tariffConf.period = TARIFF::MONTH;
@@ -1546,23 +1529,7 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteDouble("PassiveCost", td.tariffConf.passiveCost);
     cf.WriteDouble("Fee", td.tariffConf.fee);
     cf.WriteDouble("Free", td.tariffConf.free);
-
-    switch (td.tariffConf.traffType)
-        {
-        case TRAFF_UP:
-            cf.WriteString("TraffType", "up");
-            break;
-        case TRAFF_DOWN:
-            cf.WriteString("TraffType", "down");
-            break;
-        case TRAFF_UP_DOWN:
-            cf.WriteString("TraffType", "up+down");
-            break;
-        case TRAFF_MAX:
-            cf.WriteString("TraffType", "max");
-            break;
-        }
-
+    cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
     cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     }
 

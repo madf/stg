@@ -1625,24 +1625,7 @@ if (GetDouble(row[1+8*DIR_NUM], &td->tariffConf.passiveCost, 0.0) < 0)
         return -1;
         }
 
-if (!strcasecmp(str.c_str(), "up"))
-    td->tariffConf.traffType = TRAFF_UP;
-else
-    if (!strcasecmp(str.c_str(), "down"))
-        td->tariffConf.traffType = TRAFF_DOWN;
-    else
-        if (!strcasecmp(str.c_str(), "up+down"))
-            td->tariffConf.traffType = TRAFF_UP_DOWN;
-        else
-            if (!strcasecmp(str.c_str(), "max"))
-                td->tariffConf.traffType = TRAFF_MAX;
-            else
-                {
-                mysql_free_result(res);
-                errorStr = "Cannot read tariff " + tariffName + ". Parameter TraffType incorrect";
-                mysql_close(sock);
-                return -1;
-                }
+td->tariffConf.traffType = TARIFF::StringToTraffType(str);
 
 if (schemaVersion > 0)
 {
@@ -1726,21 +1709,7 @@ res += param;
 strprintf(&param, " Free=%f,", td.tariffConf.free);
 res += param;
 
-switch (td.tariffConf.traffType)
-    {
-    case TRAFF_UP:
-        res += " TraffType='up'";
-        break;
-    case TRAFF_DOWN:
-        res += " TraffType='down'";
-        break;
-    case TRAFF_UP_DOWN:
-        res += " TraffType='up+down'";
-        break;
-    case TRAFF_MAX:
-        res += " TraffType='max'";
-        break;
-    }
+res += " TraffType='" + TARIFF::TraffTypeToString(td.tariffConf.traffType) + "'";
 
 if (schemaVersion > 0)
     res += ", Period='" + TARIFF::PeriodToString(td.tariffConf.period) + "'";
