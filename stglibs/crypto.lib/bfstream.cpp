@@ -49,7 +49,7 @@ class COMMON
         m_tryConsume(last);
         }
 
-        bool isOk() const { return m_ok; }
+        bool IsOk() const { return m_ok; }
 
     private:
         char m_buffer[BUFFER_SIZE];
@@ -116,9 +116,9 @@ void ENCRYPT_STREAM::Put(const void * data, size_t size, bool last)
 m_impl->Put(data, size, last);
 }
 
-bool ENCRYPT_STREAM::isOk() const
+bool ENCRYPT_STREAM::IsOk() const
 {
-return m_impl->isOk();
+return m_impl->IsOk();
 }
 
 DECRYPT_STREAM::DECRYPT_STREAM(const std::string & key, CALLBACK callback, void * data)
@@ -135,7 +135,7 @@ void DECRYPT_STREAM::Put(const void * data, size_t size, bool last)
 m_impl->Put(data, size, last);
 }
 
-bool DECRYPT_STREAM::isOk() const
+bool DECRYPT_STREAM::IsOk() const
 {
-return m_impl->isOk();
+return m_impl->IsOk();
 }
