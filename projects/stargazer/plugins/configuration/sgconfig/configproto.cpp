@@ -50,23 +50,23 @@ CONFIGPROTO * cp = static_cast<CONFIGPROTO *>(data);
 
 if (cp->currParser)
     {
-    cp->currParser->SetCurrAdmin(*cp->currAdmin);
-    cp->currParser->ParseStart(data, el, attr);
+    //cp->currParser->SetCurrAdmin(*cp->currAdmin);
+    cp->currParser->Start(data, el, attr);
     }
 else
     {
     for (size_t i = 0; i < cp->dataParser.size(); i++)
         {
-        cp->dataParser[i]->SetCurrAdmin(*cp->currAdmin);
-        cp->dataParser[i]->Reset();
-        if (cp->dataParser[i]->ParseStart(data, el, attr) == 0)
+        //cp->dataParser[i]->SetCurrAdmin(*cp->currAdmin);
+        //cp->dataParser[i]->Reset();
+        if (cp->dataParser[i]->Start(data, el, attr) == 0)
             {
             cp->currParser = cp->dataParser[i];
             break;
             }
         else
             {
-            cp->dataParser[i]->Reset();
+            //cp->dataParser[i]->Reset();
             }
         }
     }
@@ -77,7 +77,7 @@ void ParseXMLEnd(void *data, const char *el)
 CONFIGPROTO * cp = static_cast<CONFIGPROTO *>(data);
 if (cp->currParser)
     {
-    if (cp->currParser->ParseEnd(data, el) == 0)
+    if (cp->currParser->End(data, el) == 0)
         {
         cp->dataAnswer = cp->currParser->GetAnswer();
         cp->currParser = NULL;
@@ -87,7 +87,7 @@ else
     {
     for (size_t i = 0; i < cp->dataParser.size(); i++)
         {
-        if (cp->dataParser[i]->ParseEnd(data, el) == 0)
+        if (cp->dataParser[i]->End(data, el) == 0)
             {
             cp->dataAnswer = cp->currParser->GetAnswer();
             cp->currParser = NULL;
@@ -133,7 +133,7 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       xmlParser(),
       errorStr()
 {
-dataParser.push_back(new PARSER_GET_SERVER_INFO);
+/*dataParser.push_back(new PARSER_GET_SERVER_INFO);
 
 dataParser.push_back(new PARSER_GET_USERS);
 dataParser.push_back(new PARSER_GET_USER);
@@ -153,7 +153,7 @@ dataParser.push_back(new PARSER_CHG_TARIFF);
 dataParser.push_back(new PARSER_GET_ADMINS);
 dataParser.push_back(new PARSER_CHG_ADMIN);
 dataParser.push_back(new PARSER_DEL_ADMIN);
-dataParser.push_back(new PARSER_ADD_ADMIN);
+dataParser.push_back(new PARSER_ADD_ADMIN);*/
 
 xmlParser = XML_ParserCreate(NULL);
 
