@@ -30,7 +30,7 @@
 
 #include <expat.h>
 
-#include <linux/in.h>
+#include <netinet/in.h>
 
 class SETTINGS;
 class ADMINS;
