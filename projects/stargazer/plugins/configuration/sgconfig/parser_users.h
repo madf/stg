@@ -24,6 +24,8 @@
 
 #include "parser.h"
 
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
 #include "stg/resetable.h"
 
 #include <string>
@@ -43,13 +45,12 @@ class GET_USERS: public BASE_PARSER
     public:
         GET_USERS(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "GetUsers"), m_users(users),
-              lastUserUpdateTime(0), lastUpdateFound(false) {}
+              m_lastUserUpdateTime(0) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         USERS & m_users;
-        time_t lastUserUpdateTime;
-        bool lastUpdateFound;
+        time_t m_lastUserUpdateTime;
 
         void CreateAnswer();
 };
@@ -63,7 +64,7 @@ class GET_USER: public BASE_PARSER
 
     private:
         const USERS & m_users;
-        std::string login;
+        std::string m_login;
 
         void CreateAnswer();
 };
@@ -78,31 +79,35 @@ class ADD_USER: public BASE_PARSER
 
     private:
         USERS & m_users;
-        std::string login;
+        std::string m_login;
 
-        int CheckUserData();
         void CreateAnswer();
 };
 
 class CHG_USER: public BASE_PARSER
 {
     public:
-        CHG_USER(const ADMIN & admin, USERS & users, const TARIFFS & tariffs);
-        ~CHG_USER();
+        CHG_USER(const ADMIN & admin, USERS & users, const TARIFFS & tariffs)
+            : BASE_PARSER(admin, "SetUser"),
+              m_users(users),
+              m_tariffs(tariffs),
+              m_cashMustBeAdded(false),
+              m_res(0) {}
+
         int Start(void * data, const char * el, const char ** attr);
         int End(void * data, const char * el);
 
     private:
         USERS & m_users;
         const TARIFFS & m_tariffs;
-        USER_STAT_RES * usr;
-        USER_CONF_RES * ucr;
-        RESETABLE<uint64_t> * upr;
-        RESETABLE<uint64_t> * downr;
-        std::string cashMsg;
-        std::string login;
-        bool cashMustBeAdded;
-        int res;
+        USER_STAT_RES m_usr;
+        USER_CONF_RES m_ucr;
+        RESETABLE<uint64_t> m_upr[DIR_NUM];
+        RESETABLE<uint64_t> m_downr[DIR_NUM];
+        std::string m_cashMsg;
+        std::string m_login;
+        bool m_cashMustBeAdded;
+        int m_res;
 
         int ApplyChanges();
         void CreateAnswer();

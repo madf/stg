@@ -29,6 +29,7 @@
 #include "stg/common.h"
 
 #include <cstdio>
+#include <cassert>
 
 using STG::PARSER::GET_USERS;
 using STG::PARSER::GET_USER;
@@ -166,41 +167,15 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
 
 } // namespace anonymous
 
-int GET_USER::Start(void *, const char * el, const char ** attr)
-{
-    if (strcasecmp(el, tag.c_str()) != 0)
-        return -1;
-
-    if (attr[1] == NULL)
-        return -1;
-
-    login = attr[1];
-    return 0;
-}
-
-void GET_USER::CreateAnswer()
-{
-    CONST_USER_PTR u;
-
-    if (m_users.FindByName(login, &u))
-        answer = "<" + tag + " result=\"error\" reason=\"User not found.\"/>";
-    else
-        answer = UserToXML(*u, false, currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd);
-}
-
 int GET_USERS::Start(void *, const char * el, const char ** attr)
 {
-    lastUpdateFound = false;
     if (strcasecmp(el, tag.c_str()) != 0)
         return -1;
 
     while (attr && *attr && *(attr + 1))
     {
         if (strcasecmp(*attr, "LastUpdate") == 0)
-        {
-            if (str2x(*(attr + 1), lastUserUpdateTime) == 0)
-                lastUpdateFound = true;
-        }
+            str2x(*(attr + 1), m_lastUserUpdateTime);
         ++attr;
     }
 
@@ -210,13 +185,9 @@ int GET_USERS::Start(void *, const char * el, const char ** attr)
 void GET_USERS::CreateAnswer()
 {
     int h = m_users.OpenSearch();
-    if (!h)
-    {
-        printfd(__FILE__, "m_users.OpenSearch() error\n");
-        return;
-    }
+    assert(h);
 
-    if (lastUpdateFound)
+    if (m_lastUserUpdateTime > 0)
         answer = "<" + tag + " LastUpdate=\"" + x2str(time(NULL)) + "\">";
     else
         answer = GetOpenTag();
@@ -224,11 +195,33 @@ void GET_USERS::CreateAnswer()
     USER_PTR u;
 
     while (m_users.SearchNext(h, &u) == 0)
-        answer += UserToXML(*u, true, currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd, lastUserUpdateTime);
+        answer += UserToXML(*u, true, currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd, m_lastUserUpdateTime);
 
     m_users.CloseSearch(h);
 
     answer += GetCloseTag();
+}
+
+int GET_USER::Start(void *, const char * el, const char ** attr)
+{
+    if (strcasecmp(el, tag.c_str()) != 0)
+        return -1;
+
+    if (attr[1] == NULL)
+        return -1;
+
+    m_login = attr[1];
+    return 0;
+}
+
+void GET_USER::CreateAnswer()
+{
+    CONST_USER_PTR u;
+
+    if (m_users.FindByName(m_login, &u))
+        answer = "<" + tag + " result=\"error\" reason=\"User not found.\"/>";
+    else
+        answer = UserToXML(*u, false, currAdmin.GetPriv()->userConf || currAdmin.GetPriv()->userPasswd);
 }
 
 int ADD_USER::Start(void *, const char * el, const char ** attr)
@@ -244,7 +237,7 @@ int ADD_USER::Start(void *, const char * el, const char ** attr)
     {
         if (strcasecmp(el, "login") == 0)
         {
-            login = attr[1];
+            m_login = attr[1];
             return 0;
         }
     }
@@ -266,40 +259,12 @@ int ADD_USER::End(void *, const char *el)
 
 void ADD_USER::CreateAnswer()
 {
-    if (CheckUserData() == 0)
+    if (m_users.Exists(m_login))
+        answer = "<" + tag + " result=\"error\" reason=\"User '" + m_login + "' exists.\"/>";
+    else if (m_users.Add(m_login, &currAdmin) == 0)
         answer = "<" + tag + " result=\"ok\"/>";
     else
         answer = "<" + tag + " result=\"error\" reason=\"Access denied\"/>";
-}
-
-int ADD_USER::CheckUserData()
-{
-    USER_PTR u;
-    if (m_users.FindByName(login, &u))
-        return m_users.Add(login, &currAdmin);
-
-    return -1;
-}
-
-CHG_USER::CHG_USER(const ADMIN & admin, USERS & users, const TARIFFS & tariffs)
-    : BASE_PARSER(admin, "SetUser"),
-      m_users(users),
-      m_tariffs(tariffs),
-      usr(new USER_STAT_RES),
-      ucr(new USER_CONF_RES),
-      upr(new RESETABLE<uint64_t>[DIR_NUM]),
-      downr(new RESETABLE<uint64_t>[DIR_NUM]),
-      cashMustBeAdded(false),
-      res(0)
-{
-}
-
-CHG_USER::~CHG_USER()
-{
-    delete usr;
-    delete ucr;
-    delete[] upr;
-    delete[] downr;
 }
 
 int CHG_USER::Start(void *, const char * el, const char ** attr)
@@ -315,54 +280,44 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
     {
         if (strcasecmp(el, "login") == 0)
         {
-            login = attr[1];
+            m_login = attr[1];
             return 0;
         }
 
         if (strcasecmp(el, "ip") == 0)
         {
-            try
-            {
-                ucr->ips = StrToIPS(attr[1]);
-            }
-            catch (...)
-            {
-                printfd(__FILE__, "StrToIPS Error!\n");
-            }
+            m_ucr.ips = StrToIPS(attr[1]);
+            return 0;
         }
 
         if (strcasecmp(el, "password") == 0)
         {
-            ucr->password = attr[1];
+            m_ucr.password = attr[1];
             return 0;
         }
 
         if (strcasecmp(el, "address") == 0)
         {
-            ucr->address = Decode21str(attr[1]);
+            m_ucr.address = Decode21str(attr[1]);
             return 0;
         }
 
         if (strcasecmp(el, "aonline") == 0)
         {
-            ucr->alwaysOnline = (*(attr[1]) != '0');
+            m_ucr.alwaysOnline = (*(attr[1]) != '0');
             return 0;
         }
 
         if (strcasecmp(el, "cash") == 0)
         {
             if (attr[2] && (strcasecmp(attr[2], "msg") == 0))
-                cashMsg = Decode21str(attr[3]);
+                m_cashMsg = Decode21str(attr[3]);
 
-            double cash;
+            double cash = 0;
             if (strtodouble2(attr[1], cash) == 0)
-                usr->cash = cash;
+                m_usr.cash = cash;
 
-            if (strcasecmp(attr[0], "set") == 0)
-                cashMustBeAdded = false;
-
-            if (strcasecmp(attr[0], "add") == 0)
-                cashMustBeAdded = true;
+            m_cashMustBeAdded = (strcasecmp(attr[0], "add") == 0);
 
             return 0;
         }
@@ -371,24 +326,24 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         {
             long int creditExpire = 0;
             if (str2x(attr[1], creditExpire) == 0)
-                ucr->creditExpire = (time_t)creditExpire;
+                m_ucr.creditExpire = (time_t)creditExpire;
 
             return 0;
         }
 
         if (strcasecmp(el, "credit") == 0)
         {
-            double credit;
+            double credit = 0;
             if (strtodouble2(attr[1], credit) == 0)
-                ucr->credit = credit;
+                m_ucr.credit = credit;
             return 0;
         }
 
         if (strcasecmp(el, "freemb") == 0)
         {
-            double freeMb;
+            double freeMb = 0;
             if (strtodouble2(attr[1], freeMb) == 0)
-                usr->freeMb = freeMb;
+                m_usr.freeMb = freeMb;
             return 0;
         }
 
@@ -396,7 +351,7 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         {
             int down = 0;
             if (str2x(attr[1], down) == 0)
-                ucr->disabled = down;
+                m_ucr.disabled = down;
             return 0;
         }
 
@@ -404,13 +359,13 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         {
             int disabledDetailStat = 0;
             if (str2x(attr[1], disabledDetailStat) == 0)
-                ucr->disabledDetailStat = disabledDetailStat;
+                m_ucr.disabledDetailStat = disabledDetailStat;
             return 0;
         }
 
         if (strcasecmp(el, "email") == 0)
         {
-            ucr->email = Decode21str(attr[1]);
+            m_ucr.email = Decode21str(attr[1]);
             return 0;
         }
 
@@ -420,20 +375,20 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
             sprintf(name, "userdata%d", i);
             if (strcasecmp(el, name) == 0)
             {
-                ucr->userdata[i] = Decode21str(attr[1]);
+                m_ucr.userdata[i] = Decode21str(attr[1]);
                 return 0;
             }
         }
 
         if (strcasecmp(el, "group") == 0)
         {
-            ucr->group = Decode21str(attr[1]);
+            m_ucr.group = Decode21str(attr[1]);
             return 0;
         }
 
         if (strcasecmp(el, "note") == 0)
         {
-            ucr->note = Decode21str(attr[1]);
+            m_ucr.note = Decode21str(attr[1]);
             return 0;
         }
 
@@ -441,19 +396,19 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         {
             int passive = 0;
             if (str2x(attr[1], passive) == 0)
-                ucr->passive = passive;
+                m_ucr.passive = passive;
             return 0;
         }
 
         if (strcasecmp(el, "phone") == 0)
         {
-            ucr->phone = Decode21str(attr[1]);
+            m_ucr.phone = Decode21str(attr[1]);
             return 0;
         }
 
         if (strcasecmp(el, "Name") == 0)
         {
-            ucr->realName = Decode21str(attr[1]);
+            m_ucr.realName = Decode21str(attr[1]);
             return 0;
         }
 
@@ -468,13 +423,13 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
                 {
                     uint64_t t = 0;
                     str2x(attr[j + 1], t);
-                    downr[dir] = t;
+                    m_downr[dir] = t;
                 }
                 if (strncasecmp(attr[j], "mu", 2) == 0)
                 {
                     uint64_t t = 0;
                     str2x(attr[j + 1], t);
-                    upr[dir] = t;
+                    m_upr[dir] = t;
                 }
                 j += 2;
             }
@@ -484,10 +439,10 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         if (strcasecmp(el, "tariff") == 0)
         {
             if (strcasecmp(attr[0], "now") == 0)
-                ucr->tariffName = attr[1];
+                m_ucr.tariffName = attr[1];
 
             if (strcasecmp(attr[0], "delayed") == 0)
-                ucr->nextTariff = attr[1];
+                m_ucr.nextTariff = attr[1];
 
             return 0;
         }
@@ -502,7 +457,6 @@ int CHG_USER::End(void *, const char *el)
         if (strcasecmp(el, tag.c_str()) != 0)
             return -1;
 
-        ApplyChanges();
         CreateAnswer();
     }
 
@@ -512,7 +466,7 @@ int CHG_USER::End(void *, const char *el)
 
 void CHG_USER::CreateAnswer()
 {
-    if (res == 0)
+    if (ApplyChanges() == 0)
         answer = "<" + tag + " result=\"ok\"/>";
     else
         answer = "<" + tag + " result=\"error\"/>";
@@ -523,93 +477,87 @@ int CHG_USER::ApplyChanges()
     printfd(__FILE__, "PARSER_CHG_USER::ApplyChanges()\n");
     USER_PTR u;
 
-    res = 0;
-    if (m_users.FindByName(login, &u))
-    {
-        res = -1;
+    if (m_users.FindByName(m_login, &u))
         return -1;
-    }
 
     bool check = false;
     bool alwaysOnline = u->GetProperty().alwaysOnline;
-    if (!ucr->alwaysOnline.empty())
+    if (!m_ucr.alwaysOnline.empty())
     {
         check = true;
-        alwaysOnline = ucr->alwaysOnline.const_data();
+        alwaysOnline = m_ucr.alwaysOnline.const_data();
     }
     bool onlyOneIP = u->GetProperty().ips.ConstData().OnlyOneIP();
-    if (!ucr->ips.empty())
+    if (!m_ucr.ips.empty())
     {
         check = true;
-        onlyOneIP = ucr->ips.const_data().OnlyOneIP();
+        onlyOneIP = m_ucr.ips.const_data().OnlyOneIP();
     }
 
     if (check && alwaysOnline && !onlyOneIP)
     {
         printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
         GetStgLogger()("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", currAdmin.GetLogStr().c_str());
-        res = -1;
         return -1;
     }
 
-    for (size_t i = 0; i < ucr->ips.const_data().Count(); ++i)
+    for (size_t i = 0; i < m_ucr.ips.const_data().Count(); ++i)
     {
         CONST_USER_PTR user;
-        uint32_t ip = ucr->ips.const_data().operator[](i).ip;
-        if (m_users.IsIPInUse(ip, login, &user))
+        uint32_t ip = m_ucr.ips.const_data().operator[](i).ip;
+        if (m_users.IsIPInUse(ip, m_login, &user))
         {
-            printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
-            GetStgLogger()("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", currAdmin.GetLogStr().c_str(), inet_ntostring(ip).c_str(), login.c_str(), user->GetLogin().c_str());
-            res = -1;
+            printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
+            GetStgLogger()("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", currAdmin.GetLogStr().c_str(), inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
             return -1;
         }
     }
 
-    if (!ucr->ips.empty())
-        if (!u->GetProperty().ips.Set(ucr->ips.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.ips.empty())
+        if (!u->GetProperty().ips.Set(m_ucr.ips.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->alwaysOnline.empty())
-        if (!u->GetProperty().alwaysOnline.Set(ucr->alwaysOnline.const_data(),
-                                          &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.alwaysOnline.empty())
+        if (!u->GetProperty().alwaysOnline.Set(m_ucr.alwaysOnline.const_data(),
+                                               &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->address.empty())
-        if (!u->GetProperty().address.Set(ucr->address.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.address.empty())
+        if (!u->GetProperty().address.Set(m_ucr.address.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->creditExpire.empty())
-        if (!u->GetProperty().creditExpire.Set(ucr->creditExpire.const_data(),
-                                          &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.creditExpire.empty())
+        if (!u->GetProperty().creditExpire.Set(m_ucr.creditExpire.const_data(),
+                                               &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->credit.empty())
-        if (!u->GetProperty().credit.Set(ucr->credit.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.credit.empty())
+        if (!u->GetProperty().credit.Set(m_ucr.credit.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!usr->freeMb.empty())
-        if (!u->GetProperty().freeMb.Set(usr->freeMb.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_usr.freeMb.empty())
+        if (!u->GetProperty().freeMb.Set(m_usr.freeMb.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->disabled.empty())
-        if (!u->GetProperty().disabled.Set(ucr->disabled.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.disabled.empty())
+        if (!u->GetProperty().disabled.Set(m_ucr.disabled.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->disabledDetailStat.empty())
-        if (!u->GetProperty().disabledDetailStat.Set(ucr->disabledDetailStat.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.disabledDetailStat.empty())
+        if (!u->GetProperty().disabledDetailStat.Set(m_ucr.disabledDetailStat.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->email.empty())
-        if (!u->GetProperty().email.Set(ucr->email.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.email.empty())
+        if (!u->GetProperty().email.Set(m_ucr.email.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->group.empty())
-        if (!u->GetProperty().group.Set(ucr->group.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.group.empty())
+        if (!u->GetProperty().group.Set(m_ucr.group.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->note.empty())
-        if (!u->GetProperty().note.Set(ucr->note.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.note.empty())
+        if (!u->GetProperty().note.Set(m_ucr.note.const_data(), &currAdmin, m_login, store))
+            return -1;
 
     std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
     userdata.push_back(u->GetProperty().userdata0.GetPointer());
@@ -624,68 +572,68 @@ int CHG_USER::ApplyChanges()
     userdata.push_back(u->GetProperty().userdata9.GetPointer());
 
     for (int i = 0; i < (int)userdata.size(); i++)
-        if (!ucr->userdata[i].empty())
-            if(!userdata[i]->Set(ucr->userdata[i].const_data(), &currAdmin, login, store))
-                res = -1;
+        if (!m_ucr.userdata[i].empty())
+            if(!userdata[i]->Set(m_ucr.userdata[i].const_data(), &currAdmin, m_login, store))
+                return -1;
 
-    if (!ucr->passive.empty())
-        if (!u->GetProperty().passive.Set(ucr->passive.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.passive.empty())
+        if (!u->GetProperty().passive.Set(m_ucr.passive.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->password.empty())
-        if (!u->GetProperty().password.Set(ucr->password.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.password.empty())
+        if (!u->GetProperty().password.Set(m_ucr.password.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->phone.empty())
-        if (!u->GetProperty().phone.Set(ucr->phone.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.phone.empty())
+        if (!u->GetProperty().phone.Set(m_ucr.phone.const_data(), &currAdmin, m_login, store))
+            return -1;
 
-    if (!ucr->realName.empty())
-        if (!u->GetProperty().realName.Set(ucr->realName.const_data(), &currAdmin, login, store))
-            res = -1;
+    if (!m_ucr.realName.empty())
+        if (!u->GetProperty().realName.Set(m_ucr.realName.const_data(), &currAdmin, m_login, store))
+            return -1;
 
 
-    if (!usr->cash.empty())
-        if (cashMustBeAdded)
+    if (!m_usr.cash.empty())
+        if (m_cashMustBeAdded)
         {
-            if (!u->GetProperty().cash.Set(usr->cash.const_data() + u->GetProperty().cash,
+            if (!u->GetProperty().cash.Set(m_usr.cash.const_data() + u->GetProperty().cash,
                                            &currAdmin,
-                                           login,
+                                           m_login,
                                            store,
-                                           cashMsg))
-                res = -1;
+                                           m_cashMsg))
+                return -1;
             else
-                if (!u->GetProperty().cash.Set(usr->cash.const_data(), &currAdmin, login, store, cashMsg))
-                    res = -1;
+                if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &currAdmin, m_login, store, m_cashMsg))
+                    return -1;
         }
 
 
-    if (!ucr->tariffName.empty())
+    if (!m_ucr.tariffName.empty())
     {
-        if (m_tariffs.FindByName(ucr->tariffName.const_data()))
+        if (m_tariffs.FindByName(m_ucr.tariffName.const_data()))
         {
-            if (!u->GetProperty().tariffName.Set(ucr->tariffName.const_data(), &currAdmin, login, store))
-                res = -1;
+            if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &currAdmin, m_login, store))
+                return -1;
             u->ResetNextTariff();
         }
         else
         {
             //WriteServLog("SetUser: Tariff %s not found", ud.conf.tariffName.c_str());
-            res = -1;
+            return -1;
         }
     }
 
-    if (!ucr->nextTariff.empty())
+    if (!m_ucr.nextTariff.empty())
     {
-        if (m_tariffs.FindByName(ucr->nextTariff.const_data()))
+        if (m_tariffs.FindByName(m_ucr.nextTariff.const_data()))
         {
-            if (!u->GetProperty().nextTariff.Set(ucr->nextTariff.const_data(), &currAdmin, login, store))
-                res = -1;
+            if (!u->GetProperty().nextTariff.Set(m_ucr.nextTariff.const_data(), &currAdmin, m_login, store))
+                return -1;
         }
         else
         {
             //WriteServLog("SetUser: Tariff %s not found", ud.conf.tariffName.c_str());
-            res = -1;
+            return -1;
         }
     }
 
@@ -695,25 +643,25 @@ int CHG_USER::ApplyChanges()
     int downCount = 0;
     for (int i = 0; i < DIR_NUM; i++)
     {
-        if (!upr[i].empty())
+        if (!m_upr[i].empty())
         {
-            up[i] = upr[i].data();
+            up[i] = m_upr[i].data();
             upCount++;
         }
-        if (!downr[i].empty())
+        if (!m_downr[i].empty())
         {
-            down[i] = downr[i].data();
+            down[i] = m_downr[i].data();
             downCount++;
         }
     }
 
     if (upCount)
-        if (!u->GetProperty().up.Set(up, &currAdmin, login, store))
-            res = -1;
+        if (!u->GetProperty().up.Set(up, &currAdmin, m_login, store))
+            return -1;
 
     if (downCount)
-        if (!u->GetProperty().down.Set(down, &currAdmin, login, store))
-            res = -1;
+        if (!u->GetProperty().down.Set(down, &currAdmin, m_login, store))
+            return -1;
 
     u->WriteConf();
     u->WriteStat();
