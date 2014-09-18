@@ -27,7 +27,7 @@ using STG::PARSER::AUTH_BY;
 
 int AUTH_BY::Start(void * /*data*/, const char *el, const char **attr)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     if (!attr[1])
@@ -42,13 +42,13 @@ void AUTH_BY::CreateAnswer()
     CONST_USER_PTR u;
     if (m_users.FindByName(m_login, &u))
     {
-        answer = "<AuthorizedBy result=\"error\" reason=\"User not found.\"/>";
+        m_answer = "<AuthorizedBy result=\"error\" reason=\"User not found.\"/>";
         return;
     }
 
-    answer = "<AuthorizedBy result=\"ok\">";
+    m_answer = "<AuthorizedBy result=\"ok\">";
     std::vector<std::string> list(u->GetAuthorizers());
     for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-        answer += "<Auth name=\"" + *it + "\"/>";
-    answer += "</AuthorizedBy>";
+        m_answer += "<Auth name=\"" + *it + "\"/>";
+    m_answer += "</AuthorizedBy>";
 }

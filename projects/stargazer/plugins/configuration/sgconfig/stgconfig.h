@@ -47,11 +47,11 @@ public:
     STG_CONFIG();
     virtual ~STG_CONFIG(){}
 
-    void                SetUsers(USERS * users) { config.SetUsers(users); }
-    void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
+    void                SetUsers(USERS *) {}
+    void                SetTariffs(TARIFFS *) {}
     void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
-    void                SetStore(STORE * store) { config.SetStore(store); }
-    void                SetStgSettings(const SETTINGS * settings) { config.SetStgSettings(settings); }
+    void                SetStore(STORE *) {}
+    void                SetStgSettings(const SETTINGS *) {}
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 

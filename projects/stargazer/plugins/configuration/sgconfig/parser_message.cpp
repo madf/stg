@@ -30,7 +30,7 @@ using STG::PARSER::SEND_MESSAGE;
 
 int SEND_MESSAGE::Start(void *, const char *el, const char **attr)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     for (size_t i = 0; i < 14; i++)
@@ -85,7 +85,7 @@ int SEND_MESSAGE::Start(void *, const char *el, const char **attr)
 
 int SEND_MESSAGE::End(void *, const char *el)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     m_result = res_unknown;
@@ -126,13 +126,13 @@ void SEND_MESSAGE::CreateAnswer()
     switch (m_result)
     {
         case res_ok:
-            answer = "<SendMessageResult value=\"ok\"/>";
+            m_answer = "<SendMessageResult value=\"ok\"/>";
             break;
         case res_params_error:
-            answer = "<SendMessageResult value=\"Parameters error.\"/>";
+            m_answer = "<SendMessageResult value=\"Parameters error.\"/>";
             break;
         case res_unknown:
-            answer = "<SendMessageResult value=\"Unknown user.\"/>";
+            m_answer = "<SendMessageResult value=\"Unknown user.\"/>";
             break;
     }
 }

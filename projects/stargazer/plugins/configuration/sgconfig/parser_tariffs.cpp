@@ -76,21 +76,21 @@ bool String2AOS(const std::string & source, A & array, size_t size, RESETABLE<F>
 
 void GET_TARIFFS::CreateAnswer()
 {
-    answer = GetOpenTag();
+    m_answer = GetOpenTag();
 
     std::list<TARIFF_DATA> dataList;
     m_tariffs.GetTariffsData(&dataList);
     std::list<TARIFF_DATA>::const_iterator it = dataList.begin();
     for (; it != dataList.end(); ++it)
         {
-        answer += "<tariff name=\"" + it->tariffConf.name + "\">";
+        m_answer += "<tariff name=\"" + it->tariffConf.name + "\">";
 
         for (size_t i = 0; i < DIR_NUM; i++)
-            answer += "<Time" + x2str(i) + " value=\"" +
+            m_answer += "<Time" + x2str(i) + " value=\"" +
                 x2str(it->dirPrice[i].hDay)   + ":" + x2str(it->dirPrice[i].mDay)   + "-" +
                 x2str(it->dirPrice[i].hNight) + ":" + x2str(it->dirPrice[i].mNight) + "\"/>";
 
-        answer += "<PriceDayA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayA, pt_mega) + "\"/>" +
+        m_answer += "<PriceDayA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayA, pt_mega) + "\"/>" +
                   "<PriceDayB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayB, pt_mega) + "\"/>" +
                   "<PriceNightA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceNightA, pt_mega) + "\"/>" +
                   "<PriceNightB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceNightB, pt_mega) + "\"/>" +
@@ -105,12 +105,12 @@ void GET_TARIFFS::CreateAnswer()
                   "</tariff>";
         }
 
-    answer += GetCloseTag();
+    m_answer += GetCloseTag();
 }
 
 int ADD_TARIFF::Start(void *, const char * el, const char ** attr)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     if (attr[1] == NULL)
@@ -122,15 +122,15 @@ int ADD_TARIFF::Start(void *, const char * el, const char ** attr)
 
 void ADD_TARIFF::CreateAnswer()
 {
-    if (m_tariffs.Add(tariff, &currAdmin) == 0)
-        answer = "<" + tag + " Result=\"Ok\"/>";
+    if (m_tariffs.Add(tariff, &m_currAdmin) == 0)
+        m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
-        answer = "<" + tag + " Result=\"Error. " + m_tariffs.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " Result=\"Error. " + m_tariffs.GetStrError() + "\"/>";
 }
 
 int DEL_TARIFF::Start(void *, const char * el, const char ** attr)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     if (attr[1] == NULL)
@@ -143,20 +143,20 @@ int DEL_TARIFF::Start(void *, const char * el, const char ** attr)
 void DEL_TARIFF::CreateAnswer()
 {
     if (m_users.TariffInUse(tariff))
-        answer = "<" + tag + " Result=\"Error. Tariff \'" + tariff + "\' cannot be deleted, it is in use.\"/>";
-    else if (m_tariffs.Del(tariff, &currAdmin) == 0)
-        answer = "<" + tag + " Result=\"Ok\"/>";
+        m_answer = "<" + m_tag + " Result=\"Error. Tariff \'" + tariff + "\' cannot be deleted, it is in use.\"/>";
+    else if (m_tariffs.Del(tariff, &m_currAdmin) == 0)
+        m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
-        answer = "<" + tag + " Result=\"Error. " + m_tariffs.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " Result=\"Error. " + m_tariffs.GetStrError() + "\"/>";
 }
 
 int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 {
-    depth++;
+    m_depth++;
 
-    if (depth == 1)
+    if (m_depth == 1)
     {
-        if (strcasecmp(el, tag.c_str()) == 0)
+        if (strcasecmp(el, m_tag.c_str()) == 0)
         {
             td.tariffConf.name = attr[1];
             return 0;
@@ -280,29 +280,16 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
     return -1;
 }
 
-int CHG_TARIFF::End(void *, const char * el)
-{
-    if (depth == 1)
-    {
-        if (strcasecmp(el, tag.c_str()) != 0)
-            return -1;
-        CreateAnswer();
-    }
-
-    --depth;
-    return 0;
-}
-
 void CHG_TARIFF::CreateAnswer()
 {
     if (!td.tariffConf.name.data().empty())
     {
         TARIFF_DATA tariffData = td.GetData();
-        if (m_tariffs.Chg(tariffData, &currAdmin) == 0)
-            answer = "<" + tag + " Result=\"ok\"/>";
+        if (m_tariffs.Chg(tariffData, &m_currAdmin) == 0)
+            m_answer = "<" + m_tag + " Result=\"ok\"/>";
         else
-            answer = "<" + tag + " Result=\"Change tariff error! " + m_tariffs.GetStrError() + "\"/>";
+            m_answer = "<" + m_tag + " Result=\"Change tariff error! " + m_tariffs.GetStrError() + "\"/>";
     }
     else
-        answer = "<" + tag + " Result=\"Change tariff error!\"/>";
+        m_answer = "<" + m_tag + " Result=\"Change tariff error!\"/>";
 }

@@ -84,7 +84,6 @@ class CHG_TARIFF: public BASE_PARSER
         CHG_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
             : BASE_PARSER(admin, "SetTariff"), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
-        int End(void * data, const char * el);
 
     private:
         TARIFF_DATA_RES td;

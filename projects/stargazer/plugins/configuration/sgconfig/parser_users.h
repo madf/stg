@@ -34,6 +34,7 @@ class USERS;
 class USER;
 class TARIFFS;
 class ADMIN;
+class STORE;
 
 namespace STG
 {
@@ -75,7 +76,6 @@ class ADD_USER: public BASE_PARSER
         ADD_USER(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "AddUser"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
-        int End(void * data, const char * el);
 
     private:
         USERS & m_users;
@@ -87,18 +87,20 @@ class ADD_USER: public BASE_PARSER
 class CHG_USER: public BASE_PARSER
 {
     public:
-        CHG_USER(const ADMIN & admin, USERS & users, const TARIFFS & tariffs)
+        CHG_USER(const ADMIN & admin, USERS & users,
+                 STORE & store, const TARIFFS & tariffs)
             : BASE_PARSER(admin, "SetUser"),
               m_users(users),
+              m_store(store),
               m_tariffs(tariffs),
               m_cashMustBeAdded(false),
               m_res(0) {}
 
         int Start(void * data, const char * el, const char ** attr);
-        int End(void * data, const char * el);
 
     private:
         USERS & m_users;
+        STORE & m_store;
         const TARIFFS & m_tariffs;
         USER_STAT_RES m_usr;
         USER_CONF_RES m_ucr;
