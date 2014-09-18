@@ -30,7 +30,7 @@ using STG::PARSER::USER_INFO;
 
 int USER_INFO::Start(void * /*data*/, const char *el, const char **attr)
 {
-    if (strcasecmp(el, tag.c_str()) != 0)
+    if (strcasecmp(el, m_tag.c_str()) != 0)
         return -1;
 
     if (!attr[1])
@@ -45,16 +45,16 @@ void USER_INFO::CreateAnswer()
     CONST_USER_PTR u;
     if (m_users.FindByName(m_login, &u))
     {
-        answer = "<UserInfo result=\"error\"/>";
+        m_answer = "<UserInfo result=\"error\"/>";
         return;
     }
 
-    answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
+    m_answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
              " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
              " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
              " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
     std::vector<std::string> list(u->GetAuthorizers());
     for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
-        answer += "<Auth name=\"" + *it + "\"/>";
-    answer += "</UserInfo>";
+        m_answer += "<Auth name=\"" + *it + "\"/>";
+    m_answer += "</UserInfo>";
 }

@@ -63,10 +63,6 @@ public:
 
     void            SetPort(uint16_t p) { port = p; }
     void            SetAdmins(ADMINS * a);
-    void            SetUsers(USERS * u);
-    void            SetTariffs(TARIFFS * t);
-    void            SetStore(STORE * s);
-    void            SetStgSettings(const SETTINGS * s);
     uint32_t        GetAdminIP() const { return adminIP; }
     int             Prepare();
     int             Stop();

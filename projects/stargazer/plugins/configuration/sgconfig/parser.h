@@ -21,74 +21,38 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "stg/message.h"
-#include "stg/tariff_conf.h"
-#include "stg/resetable.h"
-#include "stg/const.h"
-
 #include <string>
-#include <vector>
 
-class TARIFFS;
-class SETTINGS;
-class STORE;
-class ADMINS;
 class ADMIN;
-class USERS;
-class USER;
-class USER_STAT_RES;
-class USER_CONF_RES;
 
-//-----------------------------------------------------------------------------
-class BASE_PARSER {
-public:
-    BASE_PARSER(const ADMIN & admin, const std::string & t)
-        : strError(),
-          admins(NULL),
-          users(NULL),
-          tariffs(NULL),
-          store(NULL),
-          settings(NULL),
-          currAdmin(admin),
-          depth(0),
-          tag(t)
-    {}
-    virtual ~BASE_PARSER() {}
-    virtual int Start(void *data, const char *el, const char **attr);
-    virtual int End(void *data, const char *el);
+class BASE_PARSER
+{
+    public:
+        BASE_PARSER(const ADMIN & admin, const std::string & t)
+            : m_currAdmin(admin),
+              m_depth(0),
+              m_tag(t)
+        {}
+        virtual ~BASE_PARSER() {}
+        virtual int Start(void * data, const char * el, const char ** attr);
+        virtual int End(void * data, const char * el);
 
-    virtual void Reset() { answer.clear(); depth = 0; }
+        const std::string & GetAnswer() const { return m_answer; }
+        const std::string & GetTag() const { return m_tag; }
+        std::string GetOpenTag() const { return "<" + m_tag + ">"; }
+        std::string GetCloseTag() const { return "</" + m_tag + ">"; }
 
-    void SetUsers(USERS * u) { users = u; }
-    void SetAdmins(ADMINS * a) { admins = a; }
-    void SetTariffs(TARIFFS * t) { tariffs = t; }
-    void SetStore(STORE * s) { store = s; }
-    void SetStgSettings(const SETTINGS * s) { settings = s; }
+    protected:
+        BASE_PARSER(const BASE_PARSER & rvalue);
+        BASE_PARSER & operator=(const BASE_PARSER & rvalue);
 
-    const std::string & GetStrError() const { return strError; }
-    const std::string & GetAnswer() const { return answer; }
-    const std::string & GetTag() const { return tag; }
-    std::string GetOpenTag() const { return "<" + tag + ">"; }
-    std::string GetCloseTag() const { return "</" + tag + ">"; }
+        const ADMIN & m_currAdmin;
+        size_t        m_depth;
+        std::string   m_answer;
+        std::string   m_tag;
 
-protected:
-    BASE_PARSER(const BASE_PARSER & rvalue);
-    BASE_PARSER & operator=(const BASE_PARSER & rvalue);
-
-    std::string      strError;
-    ADMINS *         admins;
-    USERS *          users;
-    TARIFFS *        tariffs;
-    STORE *          store;
-    const SETTINGS * settings;
-    const ADMIN &    currAdmin;
-    int              depth;
-    std::string      answer;
-    std::string      tag;
-
-private:
-    virtual void CreateAnswer() = 0;
+    private:
+        virtual void CreateAnswer() = 0;
 };
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+
 #endif //PARSER_H

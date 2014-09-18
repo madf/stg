@@ -20,36 +20,28 @@
 
 #include "parser.h"
 
-#include "stg/tariffs.h"
-#include "stg/admin.h"
-#include "stg/users.h"
-#include "stg/user_property.h"
-#include "stg/settings.h"
-#include "stg/logger.h"
-#include "stg/version.h"
-#include "stg/store.h"
-
 #include <cstring>
-#include <cstdio> // sprintf
 
 //-----------------------------------------------------------------------------
 //  BASE PARSER
 //-----------------------------------------------------------------------------
-int BASE_PARSER::Start(void *, const char *el, const char **)
+int BASE_PARSER::Start(void *, const char * el, const char **)
 {
-if (strcasecmp(el, tag.c_str()) == 0)
-    return 0;
+    if (strcasecmp(el, m_tag.c_str()) == 0)
+        return 0;
 
-return -1;
+    return -1;
 }
 //-----------------------------------------------------------------------------
-int BASE_PARSER::End(void *, const char *el)
+int BASE_PARSER::End(void *, const char * el)
 {
-if (strcasecmp(el, tag.c_str()) == 0)
+    if (m_depth == 1)
     {
-    CreateAnswer();
-    return 0;
+        if (strcasecmp(el, m_tag.c_str()) != 0)
+            return -1;
+        CreateAnswer();
     }
 
-return -1;
+    --m_depth;
+    return 0;
 }

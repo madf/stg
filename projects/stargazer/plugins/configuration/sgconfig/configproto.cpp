@@ -184,7 +184,7 @@ while(nonstop)
         if (currParser)
             {
             printfd(__FILE__, "Parser reset\n");
-            currParser->Reset();
+            //currParser->Reset();
             currParser = NULL;
             }
 
@@ -203,31 +203,5 @@ return 0;
 void CONFIGPROTO::SetAdmins(ADMINS * a)
 {
 admins = a;
-for (size_t i = 0; i < dataParser.size(); i++)
-    dataParser[i]->SetAdmins(a);
-}
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetUsers(USERS * u)
-{
-for (size_t i = 0; i < dataParser.size(); i++)
-    dataParser[i]->SetUsers(u);
-}
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetTariffs(TARIFFS * t)
-{
-for (size_t i = 0; i < dataParser.size(); i++)
-    dataParser[i]->SetTariffs(t);
-}
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetStore(STORE * s)
-{
-for (size_t i = 0; i < dataParser.size(); i++)
-    dataParser[i]->SetStore(s);
-}
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetStgSettings(const SETTINGS * s)
-{
-for (size_t i = 0; i < dataParser.size(); i++)
-    dataParser[i]->SetStgSettings(s);
 }
 //-----------------------------------------------------------------------------

@@ -25,6 +25,8 @@
 
 #include <string>
 
+class USERS;
+
 namespace STG
 {
 namespace PARSER
