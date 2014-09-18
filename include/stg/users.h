@@ -33,6 +33,7 @@ public:
     virtual ~USERS() {}
     virtual int  FindByName(const std::string & login, USER_PTR * user) = 0;
     virtual int  FindByName(const std::string & login, CONST_USER_PTR * user) const = 0;
+    virtual bool Exists(const std::string & login) const = 0;
 
     virtual bool TariffInUse(const std::string & tariffName) const = 0;
 

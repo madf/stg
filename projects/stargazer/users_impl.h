@@ -77,6 +77,8 @@ public:
     int             FindByName(const std::string & login, USER_PTR * user);
     int             FindByName(const std::string & login, CONST_USER_PTR * user) const;
 
+    bool            Exists(const std::string & login) const;
+
     bool            TariffInUse(const std::string & tariffName) const;
 
     void            AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> *);

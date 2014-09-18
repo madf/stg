@@ -126,6 +126,13 @@ if (FindByNameNonLock(login, &u))
 return 0;
 }
 //-----------------------------------------------------------------------------
+bool USERS_IMPL::Exists(const std::string & login) const
+{
+STG_LOCKER lock(&mutex);
+const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+return iter != loginIndex.end();
+}
+//-----------------------------------------------------------------------------
 bool USERS_IMPL::TariffInUse(const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
