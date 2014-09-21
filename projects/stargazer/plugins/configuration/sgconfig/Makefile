@@ -7,7 +7,6 @@ include ../../../../../Makefile.conf
 PROG = mod_conf_sg.so
 
 SRCS = ./stgconfig.cpp \
-       ./rsconf.cpp \
        ./conn.cpp \
        ./configproto.cpp \
        ./parser.cpp \
