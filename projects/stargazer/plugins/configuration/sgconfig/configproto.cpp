@@ -231,9 +231,16 @@ void CONFIGPROTO::AcceptConnection()
     assert(m_users != NULL);
     assert(m_tariffs != NULL);
 
-    m_conns.push_back(new STG::Conn(*m_settings, *m_admins, *m_users, *m_tariffs, sock, outerAddr));
-
-    printfd(__FILE__, "New connection from %s:%d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port());
+    try
+    {
+        m_conns.push_back(new STG::Conn(*m_settings, *m_admins, *m_users, *m_tariffs, sock, outerAddr));
+        printfd(__FILE__, "New connection from %s:%d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port());
+    }
+    catch (const STG::Conn::Error & error)
+    {
+        // Unlikely.
+        m_logger(std::string("Failed to create new client connection: '") + error.what() + "'.");
+    }
 }
 /*
 void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
