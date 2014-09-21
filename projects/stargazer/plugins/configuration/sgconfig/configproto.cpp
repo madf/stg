@@ -15,224 +15,228 @@
  */
 
 /*
- *    Date: 27.10.2002
- */
-
-/*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
- */
-
- /*
- $Revision: 1.22 $
- $Date: 2010/10/04 20:24:14 $
- $Author: faust $
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
 
-#include "parser.h"
-#include "parser_auth_by.h"
-#include "parser_user_info.h"
+#include "conn.h"
 
-#include "stg/users.h"
-#include "stg/admins.h"
-#include "stg/tariffs.h"
-#include "stg/logger.h"
 #include "stg/common.h"
+#include "stg/logger.h"
 
-#include <unistd.h>
+#include <algorithm>
+#include <functional>
+#include <csignal>
+#include <cstring>
+#include <cerrno>
+#include <cassert>
 
-#include "configproto.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-//-----------------------------------------------------------------------------
-void ParseXMLStart(void *data, const char *el, const char **attr)
+namespace
 {
-CONFIGPROTO * cp = static_cast<CONFIGPROTO *>(data);
 
-if (cp->currParser)
-    {
-    //cp->currParser->SetCurrAdmin(*cp->currAdmin);
-    cp->currParser->Start(data, el, attr);
-    }
-else
-    {
-    for (size_t i = 0; i < cp->dataParser.size(); i++)
-        {
-        //cp->dataParser[i]->SetCurrAdmin(*cp->currAdmin);
-        //cp->dataParser[i]->Reset();
-        if (cp->dataParser[i]->Start(data, el, attr) == 0)
-            {
-            cp->currParser = cp->dataParser[i];
-            break;
-            }
-        else
-            {
-            //cp->dataParser[i]->Reset();
-            }
-        }
-    }
-}
-//-----------------------------------------------------------------------------
-void ParseXMLEnd(void *data, const char *el)
+struct IsFinished : public std::unary_function<STG::Conn *, bool>
 {
-CONFIGPROTO * cp = static_cast<CONFIGPROTO *>(data);
-if (cp->currParser)
+    result_type operator()(const argument_type & arg)
     {
-    if (cp->currParser->End(data, el) == 0)
-        {
-        cp->dataAnswer = cp->currParser->GetAnswer();
-        cp->currParser = NULL;
-        }
+        return (arg->IsDone() && !arg->IsKeepAlive()) || !arg->IsOk();
     }
-else
+};
+
+struct RemoveConn : public std::unary_function<STG::Conn *, void>
+{
+    result_type operator()(const argument_type & arg)
     {
-    for (size_t i = 0; i < cp->dataParser.size(); i++)
-        {
-        if (cp->dataParser[i]->End(data, el) == 0)
-            {
-            cp->dataAnswer = cp->currParser->GetAnswer();
-            cp->currParser = NULL;
-            break;
-            }
-        }
+        delete arg;
     }
+};
+
 }
-//-----------------------------------------------------------------------------
+
 CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
-    : answerList(),
-      requestList(),
-      adminIP(0),
-      adminLogin(),
-      adminPassword(),
-      port(0),
-      thrReciveSendConf(),
-      nonstop(true),
-      state(0),
-      currAdmin(NULL),
-      logger(l),
-      listenSocket(-1),
-      parserGetServInfo(),
-      parserGetUsers(),
-      parserGetUser(),
-      parserChgUser(),
-      parserAddUser(),
-      parserDelUser(),
-      parserCheckUser(),
-      parserSendMessage(),
-      parserAuthBy(),
-      parserGetAdmins(),
-      parserAddAdmin(),
-      parserDelAdmin(),
-      parserChgAdmin(),
-      parserGetTariffs(),
-      parserAddTariff(),
-      parserDelTariff(),
-      parserChgTariff(),
-      admins(NULL),
-      currParser(NULL),
-      dataParser(),
-      xmlParser(),
-      errorStr()
+    : m_settings(NULL),
+      m_admins(NULL),
+      m_tariffs(NULL),
+      m_users(NULL),
+      m_port(0),
+      m_running(false),
+      m_stopped(true),
+      m_logger(l),
+      m_listenSocket(-1)
 {
-/*dataParser.push_back(new PARSER_GET_SERVER_INFO);
-
-dataParser.push_back(new PARSER_GET_USERS);
-dataParser.push_back(new PARSER_GET_USER);
-dataParser.push_back(new PARSER_CHG_USER);
-dataParser.push_back(new PARSER_ADD_USER);
-dataParser.push_back(new PARSER_DEL_USER);
-dataParser.push_back(new PARSER_CHECK_USER);
-dataParser.push_back(new PARSER_SEND_MESSAGE);
-dataParser.push_back(new PARSER_AUTH_BY);
-dataParser.push_back(new PARSER_USER_INFO);
-
-dataParser.push_back(new PARSER_GET_TARIFFS);
-dataParser.push_back(new PARSER_ADD_TARIFF);
-dataParser.push_back(new PARSER_DEL_TARIFF);
-dataParser.push_back(new PARSER_CHG_TARIFF);
-
-dataParser.push_back(new PARSER_GET_ADMINS);
-dataParser.push_back(new PARSER_CHG_ADMIN);
-dataParser.push_back(new PARSER_DEL_ADMIN);
-dataParser.push_back(new PARSER_ADD_ADMIN);*/
-
-xmlParser = XML_ParserCreate(NULL);
-
-if (!xmlParser)
-    {
-    logger("Couldn't allocate memory for parser.");
-    exit(1);
-    }
-
+    std::for_each(m_conns.begin(), m_conns.end(), RemoveConn());
 }
-//-----------------------------------------------------------------------------
-CONFIGPROTO::~CONFIGPROTO()
+
+int CONFIGPROTO::Prepare()
 {
-for (size_t i = 0; i < dataParser.size(); ++i)
-    delete dataParser[i];
-XML_ParserFree(xmlParser);
-}
-//-----------------------------------------------------------------------------
-int CONFIGPROTO::ParseCommand()
-{
-std::list<std::string>::iterator n;
-int done = 0;
-char str[9];
+    sigset_t sigmask, oldmask;
+    sigemptyset(&sigmask);
+    sigaddset(&sigmask, SIGINT);
+    sigaddset(&sigmask, SIGTERM);
+    sigaddset(&sigmask, SIGUSR1);
+    sigaddset(&sigmask, SIGHUP);
+    pthread_sigmask(SIG_BLOCK, &sigmask, &oldmask);
 
-if (requestList.empty())
-    return 0;
+    m_listenSocket = socket(PF_INET, SOCK_STREAM, 0);
 
-n = requestList.begin();
-
-strncpy(str, (*n).c_str(), 8);
-str[8] = 0;
-
-XML_ParserReset(xmlParser, NULL);
-XML_SetElementHandler(xmlParser, ParseXMLStart, ParseXMLEnd);
-XML_SetUserData(xmlParser, this);
-
-while(nonstop)
+    if (m_listenSocket < 0)
     {
-    strncpy(str, (*n).c_str(), 8);
-    str[8] = 0;
-    size_t len = strlen(str);
-
-    ++n;
-    if (n == requestList.end())
-        done = 1;
-    --n;
-
-    if (XML_Parse(xmlParser, (*n).c_str(), static_cast<int>(len), done) == XML_STATUS_ERROR)
-        {
-        logger("Invalid configuration request");
-        printfd(__FILE__, "Parse error at line %d:\n%s\n",
-           XML_GetCurrentLineNumber(xmlParser),
-           XML_ErrorString(XML_GetErrorCode(xmlParser)));
-        if (currParser)
-            {
-            printfd(__FILE__, "Parser reset\n");
-            //currParser->Reset();
-            currParser = NULL;
-            }
-
+        m_errorStr = std::string("Cannot create listen socket: '") + strerror(errno) + "'.";
+        m_logger(m_errorStr);
         return -1;
-        }
-
-    if (done)
-        return 0;
-
-    ++n;
     }
 
-return 0;
+    struct sockaddr_in listenAddr;
+    listenAddr.sin_family = PF_INET;
+    listenAddr.sin_port = htons(m_port);
+    listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); // TODO: arbitrary address
+
+    int dummy = 1;
+
+    if (setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEADDR, &dummy, 4) != 0)
+    {
+        m_errorStr = std::string("Failed to set SO_REUSEADDR to the listen socket: '") + strerror(errno) + "'.";
+        m_logger(m_errorStr);
+        return -1;
+    }
+
+    if (bind(m_listenSocket, reinterpret_cast<sockaddr *>(&listenAddr), sizeof(listenAddr)) == -1)
+    {
+        m_errorStr = std::string("Cannot bind listen socket: '") + strerror(errno) + "'.";
+        m_logger(m_errorStr);
+        return -1;
+    }
+
+    if (listen(m_listenSocket, 64) == -1) // TODO: backlog length
+    {
+        m_errorStr = std::string("Failed to start listening for connections: '") + strerror(errno) + "'.";
+        m_logger(m_errorStr);
+        return -1;
+    }
+
+    m_running = true;
+    m_stopped = false;
+    return 0;
 }
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetPort(uint16_t p)
+
+int CONFIGPROTO::Stop()
 {
-port = p;
+    m_running = false;
+    for (int i = 0; i < 5 && !m_stopped; ++i)
+    {
+        struct timespec ts = {0, 200000000};
+        nanosleep(&ts, NULL);
+    }
+
+    if (!m_stopped)
+    {
+        m_errorStr = "Cannot stop listenign thread.";
+        m_logger(m_errorStr);
+        return -1;
+    }
+
+    shutdown(m_listenSocket, SHUT_RDWR);
+    close(m_listenSocket);
+    return 0;
 }
-//-----------------------------------------------------------------------------
-void CONFIGPROTO::SetAdmins(ADMINS * a)
+
+void CONFIGPROTO::Run()
 {
-admins = a;
+    while (m_running)
+    {
+        fd_set fds;
+
+        BuildFDSet(fds);
+
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 500000;
+
+        int res = select(MaxFD() + 1, &fds, NULL, NULL, &tv);
+        if (res < 0)
+        {
+            m_errorStr = std::string("'select' is failed: '") + strerror(errno) + "'.";
+            m_logger(m_errorStr);
+            break;
+        }
+        if (!m_running)
+            break;
+        if (res > 0)
+            HandleEvents(fds);
+
+        CleanupConns();
+    }
+    m_stopped = true;
 }
-//-----------------------------------------------------------------------------
+
+int CONFIGPROTO::MaxFD() const
+{
+    int maxFD = m_listenSocket;
+    for (size_t i = 0; i < m_conns.size(); ++i)
+        if (maxFD < m_conns[i]->Sock())
+            maxFD = m_conns[i]->Sock();
+    return maxFD;
+}
+
+void CONFIGPROTO::BuildFDSet(fd_set & fds) const
+{
+    for (size_t i = 0; i < m_conns.size(); ++i)
+        FD_SET(m_conns[i]->Sock(), &fds);
+}
+
+void CONFIGPROTO::CleanupConns()
+{
+    std::vector<STG::Conn *>::iterator pos;
+    pos = std::remove_if(m_conns.begin(), m_conns.end(), IsFinished());
+    if (pos == m_conns.end())
+        return;
+    std::for_each(pos, m_conns.end(), RemoveConn());
+    m_conns.erase(pos, m_conns.end());
+}
+
+void CONFIGPROTO::HandleEvents(const fd_set & fds)
+{
+    if (FD_ISSET(m_listenSocket, &fds))
+        AcceptConnection();
+    else
+    {
+        for (size_t i = 0; i < m_conns.size(); ++i)
+            if (FD_ISSET(m_conns[i]->Sock(), &fds))
+                m_conns[i]->Read();
+    }
+}
+
+void CONFIGPROTO::AcceptConnection()
+{
+    struct sockaddr_in outerAddr;
+    socklen_t outerAddrLen(sizeof(outerAddr));
+    int sock = accept(m_listenSocket, reinterpret_cast<sockaddr *>(&outerAddr), &outerAddrLen);
+
+    if (sock < 0)
+    {
+        m_errorStr = std::string("Failed to accept connection: '") + strerror(errno) + "'.";
+        printfd(__FILE__, "%s", m_errorStr.c_str());
+        m_logger(m_errorStr);
+        return;
+    }
+
+    assert(m_settings != NULL);
+    assert(m_admins != NULL);
+    assert(m_users != NULL);
+    assert(m_tariffs != NULL);
+
+    m_conns.push_back(new STG::Conn(*m_settings, *m_admins, *m_users, *m_tariffs, sock, outerAddr));
+
+    printfd(__FILE__, "New connection from %s:%d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port());
+}
+/*
+void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
+{
+    m_logger("Admin's connection failed. IP %s", inet_ntostring(ip).c_str());
+}
+*/

@@ -61,11 +61,12 @@ class Conn
 
         int Sock() const { return m_sock; }
         uint32_t IP() const { return *(uint32_t *)(&m_addr.sin_addr); }
-        uint16_t Port() const { return m_addr.sin_port; }
+        uint16_t Port() const { return ntohs(m_addr.sin_port); }
 
         bool Read();
 
         bool IsOk() const { return m_state != ERROR; }
+        bool IsDone() const { return m_state == DONE; }
         bool IsKeepAlive() const { return m_keepAlive; }
 
     private:
@@ -93,7 +94,7 @@ class Conn
 
         XML_Parser m_xmlParser;
 
-        enum { HEADER, LOGIN, CRYPTO_LOGIN, DATA, ERROR } m_state;
+        enum { HEADER, LOGIN, CRYPTO_LOGIN, DATA, DONE, ERROR } m_state;
 
         void * m_buffer;
         size_t m_bufferSize;
@@ -112,6 +113,9 @@ class Conn
         bool HandleCryptoLogin();
         bool HandleData(size_t size);
 
+        bool WriteAnswer(const void* buffer, size_t size);
+        bool WriteResponse();
+
         struct DataState
         {
             DataState(bool f, Conn & c) : final(f), conn(c) {}
@@ -122,6 +126,7 @@ class Conn
         static bool DataCallback(const void * block, size_t size, void * data);
         static void ParseXMLStart(void * data, const char * el, const char ** attr);
         static void ParseXMLEnd(void * data, const char * el);
+        static bool WriteCallback(const void * block, size_t size, void * data);
 };
 
 }
