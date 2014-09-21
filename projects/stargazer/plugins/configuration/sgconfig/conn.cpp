@@ -128,6 +128,17 @@ bool Conn::Read()
     return HandleBuffer(res);
 }
 
+bool Conn::WriteAnswer(const void* buffer, size_t size)
+{
+    ssize_t res = write(m_sock, buffer, size);
+    if (res < 0)
+    {
+        // TODO: log it
+        return false;
+    }
+    return true;
+}
+
 BASE_PARSER * Conn::GetParser(const std::string & tag)
 {
     if (strcasecmp(tag.c_str(), "getserverinfo") == 0)
@@ -166,6 +177,7 @@ bool Conn::HandleHeader()
 {
     if (strncmp(m_header, STG_HEADER, sizeof(m_header)) != 0)
     {
+        WriteAnswer(ERR_HEADER, sizeof(ERR_HEADER));
         // TODO: log it
         m_state = ERROR;
         return false;
@@ -173,13 +185,14 @@ bool Conn::HandleHeader()
     m_state = LOGIN;
     m_buffer = m_login;
     m_bufferSize = sizeof(m_login);
-    return true;
+    return WriteAnswer(OK_HEADER, sizeof(OK_HEADER));
 }
 
 bool Conn::HandleLogin()
 {
     if (m_admins.Find(m_login, &m_admin)) // ADMINS::Find returns true on error.
     {
+        WriteAnswer(ERR_LOGIN, sizeof(ERR_LOGIN));
         // TODO: log it
         m_state = ERROR;
         return false;
@@ -188,7 +201,7 @@ bool Conn::HandleLogin()
     m_state = CRYPTO_LOGIN;
     m_buffer = m_cryptoLogin;
     m_bufferSize = sizeof(m_cryptoLogin);
-    return true;
+    return WriteAnswer(OK_LOGIN, sizeof(OK_LOGIN));
 }
 
 bool Conn::HandleCryptoLogin()
@@ -200,6 +213,7 @@ bool Conn::HandleCryptoLogin()
 
     if (strncmp(m_login, login, sizeof(login)) != 0)
     {
+        WriteAnswer(ERR_LOGINS, sizeof(ERR_LOGINS));
         // TODO: log it
         m_state = ERROR;
         return false;
@@ -209,7 +223,7 @@ bool Conn::HandleCryptoLogin()
     m_buffer = m_data;
     m_bufferSize = sizeof(m_data);
     m_stream = new STG::DECRYPT_STREAM(m_admin->GetPassword(), DataCallback, &m_dataState);
-    return true;
+    return WriteAnswer(OK_LOGINS, sizeof(OK_LOGINS));
 }
 
 bool Conn::HandleData(size_t size)
@@ -233,6 +247,17 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
                   static_cast<int>(XML_GetCurrentColumnNumber(state.conn.m_xmlParser)),
                   XML_ErrorString(XML_GetErrorCode(state.conn.m_xmlParser)), (int)state.final);
         return false;
+    }
+
+    if (state.final)
+    {
+        if (!state.conn.WriteResponse())
+        {
+            // TODO: log it
+            state.conn.m_state = ERROR;
+            return false;
+        }
+        state.conn.m_state = DONE;
     }
 
     return true;
@@ -269,4 +294,19 @@ void Conn::ParseXMLEnd(void * data, const char * el)
     }
 
     conn.m_parser->End(data, el);
+}
+
+bool Conn::WriteResponse()
+{
+    STG::ENCRYPT_STREAM stream(m_admin->GetPassword(), WriteCallback, this);
+    const std::string & answer = m_parser->GetAnswer();
+    stream.Put(answer.c_str(), answer.length() + 1 /* including \0 */, true /* final */);
+    return stream.IsOk();
+}
+
+bool Conn::WriteCallback(const void * block, size_t size, void * data)
+{
+    assert(data != NULL);
+    Conn & conn = *static_cast<Conn *>(data);
+    return WriteAll(conn.m_sock, block, size);;
 }

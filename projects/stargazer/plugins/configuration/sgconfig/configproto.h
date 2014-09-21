@@ -16,102 +16,76 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
-
- /*
- $Revision: 1.14 $
- $Date: 2010/10/04 20:24:14 $
- $Author: faust $
- */
-
 
 #ifndef CONFIGPROTO_H
 #define CONFIGPROTO_H
 
-#include <string>
-#include <list>
-#include <vector>
-
 #include "stg/module_settings.h"
 #include "stg/os_int.h"
 
-#include <expat.h>
-#include <pthread.h>
+#include <string>
+#include <vector>
 
-#define  STG_HEADER     "SG04"
-#define  OK_HEADER      "OKHD"
-#define  ERR_HEADER     "ERHD"
-#define  OK_LOGIN       "OKLG"
-#define  ERR_LOGIN      "ERLG"
-#define  OK_LOGINS      "OKLS"
-#define  ERR_LOGINS     "ERLS"
+#include <sys/select.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-class BASE_PARSER;
-class USERS;
-class ADMINS;
-class ADMIN;
-class TARIFFS;
-class PLUGIN_LOGGER;
-class STORE;
 class SETTINGS;
+class ADMINS;
+class TARIFFS;
+class USERS;
+class PLUGIN_LOGGER;
 
-//-----------------------------------------------------------------------------
+namespace STG
+{
+
+class Conn;
+
+}
+
 class CONFIGPROTO {
 public:
     CONFIGPROTO(PLUGIN_LOGGER & l);
-    ~CONFIGPROTO();
 
-    void            SetPort(uint16_t p) { port = p; }
-    void            SetAdmins(ADMINS * a);
-    uint32_t        GetAdminIP() const { return adminIP; }
+    void            SetPort(uint16_t port) { m_port = port; }
+    void            SetSettings(const SETTINGS * settings) { m_settings = settings; }
+    void            SetAdmins(ADMINS * admins) { m_admins = admins; }
+    void            SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
+    void            SetUsers(USERS * users) { m_users = users; }
+
     int             Prepare();
     int             Stop();
-    const std::string & GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const { return m_errorStr; }
     void            Run();
 
 private:
     CONFIGPROTO(const CONFIGPROTO & rvalue);
     CONFIGPROTO & operator=(const CONFIGPROTO & rvalue);
 
-    int             RecvHdr(int sock);
-    int             RecvLogin(int sock);
-    int             SendLoginAnswer(int sock);
-    int             SendHdrAnswer(int sock, int err);
-    int             RecvLoginS(int sock);
-    int             SendLoginSAnswer(int sock, int err);
-    int             RecvData(int sock);
-    int             SendDataAnswer(int sock, const std::string & answer);
-    int             SendError(int sock, const std::string & text);
-    void            WriteLogAccessFailed(uint32_t ip);
-    const std::string & GetDataAnswer() const { return dataAnswer; }
+    const SETTINGS * m_settings;
+    ADMINS *         m_admins;
+    TARIFFS *        m_tariffs;
+    USERS *          m_users;
 
-    int             ParseCommand();
+    uint16_t         m_port;
+    bool             m_running;
+    bool             m_stopped;
+    PLUGIN_LOGGER &  m_logger;
+    int              m_listenSocket;
 
-    std::list<std::string>      requestList;
-    uint32_t                    adminIP;
-    std::string                 adminLogin;
-    std::string                 adminPassword;
-    uint16_t                    port;
-    pthread_t                   thrReciveSendConf;
-    bool                        nonstop;
-    int                         state;
-    ADMIN *                     currAdmin;
-    PLUGIN_LOGGER &             logger;
-    std::string                 dataAnswer;
+    std::string      m_errorStr;
 
-    int                         listenSocket;
+    std::vector<STG::Conn *> m_conns;
 
-    ADMINS *                    admins;
+    int MaxFD() const;
+    void BuildFDSet(fd_set & fds) const;
+    void CleanupConns();
+    void HandleEvents(const fd_set & fds);
+    void AcceptConnection();
 
-    BASE_PARSER *               currParser;
-    std::vector<BASE_PARSER *>  dataParser;
-
-    XML_Parser                  xmlParser;
-
-    std::string                 errorStr;
-
-    friend void ParseXMLStart(void *data, const char *el, const char **attr);
-    friend void ParseXMLEnd(void *data, const char *el);
+    //void WriteLogAccessFailed(uint32_t ip);
 };
-//-----------------------------------------------------------------------------
+
 #endif //CONFIGPROTO_H
