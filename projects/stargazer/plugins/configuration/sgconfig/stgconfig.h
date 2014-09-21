@@ -47,11 +47,11 @@ public:
     STG_CONFIG();
     virtual ~STG_CONFIG(){}
 
-    void                SetUsers(USERS *) {}
-    void                SetTariffs(TARIFFS *) {}
+    void                SetUsers(USERS * users) { config.SetUsers(users); }
+    void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
     void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
     void                SetStore(STORE *) {}
-    void                SetStgSettings(const SETTINGS *) {}
+    void                SetStgSettings(const SETTINGS * s) { config.SetSettings(s); }
     void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
     int                 ParseSettings();
 
@@ -61,7 +61,7 @@ public:
     bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return "Stg Configurator v. 1.0"; }
+    std::string         GetVersion() const { return "Stg Configurator v. 2.0"; }
     uint16_t            GetStartPosition() const { return 20; }
     uint16_t            GetStopPosition() const { return 20; }
 
