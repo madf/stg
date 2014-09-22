@@ -343,7 +343,7 @@ int NETTRANSACT::TxData(const std::string & text)
 {
 STG::ENCRYPT_STREAM stream(password, TxCrypto, this);
 stream.Put(text.c_str(), text.length() + 1, true);
-if (!stream.isOk())
+if (!stream.IsOk())
     {
     errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
@@ -367,7 +367,7 @@ while (!state.final)
         return st_recv_fail;
         }
     stream.Put(buffer, res, res == 0);
-    if (!stream.isOk())
+    if (!stream.IsOk())
         return st_xml_parse_error;
     }
 
