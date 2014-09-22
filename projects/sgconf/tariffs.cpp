@@ -40,17 +40,17 @@ switch (period)
 return "unknown";
 }
 
-std::string TraffTypeToString(int traffType)
+std::string TraffTypeToString(TARIFF::TRAFF_TYPE traffType)
 {
 switch (traffType)
     {
-    case TRAFF_UP:
+    case TARIFF::TRAFF_UP:
         return "upload";
-    case TRAFF_DOWN:
+    case TARIFF::TRAFF_DOWN:
         return "download";
-    case TRAFF_UP_DOWN:
+    case TARIFF::TRAFF_UP_DOWN:
         return "upload + download";
-    case TRAFF_MAX:
+    case TARIFF::TRAFF_MAX:
         return "max(upload, download)";
     }
 return "unknown";
@@ -67,18 +67,18 @@ else
     throw SGCONF::ACTION::ERROR("Period should be 'daily' or 'monthly'. Got: '" + value + "'");
 }
 
-void ConvTraffType(const std::string & value, RESETABLE<int> & res)
+void ConvTraffType(const std::string & value, RESETABLE<TARIFF::TRAFF_TYPE> & res)
 {
 std::string lowered = ToLower(value);
 lowered.erase(std::remove(lowered.begin(), lowered.end(), ' '), lowered.end());
 if (lowered == "upload")
-    res = TRAFF_UP;
+    res = TARIFF::TRAFF_UP;
 else if (lowered == "download")
-    res = TRAFF_DOWN;
+    res = TARIFF::TRAFF_DOWN;
 else if (lowered == "upload+download")
-    res = TRAFF_UP_DOWN;
+    res = TARIFF::TRAFF_UP_DOWN;
 else if (lowered.substr(0, 3) == "max")
-    res = TRAFF_MAX;
+    res = TARIFF::TRAFF_MAX;
 else
     throw SGCONF::ACTION::ERROR("Traff type should be 'upload', 'download', 'upload + download' or 'max'. Got: '" + value + "'");
 }
