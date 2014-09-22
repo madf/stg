@@ -31,6 +31,11 @@ using STG::PARSER::ADD_ADMIN;
 using STG::PARSER::DEL_ADMIN;
 using STG::PARSER::CHG_ADMIN;
 
+const char * GET_ADMINS::tag = "GetAdmins";
+const char * ADD_ADMIN::tag  = "AddAdmin";
+const char * DEL_ADMIN::tag  = "DelAdmin";
+const char * CHG_ADMIN::tag  = "ChgAdmin";
+
 void GET_ADMINS::CreateAnswer()
 {
     const PRIV * priv = m_currAdmin.GetPriv();

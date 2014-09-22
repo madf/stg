@@ -20,26 +20,14 @@
 
 #include "conn.h"
 
-#include "parser.h"
-
-#include "parser_server_info.h"
-#include "parser_admins.h"
-#include "parser_tariffs.h"
-#include "parser_users.h"
-#include "parser_message.h"
-#include "parser_auth_by.h"
-#include "parser_user_info.h"
-
-#include "stg/settings.h"
 #include "stg/admins.h"
-#include "stg/users.h"
-#include "stg/tariffs.h"
 #include "stg/admin.h"
 #include "stg/blowfish.h"
 #include "stg/bfstream.h"
 #include "stg/common.h"
 
 #include <cassert>
+#include <cstring>
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -54,15 +42,10 @@ const char Conn::ERR_LOGIN[] = "ERLG";
 const char Conn::OK_LOGINS[] = "OKLS";
 const char Conn::ERR_LOGINS[] = "ERLS";
 
-Conn::Conn(const SETTINGS & settings,
-           ADMINS & admins,
-           USERS & users,
-           TARIFFS & tariffs,
-           int sock, const sockaddr_in& addr)
-    : m_settings(settings),
+Conn::Conn(const BASE_PARSER::REGISTRY & registry,
+           ADMINS & admins, int sock, const sockaddr_in& addr)
+    : m_registry(registry),
       m_admins(admins),
-      m_users(users),
-      m_tariffs(tariffs),
       m_admin(NULL),
       m_sock(sock),
       m_addr(addr),
@@ -110,9 +93,6 @@ Conn::~Conn()
     shutdown(m_sock, SHUT_RDWR);
     close(m_sock);
 
-    /*std::map<std::string, BASE_PARSER *>::iterator it(m_parsers.begin());
-    for (; it != m_parsers.end(); ++it)
-        delete it->second;*/
     XML_ParserFree(m_xmlParser);
 }
 
@@ -139,19 +119,12 @@ bool Conn::WriteAnswer(const void* buffer, size_t size)
     return true;
 }
 
-BASE_PARSER * Conn::GetParser(const std::string & tag)
+BASE_PARSER * Conn::GetParser(const std::string & tag) const
 {
-    if (strcasecmp(tag.c_str(), "getserverinfo") == 0)
-        return new STG::PARSER::GET_SERVER_INFO(*m_admin, m_settings, m_users, m_tariffs);
-    if (strcasecmp(tag.c_str(), "getadmins") == 0)
-        return new STG::PARSER::GET_ADMINS(*m_admin, m_admins);
-    if (strcasecmp(tag.c_str(), "addadmin") == 0)
-        return new STG::PARSER::ADD_ADMIN(*m_admin, m_admins);
-    if (strcasecmp(tag.c_str(), "deladmin") == 0)
-        return new STG::PARSER::DEL_ADMIN(*m_admin, m_admins);
-    if (strcasecmp(tag.c_str(), "chgadmin") == 0)
-        return new STG::PARSER::CHG_ADMIN(*m_admin, m_admins);
-    return NULL;
+    BASE_PARSER::REGISTRY::const_iterator it = m_registry.find(tag);
+    if (it == m_registry.end())
+        return NULL;
+    return it->second->create(*m_admin);
 }
 
 bool Conn::HandleBuffer(size_t size)

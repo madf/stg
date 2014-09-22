@@ -25,6 +25,8 @@
 
 using STG::PARSER::AUTH_BY;
 
+const char * AUTH_BY::tag = "GetUserAuthBy";
+
 int AUTH_BY::Start(void * /*data*/, const char *el, const char **attr)
 {
     if (strcasecmp(el, m_tag.c_str()) != 0)

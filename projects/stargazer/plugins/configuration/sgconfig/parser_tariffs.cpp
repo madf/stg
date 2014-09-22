@@ -34,6 +34,11 @@ using STG::PARSER::ADD_TARIFF;
 using STG::PARSER::DEL_TARIFF;
 using STG::PARSER::CHG_TARIFF;
 
+const char * GET_TARIFFS::tag = "GetTariffs";
+const char * ADD_TARIFF::tag  = "AddTariff";
+const char * DEL_TARIFF::tag  = "DelTariff";
+const char * CHG_TARIFF::tag  = "SetTariff";
+
 namespace
 {
 

@@ -43,17 +43,18 @@ class GET_TARIFFS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, const TARIFFS & tariffs)
-                    : m_admin(admin), m_tariffs(tariffs)
-                {}
-                virtual BASE_PARSER * create() { return new GET_TARIFFS(m_admin, m_tariffs); }
+                FACTORY(const TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_TARIFFS(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, const TARIFFS & tariffs)
+                { registry[tag] = new FACTORY(tariffs); }
             private:
-                const ADMIN & m_admin;
                 const TARIFFS & m_tariffs;
         };
 
+        static const char * tag;
+
         GET_TARIFFS(const ADMIN & admin, const TARIFFS & tariffs)
-            : BASE_PARSER(admin, "GetTariffs"), m_tariffs(tariffs) {}
+            : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
 
     private:
         const TARIFFS & m_tariffs;
@@ -67,17 +68,18 @@ class ADD_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, TARIFFS & tariffs)
-                    : m_admin(admin), m_tariffs(tariffs)
-                {}
-                virtual BASE_PARSER * create() { return new ADD_TARIFF(m_admin, m_tariffs); }
+                FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_TARIFF(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, TARIFFS & tariffs)
+                { registry[tag] = new FACTORY(tariffs); }
             private:
-                const ADMIN & m_admin;
                 TARIFFS & m_tariffs;
         };
 
+        static const char * tag;
+
         ADD_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
-            : BASE_PARSER(admin, "AddTariff"), m_tariffs(tariffs) {}
+            : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
@@ -93,18 +95,19 @@ class DEL_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, TARIFFS & tariffs, const USERS & users)
-                    : m_admin(admin), m_tariffs(tariffs), m_users(users)
-                {}
-                virtual BASE_PARSER * create() { return new DEL_TARIFF(m_admin, m_users, m_tariffs); }
+                FACTORY(TARIFFS & tariffs, const USERS & users) : m_tariffs(tariffs), m_users(users) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_TARIFF(admin, m_users, m_tariffs); }
+                static void Register(REGISTRY & registry, TARIFFS & tariffs, const USERS & users)
+                { registry[tag] = new FACTORY(tariffs, users); }
             private:
-                const ADMIN & m_admin;
                 TARIFFS & m_tariffs;
                 const USERS & m_users;
         };
 
+        static const char * tag;
+
         DEL_TARIFF(const ADMIN & admin, const USERS & users, TARIFFS & tariffs)
-            : BASE_PARSER(admin, "DelTariff"), m_users(users), m_tariffs(tariffs) {}
+            : BASE_PARSER(admin, tag), m_users(users), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
@@ -121,17 +124,18 @@ class CHG_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, TARIFFS & tariffs)
-                    : m_admin(admin), m_tariffs(tariffs)
-                {}
-                virtual BASE_PARSER * create() { return new CHG_TARIFF(m_admin, m_tariffs); }
+                FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_TARIFF(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, TARIFFS & tariffs)
+                { registry[tag] = new FACTORY(tariffs); }
             private:
-                const ADMIN & m_admin;
                 TARIFFS & m_tariffs;
         };
 
+        static const char * tag;
+
         CHG_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
-            : BASE_PARSER(admin, "SetTariff"), m_tariffs(tariffs) {}
+            : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:

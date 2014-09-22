@@ -21,12 +21,13 @@
 #ifndef __STG_SGCONFIG_CONN_H__
 #define __STG_SGCONFIG_CONN_H__
 
+#include "parser.h"
+
 #include "stg/os_int.h"
 #include "stg/const.h"
 
 #include <stdexcept>
 #include <string>
-#include <map>
 
 #include <expat.h>
 
@@ -52,11 +53,8 @@ class Conn
             Error(const std::string& message) : runtime_error(message.c_str()) {}
         };
 
-        Conn(const SETTINGS & settings,
-             ADMINS & admins,
-             USERS & users,
-             TARIFFS & tariffs,
-             int sock, const sockaddr_in& addr);
+        Conn(const BASE_PARSER::REGISTRY & registry,
+             ADMINS & admins, int sock, const sockaddr_in& addr);
         ~Conn();
 
         int Sock() const { return m_sock; }
@@ -79,10 +77,9 @@ class Conn
         static const char OK_LOGINS[5];
         static const char ERR_LOGINS[5];
 
-        const SETTINGS & m_settings;
+        const BASE_PARSER::REGISTRY & m_registry;
+
         ADMINS & m_admins;
-        USERS & m_users;
-        TARIFFS & m_tariffs;
 
         ADMIN * m_admin;
 
@@ -104,7 +101,7 @@ class Conn
         char m_data[1024];
         STG::DECRYPT_STREAM * m_stream;
 
-        BASE_PARSER * GetParser(const std::string & tag);
+        BASE_PARSER * GetParser(const std::string & tag) const;
 
         bool HandleBuffer(size_t size);
 
