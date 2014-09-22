@@ -38,6 +38,13 @@ using STG::PARSER::DEL_USER;
 using STG::PARSER::CHG_USER;
 using STG::PARSER::CHECK_USER;
 
+const char * GET_USERS::tag  = "GetUsers";
+const char * GET_USER::tag   = "GetUser";
+const char * ADD_USER::tag   = "AddUser";
+const char * CHG_USER::tag   = "SetUser";
+const char * DEL_USER::tag   = "DelUser";
+const char * CHECK_USER::tag = "CheckUser";
+
 namespace
 {
 

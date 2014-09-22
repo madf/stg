@@ -19,8 +19,8 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_USERS_H__
-#define __STG_SGCONFIG_PARSER_USERS_H__
+#ifndef __STG_SGCONFIG_PARSER_SEND_MESSAGE_H__
+#define __STG_SGCONFIG_PARSER_SEND_MESSAGE_H__
 
 #include "parser.h"
 
@@ -43,17 +43,18 @@ class SEND_MESSAGE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, USERS & users)
-                    : m_admin(admin), m_users(users)
-                {}
-                virtual BASE_PARSER * create() { return new SEND_MESSAGE(m_admin, m_users); }
+                FACTORY(USERS & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new SEND_MESSAGE(admin, m_users); }
+                static void Register(REGISTRY & registry, USERS & users)
+                { registry[tag] = new FACTORY(users); }
             private:
-                const ADMIN & m_admin;
                 USERS & m_users;
         };
 
+        static const char * tag;
+
         SEND_MESSAGE(const ADMIN & admin, USERS & users)
-            : BASE_PARSER(admin, "Message"), m_users(users), m_result(res_ok), m_user(NULL) {}
+            : BASE_PARSER(admin, tag), m_users(users), m_result(res_ok), m_user(NULL) {}
         int Start(void *data, const char *el, const char **attr);
         int End(void *data, const char *el);
 

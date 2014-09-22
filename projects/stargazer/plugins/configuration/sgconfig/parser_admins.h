@@ -42,17 +42,18 @@ class GET_ADMINS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, const ADMINS & admins)
-                    : m_admin(admin), m_admins(admins)
-                {}
-                virtual BASE_PARSER * create() { return new GET_ADMINS(m_admin, m_admins); }
+                FACTORY(const ADMINS & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_ADMINS(admin, m_admins); }
+                static void Register(REGISTRY & registry, const ADMINS & admins)
+                { registry[tag] = new FACTORY(admins); }
             private:
-                const ADMIN & m_admin;
                 const ADMINS & m_admins;
         };
 
+        static const char * tag;
+
         GET_ADMINS(const ADMIN & admin, const ADMINS & admins)
-            : BASE_PARSER(admin, "GetAdmins"), m_admins(admins) {}
+            : BASE_PARSER(admin, tag), m_admins(admins) {}
 
     private:
         const ADMINS & m_admins;
@@ -66,17 +67,18 @@ class ADD_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, ADMINS & admins)
-                    : m_admin(admin), m_admins(admins)
-                {}
-                virtual BASE_PARSER * create() { return new ADD_ADMIN(m_admin, m_admins); }
+                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, ADMINS & admins)
+                { registry[tag] = new FACTORY(admins); }
             private:
-                const ADMIN & m_admin;
                 ADMINS & m_admins;
         };
 
+        static const char * tag;
+
         ADD_ADMIN(const ADMIN & admin, ADMINS & admins)
-            : BASE_PARSER(admin, "AddAdmin"), m_admins(admins) {}
+            : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
@@ -92,17 +94,18 @@ class DEL_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, ADMINS & admins)
-                    : m_admin(admin), m_admins(admins)
-                {}
-                virtual BASE_PARSER * create() { return new DEL_ADMIN(m_admin, m_admins); }
+                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, ADMINS & admins)
+                { registry[tag] = new FACTORY(admins); }
             private:
-                const ADMIN & m_admin;
                 ADMINS & m_admins;
         };
 
+        static const char * tag;
+
         DEL_ADMIN(const ADMIN & admin, ADMINS & admins)
-            : BASE_PARSER(admin, "DelAdmin"), m_admins(admins) {}
+            : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
@@ -118,17 +121,18 @@ class CHG_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, ADMINS & admins)
-                    : m_admin(admin), m_admins(admins)
-                {}
-                virtual BASE_PARSER * create() { return new CHG_ADMIN(m_admin, m_admins); }
+                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, ADMINS & admins)
+                { registry[tag] = new FACTORY(admins); }
             private:
-                const ADMIN & m_admin;
                 ADMINS & m_admins;
         };
 
+        static const char * tag;
+
         CHG_ADMIN(const ADMIN & admin, ADMINS & admins)
-            : BASE_PARSER(admin, "ChgAdmin"), m_admins(admins) {}
+            : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:

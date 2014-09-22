@@ -28,6 +28,8 @@ extern volatile time_t stgTime; // So sad...
 
 using STG::PARSER::SEND_MESSAGE;
 
+const char * SEND_MESSAGE::tag = "Message";
+
 int SEND_MESSAGE::Start(void *, const char *el, const char **attr)
 {
     if (strcasecmp(el, m_tag.c_str()) != 0)

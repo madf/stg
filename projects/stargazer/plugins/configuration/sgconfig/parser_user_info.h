@@ -38,17 +38,18 @@ class USER_INFO : public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMIN & admin, const USERS & users)
-                    : m_admin(admin), m_users(users)
-                {}
-                virtual BASE_PARSER * create() { return new USER_INFO(m_admin, m_users); }
+                FACTORY(const USERS & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new USER_INFO(admin, m_users); }
+                static void Register(REGISTRY & registry, const USERS & users)
+                { registry[tag] = new FACTORY(users); }
             private:
-                const ADMIN & m_admin;
                 const USERS & m_users;
         };
 
+        static const char * tag;
+
         USER_INFO(const ADMIN & admin, const USERS & users)
-            : BASE_PARSER(admin, "GetUserInfo"), m_users(users) {}
+            : BASE_PARSER(admin, tag), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:

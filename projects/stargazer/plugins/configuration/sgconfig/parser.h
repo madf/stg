@@ -22,6 +22,7 @@
 #define PARSER_H
 
 #include <string>
+#include <map>
 
 class ADMIN;
 
@@ -30,8 +31,9 @@ class BASE_PARSER
     public:
         struct FACTORY
         {
-            virtual BASE_PARSER * create() = 0;
+            virtual BASE_PARSER * create(const ADMIN & admin) = 0;
         };
+        typedef std::map<std::string, FACTORY *> REGISTRY;
 
         BASE_PARSER(const ADMIN & admin, const std::string & t)
             : m_currAdmin(admin),

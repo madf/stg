@@ -28,6 +28,8 @@
 
 using STG::PARSER::USER_INFO;
 
+const char * USER_INFO::tag = "GetUserInfo";
+
 int USER_INFO::Start(void * /*data*/, const char *el, const char **attr)
 {
     if (strcasecmp(el, m_tag.c_str()) != 0)

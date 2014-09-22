@@ -23,6 +23,14 @@
 
 #include "conn.h"
 
+#include "parser_server_info.h"
+#include "parser_admins.h"
+#include "parser_tariffs.h"
+#include "parser_users.h"
+#include "parser_message.h"
+#include "parser_user_info.h"
+#include "parser_auth_by.h"
+
 #include "stg/common.h"
 #include "stg/logger.h"
 
@@ -37,6 +45,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+namespace SP = STG::PARSER;
 
 namespace
 {
@@ -69,6 +79,10 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       m_stopped(true),
       m_logger(l),
       m_listenSocket(-1)
+{
+}
+
+CONFIGPROTO::~CONFIGPROTO()
 {
     std::for_each(m_conns.begin(), m_conns.end(), RemoveConn());
 }
@@ -119,6 +133,8 @@ int CONFIGPROTO::Prepare()
         m_logger(m_errorStr);
         return -1;
     }
+
+    RegisterParsers();
 
     m_running = true;
     m_stopped = false;
@@ -175,6 +191,40 @@ void CONFIGPROTO::Run()
     m_stopped = true;
 }
 
+void CONFIGPROTO::RegisterParsers()
+{
+    assert(m_settings != NULL);
+    assert(m_store != NULL);
+    assert(m_admins != NULL);
+    assert(m_users != NULL);
+    assert(m_tariffs != NULL);
+
+    SP::GET_SERVER_INFO::FACTORY::Register(m_registry, *m_settings, *m_users, *m_tariffs);
+
+    SP::GET_ADMINS::FACTORY::Register(m_registry, *m_admins);
+    SP::ADD_ADMIN::FACTORY::Register(m_registry, *m_admins);
+    SP::DEL_ADMIN::FACTORY::Register(m_registry, *m_admins);
+    SP::CHG_ADMIN::FACTORY::Register(m_registry, *m_admins);
+
+    SP::GET_TARIFFS::FACTORY::Register(m_registry, *m_tariffs);
+    SP::ADD_TARIFF::FACTORY::Register(m_registry, *m_tariffs);
+    SP::DEL_TARIFF::FACTORY::Register(m_registry, *m_tariffs, *m_users);
+    SP::CHG_TARIFF::FACTORY::Register(m_registry, *m_tariffs);
+
+    SP::GET_USERS::FACTORY::Register(m_registry, *m_users);
+    SP::GET_USER::FACTORY::Register(m_registry, *m_users);
+    SP::ADD_USER::FACTORY::Register(m_registry, *m_users);
+    SP::DEL_USER::FACTORY::Register(m_registry, *m_users);
+    SP::CHG_USER::FACTORY::Register(m_registry, *m_users, *m_store, *m_tariffs);
+    SP::CHECK_USER::FACTORY::Register(m_registry, *m_users);
+
+    SP::SEND_MESSAGE::FACTORY::Register(m_registry, *m_users);
+
+    SP::AUTH_BY::FACTORY::Register(m_registry, *m_users);
+
+    SP::USER_INFO::FACTORY::Register(m_registry, *m_users);
+}
+
 int CONFIGPROTO::MaxFD() const
 {
     int maxFD = m_listenSocket;
@@ -226,14 +276,11 @@ void CONFIGPROTO::AcceptConnection()
         return;
     }
 
-    assert(m_settings != NULL);
     assert(m_admins != NULL);
-    assert(m_users != NULL);
-    assert(m_tariffs != NULL);
 
     try
     {
-        m_conns.push_back(new STG::Conn(*m_settings, *m_admins, *m_users, *m_tariffs, sock, outerAddr));
+        m_conns.push_back(new STG::Conn(m_registry, *m_admins, sock, outerAddr));
         printfd(__FILE__, "New connection from %s:%d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port());
     }
     catch (const STG::Conn::Error & error)

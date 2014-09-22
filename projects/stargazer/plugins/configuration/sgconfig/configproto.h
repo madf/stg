@@ -22,6 +22,8 @@
 #ifndef CONFIGPROTO_H
 #define CONFIGPROTO_H
 
+#include "parser.h"
+
 #include "stg/module_settings.h"
 #include "stg/os_int.h"
 
@@ -36,6 +38,7 @@ class SETTINGS;
 class ADMINS;
 class TARIFFS;
 class USERS;
+class STORE;
 class PLUGIN_LOGGER;
 
 namespace STG
@@ -48,12 +51,14 @@ class Conn;
 class CONFIGPROTO {
 public:
     CONFIGPROTO(PLUGIN_LOGGER & l);
+    ~CONFIGPROTO();
 
     void            SetPort(uint16_t port) { m_port = port; }
     void            SetSettings(const SETTINGS * settings) { m_settings = settings; }
     void            SetAdmins(ADMINS * admins) { m_admins = admins; }
     void            SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
     void            SetUsers(USERS * users) { m_users = users; }
+    void            SetStore(STORE * store) { m_store = store; }
 
     int             Prepare();
     int             Stop();
@@ -68,6 +73,7 @@ private:
     ADMINS *         m_admins;
     TARIFFS *        m_tariffs;
     USERS *          m_users;
+    STORE *          m_store;
 
     uint16_t         m_port;
     bool             m_running;
@@ -77,7 +83,10 @@ private:
 
     std::string      m_errorStr;
 
+    BASE_PARSER::REGISTRY m_registry;
     std::vector<STG::Conn *> m_conns;
+
+    void RegisterParsers();
 
     int MaxFD() const;
     void BuildFDSet(fd_set & fds) const;

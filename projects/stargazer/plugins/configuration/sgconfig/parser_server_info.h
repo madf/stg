@@ -33,11 +33,27 @@ namespace PARSER
 
 class GET_SERVER_INFO: public BASE_PARSER {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const SETTINGS & settings, const USERS & users, const TARIFFS & tariffs)
+                    : m_settings(settings), m_users(users), m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
+                static void Register(REGISTRY & registry, const SETTINGS & settings, const USERS & users, const TARIFFS & tariffs)
+                { registry[tag] = new FACTORY(settings, users, tariffs); }
+            private:
+                const SETTINGS & m_settings;
+                const USERS & m_users;
+                const TARIFFS & m_tariffs;
+        };
+
+        static const char * tag;
+
         GET_SERVER_INFO(const ADMIN & admin,
                         const SETTINGS & settings,
                         const USERS & users,
                         const TARIFFS & tariffs)
-            : BASE_PARSER(admin, "GetServerInfo"),
+            : BASE_PARSER(admin, tag),
               m_settings(settings),
               m_users(users),
               m_tariffs(tariffs)

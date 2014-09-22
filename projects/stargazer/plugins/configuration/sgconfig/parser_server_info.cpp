@@ -32,6 +32,8 @@
 
 using STG::PARSER::GET_SERVER_INFO;
 
+const char * GET_SERVER_INFO::tag = "GetServerInfo";
+
 void GET_SERVER_INFO::CreateAnswer()
 {
     struct utsname utsn;
