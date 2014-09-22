@@ -33,7 +33,7 @@ class COMMON
         void Put(const void * data, size_t size, bool last)
         {
         size_t dataSize = m_ptr - m_buffer;
-        if (dataSize + size > sizeof(m_buffer))
+        while (dataSize + size > sizeof(m_buffer))
             {
             memcpy(m_ptr, data, sizeof(m_buffer) - dataSize); // Fill buffer
             size -= sizeof(m_buffer) - dataSize; // Adjust size
@@ -41,6 +41,7 @@ class COMMON
             m_proc(m_buffer, m_buffer, sizeof(m_buffer), &m_ctx); // Process
             m_ok = m_ok && m_callback(m_buffer, sizeof(m_buffer), m_data); // Consume
             m_ptr = m_buffer;
+            dataSize = 0;
             }
         if (!m_ok)
             return;
@@ -69,7 +70,7 @@ class COMMON
             dataSize += 8;
             remainder = 0;
             }
-        if (dataSize == 0)
+        if (!last && dataSize == 0) // Allow to call callback with 0 data on last call.
             return;
         m_proc(m_buffer, m_buffer, dataSize, &m_ctx);
         m_ok = m_ok && m_callback(m_buffer, dataSize, m_data);
