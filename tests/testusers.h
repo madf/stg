@@ -35,6 +35,7 @@ class TEST_USERS : public USERS {
         { return -1; }
         bool IsIPInIndex(uint32_t /*ip*/) const { return false; }
         bool IsIPInUse(uint32_t, const std::string &, CONST_USER_PTR *) const { return false; }
+        bool Exists(const std::string &) const { return false; }
 
         int  OpenSearch() { return 0; }
         int  SearchNext(int /*handle*/, USER_PTR * /*u*/) { return -1; }
