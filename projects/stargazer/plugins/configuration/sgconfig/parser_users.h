@@ -44,6 +44,18 @@ namespace PARSER
 class GET_USERS: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new GET_USERS(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                USERS & m_users;
+        };
+
         GET_USERS(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "GetUsers"), m_users(users),
               m_lastUserUpdateTime(0) {}
@@ -59,6 +71,18 @@ class GET_USERS: public BASE_PARSER
 class GET_USER: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new GET_USER(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                const USERS & m_users;
+        };
+
         GET_USER(const ADMIN & admin, const USERS & users)
             : BASE_PARSER(admin, "GetUser"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -73,6 +97,18 @@ class GET_USER: public BASE_PARSER
 class ADD_USER: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new ADD_USER(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                USERS & m_users;
+        };
+
         ADD_USER(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "AddUser"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -87,6 +123,20 @@ class ADD_USER: public BASE_PARSER
 class CHG_USER: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, USERS & users, STORE & store, const TARIFFS & tariffs)
+                    : m_admin(admin), m_users(users), m_store(store), m_tariffs(tariffs)
+                {}
+                virtual BASE_PARSER * create() { return new CHG_USER(m_admin, m_users, m_store, m_tariffs); }
+            private:
+                const ADMIN & m_admin;
+                USERS & m_users;
+                STORE & m_store;
+                const TARIFFS & m_tariffs;
+        };
+
         CHG_USER(const ADMIN & admin, USERS & users,
                  STORE & store, const TARIFFS & tariffs)
             : BASE_PARSER(admin, "SetUser"),
@@ -118,6 +168,18 @@ class CHG_USER: public BASE_PARSER
 class DEL_USER: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new DEL_USER(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                USERS & m_users;
+        };
+
         DEL_USER(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "DelUser"), m_users(users), res(0), u(NULL) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -134,6 +196,18 @@ class DEL_USER: public BASE_PARSER
 class CHECK_USER: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new CHECK_USER(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                const USERS & m_users;
+        };
+
         CHECK_USER(const ADMIN & admin, const USERS & users)
             : BASE_PARSER(admin, "CheckUser"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -143,9 +217,10 @@ class CHECK_USER: public BASE_PARSER
         const USERS & m_users;
 
         void CreateAnswer(const char * error);
+        void CreateAnswer() {} // dummy
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif

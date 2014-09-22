@@ -40,6 +40,18 @@ namespace PARSER
 class GET_TARIFFS: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const TARIFFS & tariffs)
+                    : m_admin(admin), m_tariffs(tariffs)
+                {}
+                virtual BASE_PARSER * create() { return new GET_TARIFFS(m_admin, m_tariffs); }
+            private:
+                const ADMIN & m_admin;
+                const TARIFFS & m_tariffs;
+        };
+
         GET_TARIFFS(const ADMIN & admin, const TARIFFS & tariffs)
             : BASE_PARSER(admin, "GetTariffs"), m_tariffs(tariffs) {}
 
@@ -52,6 +64,18 @@ class GET_TARIFFS: public BASE_PARSER
 class ADD_TARIFF: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, TARIFFS & tariffs)
+                    : m_admin(admin), m_tariffs(tariffs)
+                {}
+                virtual BASE_PARSER * create() { return new ADD_TARIFF(m_admin, m_tariffs); }
+            private:
+                const ADMIN & m_admin;
+                TARIFFS & m_tariffs;
+        };
+
         ADD_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
             : BASE_PARSER(admin, "AddTariff"), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -66,6 +90,19 @@ class ADD_TARIFF: public BASE_PARSER
 class DEL_TARIFF: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, TARIFFS & tariffs, const USERS & users)
+                    : m_admin(admin), m_tariffs(tariffs), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new DEL_TARIFF(m_admin, m_users, m_tariffs); }
+            private:
+                const ADMIN & m_admin;
+                TARIFFS & m_tariffs;
+                const USERS & m_users;
+        };
+
         DEL_TARIFF(const ADMIN & admin, const USERS & users, TARIFFS & tariffs)
             : BASE_PARSER(admin, "DelTariff"), m_users(users), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -81,6 +118,18 @@ class DEL_TARIFF: public BASE_PARSER
 class CHG_TARIFF: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, TARIFFS & tariffs)
+                    : m_admin(admin), m_tariffs(tariffs)
+                {}
+                virtual BASE_PARSER * create() { return new CHG_TARIFF(m_admin, m_tariffs); }
+            private:
+                const ADMIN & m_admin;
+                TARIFFS & m_tariffs;
+        };
+
         CHG_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
             : BASE_PARSER(admin, "SetTariff"), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -93,7 +142,7 @@ class CHG_TARIFF: public BASE_PARSER
         void CreateAnswer();
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif
