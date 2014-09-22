@@ -28,7 +28,7 @@
 #include "stg/os_int.h"
 
 #include <string>
-#include <vector>
+#include <deque>
 
 #include <sys/select.h>
 #include <sys/types.h>
@@ -54,6 +54,7 @@ public:
     ~CONFIGPROTO();
 
     void            SetPort(uint16_t port) { m_port = port; }
+    void            SetBindAddress(const std::string & address) { m_bindAddress = address; }
     void            SetSettings(const SETTINGS * settings) { m_settings = settings; }
     void            SetAdmins(ADMINS * admins) { m_admins = admins; }
     void            SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
@@ -76,6 +77,7 @@ private:
     STORE *          m_store;
 
     uint16_t         m_port;
+    std::string      m_bindAddress;
     bool             m_running;
     bool             m_stopped;
     PLUGIN_LOGGER &  m_logger;
@@ -84,7 +86,9 @@ private:
     std::string      m_errorStr;
 
     BASE_PARSER::REGISTRY m_registry;
-    std::vector<STG::Conn *> m_conns;
+    std::deque<STG::Conn *> m_conns;
+
+    bool Bind();
 
     void RegisterParsers();
 

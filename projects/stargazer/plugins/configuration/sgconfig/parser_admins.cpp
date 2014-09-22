@@ -45,9 +45,7 @@ void GET_ADMINS::CreateAnswer()
         return;
     }
 
-    m_answer.clear();
-
-    m_answer += GetOpenTag();
+    m_answer = "<Admins>";
     ADMIN_CONF ac;
     int h = m_admins.OpenSearch();
 
@@ -63,7 +61,7 @@ void GET_ADMINS::CreateAnswer()
         m_answer += "<admin login=\"" + ac.login + "\" priv=\"" + x2str(p) + "\"/>";
     }
     m_admins.CloseSearch(h);
-    m_answer += GetCloseTag();
+    m_answer += "</Admins>";
 }
 
 int DEL_ADMIN::Start(void *, const char * el, const char ** attr)

@@ -30,55 +30,58 @@
 
 #include <pthread.h>
 
-class STG_CONFIG_SETTINGS {
-public:
-                    STG_CONFIG_SETTINGS() : errorStr(), port(0) {}
-    virtual         ~STG_CONFIG_SETTINGS() {}
-    const std::string & GetStrError() const { return errorStr; }
-    int             ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t        GetPort() const { return port; }
-private:
-    std::string errorStr;
-    uint16_t    port;
+class STG_CONFIG_SETTINGS
+{
+    public:
+        STG_CONFIG_SETTINGS() : m_port(0), m_bindAddress("0.0.0.0") {}
+        virtual ~STG_CONFIG_SETTINGS() {}
+        const std::string & GetStrError() const { return errorStr; }
+        bool ParseSettings(const MODULE_SETTINGS & s);
+        uint16_t GetPort() const { return m_port; }
+        const std::string & GetBindAddress() const { return m_bindAddress; }
+    private:
+        std::string errorStr;
+        uint16_t m_port;
+        std::string m_bindAddress;
 };
-//-----------------------------------------------------------------------------
-class STG_CONFIG : public PLUGIN {
-public:
-    STG_CONFIG();
-    virtual ~STG_CONFIG(){}
 
-    void                SetUsers(USERS * users) { config.SetUsers(users); }
-    void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
-    void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
-    void                SetStore(STORE * store) { config.SetStore(store); }
-    void                SetStgSettings(const SETTINGS * s) { config.SetSettings(s); }
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+class STG_CONFIG : public PLUGIN
+{
+    public:
+        STG_CONFIG();
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload() { return 0; }
-    bool                IsRunning() { return isRunning; }
+        void                SetUsers(USERS * users) { config.SetUsers(users); }
+        void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
+        void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
+        void                SetStore(STORE * store) { config.SetStore(store); }
+        void                SetStgSettings(const SETTINGS * s) { config.SetSettings(s); }
+        void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
+        int                 ParseSettings();
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return "Stg Configurator v. 2.0"; }
-    uint16_t            GetStartPosition() const { return 20; }
-    uint16_t            GetStopPosition() const { return 20; }
+        int                 Start();
+        int                 Stop();
+        int                 Reload() { return 0; }
+        bool                IsRunning() { return isRunning; }
 
-private:
-    STG_CONFIG(const STG_CONFIG & rvalue);
-    STG_CONFIG & operator=(const STG_CONFIG & rvalue);
+        const std::string & GetStrError() const { return errorStr; }
+        std::string         GetVersion() const { return "Stg Configurator v. 2.0"; }
+        uint16_t            GetStartPosition() const { return 20; }
+        uint16_t            GetStopPosition() const { return 20; }
 
-    static void *       Run(void *);
+    private:
+        STG_CONFIG(const STG_CONFIG & rvalue);
+        STG_CONFIG & operator=(const STG_CONFIG & rvalue);
 
-    mutable std::string errorStr;
-    STG_CONFIG_SETTINGS stgConfigSettings;
-    pthread_t           thread;
-    bool                nonstop;
-    bool                isRunning;
-    PLUGIN_LOGGER       logger;
-    CONFIGPROTO         config;
-    MODULE_SETTINGS     settings;
+        static void *       Run(void *);
+
+        mutable std::string errorStr;
+        STG_CONFIG_SETTINGS stgConfigSettings;
+        pthread_t           thread;
+        bool                nonstop;
+        bool                isRunning;
+        PLUGIN_LOGGER       logger;
+        CONFIGPROTO         config;
+        MODULE_SETTINGS     settings;
 };
 //-----------------------------------------------------------------------------
 

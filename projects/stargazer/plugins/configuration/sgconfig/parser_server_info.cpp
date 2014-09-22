@@ -21,6 +21,9 @@
 
 #include "parser_server_info.h"
 
+#include "stg/settings.h"
+#include "stg/users.h"
+#include "stg/tariffs.h"
 #include "stg/common.h"
 #include "stg/version.h"
 #include "stg/const.h"
@@ -44,16 +47,16 @@ void GET_SERVER_INFO::CreateAnswer()
                        utsn.machine + " " +
                        utsn.nodename;
 
-    answer = GetOpenTag() + "<version value=\"" + SERVER_VERSION + "\"/>" +
-             "<tariff_num value=\"" + x2str(tariffs.Count()) + "\"/>" +
-             "<tariff value=\"2\"/>" +
-             "<user_num value=\"" + x2str(users.Count()) + "\"/>" +
-             "<uname value=\"" + name + "\"/>" +
-             "<dir_num value=\"" + x2str(DIR_NUM) + "\"/>" +
-             "<day_fee value=\"" + x2str(settings.GetDayFee()) + "\"/>";
+    m_answer = GetOpenTag() + "<version value=\"" + SERVER_VERSION + "\"/>" +
+               "<tariff_num value=\"" + x2str(m_tariffs.Count()) + "\"/>" +
+               "<tariff value=\"2\"/>" +
+               "<user_num value=\"" + x2str(m_users.Count()) + "\"/>" +
+               "<uname value=\"" + name + "\"/>" +
+               "<dir_num value=\"" + x2str(DIR_NUM) + "\"/>" +
+               "<day_fee value=\"" + x2str(m_settings.GetDayFee()) + "\"/>";
 
     for (size_t i = 0; i< DIR_NUM; i++)
-        answer += "<dir_name_" + x2str(i) + " value=\"" + Encode12str(settings.GetDirName(i)) + "\"/>";
+        m_answer += "<dir_name_" + x2str(i) + " value=\"" + Encode12str(m_settings.GetDirName(i)) + "\"/>";
 
-    answer += GetCloseTag();
+    m_answer += GetCloseTag();
 }

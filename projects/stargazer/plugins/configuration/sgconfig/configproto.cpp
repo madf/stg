@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <vector>
 #include <csignal>
 #include <cstring>
 #include <cerrno>
@@ -43,30 +44,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#include <netdb.h>
 
 namespace SP = STG::PARSER;
-
-namespace
-{
-
-struct IsFinished : public std::unary_function<STG::Conn *, bool>
-{
-    result_type operator()(const argument_type & arg)
-    {
-        return (arg->IsDone() && !arg->IsKeepAlive()) || !arg->IsOk();
-    }
-};
-
-struct RemoveConn : public std::unary_function<STG::Conn *, void>
-{
-    result_type operator()(const argument_type & arg)
-    {
-        delete arg;
-    }
-};
-
-}
 
 CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
     : m_settings(NULL),
@@ -74,6 +54,7 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       m_tariffs(NULL),
       m_users(NULL),
       m_port(0),
+      m_bindAddress("0.0.0.0"),
       m_running(false),
       m_stopped(true),
       m_logger(l),
@@ -83,7 +64,9 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
 
 CONFIGPROTO::~CONFIGPROTO()
 {
-    std::for_each(m_conns.begin(), m_conns.end(), RemoveConn());
+    std::deque<STG::Conn *>::iterator it;
+    for (it = m_conns.begin(); it != m_conns.end(); ++it)
+        delete *it;
 }
 
 int CONFIGPROTO::Prepare()
@@ -105,11 +88,6 @@ int CONFIGPROTO::Prepare()
         return -1;
     }
 
-    struct sockaddr_in listenAddr;
-    listenAddr.sin_family = PF_INET;
-    listenAddr.sin_port = htons(m_port);
-    listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0"); // TODO: arbitrary address
-
     int dummy = 1;
 
     if (setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEADDR, &dummy, 4) != 0)
@@ -119,12 +97,8 @@ int CONFIGPROTO::Prepare()
         return -1;
     }
 
-    if (bind(m_listenSocket, reinterpret_cast<sockaddr *>(&listenAddr), sizeof(listenAddr)) == -1)
-    {
-        m_errorStr = std::string("Cannot bind listen socket: '") + strerror(errno) + "'.";
-        m_logger(m_errorStr);
+    if (!Bind())
         return -1;
-    }
 
     if (listen(m_listenSocket, 64) == -1) // TODO: backlog length
     {
@@ -177,17 +151,55 @@ void CONFIGPROTO::Run()
         if (res < 0)
         {
             m_errorStr = std::string("'select' is failed: '") + strerror(errno) + "'.";
+            printfd(__FILE__, "%s\n", m_errorStr.c_str());
             m_logger(m_errorStr);
             break;
         }
         if (!m_running)
             break;
         if (res > 0)
+        {
+            printfd(__FILE__, "Something happend - received %d events.\n", res);
             HandleEvents(fds);
+        }
 
         CleanupConns();
     }
     m_stopped = true;
+}
+
+bool CONFIGPROTO::Bind()
+{
+    const hostent * he = gethostbyname(m_bindAddress.c_str());
+    if (he == NULL)
+    {
+        m_errorStr = "Failed to resolve name '" + m_bindAddress + "': '" + hstrerror(h_errno) + "'.";
+        printfd(__FILE__, "%s\n", m_errorStr.c_str());
+        m_logger(m_errorStr);
+        return false;
+    }
+
+    char ** ptr = he->h_addr_list;
+    while (*ptr != NULL)
+    {
+        struct sockaddr_in listenAddr;
+        listenAddr.sin_family = PF_INET;
+        listenAddr.sin_port = htons(m_port);
+        listenAddr.sin_addr.s_addr = *reinterpret_cast<in_addr_t *>(*ptr);
+
+        printfd(__FILE__, "Trying to bind to %s:%d\n", inet_ntostring(listenAddr.sin_addr.s_addr).c_str(), m_port);
+
+        if (bind(m_listenSocket, reinterpret_cast<sockaddr *>(&listenAddr), sizeof(listenAddr)) == 0)
+            return true;
+
+        m_errorStr = std::string("Cannot bind listen socket: '") + strerror(errno) + "'.";
+        printfd(__FILE__, "%s\n", m_errorStr.c_str());
+        m_logger(m_errorStr);
+
+        ++ptr;
+    }
+
+    return false;
 }
 
 void CONFIGPROTO::RegisterParsers()
@@ -227,26 +239,40 @@ void CONFIGPROTO::RegisterParsers()
 int CONFIGPROTO::MaxFD() const
 {
     int maxFD = m_listenSocket;
-    for (size_t i = 0; i < m_conns.size(); ++i)
-        if (maxFD < m_conns[i]->Sock())
-            maxFD = m_conns[i]->Sock();
+    std::deque<STG::Conn *>::const_iterator it;
+    for (it = m_conns.begin(); it != m_conns.end(); ++it)
+        if (maxFD < (*it)->Sock())
+            maxFD = (*it)->Sock();
     return maxFD;
 }
 
 void CONFIGPROTO::BuildFDSet(fd_set & fds) const
 {
-    for (size_t i = 0; i < m_conns.size(); ++i)
-        FD_SET(m_conns[i]->Sock(), &fds);
+    printfd(__FILE__, "Building fd set for %d connections.\n", m_conns.size());
+    FD_ZERO(&fds);
+    FD_SET(m_listenSocket, &fds);
+    std::deque<STG::Conn *>::const_iterator it;
+    for (it = m_conns.begin(); it != m_conns.end(); ++it)
+        FD_SET((*it)->Sock(), &fds);
 }
 
 void CONFIGPROTO::CleanupConns()
 {
-    std::vector<STG::Conn *>::iterator pos;
-    pos = std::remove_if(m_conns.begin(), m_conns.end(), IsFinished());
-    if (pos == m_conns.end())
-        return;
-    std::for_each(pos, m_conns.end(), RemoveConn());
+    size_t old = m_conns.size();
+
+    std::deque<STG::Conn *>::iterator pos;
+    for (pos = m_conns.begin(); pos != m_conns.end(); ++pos)
+        if (((*pos)->IsDone() && !(*pos)->IsKeepAlive()) || !(*pos)->IsOk())
+        {
+            delete *pos;
+            *pos = NULL;
+        }
+
+    pos = std::remove(m_conns.begin(), m_conns.end(), static_cast<STG::Conn *>(NULL));
     m_conns.erase(pos, m_conns.end());
+
+    if (m_conns.size() < old)
+        printfd(__FILE__, "Cleaned up %d connections.\n", old - m_conns.size());
 }
 
 void CONFIGPROTO::HandleEvents(const fd_set & fds)
@@ -255,14 +281,20 @@ void CONFIGPROTO::HandleEvents(const fd_set & fds)
         AcceptConnection();
     else
     {
-        for (size_t i = 0; i < m_conns.size(); ++i)
-            if (FD_ISSET(m_conns[i]->Sock(), &fds))
-                m_conns[i]->Read();
+        std::deque<STG::Conn *>::iterator it;
+        for (it = m_conns.begin(); it != m_conns.end(); ++it)
+            if (FD_ISSET((*it)->Sock(), &fds))
+            {
+                printfd(__FILE__, "Reading data from %s:%d.\n", inet_ntostring((*it)->IP()).c_str(), (*it)->Port());
+                (*it)->Read();
+            }
     }
 }
 
 void CONFIGPROTO::AcceptConnection()
 {
+    printfd(__FILE__, "Accepting new connection.\n");
+
     struct sockaddr_in outerAddr;
     socklen_t outerAddrLen(sizeof(outerAddr));
     int sock = accept(m_listenSocket, reinterpret_cast<sockaddr *>(&outerAddr), &outerAddrLen);
@@ -270,7 +302,7 @@ void CONFIGPROTO::AcceptConnection()
     if (sock < 0)
     {
         m_errorStr = std::string("Failed to accept connection: '") + strerror(errno) + "'.";
-        printfd(__FILE__, "%s", m_errorStr.c_str());
+        printfd(__FILE__, "%s\n", m_errorStr.c_str());
         m_logger(m_errorStr);
         return;
     }
@@ -280,7 +312,7 @@ void CONFIGPROTO::AcceptConnection()
     try
     {
         m_conns.push_back(new STG::Conn(m_registry, *m_admins, sock, outerAddr));
-        printfd(__FILE__, "New connection from %s:%d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port());
+        printfd(__FILE__, "New connection from %s:%d. Total connections: %d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port(), m_conns.size());
     }
     catch (const STG::Conn::Error & error)
     {
