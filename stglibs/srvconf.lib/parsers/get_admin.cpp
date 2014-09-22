@@ -105,7 +105,7 @@ if (strcasecmp(el, "admin") == 0)
             {
             parsingAnswer = true;
             for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
-                if (!TryParse(propertyParsers, ToLower(*pos), pos, *pos))
+                if (!TryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
                     {
                     error = std::string("Invalid parameter '") + *pos + "'.";
                     break;
