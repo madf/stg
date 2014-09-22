@@ -60,13 +60,7 @@ appendResetable(stream, "passiveCost", data.tariffConf.passiveCost);
 appendResetable(stream, "free", data.tariffConf.free);
 
 if (!data.tariffConf.traffType.empty())
-    switch (data.tariffConf.traffType.data())
-        {
-        case TRAFF_UP: stream << "<traffType value=\"up\"/>"; break;
-        case TRAFF_DOWN: stream << "<traffType value=\"down\"/>"; break;
-        case TRAFF_UP_DOWN: stream << "<traffType value=\"up+down\"/>"; break;
-        case TRAFF_MAX: stream << "<traffType value=\"max\"/>"; break;
-        }
+    stream << "<traffType value=\"" + TARIFF::TraffTypeToString(data.tariffConf.traffType.data()) + "\"/>";
 
 if (!data.tariffConf.period.empty())
     switch (data.tariffConf.period.data())

@@ -78,17 +78,7 @@ bool GetTraffType(const char ** attr, T & value, const std::string & attrName)
 {
 if (!CheckValue(attr, attrName))
     return false;
-std::string type(attr[1]);
-if (type == "up")
-    value = TRAFF_UP;
-else if (type == "down")
-    value = TRAFF_DOWN;
-else if (type == "up+down")
-    value = TRAFF_UP_DOWN;
-else if (type == "max")
-    value = TRAFF_MAX;
-else
-    return false;
+value = TARIFF::StringToTraffType(attr[1]);
 return true;
 }
 

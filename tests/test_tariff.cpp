@@ -22,7 +22,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -62,7 +62,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -77,7 +77,7 @@ namespace tut
         td.dirPrice[0].noDiscount = 0;
         TARIFF_IMPL tariff(td);
 
-        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TRAFF_UP);
+        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TARIFF::TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for UP", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for UP", tariff.GetTraffByType(4, 2), 4);
@@ -86,10 +86,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 1 for UP", tariff.GetTraffByType(1, 5), 1);
         ensure_equals("traffByType(0, 6) = 0 for UP", tariff.GetTraffByType(0, 6), 0);
 
-        td.tariffConf.traffType = TRAFF_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TRAFF_DOWN);
+        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_DOWN);
         ensure_equals("traffByType(6, 0) = 0 for DOWN", tariff.GetTraffByType(6, 0), 0);
         ensure_equals("traffByType(5, 1) = 1 for DOWN", tariff.GetTraffByType(5, 1), 1);
         ensure_equals("traffByType(4, 2) = 2 for DOWN", tariff.GetTraffByType(4, 2), 2);
@@ -98,10 +98,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for DOWN", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for DOWN", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TRAFF_MAX;
+        td.tariffConf.traffType = TARIFF::TRAFF_MAX;
         tariff = td;
 
-        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TRAFF_MAX);
+        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TARIFF::TRAFF_MAX);
         ensure_equals("traffByType(6, 0) = 6 for MAX", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for MAX", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for MAX", tariff.GetTraffByType(4, 2), 4);
@@ -110,10 +110,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for MAX", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for MAX", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TRAFF_UP_DOWN);
+        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_UP_DOWN);
         ensure_equals("traffByType(6, 0) = 6 for UP_DOWN", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 6 for UP_DOWN", tariff.GetTraffByType(5, 1), 6);
         ensure_equals("traffByType(4, 2) = 6 for UP_DOWN", tariff.GetTraffByType(4, 2), 6);
@@ -132,7 +132,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -188,7 +188,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
@@ -228,7 +228,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
@@ -243,7 +243,7 @@ namespace tut
         td.dirPrice[0].noDiscount = 0;
         TARIFF_IMPL tariff(td);
 
-        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TRAFF_UP);
+        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TARIFF::TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for UP", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for UP", tariff.GetTraffByType(4, 2), 4);
@@ -252,10 +252,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 1 for UP", tariff.GetTraffByType(1, 5), 1);
         ensure_equals("traffByType(0, 6) = 0 for UP", tariff.GetTraffByType(0, 6), 0);
 
-        td.tariffConf.traffType = TRAFF_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TRAFF_DOWN);
+        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_DOWN);
         ensure_equals("traffByType(6, 0) = 0 for DOWN", tariff.GetTraffByType(6, 0), 0);
         ensure_equals("traffByType(5, 1) = 1 for DOWN", tariff.GetTraffByType(5, 1), 1);
         ensure_equals("traffByType(4, 2) = 2 for DOWN", tariff.GetTraffByType(4, 2), 2);
@@ -264,10 +264,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for DOWN", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for DOWN", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TRAFF_MAX;
+        td.tariffConf.traffType = TARIFF::TRAFF_MAX;
         tariff = td;
 
-        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TRAFF_MAX);
+        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TARIFF::TRAFF_MAX);
         ensure_equals("traffByType(6, 0) = 6 for MAX", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for MAX", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for MAX", tariff.GetTraffByType(4, 2), 4);
@@ -276,10 +276,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for MAX", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for MAX", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TRAFF_UP_DOWN);
+        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_UP_DOWN);
         ensure_equals("traffByType(6, 0) = 6 for UP_DOWN", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 6 for UP_DOWN", tariff.GetTraffByType(5, 1), 6);
         ensure_equals("traffByType(4, 2) = 6 for UP_DOWN", tariff.GetTraffByType(4, 2), 6);
@@ -298,7 +298,7 @@ namespace tut
         TARIFF_DATA td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TRAFF_UP_DOWN;
+        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
