@@ -22,6 +22,7 @@
 #define SETTINGS_H
 
 #include <string>
+#include <vector>
 
 class SETTINGS {
 public:
