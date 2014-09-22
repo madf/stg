@@ -36,6 +36,18 @@ namespace PARSER
 class AUTH_BY : public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new AUTH_BY(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                const USERS & m_users;
+        };
+
         AUTH_BY(const ADMIN & admin, const USERS & users)
             : BASE_PARSER(admin, "GetUserAuthBy"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -47,7 +59,7 @@ class AUTH_BY : public BASE_PARSER
         void CreateAnswer();
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif

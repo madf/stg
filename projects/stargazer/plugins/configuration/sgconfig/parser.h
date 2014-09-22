@@ -28,6 +28,11 @@ class ADMIN;
 class BASE_PARSER
 {
     public:
+        struct FACTORY
+        {
+            virtual BASE_PARSER * create() = 0;
+        };
+
         BASE_PARSER(const ADMIN & admin, const std::string & t)
             : m_currAdmin(admin),
               m_depth(0),

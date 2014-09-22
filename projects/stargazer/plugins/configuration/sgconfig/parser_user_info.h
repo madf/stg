@@ -35,6 +35,18 @@ namespace PARSER
 class USER_INFO : public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new USER_INFO(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                const USERS & m_users;
+        };
+
         USER_INFO(const ADMIN & admin, const USERS & users)
             : BASE_PARSER(admin, "GetUserInfo"), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -46,7 +58,7 @@ class USER_INFO : public BASE_PARSER
         void CreateAnswer();
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif

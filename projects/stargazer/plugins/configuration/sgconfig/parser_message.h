@@ -40,6 +40,18 @@ namespace PARSER
 class SEND_MESSAGE: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, USERS & users)
+                    : m_admin(admin), m_users(users)
+                {}
+                virtual BASE_PARSER * create() { return new SEND_MESSAGE(m_admin, m_users); }
+            private:
+                const ADMIN & m_admin;
+                USERS & m_users;
+        };
+
         SEND_MESSAGE(const ADMIN & admin, USERS & users)
             : BASE_PARSER(admin, "Message"), m_users(users), m_result(res_ok), m_user(NULL) {}
         int Start(void *data, const char *el, const char **attr);
@@ -56,7 +68,7 @@ class SEND_MESSAGE: public BASE_PARSER
         void CreateAnswer();
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif

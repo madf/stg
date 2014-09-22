@@ -39,6 +39,18 @@ namespace PARSER
 class GET_ADMINS: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, const ADMINS & admins)
+                    : m_admin(admin), m_admins(admins)
+                {}
+                virtual BASE_PARSER * create() { return new GET_ADMINS(m_admin, m_admins); }
+            private:
+                const ADMIN & m_admin;
+                const ADMINS & m_admins;
+        };
+
         GET_ADMINS(const ADMIN & admin, const ADMINS & admins)
             : BASE_PARSER(admin, "GetAdmins"), m_admins(admins) {}
 
@@ -51,12 +63,24 @@ class GET_ADMINS: public BASE_PARSER
 class ADD_ADMIN: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, ADMINS & admins)
+                    : m_admin(admin), m_admins(admins)
+                {}
+                virtual BASE_PARSER * create() { return new ADD_ADMIN(m_admin, m_admins); }
+            private:
+                const ADMIN & m_admin;
+                ADMINS & m_admins;
+        };
+
         ADD_ADMIN(const ADMIN & admin, ADMINS & admins)
             : BASE_PARSER(admin, "AddAdmin"), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        std::string admin;
+        std::string m_admin;
         ADMINS & m_admins;
 
         void CreateAnswer();
@@ -65,12 +89,24 @@ class ADD_ADMIN: public BASE_PARSER
 class DEL_ADMIN: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, ADMINS & admins)
+                    : m_admin(admin), m_admins(admins)
+                {}
+                virtual BASE_PARSER * create() { return new DEL_ADMIN(m_admin, m_admins); }
+            private:
+                const ADMIN & m_admin;
+                ADMINS & m_admins;
+        };
+
         DEL_ADMIN(const ADMIN & admin, ADMINS & admins)
             : BASE_PARSER(admin, "DelAdmin"), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        std::string admin;
+        std::string m_admin;
         ADMINS & m_admins;
 
         void CreateAnswer();
@@ -79,6 +115,18 @@ class DEL_ADMIN: public BASE_PARSER
 class CHG_ADMIN: public BASE_PARSER
 {
     public:
+        class FACTORY : public BASE_PARSER::FACTORY
+        {
+            public:
+                FACTORY(const ADMIN & admin, ADMINS & admins)
+                    : m_admin(admin), m_admins(admins)
+                {}
+                virtual BASE_PARSER * create() { return new CHG_ADMIN(m_admin, m_admins); }
+            private:
+                const ADMIN & m_admin;
+                ADMINS & m_admins;
+        };
+
         CHG_ADMIN(const ADMIN & admin, ADMINS & admins)
             : BASE_PARSER(admin, "ChgAdmin"), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
@@ -92,7 +140,7 @@ class CHG_ADMIN: public BASE_PARSER
         void CreateAnswer();
 };
 
-}
-}
+} // namespace PARSER
+} // namespace STG
 
 #endif

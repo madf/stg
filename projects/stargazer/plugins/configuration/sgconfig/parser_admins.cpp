@@ -65,7 +65,7 @@ int DEL_ADMIN::Start(void *, const char * el, const char ** attr)
 {
     if (strcasecmp(el, m_tag.c_str()) == 0)
     {
-        admin = attr[1];
+        m_admin = attr[1];
         return 0;
     }
     return -1;
@@ -73,7 +73,7 @@ int DEL_ADMIN::Start(void *, const char * el, const char ** attr)
 
 void DEL_ADMIN::CreateAnswer()
 {
-    if (m_admins.Del(admin, &m_currAdmin) == 0)
+    if (m_admins.Del(m_admin, &m_currAdmin) == 0)
         m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
         m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.GetStrError() + "\"/>";
@@ -83,7 +83,7 @@ int ADD_ADMIN::Start(void *, const char *el, const char **attr)
 {
     if (strcasecmp(el, m_tag.c_str()) == 0)
     {
-        admin = attr[1];
+        m_admin = attr[1];
         return 0;
     }
     return -1;
@@ -91,7 +91,7 @@ int ADD_ADMIN::Start(void *, const char *el, const char **attr)
 
 void ADD_ADMIN::CreateAnswer()
 {
-    if (m_admins.Add(admin, &m_currAdmin) == 0)
+    if (m_admins.Add(m_admin, &m_currAdmin) == 0)
         m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
         m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.GetStrError() + "\"/>";
