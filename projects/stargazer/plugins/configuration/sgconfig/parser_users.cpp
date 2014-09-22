@@ -177,7 +177,10 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
 int GET_USERS::Start(void *, const char * el, const char ** attr)
 {
     if (strcasecmp(el, m_tag.c_str()) != 0)
+    {
+        printfd(__FILE__, "Got wrong tag: '%s' instead of '%s'\n", el, m_tag.c_str());
         return -1;
+    }
 
     while (attr && *attr && *(attr + 1))
     {
@@ -195,9 +198,9 @@ void GET_USERS::CreateAnswer()
     assert(h);
 
     if (m_lastUserUpdateTime > 0)
-        m_answer = "<" + m_tag + " LastUpdate=\"" + x2str(time(NULL)) + "\">";
+        m_answer = "<Users LastUpdate=\"" + x2str(time(NULL)) + "\">";
     else
-        m_answer = GetOpenTag();
+        m_answer = "<Users>";
 
     USER_PTR u;
 
@@ -206,7 +209,7 @@ void GET_USERS::CreateAnswer()
 
     m_users.CloseSearch(h);
 
-    m_answer += GetCloseTag();
+    m_answer += "</Users>";
 }
 
 int GET_USER::Start(void *, const char * el, const char ** attr)
@@ -226,7 +229,7 @@ void GET_USER::CreateAnswer()
     CONST_USER_PTR u;
 
     if (m_users.FindByName(m_login, &u))
-        m_answer = "<" + m_tag + " result=\"error\" reason=\"User not found.\"/>";
+        m_answer = "<User result=\"error\" reason=\"User not found.\"/>";
     else
         m_answer = UserToXML(*u, false, m_currAdmin.GetPriv()->userConf || m_currAdmin.GetPriv()->userPasswd);
 }

@@ -35,7 +35,7 @@ int BASE_PARSER::Start(void *, const char * el, const char **)
 //-----------------------------------------------------------------------------
 int BASE_PARSER::End(void *, const char * el)
 {
-    if (m_depth == 1)
+    if (m_depth < 2)
     {
         if (strcasecmp(el, m_tag.c_str()) != 0)
             return -1;

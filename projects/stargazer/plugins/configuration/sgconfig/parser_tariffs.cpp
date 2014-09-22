@@ -81,7 +81,7 @@ bool String2AOS(const std::string & source, A & array, size_t size, RESETABLE<F>
 
 void GET_TARIFFS::CreateAnswer()
 {
-    m_answer = GetOpenTag();
+    m_answer = "<Tariffs>";
 
     std::list<TARIFF_DATA> dataList;
     m_tariffs.GetTariffsData(&dataList);
@@ -110,7 +110,7 @@ void GET_TARIFFS::CreateAnswer()
                   "</tariff>";
         }
 
-    m_answer += GetCloseTag();
+    m_answer += "</Tariffs>";
 }
 
 int ADD_TARIFF::Start(void *, const char * el, const char ** attr)

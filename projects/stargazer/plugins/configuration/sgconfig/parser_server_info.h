@@ -25,6 +25,9 @@
 #include "parser.h"
 
 class ADMIN;
+class SETTINGS;
+class USERS;
+class TARIFFS;
 
 namespace STG
 {

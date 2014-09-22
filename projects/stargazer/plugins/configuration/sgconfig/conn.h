@@ -95,9 +95,9 @@ class Conn
 
         void * m_buffer;
         size_t m_bufferSize;
-        char m_header[sizeof(STG_HEADER)];
-        char m_login[ADM_LOGIN_LEN + 1];
-        char m_cryptoLogin[ADM_LOGIN_LEN + 1];
+        char m_header[sizeof(STG_HEADER) - 1]; // Without \0
+        char m_login[ADM_LOGIN_LEN]; // Without \0
+        char m_cryptoLogin[ADM_LOGIN_LEN]; // Without \0
         char m_data[1024];
         STG::DECRYPT_STREAM * m_stream;
 
