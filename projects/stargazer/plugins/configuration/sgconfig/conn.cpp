@@ -22,6 +22,7 @@
 
 #include "stg/admins.h"
 #include "stg/admin.h"
+#include "stg/logger.h"
 #include "stg/blowfish.h"
 #include "stg/bfstream.h"
 #include "stg/common.h"
@@ -44,7 +45,8 @@ const char Conn::OK_LOGINS[] = "OKLS";
 const char Conn::ERR_LOGINS[] = "ERLS";
 
 Conn::Conn(const BASE_PARSER::REGISTRY & registry,
-           ADMINS & admins, int sock, const sockaddr_in& addr)
+           ADMINS & admins, int sock, const sockaddr_in& addr,
+           PLUGIN_LOGGER & logger)
     : m_registry(registry),
       m_admins(admins),
       m_admin(NULL),
@@ -57,6 +59,7 @@ Conn::Conn(const BASE_PARSER::REGISTRY & registry,
       m_buffer(m_header),
       m_bufferSize(sizeof(m_header)),
       m_stream(NULL),
+      m_logger(logger),
       m_dataState(false, *this)
 {
     if (m_xmlParser == NULL)
@@ -80,16 +83,14 @@ bool Conn::Read()
     ssize_t res = read(m_sock, m_buffer, m_bufferSize);
     if (res < 0)
     {
-        printfd(__FILE__, "Failed to read data from %s:%d: '%s'.\n", inet_ntostring(IP()).c_str(), Port(), strerror(errno));
         m_state = ERROR;
-        // TODO: log it
+        Log(__FILE__, "Failed to read data from " + inet_ntostring(IP()) + ":" + x2str(Port()) + ". Reason: '" + strerror(errno) + "'");
         return false;
     }
     if (res == 0 && m_state != DATA) // EOF is ok for data.
     {
-        printfd(__FILE__, "Failed to read data from %s:%d: 'EOF'.\n", inet_ntostring(IP()).c_str(), Port());
         m_state = ERROR;
-        // TODO: log it
+        Log(__FILE__, "Failed to read data from " + inet_ntostring(IP()) + ":" + x2str(Port()) + ". Unexpected EOF.");
         return false;
     }
     m_bufferSize -= res;
@@ -101,7 +102,8 @@ bool Conn::WriteAnswer(const void* buffer, size_t size)
     ssize_t res = write(m_sock, buffer, size);
     if (res < 0)
     {
-        // TODO: log it
+        m_state = ERROR;
+        Log(__FILE__, "Failed to write data to " + inet_ntostring(IP()) + ":" + x2str(Port()) + ". Reason: '" + strerror(errno) + "'.");
         return false;
     }
     return true;
@@ -109,7 +111,7 @@ bool Conn::WriteAnswer(const void* buffer, size_t size)
 
 BASE_PARSER * Conn::GetParser(const std::string & tag) const
 {
-    BASE_PARSER::REGISTRY::const_iterator it = m_registry.find(tag);
+    BASE_PARSER::REGISTRY::const_iterator it = m_registry.find(ToLower(tag));
     if (it == m_registry.end())
         return NULL;
     return it->second->create(*m_admin);
@@ -117,7 +119,6 @@ BASE_PARSER * Conn::GetParser(const std::string & tag) const
 
 bool Conn::HandleBuffer(size_t size)
 {
-    printfd(__FILE__, "Got %d bytes. State: %s.\n", size, (m_state == DATA ? "DATA" : (m_state == HEADER ? "HEADER" : (m_state == LOGIN ? "LOGIN" : (m_state == CRYPTO_LOGIN ? "CRYPTO_LOGIN" : (m_state == DONE ? "DONE" : "ERROR"))))));
     if (m_state == DATA)
         return HandleData(size);
 
@@ -139,9 +140,8 @@ bool Conn::HandleHeader()
 {
     if (strncmp(m_header, STG_HEADER, sizeof(m_header)) != 0)
     {
-        printfd(__FILE__, "Wrong header from %s:%d.\n", inet_ntostring(IP()).c_str(), Port());
+        Log(__FILE__, "Received invalid header from " + inet_ntostring(IP()) + ":" + x2str(Port()) + ".");
         WriteAnswer(ERR_HEADER, sizeof(ERR_HEADER) - 1); // Without \0
-        // TODO: log it
         m_state = ERROR;
         return false;
     }
@@ -155,9 +155,9 @@ bool Conn::HandleLogin()
 {
     if (m_admins.Find(m_login, &m_admin)) // ADMINS::Find returns true on error.
     {
-        printfd(__FILE__, "Wrong login ('%s') from %s:%d.\n", m_login, inet_ntostring(IP()).c_str(), Port());
+        std::string login(m_login, strnlen(m_login, sizeof(m_login)));
+        Log(__FILE__, "Received invalid login '" + ToPrintable(login) + "' from " + inet_ntostring(IP()) + ":" + x2str(Port()) + ".");
         WriteAnswer(ERR_LOGIN, sizeof(ERR_LOGIN) - 1); // Without \0
-        // TODO: log it
         m_state = ERROR;
         return false;
     }
@@ -177,9 +177,8 @@ bool Conn::HandleCryptoLogin()
 
     if (strncmp(m_login, login, sizeof(login)) != 0)
     {
-        printfd(__FILE__, "Wrong password from %s:%d: '%s' != '%s'.\n", inet_ntostring(IP()).c_str(), Port(), login, m_login);
+        Log(__FILE__, "Attempt to connect with wrong password from " + m_admin->GetLogin() + "@" + inet_ntostring(IP()) + ":" + x2str(Port()) + ".");
         WriteAnswer(ERR_LOGINS, sizeof(ERR_LOGINS) - 1); // Without \0
-        // TODO: log it
         m_state = ERROR;
         return false;
     }
@@ -209,7 +208,7 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
 
     if (XML_Parse(state.conn.m_xmlParser, xml, length, state.final) == XML_STATUS_ERROR)
     {
-        // TODO: log it
+        state.conn.Log(__FILE__, "Received invalid XML from " + state.conn.m_admin->GetLogin() + "@" + inet_ntostring(state.conn.IP()) + ":" + x2str(state.conn.Port()) + ".");
         printfd(__FILE__, "XML parse error at line %d, %d: %s. Is final: %d\n",
                   static_cast<int>(XML_GetCurrentLineNumber(state.conn.m_xmlParser)),
                   static_cast<int>(XML_GetCurrentColumnNumber(state.conn.m_xmlParser)),
@@ -223,7 +222,7 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
     {
         if (!state.conn.WriteResponse())
         {
-            // TODO: log it
+            state.conn.Log(__FILE__, "Failed to write response to " + state.conn.m_admin->GetLogin() + "@" + inet_ntostring(state.conn.IP()) + ":" + x2str(state.conn.Port()) + ".");
             state.conn.m_state = ERROR;
             return false;
         }
@@ -243,13 +242,10 @@ void Conn::ParseXMLStart(void * data, const char * el, const char ** attr)
 
     if (conn.m_parser == NULL)
     {
-        printfd(__FILE__, "Failed to find a suitable parser for '%s'.\n", el);
-        // TODO: log it
+        conn.Log(__FILE__, "Received unknown command '" + std::string(el) + "' from " + conn.m_admin->GetLogin() + "@" + inet_ntostring(conn.IP()) + ":" + x2str(conn.Port()) + ".");
         conn.m_state = ERROR;
         return;
     }
-    else
-        printfd(__FILE__, "Using parser '%s'.\n", conn.m_parser->GetTag().c_str());
 
     conn.m_parser->Start(data, el, attr);
 }
@@ -261,7 +257,7 @@ void Conn::ParseXMLEnd(void * data, const char * el)
 
     if (conn.m_parser == NULL)
     {
-        // TODO: log it
+        // No need to log it.
         conn.m_state = ERROR;
         return;
     }
@@ -277,7 +273,7 @@ bool Conn::WriteResponse()
         answer = m_parser->GetAnswer();
     else
         answer = "<Error result=\"Unknown command.\"/>";
-    printfd(__FILE__, "Writing %d bytes of answer: '%s'\n", answer.length(), answer.c_str());
+    printfd(__FILE__, "Writing %d bytes of answer.\n", answer.length());
     stream.Put(answer.c_str(), answer.length() + 1 /* including \0 */, true /* final */);
     return stream.IsOk();
 }
@@ -287,4 +283,10 @@ bool Conn::WriteCallback(const void * block, size_t size, void * data)
     assert(data != NULL);
     Conn & conn = *static_cast<Conn *>(data);
     return WriteAll(conn.m_sock, block, size);;
+}
+
+void Conn::Log(const char * file, const std::string & message)
+{
+    printfd(file, "%s\n", message.c_str());
+    m_logger(message);
 }

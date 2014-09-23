@@ -26,7 +26,6 @@
 #include "stg/user_property.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
-#include "stg/common.h"
 
 #include <cstdio>
 #include <cassert>

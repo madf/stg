@@ -158,10 +158,7 @@ void CONFIGPROTO::Run()
         if (!m_running)
             break;
         if (res > 0)
-        {
-            printfd(__FILE__, "Something happend - received %d events.\n", res);
             HandleEvents(fds);
-        }
 
         CleanupConns();
     }
@@ -248,7 +245,6 @@ int CONFIGPROTO::MaxFD() const
 
 void CONFIGPROTO::BuildFDSet(fd_set & fds) const
 {
-    printfd(__FILE__, "Building fd set for %d connections.\n", m_conns.size());
     FD_ZERO(&fds);
     FD_SET(m_listenSocket, &fds);
     std::deque<STG::Conn *>::const_iterator it;
@@ -258,8 +254,6 @@ void CONFIGPROTO::BuildFDSet(fd_set & fds) const
 
 void CONFIGPROTO::CleanupConns()
 {
-    size_t old = m_conns.size();
-
     std::deque<STG::Conn *>::iterator pos;
     for (pos = m_conns.begin(); pos != m_conns.end(); ++pos)
         if (((*pos)->IsDone() && !(*pos)->IsKeepAlive()) || !(*pos)->IsOk())
@@ -270,9 +264,6 @@ void CONFIGPROTO::CleanupConns()
 
     pos = std::remove(m_conns.begin(), m_conns.end(), static_cast<STG::Conn *>(NULL));
     m_conns.erase(pos, m_conns.end());
-
-    if (m_conns.size() < old)
-        printfd(__FILE__, "Cleaned up %d connections.\n", old - m_conns.size());
 }
 
 void CONFIGPROTO::HandleEvents(const fd_set & fds)
@@ -284,17 +275,12 @@ void CONFIGPROTO::HandleEvents(const fd_set & fds)
         std::deque<STG::Conn *>::iterator it;
         for (it = m_conns.begin(); it != m_conns.end(); ++it)
             if (FD_ISSET((*it)->Sock(), &fds))
-            {
-                printfd(__FILE__, "Reading data from %s:%d.\n", inet_ntostring((*it)->IP()).c_str(), (*it)->Port());
                 (*it)->Read();
-            }
     }
 }
 
 void CONFIGPROTO::AcceptConnection()
 {
-    printfd(__FILE__, "Accepting new connection.\n");
-
     struct sockaddr_in outerAddr;
     socklen_t outerAddrLen(sizeof(outerAddr));
     int sock = accept(m_listenSocket, reinterpret_cast<sockaddr *>(&outerAddr), &outerAddrLen);
@@ -311,7 +297,7 @@ void CONFIGPROTO::AcceptConnection()
 
     try
     {
-        m_conns.push_back(new STG::Conn(m_registry, *m_admins, sock, outerAddr));
+        m_conns.push_back(new STG::Conn(m_registry, *m_admins, sock, outerAddr, m_logger));
         printfd(__FILE__, "New connection from %s:%d. Total connections: %d\n", inet_ntostring(m_conns.back()->IP()).c_str(), m_conns.back()->Port(), m_conns.size());
     }
     catch (const STG::Conn::Error & error)
@@ -320,9 +306,3 @@ void CONFIGPROTO::AcceptConnection()
         m_logger(std::string("Failed to create new client connection: '") + error.what() + "'.");
     }
 }
-/*
-void CONFIGPROTO::WriteLogAccessFailed(uint32_t ip)
-{
-    m_logger("Admin's connection failed. IP %s", inet_ntostring(ip).c_str());
-}
-*/

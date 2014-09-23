@@ -26,6 +26,7 @@
 
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
+#include "stg/common.h"
 #include "stg/resetable.h"
 
 #include <string>
@@ -50,7 +51,7 @@ class GET_USERS: public BASE_PARSER
                 FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USERS(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 USERS & m_users;
         };
@@ -78,7 +79,7 @@ class GET_USER: public BASE_PARSER
                 FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 const USERS & m_users;
         };
@@ -105,7 +106,7 @@ class ADD_USER: public BASE_PARSER
                 FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 USERS & m_users;
         };
@@ -134,7 +135,7 @@ class CHG_USER: public BASE_PARSER
                 {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_USER(admin, m_users, m_store, m_tariffs); }
                 static void Register(REGISTRY & registry, USERS & users, STORE & store, const TARIFFS & tariffs)
-                { registry[tag] = new FACTORY(users, store, tariffs); }
+                { registry[ToLower(tag)] = new FACTORY(users, store, tariffs); }
             private:
                 USERS & m_users;
                 STORE & m_store;
@@ -180,7 +181,7 @@ class DEL_USER: public BASE_PARSER
                 FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 USERS & m_users;
         };
@@ -209,7 +210,7 @@ class CHECK_USER: public BASE_PARSER
                 FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHECK_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 const USERS & m_users;
         };

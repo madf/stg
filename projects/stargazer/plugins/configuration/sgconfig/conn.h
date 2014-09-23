@@ -39,6 +39,7 @@ class USERS;
 class TARIFFS;
 class ADMIN;
 class BASE_PARSER;
+class PLUGIN_LOGGER;
 
 namespace STG
 {
@@ -54,7 +55,8 @@ class Conn
         };
 
         Conn(const BASE_PARSER::REGISTRY & registry,
-             ADMINS & admins, int sock, const sockaddr_in& addr);
+             ADMINS & admins, int sock, const sockaddr_in& addr,
+             PLUGIN_LOGGER & logger);
         ~Conn();
 
         int Sock() const { return m_sock; }
@@ -100,6 +102,7 @@ class Conn
         char m_cryptoLogin[ADM_LOGIN_LEN]; // Without \0
         char m_data[1024];
         STG::DECRYPT_STREAM * m_stream;
+        PLUGIN_LOGGER &  m_logger;
 
         BASE_PARSER * GetParser(const std::string & tag) const;
 
@@ -112,6 +115,8 @@ class Conn
 
         bool WriteAnswer(const void* buffer, size_t size);
         bool WriteResponse();
+
+        void Log(const char * file, const std::string & message);
 
         struct DataState
         {

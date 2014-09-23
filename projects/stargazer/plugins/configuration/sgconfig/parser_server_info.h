@@ -24,6 +24,8 @@
 
 #include "parser.h"
 
+#include "stg/common.h"
+
 class ADMIN;
 class SETTINGS;
 class USERS;
@@ -43,7 +45,7 @@ class GET_SERVER_INFO: public BASE_PARSER {
                     : m_settings(settings), m_users(users), m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
                 static void Register(REGISTRY & registry, const SETTINGS & settings, const USERS & users, const TARIFFS & tariffs)
-                { registry[tag] = new FACTORY(settings, users, tariffs); }
+                { registry[ToLower(tag)] = new FACTORY(settings, users, tariffs); }
             private:
                 const SETTINGS & m_settings;
                 const USERS & m_users;
