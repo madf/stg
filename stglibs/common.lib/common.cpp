@@ -1099,3 +1099,16 @@ while (done < size)
     }
 return true;
 }
+
+std::string ToPrintable(const std::string & src)
+{
+    std::string dest;
+
+    for (size_t i = 0; i < src.size(); ++i)
+        if (std::isprint(src[i]))
+            dest += src[i];
+        else
+            dest += "\\" + x2str(src[i]);
+
+    return dest;
+}

@@ -23,6 +23,8 @@
 
 #include "parser.h"
 
+#include "stg/common.h"
+
 #include <string>
 
 class USERS;
@@ -41,7 +43,7 @@ class USER_INFO : public BASE_PARSER
                 FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new USER_INFO(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 const USERS & m_users;
         };

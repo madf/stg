@@ -23,7 +23,6 @@
 
 #include "stg/tariffs.h"
 #include "stg/users.h"
-#include "stg/common.h"
 #include "stg/resetable.h"
 
 #include <cstdio> // snprintf

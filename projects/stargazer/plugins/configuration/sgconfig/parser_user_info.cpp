@@ -22,7 +22,6 @@
 
 #include "stg/users.h"
 #include "stg/user.h"
-#include "stg/common.h"
 
 #include <strings.h> // strcasecmp
 

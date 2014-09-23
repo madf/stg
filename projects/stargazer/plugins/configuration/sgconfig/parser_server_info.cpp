@@ -24,7 +24,6 @@
 #include "stg/settings.h"
 #include "stg/users.h"
 #include "stg/tariffs.h"
-#include "stg/common.h"
 #include "stg/version.h"
 #include "stg/const.h"
 

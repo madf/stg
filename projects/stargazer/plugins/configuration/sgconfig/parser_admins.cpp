@@ -22,7 +22,6 @@
 #include "parser_admins.h"
 
 #include "stg/admins.h"
-#include "stg/common.h"
 
 #include <strings.h> // strcasecmp
 

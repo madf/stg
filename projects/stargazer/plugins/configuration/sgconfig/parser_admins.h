@@ -24,6 +24,7 @@
 
 #include "parser.h"
 
+#include "stg/common.h"
 #include "stg/resetable.h"
 
 #include <string>
@@ -45,7 +46,7 @@ class GET_ADMINS: public BASE_PARSER
                 FACTORY(const ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_ADMINS(admin, m_admins); }
                 static void Register(REGISTRY & registry, const ADMINS & admins)
-                { registry[tag] = new FACTORY(admins); }
+                { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
                 const ADMINS & m_admins;
         };
@@ -70,7 +71,7 @@ class ADD_ADMIN: public BASE_PARSER
                 FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
-                { registry[tag] = new FACTORY(admins); }
+                { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
                 ADMINS & m_admins;
         };
@@ -97,7 +98,7 @@ class DEL_ADMIN: public BASE_PARSER
                 FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
-                { registry[tag] = new FACTORY(admins); }
+                { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
                 ADMINS & m_admins;
         };
@@ -124,7 +125,7 @@ class CHG_ADMIN: public BASE_PARSER
                 FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
-                { registry[tag] = new FACTORY(admins); }
+                { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
                 ADMINS & m_admins;
         };

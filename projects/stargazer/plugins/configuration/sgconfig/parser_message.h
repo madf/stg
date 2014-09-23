@@ -25,6 +25,7 @@
 #include "parser.h"
 
 #include "stg/message.h"
+#include "stg/common.h"
 
 #include <vector>
 #include <string>
@@ -46,7 +47,7 @@ class SEND_MESSAGE: public BASE_PARSER
                 FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new SEND_MESSAGE(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
-                { registry[tag] = new FACTORY(users); }
+                { registry[ToLower(tag)] = new FACTORY(users); }
             private:
                 USERS & m_users;
         };

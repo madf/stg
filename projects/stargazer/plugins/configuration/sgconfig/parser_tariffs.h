@@ -25,6 +25,7 @@
 #include "parser.h"
 
 #include "stg/tariff_conf.h"
+#include "stg/common.h"
 
 #include <string>
 
@@ -46,7 +47,7 @@ class GET_TARIFFS: public BASE_PARSER
                 FACTORY(const TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_TARIFFS(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, const TARIFFS & tariffs)
-                { registry[tag] = new FACTORY(tariffs); }
+                { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
                 const TARIFFS & m_tariffs;
         };
@@ -71,7 +72,7 @@ class ADD_TARIFF: public BASE_PARSER
                 FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, TARIFFS & tariffs)
-                { registry[tag] = new FACTORY(tariffs); }
+                { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
                 TARIFFS & m_tariffs;
         };
@@ -98,7 +99,7 @@ class DEL_TARIFF: public BASE_PARSER
                 FACTORY(TARIFFS & tariffs, const USERS & users) : m_tariffs(tariffs), m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_TARIFF(admin, m_users, m_tariffs); }
                 static void Register(REGISTRY & registry, TARIFFS & tariffs, const USERS & users)
-                { registry[tag] = new FACTORY(tariffs, users); }
+                { registry[ToLower(tag)] = new FACTORY(tariffs, users); }
             private:
                 TARIFFS & m_tariffs;
                 const USERS & m_users;
@@ -127,7 +128,7 @@ class CHG_TARIFF: public BASE_PARSER
                 FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, TARIFFS & tariffs)
-                { registry[tag] = new FACTORY(tariffs); }
+                { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
                 TARIFFS & m_tariffs;
         };
