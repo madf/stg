@@ -69,6 +69,8 @@ class Conn
         bool IsDone() const { return m_state == DONE; }
         bool IsKeepAlive() const { return m_keepAlive; }
 
+        void SetKeepAlive() { m_keepAlive = true; }
+
     private:
 
         static const char STG_HEADER[5];
