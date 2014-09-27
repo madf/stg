@@ -54,6 +54,7 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
       m_admins(NULL),
       m_tariffs(NULL),
       m_users(NULL),
+      m_store(NULL),
       m_port(0),
       m_bindAddress("0.0.0.0"),
       m_running(false),
