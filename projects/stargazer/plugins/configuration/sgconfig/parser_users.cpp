@@ -682,6 +682,8 @@ int DEL_USER::End(void *, const char *el)
         if (!res)
             m_users.Del(u->GetLogin(), &m_currAdmin);
 
+        m_done = true;
+
         return 0;
     }
     return -1;
@@ -731,7 +733,10 @@ int CHECK_USER::Start(void *, const char *el, const char **attr)
 int CHECK_USER::End(void *, const char *el)
 {
     if (strcasecmp(el, m_tag.c_str()) == 0)
+    {
+        m_done = true;
         return 0;
+    }
     return -1;
 }
 

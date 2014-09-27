@@ -40,6 +40,7 @@ int BASE_PARSER::End(void *, const char * el)
         if (strcasecmp(el, m_tag.c_str()) != 0)
             return -1;
         CreateAnswer();
+        m_done = true;
     }
 
     --m_depth;

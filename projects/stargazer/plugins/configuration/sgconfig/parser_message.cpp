@@ -102,6 +102,7 @@ int SEND_MESSAGE::End(void *, const char *el)
         m_result = res_ok;
     }
     CreateAnswer();
+    m_done = true;
     return 0;
 }
 
