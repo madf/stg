@@ -469,50 +469,58 @@ void block2bytes(uint32_t t, char * c)
 //-----------------------------------------------------------------------------
 void DecryptBlock(void * d, const void * s, const BLOWFISH_CTX *ctx)
 {
-uint32_t a = bytes2block(s);
-uint32_t b = bytes2block(s + 4);
+const char * src = s;
+char * dest = d;
+uint32_t a = bytes2block(src);
+uint32_t b = bytes2block(src + 4);
 
 Blowfish_Decrypt(ctx, &a, &b);
 
-block2bytes(a, d);
-block2bytes(b, d + 4);
+block2bytes(a, dest);
+block2bytes(b, dest + 4);
 }
 //-----------------------------------------------------------------------------
 void EncryptBlock(void * d, const void * s, const BLOWFISH_CTX *ctx)
 {
-uint32_t a = bytes2block(s);
-uint32_t b = bytes2block(s + 4);
+const char * src = s;
+char * dest = d;
+uint32_t a = bytes2block(src);
+uint32_t b = bytes2block(src + 4);
 
 Blowfish_Encrypt(ctx, &a, &b);
 
-block2bytes(a, d);
-block2bytes(b, d + 4);
+block2bytes(a, dest);
+block2bytes(b, dest + 4);
 }
 //-----------------------------------------------------------------------------
 void DecryptString(void * d, const void * s, size_t length, const BLOWFISH_CTX * ctx)
 {
+const char * src = s;
+char * dest = d;
 size_t pos = 0;
 while (pos < length)
     {
-    DecryptBlock(d + pos, s + pos, ctx);
+    DecryptBlock(dest + pos, src + pos, ctx);
     pos += 8;
     }
 }
 //-----------------------------------------------------------------------------
 void EncryptString(void * d, const void * s, size_t length, const BLOWFISH_CTX * ctx)
 {
+const char * src = s;
+char * dest = d;
 size_t pos = 0;
 while (pos < length)
     {
     if (pos + 8 < length)
-        EncryptBlock(d + pos, s + pos, ctx);
+        EncryptBlock(dest + pos, src + pos, ctx);
     else
         {
         // Short string, use 0-padded buffer.
         char buf[8];
         memset(buf, 0, sizeof(buf));
-        memcpy(buf, s + pos, length - pos);
-        EncryptBlock(d + pos, buf, ctx);
+        memcpy(buf, src + pos, length - pos);
+        EncryptBlock(dest + pos, buf, ctx);
         }
     pos += 8;
     }
