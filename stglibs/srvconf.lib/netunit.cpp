@@ -122,7 +122,7 @@ if (!localAddress.empty())
         struct hostent * phe = gethostbyname(localAddress.c_str());
         if (phe == NULL)
             {
-            errorMsg = "DNS error.\nCan not reslove " + localAddress;
+            errorMsg = "Can not reslove '" + localAddress + "'";
             return st_dns_err;
             }
 
@@ -154,7 +154,7 @@ if (ip == INADDR_NONE)
     struct hostent * phe = gethostbyname(server.c_str());
     if (phe == NULL)
         {
-        errorMsg = "DNS error.\nCan not reslove " + server;
+        errorMsg = "Can not reslove '" + server + "'";
         return st_dns_err;
         }
 
