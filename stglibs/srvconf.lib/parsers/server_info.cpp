@@ -29,15 +29,6 @@
 
 using namespace STG;
 
-namespace
-{
-
-const size_t UNAME_LEN    = 256;
-const size_t SERV_VER_LEN = 64;
-const size_t DIRNAME_LEN  = 16;
-
-}
-
 SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     : callback(f),
       data(d),
