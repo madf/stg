@@ -55,8 +55,6 @@ extern volatile time_t stgTime;
 namespace
 {
 PLUGIN_CREATOR<AUTH_IA> iac;
-
-void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password);
 }
 
 extern "C" PLUGIN * GetPlugin();
@@ -1717,17 +1715,4 @@ int res = Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
 ip2user.erase(it);
 
 return res;
-}
-namespace
-{
-//-----------------------------------------------------------------------------
-inline
-void InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password)
-{
-unsigned char keyL[PASSWD_LEN];
-memset(keyL, 0, PASSWD_LEN);
-strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
-}
-//-----------------------------------------------------------------------------
 }
