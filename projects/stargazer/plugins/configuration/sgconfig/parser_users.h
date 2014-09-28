@@ -150,8 +150,7 @@ class CHG_USER: public BASE_PARSER
               m_users(users),
               m_store(store),
               m_tariffs(tariffs),
-              m_cashMustBeAdded(false),
-              m_res(0) {}
+              m_cashMustBeAdded(false) {}
 
         int Start(void * data, const char * el, const char ** attr);
 
@@ -166,7 +165,6 @@ class CHG_USER: public BASE_PARSER
         std::string m_cashMsg;
         std::string m_login;
         bool m_cashMustBeAdded;
-        int m_res;
 
         int ApplyChanges();
         void CreateAnswer();
