@@ -196,8 +196,8 @@ fi
 rm -f fake
 
 printf "Checking for -lexpat... "
-printf "int main() { return 0; }\n" > build_check.c
-$CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+printf "#include <expat.h>\nint main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_EXPAT=no
@@ -209,7 +209,8 @@ fi
 rm -f fake
 
 printf "Checking for -lfbclient... "
-$CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+printf "int main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -221,12 +222,13 @@ fi
 rm -f fake
 
 printf "Checking for mysql_config... "
+printf "#include <mysql.h>\nint main() { return 0; }\n" > build_check.c
 MYSQL_VERSION=`mysql_config --version 2> /dev/null`
 if [ $? != 0 ]
 then
     printf "no\n";
     printf "Checking for -lmysqlclient... "
-    $CC $CFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -lmysqlclient_r $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_MYSQLCLIENT=no
@@ -260,12 +262,13 @@ else
 fi
 
 printf "Checking for pg_config... "
+printf "#include <libpq-fe.h>\nint main() { return 0; }\n" > build_check.c
 PG_VERSION=`pg_config --version 2> /dev/null`
 if [ $? != 0 ]
 then
     printf "no\n";
     printf "Checking for -lpq... "
-    $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -299,12 +302,13 @@ else
 fi
 
 printf "Checking for xmlrpc-c-config... "
+printf "#include <xmlrpc-c/base.hpp>\nint main() { return 0; }\n" > build_check.c
 XMLRPCC_VERSION=`xmlrpc-c-config $XMLRPC_FEATURES --version 2> /dev/null`
 if [ $? != 0 ]
 then
     printf "no\n";
     printf "Checking for -lxmlrpc... "
-    $CC $CFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -lxmlrpc $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_XMLRPC=no
@@ -342,7 +346,8 @@ else
 fi
 
 printf "Checking for -lpcap... "
-$CC $CFLAGS $LDFLAGS build_check.c -lpcap -o fake > /dev/null 2> /dev/null
+printf "#include <pcap.h>\nint main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lpcap -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_PCAP=no
@@ -354,7 +359,8 @@ fi
 rm -f fake
 
 printf "Checking for -lnfnetlink... "
-$CC $CFLAGS $LDFLAGS build_check.c -lnfnetlink -o fake > /dev/null 2> /dev/null
+printf "#include <linux/netfilter.h>\nint main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lnfnetlink -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_NFNETLINK=no
@@ -366,7 +372,8 @@ fi
 rm -f fake
 
 printf "Checking for -lnetfilter_queue... "
-$CC $CFLAGS $LDFLAGS build_check.c -lnetfilter_queue -o fake > /dev/null 2> /dev/null
+printf "#include <libnetfilter_queue/libnetfilter_queue.h>\nint main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lnetfilter_queue -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_NFQ=no
@@ -383,7 +390,7 @@ then
     printf "#include <linux/types.h>\n" > build_check.c
     printf "#include <linux/netfilter_ipv4/ip_queue.h>\n" >> build_check.c
     printf "int main() { return 0; }\n" >> build_check.c
-    $CC $CFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_IP_QUEUE_H=no
@@ -402,7 +409,7 @@ rm -f build_check.c
 
 if [ "$CHECK_EXPAT" != "yes" ]
 then
-    printf "-lexpat not found!\n"
+    printf -- "-lexpat not found!\n"
     exit 1
 fi
 
