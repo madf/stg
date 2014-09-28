@@ -184,7 +184,7 @@ for (size_t i = 0; i < servicesList.size(); i++)
 return false;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service)
+bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service) const
 {
 assert(service != NULL && "Pointer to service is not null");
 
@@ -192,7 +192,7 @@ STG_LOCKER lock(&mutex);
 if (data.empty())
     return false;
 
-srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si != data.end())
     {

@@ -44,7 +44,7 @@ public:
     int Add(const SERVICE_CONF & service, const ADMIN * admin);
     int Del(const std::string & name, const ADMIN * admin);
     int Change(const SERVICE_CONF & service, const ADMIN * admin);
-    bool Find(const std::string & name, SERVICE_CONF * service);
+    bool Find(const std::string & name, SERVICE_CONF * service) const;
     bool Exists(const std::string & name) const;
     const std::string & GetStrError() const { return strError; }
 

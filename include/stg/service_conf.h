@@ -58,6 +58,11 @@ SERVICE_CONF_RES()
       cost(), payDay()
 {}
 
+SERVICE_CONF_RES(const SERVICE_CONF & rhs)
+    : name(rhs.name), comment(rhs.comment),
+      cost(rhs.cost), payDay(rhs.payDay)
+{}
+
 SERVICE_CONF_RES & operator=(const SERVICE_CONF & conf)
 {
 name = conf.name;
@@ -75,6 +80,14 @@ sc.comment = comment.data();
 sc.cost = cost.data();
 sc.payDay = payDay.data();
 return sc;
+}
+
+void Splice(const SERVICE_CONF_RES & rhs)
+{
+name.splice(rhs.name);
+comment.splice(rhs.comment);
+cost.splice(rhs.cost);
+payDay.splice(rhs.payDay);
 }
 
 RESETABLE<std::string> name;
