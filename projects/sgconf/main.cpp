@@ -120,7 +120,7 @@ return CONST_METHOD1_ADAPTER<C, A, R>(func, obj);
 
 void Version(const std::string & self)
 {
-std::cout << self << ", version: 2.0.0-alpha.\n";
+std::cout << self << ", version: 2.0.0.\n";
 }
 
 void ReadUserConfigFile(SGCONF::OPTION_BLOCK & block)
