@@ -54,7 +54,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), service));
+iterator si(find(data.begin(), data.end(), service));
 
 if (si != data.end())
     {
@@ -92,7 +92,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+iterator si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si == data.end())
     {
@@ -101,7 +101,7 @@ if (si == data.end())
     return -1;
     }
 
-std::map<int, const_srv_iter>::iterator csi;
+std::map<int, const_iterator>::iterator csi;
 csi = searchDescriptors.begin();
 while (csi != searchDescriptors.end())
     {
@@ -136,7 +136,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), service));
+iterator si(find(data.begin(), data.end(), service));
 
 if (si == data.end())
     {
@@ -192,7 +192,7 @@ STG_LOCKER lock(&mutex);
 if (data.empty())
     return false;
 
-const_srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si != data.end())
     {
@@ -212,7 +212,7 @@ if (data.empty())
     return true;
     }
 
-const_srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si != data.end())
     return true;

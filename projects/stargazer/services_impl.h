@@ -58,15 +58,15 @@ private:
     SERVICES_IMPL(const SERVICES_IMPL & rvalue);
     SERVICES_IMPL & operator=(const SERVICES_IMPL & rvalue);
 
-    typedef std::list<SERVICE_CONF>::iterator       srv_iter;
-    typedef std::list<SERVICE_CONF>::const_iterator const_srv_iter;
+    typedef std::list<SERVICE_CONF>::iterator       iterator;
+    typedef std::list<SERVICE_CONF>::const_iterator const_iterator;
 
     bool Read();
 
     std::list<SERVICE_CONF> data;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
-    mutable std::map<int, const_srv_iter> searchDescriptors;
+    mutable std::map<int, const_iterator> searchDescriptors;
     mutable unsigned int    handle;
     mutable pthread_mutex_t mutex;
     std::string             strError;
