@@ -45,8 +45,6 @@ using namespace STG;
 namespace
 {
 
-const std::string::size_type MAX_XML_CHUNK_LENGTH = 2048;
-
 struct ReadState
 {
     bool final;
