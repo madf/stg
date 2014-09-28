@@ -53,6 +53,8 @@ class STG_CONFIG : public PLUGIN
         void                SetUsers(USERS * users) { config.SetUsers(users); }
         void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
         void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
+        void                SetServices(SERVICES * services) { config.SetServices(services); }
+        void                SetCorporations(CORPORATIONS * corporations) { config.SetCorporations( corporations); }
         void                SetStore(STORE * store) { config.SetStore(store); }
         void                SetStgSettings(const SETTINGS * s) { config.SetSettings(s); }
         void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }

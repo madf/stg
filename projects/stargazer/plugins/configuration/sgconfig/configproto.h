@@ -38,6 +38,8 @@ class SETTINGS;
 class ADMINS;
 class TARIFFS;
 class USERS;
+class SERVICES;
+class CORPORATIONS;
 class STORE;
 class PLUGIN_LOGGER;
 
@@ -53,18 +55,20 @@ public:
     CONFIGPROTO(PLUGIN_LOGGER & l);
     ~CONFIGPROTO();
 
-    void            SetPort(uint16_t port) { m_port = port; }
-    void            SetBindAddress(const std::string & address) { m_bindAddress = address; }
-    void            SetSettings(const SETTINGS * settings) { m_settings = settings; }
-    void            SetAdmins(ADMINS * admins) { m_admins = admins; }
-    void            SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
-    void            SetUsers(USERS * users) { m_users = users; }
-    void            SetStore(STORE * store) { m_store = store; }
+    void SetPort(uint16_t port) { m_port = port; }
+    void SetBindAddress(const std::string & address) { m_bindAddress = address; }
+    void SetSettings(const SETTINGS * settings) { m_settings = settings; }
+    void SetAdmins(ADMINS * admins) { m_admins = admins; }
+    void SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
+    void SetUsers(USERS * users) { m_users = users; }
+    void SetServices(SERVICES * services) { m_services = services; }
+    void SetCorporations(CORPORATIONS * corporations) { m_corporations = corporations; }
+    void SetStore(STORE * store) { m_store = store; }
 
-    int             Prepare();
-    int             Stop();
+    int Prepare();
+    int Stop();
     const std::string & GetStrError() const { return m_errorStr; }
-    void            Run();
+    void Run();
 
 private:
     CONFIGPROTO(const CONFIGPROTO & rvalue);
@@ -74,6 +78,8 @@ private:
     ADMINS *         m_admins;
     TARIFFS *        m_tariffs;
     USERS *          m_users;
+    SERVICES *       m_services;
+    CORPORATIONS *   m_corporations;
     STORE *          m_store;
 
     uint16_t         m_port;
@@ -97,8 +103,6 @@ private:
     void CleanupConns();
     void HandleEvents(const fd_set & fds);
     void AcceptConnection();
-
-    //void WriteLogAccessFailed(uint32_t ip);
 };
 
 #endif //CONFIGPROTO_H
