@@ -47,8 +47,6 @@
 
 #include "settings_impl.h"
 
-using namespace std;
-
 volatile time_t stgTime = time(NULL);
 
 int main(int argc, char **argv)
@@ -60,7 +58,7 @@ STORE * toStore = NULL;
 
 SETTINGS_IMPL * settings = NULL;
 
-string modulePath;
+std::string modulePath;
 
 MODULE_SETTINGS fromStoreSettings;
 MODULE_SETTINGS toStoreSettings;
@@ -72,7 +70,7 @@ STG_MSG msg;
 TARIFF_DATA td;
 CORP_CONF cc;
 SERVICE_CONF sc;
-vector<STG_MSG_HDR> hdrs;
+std::vector<STG_MSG_HDR> hdrs;
 
 if (argc == 2)
     settings = new SETTINGS_IMPL(argv[1]);
@@ -90,8 +88,8 @@ fromStoreSettings = settings->GetSourceStoreModuleSettings();
 toStoreSettings = settings->GetDestStoreModuleSettings();
 modulePath = settings->GetModulesPath();
 
-string sourcePlugin(modulePath + "/mod_" + fromStoreSettings.moduleName + ".so");
-string destPlugin(modulePath + "/mod_" + toStoreSettings.moduleName + ".so");
+std::string sourcePlugin(modulePath + "/mod_" + fromStoreSettings.moduleName + ".so");
+std::string destPlugin(modulePath + "/mod_" + toStoreSettings.moduleName + ".so");
 
 void * src_lh = dlopen(sourcePlugin.c_str(), RTLD_NOW);
 if (!src_lh)
@@ -129,8 +127,8 @@ if (!GetDestStore)
 fromStore = GetSourceStore();
 toStore = GetDestStore();
 
-vector<string> entities;
-vector<string> ready;
+std::vector<std::string> entities;
+std::vector<std::string> ready;
 fromStore->SetSettings(fromStoreSettings);
 fromStore->ParseSettings();
 toStore->SetSettings(toStoreSettings);
@@ -156,7 +154,7 @@ if (toStore->GetAdminsList(&ready))
     return -1;
     }
 
-vector<string>::const_iterator it;
+std::vector<std::string>::const_iterator it;
 for (it = entities.begin(); it != entities.end(); ++it)
     {
     printfd(__FILE__, "\t - %s\n", it->c_str());
@@ -415,7 +413,7 @@ for (it = entities.begin(); it != entities.end(); ++it)
         delete settings;
         return -1;
         }
-    vector<STG_MSG_HDR>::iterator mit;
+    std::vector<STG_MSG_HDR>::iterator mit;
     for (mit = hdrs.begin(); mit != hdrs.end(); ++mit)
         {
         if (fromStore->GetMessage(mit->id, &msg, *it))
