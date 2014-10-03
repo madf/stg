@@ -42,14 +42,12 @@
 #include "stg/const.h"
 #include "stg/ia_packets.h"
 
-using namespace std;
-
 #define MAX_MESSAGES    (10)
 //-----------------------------------------------------------------------------
 struct STG_MESSAGE
 {
-string  msg;
-string  recvTime;
+std::string  msg;
+std::string  recvTime;
 int     type;
 };
 //-----------------------------------------------------------------------------
@@ -58,10 +56,10 @@ class WEB
 public:
     WEB();
     void Run();
-    void SetDirName(const string & dn, int n);
+    void SetDirName(const std::string & dn, int n);
     void SetRefreshPagePeriod(int p);
     void SetListenAddr(uint32_t ip);
-    void AddMessage(const string & message, int type);
+    void AddMessage(const std::string & message, int type);
     void UpdateStat(const LOADSTAT & ls);
     void Start();
 private:
@@ -76,7 +74,7 @@ private:
     pthread_t thread;
     #endif
 
-    string dirName[DIR_NUM];
+    std::string dirName[DIR_NUM];
     int res;
     int listenSocket;
     int outerSocket;
@@ -85,6 +83,6 @@ private:
     uint32_t listenWebAddr;
     LOADSTAT ls;
 
-    list<STG_MESSAGE> messages;
+    std::list<STG_MESSAGE> messages;
 };
 //-----------------------------------------------------------------------------

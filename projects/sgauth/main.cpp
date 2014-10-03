@@ -49,8 +49,6 @@ const int winKOI = 0;
 IA_CLIENT_PROT * clnp;
 WEB * web = NULL;
 
-using namespace std;
-
 time_t stgTime;
 
 //-----------------------------------------------------------------------------
@@ -61,13 +59,13 @@ void Usage()
 printf("sgauth <path_to_config>\n");
 }
 //-----------------------------------------------------------------------------
-void SetDirName(const vector<string> & dn, void *)
+void SetDirName(const std::vector<std::string> & dn, void *)
 {
 for (int j = 0; j < DIR_NUM; j++)
     {
     if (winKOI)
         {
-        string dir;
+        std::string dir;
         KOIToWin(dn[j], &dir);
         if (web)
             web->SetDirName(dir, j);
@@ -90,13 +88,13 @@ void StatusChanged(int, void *)
 {
 }
 //-----------------------------------------------------------------------------
-void ShowMessage(const string & message, int i, int, int, void *)
+void ShowMessage(const std::string & message, int i, int, int, void *)
 {
 if (web)
     web->AddMessage(message, i);
 }
 //-----------------------------------------------------------------------------
-void ShowError(const string & message, int, void *)
+void ShowError(const std::string & message, int, void *)
 {
 if (web)
      web->AddMessage(message, 0);
@@ -106,20 +104,20 @@ void CatchUSR1(int)
 {
 if (clnp->GetAuthorized())
     {
-    cout << "Connect" << endl;
+    std::cout << "Connect" << std::endl;
     clnp->Connect();
     }
 }
 //-----------------------------------------------------------------------------
 void CatchUSR2(int)
 {
-cout << "Disconnect" << endl;
+std::cout << "Disconnect" << std::endl;
 clnp->Disconnect();
 }
 //-----------------------------------------------------------------------------
 void CatchTERM(int)
 {
-cout << "Terminated" << endl;
+std::cout << "Terminated" << std::endl;
 clnp->Disconnect();
 sleep(2);
 exit(0);
