@@ -28,7 +28,7 @@ void PrintService(const STG::GET_SERVICE::INFO & info, size_t level = 0)
 {
 std::cout << Indent(level, true) << "name: " << info.name << "\n"
           << Indent(level)       << "cost: " << info.cost << "\n"
-          << Indent(level)       << "payment day: " << info.payDay << "\n"
+          << Indent(level)       << "payment day: " << static_cast<unsigned>(info.payDay) << "\n"
           << Indent(level)       << "comment: " << info.comment << "\n";
 }
 
