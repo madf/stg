@@ -54,8 +54,8 @@ depth++;
 if (depth == 1)
     ParseService(el, attr);
 
-if (depth == 2 && parsingAnswer)
-    ParseServiceParams(el, attr);
+/*if (depth == 2 && parsingAnswer)
+    ParseServiceParams(el, attr);*/
 
 return 0;
 }
@@ -86,15 +86,25 @@ if (strcasecmp(el, "service") == 0)
                 error = "Service not found.";
             }
         else
+            {
             parsingAnswer = true;
+            for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
+                if (!TryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
+                    {
+                    error = std::string("Invalid parameter '") + *pos + "' or value '" + *(pos + 1) + "'.";
+                    break;
+                    }
+                else
+                    printfd(__FILE__, "Parsed '%s' successfully.\n", *pos);
+            }
         }
     else
         parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_SERVICE::PARSER::ParseServiceParams(const char * el, const char ** attr)
+/*void GET_SERVICE::PARSER::ParseServiceParams(const char * el, const char ** attr)
 {
 if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
     error = "Invalid parameter.";
-}
+}*/

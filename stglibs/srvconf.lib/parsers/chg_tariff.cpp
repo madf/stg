@@ -55,9 +55,9 @@ std::string CHG_TARIFF::Serialize(const TARIFF_DATA_RES & data, const std::strin
 {
 std::ostringstream stream;
 
-appendResetable(stream, "fee", data.tariffConf.fee);
-appendResetable(stream, "passiveCost", data.tariffConf.passiveCost);
-appendResetable(stream, "free", data.tariffConf.free);
+appendResetableTag(stream, "fee", data.tariffConf.fee);
+appendResetableTag(stream, "passiveCost", data.tariffConf.passiveCost);
+appendResetableTag(stream, "free", data.tariffConf.free);
 
 if (!data.tariffConf.traffType.empty())
     stream << "<traffType value=\"" + TARIFF::TraffTypeToString(data.tariffConf.traffType.data()) + "\"/>";

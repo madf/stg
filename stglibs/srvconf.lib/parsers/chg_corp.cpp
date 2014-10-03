@@ -33,8 +33,8 @@ std::string CHG_CORP::Serialize(const CORP_CONF_RES & conf, const std::string & 
 {
 std::ostringstream stream;
 
-appendResetable(stream, "name", conf.name);
-appendResetable(stream, "cash", conf.cash);
+appendResetableTag(stream, "name", conf.name);
+appendResetableTag(stream, "cash", conf.cash);
 
 return stream.str();
 }

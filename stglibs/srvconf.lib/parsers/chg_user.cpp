@@ -78,30 +78,30 @@ std::ostringstream stream;
 
 // Conf
 
-appendResetable(stream, "credit", conf.credit);
-appendResetable(stream, "creditExpire", conf.creditExpire);
-appendResetable(stream, "password", conf.password);
-appendResetable(stream, "down", conf.disabled); // TODO: down -> disabled
-appendResetable(stream, "passive", conf.passive);
-appendResetable(stream, "disableDetailStat", conf.disabledDetailStat); // TODO: disable -> disabled
-appendResetable(stream, "aonline", conf.alwaysOnline); // TODO: aonline -> alwaysOnline
-appendResetable(stream, "ip", conf.ips); // TODO: ip -> ips
+appendResetableTag(stream, "credit", conf.credit);
+appendResetableTag(stream, "creditExpire", conf.creditExpire);
+appendResetableTag(stream, "password", conf.password);
+appendResetableTag(stream, "down", conf.disabled); // TODO: down -> disabled
+appendResetableTag(stream, "passive", conf.passive);
+appendResetableTag(stream, "disableDetailStat", conf.disabledDetailStat); // TODO: disable -> disabled
+appendResetableTag(stream, "aonline", conf.alwaysOnline); // TODO: aonline -> alwaysOnline
+appendResetableTag(stream, "ip", conf.ips); // TODO: ip -> ips
 
 if (!conf.nextTariff.empty())
     stream << "<tariff delayed=\"" << conf.nextTariff.data() << "\"/>";
 else if (!conf.tariffName.empty())
     stream << "<tariff now=\"" << conf.tariffName.data() << "\"/>";
 
-appendResetable(stream, "note", MaybeEncode(MaybeIconv(conf.note, encoding, "koi8-ru")));
-appendResetable(stream, "name", MaybeEncode(MaybeIconv(conf.realName, encoding, "koi8-ru"))); // TODO: name -> realName
-appendResetable(stream, "address", MaybeEncode(MaybeIconv(conf.address, encoding, "koi8-ru")));
-appendResetable(stream, "email", MaybeEncode(MaybeIconv(conf.email, encoding, "koi8-ru")));
-appendResetable(stream, "phone", MaybeEncode(MaybeIconv(conf.phone, encoding, "cp1251")));
-appendResetable(stream, "group", MaybeEncode(MaybeIconv(conf.group, encoding, "koi8-ru")));
-appendResetable(stream, "corp", conf.corp);
+appendResetableTag(stream, "note", MaybeEncode(MaybeIconv(conf.note, encoding, "koi8-ru")));
+appendResetableTag(stream, "name", MaybeEncode(MaybeIconv(conf.realName, encoding, "koi8-ru"))); // TODO: name -> realName
+appendResetableTag(stream, "address", MaybeEncode(MaybeIconv(conf.address, encoding, "koi8-ru")));
+appendResetableTag(stream, "email", MaybeEncode(MaybeIconv(conf.email, encoding, "koi8-ru")));
+appendResetableTag(stream, "phone", MaybeEncode(MaybeIconv(conf.phone, encoding, "cp1251")));
+appendResetableTag(stream, "group", MaybeEncode(MaybeIconv(conf.group, encoding, "koi8-ru")));
+appendResetableTag(stream, "corp", conf.corp);
 
 for (size_t i = 0; i < conf.userdata.size(); ++i)
-    appendResetable(stream, "userdata", i, MaybeEncode(MaybeIconv(conf.userdata[i], encoding, "koi8-ru")));
+    appendResetableTag(stream, "userdata", i, MaybeEncode(MaybeIconv(conf.userdata[i], encoding, "koi8-ru")));
 
 if (!conf.services.empty())
     {
@@ -118,7 +118,7 @@ if (!stat.cashAdd.empty())
 else if (!stat.cashSet.empty())
     stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.data().second), encoding, "koi8-ru") << "\"/>";
 
-appendResetable(stream, "freeMb", stat.freeMb);
+appendResetableTag(stream, "freeMb", stat.freeMb);
 
 std::ostringstream traff;
 for (size_t i = 0; i < stat.sessionUp.size(); ++i)

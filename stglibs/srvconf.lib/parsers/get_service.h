@@ -55,7 +55,7 @@ private:
     std::string error;
 
     void ParseService(const char * el, const char ** attr);
-    void ParseServiceParams(const char * el, const char ** attr);
+    //void ParseServiceParams(const char * el, const char ** attr);
 };
 
 } // namespace GET_SERVICE

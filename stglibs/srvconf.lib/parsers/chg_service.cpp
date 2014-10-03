@@ -33,10 +33,10 @@ std::string CHG_SERVICE::Serialize(const SERVICE_CONF_RES & conf, const std::str
 {
 std::ostringstream stream;
 
-appendResetable(stream, "name", conf.name);
-appendResetable(stream, "comment", MaybeEncode(conf.comment));
-appendResetable(stream, "cost", conf.cost);
-appendResetable(stream, "payDay", conf.payDay);
+appendResetableAttr(stream, "name", conf.name);
+appendResetableAttr(stream, "comment", MaybeEncode(conf.comment));
+appendResetableAttr(stream, "cost", conf.cost);
+appendResetableAttr(stream, "payDay", conf.payDay);
 
 return stream.str();
 }
