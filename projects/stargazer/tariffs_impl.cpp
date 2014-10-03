@@ -38,8 +38,6 @@
 #include "stg/admin.h"
 #include "tariffs_impl.h"
 
-using namespace std;
-
 //-----------------------------------------------------------------------------
 TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
     : TARIFFS(),
@@ -65,7 +63,7 @@ int TARIFFS_IMPL::ReadTariffs()
 {
 STG_LOCKER lock(&mutex);
 
-vector<string> tariffsList;
+std::vector<std::string> tariffsList;
 if (store->GetTariffsList(&tariffsList))
     {
     WriteServLog("Cannot get tariffs list.");
@@ -95,13 +93,13 @@ STG_LOCKER lock(&mutex);
 return tariffs.size();
 }
 //-----------------------------------------------------------------------------
-const TARIFF * TARIFFS_IMPL::FindByName(const string & name) const
+const TARIFF * TARIFFS_IMPL::FindByName(const std::string & name) const
 {
 if (name == NO_TARIFF_NAME)
     return &noTariff;
 
 STG_LOCKER lock(&mutex);
-list<TARIFF_IMPL>::const_iterator ti;
+std::list<TARIFF_IMPL>::const_iterator ti;
 ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti != tariffs.end())
@@ -116,7 +114,7 @@ const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin->GetLogStr() + " Change tariff \'"
+    std::string s = admin->GetLogStr() + " Change tariff \'"
                + td.tariffConf.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -125,7 +123,7 @@ if (!priv->tariffChg)
 
 STG_LOCKER lock(&mutex);
 
-list<TARIFF_IMPL>::iterator ti;
+std::list<TARIFF_IMPL>::iterator ti;
 ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
 
 if (ti == tariffs.end())
@@ -139,7 +137,7 @@ if (ti == tariffs.end())
 
 if (store->SaveTariff(td, td.tariffConf.name))
     {
-    string error = "Tariff " + td.tariffConf.name + " writing error. " + store->GetStrError();
+    std::string error = "Tariff " + td.tariffConf.name + " writing error. " + store->GetStrError();
     WriteServLog(error.c_str());
     return -1;
     }
@@ -150,13 +148,13 @@ WriteServLog("%s Tariff \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Del(const string & name, const ADMIN * admin)
+int TARIFFS_IMPL::Del(const std::string & name, const ADMIN * admin)
 {
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin->GetLogStr() + " Delete tariff \'"
+    std::string s = admin->GetLogStr() + " Delete tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -168,7 +166,7 @@ TARIFF_DATA td;
     {
     STG_LOCKER lock(&mutex);
 
-    list<TARIFF_IMPL>::iterator ti;
+    std::list<TARIFF_IMPL>::iterator ti;
     ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
     if (ti == tariffs.end())
@@ -184,7 +182,7 @@ TARIFF_DATA td;
         WriteServLog("%s", store->GetStrError().c_str());
         return -1;
         }
-    
+
     td = ti->GetTariffData();
 
     tariffs.erase(ti);
@@ -203,13 +201,13 @@ WriteServLog("%s Tariff \'%s\' deleted.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Add(const string & name, const ADMIN * admin)
+int TARIFFS_IMPL::Add(const std::string & name, const ADMIN * admin)
 {
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
-    string s = admin->GetLogStr() + " Add tariff \'"
+    std::string s = admin->GetLogStr() + " Add tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -219,7 +217,7 @@ if (!priv->tariffChg)
     {
     STG_LOCKER lock(&mutex);
 
-    list<TARIFF_IMPL>::iterator ti;
+    std::list<TARIFF_IMPL>::iterator ti;
     ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
     if (ti != tariffs.end())
