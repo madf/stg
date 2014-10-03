@@ -281,7 +281,7 @@ return pImpl->Exec<GET_SERVICE::PARSER>("<GetService name=\"" + name + "\"/>", f
 
 int SERVCONF::ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + conf.name.data() + "\">" + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "</SetService>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService " + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
 int SERVCONF::AddService(const std::string & name,
@@ -291,7 +291,7 @@ int SERVCONF::AddService(const std::string & name,
 int res = pImpl->Exec<SIMPLE::PARSER>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
 if (res != st_ok)
     return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService name=\"" + name + "\">" + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "</SetService>", f, data);
+return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService " + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
 int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
@@ -342,6 +342,7 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
     : nt(server, port, login, password)
 {
 setlocale(LC_ALL, "");
+setlocale(LC_NUMERIC, "C");
 encoding = nl_langinfo(CODESET);
 parser = XML_ParserCreate(NULL);
 }
@@ -352,6 +353,7 @@ SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
     : nt(server, port, localAddress, localPort, login, password)
 {
 setlocale(LC_ALL, "");
+setlocale(LC_NUMERIC, "C");
 encoding = nl_langinfo(CODESET);
 parser = XML_ParserCreate(NULL);
 }
