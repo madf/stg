@@ -36,8 +36,6 @@
 #include "admins_impl.h"
 #include "admin_impl.h"
 
-using namespace std;
-
 //-----------------------------------------------------------------------------
 ADMINS_IMPL::ADMINS_IMPL(STORE * st)
     : ADMINS(),
@@ -55,14 +53,14 @@ pthread_mutex_init(&mutex, NULL);
 Read();
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Add(const string & login, const ADMIN * admin)
+int ADMINS_IMPL::Add(const std::string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex);
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin->GetLogStr() + " Add administrator \'" + login + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Add administrator \'" + login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -94,7 +92,7 @@ WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Del(const string & login, const ADMIN * admin)
+int ADMINS_IMPL::Del(const std::string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex);
 ADMIN_IMPL adm(0, login, "");
@@ -102,7 +100,7 @@ const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin->GetLogStr() + " Delete administrator \'" + login + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Delete administrator \'" + login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -117,7 +115,7 @@ if (ai == data.end())
     return -1;
     }
 
-map<int, const_admin_iter>::iterator si;
+std::map<int, const_admin_iter>::iterator si;
 si = searchDescriptors.begin();
 while (si != searchDescriptors.end())
     {
@@ -146,7 +144,7 @@ const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
-    string s = admin->GetLogStr() + " Change administrator \'" + ac.login + "\'. Access denied.";
+    std::string s = admin->GetLogStr() + " Change administrator \'" + ac.login + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
     return -1;
@@ -179,7 +177,7 @@ return 0;
 int ADMINS_IMPL::Read()
 {
 STG_LOCKER lock(&mutex);
-vector<string> adminsList;
+std::vector<std::string> adminsList;
 if (store->GetAdminsList(&adminsList) < 0)
     {
     WriteServLog(store->GetStrError().c_str());
@@ -201,7 +199,7 @@ for (unsigned int i = 0; i < adminsList.size(); i++)
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Find(const string & l, ADMIN ** admin)
+bool ADMINS_IMPL::Find(const std::string & l, ADMIN ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");
 
@@ -225,7 +223,7 @@ if (ai != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Exists(const string & login) const
+bool ADMINS_IMPL::Exists(const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 if (data.empty())
@@ -243,7 +241,7 @@ if (ai != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Correct(const string & login, const std::string & password, ADMIN ** admin)
+bool ADMINS_IMPL::Correct(const std::string & login, const std::string & password, ADMIN ** admin)
 {
 STG_LOCKER lock(&mutex);
 if (data.empty())

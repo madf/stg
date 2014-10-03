@@ -29,8 +29,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 #include "stg/blowfish.h"
@@ -38,14 +36,14 @@ using namespace std;
 #define adm_enc_passwd "cjeifY8m3"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetAdminsList(vector<string> * adminsList) const
+int FIREBIRD_STORE::GetAdminsList(std::vector<std::string> * adminsList) const
 {
 STG_LOCKER lock(&mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-string login;
+std::string login;
 
 try
     {
@@ -128,7 +126,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreAdmin(ADMIN_CONF * ac, const string & login) const
+int FIREBIRD_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -191,7 +189,7 @@ ac->password = adminPass;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddAdmin(const string & login) const
+int FIREBIRD_STORE::AddAdmin(const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -229,7 +227,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::DelAdmin(const string & login) const
+int FIREBIRD_STORE::DelAdmin(const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 

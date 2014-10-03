@@ -36,8 +36,6 @@ $Author: faust $
 #include "stg/dotconfpp.h"
 #include "settings_impl.h"
 
-using namespace std;
-
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL()
     : SETTINGS(),
@@ -138,7 +136,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
 {
 }
 //-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, vector<PARAM_VALUE> * params)
+int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
 {
 const DOTCONFDocumentNode * childNode;
 PARAM_VALUE pv;
@@ -148,7 +146,7 @@ pv.param = node->getName();
 
 if (node->getValue(1))
     {
-    strError = "Unexpected value \'" + string(node->getValue(1)) + "\'.";
+    strError = "Unexpected value \'" + std::string(node->getValue(1)) + "\'.";
     return -1;
     }
 
@@ -207,7 +205,7 @@ modulesSettings.clear();
 DOTCONFDocument conf(DOTCONFDocument::CASEINSENSITIVE);
 conf.setErrorCallback(SETTINGS_IMPL::ErrorCallback, this);
 conf.setRequiredOptionNames(requiredOptions);
-string confFile = confDir + "/stargazer.conf";
+std::string confFile = confDir + "/stargazer.conf";
 
 if(conf.setContent(confFile.c_str()) != 0)
     {
@@ -248,7 +246,7 @@ while (node)
         {
         if (ParseDetailStatWritePeriod(node->getValue(0)) != 0)
             {
-            strError = "Incorrect DetailStatWritePeriod value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect DetailStatWritePeriod value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -257,7 +255,7 @@ while (node)
         {
         if (ParseUnsignedInRange(node->getValue(0), 1, 1440, &statWritePeriod) != 0)
             {
-            strError = "Incorrect StatWritePeriod value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect StatWritePeriod value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -266,7 +264,7 @@ while (node)
         {
         if (ParseInt(node->getValue(0), &stgExecMsgKey) != 0)
             {
-            strError = "Incorrect ExecMsgKey value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect ExecMsgKey value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -275,7 +273,7 @@ while (node)
         {
         if (ParseUnsignedInRange(node->getValue(0), 1, 1024, &executersNum) != 0)
             {
-            strError = "Incorrect ExecutersNum value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect ExecutersNum value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -284,7 +282,7 @@ while (node)
         {
         if (ParseUnsignedInRange(node->getValue(0), 0, 31, &dayFee) != 0)
             {
-            strError = "Incorrect DayFee value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect DayFee value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -293,7 +291,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &fullFee) != 0)
             {
-            strError = "Incorrect FullFee value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect FullFee value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -302,7 +300,7 @@ while (node)
         {
         if (ParseUnsignedInRange(node->getValue(0), 0, 31, &dayResetTraff) != 0)
             {
-            strError = "Incorrect DayResetTraff value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect DayResetTraff value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -311,7 +309,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &spreadFee) != 0)
             {
-            strError = "Incorrect SpreadFee value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect SpreadFee value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -320,7 +318,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &freeMbAllowInet) != 0)
             {
-            strError = "Incorrect FreeMbAllowInet value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect FreeMbAllowInet value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -329,7 +327,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &dayFeeIsLastDay) != 0)
             {
-            strError = "Incorrect DayFeeIsLastDay value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect DayFeeIsLastDay value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -338,7 +336,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &writeFreeMbTraffCost) != 0)
             {
-            strError = "Incorrect WriteFreeMbTraffCost value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect WriteFreeMbTraffCost value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -347,7 +345,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &showFeeInCash) != 0)
             {
-            strError = "Incorrect ShowFeeInCash value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect ShowFeeInCash value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -368,7 +366,7 @@ while (node)
         {
         if (ParseUnsigned(node->getValue(0), &messageTimeout) != 0)
             {
-            strError = "Incorrect MessageTimeout value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect MessageTimeout value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -377,7 +375,7 @@ while (node)
         {
         if (ParseUnsignedInRange(node->getValue(0), 0, 3, &feeChargeType) != 0)
             {
-            strError = "Incorrect FeeChargeType value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect FeeChargeType value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -386,7 +384,7 @@ while (node)
         {
         if (ParseYesNo(node->getValue(0), &reconnectOnTariffChange) != 0)
             {
-            strError = "Incorrect ReconnectOnTariffChange value: \'" + string(node->getValue(0)) + "\'";
+            strError = "Incorrect ReconnectOnTariffChange value: \'" + std::string(node->getValue(0)) + "\'";
             return -1;
             }
         }
@@ -415,7 +413,7 @@ while (node)
         {
         if (node->getValue(1))
             {
-            strError = "Unexpected \'" + string(node->getValue(1)) + "\'.";
+            strError = "Unexpected \'" + std::string(node->getValue(1)) + "\'.";
             return -1;
             }
 
@@ -434,7 +432,7 @@ while (node)
         {
         if (node->getValue(0))
             {
-            strError = "Unexpected \'" + string(node->getValue(0)) + "\'.";
+            strError = "Unexpected \'" + std::string(node->getValue(0)) + "\'.";
             return -1;
             }
         const DOTCONFDocumentNode * child = node->getChildNode();
@@ -470,7 +468,7 @@ while (node)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ParseDetailStatWritePeriod(const string & detailStatPeriodStr)
+int SETTINGS_IMPL::ParseDetailStatWritePeriod(const std::string & detailStatPeriodStr)
 {
 if (detailStatPeriodStr == "1")
     {
