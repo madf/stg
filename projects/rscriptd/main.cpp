@@ -48,8 +48,6 @@
 #include "listener.h"
 #include "pidfile.h"
 
-using namespace std;
-
 #ifdef DEBUG
 # define MAIN_DEBUG  1
 # define NO_DAEMON    1
@@ -57,13 +55,13 @@ using namespace std;
 
 #define START_FILE "/._ST_ART_ED_"
 
-set<pid_t> executersPid;
+std::set<pid_t> executersPid;
 volatile time_t stgTime = time(NULL);
 
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
-set<pid_t>::iterator pid;
+std::set<pid_t>::iterator pid;
 pid = executersPid.begin();
 while (pid != executersPid.end())
     {
@@ -73,7 +71,7 @@ while (pid != executersPid.end())
     }
 }
 //-----------------------------------------------------------------------------
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
 int StartScriptExecuter(char * procName, int msgKey, int * msgID)
 #else
 int StartScriptExecuter(char *, int msgKey, int * msgID)
@@ -121,7 +119,7 @@ switch (executerPid)
         //close(1);
         //close(2);
         //setsid();
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
         Executer(*msgID, executerPid, procName);
 #else
         Executer(*msgID, executerPid);
@@ -130,7 +128,7 @@ switch (executerPid)
 
     default:    // Parent
         if (executersPid.empty())
-#ifdef LINUX
+#if defined(LINUX) || defined(DARWIN)
             Executer(*msgID, executerPid, NULL);
 #else
             Executer(*msgID, executerPid);
@@ -179,9 +177,9 @@ KillExecuters();
 }
 //-----------------------------------------------------------------------------
 #ifdef NO_DAEMON
-int ForkAndWait(const string &)
+int ForkAndWait(const std::string &)
 #else
-int ForkAndWait(const string & confDir)
+int ForkAndWait(const std::string & confDir)
 #endif
 {
 #ifndef NO_DAEMON
@@ -216,11 +214,11 @@ int msgID = -11;
 int execNum = 0;
 int execMsgKey = 0;
 
-string logFileName;
-string confDir;
-string password;
-string onConnect;
-string onDisconnect;
+std::string logFileName;
+std::string confDir;
+std::string password;
+std::string onConnect;
+std::string onDisconnect;
 int port;
 int userTimeout;
 
