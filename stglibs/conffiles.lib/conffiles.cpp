@@ -139,7 +139,7 @@ return e;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadString(const std::string & param, std::string * val, const std::string & defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -159,7 +159,7 @@ changed = true;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadTime(const std::string & param, time_t * val, time_t defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -179,7 +179,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadInt(const std::string & param, int * val, int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -199,7 +199,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadUInt(const std::string & param, unsigned int * val, unsigned int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -219,7 +219,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadLongInt(const std::string & param, long int * val, long int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -239,7 +239,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadULongInt(const std::string & param, unsigned long int * val, unsigned long int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -259,7 +259,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadLongLongInt(const std::string & param, int64_t * val, int64_t defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -279,7 +279,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadULongLongInt(const std::string & param, uint64_t * val, uint64_t defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -299,7 +299,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadShortInt(const std::string & param, short int * val, short int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -319,7 +319,7 @@ return -1;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadUShortInt(const std::string & param, unsigned short int * val, unsigned short int defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -347,7 +347,7 @@ changed = true;
 //---------------------------------------------------------------------------
 int CONFIGFILE::ReadDouble(const std::string & param, double * val, double defaultVal) const
 {
-const std::map<std::string, std::string>::const_iterator it(param_val.find(param));
+const std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it(param_val.find(param));
 
 if (it != param_val.end())
     {
@@ -382,7 +382,7 @@ if (!f.is_open())
     return EIO;
     }
 
-std::map<std::string, std::string>::const_iterator it = param_val.begin();
+std::map<std::string, std::string, StringCaseCmp_t>::const_iterator it = param_val.begin();
 while (it != param_val.end())
     {
     f << it->first << "=" << it->second << "\n";
