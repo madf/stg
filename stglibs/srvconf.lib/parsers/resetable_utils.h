@@ -32,18 +32,90 @@ namespace STG
 
 template <typename T>
 inline
-void appendResetable(std::ostream & stream, const std::string & name, const T & value)
+void appendTag(std::ostream & stream, const std::string & name, const T & value)
 {
-if (!value.empty())
-    stream << "<" << name << " value=\"" << value.data() << "\"/>";
+    stream << "<" << name << " value=\"" << value << "\"/>";
 }
 
 template <typename T>
 inline
-void appendResetable(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+void appendTag(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+    stream << "<" << name << suffix << " value=\"" << value << "\"/>";
+}
+
+template <>
+inline
+void appendTag<uint8_t>(std::ostream & stream, const std::string & name, const uint8_t & value)
+{
+    stream << "<" << name << " value=\"" << static_cast<unsigned>(value) << "\"/>";
+}
+
+template <>
+inline
+void appendTag<int8_t>(std::ostream & stream, const std::string & name, const int8_t & value)
+{
+    stream << "<" << name << " value=\"" << static_cast<int>(value) << "\"/>";
+}
+
+template <typename T>
+inline
+void appendAttr(std::ostream & stream, const std::string & name, const T & value)
+{
+    stream << " " << name << "=\"" << value << "\"";
+}
+
+template <typename T>
+inline
+void appendAttr(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+    stream << " " << name << suffix << "=\"" << value << "\"";
+}
+
+template <>
+inline
+void appendAttr<uint8_t>(std::ostream & stream, const std::string & name, const uint8_t & value)
+{
+    stream << " " << name << "=\"" << static_cast<unsigned>(value) << "\"";
+}
+
+template <>
+inline
+void appendAttr<int8_t>(std::ostream & stream, const std::string & name, const int8_t & value)
+{
+    stream << " " << name << "=\"" << static_cast<int>(value) << "\"";
+}
+
+template <typename T>
+inline
+void appendResetableTag(std::ostream & stream, const std::string & name, const T & value)
 {
 if (!value.empty())
-    stream << "<" << name << suffix << " value=\"" << value.data() << "\"/>";
+    appendTag(stream, name, value.const_data());
+}
+
+template <typename T>
+inline
+void appendResetableTag(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+if (!value.empty())
+    appendTag(stream, name, suffix, value.const_data());
+}
+
+template <typename T>
+inline
+void appendResetableAttr(std::ostream & stream, const std::string & name, const T & value)
+{
+if (!value.empty())
+    appendAttr(stream, name, value.const_data());
+}
+
+template <typename T>
+inline
+void appendResetableAttr(std::ostream & stream, const std::string & name, size_t suffix, const T & value)
+{
+if (!value.empty())
+    appendAttr(stream, name, suffix, value.const_data());
 }
 
 inline
