@@ -34,7 +34,7 @@ const char * GET_SERVICES::tag = "GetServices";
 const char * GET_SERVICE::tag  = "AddService";
 const char * ADD_SERVICE::tag  = "AddService";
 const char * DEL_SERVICE::tag  = "DelService";
-const char * CHG_SERVICE::tag  = "ChgService";
+const char * CHG_SERVICE::tag  = "SetService";
 
 void GET_SERVICES::CreateAnswer()
 {
@@ -133,7 +133,6 @@ int CHG_SERVICE::Start(void *, const char * el, const char ** attr)
     {
         for (size_t i = 0; i < 8; i += 2)
         {
-            printfd(__FILE__, "PARSER_CHG_SERVICE::attr[%d] = %s\n", i, attr[i]);
             if (attr[i] == NULL)
                 break;
 
@@ -154,6 +153,8 @@ int CHG_SERVICE::Start(void *, const char * el, const char ** attr)
                 double cost = 0;
                 if (str2x(attr[i + 1], cost) == 0)
                     m_service.cost = cost;
+                else
+                    printfd(__FILE__, "Bad cast from '%s' to double\n", attr[i + 1]);
                 // TODO: log it
                 continue;
             }
@@ -163,6 +164,8 @@ int CHG_SERVICE::Start(void *, const char * el, const char ** attr)
                 unsigned payDay;
                 if (str2x(attr[i + 1], payDay) == 0)
                     m_service.payDay = payDay;
+                else
+                    printfd(__FILE__, "Bad cast from '%s' to unsigned\n", attr[i + 1]);
                 // TODO: log it
                 continue;
             }
@@ -190,9 +193,10 @@ void CHG_SERVICE::CreateAnswer()
     SERVICE_CONF orig;
     m_services.Find(m_service.name.const_data(), &orig);
 
-    m_service.Splice(orig);
+    SERVICE_CONF_RES conf(orig);
+    conf.Splice(m_service);
 
-    if (m_services.Change(m_service.GetData(), &m_currAdmin) != 0)
+    if (m_services.Change(conf.GetData(), &m_currAdmin) != 0)
         m_answer = "<" + m_tag + " result = \"" + m_services.GetStrError() + "\"/>";
     else
         m_answer = "<" + m_tag + " result = \"Ok\"/>";
