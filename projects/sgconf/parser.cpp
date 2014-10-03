@@ -37,8 +37,6 @@
 #include "stg/netunit.h"
 #include "stg/request.h"
 
-using namespace std;
-
 int parse_depth = 0;
 XML_Parser parser;
 //---------------------------------------------------------------------------
