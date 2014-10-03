@@ -294,7 +294,7 @@ for (j = 0; j < DIR_NUM; j++)
     {
     if (dirName[j][0] == 0)
         continue;
-    string s;
+    std::string s;
     KOIToWin(dirName[j], &s);// +++++++++ sigsegv ==========   TODO too long dir name crashes sgauth
     sprintf(str, "       <TD id=\"TraffTableCaptionCell%d\">%s</TD>\n", rowNum++, s.c_str());
     send(outerSocket, str, strlen(str), 0);
@@ -388,7 +388,7 @@ if (!messages.empty())
     sprintf(str,"        </TR>\n");
     send(outerSocket, str, strlen(str), 0);
 
-    list<STG_MESSAGE>::reverse_iterator it;
+    std::list<STG_MESSAGE>::reverse_iterator it;
     it = messages.rbegin();
     while (it != messages.rend())
         {
@@ -433,12 +433,12 @@ send(outerSocket, replyFooter, strlen(replyFooter), 0);
 return 0;
 }
 //---------------------------------------------------------------------------
-void WEB::SetDirName(const string & dn, int n)
+void WEB::SetDirName(const std::string & dn, int n)
 {
 web->dirName[n] =  dn;
 }
 //---------------------------------------------------------------------------
-void WEB::AddMessage(const string & message, int type)
+void WEB::AddMessage(const std::string & message, int type)
 {
 time_t t = time(NULL);
 STG_MESSAGE m;
