@@ -181,5 +181,9 @@ printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
 printf "DIR_MODE=$DIR_MODE\n" >> $CONFFILE
 printf "OWNER=$OWNER\n" >> $CONFFILE
 
-$MAKE $MAKEOPTS
-
+if [ "$1" != "debug" ]
+then
+    $MAKE $MAKEOPTS
+else
+    printf "\n\n\nDebug build. Type $MAKE explicitly\n"
+fi
