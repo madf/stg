@@ -1,0 +1,18 @@
+#! /bin/sh
+
+# Login
+LOGIN=$1
+
+# User IP
+IP=$2
+
+# Cash
+CASH=$3
+
+# User ID
+ID=$4
+
+# Selected dirs to connect
+DIRS=$5
+
+TARIFFNAME=$6
