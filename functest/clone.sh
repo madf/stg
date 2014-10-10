@@ -19,7 +19,8 @@ then
     exit -1
 fi
 
-$GIT clone "https://gitorious.org/stg/stg.git" "$BASEPATH/stg"
+#$GIT clone "https://gitorious.org/stg/stg.git" "$BASEPATH/stg"
+$GIT clone "../" "$BASEPATH/stg"
 
 if [ "$ARCHIVE" != "" ]
 then
