@@ -20,7 +20,7 @@ fi
 
 LOGFILE=`date "+%Y-%m-%d-%H%M%S.log"`
 
-printf "Ok.\nCloning... "
+printf "Ok. Working dir: $DIR\nCloning... "
 ./clone.sh "$DIR" >> "$LOGFILE" 2>&1
 if [ "$?" != "0" ]
 then
