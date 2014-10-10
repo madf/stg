@@ -111,7 +111,6 @@ if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ER
               static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
               static_cast<int>(XML_GetCurrentColumnNumber(sc->parser)),
               XML_ErrorString(XML_GetErrorCode(sc->parser)), (int)final);
-    printf("%s\n", sc->errorMsg.c_str());
     return false;
     }
 

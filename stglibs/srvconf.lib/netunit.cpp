@@ -27,7 +27,6 @@
 
 #include <algorithm> // std::min
 
-#include <cstdio>
 #include <cerrno>
 #include <cstring>
 #include <cassert>
@@ -233,7 +232,6 @@ char buffer[sizeof(STG_HEADER) + 1];
 
 if (!ReadAll(sock, buffer, strlen(OK_HEADER)))
     {
-    printf("Receive header answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_HEADER_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -274,7 +272,6 @@ char buffer[sizeof(OK_LOGIN) + 1];
 
 if (!ReadAll(sock, buffer, strlen(OK_LOGIN)))
     {
-    printf("Receive login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -317,7 +314,6 @@ char buffer[sizeof(OK_LOGINS) + 1];
 
 if (!ReadAll(sock, buffer, strlen(OK_LOGINS)))
     {
-    printf("Receive secret login answer error: '%s'\n", strerror(errno));
     errorMsg = RECV_LOGIN_ANSWER_ERROR;
     return st_recv_fail;
     }
@@ -360,7 +356,6 @@ while (!state.final)
     ssize_t res = read(sock, buffer, sizeof(buffer));
     if (res < 0)
         {
-        printf("Receive data error: '%s'\n", strerror(errno));
         errorMsg = RECV_DATA_ANSWER_ERROR;
         return st_recv_fail;
         }

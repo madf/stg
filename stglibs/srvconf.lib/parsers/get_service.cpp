@@ -94,8 +94,6 @@ if (strcasecmp(el, "service") == 0)
                     error = std::string("Invalid parameter '") + *pos + "' or value '" + *(pos + 1) + "'.";
                     break;
                     }
-                else
-                    printfd(__FILE__, "Parsed '%s' successfully.\n", *pos);
             }
         }
     else
