@@ -256,6 +256,8 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
       .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
       .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
       .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
+blocks.Add("Debug options")
+      .Add("show-config", SGCONF::MakeParamAction(config.showConfig), "\t\tshow config and exit");
 SGCONF::AppendXMLOptionBlock(commands, blocks);
 SGCONF::AppendAdminsOptionBlock(commands, blocks);
 SGCONF::AppendTariffsOptionBlock(commands, blocks);
@@ -302,7 +304,11 @@ else
 
 config = configOverride;
 
-std::cerr << "Config: " << config.Serialize() << std::endl;
+if (!config.showConfig.empty() && config.showConfig.data())
+    {
+    std::cout << config.Serialize() << std::endl;
+    return 0;
+    }
 return commands.Execute(config) ? 0 : -1;
 }
 catch (const std::exception& ex)

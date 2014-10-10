@@ -78,6 +78,10 @@ class PARAM_ACTION : public ACTION
               m_description(paramDescription),
               m_hasDefault(true)
         {}
+        PARAM_ACTION(RESETABLE<T> & param)
+            : m_param(param),
+              m_hasDefault(false)
+        {}
         PARAM_ACTION(RESETABLE<T> & param,
                      const std::string & paramDescription)
             : m_param(param),
@@ -132,6 +136,14 @@ m_param = value;
 return PARSER_STATE(false, --argc, ++argv);
 }
 
+template <>
+inline
+PARSER_STATE PARAM_ACTION<bool>::Parse(int argc, char ** argv, void * /*data*/)
+{
+m_param = true;
+return PARSER_STATE(false, argc, argv);
+}
+
 template <typename T>
 inline
 void PARAM_ACTION<T>::ParseValue(const std::string & stringValue)
@@ -170,6 +182,13 @@ PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param,
                                   const std::string & paramDescription)
 {
 return new PARAM_ACTION<T>(param, defaultValue, paramDescription);
+}
+
+template <typename T>
+inline
+PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param)
+{
+return new PARAM_ACTION<T>(param);
 }
 
 template <typename T>

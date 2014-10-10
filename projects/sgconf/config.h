@@ -39,6 +39,7 @@ struct CONFIG
     RESETABLE<uint16_t> localPort;
     RESETABLE<std::string> userName;
     RESETABLE<std::string> userPass;
+    RESETABLE<bool> showConfig;
 
     CONFIG & operator=(const CONFIG & rhs)
     {
@@ -56,27 +57,29 @@ struct CONFIG
         userName = rhs.userName;
     if (!rhs.userPass.empty())
         userPass = rhs.userPass;
+    if (!rhs.showConfig.empty())
+        showConfig = rhs.showConfig;
     return *this;
     }
 
     std::string Serialize() const
     {
-    std::string res("{ ");
+    std::string res;
     if (!configFile.empty())
-        res += "configFile: '" + configFile.data() + "',";
+        res += "configFile: '" + configFile.data() + "'\n";
     if (!server.empty())
-        res += " server: '" + server.data() + "',";
+        res += "server: '" + server.data() + "'\n";
     if (!port.empty())
-        res += " port: " + x2str(port.data()) + ",";
+        res += "port: " + x2str(port.data()) + "\n";
     if (!localAddress.empty())
-        res += " local address: '" + localAddress.data() + "',";
+        res += "local address: '" + localAddress.data() + "'\n";
     if (!localPort.empty())
-        res += " local port: " + x2str(localPort.data()) + ",";
+        res += "local port: " + x2str(localPort.data()) + "\n";
     if (!userName.empty())
-        res += " userName: '" + userName.data() + "',";
+        res += "userName: '" + userName.data() + "'\n";
     if (!userPass.empty())
-        res += " userPass: '" + userPass.data() + "'";
-    return res + " }";
+        res += "userPass: '" + userPass.data() + "\n";
+    return res;
     }
 };
 
