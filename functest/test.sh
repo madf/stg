@@ -50,7 +50,7 @@ do
 done
 
 PID=`cat "$STGPATH/stargazer.pid"`
-printf "Started with pid $PID\n"
+printf "\nStarted with pid $PID\n"
 
 "$CURPATH/test_admins.sh" "$BASEPATH"
 "$CURPATH/test_services.sh" "$BASEPATH"
