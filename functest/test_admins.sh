@@ -33,3 +33,11 @@ printf "Logins:\n$LOGINS\n"
 NUM=`printf "$LOGINS" | wc -l`
 
 printf -- "--------\n$NUM\n\n"
+
+RES=`"$SGCONFPATH/sgconf" -s localhost -p 5555 -u admin -w 123456 --chg-admin admin --priv 111111111`
+
+if [ "$?" != "0" ]
+then
+    printf "Failed to update admin's priviledges Result:\n$RES\n"
+    exit 0
+fi
