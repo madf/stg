@@ -122,7 +122,7 @@ NUM=`printf "$NAMES" | wc -l`
 
 printf -- "--------\n$NUM\n\n"
 
-if [ "$NUM" != "1" ]
+if [ "$NUM" != "0" ]
 then
     printf "Services list should be empty.\n"
     exit 0
