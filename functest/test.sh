@@ -61,7 +61,27 @@ then
     exit 0
 fi
 
-printf "Got admins list:\n$RES\n"
+printf "Got admins list:\n"
+
+LOGINS=""
+OLDIFS=$IFS
+IFS=$(printf "\n")
+for LINE in $RES
+do
+    printf -- "$LINE\n"
+    LOGIN=`echo $LINE | grep login`
+    if [ "$?" == "0" ]
+    then
+        LOGINS="$LOGINS\n"`echo $LOGIN | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
+    fi
+done
+IFS=$OLDIFS
+
+printf "Logins:\n$LOGINS\n"
+
+NUM=`echo $LOGINS | wc -l`
+
+printf -- "--------\n$NUM\n\n"
 
 printf "Stopping...\n"
 kill $PID
