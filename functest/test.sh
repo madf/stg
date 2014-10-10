@@ -30,6 +30,8 @@ LOGFILE="$CURPATH/"`date "+%Y-%m-%d-%H%M%S.console.log"`
 
 cd "$STGPATH"
 
+printf "Starting Stargazer... "
+
 "$STGPATH/stargazer" "$STGPATH" >> "$LOGFILE" 2>&1 &
 
 COUNT=""
@@ -50,12 +52,15 @@ do
 done
 
 PID=`cat "$STGPATH/stargazer.pid"`
-printf "\nStarted with pid $PID\n"
+printf "Started with pid $PID\n"
 
+printf "\nTesting admins:\n"
 "$CURPATH/test_admins.sh" "$BASEPATH"
+printf "\nTesting services:\n"
 "$CURPATH/test_services.sh" "$BASEPATH"
+printf "\n"
 
-printf "Stopping...\n"
+printf "Stopping... "
 kill $PID
 
 COUNT=""

@@ -35,16 +35,12 @@ then
     printf "Failed.\n"
     exit -1
 else
-    printf "Ok.\nTesting... "
+    printf "Ok.\n"
 fi
+
 ./test.sh "$DIR" # >> "$LOGFILE" 2>&1
-if [ "$?" != "0" ]
-then
-    printf "Failed.\n"
-    exit -1
-else
-    printf "Ok.\nCleaning up... "
-fi
+
+printf "Cleaning up... "
 
 $RM -rf $DIR
 if [ "$?" != "0" ]
