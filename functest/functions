@@ -1,0 +1,40 @@
+trim()
+{
+    printf "$1" | sed -e 's/^ *//' -e 's/ *$//'
+}
+
+getField()
+{
+    NAME="$1"
+    DATA="$2"
+
+    printf "$DATA" | grep "$NAME" > /dev/null 2> /dev/null
+    if [ "$?" != "0" ]
+    then
+        return 1
+    fi
+
+    trim `printf "$DATA" | cut -d: -f2`
+}
+
+getFields()
+{
+    NAME=$1
+    DATA=$2
+
+    IFS=`printf '\n+'`
+    for LINE in $DATA
+    do
+        VALUE=`getField $NAME $LINE` && printf "%s\n" "$VALUE"
+    done
+}
+
+count()
+{
+    if [ "$1" == "" ]
+    then
+        printf "0\n"
+    else
+        printf "$1\n" | wc -l
+    fi
+}
