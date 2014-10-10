@@ -106,7 +106,7 @@ void ADD_SERVICE::CreateAnswer()
     if (m_services.Add(conf, &m_currAdmin) == 0)
         m_answer = "<" + m_tag + " result=\"Ok\"/>";
     else
-        m_answer = "<" + m_tag + " result=\"Error. " + m_services.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " result=\"" + m_services.GetStrError() + "\"/>";
 }
 
 int DEL_SERVICE::Start(void *, const char * el, const char ** attr)
@@ -124,7 +124,7 @@ void DEL_SERVICE::CreateAnswer()
     if (m_services.Del(m_name, &m_currAdmin) == 0)
         m_answer = "<" + m_tag + " result=\"Ok\"/>";
     else
-        m_answer = "<" + m_tag + " result=\"Error. " + m_services.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " result=\"" + m_services.GetStrError() + "\"/>";
 }
 
 int CHG_SERVICE::Start(void *, const char * el, const char ** attr)
