@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source `dirname $0`/functions
+
 BASEPATH=$1
 
 SGCONFPATH="$BASEPATH/stg/projects/sgconf"
@@ -12,25 +14,11 @@ then
     exit 0
 fi
 
-printf "Got services list:\n"
-
-NAMES=""
-OLDIFS=$IFS
-IFS=$(printf "\n")
-for LINE in $RES
-do
-    printf -- "$LINE\n"
-    NAME=`printf "$LINE" | grep name`
-    if [ "$?" == "0" ]
-    then
-        NAMES="$NAMES\n"`printf "$NAME" | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
-    fi
-done
-IFS=$OLDIFS
+NAMES=`getFields "name" "$RES"`
 
 printf "Names:\n$NAMES\n"
 
-NUM=`printf "$NAMES" | wc -l`
+NUM=`count "$NAMES"`
 
 printf -- "--------\n$NUM\n\n"
 
@@ -56,25 +44,11 @@ then
     exit 0
 fi
 
-printf "Got services list:\n"
-
-NAMES=""
-OLDIFS=$IFS
-IFS=$(printf "\n")
-for LINE in $RES
-do
-    printf -- "$LINE\n"
-    NAME=`printf "$LINE" | grep name`
-    if [ "$?" == "0" ]
-    then
-        NAMES="$NAMES\n"`printf "$NAME" | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
-    fi
-done
-IFS=$OLDIFS
+NAMES=`getFields "name" "$RES"`
 
 printf "Names:\n$NAMES\n"
 
-NUM=`printf "$NAMES" | wc -l`
+NUM=`count "$NAMES"`
 
 printf -- "--------\n$NUM\n\n"
 
@@ -100,25 +74,11 @@ then
     exit 0
 fi
 
-printf "Got services list:\n"
-
-NAMES=""
-OLDIFS=$IFS
-IFS=$(printf "\n")
-for LINE in $RES
-do
-    printf -- "$LINE\n"
-    NAME=`printf "$LINE" | grep name`
-    if [ "$?" == "0" ]
-    then
-        NAMES="$NAMES\n"`printf "$NAME" | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
-    fi
-done
-IFS=$OLDIFS
+NAMES=`getFields "name" "$RES"`
 
 printf "Names:\n$NAMES\n"
 
-NUM=`printf "$NAMES" | wc -l`
+NUM=`count "$NAMES"`
 
 printf -- "--------\n$NUM\n\n"
 

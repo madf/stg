@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source `dirname $0`/functions
+
 BASEPATH=$1
 
 SGCONFPATH="$BASEPATH/stg/projects/sgconf"
@@ -12,25 +14,11 @@ then
     exit 0
 fi
 
-printf "Got admins list:\n"
-
-LOGINS=""
-OLDIFS=$IFS
-IFS=$(printf "\n")
-for LINE in $RES
-do
-    printf -- "$LINE\n"
-    LOGIN=`printf "$LINE" | grep login`
-    if [ "$?" == "0" ]
-    then
-        LOGINS="$LOGINS\n"`printf "$LOGIN" | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
-    fi
-done
-IFS=$OLDIFS
+LOGINS=`getFields "login" "$RES"`
 
 printf "Logins:\n$LOGINS\n"
 
-NUM=`printf "$LOGINS" | wc -l`
+NUM=`count "$LOGINS"`
 
 printf -- "--------\n$NUM\n\n"
 
