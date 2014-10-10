@@ -25,7 +25,8 @@ cp -R "stuff/db-stub" "$STGPATH/db"
 
 sed -i "s|-STG-PATH-|$STGPATH|g" "$STGPATH/stargazer.conf"
 
-LOGFILE=`pwd`"/"`date "+%Y-%m-%d-%H%M%S.console.log"`
+CURPATH=`pwd`
+LOGFILE="$CURPATH/"`date "+%Y-%m-%d-%H%M%S.console.log"`
 
 cd "$STGPATH"
 
@@ -51,37 +52,8 @@ done
 PID=`cat "$STGPATH/stargazer.pid"`
 printf "Started with pid $PID\n"
 
-SGCONFPATH="$BASEPATH/stg/projects/sgconf"
-
-RES=`"$SGCONFPATH/sgconf" -s localhost -p 5555 -u admin -w 123456 --get-admins`
-
-if [ "$?" != "0" ]
-then
-    printf "Failed to get admins list. Result:\n$RES\n"
-    exit 0
-fi
-
-printf "Got admins list:\n"
-
-LOGINS=""
-OLDIFS=$IFS
-IFS=$(printf "\n")
-for LINE in $RES
-do
-    printf -- "$LINE\n"
-    LOGIN=`echo $LINE | grep login`
-    if [ "$?" == "0" ]
-    then
-        LOGINS="$LOGINS\n"`echo $LOGIN | cut -d: -f2 | sed -e 's/^ *//' -e 's/ *$//'`
-    fi
-done
-IFS=$OLDIFS
-
-printf "Logins:\n$LOGINS\n"
-
-NUM=`echo $LOGINS | wc -l`
-
-printf -- "--------\n$NUM\n\n"
+"$CURPATH/test_admins.sh" "$BASEPATH"
+"$CURPATH/test_services.sh" "$BASEPATH"
 
 printf "Stopping...\n"
 kill $PID
