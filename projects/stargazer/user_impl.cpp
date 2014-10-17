@@ -53,6 +53,25 @@
 #include <pthread.h>
 #include <unistd.h> // access
 
+namespace
+{
+
+std::string dirsToString(const bool * dirs)
+{
+std::string res;
+for (size_t i = 0; i < DIR_NUM; i++)
+    res += dirs[i] ? '1' : '0';
+return res;
+}
+
+void dirsFromBits(bool * dirs, uint32_t bits)
+{
+for (size_t i = 0; i < DIR_NUM; i++)
+    dirs[i] = bits & (1 << i);
+}
+
+}
+
 #ifdef USE_ABSTRACT_SETTINGS
 USER_IMPL::USER_IMPL(const SETTINGS * s,
            const STORE * st,
@@ -449,6 +468,12 @@ STG_LOCKER lock(&mutex);
  */
 
 /*
+ * TODO: in fact "authorization" means allowing access to a service. What we
+ * call "authorization" here, int STG, is "authentication". So this should be
+ * fixed in future.
+ */
+
+/*
  * Prevent double authorization by identical authorizers
  */
 if (authorizedBy.find(auth) != authorizedBy.end())
@@ -457,16 +482,13 @@ if (authorizedBy.find(auth) != authorizedBy.end())
 if (!ip)
     return -1;
 
-for (int i = 0; i < DIR_NUM; i++)
-    {
-    enabledDirs[i] = dirs & (1 << i);
-    }
+dirsFromBits(enabledDirs, dirs);
 
 if (!authorizedBy.empty())
     {
     if (currIP != ip)
         {
-        //  We are already authorized, but with different IP address
+        // We are already authorized, but with different IP address
         errorStr = "User " + login + " already authorized with IP address " + inet_ntostring(ip);
         return -1;
         }
@@ -474,11 +496,11 @@ if (!authorizedBy.empty())
     USER * u = NULL;
     if (!users->FindByIPIdx(ip, &u))
         {
-        //  Address is already present in IP-index
-        //  If it's not our IP - throw an error
+        // Address presents in IP-index.
+        // If it's not our IP - report it.
         if (u != this)
             {
-            errorStr = "IP address " + inet_ntostring(ip) + " already in use";
+            errorStr = "IP address " + inet_ntostring(ip) + " is already in use";
             return -1;
             }
         }
@@ -487,8 +509,8 @@ else
     {
     if (users->IsIPInIndex(ip))
         {
-        //  Address is already present in IP-index
-        errorStr = "IP address " + inet_ntostring(ip) + " already in use";
+        // Address is already present in IP-index.
+        errorStr = "IP address " + inet_ntostring(ip) + " is already in use";
         return -1;
         }
 
@@ -500,7 +522,7 @@ else
     else
         {
         printfd(__FILE__, " user %s: ips = %s\n", login.c_str(), ips.ConstData().GetIpStr().c_str());
-        errorStr = "IP address " + inet_ntostring(ip) + " not belong user " + login;
+        errorStr = "IP address " + inet_ntostring(ip) + " does not belong to user " + login;
         return -1;
         }
     }
@@ -523,9 +545,10 @@ STG_LOCKER lock(&mutex);
 if (!authorizedBy.erase(auth))
     return;
 
+authorizedModificationTime = stgTime;
+
 if (authorizedBy.empty())
     {
-    authorizedModificationTime = stgTime;
     lastDisconnectReason = reason;
     lastIPForDisconnect = currIP;
     currIP = 0; // DelUser in traffcounter
@@ -536,12 +559,13 @@ if (authorizedBy.empty())
 bool USER_IMPL::IsAuthorizedBy(const AUTH * auth) const
 {
 STG_LOCKER lock(&mutex);
-//  Is this user authorized by specified authorizer?
+// Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
 }
 //-----------------------------------------------------------------------------
 std::vector<std::string> USER_IMPL::GetAuthorizers() const
 {
+    STG_LOCKER lock(&mutex);
     std::vector<std::string> list;
     std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), std::mem_fun(&AUTH::GetVersion));
     return list;
@@ -550,7 +574,7 @@ std::vector<std::string> USER_IMPL::GetAuthorizers() const
 void USER_IMPL::Connect(bool fakeConnect)
 {
 /*
- *  Connect user to Internet. This function is differ from Authorize() !!!
+ * Connect user to Internet. This function is differ from Authorize() !!!
  */
 
 STG_LOCKER lock(&mutex);
@@ -561,23 +585,17 @@ if (!fakeConnect)
 
     if (access(scriptOnConnect.c_str(), X_OK) == 0)
         {
-        char dirsStr[DIR_NUM + 1];
-        dirsStr[DIR_NUM] = 0;
-        for (int i = 0; i < DIR_NUM; i++)
-            {
-            dirsStr[i] = enabledDirs[i] ? '1' : '0';
-            }
+        std::string dirs = dirsToString(enabledDirs);
 
         std::string scriptOnConnectParams;
-
         strprintf(&scriptOnConnectParams,
-                "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
-                scriptOnConnect.c_str(),
-                login.c_str(),
-                inet_ntostring(currIP).c_str(),
-                cash.ConstData(),
-                id,
-                dirsStr);
+                  "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
+                  scriptOnConnect.c_str(),
+                  login.c_str(),
+                  inet_ntostring(currIP).c_str(),
+                  cash.ConstData(),
+                  id,
+                  dirs.c_str());
 
         std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
         while (it != settings->GetScriptParams().end())
@@ -627,12 +645,7 @@ if (!fakeDisconnect)
 
     if (access(scriptOnDisonnect.c_str(), X_OK) == 0)
         {
-        char dirsStr[DIR_NUM + 1];
-        dirsStr[DIR_NUM] = 0;
-        for (int i = 0; i < DIR_NUM; i++)
-            {
-            dirsStr[i] = enabledDirs[i] ? '1' : '0';
-            }
+        std::string dirs = dirsToString(enabledDirs);
 
         std::string scriptOnDisonnectParams;
         strprintf(&scriptOnDisonnectParams,
@@ -642,7 +655,7 @@ if (!fakeDisconnect)
                 inet_ntostring(lastIPForDisconnect).c_str(),
                 cash.ConstData(),
                 id,
-                dirsStr);
+                dirs.c_str());
 
         std::vector<std::string>::const_iterator it(settings->GetScriptParams().begin());
         while (it != settings->GetScriptParams().end())
@@ -675,49 +688,10 @@ if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload,
 if (!fakeDisconnect)
     lastIPForDisconnect = 0;
 
-DIR_TRAFF zeroSesssion;
-
-sessionUpload = zeroSesssion;
-sessionDownload = zeroSesssion;
+sessionUpload.Reset();
+sessionDownload.Reset();
 sessionUploadModTime = stgTime;
 sessionDownloadModTime = stgTime;
-}
-//-----------------------------------------------------------------------------
-void USER_IMPL::PrintUser() const
-{
-//return;
-STG_LOCKER lock(&mutex);
-std::cout << "============================================================" << std::endl;
-std::cout << "id=" << id << std::endl;
-std::cout << "login=" << login << std::endl;
-std::cout << "password=" << password << std::endl;
-std::cout << "passive=" << passive << std::endl;
-std::cout << "disabled=" << disabled << std::endl;
-std::cout << "disabledDetailStat=" << disabledDetailStat << std::endl;
-std::cout << "alwaysOnline=" << alwaysOnline << std::endl;
-std::cout << "tariffName=" << tariffName << std::endl;
-std::cout << "address=" << address << std::endl;
-std::cout << "phone=" << phone << std::endl;
-std::cout << "email=" << email << std::endl;
-std::cout << "note=" << note << std::endl;
-std::cout << "realName=" <<realName << std::endl;
-std::cout << "group=" << group << std::endl;
-std::cout << "credit=" << credit << std::endl;
-std::cout << "nextTariff=" << nextTariff << std::endl;
-std::cout << "userdata0" << userdata0 << std::endl;
-std::cout << "userdata1" << userdata1 << std::endl;
-std::cout << "creditExpire=" << creditExpire << std::endl;
-std::cout << "ips=" << ips << std::endl;
-std::cout << "------------------------" << std::endl;
-std::cout << "up=" << up << std::endl;
-std::cout << "down=" << down << std::endl;
-std::cout << "cash=" << cash << std::endl;
-std::cout << "freeMb=" << freeMb << std::endl;
-std::cout << "lastCashAdd=" << lastCashAdd << std::endl;
-std::cout << "lastCashAddTime=" << lastCashAddTime << std::endl;
-std::cout << "passiveTime=" << passiveTime << std::endl;
-std::cout << "lastActivityTime=" << lastActivityTime << std::endl;
-std::cout << "============================================================" << std::endl;
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::Run()
@@ -748,13 +722,11 @@ if (passive.ConstData()
 if (!authorizedBy.empty())
     {
     if (connected)
-        {
         property.Stat().lastActivityTime = stgTime;
-        }
+
     if (!connected && IsInetable())
-        {
         Connect();
-        }
+
     if (connected && !IsInetable())
         {
         if (disabled)
@@ -774,9 +746,7 @@ if (!authorizedBy.empty())
 else
     {
     if (connected)
-        {
         Disconnect(false, "not authorized");
-        }
     }
 
 }
@@ -784,7 +754,6 @@ else
 void USER_IMPL::UpdatePingTime(time_t t)
 {
 STG_LOCKER lock(&mutex);
-//printfd(__FILE__, "UpdatePingTime(%d) %s\n", t, login.c_str());
 if (t)
     pingTime = t;
 else
@@ -793,8 +762,6 @@ else
 //-----------------------------------------------------------------------------
 bool USER_IMPL::IsInetable()
 {
-//STG_LOCKER lock(&mutex);
-
 if (disabled || passive)
     return false;
 
@@ -805,21 +772,14 @@ if (settings->GetFreeMbAllowInet())
     }
 
 if (settings->GetShowFeeInCash() || tariff == NULL)
-    {
     return (cash >= -credit);
-    }
 
 return (cash - tariff->GetFee() >= -credit);
 }
 //-----------------------------------------------------------------------------
 std::string USER_IMPL::GetEnabledDirs() const
 {
-//STG_LOCKER lock(&mutex);
-
-std::string dirs = "";
-for(int i = 0; i < DIR_NUM; i++)
-    dirs += enabledDirs[i] ? "1" : "0";
-return dirs;
+return dirsToString(enabledDirs);
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
@@ -1063,11 +1023,7 @@ std::string scriptOnAdd = settings->GetScriptsDir() + "/OnUserAdd";
 
 if (access(scriptOnAdd.c_str(), X_OK) == 0)
     {
-    std::string scriptOnAddParams;
-    strprintf(&scriptOnAddParams,
-            "%s \"%s\"",
-            scriptOnAdd.c_str(),
-            login.c_str());
+    std::string scriptOnAddParams = scriptOnAdd + " \"" + login + "\"";
 
     ScriptExec(scriptOnAddParams.c_str());
     }
@@ -1085,11 +1041,7 @@ std::string scriptOnDel = settings->GetScriptsDir() + "/OnUserDel";
 
 if (access(scriptOnDel.c_str(), X_OK) == 0)
     {
-    std::string scriptOnDelParams;
-    strprintf(&scriptOnDelParams,
-            "%s \"%s\"",
-            scriptOnDel.c_str(),
-            login.c_str());
+    std::string scriptOnDelParams = scriptOnDel + " \"" + login + "\"";
 
     ScriptExec(scriptOnDelParams.c_str());
     }
@@ -1204,36 +1156,25 @@ void USER_IMPL::ProcessNewMonth()
 STG_LOCKER lock(&mutex);
 //  Reset traff
 if (connected)
-    {
     Disconnect(true, "fake");
-    }
-DIR_TRAFF zeroTarff;
 
 WriteMonthStat();
 
-up = zeroTarff;
-down = zeroTarff;
+property.Stat().monthUp.Reset();
+property.Stat().monthDown.Reset();
 
 if (connected)
-    {
     Connect(true);
-    }
 
 //  Set new tariff
 if (nextTariff.ConstData() != "")
     {
-    const TARIFF * nt;
-    nt = tariffs->FindByName(nextTariff);
+    const TARIFF * nt = tariffs->FindByName(nextTariff);
     if (nt == NULL)
-        {
         WriteServLog("Cannot change tariff for user %s. Tariff %s not exist.",
                      login.c_str(), property.tariffName.Get().c_str());
-        }
     else
-        {
         property.tariffName.Set(nextTariff, sysAdmin, login, store);
-        //tariff = nt;
-        }
     ResetNextTariff();
     WriteConf();
     }
@@ -1539,14 +1480,9 @@ if (newPassive && !oldPassive && user->tariff != NULL)
 void CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
 {
 if (oldValue && !newValue && user->GetConnected())
-    {
     user->Disconnect(false, "disabled");
-    }
 else if (!oldValue && newValue && user->IsInetable())
-    {
     user->Connect(false);
-    }
-
 }
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
@@ -1568,10 +1504,9 @@ user->lastCashAdd = newCash - oldCash;
 //-----------------------------------------------------------------------------
 void CHG_IPS_NOTIFIER::Notify(const USER_IPS & from, const USER_IPS & to)
 {
-    printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.GetIpStr().c_str(), to.GetIpStr().c_str());
-    if (user->connected)
-        user->Disconnect(false, "Change IP");
-    if (!user->authorizedBy.empty() && user->IsInetable())
-        user->Connect(false);
+printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.GetIpStr().c_str(), to.GetIpStr().c_str());
+if (user->connected)
+    user->Disconnect(false, "Change IP");
+if (!user->authorizedBy.empty() && user->IsInetable())
+    user->Connect(false);
 }
-//-----------------------------------------------------------------------------

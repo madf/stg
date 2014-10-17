@@ -200,7 +200,6 @@ public:
     void            UpdatePingTime(time_t t = 0);
     time_t          GetPingTime() const { return pingTime; }
 
-    void            PrintUser() const;
     void            Run();
 
     const std::string & GetStrError() const { return errorStr; }
