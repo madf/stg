@@ -230,6 +230,8 @@ public:
 private:
     USER_IMPL & operator=(const USER_IMPL & rvalue);
 
+    void            Init();
+
     const USERS *   users;
     USER_PROPERTIES property;
     STG_LOGGER &    WriteServLog;

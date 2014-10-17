@@ -18,25 +18,13 @@
 struct USER_CONF
 {
     USER_CONF()
-        : password(),
-          passive(0),
+        : passive(0),
           disabled(0),
           disabledDetailStat(0),
           alwaysOnline(0),
-          tariffName(),
-          address(),
-          phone(),
-          email(),
-          note(),
-          realName(),
-          corp(),
-          services(),
-          group(),
           credit(0),
-          nextTariff(),
           userdata(USERDATA_NUM),
-          creditExpire(0),
-          ips()
+          creditExpire(0)
     {}
 
     std::string              password;
@@ -63,25 +51,6 @@ struct USER_CONF
 struct USER_CONF_RES
 {
     USER_CONF_RES()
-        : password(),
-          passive(),
-          disabled(),
-          disabledDetailStat(),
-          alwaysOnline(),
-          tariffName(),
-          address(),
-          phone(),
-          email(),
-          note(),
-          realName(),
-          corp(),
-          group(),
-          credit(),
-          nextTariff(),
-          userdata(USERDATA_NUM),
-          services(),
-          creditExpire(),
-          ips()
     {
     }
 

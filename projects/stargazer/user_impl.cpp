@@ -59,8 +59,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
            const TARIFFS * t,
            const ADMIN * a,
            const USERS * u)
-    : USER(),
-      users(u),
+    : users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
@@ -120,22 +119,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       cashNotifier(this),
       ipNotifier(this)
 {
-password = "*_EMPTY_PASSWORD_*";
-tariffName = NO_TARIFF_NAME;
-ips = StrToIPS("*");
-lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
-lastWriteDetailedStat = stgTime;
-
-property.tariffName.AddBeforeNotifier(&tariffNotifier);
-property.passive.AddBeforeNotifier(&passiveNotifier);
-property.disabled.AddAfterNotifier(&disabledNotifier);
-property.cash.AddBeforeNotifier(&cashNotifier);
-ips.AddAfterNotifier(&ipNotifier);
-
-pthread_mutexattr_t attr;
-pthread_mutexattr_init(&attr);
-pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-pthread_mutex_init(&mutex, &attr);
+Init();
 }
 #else
 USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
@@ -143,8 +127,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
                      const TARIFFS * t,
                      const ADMIN * a,
                      const USERS * u)
-    : USER(),
-      users(u),
+    : users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
@@ -204,6 +187,12 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       cashNotifier(this),
       ipNotifier(this)
 {
+Init();
+}
+#endif
+//-----------------------------------------------------------------------------
+void USER_IMPL::Init()
+{
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 ips = StrToIPS("*");
@@ -221,7 +210,6 @@ pthread_mutexattr_init(&attr);
 pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
-#endif
 //-----------------------------------------------------------------------------
 USER_IMPL::USER_IMPL(const USER_IMPL & u)
     : USER(),
