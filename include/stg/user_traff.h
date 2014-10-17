@@ -51,6 +51,12 @@ public:
     uint64_t & operator[](IndexType idx) { return traff[idx]; }
     IndexType size() const { return traff.size(); }
 
+    void Reset()
+    {
+    for (IndexType i = 0; i < traff.size(); ++i)
+        traff[i] = 0;
+    }
+
 private:
     ContainerType traff;
 };
