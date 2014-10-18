@@ -77,7 +77,8 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
            const STORE * st,
            const TARIFFS * t,
            const ADMIN * a,
-           const USERS * u)
+           const USERS * u,
+           const SERVICES & svcs)
     : users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
@@ -93,6 +94,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       store(st),
       tariffs(t),
       tariff(NULL),
+      m_services(svcs),
       settings(s),
       authorizedModificationTime(0),
       deleted(false),
@@ -145,7 +147,8 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
                      const STORE * st,
                      const TARIFFS * t,
                      const ADMIN * a,
-                     const USERS * u)
+                     const USERS * u,
+                     const SERVICES & svcs)
     : users(u),
       property(s->GetScriptsDir()),
       WriteServLog(GetStgLogger()),
@@ -161,6 +164,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
       store(st),
       tariffs(t),
       tariff(NULL),
+      m_services(svcs),
       settings(s),
       authorizedModificationTime(0),
       deleted(false),
@@ -249,6 +253,7 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       store(u.store),
       tariffs(u.tariffs),
       tariff(u.tariff),
+      m_services(u.m_services),
       traffStat(u.traffStat),
       traffStatSaved(u.traffStatSaved),
       settings(u.settings),
@@ -1319,6 +1324,75 @@ switch (settings->GetFeeChargeType())
         break;
     }
 ResetPassiveTime();
+}
+//-----------------------------------------------------------------------------
+void USER_IMPL::ProcessServices()
+{
+struct tm tms;
+time_t t = stgTime;
+localtime_r(&t, &tms);
+
+double passiveTimePart = 1.0;
+if (!settings->GetFullFee())
+    {
+    passiveTimePart = GetPassiveTimePart();
+    }
+else
+    {
+    if (passive.ConstData())
+        {
+        printfd(__FILE__, "Don't charge fee `cause we are passive\n");
+        return;
+        }
+    }
+
+for (size_t i = 0; i < property.Conf().services.size(); ++i)
+    {
+    SERVICE_CONF conf;
+    if (m_services.Find(property.Conf().services[i], &conf))
+        continue;
+    if (conf.payDay == tms.tm_mday ||
+        conf.payDay == 0 && tms.tm_mday == DaysInCurrentMonth())
+        {
+        double c = cash;
+        double fee = conf.cost * passiveTimePart;
+        printfd(__FILE__, "Service fee. login: %8s Cash=%f Credit=%f  Fee=%f PassiveTimePart=%f fee=%f\n",
+                login.c_str(),
+                cash.ConstData(),
+                credit.ConstData(),
+                tariff->GetFee(),
+                passiveTimePart,
+                fee);
+        switch (settings->GetFeeChargeType())
+            {
+            case 0:
+                property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                SetPrepaidTraff();
+                break;
+            case 1:
+                if (c + credit >= 0)
+                    {
+                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    SetPrepaidTraff();
+                    }
+                break;
+            case 2:
+                if (c + credit >= fee)
+                    {
+                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    SetPrepaidTraff();
+                    }
+                break;
+            case 3:
+                if (c >= 0)
+                    {
+                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    SetPrepaidTraff();
+                    }
+                break;
+            }
+        }
+    }
 }
 //-----------------------------------------------------------------------------
 void USER_IMPL::SetPrepaidTraff()

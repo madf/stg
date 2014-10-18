@@ -125,13 +125,15 @@ public:
               const STORE * store,
               const TARIFFS * tariffs,
               const ADMIN * sysAdmin,
-              const USERS * u);
+              const USERS * u,
+              const SERVICES & svcs);
 #else
     USER_IMPL(const SETTINGS_IMPL * settings,
               const STORE * store,
               const TARIFFS * tariffs,
               const ADMIN * sysAdmin,
-              const USERS * u);
+              const USERS * u,
+              const SERVICES & svcs);
 #endif
     USER_IMPL(const USER_IMPL & u);
     virtual ~USER_IMPL();
@@ -217,6 +219,7 @@ public:
     void            ProcessDayFeeSpread();
     void            ProcessNewMonth();
     void            ProcessDailyFee();
+    void            ProcessServices();
 
     bool            IsInetable();
     std::string     GetEnabledDirs() const;
@@ -268,6 +271,8 @@ private:
 
     const TARIFFS * tariffs;
     const TARIFF *  tariff;
+
+    const SERVICES & m_services;
 
     TRAFF_STAT      traffStat;
     std::pair<time_t, TRAFF_STAT> traffStatSaved;
