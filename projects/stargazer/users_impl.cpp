@@ -521,6 +521,7 @@ else
     }
 
 std::for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDailyFee));
+std::for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessServices));
 
 if (settings->GetDayFeeIsLastDay())
     {
