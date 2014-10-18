@@ -7,6 +7,7 @@
 #include "testtariffs.h"
 #include "testadmin.h"
 #include "teststore.h"
+#include "testservices.h"
 
 namespace tut
 {
@@ -40,7 +41,8 @@ namespace tut
         TEST_TARIFFS tariffs;
         TEST_ADMIN admin;
         TEST_STORE store;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL);
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL, services);
 
         USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
@@ -72,7 +74,8 @@ namespace tut
         TEST_TARIFFS tariffs;
         TEST_ADMIN admin;
         TEST_STORE store;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL);
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL, services);
 
         USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<double> & credit(user.GetProperty().credit);
@@ -118,7 +121,8 @@ namespace tut
         TEST_TARIFFS tariffs;
         TEST_ADMIN admin;
         TEST_STORE store;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL);
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, NULL, services);
 
         USER_PROPERTY<double> & cash(user.GetProperty().cash);
         USER_PROPERTY<double> & credit(user.GetProperty().credit);

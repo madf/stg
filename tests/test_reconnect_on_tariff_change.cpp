@@ -9,6 +9,7 @@
 #include "teststore.h"
 #include "testauth.h"
 #include "testusers.h"
+#include "testservices.h"
 
 class AFTER_CONNECTED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<bool>,
                                  private NONCOPYABLE {
@@ -62,7 +63,8 @@ namespace tut
         TEST_STORE store;
         TEST_AUTH auth;
         TEST_USERS users;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users);
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 
@@ -119,7 +121,8 @@ namespace tut
         TEST_STORE store;
         TEST_AUTH auth;
         TEST_USERS users;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users);
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 

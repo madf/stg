@@ -1,6 +1,8 @@
 #ifndef __TEST_USERS_H__
 #define __TEST_USERS_H__
 
+#include "stg/users.h"
+
 class TEST_USERS : public USERS {
     public:
         TEST_USERS() {}
