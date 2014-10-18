@@ -192,7 +192,7 @@ assert(service != NULL && "Pointer to service is not null");
 
 STG_LOCKER lock(&mutex);
 if (data.empty())
-    return false;
+    return true;
 
 const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
 
@@ -211,7 +211,7 @@ assert(service != NULL && "Pointer to service is not null");
 
 STG_LOCKER lock(&mutex);
 if (data.empty())
-    return false;
+    return true;
 
 const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
 
