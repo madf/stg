@@ -1352,7 +1352,7 @@ for (size_t i = 0; i < property.Conf().services.size(); ++i)
     if (m_services.Find(property.Conf().services[i], &conf))
         continue;
     if (conf.payDay == tms.tm_mday ||
-        conf.payDay == 0 && tms.tm_mday == DaysInCurrentMonth())
+        (conf.payDay == 0 && tms.tm_mday == DaysInCurrentMonth()))
         {
         double c = cash;
         double fee = conf.cost * passiveTimePart;

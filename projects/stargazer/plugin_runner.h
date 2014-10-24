@@ -16,86 +16,79 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
- */
-
-/*
- $Revision: 1.13 $
- $Date: 2010/03/04 12:22:41 $
- $Author: faust $
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
 #ifndef PLUGIN_RUNNER_H
 #define PLUGIN_RUNNER_H
 
-#include <string>
-
-#include "stg/module_settings.h"
 #include "stg/plugin.h"
+#include "stg/module_settings.h"
 #include "stg/os_int.h"
 
-class SETTINGS_IMPL;
-class ADMINS_IMPL;
-class TARIFFS_IMPL;
-class USERS_IMPL;
-class SERVICES_IMPL;
-class CORPORATIONS_IMPL;
+#include <string>
+#include <stdexcept>
+
+class SETTINGS;
+class ADMINS;
+class TARIFFS;
+class USERS;
+class SERVICES;
+class CORPORATIONS;
 class TRAFFCOUNTER;
 class STORE;
 
 //-----------------------------------------------------------------------------
 class PLUGIN_RUNNER {
 public:
+    struct Error : public std::runtime_error {
+        Error(const std::string & msg) : runtime_error(msg) {}
+    };
+
     PLUGIN_RUNNER(const std::string & pluginFileName,
                   const MODULE_SETTINGS & ms,
-                  ADMINS_IMPL * admins,
-                  TARIFFS_IMPL * tariffs,
-                  USERS_IMPL * users,
-                  SERVICES_IMPL * services,
-                  CORPORATIONS_IMPL * corporations,
-                  TRAFFCOUNTER * tc,
-                  STORE * store,
-                  const SETTINGS_IMPL * s);
-    PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue);
+                  ADMINS & admins,
+                  TARIFFS & tariffs,
+                  USERS & users,
+                  SERVICES & services,
+                  CORPORATIONS & corporations,
+                  TRAFFCOUNTER & traffcounter,
+                  STORE & store,
+                  const SETTINGS & settings);
     ~PLUGIN_RUNNER();
-
-    PLUGIN_RUNNER & operator=(const PLUGIN_RUNNER & rvalue);
 
     int             Start();
     int             Stop();
     int             Reload();
     int             Restart();
-    bool            IsRunning();
+    bool            IsRunning() { return m_plugin.IsRunning(); }
 
     const std::string & GetStrError() const { return errorStr; }
-    PLUGIN *        GetPlugin();
+    PLUGIN &        GetPlugin() { return m_plugin; }
     const std::string & GetFileName() const { return pluginFileName; }
 
-    int             Load();
-    int             Unload();
-
-    uint16_t        GetStartPosition() const { return plugin->GetStartPosition(); }
-    uint16_t        GetStopPosition() const { return plugin->GetStopPosition(); }
+    uint16_t        GetStartPosition() const { return m_plugin.GetStartPosition(); }
+    uint16_t        GetStopPosition() const { return m_plugin.GetStopPosition(); }
 
 private:
+    PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue);
+    PLUGIN_RUNNER & operator=(const PLUGIN_RUNNER & rvalue);
+
+    PLUGIN & Load(const MODULE_SETTINGS & ms,
+                  ADMINS & admins,
+                  TARIFFS & tariffs,
+                  USERS & users,
+                  SERVICES & services,
+                  CORPORATIONS & corporations,
+                  TRAFFCOUNTER & traffcounter,
+                  STORE & store,
+                  const SETTINGS & settings);
+
     std::string     pluginFileName;
-    std::string     pluginSettingFileName;
-
-    PLUGIN *        plugin;
-    bool            isPluginLoaded;
-    std::string     errorStr;
-
     void *          libHandle;
-    bool            isRunning;
 
-    ADMINS_IMPL *   admins;
-    TARIFFS_IMPL *  tariffs;
-    USERS_IMPL *    users;
-    SERVICES_IMPL * services;
-    CORPORATIONS_IMPL * corps;
-    STORE *         store;
-    TRAFFCOUNTER *  traffCnt;
-    const SETTINGS_IMPL * stgSettings;
-    MODULE_SETTINGS modSettings;
+    PLUGIN &        m_plugin;
+    std::string     errorStr;
 };
 //-----------------------------------------------------------------------------
 #endif //PLUGIN_RUNNER_H

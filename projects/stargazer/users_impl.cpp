@@ -51,29 +51,18 @@ extern volatile time_t stgTime;
 //#define USERS_DEBUG 1
 
 //-----------------------------------------------------------------------------
-USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st, TARIFFS * t, const ADMIN * sa)
-    : USERS(),
-      users(),
-      usersToDelete(),
-      /*userIPNotifiersBefore(),
-      userIPNotifiersAfter(),*/
-      ipIndex(),
-      loginIndex(),
-      settings(s),
+USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st,
+                       TARIFFS * t, SERVICES & svcs,
+                       const ADMIN * sa)
+    : settings(s),
       tariffs(t),
+      m_services(svcs),
       store(st),
       sysAdmin(sa),
       WriteServLog(GetStgLogger()),
       nonstop(false),
       isRunning(false),
-      mutex(),
-      thread(),
-      handle(0),
-      searchDescriptors(),
-      onAddNotifiers(),
-      onDelNotifiers(),
-      onAddNotifiersImpl(),
-      onDelNotifiersImpl()
+      handle(0)
 {
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -171,7 +160,7 @@ if (store->AddUser(login))
     }
 //////
 
-USER_IMPL u(settings, store, tariffs, sysAdmin, this);
+USER_IMPL u(settings, store, tariffs, sysAdmin, this, m_services);
 
 /*struct tm * tms;
 time_t t = stgTime;
@@ -357,7 +346,7 @@ user_iter ui;
 
 for (unsigned int i = 0; i < usersList.size(); i++)
     {
-    USER_IMPL u(settings, store, tariffs, sysAdmin, this);
+    USER_IMPL u(settings, store, tariffs, sysAdmin, this, m_services);
 
     u.SetLogin(usersList[i]);
     users.push_front(u);

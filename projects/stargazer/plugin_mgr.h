@@ -1,3 +1,6 @@
+#ifndef __STG_PLUGIN_MGR_H__
+#define __STG_PLUGIN_MGR_H__
+
 /*
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -18,49 +21,40 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.3 $
- $Date: 2010/03/04 12:24:19 $
- $Author: faust $
- */
-
-/*
- *  Header file for RAII store plugin loader
- */
-
-#ifndef __STORE_LOADER_H__
-#define __STORE_LOADER_H__
-
-#include <string>
-
 #include "stg/module_settings.h"
-#include "stg/noncopyable.h"
 
-class STORE;
+#include <vector>
+
 class SETTINGS_IMPL;
+class PLUGIN_RUNNER;
+class STORE;
+class ADMINS_IMPL;
+class TARIFFS_IMPL;
+class SERVICES_IMPL;
+class CORPORATIONS_IMPL;
+class USERS_IMPL;
+class TRAFFCOUNTER_IMPL;
+class STG_LOGGER;
 
-class STORE_LOADER : private NONCOPYABLE {
-public:
-    STORE_LOADER(const SETTINGS_IMPL & settings);
-    ~STORE_LOADER();
+namespace STG
+{
 
-    bool Load();
-    bool Unload();
+class PluginManager
+{
+    public:
+        PluginManager(const SETTINGS_IMPL& settings,
+                      STORE& store, ADMINS_IMPL& admins, TARIFFS_IMPL& tariffs,
+                      SERVICES_IMPL& services, CORPORATIONS_IMPL& corporations,
+                      USERS_IMPL& users, TRAFFCOUNTER_IMPL& traffcounter);
+        ~PluginManager();
 
-    STORE & GetStore() { return *plugin; }
+        void reload();
 
-    const std::string & GetStrError() const { return errorStr; }
-
-private:
-    STORE_LOADER(const STORE_LOADER & rvalue);
-    STORE_LOADER & operator=(const STORE_LOADER & rvalue);
-
-    bool isLoaded;
-    void * handle;
-    STORE * plugin;
-    std::string errorStr;
-    MODULE_SETTINGS storeSettings;
-    std::string pluginFileName;
+    private:
+        std::vector<PLUGIN_RUNNER*> m_modules;
+        STG_LOGGER & m_log;
 };
+
+} // namespace STG
 
 #endif

@@ -71,7 +71,9 @@ class USERS_IMPL : private NONCOPYABLE, public USERS {
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
 public:
-    USERS_IMPL(SETTINGS_IMPL * s, STORE * store, TARIFFS * tariffs, const ADMIN * sysAdmin);
+    USERS_IMPL(SETTINGS_IMPL * s, STORE * store,
+               TARIFFS * tariffs, SERVICES & svcs,
+               const ADMIN * sysAdmin);
     virtual ~USERS_IMPL();
 
     int             FindByName(const std::string & login, USER_PTR * user);
@@ -150,6 +152,7 @@ private:
 
     SETTINGS_IMPL *     settings;
     TARIFFS *           tariffs;
+    SERVICES &          m_services;
     STORE *             store;
     const ADMIN *       sysAdmin;
     STG_LOGGER &        WriteServLog;

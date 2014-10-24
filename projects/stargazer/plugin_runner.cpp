@@ -16,225 +16,79 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
+ *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.17 $
- $Date: 2010/09/13 05:52:46 $
- $Author: faust $
- */
+#include "plugin_runner.h"
+
+#include "stg/common.h"
 
 #include <dlfcn.h>
 #include <unistd.h>
 
-#include "stg/common.h"
-#include "stg/traffcounter.h"
-#include "plugin_runner.h"
-#include "settings_impl.h"
-#include "admins_impl.h"
-#include "tariffs_impl.h"
-#include "users_impl.h"
-#include "services_impl.h"
-#include "corps_impl.h"
-
 //-----------------------------------------------------------------------------
-PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & pFileName,
+PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & fileName,
                              const MODULE_SETTINGS & ms,
-                             ADMINS_IMPL * a,
-                             TARIFFS_IMPL * t,
-                             USERS_IMPL * u,
-                             SERVICES_IMPL * svc,
-                             CORPORATIONS_IMPL * crp,
-                             TRAFFCOUNTER * tc,
-                             STORE * st,
-                             const SETTINGS_IMPL * s)
-    : pluginFileName(pFileName),
-      pluginSettingFileName(),
-      plugin(NULL),
-      isPluginLoaded(false),
-      errorStr(),
+                             ADMINS & admins,
+                             TARIFFS & tariffs,
+                             USERS & users,
+                             SERVICES & services,
+                             CORPORATIONS & corporations,
+                             TRAFFCOUNTER & traffcounter,
+                             STORE & store,
+                             const SETTINGS & settings)
+    : pluginFileName(fileName),
       libHandle(NULL),
-      isRunning(false),
-      admins(a),
-      tariffs(t),
-      users(u),
-      services(svc),
-      corps(crp),
-      store(st),
-      traffCnt(tc),
-      stgSettings(s),
-      modSettings(ms)
+      m_plugin(Load(ms, admins, tariffs, users, services, corporations,
+                    traffcounter, store, settings))
 {
-}
-//-----------------------------------------------------------------------------
-PLUGIN_RUNNER::PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue)
-    : pluginFileName(rvalue.pluginFileName),
-      pluginSettingFileName(rvalue.pluginSettingFileName),
-      plugin(rvalue.plugin),
-      isPluginLoaded(rvalue.isPluginLoaded),
-      errorStr(rvalue.errorStr),
-      libHandle(rvalue.libHandle),
-      isRunning(rvalue.isRunning),
-      admins(rvalue.admins),
-      tariffs(rvalue.tariffs),
-      users(rvalue.users),
-      services(rvalue.services),
-      corps(rvalue.corps),
-      store(rvalue.store),
-      traffCnt(rvalue.traffCnt),
-      stgSettings(rvalue.stgSettings),
-      modSettings(rvalue.modSettings)
-{
-}
-//-----------------------------------------------------------------------------
-PLUGIN_RUNNER & PLUGIN_RUNNER::operator=(const PLUGIN_RUNNER & rvalue)
-{
-pluginFileName = rvalue.pluginFileName;
-pluginSettingFileName = rvalue.pluginSettingFileName;
-plugin = rvalue.plugin;
-isPluginLoaded = rvalue.isPluginLoaded;
-errorStr = rvalue.errorStr;
-libHandle = rvalue.libHandle;
-isRunning = rvalue.isRunning;
-admins = rvalue.admins;
-tariffs = rvalue.tariffs;
-users = rvalue.users;
-services = rvalue.services;
-corps = rvalue.corps;
-store = rvalue.store;
-traffCnt = rvalue.traffCnt;
-stgSettings = rvalue.stgSettings;
-modSettings = rvalue.modSettings;
-
-return *this;
 }
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::~PLUGIN_RUNNER()
 {
-if (isPluginLoaded)
+if (dlclose(libHandle))
     {
-    Unload();
+    errorStr = "Failed to unload plugin '" + pluginFileName + "': " + dlerror();
+    printfd(__FILE__, "PLUGIN_RUNNER::Unload() - %s", errorStr.c_str());
     }
-
-isPluginLoaded = false;
-}
-//-----------------------------------------------------------------------------
-PLUGIN * PLUGIN_RUNNER::GetPlugin()
-{
-if (!isPluginLoaded)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' is not loaded yet!";
-    printfd(__FILE__, "PLUGIN_RUNNER::GetPlugin() - %s\n", errorStr.c_str());
-    return NULL;
-    }
-
-return plugin;
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Start()
 {
-if (!isPluginLoaded)
-    if (Load())
-        return -1;
-
-if (!plugin)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not created!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Start() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
-plugin->SetTariffs(tariffs);
-plugin->SetAdmins(admins);
-plugin->SetUsers(users);
-plugin->SetServices(services);
-plugin->SetCorporations(corps);
-plugin->SetTraffcounter(traffCnt);
-plugin->SetStore(store);
-plugin->SetStgSettings(stgSettings);
-
-if (plugin->Start())
-    {
-    errorStr = plugin->GetStrError();
-    return -1;
-    }
-
-return 0;
+int res = m_plugin.Start();
+errorStr = m_plugin.GetStrError();
+return res;
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Stop()
 {
-if (!isPluginLoaded)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Stop() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
-if (!plugin)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not created!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Stop() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
-return plugin->Stop();
+int res = m_plugin.Stop();
+errorStr = m_plugin.GetStrError();
+return res;
 }
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Reload()
 {
-if (!isPluginLoaded)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Reload() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
-if (!plugin)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not created!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Reload() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
-int res = plugin->Reload();
-errorStr = plugin->GetStrError();
+int res = m_plugin.Reload();
+errorStr = m_plugin.GetStrError();
 return res;
 }
 //-----------------------------------------------------------------------------
-bool PLUGIN_RUNNER::IsRunning()
+PLUGIN & PLUGIN_RUNNER::Load(const MODULE_SETTINGS & ms,
+                             ADMINS & admins,
+                             TARIFFS & tariffs,
+                             USERS & users,
+                             SERVICES & services,
+                             CORPORATIONS & corporations,
+                             TRAFFCOUNTER & traffcounter,
+                             STORE & store,
+                             const SETTINGS & settings)
 {
-if (!isPluginLoaded)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not loaded yet!";
-    printfd(__FILE__, "PLUGIN_RUNNER::IsRunning() - %s\n", errorStr.c_str());
-    return false;
-    }
-
-if (!plugin)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was not created!";
-    printfd(__FILE__, "PLUGIN_RUNNER::IsRunning() - %s\n", errorStr.c_str());
-    return false;
-    }
-
-return plugin->IsRunning();
-}
-//-----------------------------------------------------------------------------
-int PLUGIN_RUNNER::Load()
-{
-if (isPluginLoaded)
-    {
-    errorStr = "Plugin '" + pluginFileName + "' was already loaded!";
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
-    }
-
 if (pluginFileName.empty())
     {
-    errorStr = "Empty plugin file name!";
+    errorStr = "Empty plugin file name.";
     printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
+    throw Error(errorStr);
     }
 
 libHandle = dlopen(pluginFileName.c_str(), RTLD_NOW);
@@ -243,10 +97,8 @@ if (!libHandle)
     {
     errorStr = "Error loading plugin '" + pluginFileName + "': '" + dlerror() + "'";
     printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
+    throw Error(errorStr);
     }
-
-isPluginLoaded = true;
 
 PLUGIN * (*GetPlugin)();
 GetPlugin = (PLUGIN * (*)())dlsym(libHandle, "GetPlugin");
@@ -254,41 +106,33 @@ if (!GetPlugin)
     {
     errorStr = "Plugin '" + pluginFileName + "' does not have GetPlugin() function. " + dlerror();
     printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
+    throw Error(errorStr);
     }
-plugin = GetPlugin();
+PLUGIN * plugin = GetPlugin();
 
 if (!plugin)
     {
     errorStr = "Failed to create an instance of plugin '" + pluginFileName + "'.";
     printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
+    throw Error(errorStr);
     }
 
-plugin->SetSettings(modSettings);
+plugin->SetSettings(ms);
+plugin->SetTariffs(&tariffs);
+plugin->SetAdmins(&admins);
+plugin->SetUsers(&users);
+plugin->SetServices(&services);
+plugin->SetCorporations(&corporations);
+plugin->SetTraffcounter(&traffcounter);
+plugin->SetStore(&store);
+plugin->SetStgSettings(&settings);
+
 if (plugin->ParseSettings())
     {
     errorStr = "Plugin '" + pluginFileName + "' is unable to parse settings. " + plugin->GetStrError();
     printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    return -1;
+    throw Error(errorStr);
     }
 
-return 0;
+return *plugin;
 }
-//-----------------------------------------------------------------------------
-int PLUGIN_RUNNER::Unload()
-{
-if (isPluginLoaded)
-    {
-    if (dlclose(libHandle))
-        {
-        errorStr = "Failed to unload plugin '" + pluginFileName + "': " + dlerror();
-        printfd(__FILE__, "PLUGIN_RUNNER::Unload() - %s", errorStr.c_str());
-        return -1;
-        }
-    plugin = NULL;
-    isPluginLoaded = false;
-    }
-return 0;
-}
-//-----------------------------------------------------------------------------
