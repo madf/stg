@@ -13,6 +13,7 @@ SRCS = ./admin_impl.cpp \
        ./main.cpp \
        ./pidfile.cpp \
        ./plugin_runner.cpp \
+       ./plugin_mgr.cpp \
        ./settings_impl.cpp \
        ./services_impl.cpp \
        ./stg_timer.cpp \

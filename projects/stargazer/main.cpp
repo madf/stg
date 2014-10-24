@@ -18,11 +18,34 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.124 $
- $Date: 2010/10/04 20:19:12 $
- $Author: faust $
- */
+#include "store_loader.h"
+#include "plugin_mgr.h"
+#include "plugin_runner.h"
+#include "users_impl.h"
+#include "admins_impl.h"
+#include "tariffs_impl.h"
+#include "services_impl.h"
+#include "corps_impl.h"
+#include "traffcounter_impl.h"
+#include "settings_impl.h"
+#include "pidfile.h"
+#include "eventloop.h"
+#include "stg_timer.h"
+
+#include "stg/user.h"
+#include "stg/common.h"
+#include "stg/plugin.h"
+#include "stg/logger.h"
+#include "stg/scriptexecuter.h"
+#include "stg/version.h"
+
+#include <fstream>
+#include <vector>
+#include <set>
+#include <csignal>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib> // srandom, exit
 
 #include <unistd.h>
 #include <sys/ipc.h>
@@ -32,36 +55,7 @@
 #include <sys/stat.h> // S_IRUSR
 #include <fcntl.h> // create
 
-#include <csignal>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib> // srandom, exit
-#include <fstream>
-#include <vector>
-#include <set>
-#include <list>
-
-#include "stg/user.h"
-#include "stg/common.h"
-#include "stg/plugin.h"
-#include "stg/logger.h"
-#include "stg/scriptexecuter.h"
-#include "stg/version.h"
-#include "stg_timer.h"
-#include "settings_impl.h"
-#include "users_impl.h"
-#include "admins_impl.h"
-#include "tariffs_impl.h"
-#include "services_impl.h"
-#include "corps_impl.h"
-#include "traffcounter_impl.h"
-#include "plugin_runner.h"
-#include "store_loader.h"
-#include "pidfile.h"
-#include "eventloop.h"
-
 #ifdef DEBUG
-    #define MAIN_DEBUG (1)
     #define NO_DAEMON  (1)
 #endif
 
@@ -71,23 +65,11 @@ namespace
 {
 std::set<pid_t> executersPid;
 
-bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs);
-bool StopModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs);
 void StartTimer();
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings);
 int ForkAndWait(const std::string & confDir);
 void KillExecuters();
 
-//-----------------------------------------------------------------------------
-bool StartModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
-{
-return lhs.GetStartPosition() < rhs.GetStartPosition();
-}
-//-----------------------------------------------------------------------------
-bool StopModCmp(const PLUGIN_RUNNER & lhs, const PLUGIN_RUNNER & rhs)
-{
-return lhs.GetStopPosition() > rhs.GetStopPosition();
-}
 //-----------------------------------------------------------------------------
 void StartTimer()
 {
@@ -231,29 +213,14 @@ while (pid != executersPid.end())
 int main(int argc, char * argv[])
 {
 SETTINGS_IMPL * settings = NULL;
-STORE * dataStore = NULL;
-TARIFFS_IMPL * tariffs = NULL;
-ADMINS_IMPL * admins = NULL;
-USERS_IMPL * users = NULL;
-TRAFFCOUNTER_IMPL * traffCnt = NULL;
-SERVICES_IMPL * services = NULL;
-CORPORATIONS_IMPL * corps = NULL;
 int msgID = -11;
 
-    {
-    STG_LOGGER & WriteServLog = GetStgLogger();
-    WriteServLog.SetLogFileName("/var/log/stargazer.log");
-    }
-
-std::vector<MODULE_SETTINGS> modSettings;
-std::list<PLUGIN_RUNNER> modules;
-
-std::list<PLUGIN_RUNNER>::iterator modIter;
+GetStgLogger().SetLogFileName("/var/log/stargazer.log");
 
 if (getuid())
     {
     printf("You must be root. Exit.\n");
-    exit(1);
+    return 1;
     }
 
 if (argc == 2)
@@ -269,7 +236,7 @@ if (settings->ReadSettings())
         WriteServLog.SetLogFileName(settings->GetLogFileName());
 
     WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
-    exit(1);
+    return -1;
     }
 
 #ifndef NO_DAEMON
@@ -280,7 +247,7 @@ if (ForkAndWait(settings->GetConfDir()) < 0)
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
     WriteServLog("Fork error!");
-    exit(1);
+    return -1;
     }
 
 STG_LOGGER & WriteServLog = GetStgLogger();
@@ -294,7 +261,7 @@ for (size_t i = 0; i < settings->GetExecutersNum(); i++)
         {
         STG_LOGGER & WriteServLog = GetStgLogger();
         WriteServLog("Start Script Executer error!");
-        return 1;
+        return -1;
         }
     if (ret == 1)
         {
@@ -315,6 +282,7 @@ if (!IsStgTimerRunning())
     {
     printfd(__FILE__, "Timer thread not started in 1 sec!\n");
     WriteServLog("Timer thread not started in 1 sec!");
+    return -1;
     }
 
 EVENT_LOOP & loop(EVENT_LOOP_SINGLETON::GetInstance());
@@ -322,92 +290,40 @@ EVENT_LOOP & loop(EVENT_LOOP_SINGLETON::GetInstance());
 STORE_LOADER storeLoader(*settings);
 if (storeLoader.Load())
     {
+    printfd(__FILE__, "Storage plugin: '%s'\n", storeLoader.GetStrError().c_str());
     WriteServLog("Storage plugin: '%s'", storeLoader.GetStrError().c_str());
-    goto exitLblNotStarted;
+    return -1;
     }
 
 if (loop.Start())
     {
+    printfd(__FILE__, "Event loop not started.\n");
     WriteServLog("Event loop not started.");
-    goto exitLblNotStarted;
+    return -1;
     }
 
-dataStore = storeLoader.GetStore();
-WriteServLog("Storage plugin: %s. Loading successfull.", dataStore->GetVersion().c_str());
+STORE & store(storeLoader.GetStore());
+WriteServLog("Storage plugin: %s. Loading successfull.", store.GetVersion().c_str());
 
-tariffs = new TARIFFS_IMPL(dataStore);
-admins = new ADMINS_IMPL(dataStore);
-users = new USERS_IMPL(settings, dataStore, tariffs, admins->GetSysAdmin());
-traffCnt = new TRAFFCOUNTER_IMPL(users, settings->GetRulesFileName());
-services = new SERVICES_IMPL(dataStore);
-corps = new CORPORATIONS_IMPL(dataStore);
-traffCnt->SetMonitorDir(settings->GetMonitorDir());
+ADMINS_IMPL admins(&store);
+TARIFFS_IMPL tariffs(&store);
+SERVICES_IMPL services(&store);
+CORPORATIONS_IMPL corps(&store);
+USERS_IMPL users(settings, &store, &tariffs, services, admins.GetSysAdmin());
+TRAFFCOUNTER_IMPL traffCnt(&users, settings->GetRulesFileName());
+traffCnt.SetMonitorDir(settings->GetMonitorDir());
 
-modSettings = settings->GetModulesSettings();
+if (users.Start())
+    return -1;
 
-for (size_t i = 0; i < modSettings.size(); i++)
-    {
-    std::string modulePath = settings->GetModulesPath();
-    modulePath += "/mod_";
-    modulePath += modSettings[i].moduleName;
-    modulePath += ".so";
-    printfd(__FILE__, "Module: %s\n", modulePath.c_str());
-    modules.push_back(
-        PLUGIN_RUNNER(modulePath,
-                      modSettings[i],
-                      admins,
-                      tariffs,
-                      users,
-                      services,
-                      corps,
-                      traffCnt,
-                      dataStore,
-                      settings)
-        );
-    }
-
-modIter = modules.begin();
-
-while (modIter != modules.end())
-    {
-    if (modIter->Load())
-        {
-        WriteServLog("Error loading module '%s': %s",
-                     modIter->GetPlugin()->GetVersion().c_str(),
-                     modIter->GetStrError().c_str());
-        goto exitLblNotStarted;
-        }
-    ++modIter;
-    }
-
-if (users->Start())
-    {
-    goto exitLblNotStarted;
-    }
 WriteServLog("Users started successfully.");
 
-if (traffCnt->Start())
-    {
-    goto exitLblNotStarted;
-    }
+if (traffCnt.Start())
+    return -1;
+
 WriteServLog("Traffcounter started successfully.");
 
-//Sort by start order
-modules.sort(StartModCmp);
-modIter = modules.begin();
-
-while (modIter != modules.end())
-    {
-    if (modIter->Start())
-        {
-        WriteServLog("Error starting module '%s': %s",
-                     modIter->GetPlugin()->GetVersion().c_str(),
-                     modIter->GetStrError().c_str());
-        goto exitLbl;
-        }
-    WriteServLog("Module: '%s'. Start successfull.", modIter->GetPlugin()->GetVersion().c_str());
-    ++modIter;
-    }
+STG::PluginManager manager(*settings, store, admins, tariffs, services, corps, users, traffCnt);
 
 srandom(static_cast<unsigned int>(stgTime));
 
@@ -430,18 +346,8 @@ while (true)
     switch (sig)
         {
         case SIGHUP:
-            traffCnt->Reload();
-            modIter = modules.begin();
-            for (; modIter != modules.end(); ++modIter)
-                {
-                if (modIter->Reload())
-                    {
-                    WriteServLog("Error reloading module '%s': '%s'", modIter->GetPlugin()->GetVersion().c_str(),
-                                                              modIter->GetStrError().c_str());
-                    printfd(__FILE__, "Error reloading module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(),
-                                                                     modIter->GetStrError().c_str());
-                    }
-                }
+            traffCnt.Reload();
+            manager.reload();
             break;
         case SIGTERM:
             stop = true;
@@ -471,71 +377,16 @@ while (true)
         break;
     }
 
-exitLbl:
-
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-//Sort by start order
-modules.sort(StopModCmp);
-modIter = modules.begin();
-while (modIter != modules.end())
-    {
-    std::string name = modIter->GetFileName();
-    printfd(__FILE__, "Stopping module '%s'\n", name.c_str());
-    if (modIter->Stop())
-        {
-        WriteServLog("Error stopping module '%s': %s",
-                     modIter->GetPlugin()->GetVersion().c_str(),
-                     modIter->GetStrError().c_str());
-        printfd(__FILE__, "Error stopping module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(), modIter->GetStrError().c_str());
-        }
-    else
-        {
-        WriteServLog("Module: '%s'. Stop successfull.", modIter->GetPlugin()->GetVersion().c_str());
-        }
-    ++modIter;
-    }
-
 if (loop.Stop())
-    {
     WriteServLog("Event loop not stopped.");
-    }
 
-exitLblNotStarted:
-
-modIter = modules.begin();
-while (modIter != modules.end())
-    {
-    std::string name = modIter->GetFileName();
-    if (modIter->IsRunning())
-        {
-        printfd(__FILE__, "Passing module '%s' `cause it's still running\n", name.c_str());
-        }
-    else
-        {
-        printfd(__FILE__, "Unloading module '%s'\n", name.c_str());
-        if (modIter->Unload())
-            {
-            WriteServLog("Error unloading module '%s': '%s'",
-                         modIter->GetPlugin()->GetVersion().c_str(),
-                         modIter->GetStrError().c_str());
-            printfd(__FILE__, "Error unloading module '%s': '%s'\n", modIter->GetPlugin()->GetVersion().c_str(), modIter->GetStrError().c_str());
-            }
-        }
-    ++modIter;
-    }
-
-if (traffCnt)
-    {
-    traffCnt->Stop();
+if (!traffCnt.Stop())
     WriteServLog("Traffcounter: Stop successfull.");
-    }
 
-if (users)
-    {
-    users->Stop();
+if (!users.Stop())
     WriteServLog("Users: Stop successfull.");
-    }
 
 sleep(1);
 int res = msgctl(msgID, IPC_RMID, NULL);
@@ -549,12 +400,6 @@ KillExecuters();
 StopStgTimer();
 WriteServLog("StgTimer: Stop successfull.");
 
-delete corps;
-delete services;
-delete traffCnt;
-delete users;
-delete admins;
-delete tariffs;
 delete settings;
 
 WriteServLog("Stg stopped successfully.");
