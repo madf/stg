@@ -2,6 +2,8 @@
 
 BASEPATH=$1
 
+source `dirname $0`/functions
+
 if [ "$BASEPATH" == "" ]
 then
     printf "Usage: $0 <path>\n"
@@ -36,8 +38,8 @@ then
     GROUP=wheel
 fi
 
-sed -i "" "s|-STG-PATH-|$STGPATH|g" "$STGPATH/stargazer.conf"
-sed -i "" "s|-STG-GROUP-|$GROUP|g" "$STGPATH/stargazer.conf"
+subst "-STG-PATH-" "$STGPATH" "$STGPATH/stargazer.conf"
+subst "-STG-GROUP-" "$GROUP" "$STGPATH/stargazer.conf"
 
 CURPATH=`pwd`
 LOGFILE="$CURPATH/"`date "+%Y-%m-%d-%H%M%S.console.log"`

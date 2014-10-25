@@ -40,3 +40,8 @@ count()
         printf "$RES"
     fi
 }
+
+subst()
+{
+    sed -i "s|$1|$2|g" "$3" 2> /dev/null || sed -i "" "s|$1|$2|g" "$3"
+}
