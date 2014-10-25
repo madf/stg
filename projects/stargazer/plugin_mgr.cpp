@@ -84,7 +84,7 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
         {
             m_log("Failed to start module '%s': '%s'", plugin.GetVersion().c_str(),
                                                        plugin.GetStrError().c_str());
-            printfd(__FILE__, "Failed to start module '%s': '%s'", plugin.GetVersion().c_str(),
+            printfd(__FILE__, "Failed to start module '%s': '%s'\n", plugin.GetVersion().c_str(),
                                                                    plugin.GetStrError().c_str());
         }
         else
@@ -105,7 +105,7 @@ PluginManager::~PluginManager()
         {
             m_log("Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),
                                                       plugin.GetStrError().c_str());
-            printfd(__FILE__, "Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),
+            printfd(__FILE__, "Failed to stop module '%s': '%s'\n", plugin.GetVersion().c_str(),
                                                                   plugin.GetStrError().c_str());
         }
         else
