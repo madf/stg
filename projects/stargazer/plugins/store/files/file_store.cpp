@@ -67,6 +67,16 @@ const int pt_mega = 1024 * 1024;
 namespace
 {
 PLUGIN_CREATOR<FILES_STORE> fsc;
+
+bool CheckAndCreate(const std::string & dir, mode_t mode)
+{
+if (access(dir.c_str(), F_OK) == 0)
+    return true;
+if (mkdir(dir.c_str(), mode) == 0)
+    return true;
+return false;
+}
+
 }
 
 extern "C" STORE * GetStore();
@@ -80,11 +90,6 @@ return fsc.GetPlugin();
 //-----------------------------------------------------------------------------
 FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
     : settings(NULL),
-      errorStr(),
-      workDir(),
-      usersDir(),
-      adminsDir(),
-      tariffsDir(),
       statMode(0),
       statUID(0),
       statGID(0),
@@ -249,8 +254,33 @@ if (workDir.size() && workDir[workDir.size() - 1] == '/')
     workDir.resize(workDir.size() - 1);
     }
 usersDir = workDir + "/users/";
+if (!CheckAndCreate(usersDir, GetConfModeDir()))
+    {
+    errorStr = usersDir + " doesn't exist. Failed to create.";
+    printfd(__FILE__, "%s\n", errorStr.c_str());
+    return -1;
+    }
 tariffsDir = workDir + "/tariffs/";
+if (!CheckAndCreate(tariffsDir, GetConfModeDir()))
+    {
+    errorStr = tariffsDir + " doesn't exist. Failed to create.";
+    printfd(__FILE__, "%s\n", errorStr.c_str());
+    return -1;
+    }
 adminsDir = workDir + "/admins/";
+if (!CheckAndCreate(adminsDir, GetConfModeDir()))
+    {
+    errorStr = adminsDir + " doesn't exist. Failed to create.";
+    printfd(__FILE__, "%s\n", errorStr.c_str());
+    return -1;
+    }
+servicesDir = workDir + "/services/";
+if (!CheckAndCreate(servicesDir, GetConfModeDir()))
+    {
+    errorStr = servicesDir + " doesn't exist. Failed to create.";
+    printfd(__FILE__, "%s\n", errorStr.c_str());
+    return -1;
+    }
 
 return 0;
 }
@@ -414,6 +444,24 @@ if (GetFileList(&files, storeSettings.GetTariffsDir(), S_IFREG, ".tf"))
 STG_LOCKER lock(&mutex);
 
 tariffList->swap(files);
+
+return 0;
+}
+//-----------------------------------------------------------------------------
+int FILES_STORE::GetServicesList(std::vector<std::string> * list) const
+{
+std::vector<std::string> files;
+
+if (GetFileList(&files, storeSettings.GetServicesDir(), S_IFREG, ".serv"))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Failed to open '" + storeSettings.GetServicesDir() + "': " + std::string(strerror(errno));
+    return -1;
+    }
+
+STG_LOCKER lock(&mutex);
+
+list->swap(files);
 
 return 0;
 }
@@ -1532,6 +1580,116 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
     cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     }
+
+return 0;
+}
+//-----------------------------------------------------------------------------*/
+int FILES_STORE::AddService(const std::string & name) const
+{
+std::string fileName;
+strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), name.c_str());
+
+if (Touch(fileName))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Cannot create file " + fileName;
+    printfd(__FILE__, "FILES_STORE::AddService - failed to add service '%s'\n", name.c_str());
+    return -1;
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------*/
+int FILES_STORE::DelService(const std::string & name) const
+{
+std::string fileName;
+strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), name.c_str());
+if (unlink(fileName.c_str()))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "unlink failed. Message: '";
+    errorStr += strerror(errno);
+    errorStr += "'";
+    printfd(__FILE__, "FILES_STORE::DelAdmin - unlink failed. Message: '%s'\n", strerror(errno));
+    }
+return 0;
+}
+//-----------------------------------------------------------------------------*/
+int FILES_STORE::SaveService(const SERVICE_CONF & conf) const
+{
+std::string fileName;
+
+strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), conf.name.c_str());
+
+    {
+    CONFIGFILE cf(fileName, true);
+
+    int e = cf.Error();
+
+    if (e)
+        {
+        STG_LOCKER lock(&mutex);
+        errorStr = "Cannot write service " + conf.name + ". " + fileName;
+        printfd(__FILE__, "FILES_STORE::SaveService - failed to save service '%s'\n", conf.name.c_str());
+        return -1;
+        }
+
+    cf.WriteString("name", conf.name);
+    cf.WriteString("comment", conf.comment);
+    cf.WriteDouble("cost", conf.cost);
+    cf.WriteInt("pay_day", conf.payDay);
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
+int FILES_STORE::RestoreService(SERVICE_CONF * conf, const std::string & name) const
+{
+std::string fileName;
+strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), name.c_str());
+CONFIGFILE cf(fileName);
+
+if (cf.Error())
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Cannot open " + fileName;
+    printfd(__FILE__, "FILES_STORE::RestoreService - failed to restore service '%s'\n", name.c_str());
+    return -1;
+    }
+
+if (cf.ReadString("name", &conf->name, name))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Error in parameter 'name'";
+    printfd(__FILE__, "FILES_STORE::RestoreService - name read failed for service '%s'\n", name.c_str());
+    return -1;
+    }
+
+if (cf.ReadString("comment", &conf->comment, ""))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Error in parameter 'comment'";
+    printfd(__FILE__, "FILES_STORE::RestoreService - comment read failed for service '%s'\n", name.c_str());
+    return -1;
+    }
+
+if (cf.ReadDouble("cost", &conf->cost, 0.0))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Error in parameter 'cost'";
+    printfd(__FILE__, "FILES_STORE::RestoreService - cost read failed for service '%s'\n", name.c_str());
+    return -1;
+    }
+
+unsigned short value = 0;
+if (cf.ReadUShortInt("pay_day", &value, 0))
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Error in parameter 'pay_day'";
+    printfd(__FILE__, "FILES_STORE::RestoreService - pay day read failed for service '%s'\n", name.c_str());
+    return -1;
+    }
+conf->payDay = value;
 
 return 0;
 }
