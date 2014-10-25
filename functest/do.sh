@@ -4,7 +4,7 @@ MKTEMP=/usr/bin/mktemp
 RM=/bin/rm
 
 printf "Creating temporary dir... "
-DIR=`$MKTEMP -d`
+DIR=`$MKTEMP -d 2> /dev/null || $MKTEMP -d -t stg`
 
 if [ "$DIR" == "" ]
 then
