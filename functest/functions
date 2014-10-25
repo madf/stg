@@ -33,8 +33,10 @@ count()
 {
     if [ "$1" == "" ]
     then
-        printf "0\n"
+        printf "0"
     else
-        printf "$1\n" | wc -l
+        RES=`printf "$1\n" | wc -l`
+        RES=`trim "$RES"`
+        printf "$RES"
     fi
 }
