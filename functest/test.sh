@@ -23,7 +23,21 @@ cp "stuff/OnDisconnect" "$STGPATH/"
 cp "stuff/OnChange" "$STGPATH/"
 cp -R "stuff/db-stub" "$STGPATH/db"
 
-sed -i "s|-STG-PATH-|$STGPATH|g" "$STGPATH/stargazer.conf"
+GROUP=root
+groups | grep root > /dev/null 2> /dev/null
+if [ "$?" != "0" ]
+then
+    groups | grep wheel > /dev/null 2> /dev/null
+    if [ "$?" != "0" ]
+    then
+        printf "Can't find neither 'root' nor 'wheel' group.\n"
+        exit -1
+    fi
+    GROUP=wheel
+fi
+
+sed -i "" "s|-STG-PATH-|$STGPATH|g" "$STGPATH/stargazer.conf"
+sed -i "" "s|-STG-GROUP-|$GROUP|g" "$STGPATH/stargazer.conf"
 
 CURPATH=`pwd`
 LOGFILE="$CURPATH/"`date "+%Y-%m-%d-%H%M%S.console.log"`
