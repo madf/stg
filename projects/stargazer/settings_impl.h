@@ -58,7 +58,6 @@ class DOTCONFDocumentNode;
 //-----------------------------------------------------------------------------
 class SETTINGS_IMPL : public SETTINGS {
 public:
-    SETTINGS_IMPL();
     SETTINGS_IMPL(const std::string &);
     SETTINGS_IMPL(const SETTINGS_IMPL &);
     virtual ~SETTINGS_IMPL() {}

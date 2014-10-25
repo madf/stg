@@ -37,47 +37,12 @@ $Author: faust $
 #include "settings_impl.h"
 
 //-----------------------------------------------------------------------------
-SETTINGS_IMPL::SETTINGS_IMPL()
-    : SETTINGS(),
-      strError(),
-      modulesPath("/usr/lib/stg"),
-      dirName(DIR_NUM),
-      confDir("/etc/stargazer"),
-      scriptsDir("/etc/stargazer"),
-      rules("/etc/stargazer/rules"),
-      logFile("/var/log/stargazer.log"),
-      pidFile("/var/run/stargazer.pid"),
-      monitorDir("/var/stargazer/monitoring"),
-      monitoring(false),
-      detailStatWritePeriod(dsPeriod_1_6),
-      statWritePeriod(10),
-      stgExecMsgKey(5555),
-      executersNum(1),
-      fullFee(false),
-      dayFee(0),
-      dayResetTraff(0),
-      spreadFee(false),
-      freeMbAllowInet(false),
-      dayFeeIsLastDay(false),
-      writeFreeMbTraffCost(false),
-      showFeeInCash(true),
-      messageTimeout(0),
-      feeChargeType(0),
-      reconnectOnTariffChange(false),
-      modulesSettings(),
-      storeModuleSettings(),
-      logger(GetStgLogger())
-{
-}
-//-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
-    : SETTINGS(),
-      strError(),
-      modulesPath("/usr/lib/stg"),
+    : modulesPath("/usr/lib/stg"),
       dirName(DIR_NUM),
-      confDir(cd),
-      scriptsDir(cd),
-      rules(cd + "/rules"),
+      confDir(cd.empty() ? "/etc/stargazer" : cd),
+      scriptsDir(confDir),
+      rules(confDir + "/rules"),
       logFile("/var/log/stargazer.log"),
       pidFile("/var/run/stargazer.pid"),
       monitorDir("/var/stargazer/monitoring"),
@@ -97,8 +62,6 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       messageTimeout(0),
       feeChargeType(0),
       reconnectOnTariffChange(false),
-      modulesSettings(),
-      storeModuleSettings(),
       logger(GetStgLogger())
 {
 }

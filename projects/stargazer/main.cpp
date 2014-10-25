@@ -63,7 +63,7 @@
 
 namespace
 {
-std::set<pid_t> executersPid;
+std::set<pid_t> executers;
 
 void StartTimer();
 int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings);
@@ -123,9 +123,9 @@ if (*msgID == -11)   // If msgID == -11 - first call. Create queue
         }
     }
 
-pid_t executerPid = fork();
+pid_t pid = fork();
 
-switch (executerPid)
+switch (pid)
     {
     case -1:
         WriteServLog("Fork error!");
@@ -134,21 +134,21 @@ switch (executerPid)
     case 0:
         delete settings;
 #if defined(LINUX) || defined(DARWIN)
-        Executer(*msgID, executerPid, procName);
+        Executer(*msgID, pid, procName);
 #else
-        Executer(*msgID, executerPid);
+        Executer(*msgID, pid);
 #endif
         return 1;
 
     default:
-        if (executersPid.empty()) {
+        if (executers.empty()) {
 #if defined(LINUX) || defined(DARWIN)
-            Executer(*msgID, executerPid, NULL);
+            Executer(*msgID, pid, NULL);
 #else
-            Executer(*msgID, executerPid);
+            Executer(*msgID, pid);
 #endif
         }
-        executersPid.insert(executerPid);
+        executers.insert(pid);
     }
 return 0;
 }
@@ -160,11 +160,11 @@ int ForkAndWait(const std::string &)
 #endif
 {
 #ifndef NO_DAEMON
-pid_t childPid = fork();
+pid_t pid = fork();
 std::string startFile = confDir + START_FILE;
 unlink(startFile.c_str());
 
-switch (childPid)
+switch (pid)
     {
     case -1:
         return -1;
@@ -198,9 +198,8 @@ return 0;
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
-std::set<pid_t>::iterator pid;
-pid = executersPid.begin();
-while (pid != executersPid.end())
+std::set<pid_t>::iterator pid(executers.begin());
+while (pid != executers.end())
     {
     printfd(__FILE__, "KillExecuters pid=%d\n", *pid);
     kill(*pid, SIGUSR1);
@@ -212,7 +211,6 @@ while (pid != executersPid.end())
 //-----------------------------------------------------------------------------
 int main(int argc, char * argv[])
 {
-SETTINGS_IMPL * settings = NULL;
 int msgID = -11;
 
 GetStgLogger().SetLogFileName("/var/log/stargazer.log");
@@ -223,27 +221,24 @@ if (getuid())
     return 1;
     }
 
-if (argc == 2)
-    settings = new SETTINGS_IMPL(argv[1]);
-else
-    settings = new SETTINGS_IMPL();
+SETTINGS_IMPL settings(argc == 2 ? argv[1] : "");
 
-if (settings->ReadSettings())
+if (settings.ReadSettings())
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
 
-    if (settings->GetLogFileName() != "")
-        WriteServLog.SetLogFileName(settings->GetLogFileName());
+    if (settings.GetLogFileName() != "")
+        WriteServLog.SetLogFileName(settings.GetLogFileName());
 
-    WriteServLog("ReadSettings error. %s", settings->GetStrError().c_str());
+    WriteServLog("ReadSettings error. %s", settings.GetStrError().c_str());
     return -1;
     }
 
 #ifndef NO_DAEMON
-std::string startFile(settings->GetConfDir() + START_FILE);
+std::string startFile(settings.GetConfDir() + START_FILE);
 #endif
 
-if (ForkAndWait(settings->GetConfDir()) < 0)
+if (ForkAndWait(settings.GetConfDir()) < 0)
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
     WriteServLog("Fork error!");
@@ -251,12 +246,12 @@ if (ForkAndWait(settings->GetConfDir()) < 0)
     }
 
 STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog.SetLogFileName(settings->GetLogFileName());
+WriteServLog.SetLogFileName(settings.GetLogFileName());
 WriteServLog("Stg v. %s", SERVER_VERSION);
 
-for (size_t i = 0; i < settings->GetExecutersNum(); i++)
+for (size_t i = 0; i < settings.GetExecutersNum(); i++)
     {
-    int ret = StartScriptExecuter(argv[0], settings->GetExecMsgKey(), &msgID, settings);
+    int ret = StartScriptExecuter(argv[0], settings.GetExecMsgKey(), &msgID, &settings);
     if (ret < 0)
         {
         STG_LOGGER & WriteServLog = GetStgLogger();
@@ -270,7 +265,7 @@ for (size_t i = 0; i < settings->GetExecutersNum(); i++)
         }
     }
 
-PIDFile pidFile(settings->GetPIDFileName());
+PIDFile pidFile(settings.GetPIDFileName());
 
 sigset_t signalSet;
 sigfillset(&signalSet);
@@ -287,7 +282,7 @@ if (!IsStgTimerRunning())
 
 EVENT_LOOP & loop(EVENT_LOOP_SINGLETON::GetInstance());
 
-STORE_LOADER storeLoader(*settings);
+STORE_LOADER storeLoader(settings);
 if (storeLoader.Load())
     {
     printfd(__FILE__, "Storage plugin: '%s'\n", storeLoader.GetStrError().c_str());
@@ -309,9 +304,9 @@ ADMINS_IMPL admins(&store);
 TARIFFS_IMPL tariffs(&store);
 SERVICES_IMPL services(&store);
 CORPORATIONS_IMPL corps(&store);
-USERS_IMPL users(settings, &store, &tariffs, services, admins.GetSysAdmin());
-TRAFFCOUNTER_IMPL traffCnt(&users, settings->GetRulesFileName());
-traffCnt.SetMonitorDir(settings->GetMonitorDir());
+USERS_IMPL users(&settings, &store, &tariffs, services, admins.GetSysAdmin());
+TRAFFCOUNTER_IMPL traffCnt(&users, settings.GetRulesFileName());
+traffCnt.SetMonitorDir(settings.GetMonitorDir());
 
 if (users.Start())
     return -1;
@@ -323,7 +318,7 @@ if (traffCnt.Start())
 
 WriteServLog("Traffcounter started successfully.");
 
-STG::PluginManager manager(*settings, store, admins, tariffs, services, corps, users, traffCnt);
+STG::PluginManager manager(settings, store, admins, tariffs, services, corps, users, traffCnt);
 
 srandom(static_cast<unsigned int>(stgTime));
 
@@ -334,15 +329,13 @@ WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 creat(startFile.c_str(), S_IRUSR);
 #endif
 
-while (true)
+bool running = true;
+while (running)
     {
     sigfillset(&signalSet);
     int sig = 0;
     sigwait(&signalSet, &sig);
-    bool stop = false;
     int status;
-    pid_t childPid;
-    std::set<pid_t>::iterator it;
     switch (sig)
         {
         case SIGHUP:
@@ -350,31 +343,23 @@ while (true)
             manager.reload();
             break;
         case SIGTERM:
-            stop = true;
+            running = false;
             break;
         case SIGINT:
-            stop = true;
+            running = false;
             break;
         case SIGPIPE:
             WriteServLog("Broken pipe!");
             break;
         case SIGCHLD:
-            childPid = waitpid(-1, &status, WNOHANG);
-
-            it = executersPid.find(childPid);
-            if (it != executersPid.end())
-                {
-                executersPid.erase(it);
-                if (executersPid.empty())
-                    stop = true;
-                }
+            executers.erase(waitpid(-1, &status, WNOHANG));
+            if (executers.empty())
+                running = false;
             break;
         default:
             WriteServLog("Ignore signal %d", sig);
             break;
         }
-    if (stop)
-        break;
     }
 
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
@@ -399,8 +384,6 @@ KillExecuters();
 
 StopStgTimer();
 WriteServLog("StgTimer: Stop successfull.");
-
-delete settings;
 
 WriteServLog("Stg stopped successfully.");
 WriteServLog("---------------------------------------------");
