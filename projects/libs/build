@@ -1,0 +1,270 @@
+#!/bin/sh
+
+#   $Revision: 1.57 $
+#   $Author: faust $
+#   $Date: 2010/05/09 12:39:01 $
+######################################################
+
+# Installation path prefix
+
+#PREFIX=""
+
+# Binaries access bits
+
+BIN_MODE=0755
+
+# Data files access bits
+
+DATA_MODE=0644
+
+# Dir access bits
+
+DIR_MODE=0755
+
+# Binaries and data files owner
+
+OWNER=root
+
+OS=unknown
+sys=`uname -s`
+release=`uname -r | cut -b1`
+BUILD_DIR=`pwd`
+CONFFILE="../../Makefile.conf"
+VAR_DIR="./inst/var/stargazer"
+MIN_XMLRPCC_VERSION="1.06.27"
+XMLRPC_FEATURES="c++2 abyss-server"
+
+
+if [ "$1" = "debug" ]
+then
+    DEFS="$DEFS -DDEBUG"
+    MAKEOPTS="$MAKEOPTS -j1"
+    CFLAGS="$CFLAGS -ggdb3 -W -Wall"
+    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
+    DEBUG="yes"
+else
+    DEFS="$DEFS -DNDEBUG"
+    DEBUG="no"
+fi
+
+CFLAGS="$CFLAGS -I/usr/local/include"
+CXXFLAGS="$CXXFLAGS -I/usr/local/include"
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
+
+if [ "$sys" = "Linux" ]
+then
+    OS=linux
+    release=""
+    ETC_DIR="./inst/linux/etc/stargazer"
+    MAKE="make"
+fi
+
+if [ "$sys" = "FreeBSD" ]
+then
+    case $release in
+        4) OS=bsd;;
+        5) OS=bsd5;;
+        6) OS=bsd5;;
+        7) OS=bsd7;;
+        *) OS=bsd7;;
+    esac
+    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
+fi
+
+if [ "$sys" = "Darwin" ]
+then
+    OS=darwin
+    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
+fi
+
+if [ "$OS" = "unknown" ]
+then
+    printf "#############################################################################\n"
+    printf "# Sorry, but stargazer currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
+    printf "#############################################################################\n"
+    exit 1
+fi
+
+printf "#############################################################################\n"
+printf "       Building STG 2.4 for $sys $release\n"
+printf "#############################################################################\n"
+
+STG_LIBS="logger.lib
+          crypto.lib
+          common.lib
+          scriptexecuter.lib
+          conffiles.lib
+          pinger.lib
+          dotconfpp.lib
+          smux.lib
+          ia.lib
+          srvconf.lib"
+
+if [ "$OS" = "linux" ]
+then
+    DEFS="$DEFS -DLINUX"
+else
+    if [ "$OS" = "bsd" ]
+    then
+        DEFS="$DEFS -DFREE_BSD"
+    else
+        if [ "$OS" = "bsd7" ]
+        then
+            DEFS="$DEFS -DFREE_BSD5"
+        else
+            if [ "$OS" == "darwin" ]
+            then
+                DEFS="$DEFS -DDARWIN"
+            fi
+        fi
+    fi
+fi
+
+if [ -z "$CC" ]
+then
+    CC=gcc
+fi
+
+if [ -z "$CXX" ]
+then
+    CXX=g++
+fi
+
+printf "Checking CC... "
+$CC --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    printf "FAIL!\n"
+    printf "$CC not found\n"
+    exit;
+fi
+printf "found\n"
+printf "Checking CXX... "
+$CXX --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    printf "FAIL!\n"
+    printf "$CXX not found\n"
+    exit;
+fi
+printf "found\n"
+
+printf "Checking endianess... "
+printf "int main() { int probe = 0x00000001; return *(char *)&probe; }\n" > build_check.c
+$CC $CFLAGS $LDFLAGS build_check.c -o fake
+if [ $? != 0 ]
+then
+    printf "FAIL!\n"
+    printf "Endianess checking failed\n"
+    exit;
+else
+    ./fake
+    if [ $? = 1 ]
+    then
+        ARCH=le
+        CXXFLAGS="$CXXFLAGS -DARCH_LE"
+        CFLAGS="$CFLAGS -DARCH_LE"
+        printf "Little Endian\n"
+    else
+        ARCH=be
+        CXXFLAGS="$CXXFLAGS -DARCH_BE"
+        CFLAGS="$CFLAGS -DARCH_BE"
+        printf "Big Endian\n"
+    fi
+fi
+rm -f fake
+
+printf "Checking for -lexpat... "
+printf "#include <expat.h>\nint main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lexpat -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_EXPAT=no
+    printf "no\n"
+else
+    CHECK_EXPAT=yes
+    printf "yes\n"
+fi
+rm -f fake
+
+printf "Checking for -lfbclient... "
+printf "int main() { return 0; }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_FBCLIENT=no
+    printf "no\n"
+else
+    CHECK_FBCLIENT=yes
+    printf "yes\n"
+fi
+rm -f fake
+
+rm -f build_check.c
+
+if [ "$CHECK_EXPAT" != "yes" ]
+then
+    printf -- "-lexpat not found!\n"
+    exit 1
+fi
+
+if [ "$CHECK_FBCLIENT" = "yes" ]
+then
+    STG_LIBS="$STG_LIBS
+              ibpp.lib"
+fi
+
+printf "OS=$OS\n" > $CONFFILE
+printf "STG_TIME=yes\n" >> $CONFFILE
+printf "DEBUG=$DEBUG\n" >> $CONFFILE
+printf "DIR_BUILD=$BUILD_DIR\n" >> $CONFFILE
+printf "DIR_LIB=\$(DIR_BUILD)/../../lib\n" >> $CONFFILE
+printf "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs\n" >> $CONFFILE
+printf "DIR_INCLUDE=\$(DIR_BUILD)/../../include\n" >> $CONFFILE
+printf "DIR_MOD=\$(DIR_BUILD)/modules\n" >> $CONFFILE
+printf "DIR_PLUGINS=\$(DIR_BUILD)/plugins\n" >> $CONFFILE
+printf "ARCH=$ARCH\n" >> $CONFFILE
+printf "CHECK_EXPAT=$CHECK_EXPAT\n" >> $CONFFILE
+printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
+printf "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT\n" >> $CONFFILE
+printf "CHECK_PQ=$CHECK_PQ\n" >> $CONFFILE
+printf "CHECK_XMLRPC=$CHECK_XMLRPC\n" >> $CONFFILE
+printf "CHECK_PCAP=$CHECK_PCAP\n" >> $CONFFILE
+printf "CHECK_NFNETLINK=$CHECK_NFNETLINK\n" >> $CONFFILE
+printf "CHECK_NFQ=$CHECK_NFQ\n" >> $CONFFILE
+printf "DEFS=$DEFS\n" >> $CONFFILE
+printf "NFQ_LIBS=$NFQ_LIBS\n" >> $CONFFILE
+printf "STG_LIBS=" >> $CONFFILE
+for lib in $STG_LIBS
+do
+    printf "$lib " >> $CONFFILE
+done
+printf "\n" >> $CONFFILE
+printf "PLUGINS=" >> $CONFFILE
+for plugin in $PLUGINS
+do
+    printf "$plugin " >> $CONFFILE
+done
+printf "\n" >> $CONFFILE
+printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
+printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
+printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
+printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
+printf "PREFIX=$PREFIX\n" >> $CONFFILE
+printf "BIN_MODE=$BIN_MODE\n" >> $CONFFILE
+printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
+printf "DIR_MODE=$DIR_MODE\n" >> $CONFFILE
+printf "OWNER=$OWNER\n" >> $CONFFILE
+printf "VAR_DIR=$VAR_DIR\n" >> $CONFFILE
+printf "ETC_DIR=$ETC_DIR\n" >> $CONFFILE
+
+mkdir -p modules
+
+if [ "$1" != "debug" ]
+then
+    $MAKE $MAKEOPTS
+else
+    printf "\n\n\nDebug build. Type $MAKE explicitly\n"
+fi
