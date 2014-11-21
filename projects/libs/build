@@ -30,9 +30,6 @@ sys=`uname -s`
 release=`uname -r | cut -b1`
 BUILD_DIR=`pwd`
 CONFFILE="../../Makefile.conf"
-VAR_DIR="./inst/var/stargazer"
-MIN_XMLRPCC_VERSION="1.06.27"
-XMLRPC_FEATURES="c++2 abyss-server"
 
 
 if [ "$1" = "debug" ]
@@ -55,7 +52,6 @@ if [ "$sys" = "Linux" ]
 then
     OS=linux
     release=""
-    ETC_DIR="./inst/linux/etc/stargazer"
     MAKE="make"
 fi
 
@@ -68,14 +64,12 @@ then
         7) OS=bsd7;;
         *) OS=bsd7;;
     esac
-    ETC_DIR="./inst/freebsd/etc/stargazer"
     MAKE="gmake"
 fi
 
 if [ "$sys" = "Darwin" ]
 then
     OS=darwin
-    ETC_DIR="./inst/freebsd/etc/stargazer"
     MAKE="gmake"
 fi
 
@@ -191,7 +185,7 @@ rm -f fake
 
 printf "Checking for -lfbclient... "
 printf "int main() { return 0; }\n" > build_check.c
-$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     CHECK_FBCLIENT=no
@@ -223,44 +217,24 @@ printf "DIR_BUILD=$BUILD_DIR\n" >> $CONFFILE
 printf "DIR_LIB=\$(DIR_BUILD)/../../lib\n" >> $CONFFILE
 printf "DIR_LIBSRC=\$(DIR_BUILD)/../../stglibs\n" >> $CONFFILE
 printf "DIR_INCLUDE=\$(DIR_BUILD)/../../include\n" >> $CONFFILE
-printf "DIR_MOD=\$(DIR_BUILD)/modules\n" >> $CONFFILE
-printf "DIR_PLUGINS=\$(DIR_BUILD)/plugins\n" >> $CONFFILE
 printf "ARCH=$ARCH\n" >> $CONFFILE
 printf "CHECK_EXPAT=$CHECK_EXPAT\n" >> $CONFFILE
 printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
-printf "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT\n" >> $CONFFILE
-printf "CHECK_PQ=$CHECK_PQ\n" >> $CONFFILE
-printf "CHECK_XMLRPC=$CHECK_XMLRPC\n" >> $CONFFILE
-printf "CHECK_PCAP=$CHECK_PCAP\n" >> $CONFFILE
-printf "CHECK_NFNETLINK=$CHECK_NFNETLINK\n" >> $CONFFILE
-printf "CHECK_NFQ=$CHECK_NFQ\n" >> $CONFFILE
 printf "DEFS=$DEFS\n" >> $CONFFILE
-printf "NFQ_LIBS=$NFQ_LIBS\n" >> $CONFFILE
 printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS
 do
     printf "$lib " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
-printf "PLUGINS=" >> $CONFFILE
-for plugin in $PLUGINS
-do
-    printf "$plugin " >> $CONFFILE
-done
-printf "\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
-printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
 printf "PREFIX=$PREFIX\n" >> $CONFFILE
 printf "BIN_MODE=$BIN_MODE\n" >> $CONFFILE
 printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
 printf "DIR_MODE=$DIR_MODE\n" >> $CONFFILE
 printf "OWNER=$OWNER\n" >> $CONFFILE
-printf "VAR_DIR=$VAR_DIR\n" >> $CONFFILE
-printf "ETC_DIR=$ETC_DIR\n" >> $CONFFILE
-
-mkdir -p modules
 
 if [ "$1" != "debug" ]
 then
