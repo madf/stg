@@ -15,6 +15,7 @@ SRCS = ./main.cpp \
        ./users.cpp \
        ./services.cpp \
        ./corps.cpp \
+       ./info.cpp \
        ./xml.cpp
 
 STGLIBS = srvconf \

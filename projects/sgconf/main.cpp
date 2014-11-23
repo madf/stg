@@ -25,6 +25,7 @@
 #include "users.h"
 #include "services.h"
 #include "corps.h"
+#include "info.h"
 
 #include "api_action.h"
 #include "options.h"
@@ -259,6 +260,7 @@ SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
 blocks.Add("Debug options")
       .Add("show-config", SGCONF::MakeParamAction(config.showConfig), "\tshow config and exit");
 SGCONF::AppendXMLOptionBlock(commands, blocks);
+SGCONF::AppendServerInfoBlock(commands, blocks);
 SGCONF::AppendAdminsOptionBlock(commands, blocks);
 SGCONF::AppendTariffsOptionBlock(commands, blocks);
 SGCONF::AppendUsersOptionBlock(commands, blocks);
