@@ -70,6 +70,8 @@ done
 PID=`cat "$STGPATH/stargazer.pid"`
 printf "Started with pid $PID\n"
 
+printf "\nTesting server info:\n"
+"$CURPATH/test_server_info.sh" "$BASEPATH"
 printf "\nTesting admins:\n"
 "$CURPATH/test_admins.sh" "$BASEPATH"
 printf "\nTesting services:\n"
