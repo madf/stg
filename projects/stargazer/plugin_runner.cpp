@@ -86,35 +86,45 @@ PLUGIN & PLUGIN_RUNNER::Load(const MODULE_SETTINGS & ms,
 {
 if (pluginFileName.empty())
     {
-    errorStr = "Empty plugin file name.";
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    throw Error(errorStr);
+    const std::string msg = "Empty plugin file name.";
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
+    }
+
+if (access(pluginFileName.c_str(), R_OK))
+    {
+    const std::string msg = "Plugin file '" + pluginFileName + "' is missing or inaccessible.";
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
     }
 
 libHandle = dlopen(pluginFileName.c_str(), RTLD_NOW);
 
 if (!libHandle)
     {
-    errorStr = "Error loading plugin '" + pluginFileName + "': '" + dlerror() + "'";
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    throw Error(errorStr);
+    std::string msg = "Error loading plugin '" + pluginFileName + "'";
+    const char* error = dlerror();
+    if (error)
+        msg = msg + ": '" + error + "'";
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
     }
 
 PLUGIN * (*GetPlugin)();
 GetPlugin = (PLUGIN * (*)())dlsym(libHandle, "GetPlugin");
 if (!GetPlugin)
     {
-    errorStr = "Plugin '" + pluginFileName + "' does not have GetPlugin() function. " + dlerror();
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    throw Error(errorStr);
+    const std::string msg = "Plugin '" + pluginFileName + "' does not have GetPlugin() function. ";
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
     }
 PLUGIN * plugin = GetPlugin();
 
 if (!plugin)
     {
-    errorStr = "Failed to create an instance of plugin '" + pluginFileName + "'.";
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    throw Error(errorStr);
+    const std::string msg = "Failed to create an instance of plugin '" + pluginFileName + "'.";
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
     }
 
 plugin->SetSettings(ms);
@@ -129,9 +139,9 @@ plugin->SetStgSettings(&settings);
 
 if (plugin->ParseSettings())
     {
-    errorStr = "Plugin '" + pluginFileName + "' is unable to parse settings. " + plugin->GetStrError();
-    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", errorStr.c_str());
-    throw Error(errorStr);
+    const std::string msg = "Plugin '" + pluginFileName + "' is unable to parse settings. " + plugin->GetStrError();
+    printfd(__FILE__, "PLUGIN_RUNNER::Load() - %s\n", msg.c_str());
+    throw Error(msg);
     }
 
 return *plugin;
