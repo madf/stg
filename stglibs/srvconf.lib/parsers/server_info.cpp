@@ -52,7 +52,7 @@ int SERVER_INFO::PARSER::ParseStart(const char *el, const char **attr)
 depth++;
 if (depth == 1)
     {
-    if (strcasecmp(el, "ServerInfo") == 0)
+    if (strcasecmp(el, "GetServerInfo") == 0)
         parsingAnswer = true;
     }
 else
