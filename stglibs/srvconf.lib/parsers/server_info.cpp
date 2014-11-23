@@ -40,7 +40,7 @@ SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "version", info.version);
     AddParser(propertyParsers, "tariff", info.tariffType);
     AddParser(propertyParsers, "dir_num", info.dirNum);
-    AddParser(propertyParsers, "users_num", info.usersNum);
+    AddParser(propertyParsers, "user_num", info.usersNum);
     AddParser(propertyParsers, "tariff_num", info.tariffNum);
 
     for (size_t i = 0; i < DIR_NUM; i++)
