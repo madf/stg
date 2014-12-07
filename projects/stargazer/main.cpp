@@ -66,7 +66,7 @@ namespace
 std::set<pid_t> executers;
 
 void StartTimer();
-int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings);
+int StartScriptExecuter(char * procName, int msgKey, int * msgID);
 int ForkAndWait(const std::string & confDir);
 void KillExecuters();
 
@@ -89,9 +89,9 @@ else
 }
 //-----------------------------------------------------------------------------
 #if defined(LINUX) || defined(DARWIN)
-int StartScriptExecuter(char * procName, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+int StartScriptExecuter(char * procName, int msgKey, int * msgID)
 #else
-int StartScriptExecuter(char *, int msgKey, int * msgID, SETTINGS_IMPL * settings)
+int StartScriptExecuter(char *, int msgKey, int * msgID)
 #endif
 {
 STG_LOGGER & WriteServLog = GetStgLogger();
@@ -132,7 +132,6 @@ switch (pid)
         return -1;
 
     case 0:
-        delete settings;
 #if defined(LINUX) || defined(DARWIN)
         Executer(*msgID, pid, procName);
 #else
@@ -251,7 +250,7 @@ WriteServLog("Stg v. %s", SERVER_VERSION);
 
 for (size_t i = 0; i < settings.GetExecutersNum(); i++)
     {
-    int ret = StartScriptExecuter(argv[0], settings.GetExecMsgKey(), &msgID, &settings);
+    int ret = StartScriptExecuter(argv[0], settings.GetExecMsgKey(), &msgID);
     if (ret < 0)
         {
         STG_LOGGER & WriteServLog = GetStgLogger();
