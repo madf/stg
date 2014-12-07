@@ -39,6 +39,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+const char STG_HEADER[] = "SG04";
+const char OK_HEADER[]  = "OKHD";
+const char ERR_HEADER[] = "ERHD";
+const char OK_LOGIN[]   = "OKLG";
+const char ERR_LOGIN[]  = "ERLG";
+const char OK_LOGINS[]  = "OKLS";
+const char ERR_LOGINS[] = "ERLS";
+
 using namespace STG;
 
 namespace
@@ -56,19 +64,18 @@ struct ReadState
 
 //---------------------------------------------------------------------------
 
-#define SEND_DATA_ERROR             "Send data error!"
-#define RECV_DATA_ANSWER_ERROR      "Recv data answer error!"
-#define UNKNOWN_ERROR               "Unknown error!"
-#define CONNECT_FAILED              "Connect failed!"
-#define BIND_FAILED                 "Bind failed!"
-#define INCORRECT_LOGIN             "Incorrect login!"
-#define INCORRECT_HEADER            "Incorrect header!"
-#define SEND_LOGIN_ERROR            "Send login error!"
-#define RECV_LOGIN_ANSWER_ERROR     "Recv login answer error!"
-#define CREATE_SOCKET_ERROR         "Create socket failed!"
-#define WSASTARTUP_FAILED           "WSAStartup failed!"
-#define SEND_HEADER_ERROR           "Send header error!"
-#define RECV_HEADER_ANSWER_ERROR    "Recv header answer error!"
+const char SEND_DATA_ERROR[]          = "Error sending data.";
+const char RECV_DATA_ANSWER_ERROR[]   = "Error receiving data answer.";
+const char UNKNOWN_ERROR[]            = "Unknown error";
+const char CONNECT_FAILED[]           = "Failed to connect.";
+const char BIND_FAILED[]              = "Failed to bind.";
+const char INCORRECT_LOGIN[]          = "Incorrect login.";
+const char INCORRECT_HEADER[]         = "Incorrect header.";
+const char SEND_LOGIN_ERROR[]         = "Error sending login.";
+const char RECV_LOGIN_ANSWER_ERROR[]  = "Error receiving login answer.";
+const char CREATE_SOCKET_ERROR[]      = "Failed to create socket.";
+const char SEND_HEADER_ERROR[]        = "Error sending header.";
+const char RECV_HEADER_ANSWER_ERROR[] = "Error receiving header answer.";
 
 //---------------------------------------------------------------------------
 NETTRANSACT::NETTRANSACT(const std::string & s, uint16_t p,

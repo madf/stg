@@ -29,16 +29,6 @@
 #include <vector>
 #include <ctime>
 
-#define  STG_HEADER     "SG04"
-#define  OK_HEADER      "OKHD"
-#define  ERR_HEADER     "ERHD"
-#define  OK_LOGIN       "OKLG"
-#define  ERR_LOGIN      "ERLG"
-#define  OK_LOGINS      "OKLS"
-#define  ERR_LOGINS     "ERLS"
-
-#define  ENC_MSG_LEN    (8)
-
 struct ADMIN_CONF;
 struct TARIFF_DATA;
 struct SERVICE_CONF;
@@ -63,14 +53,6 @@ st_xml_parse_error,
 st_data_error
 };
 
-enum CONF_STATE
-{
-confHdr = 0,
-confLogin,
-confLoginCipher,
-confData
-};
-
 namespace SIMPLE
 {
 
@@ -87,7 +69,7 @@ struct CALLBACK
 typedef void (* TYPE)(bool result, const std::string & reason, const std::vector<INFO> & info, void * data);
 };
 
-}
+} // namespace GET_CONTAINER
 
 namespace AUTH_BY
 {
@@ -119,7 +101,7 @@ namespace RAW_XML
 
 typedef void (* CALLBACK)(bool result, const std::string & reason, const std::string & response, void * data);
 
-}
+} // namespace RAW_XML
 
 namespace GET_USER
 {
@@ -176,7 +158,7 @@ namespace GET_ADMIN
 typedef ADMIN_CONF INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
-}
+} // namespace GET_ADMIN
 
 namespace GET_TARIFF
 {
@@ -184,7 +166,7 @@ namespace GET_TARIFF
 typedef TARIFF_DATA INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
-}
+} // namespace GET_TARIFF
 
 namespace GET_SERVICE
 {
@@ -192,7 +174,7 @@ namespace GET_SERVICE
 typedef SERVICE_CONF INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
-}
+} // namespace GET_SERVICE
 
 namespace GET_CORP
 {
@@ -200,7 +182,7 @@ namespace GET_CORP
 typedef CORP_CONF INFO;
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
-}
+} // namespace GET_CORP
 
 } // namespace STG
 

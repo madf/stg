@@ -25,6 +25,9 @@
 
 #include <string>
 
+namespace STG
+{
+
 class NETTRANSACT
 {
 public:
@@ -66,5 +69,7 @@ private:
     static bool TxCrypto(const void * block, size_t size, void * data);
     static bool RxCrypto(const void * block, size_t size, void * data);
 };
+
+} // namespace STG
 
 #endif
