@@ -19,6 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
+#include "configproto.h"
 
 #include "conn.h"
 
@@ -27,7 +28,6 @@
 #include "parser_tariffs.h"
 #include "parser_users.h"
 #include "parser_message.h"
-#include "parser_user_info.h"
 #include "parser_auth_by.h"
 
 #include "stg/common.h"
@@ -230,8 +230,6 @@ void CONFIGPROTO::RegisterParsers()
     SP::SEND_MESSAGE::FACTORY::Register(m_registry, *m_users);
 
     SP::AUTH_BY::FACTORY::Register(m_registry, *m_users);
-
-    SP::USER_INFO::FACTORY::Register(m_registry, *m_users);
 }
 
 int CONFIGPROTO::MaxFD() const

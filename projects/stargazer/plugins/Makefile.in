@@ -13,8 +13,8 @@ STGLIBS_PATHS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIB
 
 STGLIBS_LIBS = $(addprefix -lstg,$(STGLIBS))
 
-CXXFLAGS += -fPIC $(STGLIBS_INCS)
-CFLAGS += -fPIC $(STGLIBS_INCS)
+CXXFLAGS += -fPIC $(DEFS) $(SEARCH_DIRS) $(STGLIBS_INCS)
+CFLAGS += -fPIC $(DEFS) $(SEARCH_DIRS) $(STGLIBS_INCS)
 
 ifneq ($(OS),darwin)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
