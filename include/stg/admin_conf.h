@@ -7,6 +7,8 @@
 #ifndef ADMIN_CONF_H
 #define ADMIN_CONF_H
 
+#include "stg/resetable.h"
+
 #include <string>
 
 #include "os_int.h"
