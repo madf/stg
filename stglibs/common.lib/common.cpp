@@ -47,6 +47,7 @@
 
 #include <iconv.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
@@ -856,20 +857,16 @@ std::string res(val);
 return TrimR(TrimL(res));
 }
 //---------------------------------------------------------------------------
-std::string ToLower(const std::string & value)
+std::string ToLower(std::string value)
 {
-    std::string res;
-    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
-        res += tolower(value[pos]);
-    return res;
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    return value;
 }
 //---------------------------------------------------------------------------
-std::string ToUpper(const std::string & value)
+std::string ToUpper(std::string value)
 {
-    std::string res;
-    for (std::string::size_type pos = 0; pos < value.length(); ++pos)
-        res += toupper(value[pos]);
-    return res;
+    std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+    return value;
 }
 //---------------------------------------------------------------------------
 #ifdef WIN32

@@ -99,8 +99,8 @@ std::string &   TrimR(std::string & val);
 std::string &   Trim(std::string & val);
 std::string     Trim(const std::string & val);
 
-std::string     ToLower(const std::string & value);
-std::string     ToUpper(const std::string & value);
+std::string     ToLower(std::string value);
+std::string     ToUpper(std::string value);
 
 template <typename C, typename F>
 inline
