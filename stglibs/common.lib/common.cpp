@@ -820,6 +820,18 @@ std::string & Trim(std::string & val)
 return TrimR(TrimL(val));
 }
 //---------------------------------------------------------------------------
+std::string ToLower(std::string value)
+{
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    return value;
+}
+//---------------------------------------------------------------------------
+std::string ToUpper(std::string value)
+{
+    std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+    return value;
+}
+//---------------------------------------------------------------------------
 #ifdef WIN32
 static int is_leap(unsigned y)
 {

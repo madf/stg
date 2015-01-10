@@ -97,6 +97,9 @@ std::string &   TrimL(std::string & val);
 std::string &   TrimR(std::string & val);
 std::string &   Trim(std::string & val);
 
+std::string ToLower(std::string value);
+std::string ToUpper(std::string value);
+
 template <typename C, typename F>
 C Split(const std::string & value, char delim, F conv)
 {
