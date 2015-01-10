@@ -47,6 +47,8 @@
 
 #include <iconv.h>
 
+#include <algorithm>
+
 #include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
