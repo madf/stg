@@ -66,6 +66,8 @@ void            Decode21(char * dst, const char * src);
 
 void            Encode12str(std::string & dst, const std::string & src);
 void            Decode21str(std::string & dst, const std::string & src);
+inline std::string Encode12str(const std::string & src) { std::string dst; Encode12str(dst, src); return dst; }
+inline std::string Decode21str(const std::string & src) { std::string dst; Decode21str(dst, src); return dst; }
 
 int             ParseIPString(const char * str, uint32_t * ips, int maxIP);
 void            KOIToWin(const char * s1, char * s2, int l);
