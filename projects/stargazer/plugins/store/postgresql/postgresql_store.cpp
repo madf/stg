@@ -40,7 +40,6 @@
 
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include <libpq-fe.h>
 
@@ -97,8 +96,7 @@ std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
-    s = i->param;
-    std::transform(s.begin(), s.end(), s.begin(), ToLower());
+    s = ToLower(i->param);
     if (s == "server")
         {
         server = *(i->value.begin());

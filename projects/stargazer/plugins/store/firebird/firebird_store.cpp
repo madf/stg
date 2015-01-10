@@ -33,9 +33,6 @@
 
 #include <string>
 #include <vector>
-#include <algorithm>
-
-#include <cctype>
 
 namespace
 {
@@ -81,9 +78,7 @@ std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
-    s = i->param;
-
-    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    s = ToLower(i->param);
 
     if (s == "server")
         db_server = *(i->value.begin());
