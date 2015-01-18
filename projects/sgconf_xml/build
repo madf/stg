@@ -51,6 +51,12 @@ then
     MAKE="gmake"
 fi
 
+if [ "$sys" = "Darwin" ]
+then
+    OS=darwin
+    MAKE="gmake"
+fi
+
 if [ "$OS" = "unknown" ]
 then
     printf "#############################################################################\n"
