@@ -104,7 +104,6 @@ private:
     int     RxLoginSAnswer();
 
     int     TxData(const char * text);
-    int     TxData(char * data);
     int     RxDataAnswer();
 
     std::string server;

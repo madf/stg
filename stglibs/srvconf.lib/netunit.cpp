@@ -262,13 +262,11 @@ else
 int NETTRANSACT::TxLoginS()
 {
 char loginZ[ADM_LOGIN_LEN];
-char ct[ENC_MSG_LEN];
-int ret;
 
 memset(loginZ, 0, ADM_LOGIN_LEN);
 BLOWFISH_CTX ctx;
 InitContext(password.c_str(), PASSWD_LEN, &ctx);
-EncryptString(loginZ, login.c_str(), std::min(login.length() + 1, ADM_LOGIN_LEN), &ctx);
+EncryptString(loginZ, login.c_str(), std::min<int>(login.length() + 1, ADM_LOGIN_LEN), &ctx);
 if (send(outerSocket, loginZ, ADM_LOGIN_LEN, 0) <= 0)
     {
     errorMsg = SEND_LOGIN_ERROR;
@@ -310,51 +308,17 @@ else
 //---------------------------------------------------------------------------
 int NETTRANSACT::TxData(const char * text)
 {
-char textZ[ENC_MSG_LEN];
-char ct[ENC_MSG_LEN];
-int ret;
-int j;
-
-int n = strlen(text) / ENC_MSG_LEN;
-int r = strlen(text) % ENC_MSG_LEN;
-
 BLOWFISH_CTX ctx;
 InitContext(password.c_str(), PASSWD_LEN, &ctx);
-char buffer[text.length() + 9];
-EncryptString(buffer, text.c_str(), text.length() + 1, &ctx);
+size_t length = strlen(text);
+char buffer[length + 9];
+EncryptString(buffer, text, length, &ctx);
 if (send(outerSocket, buffer, sizeof(buffer), 0) <= 0)
     {
     errorMsg = SEND_DATA_ERROR;
     return st_send_fail;
     }
 return st_ok;
-}
-//---------------------------------------------------------------------------
-int NETTRANSACT::TxData(char * data)
-{
-char buff[ENC_MSG_LEN];
-char buffS[ENC_MSG_LEN];
-char passwd[ADM_PASSWD_LEN];
-
-memset(passwd, 0, ADM_PASSWD_LEN);
-strncpy(passwd, password.c_str(), ADM_PASSWD_LEN);
-memset(buff, 0, ENC_MSG_LEN);
-
-int l = strlen(data)/ENC_MSG_LEN;
-if (strlen(data)%ENC_MSG_LEN)
-    l++;
-
-BLOWFISH_CTX ctx;
-InitContext(passwd, PASSWD_LEN, &ctx);
-
-for (int j = 0; j < l; j++)
-    {
-    strncpy(buff, &data[j*ENC_MSG_LEN], ENC_MSG_LEN);
-    EncryptBlock(buffS, buff, &ctx);
-    send(outerSocket, buffS, ENC_MSG_LEN, 0);
-    }
-
-return 0;
 }
 //---------------------------------------------------------------------------
 int NETTRANSACT::RxDataAnswer()
