@@ -107,10 +107,6 @@ private:
     int     TxData(char * data);
     int     RxDataAnswer();
 
-    void Encrypt(char * d, const char * s, BLOWFISH_CTX *ctx);
-    void EnDecryptInit(const char * passwd, int passwdLen, BLOWFISH_CTX *ctx);
-    void Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx);
-
     std::string server;
     short unsigned  port;
     std::string login;
