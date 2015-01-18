@@ -335,13 +335,13 @@ if (ud->login == "")
     return;
     }
 
-if (!req->cash.res_empty())
+if (!req->cash.empty())
     cout << "cash=" << ud->cash << endl;
 
-if (!req->credit.res_empty())
+if (!req->credit.empty())
     cout << "credit=" << ud->credit << endl;
 
-if (!req->creditExpire.res_empty())
+if (!req->creditExpire.empty())
     {
     char buf[32];
     struct tm brokenTime;
@@ -361,32 +361,32 @@ if (!req->creditExpire.res_empty())
     cout << "creditExpire=" << buf << endl;
     }
 
-if (!req->down.res_empty())
+if (!req->down.empty())
     cout << "down=" << ud->down << endl;
 
-if (!req->passive.res_empty())
+if (!req->passive.empty())
     cout << "passive=" << ud->passive << endl;
 
-if (!req->disableDetailStat.res_empty())
+if (!req->disableDetailStat.empty())
     cout << "disableDetailStat=" << ud->disableDetailStat << endl;
 
-if (!req->alwaysOnline.res_empty())
+if (!req->alwaysOnline.empty())
     cout << "alwaysOnline=" << ud->alwaysOnline << endl;
 
-if (!req->prepaidTraff.res_empty())
+if (!req->prepaidTraff.empty())
     cout << "prepaidTraff=" << ud->prepaidTraff << endl;
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    if (!req->u[i].res_empty())
+    if (!req->u[i].empty())
         cout << "u" << i << "=" << ud->stat.mu[i] << endl;
-    if (!req->d[i].res_empty())
+    if (!req->d[i].empty())
         cout << "d" << i << "=" << ud->stat.md[i] << endl;
     }
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    if (!req->ud[i].res_empty())
+    if (!req->ud[i].empty())
         {
         string str;
         ConvertFromKOI8(ud->userData[i], &str);
@@ -408,7 +408,7 @@ StringReqParams strReqParams[] =
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
-    if (!strReqParams[i].reqParam.res_empty())
+    if (!strReqParams[i].reqParam.empty())
         {
         string str;
         ConvertFromKOI8(*strReqParams[i].value, &str);
@@ -424,8 +424,6 @@ AuthByCbData * abcbd;
 abcbd = (AuthByCbData *)d;
 
 bool * result = abcbd->result;
-
-REQUEST * req = (REQUEST *)abcbd->data;
 
 for (std::vector<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
     cout << *it << "\n";
