@@ -130,7 +130,6 @@ private:
     RecvChgUserCb_t RecvChgUserCb;
     void * chgUserCbData;
     int depth;
-    bool error;
 };
 //-----------------------------------------------------------------------------
 class PARSER_CHECK_USER: public PARSER
@@ -145,7 +144,6 @@ private:
     RecvCheckUserCb_t RecvCheckUserCb;
     void * checkUserCbData;
     int depth;
-    bool error;
 };
 //-----------------------------------------------------------------------------
 class PARSER_GET_USERS: public PARSER
@@ -164,7 +162,6 @@ private:
     void * userDataCb;
     USERDATA user;
     int depth;
-    bool error;
 };
 //-----------------------------------------------------------------------------
 class PARSER_GET_USER: public PARSER
@@ -223,7 +220,6 @@ private:
     RecvSendMessageCb_t RecvSendMessageCb;
     void * sendMessageCbData;
     int depth;
-    bool error;
 };
 //-----------------------------------------------------------------------------
 class PARSER_AUTH_BY: public PARSER
@@ -288,7 +284,6 @@ private:
     PARSER_SEND_MESSAGE parserSendMessage;
 
     NETTRANSACT nt;
-    int parseDepth;
 
     std::string errorMsg;
     int error;

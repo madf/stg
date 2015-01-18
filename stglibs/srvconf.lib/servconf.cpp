@@ -92,7 +92,6 @@ sc->End(el);
 //-----------------------------------------------------------------------------
 SERVCONF::SERVCONF()
     : currParser(NULL),
-      parseDepth(0),
       error(0),
       RecvUserDataCb(NULL),
       RecvGetUserDataCb(NULL),

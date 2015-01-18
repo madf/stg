@@ -45,9 +45,7 @@ using namespace std;
 PARSER_GET_USERS::PARSER_GET_USERS()
     : RecvUserDataCb(NULL),
       userDataCb(NULL),
-      user(),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -387,9 +385,7 @@ userDataCb = data;
 PARSER_GET_USER::PARSER_GET_USER()
     : RecvUserDataCb(NULL),
       userDataCb(NULL),
-      user(),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -665,9 +661,7 @@ userDataCb = data;
 PARSER_GET_SERVER_INFO::PARSER_GET_SERVER_INFO()
     : RecvServerInfoDataCb(NULL),
       serverInfoDataCb(NULL),
-      depth(0),
-      error(false),
-      serverInfo()
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -825,9 +819,7 @@ if (strcmp(attr[0], "value") == 0)
 PARSER_AUTH_BY::PARSER_AUTH_BY()
     : RecvAuthByDataCb(NULL),
       authByDataCb(NULL),
-      depth(0),
-      error(false),
-      list()
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -877,8 +869,7 @@ authByDataCb = data;
 PARSER_CHG_USER::PARSER_CHG_USER()
     : RecvChgUserCb(NULL),
       chgUserCbData(NULL),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -927,8 +918,7 @@ chgUserCbData = data;
 PARSER_CHECK_USER::PARSER_CHECK_USER()
     : RecvCheckUserCb(NULL),
       checkUserCbData(NULL),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -970,8 +960,7 @@ checkUserCbData = data;
 PARSER_SEND_MESSAGE::PARSER_SEND_MESSAGE()
     : RecvSendMessageCb(NULL),
       sendMessageCbData(NULL),
-      depth(0),
-      error(false)
+      depth(0)
 {
 }
 //-----------------------------------------------------------------------------
