@@ -404,7 +404,7 @@ r[0] = 0;
 if (!req->usrMsg.empty())
     {
     string msg;
-    Encode12str(msg, req->usrMsg.data());
+    Encode12str(msg, req->usrMsg.const_data());
     sprintf(str, "<Message login=\"%s\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"%s\"/>", req->login.const_data().c_str(), msg.c_str());
     //sprintf(str, "<message login=\"%s\" priority=\"0\" text=\"%s\"/>\n", req->login, msg);
     strcat(r, str);
@@ -451,7 +451,7 @@ if (!req->prepaidTraff.empty())
 if (!req->cash.empty())
     {
     string msg;
-    Encode12str(msg, req->message.data());
+    Encode12str(msg, req->message.c_str());
     sprintf(str, "<cash add=\"%f\" msg=\"%s\"/>\n", req->cash.const_data(), msg.c_str());
     strcat(r, str);
     }
@@ -459,7 +459,7 @@ if (!req->cash.empty())
 if (!req->setCash.empty())
     {
     string msg;
-    Encode12str(msg, req->message.data());
+    Encode12str(msg, req->message.c_str());
     sprintf(str, "<cash set=\"%f\" msg=\"%s\"/>\n", req->setCash.const_data(), msg.c_str());
     strcat(r, str);
     }
@@ -565,7 +565,7 @@ if (!req->tariff.empty())
 if (!req->note.empty())
     {
     string note;
-    Encode12str(note, req->note.data());
+    Encode12str(note, req->note.const_data());
     sprintf(str, "<note value=\"%s\"/>", note.c_str());
     strcat(r, str);
     }
@@ -573,7 +573,7 @@ if (!req->note.empty())
 if (!req->name.empty())
     {
     string name;
-    Encode12str(name, req->name.data());
+    Encode12str(name, req->name.const_data());
     sprintf(str, "<name value=\"%s\"/>", name.c_str());
     strcat(r, str);
     }
@@ -581,7 +581,7 @@ if (!req->name.empty())
 if (!req->address.empty())
     {
     string address;
-    Encode12str(address, req->address.data());
+    Encode12str(address, req->address.const_data());
     sprintf(str, "<address value=\"%s\"/>", address.c_str());
     strcat(r, str);
     }
@@ -589,7 +589,7 @@ if (!req->address.empty())
 if (!req->email.empty())
     {
     string email;
-    Encode12str(email, req->email.data());
+    Encode12str(email, req->email.const_data());
     sprintf(str, "<email value=\"%s\"/>", email.c_str());
     strcat(r, str);
     }
@@ -597,7 +597,7 @@ if (!req->email.empty())
 if (!req->phone.empty())
     {
     string phone;
-    Encode12str(phone, req->phone.data());
+    Encode12str(phone, req->phone.const_data());
     sprintf(str, "<phone value=\"%s\"/>", phone.c_str());
     strcat(r, str);
     }
@@ -605,7 +605,7 @@ if (!req->phone.empty())
 if (!req->group.empty())
     {
     string group;
-    Encode12str(group, req->group.data());
+    Encode12str(group, req->group.const_data());
     sprintf(str, "<group value=\"%s\"/>", group.c_str());
     strcat(r, str);
     }
@@ -615,7 +615,7 @@ for (int i = 0; i < USERDATA_NUM; i++)
     if (!req->ud[i].empty())
         {
         string ud;
-        Encode12str(ud, req->ud[i].data());
+        Encode12str(ud, req->ud[i].const_data());
         sprintf(str, "<userdata%d value=\"%s\"/>", i, ud.c_str());
         strcat(r, str);
         }
@@ -879,9 +879,9 @@ if (missedOptionArg || !CheckParametersGet(&req))
     }
 
 if (req.authBy)
-    return ProcessAuthBy(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), &req);
+    return ProcessAuthBy(req.server.const_data(), req.port.const_data(), req.admLogin.const_data(), req.admPasswd.const_data(), req.login.const_data(), &req);
 else
-    return ProcessGetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), req.login.data(), &req);
+    return ProcessGetUser(req.server.const_data(), req.port.const_data(), req.admLogin.const_data(), req.admPasswd.const_data(), req.login.const_data(), &req);
 }
 //-----------------------------------------------------------------------------
 int mainSet(int argc, char **argv)
@@ -1103,7 +1103,7 @@ char rstr[rLen];
 memset(rstr, 0, rLen);
 
 CreateRequestSet(&req, rstr);
-return ProcessSetUser(req.server.data(), req.port.data(), req.admLogin.data(), req.admPasswd.data(), rstr, NULL, isMessage);
+return ProcessSetUser(req.server.const_data(), req.port.const_data(), req.admLogin.const_data(), req.admPasswd.const_data(), rstr, NULL, isMessage);
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
