@@ -58,31 +58,6 @@ NETTRANSACT::NETTRANSACT()
       dataRxCallBack(NULL)
 {
 }
-//-----------------------------------------------------------------------------
-void NETTRANSACT::EnDecryptInit(const char * passwd, int, BLOWFISH_CTX *ctx)
-{
-unsigned char * keyL = NULL;
-
-keyL = new unsigned char[PASSWD_LEN];
-
-memset(keyL, 0, PASSWD_LEN);
-
-strncpy((char *)keyL, passwd, PASSWD_LEN);
-
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
-
-delete[] keyL;
-}
-//-----------------------------------------------------------------------------
-void NETTRANSACT::Encrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
-{
-EncodeString(d, s, ctx);
-}
-//---------------------------------------------------------------------------
-void NETTRANSACT::Decrypt(char * d, const char * s, BLOWFISH_CTX *ctx)
-{
-DecodeString(d, s, ctx);
-}
 //---------------------------------------------------------------------------
 int NETTRANSACT::Connect()
 {
@@ -370,12 +345,12 @@ if (strlen(data)%ENC_MSG_LEN)
     l++;
 
 BLOWFISH_CTX ctx;
-InitContext(password.c_str(), PASSWD_LEN, &ctx);
+InitContext(passwd, PASSWD_LEN, &ctx);
 
 for (int j = 0; j < l; j++)
     {
     strncpy(buff, &data[j*ENC_MSG_LEN], ENC_MSG_LEN);
-    Encrypt(buffS, buff, &ctx);
+    EncryptBlock(buffS, buff, &ctx);
     send(outerSocket, buffS, ENC_MSG_LEN, 0);
     }
 
@@ -390,7 +365,7 @@ char bufferS[ENC_MSG_LEN];
 char buffer[ENC_MSG_LEN + 1];
 
 BLOWFISH_CTX ctx;
-EnDecryptInit(password.c_str(), PASSWD_LEN, &ctx);
+InitContext(password.c_str(), PASSWD_LEN, &ctx);
 
 while (1)
     {
@@ -405,7 +380,7 @@ while (1)
     if (n == ENC_MSG_LEN)
         {
         n = 0;
-        Decrypt(buffer, bufferS, &ctx);
+        DecryptBlock(buffer, bufferS, &ctx);
         buffer[ENC_MSG_LEN] = 0;
 
         answerList.push_back(buffer);
