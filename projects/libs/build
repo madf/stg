@@ -27,7 +27,8 @@ OWNER=root
 
 OS=unknown
 sys=`uname -s`
-release=`uname -r | cut -b1`
+release=`uname -r`
+major=`printf "%s" "$release" | cut -d. -f1`
 BUILD_DIR=`pwd`
 CONFFILE="../../Makefile.conf"
 
@@ -51,13 +52,12 @@ LDFLAGS="$LDFLAGS -L/usr/local/lib"
 if [ "$sys" = "Linux" ]
 then
     OS=linux
-    release=""
     MAKE="make"
 fi
 
 if [ "$sys" = "FreeBSD" ]
 then
-    case $release in
+    case $major in
         4) OS=bsd;;
         5) OS=bsd5;;
         6) OS=bsd5;;
