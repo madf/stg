@@ -76,13 +76,13 @@ fi
 if [ "$OS" = "unknown" ]
 then
     printf "#############################################################################\n"
-    printf "# Sorry, but stargazer currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
+    printf "# Sorry, but we currently support Linux, FreeBSD and Darwin.                #\n"
     printf "#############################################################################\n"
     exit 1
 fi
 
 printf "#############################################################################\n"
-printf "       Building STG 2.4 for $sys $release\n"
+printf "       Building STG 2.4 libs for $sys $release\n"
 printf "#############################################################################\n"
 
 STG_LIBS="logger.lib

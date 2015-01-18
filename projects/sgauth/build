@@ -64,7 +64,7 @@ fi
 if [ "$OS" = "unknown" ]
 then
     printf "#############################################################################\n"
-    printf "# Sorry, but sgauth currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
+    printf "# Sorry, but sgauth is currently supported by Linux, FreeBSD and Darwin.    #\n"
     printf "#############################################################################\n"
     exit 1
 fi

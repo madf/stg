@@ -54,13 +54,13 @@ fi
 if [ "$OS" = "unknown" ]
 then
     printf "#############################################################################\n"
-    printf "# Sorry, but sgconf currently supported by Linux, FreeBSD 4.x, 5.x, 6.x  #\n"
+    printf "# Sorry, but sgconf_xml is currently supported by Linux, FreeBSD and Darwin.#\n"
     printf "#############################################################################\n"
     exit 1
 fi
 
 printf "#############################################################################\n"
-printf "       Building sgconf for $sys $release\n"
+printf "       Building sgconf_xml for $sys $release\n"
 printf "#############################################################################\n"
 
 STG_LIBS="conffiles.lib
@@ -187,5 +187,9 @@ printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
 printf "DIR_MODE=$DIR_MODE\n" >> $CONFFILE
 printf "OWNER=$OWNER\n" >> $CONFFILE
 
-$MAKE $MAKEOPTS
-
+if [ "$1" != "debug" ]
+then
+    $MAKE $MAKEOPTS
+else
+    printf "\n\n\nDebug build. Type $MAKE explicitly\n"
+fi

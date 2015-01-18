@@ -16,22 +16,16 @@ DATA_MODE=0644
 DIR_MODE=0755
 OWNER=root
 
-if [ -z $1 ]
+if [ "$1" = "debug" ]
 then
-    MAKEOPTS="-j1"
-    DEBUG="no"
+   DEFS="$DEFS -DDEBUG"
+   MAKEOPTS="$MAKEOPTS -j1"
+   CFLAGS="$CFLAGS -ggdb3 -W -Wall -Wextra"
+   CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
+   DEBUG="yes"
 else
-    if [ "$1" = "debug" ]
-    then
-        DEFS="-DDEBUG"
-        MAKEOPTS="-j1"
-        CFLAGS="$CFLAGS -ggdb3 -W -Wall"
-        CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall"
-        DEBUG="yes"
-    else
-        MAKEOPTS="-j1"
-        DEBUG="no"
-    fi
+   DEFS="$DEFS -DNDEBUG"
+   DEBUG="no"
 fi
 
 CFLAGS="$CFLAGS -I/usr/local/include"
@@ -52,17 +46,25 @@ then
         5) OS=bsd5;;
         6) OS=bsd5;;
         7) OS=bsd7;;
-        8) OS=bsd7;;
-        9) OS=bsd7;;
-        *) OS=unknown;;
+        *) OS=bsd7;;
     esac
     MAKE="gmake"
+fi
+
+if [ "$sys" = "Darwin" ]
+then
+    OS=darwin
+    ETC_DIR="./inst/freebsd/etc/stargazer"
+    MAKE="gmake"
+    CFLAGS="$CFLAGS -I/opt/local/include"
+    CXXFLAGS="$CFLAGS -I/opt/local/include"
+    LDFLAGS="$LDFLAGS -L/opt/local/lib"
 fi
 
 if [ "$OS" = "unknown" ]
 then
     printf "################################################################################\n"
-    printf "# Sorry, but sgauthstress currently supported by Linux, FreeBSD 4.x-8.x        #\n"
+    printf "# Sorry, but sgauthstress is currently supported by Linux, FreeBSD and Darwin. #\n"
     printf "################################################################################\n"
     exit 1
 fi
@@ -73,7 +75,7 @@ printf "########################################################################
 
 STG_LIBS="logger.lib
           crypto.lib
-	  common.lib
+          common.lib
           conffiles.lib
           dotconfpp.lib"
 
