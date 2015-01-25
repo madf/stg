@@ -41,6 +41,7 @@ public:
 
     static std::string TraffTypeToString(TRAFF_TYPE type);
     static TRAFF_TYPE StringToTraffType(const std::string& value);
+    static TRAFF_TYPE IntToTraffType(int value);
 
     virtual ~TARIFF() {}
     virtual double  GetPriceWithTraffType(uint64_t up,
@@ -115,6 +116,14 @@ std::istream & operator>>(std::istream & stream, TARIFF::TRAFF_TYPE & traffType)
     stream >> val;
     traffType = static_cast<TARIFF::TRAFF_TYPE>(val);
     return stream;
+}
+
+inline
+TARIFF::TRAFF_TYPE TARIFF::IntToTraffType(int value)
+{
+    if (value < 0 || value > TRAFF_MAX)
+        return TRAFF_UP_DOWN;
+    return static_cast<TRAFF_TYPE>(value);
 }
 
 #endif

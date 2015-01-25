@@ -275,13 +275,10 @@ try
     st->Get(3, td->tariffConf.fee);
     st->Get(4, td->tariffConf.free);
     st->Get(5, td->tariffConf.passiveCost);
-    st->Get(6, td->tariffConf.traffType);
+    //st->Get(6, td->tariffConf.traffType);
+    td->tariffConf.traffType = TARIFF::IntToTraffType(Get<int>(st, 6));
     if (schemaVersion > 0)
-        {
-        std::string period;
-        st->Get(7, period);
-        td->tariffConf.period = TARIFF::StringToPeriod(period);
-        }
+        td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);
