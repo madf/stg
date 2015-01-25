@@ -1002,7 +1002,7 @@ while (1)
             break;
 
         case 'P': //phone
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             req.phone = str;
             break;
 
