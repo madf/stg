@@ -50,6 +50,9 @@ struct USER_CONF
 //-----------------------------------------------------------------------------
 struct USER_CONF_RES
 {
+    USER_CONF_RES()
+        : userdata(USERDATA_NUM)
+    {}
     USER_CONF_RES & operator=(const USER_CONF & uc)
     {
         userdata.resize(USERDATA_NUM);
