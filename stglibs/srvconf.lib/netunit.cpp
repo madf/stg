@@ -312,7 +312,8 @@ BLOWFISH_CTX ctx;
 InitContext(password.c_str(), PASSWD_LEN, &ctx);
 size_t length = strlen(text);
 char buffer[length + 9];
-EncryptString(buffer, text, length, &ctx);
+memset(buffer, 0, sizeof(buffer));
+EncryptString(buffer, text, length + 1, &ctx);
 if (send(outerSocket, buffer, sizeof(buffer), 0) <= 0)
     {
     errorMsg = SEND_DATA_ERROR;
