@@ -584,9 +584,11 @@ int CHG_USER::ApplyChanges()
                                            &m_store,
                                            m_cashMsg))
                 return -1;
-            else
-                if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
-                    return -1;
+        }
+        else
+        {
+            if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
+                return -1;
         }
 
 
