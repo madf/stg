@@ -346,7 +346,7 @@ else
 fi
 
 printf "Checking for -lnfnetlink... "
-printf "#include <linux/netfilter.h>\nint main() { return 0; }\n" > build_check.c
+printf "#include <stdint.h>\n#include <netinet/in.h>\n#include <linux/netfilter.h>\nint main() { return 0; }\n" > build_check.c
 $CXX $CXXFLAGS $LDFLAGS build_check.c -lnfnetlink -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
@@ -359,7 +359,7 @@ fi
 rm -f fake
 
 printf "Checking for -lnetfilter_queue... "
-printf "#include <libnetfilter_queue/libnetfilter_queue.h>\nint main() { return 0; }\n" > build_check.c
+printf "#include <stdint.h>\n#include <libnetfilter_queue/libnetfilter_queue.h>\nint main() { return 0; }\n" > build_check.c
 $CXX $CXXFLAGS $LDFLAGS build_check.c -lnetfilter_queue -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
