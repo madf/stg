@@ -110,6 +110,11 @@ SERVCONF::SERVCONF()
 parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
+SERVCONF::~SERVCONF()
+{
+XML_ParserFree(parser);
+}
+//-----------------------------------------------------------------------------
 void SERVCONF::SetServer(const char * server)
 {
 nt.SetServer(server);

@@ -243,6 +243,7 @@ class SERVCONF
 {
 public:
     SERVCONF();
+    ~SERVCONF();
     void SetServer(const char * server);
     void SetPort(uint16_t port);
 
