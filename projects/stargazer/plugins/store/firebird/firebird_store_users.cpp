@@ -127,9 +127,9 @@ return SaveStat(stat, login);
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveStat(const USER_STAT & stat,
-                                 const std::string & login,
-                                 int year,
-                                 int month) const
+                             const std::string & login,
+                             int year,
+                             int month) const
 {
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -147,7 +147,7 @@ try
     tr->Rollback();
     return -1;
     }
-    st->Get(1, uid);
+    int32_t uid = Get<int32_t>(st, 1);
     st->Close();
     st->Prepare("select first 1 pk_stat from tb_stats where fk_user = ? order by stats_date desc");
     st->Set(1, uid);
