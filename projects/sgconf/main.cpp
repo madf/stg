@@ -1062,7 +1062,7 @@ while (1)
         case 707:
         case 708:
         case 709:
-            ParseAnyString(optarg, &str);
+            ParseAnyString(optarg, &str, "koi8-ru");
             //printf("UD%d\n", c - 700);
             req.ud[c - 700] = str;
             break;
