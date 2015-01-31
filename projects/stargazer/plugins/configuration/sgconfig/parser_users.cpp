@@ -126,8 +126,8 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
         answer += "<IP value=\"" + user.GetProperty().ips.Get().GetIpStr() + "\"/>";
 
     answer += "<Traff";
-    const DIR_TRAFF & upload(user.GetProperty().down.Get());
-    const DIR_TRAFF & download(user.GetProperty().up.Get());
+    const DIR_TRAFF & upload(user.GetProperty().up.Get());
+    const DIR_TRAFF & download(user.GetProperty().down.Get());
     if (user.GetProperty().up.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
             answer += " MU" + x2str(j) + "=\"" + x2str(upload[j]) + "\"";
