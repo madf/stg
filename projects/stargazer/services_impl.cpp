@@ -54,7 +54,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), service));
+iterator si(std::find(data.begin(), data.end(), service));
 
 if (si != data.end())
     {
@@ -92,7 +92,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si == data.end())
     {
@@ -101,7 +101,7 @@ if (si == data.end())
     return -1;
     }
 
-std::map<int, const_srv_iter>::iterator csi;
+std::map<int, const_iterator>::iterator csi;
 csi = searchDescriptors.begin();
 while (csi != searchDescriptors.end())
     {
@@ -136,7 +136,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-srv_iter si(find(data.begin(), data.end(), service));
+iterator si(std::find(data.begin(), data.end(), service));
 
 if (si == data.end())
     {
@@ -145,7 +145,9 @@ if (si == data.end())
     return -1;
     }
 
+printfd(__FILE__, "Old cost = %f, old pay day = %d\n", si->cost, (unsigned)si->payDay);
 *si = service;
+printfd(__FILE__, "New cost = %f, New pay day = %d\n", si->cost, (unsigned)si->payDay);
 if (store->SaveService(service))
     {
     WriteServLog("Cannot write service %s.", service.name.c_str());
@@ -184,15 +186,34 @@ for (size_t i = 0; i < servicesList.size(); i++)
 return false;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service)
+bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service) const
 {
 assert(service != NULL && "Pointer to service is not null");
 
 STG_LOCKER lock(&mutex);
 if (data.empty())
-    return false;
+    return true;
 
-srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
+
+if (si != data.end())
+    {
+    *service = *si;
+    return false;
+    }
+
+return true;
+}
+//-----------------------------------------------------------------------------
+bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF_RES * service) const
+{
+assert(service != NULL && "Pointer to service is not null");
+
+STG_LOCKER lock(&mutex);
+if (data.empty())
+    return true;
+
+const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si != data.end())
     {
@@ -208,11 +229,11 @@ bool SERVICES_IMPL::Exists(const std::string & name) const
 STG_LOCKER lock(&mutex);
 if (data.empty())
     {
-    printfd(__FILE__, "no admin in system!\n");
+    printfd(__FILE__, "No services in the system!\n");
     return true;
     }
 
-const_srv_iter si(find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
 
 if (si != data.end())
     return true;
