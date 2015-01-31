@@ -21,9 +21,9 @@
 #ifndef SERVICES_H
 #define SERVICES_H
 
-#include <string>
-
 #include "service_conf.h"
+
+#include <string>
 
 class ADMIN;
 
@@ -33,7 +33,8 @@ public:
     virtual int Add(const SERVICE_CONF & service, const ADMIN * admin) = 0;
     virtual int Del(const std::string & name, const ADMIN * admin) = 0;
     virtual int Change(const SERVICE_CONF & service, const ADMIN * admin) = 0;
-    virtual bool Find(const std::string & name, SERVICE_CONF * service) = 0;
+    virtual bool Find(const std::string & name, SERVICE_CONF * service) const = 0;
+    virtual bool Find(const std::string & name, SERVICE_CONF_RES * service) const = 0;
     virtual bool Exists(const std::string & name) const = 0;
     virtual const std::string & GetStrError() const = 0;
     virtual size_t Count() const = 0;
