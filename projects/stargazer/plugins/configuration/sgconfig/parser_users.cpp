@@ -574,8 +574,8 @@ int CHG_USER::ApplyChanges()
         if (!u->GetProperty().realName.Set(m_ucr.realName.const_data(), &m_currAdmin, m_login, &m_store))
             return -1;
 
-
     if (!m_usr.cash.empty())
+    {
         if (m_cashMustBeAdded)
         {
             if (!u->GetProperty().cash.Set(m_usr.cash.const_data() + u->GetProperty().cash,
@@ -590,7 +590,7 @@ int CHG_USER::ApplyChanges()
             if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
                 return -1;
         }
-
+    }
 
     if (!m_ucr.tariffName.empty())
     {
