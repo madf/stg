@@ -208,18 +208,48 @@ else
 fi
 rm -f fake
 
-printf "Checking for -lfbclient... "
-printf "int main() { return 0; }\n" > build_check.c
-$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
-if [ $? != 0 ]
+printf "Checking for fb_config... "
+FB_VERSION=`fb_config --version 2> /dev/null`
+if [ "$?" != "0" ]
 then
-    CHECK_FBCLIENT=no
     printf "no\n"
+    printf "Checking for -lfbclient... "
+    printf "int main() { return 0; }\n" > build_check.c
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        FB_CFLAGS=""
+        FB_LDFLAGS="-lfbclient"
+        CHECK_FBCLIENT=yes
+        printf "yes\n"
+    fi
+    rm -f fake
 else
-    CHECK_FBCLIENT=yes
     printf "yes\n"
+    printf "Checking for fb_config --cflags... "
+    FB_CFLAGS=`fb_config --cflags`
+    if [ "$?" != "0" ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        printf "[$FB_CFLAGS]\n"
+        printf "Checking for fb_config --libs "
+        FB_LDFLAGS=`fb_config --libs`
+        if [ "$?" != "0" ]
+        then
+            CHECK_FBCLIENT=no
+            printf "no\n"
+        else
+            CHECK_FBCLIENT=yes
+            printf "[$FB_LDFLAGS]\n"
+        fi
+    fi
 fi
-rm -f fake
+
 
 printf "Checking for mysql_config... "
 printf "#include <mysql.h>\nint main() { return 0; }\n" > build_check.c
@@ -235,6 +265,8 @@ then
         printf "no\n"
     else
         CHECK_MYSQLCLIENT=yes
+        MYSQL_CFLAGS=""
+        MYSQL_LDFLAGS="-lmysqlclient_r"
         printf "yes\n"
     fi
     rm -f fake
@@ -281,7 +313,7 @@ then
 else
     printf "yes\n";
     printf "Checking for pg_config --includedir... "
-    PG_CFLAGS=`pg_config --includedir 2> /dev/null`
+    PG_CFLAGS="-I"`pg_config --includedir 2> /dev/null`
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -289,7 +321,7 @@ else
     else
         printf "[$PG_CFLAGS]\n"
         printf "Checking for pg_config --libdir... "
-        PG_LDFLAGS=`pg_config --libdir 2> /dev/null`
+        PG_LDFLAGS="-L"`pg_config --libdir 2> /dev/null`
         if [ $? != 0 ]
         then
             CHECK_PQ=no
@@ -354,6 +386,7 @@ then
     printf "no\n"
 else
     CHECK_NFNETLINK=yes
+    NETLINK_LDFLAGS="-lnfnetlink"
     printf "yes\n"
 fi
 rm -f fake
@@ -367,6 +400,7 @@ then
     printf "no\n"
 else
     CHECK_NFQ=yes
+    NFQ_LDFLAGS="-lnetfilter_queue"
     printf "yes\n"
 fi
 rm -f fake
@@ -430,7 +464,6 @@ if [ "$CHECK_NFNETLINK" = "yes" -a "$CHECK_NFQ" = "yes" ]
 then
     PLUGINS="$PLUGINS
              capture/nfqueue"
-    NFQ_LIBS="-lnfnetlink -lnetfilter_queue"
 fi
 
 printf "OS=$OS\n" > $CONFFILE
@@ -445,13 +478,40 @@ printf "DIR_PLUGINS=\$(DIR_BUILD)/plugins\n" >> $CONFFILE
 printf "ARCH=$ARCH\n" >> $CONFFILE
 printf "CHECK_EXPAT=$CHECK_EXPAT\n" >> $CONFFILE
 printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
+if [ "$CHECK_FBCLIENT" = "yes" ]
+then
+    printf "FB_CFLAGS=$FB_CFLAGS\n" >> $CONFFILE
+    printf "FB_LDFLAGS=$FB_LDFLAGS\n" >> $CONFFILE
+fi
 printf "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT\n" >> $CONFFILE
+if [ "$CHECK_MYSQLCLIENT" = "yes" ]
+then
+    printf "MYSQL_CFLAGS=$MYSQL_CFLAGS\n" >> $CONFFILE
+    printf "MYSQL_LDFLAGS=$MYSQL_LDFLAGS\n" >> $CONFFILE
+fi
 printf "CHECK_PQ=$CHECK_PQ\n" >> $CONFFILE
+if [ "$CHECK_PQ" = "yes" ]
+then
+    printf "PG_CFLAGS=$PG_CFLAGS\n" >> $CONFFILE
+    printf "PG_LDFLAGS=$PG_LDFLAGS\n" >> $CONFFILE
+fi
 printf "CHECK_XMLRPC=$CHECK_XMLRPC\n" >> $CONFFILE
+if [ "$CHECK_XMLRPC" = "yes" ]
+then
+    printf "XMLRPC_CFLAGS=$XMLRPC_CFLAGS\n" >> $CONFFILE
+    printf "XMLRPC_LDFLAGS=$XMLRPC_LDFLAGS\n" >> $CONFFILE
+fi
 printf "CHECK_NFNETLINK=$CHECK_NFNETLINK\n" >> $CONFFILE
+if [ "$CHECK_NFNETLINK" = "yes" ]
+then
+    printf "NETLINK_LDFLAGS=$NETLINK_LDFLAGS\n" >> $CONFFILE
+fi
 printf "CHECK_NFQ=$CHECK_NFQ\n" >> $CONFFILE
+if [ "$CHECK_NFQ" = "yes" ]
+then
+    printf "NFQ_LDFLAGS=$NFQ_LDFLAGS\n" >> $CONFFILE
+fi
 printf "DEFS=$DEFS\n" >> $CONFFILE
-printf "NFQ_LIBS=$NFQ_LIBS\n" >> $CONFFILE
 printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS
 do
@@ -464,6 +524,8 @@ do
     printf "$plugin " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE

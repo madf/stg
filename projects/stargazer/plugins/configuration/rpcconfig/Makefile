@@ -15,9 +15,7 @@ SRCS = ./rpcconfig.cpp \
        ./admins_methods.cpp \
        ./messages_methods.cpp
 
-XMLRPC_C_LIBS = $(shell xmlrpc-c-config c++2 abyss-server --libs)
-
-LIBS += $(XMLRPC_C_LIBS) \
+LIBS += $(XMLRPC_LDFLAGS) \
 	$(LIB_THREAD)
 
 ifneq ($(OS),linux)

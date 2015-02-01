@@ -25,7 +25,7 @@ endif
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CXX) $^ $(STGLIBS_PATHS) $(STGLIBS_LIBS) $(LIBS) $(LDFLAGS) -o $(PROG)
+	$(CXX) $^ $(LDFLAGS) $(STGLIBS_PATHS) $(STGLIBS_LIBS) $(LIBS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
 clean:
