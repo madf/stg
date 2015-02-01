@@ -345,6 +345,8 @@ do
     printf "$plugin " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
