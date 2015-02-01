@@ -183,18 +183,47 @@ else
 fi
 rm -f fake
 
-printf "Checking for -lfbclient... "
-printf "int main() { return 0; }\n" > build_check.c
-$CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient -o fake > /dev/null 2> /dev/null
-if [ $? != 0 ]
+printf "Checking for fb_config... "
+FB_VERSION=`fb_config --version 2> /dev/null`
+if [ "$?" != "0" ]
 then
-    CHECK_FBCLIENT=no
     printf "no\n"
+    printf "Checking for -lfbclient... "
+    printf "int main() { return 0; }\n" > build_check.c
+    $CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        FB_CFLAGS=""
+        FB_LDFLAGS="-lfbclient"
+        CHECK_FBCLIENT=yes
+        printf "yes\n"
+    fi
+    rm -f fake
 else
-    CHECK_FBCLIENT=yes
     printf "yes\n"
+    printf "Checking for fb_config --cflags... "
+    FB_CFLAGS=`fb_config --cflags`
+    if [ "$?" != "0" ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        printf "[$FB_CFLAGS]\n"
+        printf "Checking for fb_config --libs "
+        FB_LDFLAGS=`fb_config --libs`
+        if [ "$?" != "0" ]
+        then
+            CHECK_FBCLIENT=no
+            printf "no\n"
+        else
+            CHECK_FBCLIENT=yes
+            printf "[$FB_LDFLAGS]\n"
+        fi
+    fi
 fi
-rm -f fake
 
 rm -f build_check.c
 
@@ -220,6 +249,11 @@ printf "DIR_INCLUDE=\$(DIR_BUILD)/../../include\n" >> $CONFFILE
 printf "ARCH=$ARCH\n" >> $CONFFILE
 printf "CHECK_EXPAT=$CHECK_EXPAT\n" >> $CONFFILE
 printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
+if [ "$CHECK_FBCLIENT" = "yes" ]
+then
+    printf "FB_CFLAGS=$FB_CFLAGS\n" >> $CONFFILE
+    printf "FB_LDFLAGS=$FB_LDFLAGS\n" >> $CONFFILE
+fi
 printf "DEFS=$DEFS\n" >> $CONFFILE
 printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS
@@ -227,6 +261,8 @@ do
     printf "$lib " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
