@@ -21,10 +21,10 @@ STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
 LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
-ifneq ($(OS),linux)
-LIBS += -liconv
+ifeq ($(OS),linux)
 D_FLAG = -D
 else
+LIBS += -liconv
 D_FLAG = -d
 endif
 
