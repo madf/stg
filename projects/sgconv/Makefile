@@ -10,9 +10,9 @@ SRCS = ./main.cpp \
        ./settings_impl.cpp
 
 STGLIBS = dotconfpp \
-	  conffiles \
-	  logger \
-	  crypto \
+          conffiles \
+          logger \
+          crypto \
           common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
@@ -22,8 +22,10 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
+D_FLAG = -D
 else
 LIBS += -lc -liconv
+D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -45,7 +47,7 @@ all: libs plugins $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-plugins: libs 
+plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS)
@@ -67,9 +69,9 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_PLUGINS) install
 

@@ -23,6 +23,9 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifneq ($(OS),linux)
 LIBS += -liconv
+D_FLAG = -D
+else
+D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -62,9 +65,9 @@ install: install-bin install-data
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 
@@ -73,11 +76,11 @@ install-data:
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/etc/rscriptd
 	install -m $(DATA_MODE) -o $(OWNER) ./rscriptd.conf $(PREFIX)/etc/rscriptd/rscriptd.conf
 ifeq ($(OS), linux)
-	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
-	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/linux/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
-	install -D -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnConnect $(PREFIX)/etc/rscriptd/
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) ../stargazer/inst/freebsd/etc/stargazer/OnDisconnect $(PREFIX)/etc/rscriptd/
 endif
 
 uninstall: uninstall-bin uninstall-data

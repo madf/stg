@@ -11,7 +11,7 @@ SRCS = ./main.cpp \
 
 STGLIBS = conffiles \
           srvconf \
-	  crypto \
+          crypto \
           common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
@@ -22,7 +22,10 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) -lexpat $(LIB_THREAD)
 ifeq ($(OS),linux)
 else
 LIBS += -lc \
-	-liconv
+        -liconv
+D_FLAG = -D
+else
+D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -71,9 +74,9 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 

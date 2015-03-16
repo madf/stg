@@ -9,8 +9,8 @@ SRCS = main.cpp \
        proto.cpp
 
 STGLIBS = dotconfpp \
-	  crypto \
-	  common
+          crypto \
+          common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
@@ -19,10 +19,12 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
+D_FLAG = -D
 else
 LIBS += -lintl \
         -lc \
-	-liconv
+        -liconv
+D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include

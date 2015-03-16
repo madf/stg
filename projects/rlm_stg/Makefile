@@ -13,8 +13,8 @@ SRCS = ./rlm_stg.c \
        ./stg_client.cpp
 
 STGLIBS = crypto \
-	  common
-          
+          common
+
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
@@ -22,10 +22,12 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
+D_FLAG = -D
 else
 LIBS += -lintl \
         -lc \
-	-liconv
+        -liconv
+D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -59,16 +61,16 @@ install: install-bin
 install-bin:
 ifeq ($(DEBUG), yes)
 ifeq ($(OS), linux)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
 endif
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 ifeq ($(OS), linux)
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
 endif
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
