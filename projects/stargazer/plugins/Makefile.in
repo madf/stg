@@ -34,9 +34,9 @@ clean:
 install: $(PROG)
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/stg
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 endif
 
 uninstall:
