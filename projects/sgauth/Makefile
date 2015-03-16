@@ -21,12 +21,10 @@ STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
-D_FLAG = -D
 else
 LIBS += -lintl \
         -lc \
         -liconv
-D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -62,9 +60,11 @@ install: install-bin install-data
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/sbin
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 else
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/sbin
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 

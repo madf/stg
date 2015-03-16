@@ -22,12 +22,10 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
-D_FLAG = -D
 else
 LIBS += -lintl \
         -lc \
         -liconv
-D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -61,16 +59,21 @@ install: install-bin
 install-bin:
 ifeq ($(DEBUG), yes)
 ifeq ($(OS), linux)
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/freeradius
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/$(PROG)
 endif
 else
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/freeradius
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 ifeq ($(OS), linux)
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/freeradius
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/freeradius/$(PROG)
 else
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/$(PROG)
 endif
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install

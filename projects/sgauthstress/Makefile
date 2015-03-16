@@ -19,12 +19,10 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
-D_FLAG = -D
 else
 LIBS += -lintl \
         -lc \
         -liconv
-D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include

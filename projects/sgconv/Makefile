@@ -22,10 +22,8 @@ LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
-D_FLAG = -D
 else
 LIBS += -lc -liconv
-D_FLAG = -d
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -69,9 +67,11 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/bin
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
 else
-	install $(D_FLAG) -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/bin
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_PLUGINS) install
 
