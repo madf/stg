@@ -23,7 +23,6 @@ ifeq ($(OS),linux)
 else
 LIBS += -lc \
         -liconv
-else
 endif
 
 SEARCH_DIRS = -I ../../include
