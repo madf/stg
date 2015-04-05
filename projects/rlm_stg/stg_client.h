@@ -38,7 +38,7 @@
 #include "stg/blowfish.h"
 #include "stg/rad_packets.h"
 
-#include "stgpair.h"
+typedef std::vector<std::pair<std::string, std::string> > PAIRS;
 
 class STG_CLIENT
 {
@@ -46,33 +46,16 @@ public:
     STG_CLIENT(const std::string & host, uint16_t port, const std::string & password);
     ~STG_CLIENT();
 
-    const STG_PAIR * Authorize(const std::string & login, const std::string & service);
-    const STG_PAIR * Authenticate(const std::string & login, const std::string & service);
-    const STG_PAIR * PostAuth(const std::string & login, const std::string & service);
-    const STG_PAIR * PreAcct(const std::string & login, const std::string & service);
-    const STG_PAIR * Account(const std::string & type, const std::string & login, const std::string & service, const std::string & sessionId);
+    static STG_CLIENT* get();
+    static void configure(const std::string& server, uint16_t port, const std::string& password);
+
+    PAIRS authorize(const PAIRS& pairs);
+    PAIRS authenticate(const PAIRS& pairs);
+    PAIRS postAuth(const PAIRS& pairs);
+    PAIRS preAcct(const PAIRS& pairs);
+    PAIRS account(const PAIRS& pairs);
 
 private:
-    std::string password;
-
-    int PrepareNet();
-
-    int Request(RAD_PACKET * packet, const std::string & login, const std::string & svc, uint8_t packetType);
-
-    int RecvData(RAD_PACKET * packet);
-    int Send(const RAD_PACKET & packet);
-};
-
-struct STG_CLIENT_ST
-{
-    public:
-        static void Configure(const std::string & host, uint16_t port, const std::string & password);
-        static STG_CLIENT * Get();
-
-    private:
-        static std::string m_host;
-        static uint16_t m_port;
-        static std::string m_password;
 };
 
 #endif

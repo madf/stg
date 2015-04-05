@@ -39,7 +39,11 @@
 
 #include "stg_client.h"
 
-typedef std::vector<std::pair<std::string, std::string> > PAIRS;
+namespace {
+
+STG_CLIENT* stgClient = NULL;
+
+}
 
 //-----------------------------------------------------------------------------
 
@@ -150,7 +154,7 @@ return 0;*/
 
 //-----------------------------------------------------------------------------
 
-const STG_PAIRS * STG_CLIENT::Authorize(const std::string & login, const std::string & svc)
+const STG_PAIRS * STG_CLIENT::Authorize(const PAIRS& pairs)
 {
 /*RAD_PACKET packet;
 
@@ -170,7 +174,7 @@ pairs.push_back(std::make_pair("Cleartext-Password", userPassword));
 return ToSTGPairs(pairs);
 }
 
-const STG_PAIRS * STG_CLIENT::Authenticate(const std::string & login, const std::string & svc)
+const STG_PAIRS * STG_CLIENT::Authenticate(const PAIRS& pairs)
 {
 /*RAD_PACKET packet;
 
@@ -187,7 +191,7 @@ PAIRS pairs;
 return ToSTGPairs(pairs);
 }
 
-const STG_PAIRS * STG_CLIENT::PostAuth(const std::string & login, const std::string & svc)
+const STG_PAIRS * STG_CLIENT::PostAuth(const PAIRS& pairs)
 {
 /*RAD_PACKET packet;
 
@@ -210,14 +214,14 @@ pairs.push_back(std::make_pair("Framed-IP-Address", inet_ntostring(framedIP)));
 return ToSTGPairs(pairs);
 }
 
-const STG_PAIRS * STG_CLIENT::PreAcct(const std::string & login, const std::String & service)
+const STG_PAIRS * STG_CLIENT::PreAcct(const PAIRS& pairs)
 {
 PAIRS pairs;
 
 return ToSTGPairs(pairs);
 }
 
-const STG_PAIRS * STG_CLIENT::Account(const std::string & type, const std::string & login, const std::string & svc, const std::string & sessid)
+const STG_PAIRS * STG_CLIENT::Account(const PAIRS& pairs)
 {
 /*RAD_PACKET packet;
 
@@ -261,19 +265,16 @@ std::string STG_CLIENT_ST::m_password;
 
 //-----------------------------------------------------------------------------
 
-STG_CLIENT * STG_CLIENT_ST::Get()
+STG_CLIENT* STG_CLIENT::get()
 {
-    static STG_CLIENT * stgClient = NULL;
-    if ( stgClient == NULL )
-        stgClient = new STG_CLIENT(m_host, m_port, m_password);
     return stgClient;
 }
 
-void STG_CLIENT_ST::Configure(const std::string & host, uint16_t port, const std::string & password)
+void STG_CLIENT::configure(const std::string& server, uint16_t port, const std::string& password)
 {
-    m_host = host;
-    m_port = port;
-    m_password = password;
+    if ( stgClient != NULL )
+        delete stgClient;
+    stgClient = new STG_CLIENT(server, port, password);
 }
 
 //-----------------------------------------------------------------------------

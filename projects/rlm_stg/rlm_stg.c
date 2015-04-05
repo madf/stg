@@ -34,13 +34,13 @@
 #undef NDEBUG
 #endif
 
-#include "stgpair.h"
 #include "iface.h"
+#include "stgpair.h"
 
 typedef struct rlm_stg_t {
-    char * server;
+    char* server;
     uint16_t port;
-    char * password;
+    char* password;
 } rlm_stg_t;
 
 static const CONF_PARSER module_config[] = {
@@ -50,8 +50,6 @@ static const CONF_PARSER module_config[] = {
 
   { NULL, -1, 0, NULL, NULL }        /* end the list */
 };
-
-int emptyPair(const STG_PAIR * pair);
 
 /*
  *    Do any per-module initialization that is separate to each
@@ -63,17 +61,17 @@ int emptyPair(const STG_PAIR * pair);
  *    that must be referenced in later calls, store a handle to it
  *    in *instance otherwise put a null pointer there.
  */
-static int stg_instantiate(CONF_SECTION *conf, void **instance)
+static int stg_instantiate(CONF_SECTION* conf, void** instance)
 {
-    rlm_stg_t *data;
+    rlm_stg_t* data;
 
     /*
      *    Set up a storage area for instance data
      */
     data = rad_malloc(sizeof(*data));
-    if (!data) {
+    if (!data)
         return -1;
-    }
+
     memset(data, 0, sizeof(*data));
 
     /*
@@ -101,31 +99,30 @@ static int stg_instantiate(CONF_SECTION *conf, void **instance)
  *    from the database. The authentication code only needs to check
  *    the password, the rest is done here.
  */
-static int stg_authorize(void *, REQUEST *request)
+static int stg_authorize(void*, REQUEST* request)
 {
-    const STG_PAIR * pairs;
-    const STG_PAIR * pair;
+    const STG_PAIR* pairs;
+    const STG_PAIR* pair;
     size_t count = 0;
+    const char* username = NULL;
+    const char* password = NULL;
 
     instance = instance;
 
     DEBUG("rlm_stg: stg_authorize()");
 
     if (request->username) {
-        DEBUG("rlm_stg: stg_authorize() request username field: '%s'", request->username->vp_strvalue);
+        username = request->username->data.strvalue;
+        DEBUG("rlm_stg: stg_authorize() request username field: '%s'", username);
     }
+
     if (request->password) {
-        DEBUG("rlm_stg: stg_authorize() request password field: '%s'", request->password->vp_strvalue);
+        password = request->password->data.strvalue;
+        DEBUG("rlm_stg: stg_authorize() request password field: '%s'", password);
     }
-    // Here we need to define Framed-Protocol
-    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
-    if (svc) {
-        DEBUG("rlm_stg: stg_authorize() Service-Type defined as '%s'", svc->vp_strvalue);
-        pairs = stgAuthorizeImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
-    } else {
-        DEBUG("rlm_stg: stg_authorize() Service-Type undefined");
-        pairs = stgAuthorizeImpl((const char *)request->username->vp_strvalue, "");
-    }
+
+    pairs = stgAuthorizeImpl(username, password, request->packet->vps);
+
     if (!pairs) {
         DEBUG("rlm_stg: stg_authorize() failed.");
         return RLM_MODULE_REJECT;
@@ -133,8 +130,8 @@ static int stg_authorize(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
-        pairadd(&request->config_items, pwd);
+        VALUE_PAIR* vp = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->config_items, vp);
         DEBUG("Adding pair '%s': '%s'", pair->key, pair->value);
         ++pair;
         ++count;
@@ -150,24 +147,30 @@ static int stg_authorize(void *, REQUEST *request)
 /*
  *    Authenticate the user with the given password.
  */
-static int stg_authenticate(void *, REQUEST *request)
+static int stg_authenticate(void*, REQUEST* request)
 {
-    const STG_PAIR * pairs;
-    const STG_PAIR * pair;
+    const STG_PAIR* pairs;
+    const STG_PAIR* pair;
     size_t count = 0;
+    const char* username = NULL;
+    const char* password = NULL;
 
     instance = instance;
 
     DEBUG("rlm_stg: stg_authenticate()");
 
-    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
-    if (svc) {
-        DEBUG("rlm_stg: stg_authenticate() Service-Type defined as '%s'", svc->vp_strvalue);
-        pairs = stgAuthenticateImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
-    } else {
-        DEBUG("rlm_stg: stg_authenticate() Service-Type undefined");
-        pairs = stgAuthenticateImpl((const char *)request->username->vp_strvalue, "");
+    if (request->username) {
+        username = request->username->data.strvalue;
+        DEBUG("rlm_stg: stg_authenticate() request username field: '%s'", username);
     }
+
+    if (request->password) {
+        password = request->password->data.strvalue;
+        DEBUG("rlm_stg: stg_authenticate() request password field: '%s'", password);
+    }
+
+    pairs = stgAuthenticateImpl(username, password, request->packet->vps);
+
     if (!pairs) {
         DEBUG("rlm_stg: stg_authenticate() failed.");
         return RLM_MODULE_REJECT;
@@ -175,8 +178,8 @@ static int stg_authenticate(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
-        pairadd(&request->reply->vps, pwd);
+        VALUE_PAIR* vp = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->reply->vps, vp);
         ++pair;
         ++count;
     }
@@ -191,31 +194,66 @@ static int stg_authenticate(void *, REQUEST *request)
 /*
  *    Massage the request before recording it or proxying it
  */
-static int stg_preacct(void *, REQUEST *)
+static int stg_preacct(void*, REQUEST*)
 {
+    const STG_PAIR* pairs;
+    const STG_PAIR* pair;
+    size_t count = 0;
+    const char* username = NULL;
+    const char* password = NULL;
+
     DEBUG("rlm_stg: stg_preacct()");
 
     instance = instance;
 
-    return RLM_MODULE_OK;
+    if (request->username) {
+        username = request->username->data.strvalue;
+        DEBUG("rlm_stg: stg_preacct() request username field: '%s'", username);
+    }
+
+    if (request->password) {
+        password = request->password->data.strvalue;
+        DEBUG("rlm_stg: stg_preacct() request password field: '%s'", password);
+    }
+
+    pairs = stgPreAcctImpl(username, password, request->packet->vps);
+
+    if (!pairs) {
+        DEBUG("rlm_stg: stg_preacct() failed.");
+        return RLM_MODULE_REJECT;
+    }
+
+    pair = pairs;
+    while (!emptyPair(pair)) {
+        VALUE_PAIR* vp = pairmake(pair->key, pair->value, T_OP_SET);
+        pairadd(&request->reply->vps, vp);
+        ++pair;
+        ++count;
+    }
+    deletePairs(pairs);
+
+    if (count)
+        return RLM_MODULE_UPDATED;
+
+    return RLM_MODULE_NOOP;
 }
 
 /*
  *    Write accounting information to this modules database.
  */
-static int stg_accounting(void *, REQUEST * request)
+static int stg_accounting(void*, REQUEST* request)
 {
-    const STG_PAIR * pairs;
-    const STG_PAIR * pair;
+    const STG_PAIR* pairs;
+    const STG_PAIR* pair;
     size_t count = 0;
 
     instance = instance;
 
     DEBUG("rlm_stg: stg_accounting()");
 
-    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
-    VALUE_PAIR * sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
-    VALUE_PAIR * sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
+    VALUE_PAIR* svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR* sessid = pairfind(request->packet->vps, PW_ACCT_SESSION_ID);
+    VALUE_PAIR* sttype = pairfind(request->packet->vps, PW_ACCT_STATUS_TYPE);
 
     if (!sessid) {
         DEBUG("rlm_stg: stg_accounting() Acct-Session-ID undefined");
@@ -223,13 +261,13 @@ static int stg_accounting(void *, REQUEST * request)
     }
 
     if (sttype) {
-        DEBUG("Acct-Status-Type := %s", sttype->vp_strvalue);
+        DEBUG("Acct-Status-Type := %s", sttype->data.strvalue);
         if (svc) {
-            DEBUG("rlm_stg: stg_accounting() Service-Type defined as '%s'", svc->vp_strvalue);
-            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue, (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
+            DEBUG("rlm_stg: stg_accounting() Service-Type defined as '%s'", svc->data.strvalue);
+            pairs = stgAccountingImpl((const char*)request->username->data.strvalue, (const char*)svc->data.strvalue, (const char*)sttype->data.strvalue, (const char*)sessid->data.strvalue);
         } else {
             DEBUG("rlm_stg: stg_accounting() Service-Type undefined");
-            pairs = stgAccountingImpl((const char *)request->username->vp_strvalue, "", (const char *)sttype->vp_strvalue, (const char *)sessid->vp_strvalue);
+            pairs = stgAccountingImpl((const char*)request->username->data.strvalue, "", (const char*)sttype->data.strvalue, (const char*)sessid->data.strvalue);
         }
     } else {
         DEBUG("rlm_stg: stg_accounting() Acct-Status-Type := NULL");
@@ -242,7 +280,7 @@ static int stg_accounting(void *, REQUEST * request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR* pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->reply->vps, pwd);
         ++pair;
         ++count;
@@ -265,35 +303,35 @@ static int stg_accounting(void *, REQUEST * request)
  *    max. number of logins, do a second pass and validate all
  *    logins by querying the terminal server (using eg. SNMP).
  */
-static int stg_checksimul(void *, REQUEST *request)
+static int stg_checksimul(void*, REQUEST* request)
 {
     DEBUG("rlm_stg: stg_checksimul()");
 
     instance = instance;
 
-    request->simul_count=0;
+    request->simul_count = 0;
 
     return RLM_MODULE_OK;
 }
 
-static int stg_postauth(void *, REQUEST *request)
+static int stg_postauth(void*, REQUEST* request)
 {
-    const STG_PAIR * pairs;
-    const STG_PAIR * pair;
+    const STG_PAIR* pairs;
+    const STG_PAIR* pair;
     size_t count = 0;
 
     instance = instance;
 
     DEBUG("rlm_stg: stg_postauth()");
 
-    VALUE_PAIR * svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
+    VALUE_PAIR* svc = pairfind(request->packet->vps, PW_SERVICE_TYPE);
 
     if (svc) {
-        DEBUG("rlm_stg: stg_postauth() Service-Type defined as '%s'", svc->vp_strvalue);
-        pairs = stgPostAuthImpl((const char *)request->username->vp_strvalue, (const char *)svc->vp_strvalue);
+        DEBUG("rlm_stg: stg_postauth() Service-Type defined as '%s'", svc->data.strvalue);
+        pairs = stgPostAuthImpl((const char*)request->username->data.strvalue, (const char*)svc->data.strvalue);
     } else {
         DEBUG("rlm_stg: stg_postauth() Service-Type undefined");
-        pairs = stgPostAuthImpl((const char *)request->username->vp_strvalue, "");
+        pairs = stgPostAuthImpl((const char*)request->username->data.strvalue, "");
     }
     if (!pairs) {
         DEBUG("rlm_stg: stg_postauth() failed.");
@@ -302,7 +340,7 @@ static int stg_postauth(void *, REQUEST *request)
 
     pair = pairs;
     while (!emptyPair(pair)) {
-        VALUE_PAIR * pwd = pairmake(pair->key, pair->value, T_OP_SET);
+        VALUE_PAIR* pwd = pairmake(pair->key, pair->value, T_OP_SET);
         pairadd(&request->reply->vps, pwd);
         ++pair;
         ++count;
@@ -315,9 +353,9 @@ static int stg_postauth(void *, REQUEST *request)
     return RLM_MODULE_NOOP;
 }
 
-static int stg_detach(void *instance)
+static int stg_detach(void* instance)
 {
-    free(((struct rlm_stg_t *)instance)->server);
+    free(((struct rlm_stg_t*)instance)->server);
     free(instance);
     return 0;
 }
@@ -334,17 +372,17 @@ static int stg_detach(void *instance)
 module_t rlm_stg = {
     RLM_MODULE_INIT,
     "stg",
-    RLM_TYPE_THREAD_SAFE,        /* type */
-    stg_instantiate,        /* instantiation */
-    stg_detach,            /* detach */
+    RLM_TYPE_THREAD_SAFE, /* type */
+    stg_instantiate,      /* instantiation */
+    stg_detach,           /* detach */
     {
-        stg_authenticate,    /* authentication */
+        stg_authenticate, /* authentication */
         stg_authorize,    /* authorization */
-        stg_preacct,    /* preaccounting */
-        stg_accounting,    /* accounting */
-        stg_checksimul,    /* checksimul */
-        NULL,            /* pre-proxy */
-        NULL,            /* post-proxy */
-        stg_postauth            /* post-auth */
+        stg_preacct,      /* preaccounting */
+        stg_accounting,   /* accounting */
+        stg_checksimul,   /* checksimul */
+        stg_pre_proxy,    /* pre-proxy */
+        stg_post_proxy,   /* post-proxy */
+        stg_postauth      /* post-auth */
     },
 };

@@ -9,14 +9,16 @@
 extern "C" {
 #endif
 
-int stgInstantiateImpl(const char * server, uint16_t port, const char * password);
-const STG_PAIR * stgAuthorizeImpl(const char * userName, const char * serviceType);
-const STG_PAIR * stgAuthenticateImpl(const char * userName, const char * serviceType);
-const STG_PAIR * stgPostAuthImpl(const char * userName, const char * serviceType);
-/*const STG_PAIR * stgPreAcctImpl(const char * userName, const char * serviceType);*/
-const STG_PAIR * stgAccountingImpl(const char * userName, const char * serviceType, const char * statusType, const char * sessionId);
+int stgInstantiateImpl(const char* server, uint16_t port, const char* password);
+const STG_PAIR* stgAuthorizeImpl(const char* userName, const char* serviceType);
+const STG_PAIR* stgAuthenticateImpl(const char* userName, const char* serviceType);
+const STG_PAIR* stgPostAuthImpl(const char* userName, const char* serviceType);
+const STG_PAIR* stgPreAcctImpl(const char* userName, const char* serviceType);
+const STG_PAIR* stgAccountingImpl(const char* userName, const char* serviceType, const char* statusType, const char* sessionId);
 
-void deletePairs(const STG_PAIR * pairs);
+void deletePairs(const STG_PAIR* pairs);
+STG_PAIR* fromValuePairs(const VALUE_PAIR* pairs);
+int countValuePairs(const VALUE_PAIR* pairs);
 
 #ifdef __cplusplus
 }
