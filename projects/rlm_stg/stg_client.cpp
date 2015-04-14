@@ -18,279 +18,146 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  Realization of data access via Stargazer for RADIUS
- *
- *  $Revision: 1.8 $
- *  $Date: 2010/04/16 12:30:02 $
- *
- */
+#include "stg_client.h"
 
-#include <netdb.h>
-#include <sys/types.h>
-#include <unistd.h> // close
-
-#include <cerrno>
-#include <cstring>
-#include <vector>
-#include <utility>
+#include "stg/common.h"
 
 #include <stdexcept>
-
-#include "stg_client.h"
 
 namespace {
 
 STG_CLIENT* stgClient = NULL;
 
+unsigned fromType(STG_CLIENT::TYPE type)
+{
+    return static_cast<unsigned>(type);
 }
 
-//-----------------------------------------------------------------------------
-
-STG_CLIENT::STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass)
-    : password(pass),
-      framedIP(0)
+STG::SGCP::TransportType toTransport(const std::string& value)
 {
-/*sock = socket(AF_INET, SOCK_DGRAM, 0);
-if (sock == -1)
-    {
-    std::string message = strerror(errno);
-    message = "Socket create error: '" + message + "'";
-    throw std::runtime_error(message);
+    std::string type = ToLower(value);
+    if (type == "unix") return STG::SGCP::UNIX;
+    else if (type == "udp") return STG::SGCP::UDP;
+    else if (type == "tcp") return STG::SGCP::TCP;
+    throw ChannelConfig::Error("Invalid transport type. Should be 'unix', 'udp' or 'tcp'.");
+}
+
+}
+
+ChannelConfig::ChannelConfig(std::string addr)
+    : transport(STG::SGCP::TCP)
+{
+    // unix:pass@/var/run/stg.sock
+    // tcp:secret@192.168.0.1:12345
+    // udp:key@isp.com.ua:54321
+
+    size_t pos = addr.find_first_of(':');
+    if (pos == std::string::npos)
+        throw Error("Missing transport name.");
+    transport = toTransport(addr.substr(0, pos));
+    addr = addr.substr(pos + 1);
+    if (addr.empty())
+        throw Error("Missing address to connect to.");
+    pos = addr.find_first_of('@');
+    if (pos != std::string::npos) {
+        key = addr.substr(0, pos);
+        addr = addr.substr(pos + 1);
+        if (addr.empty())
+            throw Error("Missing address to connect to.");
     }
-
-struct hostent * he = NULL;
-he = gethostbyname(host.c_str());
-if (he == NULL)
+    if (transport == STG::SGCP::UNIX)
     {
-    throw std::runtime_error("gethostbyname error");
+        address = addr;
+        return;
     }
+    pos = addr.find_first_of(':');
+    if (pos == std::string::npos)
+        throw Error("Missing port.");
+    address = addr.substr(0, pos);
+    if (str2x(addr.substr(pos + 1), port))
+        throw Error("Invalid port value.");
+}
 
-outerAddr.sin_family = AF_INET;
-outerAddr.sin_port = htons(port);
-outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
-
-InitEncrypt(&ctx, password);
-
-PrepareNet();*/
+STG_CLIENT::STG_CLIENT(const std::string& address)
+    : m_config(address),
+      m_proto(m_config.transport, m_config.key)
+{
+    try {
+        m_proto.connect(m_config.address, m_config.port);
+    } catch (const STG::SGCP::Proto::Error& ex) {
+        throw Error(ex.what());
+    }
 }
 
 STG_CLIENT::~STG_CLIENT()
 {
-/*close(sock);*/
 }
 
-int STG_CLIENT::PrepareNet()
+RESULT STG_CLIENT::request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
 {
-return 0;
+    m_writeHeader(type, userName, password);
+    m_writePairBlock(pairs);
+    RESULT result;
+    result.modify = m_readPairBlock();
+    result.reply = m_readPairBlock();
+    return result;
 }
-
-int STG_CLIENT::Send(const RAD_PACKET & packet)
-{
-/*char buf[RAD_MAX_PACKET_LEN];
-    
-Encrypt(&ctx, buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
-
-int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, sizeof(outerAddr));
-
-if (res == -1)
-    errorStr = "Error sending data";
-
-return res;*/
-}
-
-int STG_CLIENT::RecvData(RAD_PACKET * packet)
-{
-/*char buf[RAD_MAX_PACKET_LEN];
-int res;
-
-struct sockaddr_in addr;
-socklen_t len = sizeof(struct sockaddr_in);
-
-res = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(&addr), &len);
-if (res == -1)
-    {
-    errorStr = "Error receiving data";
-    return -1;
-    }
-
-Decrypt(&ctx, (char *)packet, buf, res / 8);
-
-return 0;*/
-}
-
-int STG_CLIENT::Request(RAD_PACKET * packet, const std::string & login, const std::string & svc, uint8_t packetType)
-{
-/*int res;
-
-memcpy((void *)&packet->magic, (void *)RAD_ID, RAD_MAGIC_LEN);
-packet->protoVer[0] = '0';
-packet->protoVer[1] = '1';
-packet->packetType = packetType;
-packet->ip = 0;
-strncpy((char *)packet->login, login.c_str(), RAD_LOGIN_LEN);
-strncpy((char *)packet->service, svc.c_str(), RAD_SERVICE_LEN);
-
-res = Send(*packet);
-if (res == -1)
-    return -1;
-
-res = RecvData(packet);
-if (res == -1)
-    return -1;
-
-if (strncmp((char *)packet->magic, RAD_ID, RAD_MAGIC_LEN))
-    {
-    errorStr = "Magic invalid. Wanted: '";
-    errorStr += RAD_ID;
-    errorStr += "', got: '";
-    errorStr += (char *)packet->magic;
-    errorStr += "'";
-    return -1;
-    }
-
-return 0;*/
-}
-
-//-----------------------------------------------------------------------------
-
-const STG_PAIRS * STG_CLIENT::Authorize(const PAIRS& pairs)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_AUTZ_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
-
-userPassword = (char *)packet.password;*/
-
-PAIRS pairs;
-pairs.push_back(std::make_pair("Cleartext-Password", userPassword));
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::Authenticate(const PAIRS& pairs)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_AUTH_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;*/
-
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::PostAuth(const PAIRS& pairs)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_POST_AUTH_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
-
-if (svc == "Framed-User")
-    framedIP = packet.ip;
-else
-    framedIP = 0;*/
-
-PAIRS pairs;
-pairs.push_back(std::make_pair("Framed-IP-Address", inet_ntostring(framedIP)));
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::PreAcct(const PAIRS& pairs)
-{
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::Account(const PAIRS& pairs)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-strncpy((char *)packet.sessid, sessid.c_str(), RAD_SESSID_LEN);
-
-if (type == "Start")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_START_PACKET))
-        return -1;
-    }
-else if (type == "Stop")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_STOP_PACKET))
-        return -1;
-    }
-else if (type == "Interim-Update")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_UPDATE_PACKET))
-        return -1;
-    }
-else
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_OTHER_PACKET))
-        return -1;
-    }
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;*/
-
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-//-----------------------------------------------------------------------------
-
-std::string STG_CLIENT_ST::m_host;
-uint16_t STG_CLIENT_ST::m_port(6666);
-std::string STG_CLIENT_ST::m_password;
-
-//-----------------------------------------------------------------------------
 
 STG_CLIENT* STG_CLIENT::get()
 {
     return stgClient;
 }
 
-void STG_CLIENT::configure(const std::string& server, uint16_t port, const std::string& password)
+bool STG_CLIENT::configure(const std::string& address)
 {
     if ( stgClient != NULL )
         delete stgClient;
-    stgClient = new STG_CLIENT(server, port, password);
+    try {
+        stgClient = new STG_CLIENT(address);
+        return true;
+    } catch (const ChannelConfig::Error& ex) {
+        // TODO: Log it
+    }
+    return false;
 }
 
-//-----------------------------------------------------------------------------
-
-const STG_PAIR * ToSTGPairs(const PAIRS & source)
+void STG_CLIENT::m_writeHeader(TYPE type, const std::string& userName, const std::string& password)
 {
-    STG_PAIR * pairs = new STG_PAIR[source.size() + 1];
-    for (size_t pos = 0; pos < source.size(); ++pos) {
-        bzero(pairs[pos].key, sizeof(STG_PAIR::key));
-        bzero(pairs[pos].value, sizeof(STG_PAIR::value));
-        strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(STG_PAIR::key));
-        strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(STG_PAIR::value));
-        ++pos;
+    try {
+        m_proto.writeAll<uint64_t>(fromType(type));
+        m_proto.writeAll(userName);
+        m_proto.writeAll(password);
+    } catch (const STG::SGCP::Proto::Error& ex) {
+        throw Error(ex.what());
     }
-    bzero(pairs[sources.size()].key, sizeof(STG_PAIR::key));
-    bzero(pairs[sources.size()].value, sizeof(STG_PAIR::value));
+}
 
-    return pairs;
+void STG_CLIENT::m_writePairBlock(const PAIRS& pairs)
+{
+    try {
+        m_proto.writeAll<uint64_t>(pairs.size());
+        for (size_t i = 0; i < pairs.size(); ++i) {
+            m_proto.writeAll(pairs[i].first);
+            m_proto.writeAll(pairs[i].second);
+        }
+    } catch (const STG::SGCP::Proto::Error& ex) {
+        throw Error(ex.what());
+    }
+}
+
+PAIRS STG_CLIENT::m_readPairBlock()
+{
+    try {
+        size_t count = m_proto.readAll<uint64_t>();
+        if (count == 0)
+            return PAIRS();
+        PAIRS res(count);
+        for (size_t i = 0; i < count; ++i) {
+            res[i].first = m_proto.readAll<std::string>();
+            res[i].second = m_proto.readAll<std::string>();
+        }
+        return res;
+    } catch (const STG::SGCP::Proto::Error& ex) {
+        throw Error(ex.what());
+    }
 }

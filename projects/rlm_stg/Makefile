@@ -13,7 +13,8 @@ SRCS = ./rlm_stg.c \
        ./stg_client.cpp
 
 STGLIBS = crypto \
-          common
+          common \
+          sgcp
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
@@ -32,6 +33,7 @@ SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
+CFLAGS += -fPIC $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CXXFLAGS += -fPIC $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-E $(STGLIBS_LIBS)

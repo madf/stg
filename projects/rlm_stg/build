@@ -61,7 +61,7 @@ printf "########################################################################
 printf "       Building rlm_stg for $sys $release\n"
 printf "#############################################################################\n"
 
-STG_LIBS="crypto.lib common.lib"
+STG_LIBS="crypto.lib common.lib sgcp.lib"
 
 if [ "$OS" = "linux" ]
 then

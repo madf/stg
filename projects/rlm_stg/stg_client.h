@@ -18,44 +18,67 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  Header file for client part of data access via Stargazer for RADIUS
- *
- *  $Revision: 1.4 $
- *  $Date: 2010/04/16 12:30:02 $
- *
- */
-
 #ifndef STG_CLIENT_H
 #define STG_CLIENT_H
 
+#include "stg/sgcp_proto.h" // Proto
+#include "stg/sgcp_types.h" // TransportType
+#include "stg/os_int.h"
+
 #include <string>
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h> // socklen_t
-
-#include "stg/blowfish.h"
-#include "stg/rad_packets.h"
+#include <vector>
+#include <utility>
 
 typedef std::vector<std::pair<std::string, std::string> > PAIRS;
+
+struct RESULT
+{
+    PAIRS modify;
+    PAIRS reply;
+};
+
+struct ChannelConfig {
+    struct Error : std::runtime_error {
+        Error(const std::string& message) : runtime_error(message) {}
+    };
+
+    ChannelConfig(std::string address);
+
+    STG::SGCP::TransportType transport;
+    std::string key;
+    std::string address;
+    uint16_t port;
+};
 
 class STG_CLIENT
 {
 public:
-    STG_CLIENT(const std::string & host, uint16_t port, const std::string & password);
+    enum TYPE {
+        AUTHORIZE,
+        AUTHENTICATE,
+        POST_AUTH,
+        PRE_ACCT,
+        ACCOUNT
+    };
+    struct Error : std::runtime_error {
+        Error(const std::string& message) : runtime_error(message) {}
+    };
+
+    STG_CLIENT(const std::string& address);
     ~STG_CLIENT();
 
     static STG_CLIENT* get();
-    static void configure(const std::string& server, uint16_t port, const std::string& password);
+    static bool configure(const std::string& address);
 
-    PAIRS authorize(const PAIRS& pairs);
-    PAIRS authenticate(const PAIRS& pairs);
-    PAIRS postAuth(const PAIRS& pairs);
-    PAIRS preAcct(const PAIRS& pairs);
-    PAIRS account(const PAIRS& pairs);
+    RESULT request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
 
 private:
+    ChannelConfig m_config;
+    STG::SGCP::Proto m_proto;
+
+    void m_writeHeader(TYPE type, const std::string& userName, const std::string& password);
+    void m_writePairBlock(const PAIRS& source);
+    PAIRS m_readPairBlock();
 };
 
 #endif

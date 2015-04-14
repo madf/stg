@@ -7,9 +7,11 @@ include ../../Makefile.conf
 LIB_NAME = stgcommon
 
 SRCS = common.cpp \
-	strptime.cpp
+       strptime.cpp \
+       blockio.cpp
 
-INCS = common.h
+INCS = common.h \
+       blockio.h
 
 ifneq ($(OS),linux)
 LIBS += -liconv
