@@ -8,7 +8,8 @@ LIBS += $(LIB_THREAD)
 
 PROG = mod_radius.so
 
-SRCS = ./radius.cpp
+SRCS = radius.cpp \
+       config.cpp
 
 STGLIBS = common \
 	  crypto \
