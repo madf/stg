@@ -68,6 +68,7 @@ then
     DEFS="$DEFS -DLINUX"
     LIB_THREAD=-lpthread
 else
+    LIBICONV="-liconv"
     if [ "$OS" = "bsd" ]
     then
         DEFS="$DEFS -DFREE_BSD"
@@ -139,7 +140,7 @@ rm -f fake
 
 printf "Checking for iconv 2nd argument... "
 printf "#include <iconv.h>\nint main(){ const char** src = 0; iconv(0, src, 0, 0, 0); }\n" > build_check.c
-$CXX $CXXFLAGS $LDFLAGS -Werror build_check.c -o fake > /dev/null 2> /dev/null
+$CXX $CXXFLAGS $LDFLAGS -Werror build_check.c $LIBICONV -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     printf "non-const\n"
@@ -168,6 +169,7 @@ printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
 printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
+printf "LIBICONV=$LIBICONV\n" >> $CONFFILE
 printf "PREFIX=$PREFIX\n" >> $CONFFILE
 printf "BIN_MODE=$BIN_MODE\n" >> $CONFFILE
 printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE
