@@ -899,7 +899,7 @@ strncpy(inBuf, source.c_str(), source.length());
 
 inBuf[source.length()] = 0;
 
-#if defined(FREE_BSD) || defined(FREE_BSD5) || defined(WIN32)
+#if defined(CONST_ICONV)
 const char * srcPos = inBuf;
 #else
 char * srcPos = inBuf;

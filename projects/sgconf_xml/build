@@ -159,6 +159,19 @@ else
     printf "yes\n"
 fi
 rm -f fake
+
+printf "Checking for iconv 2nd argument... "
+printf "#include <iconv.h>\nint main(){ const char** src = 0; iconv(0, src, 0, 0, 0); }\n" > build_check.c
+$CXX $CXXFLAGS $LDFLAGS -Werror build_check.c -o fake > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    DEFS="$DEFS -DCONST_ICONV"
+    printf "non-const\n"
+else
+    printf "const\n"
+fi
+rm -f fake
+
 rm -f build_check.c
 
 if [ "$CHECK_EXPAT" != "yes" ]
