@@ -164,7 +164,7 @@ rm -f fake
 
 printf "Checking for iconv 2nd argument... "
 printf "#include <iconv.h>\nint main(){ const char** src = 0; iconv(0, src, 0, 0, 0); }\n" > build_check.c
-$CXX $CXXFLAGS $LDFLAGS -Werror build_check.c $LIBICONV -o fake > /dev/null 2> /dev/null
+$CC $CFLAGS $LDFLAGS -Werror build_check.c $LIBICONV -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
     printf "non-const\n"
@@ -181,7 +181,7 @@ then
     printf "no\n"
     printf "Checking for -lfbclient... "
     printf "int main() { return 0; }\n" > build_check.c
-    $CXX $CXXFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_FBCLIENT=no
@@ -263,7 +263,7 @@ if [ $? != 0 ]
 then
     printf "no\n";
     printf "Checking for -lpq... "
-    $CXX $CXXFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    $CC $CFLAGS $LDFLAGS build_check.c -lpq $LIB_THREAD -o fake > /dev/null 2> /dev/null
     if [ $? != 0 ]
     then
         CHECK_PQ=no
