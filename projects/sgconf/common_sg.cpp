@@ -259,7 +259,7 @@ if (cd == (iconv_t) -1)
     exit(ICONV_ERR_CODE);
     }
 
-#if defined(FREE_BSD) || defined(FREE_BSD5)
+#if defined(CONST_ICONV)
 nconv = iconv(cd, (const char **)&inbuf, &insize, &outbuf, &outsize);
 #else
 nconv = iconv(cd, &inbuf, &insize, &outbuf, &outsize);
