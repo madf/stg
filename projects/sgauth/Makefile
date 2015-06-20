@@ -18,13 +18,12 @@ STGLIBS =  conffiles \
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD) $(LIBICONV)
 
 ifeq ($(OS),linux)
 else
 LIBS += -lintl \
-        -lc \
-        -liconv
+        -lc
 endif
 
 SEARCH_DIRS = -I ../../include

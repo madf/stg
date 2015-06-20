@@ -13,8 +13,6 @@ SRCS = common.cpp \
 INCS = common.h \
        blockio.h
 
-ifneq ($(OS),linux)
-LIBS += -liconv
-endif
+LIBS += $(LIBICONV)
 
 include ../Makefile.in

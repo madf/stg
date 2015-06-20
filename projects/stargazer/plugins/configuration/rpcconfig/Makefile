@@ -16,11 +16,8 @@ SRCS = ./rpcconfig.cpp \
        ./messages_methods.cpp
 
 LIBS += $(XMLRPC_LDFLAGS) \
-	$(LIB_THREAD)
-
-ifneq ($(OS),linux)
-LIBS += -liconv
-endif
+	$(LIB_THREAD) \
+	$(LIBICONV)
 
 STGLIBS = common \
 	  logger \

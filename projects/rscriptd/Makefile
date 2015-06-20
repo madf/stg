@@ -19,12 +19,7 @@ STGLIBS = scriptexecuter \
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
-
-ifeq ($(OS),linux)
-else
-LIBS += -liconv
-endif
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD) $(LIBICONV)
 
 SEARCH_DIRS = -I ../../include
 
