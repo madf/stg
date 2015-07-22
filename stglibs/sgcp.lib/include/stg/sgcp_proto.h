@@ -22,17 +22,13 @@
  */
 
 #include "sgcp_types.h" // TransportType
-#include "sgcp_utils.h" // hton/ntoh
 
 #include "stg/os_int.h"
 
-#include <boost/asio/basic_stream_socket.hpp>
 #include <boost/function.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <boost/system/error_code.hpp>
 
 #include <string>
-#include <vector>
 #include <stdexcept>
 
 namespace STG
@@ -43,13 +39,6 @@ namespace SGCP
 class Proto
 {
     public:
-        enum { CONTEXT = 0 };
-        enum PacketType {
-            INFO = 0,
-            PING,
-            PONG,
-            DATA
-        };
 
         struct Error : public std::runtime_error
         {
