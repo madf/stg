@@ -23,9 +23,6 @@
 
 #include "stg/os_int.h"
 
-#include <string>
-#include <vector>
-
 #include <arpa/inet.h> // hton*
 
 namespace STG
