@@ -40,8 +40,6 @@ namespace STG
 namespace SGCP
 {
 
-class TransportProto;
-
 class Proto
 {
     public:
