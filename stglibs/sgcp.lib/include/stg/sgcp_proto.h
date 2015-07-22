@@ -22,6 +22,7 @@
  */
 
 #include "sgcp_types.h" // TransportType
+#include "sgcp_conn.h"
 
 #include "stg/os_int.h"
 

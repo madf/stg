@@ -62,6 +62,8 @@ class Connection : public boost::enable_shared_from_this<Connection>
         ErrorHandler m_errorHandler;
 };
 
+typedef boost::shared_ptr<Connection> ConnectionPtr;
+
 } // namespace SGCP
 } // namespace STG
 
