@@ -1,5 +1,5 @@
-#ifndef __STG_SGCP_TCP_H__
-#define __STG_SGCP_TCP_H__
+#ifndef __STG_SGCP_PACKET_H__
+#define __STG_SGCP_PACKET_H__
 
 /*
  *    This program is free software; you can redistribute it and/or modify
@@ -21,35 +21,32 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "stg/sgcp_transport.h"
-
-#include "stg/os_int.h"
-
-#include <string>
-
-#include <unistd.h> // ssize_t
+#include <boost/stdint.hpp>
 
 namespace STG
 {
 namespace SGCP
 {
 
-class TCPProto : public TransportProto
+struct __attribute__ ((__packed__)) Packet
 {
-    public:
-        TCPProto(boost::asio::io_service& ios);
-        virtual ~TCPProto();
+    Packet(uint16_t type, uint16_t size);
 
-        virtual ConnectionPtr connect(const std::string& address, uint16_t port) = 0;
-        virtual void bind(const std::string& address, uint16_t port, Proto::AcceptHandler handler) = 0;
+    bool valid() const { return magic == MAGIC; }
 
-        typedef boost::asio::ip::tcp protocol;
-    private:
-        ba::io_service& m_ios;
-        protocol::acceptor m_acceptor;
+    static uint64_t MAGIC;
+    static uint16_t VERSION;
 
-        void m_handleAccept(TCPConn* conn, Proto::AcceptHandler handler, const boost::system::error_code& ec)
+    enum Types { PING, PONG, DATA };
+
+    uint64_t magic;
+    uint64_t senderTime;
+    uint16_t version;
+    uint16_t type;
+    uint32_t size;
 };
+
+Packet hton(Packet value);
 
 } // namespace SGCP
 } // namespace STG

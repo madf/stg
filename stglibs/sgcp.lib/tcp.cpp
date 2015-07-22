@@ -12,8 +12,9 @@
 
 using STG::SGCP::TCPProto;
 
-TCPProto::TCPProto()
-    : m_sock(socket(AF_INET, SOCK_STREAM, 0))
+TCPProto::TCPProto(ba::io_service& ios)
+    : m_ios(ios),
+      m_acceptor(m_ios)
 {
 }
 
@@ -22,31 +23,34 @@ TCPProto::~TCPProto()
     close(m_sock);
 }
 
-void TCPProto::connect(const std::string& address, uint16_t port)
+ConnectionPtr TCPProto::connect(const std::string& address, uint16_t port)
 {
-    std::vector<in_addr> addrs = resolve(address);
+    bs::error_code ec;
+    ConnectionPtr conn = boost::make_shared(m_ios);
+    conn.socket().connect(ba::local::stream_protocol::enpoint(address, port), ec);
+    if (ec)
+        throw Error(ec.message());
+    conn->start();
+    return conn;
+}
 
-    for (size_t i = 0; i < addrs.size(); ++i) {
-        sockaddr_in addr;
-        addr.sin_family = AF_INET;
-        addr.sin_port = hton(port);
-        addr.sin_addr = addrs[i];
+void TCPProto::bind(const std::string& address, uint16_t port, Proto::AcceptHandler handler)
+{
+    bs::error_code ec;
+    m_acceptor.bind(address, ec);
+    if (ec)
+        throw Error(ec.message());
 
-        if (::connect(m_sock, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) == 0)
-            return;
+    TCPConn* conn = new TCPConn(m_ios);
+    m_acceptor.async_accept(conn->socket(), conn->endpoint(), boost::bind(&TCPProto::m_handleAccept, this, conn, handler, boost::_1);
+}
 
-        close(m_sock);
-        m_sock = socket(AF_INET, SOCK_STREAM, 0);
+void TCPProto::m_handleAccept(TCPConn* conn, Proto::AcceptHandler handler, const boost::system::error_code& ec)
+{
+    if (ec) {
+        delete conn;
+        handler(NULL, "", ec.message());
+        return;
     }
-    throw Error("No more addresses to connect to.");
-}
-
-ssize_t TCPProto::write(const void* buf, size_t size)
-{
-    return ::write(m_sock, buf, size);
-}
-
-ssize_t TCPProto::read(void* buf, size_t size)
-{
-    return ::read(m_sock, buf, size);
+    handler(conn, conn->enpoint().address(), "");
 }

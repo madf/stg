@@ -1,5 +1,5 @@
-#ifndef __STG_SGCP_PROTO_H__
-#define __STG_SGCP_PROTO_H__
+#ifndef __STG_SGCP_CONN_H__
+#define __STG_SGCP_CONN_H__
 
 /*
  *    This program is free software; you can redistribute it and/or modify
@@ -21,57 +21,45 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include "sgcp_types.h" // TransportType
-#include "sgcp_utils.h" // hton/ntoh
-
 #include "stg/os_int.h"
 
 #include <boost/asio/basic_stream_socket.hpp>
 #include <boost/function.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/system/error_code.hpp>
 
 #include <string>
-#include <vector>
-#include <stdexcept>
 
 namespace STG
 {
 namespace SGCP
 {
 
-class TransportProto;
-
-class Proto
+class Connection : public boost::enable_shared_from_this<Connection>
 {
     public:
-        enum { CONTEXT = 0 };
-        enum PacketType {
-            INFO = 0,
-            PING,
-            PONG,
-            DATA
-        };
-
-        struct Error : public std::runtime_error
+        struct Chunk;
+        typedef boost::function<Chunk (uint16_t /*type*/, uint32_t /*size*/)> Dispatcher;
+        typedef boost::function<Chunk (const std::string& /*error*/)> Continuation;
+        typedef boost::function<void (const std::string& /*error*/)> ErrorHandler;
+        struct Chunk
         {
-            Error(const std::string& mesage) : runtime_error(message) {}
+            void* buffer;
+            size_t size;
+            Continuation continuation;
         };
 
-        typedef boost::function<void (ConnectionPtr /*conn*/, const std::string& /*enpoint*/, const std::string& /*error*/)> AcceptHandler;
+        Connection(Dispatcher dispatcher, ErrorHandler errorHandler) : m_dispatcher(dispatcher), m_errorHandler(errorHandler) {}
+        virtual ~Connection() {}
 
-        Proto(TransportType transport, const std::string& key);
-        ~Proto();
+        virtual boost::asio::basic_stream_socket& socket() = 0;
 
-        ConnectionPtr connect(const std::string& address, uint16_t port);
-        void bind(const std::string& address, uint16_t port, AcceptHandler handler);
+        virtual void send(const void* data, size_t size) = 0;
 
-        void run();
-        bool stop();
+        virtual void start() = 0;
+        virtual void stop() = 0;
 
-    private:
-        class Impl;
-        boost::scoped_ptr<Impl> m_impl;
+    protected:
+        Dispatcher m_dispatcher;
+        ErrorHandler m_errorHandler;
 };
 
 } // namespace SGCP

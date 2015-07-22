@@ -29,8 +29,8 @@ namespace SGCP
 enum TransportType
 {
     UNIX,
-    UDP,
-    TCP
+    TCP,
+    SSL
 };
 
 } // namespace SGCP

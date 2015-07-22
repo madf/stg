@@ -34,18 +34,21 @@ namespace STG
 namespace SGCP
 {
 
-class UnixProto : public TransportProto
+class UNIXProto : public TransportProto
 {
     public:
-        UnixProto();
-        virtual ~UnixProto();
+        UNIXProto(boost::asio::io_service& ios);
+        virtual ~UNIXProto();
 
-        virtual void connect(const std::string& address, uint16_t /*port*/);
-        virtual ssize_t write(const void* buf, size_t size);
-        virtual ssize_t read(void* buf, size_t size);
+        virtual ConnectionPtr connect(const std::string& address, uint16_t port) = 0;
+        virtual void bind(const std::string& address, uint16_t port, Proto::AcceptHandler handler) = 0;
 
+        typedef boost::asio::local::stream_protocol protocol;
     private:
-        int m_sock;
+        ba::io_service& m_ios;
+        protocol::acceptor m_acceptor;
+
+        void m_handleAccept(UNIXConn* conn, Proto::AcceptHandler handler, const boost::system::error_code& ec)
 };
 
 } // namespace SGCP

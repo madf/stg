@@ -22,6 +22,8 @@
 
 #include "stg/common.h"
 
+#include <boost/bind.hpp>
+
 #include <stdexcept>
 
 namespace {
@@ -80,17 +82,19 @@ ChannelConfig::ChannelConfig(std::string addr)
 
 STG_CLIENT::STG_CLIENT(const std::string& address)
     : m_config(address),
-      m_proto(m_config.transport, m_config.key)
+      m_proto(m_config.transport, m_config.key),
+      m_thread(boost::bind(&STG_CLIENT::m_run, this))
 {
-    try {
-        m_proto.connect(m_config.address, m_config.port);
-    } catch (const STG::SGCP::Proto::Error& ex) {
-        throw Error(ex.what());
-    }
 }
 
 STG_CLIENT::~STG_CLIENT()
 {
+    stop();
+}
+
+bool STG_CLIENT::stop()
+{
+    return m_proto.stop();
 }
 
 RESULT STG_CLIENT::request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
@@ -110,7 +114,7 @@ STG_CLIENT* STG_CLIENT::get()
 
 bool STG_CLIENT::configure(const std::string& address)
 {
-    if ( stgClient != NULL )
+    if ( stgClient != NULL && stgClient->stop() )
         delete stgClient;
     try {
         stgClient = new STG_CLIENT(address);
@@ -160,4 +164,10 @@ PAIRS STG_CLIENT::m_readPairBlock()
     } catch (const STG::SGCP::Proto::Error& ex) {
         throw Error(ex.what());
     }
+}
+
+void STG_CLIENT::m_run()
+{
+    m_proto.connect(m_config.address, m_config.port);
+    m_proto.run();
 }

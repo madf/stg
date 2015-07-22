@@ -25,6 +25,8 @@
 #include "stg/sgcp_types.h" // TransportType
 #include "stg/os_int.h"
 
+#include <boost/thread.hpp>
+
 #include <string>
 #include <vector>
 #include <utility>
@@ -67,6 +69,8 @@ public:
     STG_CLIENT(const std::string& address);
     ~STG_CLIENT();
 
+    bool stop();
+
     static STG_CLIENT* get();
     static bool configure(const std::string& address);
 
@@ -75,10 +79,13 @@ public:
 private:
     ChannelConfig m_config;
     STG::SGCP::Proto m_proto;
+    boost::thread m_thread;
 
     void m_writeHeader(TYPE type, const std::string& userName, const std::string& password);
     void m_writePairBlock(const PAIRS& source);
     PAIRS m_readPairBlock();
+
+    void m_run();
 };
 
 #endif

@@ -43,13 +43,11 @@ class TransportProto
         };
 
         static TransportProto* create(TransportType transport, const std::string& key);
-        static TransportProto* create(TransportType transport);
 
         virtual ~TransportProto() {}
 
-        virtual void connect(const std::string& address, uint16_t port) = 0;
-        virtual ssize_t write(const void* buf, size_t size) = 0;
-        virtual ssize_t read(void* buf, size_t size) = 0;
+        virtual ConnectionPtr connect(const std::string& address, uint16_t port) = 0;
+        virtual void bind(const std::string& address, uint16_t port, Proto::AcceptHandler handler) = 0;
 };
 
 } // namespace SGCP

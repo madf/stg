@@ -1,41 +1,46 @@
 #include "unix.h"
 
-#include <cerrno>
-#include <cstring>
+using STG::SGCP::UNIXProto;
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-
-using STG::SGCP::UnixProto;
-
-UnixProto::UnixProto()
-    : m_sock(socket(AF_UNIX, SOCK_STREAM, 0))
+UNIXProto::UNIXProto(ba::io_service& ios)
+    : m_ios(ios),
+      m_acceptor(m_ios)
 {
 }
 
-UnixProto::~UnixProto()
+UNIXProto::~UNIXProto()
 {
     close(m_sock);
 }
 
-void UnixProto::connect(const std::string& address, uint16_t /*port*/)
+ConnectionPtr UNIXProto::connect(const std::string& address, uint16_t /*port*/)
 {
-    sockaddr_un addr;
-    addr.sun_family = AF_UNIX;
-    size_t max = sizeof(addr.sun_path);
-    strncpy(addr.sun_path, address.c_str(), max - 1);
-    addr.sun_path[max - 1] = 0; // Just in case.
-    if (::connect(m_sock, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
-        throw Error(strerror(errno));
+    bs::error_code ec;
+    ConnectionPtr conn = boost::make_shared(m_ios);
+    conn.socket().connect(ba::local::stream_protocol::enpoint(address), ec);
+    if (ec)
+        throw Error(ec.message());
+    conn->start();
+    return conn;
 }
 
-ssize_t UnixProto::write(const void* buf, size_t size)
+void UNIXProto::bind(const std::string& address, uint16_t /*port*/, Proto::AcceptHandler handler)
 {
-    return ::write(m_sock, buf, size);
+    bs::error_code ec;
+    m_acceptor.bind(address, ec);
+    if (ec)
+        throw Error(ec.message());
+
+    UNIXConn* conn = new UNIXConn(m_ios);
+    m_acceptor.async_accept(conn->socket(), conn->endpoint(), boost::bind(&UNIXProto::m_handleAccept, this, conn, handler, boost::_1);
 }
 
-ssize_t UnixProto::read(void* buf, size_t size)
+void UNIXProto::m_handleAccept(UNIXConn* conn, Proto::AcceptHandler handler, const boost::system::error_code& ec)
 {
-    return ::read(m_sock, buf, size);
+    if (ec) {
+        delete conn;
+        handler(NULL, "", ec.message());
+        return;
+    }
+    handler(conn, conn->enpoint().path(), "");
 }

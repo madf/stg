@@ -27,7 +27,6 @@
 #include <vector>
 
 #include <arpa/inet.h> // hton*
-#include <netinet/in.h> // in_addr
 
 namespace STG
 {
@@ -58,8 +57,6 @@ uint64_t htonll(uint64_t value)
 
 template <> inline uint64_t hton(uint64_t value) { return htonll(value); }
 template <> inline int64_t hton(int64_t value) { return htonll(value); }
-
-std::vector<in_addr> resolve(const std::string& address);
 
 } // namespace SGCP
 } // namespace STG
