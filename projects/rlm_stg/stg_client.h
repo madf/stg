@@ -21,15 +21,13 @@
 #ifndef STG_CLIENT_H
 #define STG_CLIENT_H
 
-#include "stg/sgcp_proto.h" // Proto
-#include "stg/sgcp_types.h" // TransportType
 #include "stg/os_int.h"
 
-#include <boost/thread.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <string>
 #include <vector>
-#include <utility>
+#include <stdexcept>
 
 typedef std::vector<std::pair<std::string, std::string> > PAIRS;
 
@@ -46,9 +44,10 @@ struct ChannelConfig {
 
     ChannelConfig(std::string address);
 
-    STG::SGCP::TransportType transport;
+    std::string transport;
     std::string key;
     std::string address;
+    std::string portStr;
     uint16_t port;
 };
 
@@ -66,26 +65,21 @@ public:
         Error(const std::string& message) : runtime_error(message) {}
     };
 
-    STG_CLIENT(const std::string& address);
+    typedef bool (*Callback)(void* data, const RESULT& result);
+
+    STG_CLIENT(const std::string& address, Callback callback, void* data);
     ~STG_CLIENT();
 
     bool stop();
 
     static STG_CLIENT* get();
-    static bool configure(const std::string& address);
+    static bool configure(const std::string& address, Callback callback, void* data);
 
-    RESULT request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
+    bool request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
 
 private:
-    ChannelConfig m_config;
-    STG::SGCP::Proto m_proto;
-    boost::thread m_thread;
-
-    void m_writeHeader(TYPE type, const std::string& userName, const std::string& password);
-    void m_writePairBlock(const PAIRS& source);
-    PAIRS m_readPairBlock();
-
-    void m_run();
+    class Impl;
+    boost::scoped_ptr<Impl> m_impl;
 };
 
 #endif
