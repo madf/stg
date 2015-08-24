@@ -26,7 +26,11 @@
 #include "stg/module_settings.h"
 #include "stg/logger.h"
 
+#include "config.h"
+#include "conn.h"
+
 #include <string>
+#include <deque>
 
 #include <pthread.h>
 #include <unistd.h>
@@ -43,10 +47,10 @@ public:
     RADIUS();
     virtual ~RADIUS() {}
 
-    void SetUsers(USERS* u) { users = u; }
-    void SetStore(STORE* s) { store = s; }
+    void SetUsers(USERS* u) { m_users = u; }
+    void SetStore(STORE* s) { m_store = s; }
     void SetStgSettings(const SETTINGS*) {}
-    void SetSettings(const MODULE_SETTINGS& s) { settings = s; }
+    void SetSettings(const MODULE_SETTINGS& s) { m_settings = s; }
     int ParseSettings();
 
     int Start();
@@ -67,12 +71,17 @@ private:
 
     static void* run(void*);
 
-    void rumImpl();
+    bool reconnect();
+    int createUNIX() const;
+    int createTCP() const;
+    void runImpl();
     int maxFD() const;
     void buildFDSet(fd_set & fds) const;
     void cleanupConns();
     void handleEvents(const fd_set & fds);
     void acceptConnection();
+    void acceptUNIX();
+    void acceptTCP();
 
     mutable std::string m_error;
     STG::Config m_config;
@@ -85,8 +94,10 @@ private:
     USERS* m_users;
     const STORE* m_store;
 
+    int m_listenSocket;
+    std::deque<STG::Conn*> m_conns;
+
     pthread_t m_thread;
-    pthread_mutex_t m_mutex;
 
     PLUGIN_LOGGER m_logger;
 };

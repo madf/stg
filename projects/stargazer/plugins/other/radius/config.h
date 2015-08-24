@@ -34,7 +34,8 @@ namespace STG
 struct Config
 {
     typedef std::map<std::string, std::string> Pairs;
-    typedef Pairs::value_type Pair;
+    typedef std::pair<std::string, std::string> Pair;
+    enum Type { UNIX, TCP };
 
     Config(const MODULE_SETTINGS& settings);
 
@@ -44,7 +45,9 @@ struct Config
 
     bool verbose;
 
+    Type connectionType;
     std::string bindAddress;
+    std::string portStr;
     uint16_t port;
     std::string key;
 };

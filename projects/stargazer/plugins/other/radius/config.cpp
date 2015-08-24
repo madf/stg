@@ -39,6 +39,7 @@ struct ParserError : public std::runtime_error
           position(pos),
           error(message)
     {}
+    virtual ~ParserError() throw() {}
 
     size_t position;
     std::string error;
@@ -51,12 +52,12 @@ size_t skipSpaces(const std::string& value, size_t start)
     return start;
 }
 
-size_t checkChar(const std:string& value, size_t start, char ch)
+size_t checkChar(const std::string& value, size_t start, char ch)
 {
     if (start >= value.length())
-        throw ParserError(start, "Unexpected end of string. Expected '" + std::string(ch) + "'.");
+        throw ParserError(start, "Unexpected end of string. Expected '" + std::string(1, ch) + "'.");
     if (value[start] != ch)
-        throw ParserError(start, "Expected '" + std::string(ch) + "', got '" + std::string(value[start]) + "'.");
+        throw ParserError(start, "Expected '" + std::string(1, ch) + "', got '" + std::string(1, value[start]) + "'.");
     return start + 1;
 }
 
@@ -71,7 +72,7 @@ std::pair<size_t, std::string> readString(const std::string& value, size_t start
         else
             throw ParserError(start, "Unexpected whitespace. Expected string.");
     }
-    return dest;
+    return std::make_pair(start, dest);
 }
 
 Config::Pairs toPairs(const std::vector<std::string>& values)
@@ -90,11 +91,11 @@ Config::Pairs toPairs(const std::vector<std::string>& values)
         start = key.first;
         pair.first = key.second;
         start = skipSpaces(value, start);
-        start = checkChar(value, start, ',')
+        start = checkChar(value, start, ',');
         start = skipSpaces(value, start);
-        std::pair<size_t, std::string> value = readString(value, start);
+        std::pair<size_t, std::string> val = readString(value, start);
         start = key.first;
-        pair.second = value.second;
+        pair.second = val.second;
         start = skipSpaces(value, start);
         start = checkChar(value, start, ')');
         if (res.find(pair.first) != res.end())
@@ -125,7 +126,7 @@ T toInt(const std::vector<std::string>& values)
     if (values.empty())
         return 0;
     T res = 0;
-    if (srt2x(values[0], res) == 0)
+    if (str2x(values[0], res) == 0)
         return res;
     return 0;
 }
@@ -133,24 +134,24 @@ T toInt(const std::vector<std::string>& values)
 Config::Pairs parseVector(const std::string& paramName, const MODULE_SETTINGS& params)
 {
     for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].first == paramName)
-            return toPairs(params.moduleParams[i].second);
+        if (params.moduleParams[i].param == paramName)
+            return toPairs(params.moduleParams[i].value);
     return Config::Pairs();
 }
 
 bool parseBool(const std::string& paramName, const MODULE_SETTINGS& params)
 {
     for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].first == paramName)
-            return toBool(params.moduleParams[i].second);
+        if (params.moduleParams[i].param == paramName)
+            return toBool(params.moduleParams[i].value);
     return false;
 }
 
 std::string parseString(const std::string& paramName, const MODULE_SETTINGS& params)
 {
     for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].first == paramName)
-            return toString(params.moduleParams[i].second);
+        if (params.moduleParams[i].param == paramName)
+            return toString(params.moduleParams[i].value);
     return "";
 }
 
@@ -158,8 +159,8 @@ template <typename T>
 T parseInt(const std::string& paramName, const MODULE_SETTINGS& params)
 {
     for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].first == paramName)
-            return toInt<T>(params.moduleParams[i].second);
+        if (params.moduleParams[i].param == paramName)
+            return toInt<T>(params.moduleParams[i].value);
     return 0;
 }
 
@@ -171,6 +172,7 @@ Config::Config(const MODULE_SETTINGS& settings)
       reply(parseVector("reply", settings)),
       verbose(parseBool("verbose", settings)),
       bindAddress(parseString("bind_address", settings)),
+      portStr(parseString("port", settings)),
       port(parseInt<uint16_t>("port", settings)),
       key(parseString("key", settings))
 {

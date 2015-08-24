@@ -21,35 +21,35 @@
 #ifndef __STG_SGCONFIG_CONN_H__
 #define __STG_SGCONFIG_CONN_H__
 
-#include "stg/os_int.h"
+#include <boost/scoped_ptr.hpp>
 
-#include <stdexcept>
 #include <string>
 
+class USER;
 class USERS;
+class PLUGIN_LOGGER;
 
 namespace STG
 {
 
+class Config;
+
 class Conn
 {
     public:
-        struct Error : public std::runtime_error
-        {
-            Error(const std::string& message) : runtime_error(message.c_str()) {}
-        };
-
-        Conn(USERS& users, PLUGIN_LOGGER& logger, const Config& config);
+        Conn(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int fd, const std::string& remote);
         ~Conn();
 
-        int sock() const { return m_sock; }
+        int sock() const;
 
         bool read();
+        bool tick();
+
+        bool isOk() const;
 
     private:
-        USERS& m_users;
-        PLUGIN_LOGGER& m_logger;
-        const Config& m_config;
+        class Impl;
+        boost::scoped_ptr<Impl> m_impl;
 };
 
 }
