@@ -14,7 +14,7 @@ SRCS = ./rlm_stg.c \
 
 STGLIBS = crypto \
           common \
-          sgcp
+          json
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
