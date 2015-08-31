@@ -65,7 +65,7 @@ public:
         Error(const std::string& message) : runtime_error(message) {}
     };
 
-    typedef bool (*Callback)(void* data, const RESULT& result);
+    typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/, bool /*status*/);
 
     STG_CLIENT(const std::string& address, Callback callback, void* data);
     ~STG_CLIENT();
