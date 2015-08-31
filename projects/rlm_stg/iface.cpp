@@ -1,6 +1,7 @@
 #include "iface.h"
 
 #include "stg_client.h"
+#include "radlog.h"
 
 #include <cstring>
 
@@ -15,12 +16,14 @@ struct Response
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     RESULT result;
+    bool status;
 
-    static bool callback(void* data, const RESULT& res)
+    static bool callback(void* data, const RESULT& result, bool status)
     {
         Response& resp = *static_cast<Response*>(data);
         pthread_mutex_lock(&resp.mutex);
-        resp.result = res;
+        resp.result = result;
+        resp.status = status;
         resp.done = true;
         pthread_cond_signal(&resp.cond);
         pthread_mutex_unlock(&resp.mutex);
@@ -36,7 +39,6 @@ STG_PAIR* toSTGPairs(const PAIRS& source)
         bzero(pairs[pos].value, sizeof(STG_PAIR::value));
         strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(STG_PAIR::key));
         strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(STG_PAIR::value));
-        ++pos;
     }
     bzero(pairs[source.size()].key, sizeof(STG_PAIR::key));
     bzero(pairs[source.size()].value, sizeof(STG_PAIR::value));
@@ -83,7 +85,7 @@ STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* p
 {
     STG_CLIENT* client = STG_CLIENT::get();
     if (client == NULL) {
-        // TODO: log "Not configured"
+        RadLog("Client is not configured.");
         return emptyResult();
     }
     try {
@@ -92,9 +94,11 @@ STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* p
         while (!response.done)
             pthread_cond_wait(&response.cond, &response.mutex);
         pthread_mutex_unlock(&response.mutex);
+        if (!response.status)
+            return emptyResult();
         return toResult(response.result);
     } catch (const STG_CLIENT::Error& ex) {
-        // TODO: log error
+        RadLog("Error: '%s'.", ex.what());
         return emptyResult();
     }
 }
