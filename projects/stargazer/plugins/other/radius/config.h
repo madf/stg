@@ -37,6 +37,7 @@ struct Config
     typedef std::pair<std::string, std::string> Pair;
     enum Type { UNIX, TCP };
 
+    Config() {}
     Config(const MODULE_SETTINGS& settings);
 
     Pairs match;
@@ -45,8 +46,9 @@ struct Config
 
     bool verbose;
 
-    Type connectionType;
+    std::string address;
     std::string bindAddress;
+    Type connectionType;
     std::string portStr;
     uint16_t port;
     std::string key;

@@ -64,7 +64,8 @@ size_t checkChar(const std::string& value, size_t start, char ch)
 std::pair<size_t, std::string> readString(const std::string& value, size_t start)
 {
     std::string dest;
-    while (start < value.length() && !std::isspace(value[start]))
+    while (start < value.length() && !std::isspace(value[start]) &&
+           value[start] != ',' && value[start] != '(' && value[start] != ')')
         dest.push_back(value[start++]);
     if (dest.empty()) {
         if (start == value.length())
@@ -85,16 +86,21 @@ Config::Pairs toPairs(const std::vector<std::string>& values)
     while (start < value.size()) {
         Config::Pair pair;
         start = skipSpaces(value, start);
+        if (!res.empty())
+        {
+            start = checkChar(value, start, ',');
+            start = skipSpaces(value, start);
+        }
         size_t pairStart = start;
         start = checkChar(value, start, '(');
-        std::pair<size_t, std::string> key = readString(value, start);
+        const std::pair<size_t, std::string> key = readString(value, start);
         start = key.first;
         pair.first = key.second;
         start = skipSpaces(value, start);
         start = checkChar(value, start, ',');
         start = skipSpaces(value, start);
-        std::pair<size_t, std::string> val = readString(value, start);
-        start = key.first;
+        const std::pair<size_t, std::string> val = readString(value, start);
+        start = val.first;
         pair.second = val.second;
         start = skipSpaces(value, start);
         start = checkChar(value, start, ')');
@@ -164,6 +170,27 @@ T parseInt(const std::string& paramName, const MODULE_SETTINGS& params)
     return 0;
 }
 
+std::string parseAddress(const std::string& address)
+{
+    size_t pos = address.find_first_of(':');
+    if (pos == std::string::npos)
+        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+    return address.substr(pos + 1);
+}
+
+Config::Type parseConnectionType(const std::string& address)
+{
+    size_t pos = address.find_first_of(':');
+    if (pos == std::string::npos)
+        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+    std::string type = ToLower(address.substr(0, pos));
+    if (type == "unix")
+        return Config::UNIX;
+    else if (type == "tcp")
+        return Config::TCP;
+    throw ParserError(0, "Invalid connection type. Should be either 'unix' or 'tcp', got '" + type + "'");
+}
+
 } // namespace anonymous
 
 Config::Config(const MODULE_SETTINGS& settings)
@@ -171,7 +198,9 @@ Config::Config(const MODULE_SETTINGS& settings)
       modify(parseVector("modify", settings)),
       reply(parseVector("reply", settings)),
       verbose(parseBool("verbose", settings)),
-      bindAddress(parseString("bind_address", settings)),
+      address(parseString("bind_address", settings)),
+      bindAddress(parseAddress(address)),
+      connectionType(parseConnectionType(address)),
       portStr(parseString("port", settings)),
       port(parseInt<uint16_t>("port", settings)),
       key(parseString("key", settings))
