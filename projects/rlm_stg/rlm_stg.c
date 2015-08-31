@@ -29,13 +29,9 @@
 #include "iface.h"
 #include "stgpair.h"
 
-#ifndef NDEBUG
-#define NDEBUG
 #include <freeradius/ident.h>
 #include <freeradius/radiusd.h>
 #include <freeradius/modules.h>
-#undef NDEBUG
-#endif
 
 #include <stddef.h> // size_t
 
@@ -54,15 +50,14 @@ static void deletePairs(STG_PAIR* pairs)
     free(pairs);
 }
 
-static size_t toVPS(const STG_PAIR* pairs, VALUE_PAIR* vps)
+static size_t toVPS(const STG_PAIR* pairs, VALUE_PAIR** vps)
 {
     const STG_PAIR* pair = pairs;
     size_t count = 0;
 
     while (!emptyPair(pair)) {
         VALUE_PAIR* vp = pairmake(pair->key, pair->value, T_OP_SET);
-        pairadd(&vps, vp);
-        DEBUG("Adding pair '%s': '%s'", pair->key, pair->value);
+        pairadd(vps, vp);
         ++pair;
         ++count;
     }
@@ -74,8 +69,8 @@ static size_t toReply(STG_RESULT result, REQUEST* request)
 {
     size_t count = 0;
 
-    count += toVPS(result.modify, request->config_items);
-    count += toVPS(result.reply, request->reply->vps);
+    count += toVPS(result.modify, &request->config_items);
+    count += toVPS(result.reply, &request->reply->vps);
 
     deletePairs(result.modify);
     deletePairs(result.reply);
@@ -102,7 +97,7 @@ static STG_PAIR* fromVPS(const VALUE_PAIR* pairs)
         bzero(res[pos].key, sizeof(res[0].key));
         bzero(res[pos].value, sizeof(res[0].value));
         strncpy(res[pos].key, pairs->name, sizeof(res[0].key));
-        strncpy(res[pos].value, pairs->data.strvalue, sizeof(res[0].value));
+        vp_prints_value(res[pos].value, sizeof(res[0].value), pairs, 0);
         ++pos;
         pairs = pairs->next;
     }
@@ -386,15 +381,6 @@ static int stg_detach(void* instance)
     return 0;
 }
 
-/*
- *    The module name should be the only globally exported symbol.
- *    That is, everything else should be 'static'.
- *
- *    If the module needs to temporarily modify it's instantiation
- *    data, the type should be changed to RLM_TYPE_THREAD_UNSAFE.
- *    The server will then take care of ensuring that the module
- *    is single-threaded.
- */
 module_t rlm_stg = {
     RLM_MODULE_INIT,
     "stg",
