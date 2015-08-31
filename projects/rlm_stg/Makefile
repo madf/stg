@@ -10,7 +10,8 @@ PROG = $(LIB_NAME).so
 
 SRCS = ./rlm_stg.c \
        ./iface.cpp \
-       ./stg_client.cpp
+       ./stg_client.cpp \
+       ./radlog.c
 
 STGLIBS = crypto \
           common \
@@ -22,10 +23,12 @@ STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD) $(LIBICONV)
 
 ifeq ($(OS),linux)
-LIBS += -ldl
+LIBS += -ldl \
+	-lyajl
 else
 LIBS += -lintl \
-        -lc
+        -lc \
+	-lyajl
 endif
 
 SEARCH_DIRS = -I ../../include
