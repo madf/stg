@@ -20,6 +20,7 @@ if [ "$1" = "debug" ]
 then
    DEFS="$DEFS -DDEBUG"
    MAKEOPTS="$MAKEOPTS -j1"
+   CFLAGS="$CFLAGS -ggdb3 -W -Wall -Wextra"
    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
    DEBUG="yes"
 else
@@ -27,6 +28,7 @@ else
    DEBUG="no"
 fi
 
+CFLAGS="$CFLAGS -I/usr/local/include"
 CXXFLAGS="$CXXFLAGS -I/usr/local/include"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
@@ -227,6 +229,8 @@ do
     printf "$lib " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
