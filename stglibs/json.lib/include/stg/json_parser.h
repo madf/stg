@@ -55,7 +55,7 @@ class Parser
         virtual ~Parser();
 
         bool append(const char* data, size_t size);
-        bool done();
+        bool last();
 
     private:
         class Impl;

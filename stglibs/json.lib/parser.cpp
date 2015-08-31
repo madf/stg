@@ -34,8 +34,8 @@ class Parser::Impl
             yajl_free(m_handle);
         }
 
-        bool append(const char* data, size_t size) { return yajl_parse(m_handle, reinterpret_cast<const unsigned char*>(data), size) != yajl_status_ok; }
-        bool done() { return yajl_complete_parse(m_handle) != yajl_status_ok; }
+        bool append(const char* data, size_t size) { return yajl_parse(m_handle, reinterpret_cast<const unsigned char*>(data), size) == yajl_status_ok; }
+        bool last() { return yajl_complete_parse(m_handle) == yajl_status_ok; }
 
         static int parseNull(void* ctx)
         { return runParser(ctx, &NodeParser::parseNull); }
@@ -100,6 +100,7 @@ Parser::Impl::Impl(NodeParser* topParser)
     : m_handle(yajl_alloc(&callbacks, NULL, this)),
       m_parser(topParser)
 {
+    yajl_config(m_handle, yajl_allow_multiple_values, 1);
 }
 
 Parser::Parser(NodeParser* topParser)
@@ -116,7 +117,7 @@ bool Parser::append(const char* data, size_t size)
     return m_impl->append(data, size);
 }
 
-bool Parser::done()
+bool Parser::last()
 {
-    return m_impl->done();
+    return m_impl->last();
 }
