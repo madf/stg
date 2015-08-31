@@ -23,6 +23,7 @@
 #include "stg/store.h"
 #include "stg/users.h"
 #include "stg/plugin_creator.h"
+#include "stg/common.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -53,7 +54,7 @@ extern "C" PLUGIN * GetPlugin()
 }
 
 RADIUS::RADIUS()
-    : m_config(m_settings),
+    : m_config(),
       m_running(false),
       m_stopped(true),
       m_users(NULL),
@@ -105,6 +106,9 @@ int RADIUS::Stop()
         return 0;
     }
 
+    if (m_config.connectionType == Config::UNIX)
+        unlink(m_config.bindAddress.c_str());
+
     m_error = "Failed to stop thread.";
     m_logger(m_error);
     return -1;
@@ -134,8 +138,6 @@ bool RADIUS::reconnect()
     {
         shutdown(m_listenSocket, SHUT_RDWR);
         close(m_listenSocket);
-        if (m_config.connectionType == Config::UNIX)
-            unlink(m_config.bindAddress.c_str());
     }
     if (m_config.connectionType == Config::UNIX)
         m_listenSocket = createUNIX();
@@ -165,6 +167,7 @@ int RADIUS::createUNIX() const
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, m_config.bindAddress.c_str(), m_config.bindAddress.length());
+    unlink(m_config.bindAddress.c_str());
     if (bind(fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) == -1)
     {
         shutdown(fd, SHUT_RDWR);
@@ -193,7 +196,7 @@ int RADIUS::createTCP() const
     int res = getaddrinfo(m_config.bindAddress.c_str(), m_config.portStr.c_str(), &hints, &ais);
     if (res != 0)
     {
-        m_error = "Error resolvin address '" + m_config.bindAddress + "': " + gai_strerror(res);
+        m_error = "Error resolving address '" + m_config.bindAddress + "': " + gai_strerror(res);
         m_logger(m_error);
         return 0;
     }
@@ -243,6 +246,8 @@ void RADIUS::runImpl()
         int res = select(maxFD() + 1, &fds, NULL, NULL, &tv);
         if (res < 0)
         {
+            if (errno == EINTR)
+                continue;
             m_error = std::string("'select' is failed: '") + strerror(errno) + "'.";
             m_logger(m_error);
             break;
@@ -332,6 +337,7 @@ void RADIUS::acceptUNIX()
         m_logger(m_error);
         return;
     }
+    printfd(__FILE__, "New UNIX connection: '%s'\n", addr.sun_path);
     m_conns.push_back(new Conn(*m_users, m_logger, m_config, res, addr.sun_path));
 }
 
@@ -348,5 +354,6 @@ void RADIUS::acceptTCP()
         return;
     }
     std::string remote = inet_ntostring(addr.sin_addr.s_addr) + ":" + x2str(ntohs(addr.sin_port));
+    printfd(__FILE__, "New TCP connection: '%s'\n", remote.c_str());
     m_conns.push_back(new Conn(*m_users, m_logger, m_config, res, remote));
 }
