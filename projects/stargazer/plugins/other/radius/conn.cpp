@@ -32,6 +32,7 @@
 #include <yajl/yajl_gen.h>
 
 #include <map>
+#include <stdexcept>
 #include <cstring>
 #include <cerrno>
 
@@ -228,6 +229,23 @@ class Conn::Impl
         time_t m_lastActivity;
         ProtoParser m_parser;
 
+        const Config::Pairs& stagePairs(Config::Pairs Config::Section::* pairs) const
+        {
+            switch (m_parser.stage())
+            {
+                case AUTHORIZE: return m_config.autz.*pairs;
+                case AUTHENTICATE: return m_config.auth.*pairs;
+                case POSTAUTH: return m_config.postauth.*pairs;
+                case PREACCT: return m_config.preacct.*pairs;
+                case ACCOUNTING: return m_config.acct.*pairs;
+            }
+            throw std::runtime_error("Invalid stage: '" + m_parser.stageStr() + "'.");
+        }
+
+        const Config::Pairs& match() const { return stagePairs(&Config::Section::match); }
+        const Config::Pairs& modify() const { return stagePairs(&Config::Section::modify); }
+        const Config::Pairs& reply() const { return stagePairs(&Config::Section::reply); }
+
         static void process(void* data);
         void processPing();
         void processPong();
@@ -330,17 +348,25 @@ bool Conn::Impl::tick()
 void Conn::Impl::process(void* data)
 {
     Impl& impl = *static_cast<Impl*>(data);
-    switch (impl.m_parser.packet())
+    try
     {
-        case PING:
-            impl.processPing();
-            return;
-        case PONG:
-            impl.processPong();
-            return;
-        case DATA:
-            impl.processData();
-            return;
+        switch (impl.m_parser.packet())
+        {
+            case PING:
+                impl.processPing();
+                return;
+            case PONG:
+                impl.processPong();
+                return;
+            case DATA:
+                impl.processData();
+                return;
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        printfd(__FILE__, "Processing error. %s", ex.what());
+        impl.m_logger("Processing error. %s", ex.what());
     }
     printfd(__FILE__, "Received invalid packet type: '%s'.\n", impl.m_parser.packetStr().c_str());
     impl.m_logger("Received invalid packet type: " + impl.m_parser.packetStr());
@@ -364,34 +390,34 @@ void Conn::Impl::processData()
     int handle = m_users.OpenSearch();
 
     USER_PTR user = NULL;
-    bool match = false;
+    bool matched = false;
     while (m_users.SearchNext(handle, &user) == 0)
     {
         if (user == NULL)
             continue;
 
-        match = true;
-        for (Config::Pairs::const_iterator it = m_config.match.begin(); it != m_config.match.end(); ++it)
+        matched = true;
+        for (Config::Pairs::const_iterator it = match().begin(); it != match().end(); ++it)
         {
             Config::Pairs::const_iterator pos = m_parser.data().find(it->first);
             if (pos == m_parser.data().end())
             {
-                match = false;
+                matched = false;
                 break;
             }
             if (user->GetParamValue(it->second) != pos->second)
             {
-                match = false;
+                matched = false;
                 break;
             }
         }
-        if (!match)
+        if (!matched)
             continue;
         answer(*user);
         break;
     }
 
-    if (!match)
+    if (!matched)
         answerNo();
 
     m_users.CloseSearch(handle);
@@ -400,18 +426,18 @@ void Conn::Impl::processData()
 bool Conn::Impl::answer(const USER& user)
 {
     printfd(__FILE__, "Got match. Sending answer...\n");
-    MapGen reply;
-    for (Config::Pairs::const_iterator it = m_config.reply.begin(); it != m_config.reply.end(); ++it)
-        reply.add(it->first, new StringGen(user.GetParamValue(it->second)));
+    MapGen replyData;
+    for (Config::Pairs::const_iterator it = reply().begin(); it != reply().end(); ++it)
+        replyData.add(it->first, new StringGen(user.GetParamValue(it->second)));
 
-    MapGen modify;
-    for (Config::Pairs::const_iterator it = m_config.modify.begin(); it != m_config.modify.end(); ++it)
-        modify.add(it->first, new StringGen(user.GetParamValue(it->second)));
+    MapGen modifyData;
+    for (Config::Pairs::const_iterator it = modify().begin(); it != modify().end(); ++it)
+        modifyData.add(it->first, new StringGen(user.GetParamValue(it->second)));
 
     PacketGen gen("data");
     gen.add("result", "ok")
-       .add("reply", reply)
-       .add("modify", modify);
+       .add("reply", replyData)
+       .add("modify", modifyData);
 
     m_lastPing = time(NULL);
 

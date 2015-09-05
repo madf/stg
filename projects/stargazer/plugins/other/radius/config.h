@@ -37,12 +37,24 @@ struct Config
     typedef std::pair<std::string, std::string> Pair;
     enum Type { UNIX, TCP };
 
+    struct Section
+    {
+        Section() {}
+        Section(const Pairs& ma, const Pairs& mo, const Pairs& re)
+            : match(ma), modify(mo), reply(re) {}
+        Pairs match;
+        Pairs modify;
+        Pairs reply;
+    };
+
     Config() {}
     Config(const MODULE_SETTINGS& settings);
 
-    Pairs match;
-    Pairs modify;
-    Pairs reply;
+    Section autz;
+    Section auth;
+    Section postauth;
+    Section preacct;
+    Section acct;
 
     bool verbose;
 

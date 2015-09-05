@@ -32,7 +32,7 @@ class PLUGIN_LOGGER;
 namespace STG
 {
 
-class Config;
+struct Config;
 
 class Conn
 {

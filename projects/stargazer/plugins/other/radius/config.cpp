@@ -137,37 +137,28 @@ T toInt(const std::vector<std::string>& values)
     return 0;
 }
 
-Config::Pairs parseVector(const std::string& paramName, const MODULE_SETTINGS& params)
+Config::Pairs parseVector(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
 {
-    for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].param == paramName)
-            return toPairs(params.moduleParams[i].value);
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toPairs(params[i].value);
     return Config::Pairs();
 }
 
-bool parseBool(const std::string& paramName, const MODULE_SETTINGS& params)
+bool parseBool(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
 {
-    for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].param == paramName)
-            return toBool(params.moduleParams[i].value);
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toBool(params[i].value);
     return false;
 }
 
-std::string parseString(const std::string& paramName, const MODULE_SETTINGS& params)
+std::string parseString(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
 {
-    for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].param == paramName)
-            return toString(params.moduleParams[i].value);
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toString(params[i].value);
     return "";
-}
-
-template <typename T>
-T parseInt(const std::string& paramName, const MODULE_SETTINGS& params)
-{
-    for (size_t i = 0; i < params.moduleParams.size(); ++i)
-        if (params.moduleParams[i].param == paramName)
-            return toInt<T>(params.moduleParams[i].value);
-    return 0;
 }
 
 std::string parseAddress(const std::string& address)
@@ -191,18 +182,28 @@ Config::Type parseConnectionType(const std::string& address)
     throw ParserError(0, "Invalid connection type. Should be either 'unix' or 'tcp', got '" + type + "'");
 }
 
+Config::Section parseSection(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return Config::Section(parseVector("match", params[i].sections),
+                                   parseVector("modify", params[i].sections),
+                                   parseVector("reply", params[i].sections));
+    return Config::Section();
+}
+
 } // namespace anonymous
 
 Config::Config(const MODULE_SETTINGS& settings)
-    : match(parseVector("match", settings)),
-      modify(parseVector("modify", settings)),
-      reply(parseVector("reply", settings)),
-      verbose(parseBool("verbose", settings)),
-      address(parseString("bind_address", settings)),
+    : autz(parseSection("autz", settings.moduleParams)),
+      auth(parseSection("auth", settings.moduleParams)),
+      postauth(parseSection("postauth", settings.moduleParams)),
+      preacct(parseSection("preacct", settings.moduleParams)),
+      acct(parseSection("acct", settings.moduleParams)),
+      verbose(parseBool("verbose", settings.moduleParams)),
+      address(parseString("bind_address", settings.moduleParams)),
       bindAddress(parseAddress(address)),
       connectionType(parseConnectionType(address)),
-      portStr(parseString("port", settings)),
-      port(parseInt<uint16_t>("port", settings)),
-      key(parseString("key", settings))
+      key(parseString("key", settings.moduleParams))
 {
 }
