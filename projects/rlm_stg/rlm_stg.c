@@ -70,6 +70,7 @@ static size_t toReply(STG_RESULT result, REQUEST* request)
     size_t count = 0;
 
     count += toVPS(result.modify, &request->config_items);
+    pairfree(&request->reply->vps);
     count += toVPS(result.reply, &request->reply->vps);
 
     deletePairs(result.modify);
