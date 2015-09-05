@@ -1,9 +1,3 @@
- /*
- $Revision: 1.27 $
- $Date: 2010/08/19 13:42:30 $
- $Author: faust $
- */
-
 /*
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -21,18 +15,8 @@
  */
 
 /*
- *    Date: 27.10.2002
- */
-
-/*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
-
- /*
- $Revision: 1.27 $
- $Date: 2010/08/19 13:42:30 $
- */
-
 
 #ifndef SETTINGS_IMPL_H
 #define SETTINGS_IMPL_H
@@ -41,16 +25,15 @@
 #include <vector>
 
 #include "stg/settings.h"
-#include "stg/common.h"
-#include "stg/logger.h"
 #include "stg/module_settings.h"
+#include "stg/ref.h"
 
 //-----------------------------------------------------------------------------
 enum DETAIL_STAT_PERIOD {
-dsPeriod_1,
-dsPeriod_1_2,
-dsPeriod_1_4,
-dsPeriod_1_6
+    dsPeriod_1,
+    dsPeriod_1_2,
+    dsPeriod_1_4,
+    dsPeriod_1_6
 };
 //-----------------------------------------------------------------------------
 class STG_LOGGER;
@@ -59,7 +42,6 @@ class DOTCONFDocumentNode;
 class SETTINGS_IMPL : public SETTINGS {
 public:
     SETTINGS_IMPL(const std::string &);
-    SETTINGS_IMPL(const SETTINGS_IMPL &);
     virtual ~SETTINGS_IMPL() {}
     int Reload() { return ReadSettings(); }
     int ReadSettings();
@@ -74,7 +56,7 @@ public:
     const std::string & GetRulesFileName() const { return rules; }
     const std::string & GetLogFileName() const { return logFile; }
     const std::string & GetPIDFileName() const { return pidFile; }
-    unsigned            GetDetailStatWritePeriod() const 
+    unsigned            GetDetailStatWritePeriod() const
         { return detailStatWritePeriod; }
     unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
     unsigned            GetDayFee() const { return dayFee; }
@@ -101,9 +83,6 @@ public:
 
 private:
 
-    int ParseDetailStatWritePeriod(const std::string & str);
-    int ParseModuleSettings(const DOTCONFDocumentNode * dirNameNode, std::vector<PARAM_VALUE> * params);
-
     static void ErrorCallback(void * data, const char * buf);
 
     std::string strError;
@@ -112,7 +91,7 @@ private:
     std::string modulesPath;
     std::vector<std::string> dirName;
     std::string confDir;
-    std::string	scriptsDir;
+    std::string scriptsDir;
     std::string rules;
     std::string logFile;
     std::string pidFile;
@@ -137,7 +116,7 @@ private:
 
     std::vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS storeModuleSettings;
-    STG_LOGGER & logger;
+    STG::RefWrapper<STG_LOGGER> logger;
 };
 //-----------------------------------------------------------------------------
 
