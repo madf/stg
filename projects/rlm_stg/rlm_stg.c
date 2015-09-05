@@ -385,7 +385,7 @@ static int stg_detach(void* instance)
 module_t rlm_stg = {
     RLM_MODULE_INIT,
     "stg",
-    RLM_TYPE_THREAD_SAFE, /* type */
+    RLM_TYPE_THREAD_UNSAFE, /* type */
     stg_instantiate,      /* instantiation */
     stg_detach,           /* detach */
     {
