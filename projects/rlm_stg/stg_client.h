@@ -68,12 +68,15 @@ public:
     typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/, bool /*status*/);
 
     STG_CLIENT(const std::string& address, Callback callback, void* data);
+    STG_CLIENT(const STG_CLIENT& rhs);
     ~STG_CLIENT();
 
     bool stop();
+    bool connected() const;
 
     static STG_CLIENT* get();
     static bool configure(const std::string& address, Callback callback, void* data);
+    static bool reconnect();
 
     bool request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
 

@@ -89,6 +89,12 @@ STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* p
         return emptyResult();
     }
     try {
+        if (!client->connected())
+        {
+            if (!STG_CLIENT::reconnect())
+                return emptyResult();
+            client = STG_CLIENT::get();
+        }
         response.done = false;
         client->request(type, toString(userName), toString(password), fromSTGPairs(pairs));
         pthread_mutex_lock(&response.mutex);
