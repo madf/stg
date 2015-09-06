@@ -233,6 +233,7 @@ int RADIUS::createTCP() const
 void RADIUS::runImpl()
 {
     m_running = true;
+    m_stopped = false;
 
     while (m_running) {
         fd_set fds;
