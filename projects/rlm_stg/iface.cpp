@@ -98,10 +98,14 @@ STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* p
         response.done = false;
         client->request(type, toString(userName), toString(password), fromSTGPairs(pairs));
         pthread_mutex_lock(&response.mutex);
-        while (!response.done)
-            pthread_cond_wait(&response.cond, &response.mutex);
+        timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += 5;
+        int res = 0;
+        while (!response.done && res == 0)
+            res = pthread_cond_timedwait(&response.cond, &response.mutex, &ts);
         pthread_mutex_unlock(&response.mutex);
-        if (!response.status)
+        if (res != 0 || !response.status)
             return emptyResult();
         return toResult(response.result);
     } catch (const STG_CLIENT::Error& ex) {
