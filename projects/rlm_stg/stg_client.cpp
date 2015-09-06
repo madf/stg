@@ -338,7 +338,7 @@ bool STG_CLIENT::configure(const std::string& address, Callback callback, void* 
     try {
         stgClient = new STG_CLIENT(address, callback, data);
         return true;
-    } catch (const ChannelConfig::Error& ex) {
+    } catch (const std::exception& ex) {
         // TODO: Log it
         RadLog("Client configuration error: %s.", ex.what());
     }
@@ -469,8 +469,6 @@ void STG_CLIENT::Impl::runImpl()
             if (errno == EINTR)
                 continue;
             RadLog("'select' is failed: %s", strerror(errno));
-            //m_error = std::string("'select' is failed: '") + strerror(errno) + "'.";
-            //m_logger(m_error);
             break;
         }
 
@@ -531,7 +529,6 @@ int STG_CLIENT::Impl::connectTCP()
             shutdown(fd, SHUT_RDWR);
             close(fd);
             RadLog("'connect' is failed: %s", strerror(errno));
-            // TODO: log it.
             continue;
         }
         freeaddrinfo(ais);
@@ -568,8 +565,7 @@ bool STG_CLIENT::Impl::read()
     ssize_t res = ::read(m_sock, buffer.data(), buffer.size());
     if (res < 0)
     {
-        RadLog("Failed to read data: ", strerror(errno));
-        //m_logger("Failed to read data from '" + m_remote + "': " + strerror(errno));
+        RadLog("Failed to read data: %s", strerror(errno));
         return false;
     }
     m_lastActivity = time(NULL);
@@ -673,7 +669,6 @@ bool STG_CLIENT::Impl::write(void* data, const char* buf, size_t size)
         {
             impl.m_connected = false;
             RadLog("Failed to write data: %s.", strerror(errno));
-            //conn.m_logger("Failed to write pong to '" + conn.m_remote + "': " + strerror(errno));
             return false;
         }
         size -= res;
