@@ -1,47 +1,35 @@
 #include "iface.h"
 
 #include "stg_client.h"
+#include "types.h"
 #include "radlog.h"
 
+#include <stdexcept>
 #include <cstring>
 
 #include <strings.h>
 
+namespace RLM = STG::RLM;
+
+using RLM::Client;
+using RLM::PAIRS;
+using RLM::RESULT;
+using RLM::REQUEST_TYPE;
+
 namespace
 {
-
-struct Response
-{
-    bool done;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-    RESULT result;
-    bool status;
-
-    static bool callback(void* data, const RESULT& result, bool status)
-    {
-        Response& resp = *static_cast<Response*>(data);
-        pthread_mutex_lock(&resp.mutex);
-        resp.result = result;
-        resp.status = status;
-        resp.done = true;
-        pthread_cond_signal(&resp.cond);
-        pthread_mutex_unlock(&resp.mutex);
-        return true;
-    }
-} response;
 
 STG_PAIR* toSTGPairs(const PAIRS& source)
 {
     STG_PAIR * pairs = new STG_PAIR[source.size() + 1];
     for (size_t pos = 0; pos < source.size(); ++pos) {
-        bzero(pairs[pos].key, sizeof(STG_PAIR::key));
-        bzero(pairs[pos].value, sizeof(STG_PAIR::value));
-        strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(STG_PAIR::key));
-        strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(STG_PAIR::value));
+        bzero(pairs[pos].key, sizeof(pairs[pos].key));
+        bzero(pairs[pos].value, sizeof(pairs[pos].value));
+        strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(pairs[pos].key));
+        strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(pairs[pos].value));
     }
-    bzero(pairs[source.size()].key, sizeof(STG_PAIR::key));
-    bzero(pairs[source.size()].value, sizeof(STG_PAIR::value));
+    bzero(pairs[source.size()].key, sizeof(pairs[source.size()].key));
+    bzero(pairs[source.size()].value, sizeof(pairs[source.size()].value));
 
     return pairs;
 }
@@ -81,34 +69,16 @@ std::string toString(const char* value)
         return value;
 }
 
-STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* password, const STG_PAIR* pairs)
+STG_RESULT stgRequest(REQUEST_TYPE type, const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    STG_CLIENT* client = STG_CLIENT::get();
+    Client* client = Client::get();
     if (client == NULL) {
         RadLog("Client is not configured.");
         return emptyResult();
     }
     try {
-        if (!client->connected())
-        {
-            if (!STG_CLIENT::reconnect())
-                return emptyResult();
-            client = STG_CLIENT::get();
-        }
-        response.done = false;
-        client->request(type, toString(userName), toString(password), fromSTGPairs(pairs));
-        pthread_mutex_lock(&response.mutex);
-        timespec ts;
-        clock_gettime(CLOCK_REALTIME, &ts);
-        ts.tv_sec += 5;
-        int res = 0;
-        while (!response.done && res == 0)
-            res = pthread_cond_timedwait(&response.cond, &response.mutex, &ts);
-        pthread_mutex_unlock(&response.mutex);
-        if (res != 0 || !response.status)
-            return emptyResult();
-        return toResult(response.result);
-    } catch (const STG_CLIENT::Error& ex) {
+        return toResult(client->request(type, toString(userName), toString(password), fromSTGPairs(pairs)));
+    } catch (const std::runtime_error& ex) {
         RadLog("Error: '%s'.", ex.what());
         return emptyResult();
     }
@@ -118,11 +88,7 @@ STG_RESULT stgRequest(STG_CLIENT::TYPE type, const char* userName, const char* p
 
 int stgInstantiateImpl(const char* address)
 {
-    pthread_mutex_init(&response.mutex, NULL);
-    pthread_cond_init(&response.cond, NULL);
-    response.done = false;
-
-    if (STG_CLIENT::configure(toString(address), &Response::callback, &response))
+    if (Client::configure(toString(address)))
         return 1;
 
     return 0;
@@ -130,25 +96,25 @@ int stgInstantiateImpl(const char* address)
 
 STG_RESULT stgAuthorizeImpl(const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    return stgRequest(STG_CLIENT::AUTHORIZE, userName, password, pairs);
+    return stgRequest(RLM::AUTHORIZE, userName, password, pairs);
 }
 
 STG_RESULT stgAuthenticateImpl(const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    return stgRequest(STG_CLIENT::AUTHENTICATE, userName, password, pairs);
+    return stgRequest(RLM::AUTHENTICATE, userName, password, pairs);
 }
 
 STG_RESULT stgPostAuthImpl(const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    return stgRequest(STG_CLIENT::POST_AUTH, userName, password, pairs);
+    return stgRequest(RLM::POST_AUTH, userName, password, pairs);
 }
 
 STG_RESULT stgPreAcctImpl(const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    return stgRequest(STG_CLIENT::PRE_ACCT, userName, password, pairs);
+    return stgRequest(RLM::PRE_ACCT, userName, password, pairs);
 }
 
 STG_RESULT stgAccountingImpl(const char* userName, const char* password, const STG_PAIR* pairs)
 {
-    return stgRequest(STG_CLIENT::ACCOUNT, userName, password, pairs);
+    return stgRequest(RLM::ACCOUNT, userName, password, pairs);
 }

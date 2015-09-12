@@ -18,71 +18,41 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef STG_CLIENT_H
-#define STG_CLIENT_H
+#ifndef __STG_RLM_CLIENT_H__
+#define __STG_RLM_CLIENT_H__
+
+#include "types.h"
 
 #include "stg/os_int.h"
 
 #include <boost/scoped_ptr.hpp>
 
 #include <string>
-#include <vector>
-#include <stdexcept>
 
-typedef std::vector<std::pair<std::string, std::string> > PAIRS;
-
-struct RESULT
+namespace STG
 {
-    PAIRS modify;
-    PAIRS reply;
-};
+namespace RLM
+{
 
-struct ChannelConfig {
-    struct Error : std::runtime_error {
-        Error(const std::string& message) : runtime_error(message) {}
-    };
-
-    ChannelConfig(std::string address);
-
-    std::string transport;
-    std::string key;
-    std::string address;
-    std::string portStr;
-    uint16_t port;
-};
-
-class STG_CLIENT
+class Client
 {
 public:
-    enum TYPE {
-        AUTHORIZE,
-        AUTHENTICATE,
-        POST_AUTH,
-        PRE_ACCT,
-        ACCOUNT
-    };
-    struct Error : std::runtime_error {
-        Error(const std::string& message) : runtime_error(message) {}
-    };
-
-    typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/, bool /*status*/);
-
-    STG_CLIENT(const std::string& address, Callback callback, void* data);
-    STG_CLIENT(const STG_CLIENT& rhs);
-    ~STG_CLIENT();
+    Client(const std::string& address);
+    ~Client();
 
     bool stop();
-    bool connected() const;
 
-    static STG_CLIENT* get();
-    static bool configure(const std::string& address, Callback callback, void* data);
-    static bool reconnect();
+    static Client* get();
+    static bool configure(const std::string& address);
 
-    bool request(TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
+    RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
 
 private:
     class Impl;
     boost::scoped_ptr<Impl> m_impl;
 };
+
+} // namespace RLM
+} // namespace STG
 
 #endif
