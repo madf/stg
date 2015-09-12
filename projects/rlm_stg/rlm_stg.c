@@ -98,7 +98,7 @@ static STG_PAIR* fromVPS(const VALUE_PAIR* pairs)
         bzero(res[pos].key, sizeof(res[0].key));
         bzero(res[pos].value, sizeof(res[0].value));
         strncpy(res[pos].key, pairs->name, sizeof(res[0].key));
-        vp_prints_value(res[pos].value, sizeof(res[0].value), pairs, 0);
+        vp_prints_value(res[pos].value, sizeof(res[0].value), (VALUE_PAIR*)pairs, 0);
         ++pos;
         pairs = pairs->next;
     }
