@@ -8,10 +8,11 @@ LIB_NAME = rlm_stg
 
 PROG = $(LIB_NAME).so
 
-SRCS = ./rlm_stg.c \
-       ./iface.cpp \
-       ./stg_client.cpp \
-       ./radlog.c
+SRCS = rlm_stg.c \
+       iface.cpp \
+       stg_client.cpp \
+       conn.cpp \
+       radlog.c
 
 STGLIBS = crypto \
           common \
