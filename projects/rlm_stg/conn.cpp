@@ -312,6 +312,30 @@ ChannelConfig::ChannelConfig(std::string addr)
         throw Error("Invalid port value.");
 }
 
+Conn::Conn(const std::string& address, Callback callback, void* data)
+    : m_impl(new Impl(address, callback, data))
+{
+}
+
+Conn::~Conn()
+{
+}
+
+bool Conn::stop()
+{
+    return m_impl->stop();
+}
+
+bool Conn::connected() const
+{
+    return m_impl->connected();
+}
+
+bool Conn::request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
+{
+    return m_impl->request(type, userName, password, pairs);
+}
+
 Conn::Impl::Impl(const std::string& address, Callback callback, void* data)
     : m_config(address),
       m_sock(connect()),

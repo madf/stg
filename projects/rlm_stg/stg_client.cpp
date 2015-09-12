@@ -23,6 +23,7 @@
 #include "conn.h"
 #include "radlog.h"
 
+#include "stg/locker.h"
 #include "stg/common.h"
 
 #include <map>
@@ -44,7 +45,7 @@ class Client::Impl
         Impl(const std::string& address);
         ~Impl();
 
-        bool stop() { return m_conn->stop(); }
+        bool stop() { return m_conn ? m_conn->stop() : true; }
 
         RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
 
@@ -61,20 +62,26 @@ class Client::Impl
         static bool callback(void* data, const RESULT& result, bool status)
         {
             Impl& impl = *static_cast<Impl*>(data);
-            pthread_mutex_lock(&impl.m_mutex);
+            STG_LOCKER lock(impl.m_mutex);
             impl.m_result = result;
             impl.m_status = status;
             impl.m_done = true;
             pthread_cond_signal(&impl.m_cond);
-            pthread_mutex_unlock(&impl.m_mutex);
             return true;
         }
 };
 
 Client::Impl::Impl(const std::string& address)
-    : m_address(address),
-      m_conn(new Conn(m_address, &Impl::callback, this))
+    : m_address(address)
 {
+    try
+    {
+        m_conn.reset(new Conn(m_address, &Impl::callback, this));
+    }
+    catch (const std::runtime_error& ex)
+    {
+        RadLog("Connection error: %s.", ex.what());
+    }
     pthread_mutex_init(&m_mutex, NULL);
     pthread_cond_init(&m_cond, NULL);
     m_done = false;
@@ -88,8 +95,8 @@ Client::Impl::~Impl()
 
 RESULT Client::Impl::request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
 {
-    pthread_mutex_lock(&m_mutex);
-    if (!m_conn->connected())
+    STG_LOCKER lock(m_mutex);
+    if (!m_conn || !m_conn->connected())
         m_conn.reset(new Conn(m_address, &Impl::callback, this));
     if (!m_conn->connected())
         throw Conn::Error("Failed to create connection to '" + m_address + "'.");
@@ -102,7 +109,6 @@ RESULT Client::Impl::request(REQUEST_TYPE type, const std::string& userName, con
     int res = 0;
     while (!m_done && res == 0)
         res = pthread_cond_timedwait(&m_cond, &m_mutex, &ts);
-    pthread_mutex_unlock(&m_mutex);
     if (res != 0 || !m_status)
         throw Conn::Error("Request failed.");
     return m_result;
