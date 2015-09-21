@@ -42,7 +42,7 @@ Client* stgClient = NULL;
 class Client::Impl
 {
     public:
-        Impl(const std::string& address);
+        explicit Impl(const std::string& address);
         ~Impl();
 
         bool stop() { return m_conn ? m_conn->stop() : true; }

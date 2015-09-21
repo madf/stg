@@ -37,7 +37,7 @@ namespace RLM
 class Client
 {
 public:
-    Client(const std::string& address);
+    explicit Client(const std::string& address);
     ~Client();
 
     bool stop();

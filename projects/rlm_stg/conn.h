@@ -39,7 +39,7 @@ class Conn
 {
     public:
         struct Error : std::runtime_error {
-            Error(const std::string& message) : runtime_error(message) {}
+            explicit Error(const std::string& message) : runtime_error(message) {}
         };
 
         typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/, bool /*status*/);

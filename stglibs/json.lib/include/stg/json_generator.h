@@ -49,7 +49,7 @@ struct NullGen : public Gen
 class BoolGen : public Gen
 {
     public:
-        BoolGen(bool value) : m_value(value) {}
+        explicit BoolGen(bool value) : m_value(value) {}
         virtual void run(yajl_gen_t* handle) const;
     private:
         bool m_value;
@@ -58,7 +58,7 @@ class BoolGen : public Gen
 class StringGen : public Gen
 {
     public:
-        StringGen(const std::string& value) : m_value(value) {}
+        explicit StringGen(const std::string& value) : m_value(value) {}
         virtual void run(yajl_gen_t* handle) const;
     private:
         std::string m_value;
@@ -67,9 +67,9 @@ class StringGen : public Gen
 class NumberGen : public Gen
 {
     public:
-        NumberGen(const std::string& value) : m_value(value) {}
+        explicit NumberGen(const std::string& value) : m_value(value) {}
         template <typename T>
-        NumberGen(const T& value) : m_value(x2str(value)) {}
+        explicit NumberGen(const T& value) : m_value(x2str(value)) {}
         virtual void run(yajl_gen_t* handle) const;
     private:
         std::string m_value;

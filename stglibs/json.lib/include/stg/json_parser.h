@@ -51,7 +51,7 @@ struct NodeParser
 class Parser
 {
     public:
-        Parser(NodeParser* topParser);
+        explicit Parser(NodeParser* topParser);
         virtual ~Parser();
 
         bool append(const char* data, size_t size);

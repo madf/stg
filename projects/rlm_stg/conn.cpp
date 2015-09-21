@@ -55,10 +55,10 @@ double PING_TIMEOUT = 10;
 
 struct ChannelConfig {
     struct Error : std::runtime_error {
-        Error(const std::string& message) : runtime_error(message) {}
+        explicit Error(const std::string& message) : runtime_error(message) {}
     };
 
-    ChannelConfig(std::string address);
+    explicit ChannelConfig(std::string address);
 
     std::string transport;
     std::string key;
@@ -195,7 +195,7 @@ class ProtoParser : public Parser
 class PacketGen : public Gen
 {
     public:
-        PacketGen(const std::string& type)
+        explicit PacketGen(const std::string& type)
             : m_type(type)
         {
             m_gen.add("packet", m_type);
@@ -348,6 +348,7 @@ Conn::Impl::Impl(const std::string& address, Callback callback, void* data)
       m_parser(&Conn::Impl::process, this),
       m_connected(true)
 {
+    RadLog("Created connection.");
     pthread_mutex_init(&m_mutex, NULL);
     int res = pthread_create(&m_thread, NULL, &Conn::Impl::run, this);
     if (res != 0)
@@ -360,6 +361,7 @@ Conn::Impl::~Impl()
     shutdown(m_sock, SHUT_RDWR);
     close(m_sock);
     pthread_mutex_destroy(&m_mutex);
+    RadLog("Deleted connection.");
 }
 
 bool Conn::Impl::stop()
@@ -407,6 +409,8 @@ void Conn::Impl::runImpl()
 {
     m_running = true;
 
+    RadLog("Run connection.");
+
     while (m_running) {
         fd_set fds;
 
@@ -417,7 +421,9 @@ void Conn::Impl::runImpl()
         tv.tv_sec = 0;
         tv.tv_usec = 500000;
 
+        RadLog("Starting 'select'.");
         int res = select(m_sock + 1, &fds, NULL, NULL, &tv);
+        RadLog("'select' result: %d.", res);
         if (res < 0)
         {
             if (errno == EINTR)
@@ -426,6 +432,7 @@ void Conn::Impl::runImpl()
             break;
         }
 
+
         if (!m_running)
             break;
 
@@ -433,12 +440,16 @@ void Conn::Impl::runImpl()
 
         if (res > 0)
         {
+            RadLog("Got %d fds.", res);
             if (FD_ISSET(m_sock, &fds))
                 m_running = read();
+            RadLog("Read complete.");
         }
         else
             m_running = tick();
     }
+
+    RadLog("End running connection.");
 
     m_connected = false;
     m_stopped = true;
@@ -627,6 +638,7 @@ bool Conn::Impl::write(void* data, const char* buf, size_t size)
             RadLog("Failed to write data: %s.", strerror(errno));
             return false;
         }
+        RadLog("Send %d bytes.", res);
         size -= res;
     }
     return true;

@@ -34,12 +34,12 @@
 class STG_LOCKER
 {
 public:
-    STG_LOCKER(pthread_mutex_t& m)
+    explicit STG_LOCKER(pthread_mutex_t& m)
         : mutex(&m)
         {
         pthread_mutex_lock(mutex);
         }
-    STG_LOCKER(pthread_mutex_t * m)
+    explicit STG_LOCKER(pthread_mutex_t * m)
         : mutex(m)
         {
         pthread_mutex_lock(mutex);
