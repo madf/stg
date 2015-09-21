@@ -261,6 +261,8 @@ private:
 
     void runImpl();
 
+    bool start();
+
     int connect();
     int connectTCP();
     int connectUNIX();
@@ -348,11 +350,7 @@ Conn::Impl::Impl(const std::string& address, Callback callback, void* data)
       m_parser(&Conn::Impl::process, this),
       m_connected(true)
 {
-    RadLog("Created connection.");
     pthread_mutex_init(&m_mutex, NULL);
-    int res = pthread_create(&m_thread, NULL, &Conn::Impl::run, this);
-    if (res != 0)
-        throw Error("Failed to create thread: " + std::string(strerror(errno)));
 }
 
 Conn::Impl::~Impl()
@@ -361,7 +359,6 @@ Conn::Impl::~Impl()
     shutdown(m_sock, SHUT_RDWR);
     close(m_sock);
     pthread_mutex_destroy(&m_mutex);
-    RadLog("Deleted connection.");
 }
 
 bool Conn::Impl::stop()
@@ -388,6 +385,9 @@ bool Conn::Impl::stop()
 
 bool Conn::Impl::request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
 {
+    if (!m_running)
+        if (!start())
+            return false;
     MapGen map;
     for (PAIRS::const_iterator it = pairs.begin(); it != pairs.end(); ++it)
         map.add(it->first, new StringGen(it->second));
@@ -409,8 +409,6 @@ void Conn::Impl::runImpl()
 {
     m_running = true;
 
-    RadLog("Run connection.");
-
     while (m_running) {
         fd_set fds;
 
@@ -421,9 +419,7 @@ void Conn::Impl::runImpl()
         tv.tv_sec = 0;
         tv.tv_usec = 500000;
 
-        RadLog("Starting 'select'.");
         int res = select(m_sock + 1, &fds, NULL, NULL, &tv);
-        RadLog("'select' result: %d.", res);
         if (res < 0)
         {
             if (errno == EINTR)
@@ -440,19 +436,23 @@ void Conn::Impl::runImpl()
 
         if (res > 0)
         {
-            RadLog("Got %d fds.", res);
             if (FD_ISSET(m_sock, &fds))
                 m_running = read();
-            RadLog("Read complete.");
         }
         else
             m_running = tick();
     }
 
-    RadLog("End running connection.");
-
     m_connected = false;
     m_stopped = true;
+}
+
+bool Conn::Impl::start()
+{
+    int res = pthread_create(&m_thread, NULL, &Conn::Impl::run, this);
+    if (res != 0)
+        return false;
+    return true;
 }
 
 int Conn::Impl::connect()
@@ -584,20 +584,17 @@ void Conn::Impl::process(void* data)
 
 void Conn::Impl::processPing()
 {
-    RadLog("Got ping, sending pong.");
     sendPong();
 }
 
 void Conn::Impl::processPong()
 {
-    RadLog("Got pong.");
     m_lastActivity = time(NULL);
 }
 
 void Conn::Impl::processData()
 {
     RESULT data;
-    RadLog("Got data.");
     for (PairsParser::Pairs::const_iterator it = m_parser.reply().begin(); it != m_parser.reply().end(); ++it)
         data.reply.push_back(std::make_pair(it->first, it->second));
     for (PairsParser::Pairs::const_iterator it = m_parser.modify().begin(); it != m_parser.modify().end(); ++it)
@@ -625,9 +622,8 @@ bool Conn::Impl::sendPong()
 
 bool Conn::Impl::write(void* data, const char* buf, size_t size)
 {
-    RadLog("Sending JSON:");
     std::string json(buf, size);
-    RadLog("%s", json.c_str());
+    RadLog("Sending JSON: %s", json.c_str());
     Conn::Impl& impl = *static_cast<Conn::Impl*>(data);
     while (size > 0)
     {
@@ -638,7 +634,6 @@ bool Conn::Impl::write(void* data, const char* buf, size_t size)
             RadLog("Failed to write data: %s.", strerror(errno));
             return false;
         }
-        RadLog("Send %d bytes.", res);
         size -= res;
     }
     return true;
