@@ -126,6 +126,36 @@ std::string toString(const std::vector<std::string>& values)
     return values[0];
 }
 
+uid_t toUID(const std::vector<std::string>& values)
+{
+    if (values.empty())
+        return -1;
+    uid_t res = str2uid(values[0]);
+    if (res == static_cast<uid_t>(-1))
+        throw ParserError(0, "Invalid user name: '" + values[0] + "'");
+    return res;
+}
+
+gid_t toGID(const std::vector<std::string>& values)
+{
+    if (values.empty())
+        return -1;
+    gid_t res = str2gid(values[0]);
+    if (res == static_cast<gid_t>(-1))
+        throw ParserError(0, "Invalid group name: '" + values[0] + "'");
+    return res;
+}
+
+mode_t toMode(const std::vector<std::string>& values)
+{
+    if (values.empty())
+        return -1;
+    mode_t res = str2mode(values[0]);
+    if (res == static_cast<mode_t>(-1))
+        throw ParserError(0, "Invalid mode: '" + values[0] + "'");
+    return res;
+}
+
 template <typename T>
 T toInt(const std::vector<std::string>& values)
 {
@@ -192,6 +222,30 @@ Config::Section parseSection(const std::string& paramName, const std::vector<PAR
     return Config::Section();
 }
 
+uid_t parseUID(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toUID(params[i].value);
+    return -1;
+}
+
+gid_t parseGID(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toGID(params[i].value);
+    return -1;
+}
+
+mode_t parseMode(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toMode(params[i].value);
+    return -1;
+}
+
 } // namespace anonymous
 
 Config::Config(const MODULE_SETTINGS& settings)
@@ -204,6 +258,9 @@ Config::Config(const MODULE_SETTINGS& settings)
       address(parseString("bind_address", settings.moduleParams)),
       bindAddress(parseAddress(address)),
       connectionType(parseConnectionType(address)),
-      key(parseString("key", settings.moduleParams))
+      key(parseString("key", settings.moduleParams)),
+      sockUID(parseUID("sock_owner", settings.moduleParams)),
+      sockGID(parseGID("sock_group", settings.moduleParams)),
+      sockMode(parseMode("sock_mode", settings.moduleParams))
 {
 }

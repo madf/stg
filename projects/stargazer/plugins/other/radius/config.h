@@ -28,6 +28,9 @@
 #include <map>
 #include <string>
 
+#include <unistd.h> // uid_t, gid_t
+#include <sys/stat.h> // mode_t
+
 namespace STG
 {
 
@@ -64,6 +67,10 @@ struct Config
     std::string portStr;
     uint16_t port;
     std::string key;
+
+    uid_t sockUID;
+    gid_t sockGID;
+    mode_t sockMode;
 };
 
 } // namespace STG

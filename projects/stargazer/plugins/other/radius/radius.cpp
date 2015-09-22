@@ -176,6 +176,9 @@ int RADIUS::createUNIX() const
         m_logger(m_error);
         return 0;
     }
+    chown(m_config.bindAddress.c_str(), m_config.sockUID, m_config.sockGID);
+    if (m_config.sockMode != static_cast<mode_t>(-1))
+        chmod(m_config.bindAddress.c_str(), m_config.sockMode);
     return fd;
 }
 
