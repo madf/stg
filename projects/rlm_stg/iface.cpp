@@ -52,12 +52,13 @@ STG_RESULT toResult(const RESULT& source)
     STG_RESULT result;
     result.modify = toSTGPairs(source.modify);
     result.reply = toSTGPairs(source.reply);
+    result.returnCode = source.returnCode;
     return result;
 }
 
 STG_RESULT emptyResult()
 {
-    STG_RESULT result = {NULL, NULL};
+    STG_RESULT result = {NULL, NULL, STG_REJECT};
     return result;
 }
 

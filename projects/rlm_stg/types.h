@@ -35,6 +35,7 @@ struct RESULT
 {
     PAIRS modify;
     PAIRS reply;
+    int returnCode;
 };
 
 enum REQUEST_TYPE {

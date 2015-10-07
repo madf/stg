@@ -57,14 +57,12 @@ class Client::Impl
         pthread_cond_t m_cond;
         bool m_done;
         RESULT m_result;
-        bool m_status;
 
-        static bool callback(void* data, const RESULT& result, bool status)
+        static bool callback(void* data, const RESULT& result)
         {
             Impl& impl = *static_cast<Impl*>(data);
             STG_LOCKER lock(impl.m_mutex);
             impl.m_result = result;
-            impl.m_status = status;
             impl.m_done = true;
             pthread_cond_signal(&impl.m_cond);
             return true;
@@ -109,7 +107,7 @@ RESULT Client::Impl::request(REQUEST_TYPE type, const std::string& userName, con
     int res = 0;
     while (!m_done && res == 0)
         res = pthread_cond_timedwait(&m_cond, &m_mutex, &ts);
-    if (res != 0 || !m_status)
+    if (res != 0)
         throw Conn::Error("Request failed.");
     return m_result;
 }

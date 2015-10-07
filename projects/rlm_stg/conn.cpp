@@ -21,6 +21,7 @@
 #include "conn.h"
 
 #include "radlog.h"
+#include "stgpair.h"
 
 #include "stg/json_parser.h"
 #include "stg/json_generator.h"
@@ -89,6 +90,7 @@ enum Packet
 
 std::map<std::string, Packet> packetCodes;
 std::map<std::string, bool> resultCodes;
+std::map<std::string, int> returnCodes;
 
 class PacketParser : public EnumParser<Packet>
 {
@@ -117,6 +119,26 @@ class ResultParser : public EnumParser<bool>
         }
 };
 
+class ReturnCodeParser : public EnumParser<int>
+{
+    public:
+        ReturnCodeParser(NodeParser* next, int& returnCode, std::string& returnCodeStr)
+            : EnumParser(next, returnCode, returnCodeStr, returnCodes)
+        {
+            if (!returnCodes.empty())
+                return;
+            returnCodes["reject"]   = STG_REJECT;
+            returnCodes["fail"]     = STG_FAIL;
+            returnCodes["ok"]       = STG_OK;
+            returnCodes["handled"]  = STG_HANDLED;
+            returnCodes["invalid"]  = STG_INVALID;
+            returnCodes["userlock"] = STG_USERLOCK;
+            returnCodes["notfound"] = STG_NOTFOUND;
+            returnCodes["noop"]     = STG_NOOP;
+            returnCodes["updated"]  = STG_UPDATED;
+        }
+};
+
 class TopParser : public NodeParser
 {
     public:
@@ -124,8 +146,10 @@ class TopParser : public NodeParser
         TopParser(Callback callback, void* data)
             : m_packet(PING),
               m_result(false),
+              m_returnCode(STG_REJECT),
               m_packetParser(this, m_packet, m_packetStr),
               m_resultParser(this, m_result, m_resultStr),
+              m_returnCodeParser(this, m_returnCode, m_returnCodeStr),
               m_replyParser(this, m_reply),
               m_modifyParser(this, m_modify),
               m_callback(callback), m_data(data)
@@ -144,6 +168,8 @@ class TopParser : public NodeParser
                 return &m_replyParser;
             else if (key == "modify")
                 return &m_modifyParser;
+            else if (key == "return_code")
+                return &m_returnCodeParser;
 
             return this;
         }
@@ -153,6 +179,8 @@ class TopParser : public NodeParser
         Packet packet() const { return m_packet; }
         const std::string& resultStr() const { return m_resultStr; }
         bool result() const { return m_result; }
+        const std::string& returnCodeStr() const { return m_returnCodeStr; }
+        int returnCode() const { return m_returnCode; }
         const PairsParser::Pairs& reply() const { return m_reply; }
         const PairsParser::Pairs& modify() const { return m_modify; }
 
@@ -161,11 +189,14 @@ class TopParser : public NodeParser
         Packet m_packet;
         std::string m_resultStr;
         bool m_result;
+        std::string m_returnCodeStr;
+        int m_returnCode;
         PairsParser::Pairs m_reply;
         PairsParser::Pairs m_modify;
 
         PacketParser m_packetParser;
         ResultParser m_resultParser;
+        ReturnCodeParser m_returnCodeParser;
         PairsParser m_replyParser;
         PairsParser m_modifyParser;
 
@@ -185,6 +216,8 @@ class ProtoParser : public Parser
         Packet packet() const { return m_topParser.packet(); }
         const std::string& resultStr() const { return m_topParser.resultStr(); }
         bool result() const { return m_topParser.result(); }
+        const std::string& returnCodeStr() const { return m_topParser.returnCodeStr(); }
+        int returnCode() const { return m_topParser.returnCode(); }
         const PairsParser::Pairs& reply() const { return m_topParser.reply(); }
         const PairsParser::Pairs& modify() const { return m_topParser.modify(); }
 
@@ -595,11 +628,17 @@ void Conn::Impl::processPong()
 void Conn::Impl::processData()
 {
     RESULT data;
-    for (PairsParser::Pairs::const_iterator it = m_parser.reply().begin(); it != m_parser.reply().end(); ++it)
-        data.reply.push_back(std::make_pair(it->first, it->second));
-    for (PairsParser::Pairs::const_iterator it = m_parser.modify().begin(); it != m_parser.modify().end(); ++it)
-        data.modify.push_back(std::make_pair(it->first, it->second));
-    m_callback(m_data, data, m_parser.result());
+    if (m_parser.result())
+    {
+        for (PairsParser::Pairs::const_iterator it = m_parser.reply().begin(); it != m_parser.reply().end(); ++it)
+            data.reply.push_back(std::make_pair(it->first, it->second));
+        for (PairsParser::Pairs::const_iterator it = m_parser.modify().begin(); it != m_parser.modify().end(); ++it)
+            data.modify.push_back(std::make_pair(it->first, it->second));
+        data.returnCode = STG_UPDATED;
+    }
+    else
+        data.returnCode = m_parser.returnCode();
+    m_callback(m_data, data);
 }
 
 bool Conn::Impl::sendPing()

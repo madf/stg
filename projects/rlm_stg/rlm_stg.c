@@ -107,6 +107,23 @@ static STG_PAIR* fromVPS(const VALUE_PAIR* pairs)
     return res;
 }
 
+static int toRLMCode(int code)
+{
+    switch (code)
+    {
+        case STG_REJECT:   return RLM_MODULE_REJECT;
+        case STG_FAIL:     return RLM_MODULE_FAIL;
+        case STG_OK:       return RLM_MODULE_OK;
+        case STG_HANDLED:  return RLM_MODULE_HANDLED;
+        case STG_INVALID:  return RLM_MODULE_INVALID;
+        case STG_USERLOCK: return RLM_MODULE_USERLOCK;
+        case STG_NOTFOUND: return RLM_MODULE_NOTFOUND;
+        case STG_NOOP:     return RLM_MODULE_NOOP;
+        case STG_UPDATED:  return RLM_MODULE_UPDATED;
+    }
+    return RLM_MODULE_REJECT;
+}
+
 /*
  *    Do any per-module initialization that is separate to each
  *    configured instance of the module.  e.g. set up connections
@@ -190,7 +207,7 @@ static int stg_authorize(void* instance, REQUEST* request)
     if (count)
         return RLM_MODULE_UPDATED;
 
-    return RLM_MODULE_NOOP;
+    return toRLMCode(result.returnCode);
 }
 
 /*
@@ -231,7 +248,7 @@ static int stg_authenticate(void* instance, REQUEST* request)
     if (count)
         return RLM_MODULE_UPDATED;
 
-    return RLM_MODULE_NOOP;
+    return toRLMCode(result.returnCode);
 }
 
 /*
@@ -272,7 +289,7 @@ static int stg_preacct(void* instance, REQUEST* request)
     if (count)
         return RLM_MODULE_UPDATED;
 
-    return RLM_MODULE_NOOP;
+    return toRLMCode(result.returnCode);
 }
 
 /*
@@ -313,7 +330,7 @@ static int stg_accounting(void* instance, REQUEST* request)
     if (count)
         return RLM_MODULE_UPDATED;
 
-    return RLM_MODULE_OK;
+    return toRLMCode(result.returnCode);
 }
 
 /*
@@ -372,7 +389,7 @@ static int stg_postauth(void* instance, REQUEST* request)
     if (count)
         return RLM_MODULE_UPDATED;
 
-    return RLM_MODULE_NOOP;
+    return toRLMCode(result.returnCode);
 }
 
 static int stg_detach(void* instance)

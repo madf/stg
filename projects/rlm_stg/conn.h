@@ -42,7 +42,7 @@ class Conn
             explicit Error(const std::string& message) : runtime_error(message) {}
         };
 
-        typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/, bool /*status*/);
+        typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/);
 
         Conn(const std::string& address, Callback callback, void* data);
         ~Conn();
