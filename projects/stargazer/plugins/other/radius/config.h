@@ -39,15 +39,28 @@ struct Config
     typedef std::map<std::string, std::string> Pairs;
     typedef std::pair<std::string, std::string> Pair;
     enum Type { UNIX, TCP };
+    enum ReturnCode
+    {
+        REJECT,   // Reject the request immediately.
+        FAIL,     // Module failed.
+        OK,       // Module is OK, continue.
+        HANDLED,  // The request is handled, no further handling.
+        INVALID,  // The request is invalud.
+        USERLOCK, // Reject the request, user is locked.
+        NOTFOUND, // User not found.
+        NOOP,     // Module performed no action.
+        UPDATED   // Module sends some updates.
+    };
 
     struct Section
     {
         Section() {}
-        Section(const Pairs& ma, const Pairs& mo, const Pairs& re)
-            : match(ma), modify(mo), reply(re) {}
+        Section(const Pairs& ma, const Pairs& mo, const Pairs& re, ReturnCode code)
+            : match(ma), modify(mo), reply(re), returnCode(code) {}
         Pairs match;
         Pairs modify;
         Pairs reply;
+        ReturnCode returnCode;
     };
 
     Config() {}

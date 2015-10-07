@@ -203,6 +203,23 @@ class PacketGen : public Gen
         StringGen m_type;
 };
 
+std::string toString(Config::ReturnCode code)
+{
+    switch (code)
+    {
+        case Config::REJECT:   return "reject";
+        case Config::FAIL:     return "fail";
+        case Config::OK:       return "ok";
+        case Config::HANDLED:  return "handled";
+        case Config::INVALID:  return "invalid";
+        case Config::USERLOCK: return "userlock";
+        case Config::NOTFOUND: return "notfound";
+        case Config::NOOP:     return "noop";
+        case Config::UPDATED:  return "noop";
+    }
+    return "reject";
+}
+
 }
 
 class Conn::Impl
@@ -229,22 +246,24 @@ class Conn::Impl
         time_t m_lastActivity;
         ProtoParser m_parser;
 
-        const Config::Pairs& stagePairs(Config::Pairs Config::Section::* pairs) const
+        template <typename T>
+        const T& stageMember(T Config::Section::* member) const
         {
             switch (m_parser.stage())
             {
-                case AUTHORIZE: return m_config.autz.*pairs;
-                case AUTHENTICATE: return m_config.auth.*pairs;
-                case POSTAUTH: return m_config.postauth.*pairs;
-                case PREACCT: return m_config.preacct.*pairs;
-                case ACCOUNTING: return m_config.acct.*pairs;
+                case AUTHORIZE: return m_config.autz.*member;
+                case AUTHENTICATE: return m_config.auth.*member;
+                case POSTAUTH: return m_config.postauth.*member;
+                case PREACCT: return m_config.preacct.*member;
+                case ACCOUNTING: return m_config.acct.*member;
             }
             throw std::runtime_error("Invalid stage: '" + m_parser.stageStr() + "'.");
         }
 
-        const Config::Pairs& match() const { return stagePairs(&Config::Section::match); }
-        const Config::Pairs& modify() const { return stagePairs(&Config::Section::modify); }
-        const Config::Pairs& reply() const { return stagePairs(&Config::Section::reply); }
+        const Config::Pairs& match() const { return stageMember(&Config::Section::match); }
+        const Config::Pairs& modify() const { return stageMember(&Config::Section::modify); }
+        const Config::Pairs& reply() const { return stageMember(&Config::Section::reply); }
+        Config::ReturnCode returnCode() const { return stageMember(&Config::Section::returnCode); }
 
         static void process(void* data);
         void processPing();
@@ -449,6 +468,7 @@ bool Conn::Impl::answerNo()
     printfd(__FILE__, "No match. Sending answer...\n");
     PacketGen gen("data");
     gen.add("result", "no");
+    gen.add("return_code", toString(returnCode()));
 
     m_lastPing = time(NULL);
 

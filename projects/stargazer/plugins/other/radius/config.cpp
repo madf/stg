@@ -167,12 +167,50 @@ T toInt(const std::vector<std::string>& values)
     return 0;
 }
 
+typedef std::map<std::string, Config::ReturnCode> Codes;
+
+// One-time call to initialize the list of codes.
+Codes getCodes()
+{
+    Codes res;
+    res["reject"]   = Config::REJECT;
+    res["fail"]     = Config::FAIL;
+    res["ok"]       = Config::OK;
+    res["handled"]  = Config::HANDLED;
+    res["invalid"]  = Config::INVALID;
+    res["userlock"] = Config::USERLOCK;
+    res["notfound"] = Config::NOTFOUND;
+    res["noop"]     = Config::NOOP;
+    res["updated"]  = Config::UPDATED;
+    return res;
+}
+
+Config::ReturnCode toReturnCode(const std::vector<std::string>& values)
+{
+    static Codes codes(getCodes());
+    if (values.empty())
+        return Config::REJECT;
+    std::string code = ToLower(values[0]);
+    const Codes::const_iterator it = codes.find(code);
+    if (it == codes.end())
+        return Config::REJECT;
+    return it->second;
+}
+
 Config::Pairs parseVector(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
             return toPairs(params[i].value);
     return Config::Pairs();
+}
+
+Config::ReturnCode parseReturnCode(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return toReturnCode(params[i].value);
+    return Config::REJECT;
 }
 
 bool parseBool(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
@@ -218,7 +256,8 @@ Config::Section parseSection(const std::string& paramName, const std::vector<PAR
         if (params[i].param == paramName)
             return Config::Section(parseVector("match", params[i].sections),
                                    parseVector("modify", params[i].sections),
-                                   parseVector("reply", params[i].sections));
+                                   parseVector("reply", params[i].sections),
+                                   parseReturnCode("no_match", params[i].sections));
     return Config::Section();
 }
 
