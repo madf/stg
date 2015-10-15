@@ -75,8 +75,8 @@ struct Config
     bool verbose;
 
     std::string address;
-    std::string bindAddress;
     Type connectionType;
+    std::string bindAddress;
     std::string portStr;
     uint16_t port;
     std::string key;

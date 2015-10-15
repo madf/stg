@@ -167,6 +167,14 @@ T toInt(const std::vector<std::string>& values)
     return 0;
 }
 
+uint16_t toPort(const std::string& value)
+{
+    uint16_t res = 0;
+    if (str2x(value, res) == 0)
+        return res;
+    throw ParserError(0, "'" + value + "' is not a valid port number.");
+}
+
 typedef std::map<std::string, Config::ReturnCode> Codes;
 
 // One-time call to initialize the list of codes.
@@ -229,11 +237,31 @@ std::string parseString(const std::string& paramName, const std::vector<PARAM_VA
     return "";
 }
 
-std::string parseAddress(const std::string& address)
+std::string parseAddress(Config::Type connectionType, const std::string& value)
 {
-    size_t pos = address.find_first_of(':');
+    size_t pos = value.find_first_of(':');
     if (pos == std::string::npos)
         throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+    if (connectionType == Config::UNIX)
+        return value.substr(pos + 1);
+    std::string address(value.substr(pos + 1));
+    pos = address.find_first_of(':', pos + 1);
+    if (pos == std::string::npos)
+        throw ParserError(0, "Port is not specified.");
+    return address.substr(0, pos - 1);
+}
+
+std::string parsePort(Config::Type connectionType, const std::string& value)
+{
+    size_t pos = value.find_first_of(':');
+    if (pos == std::string::npos)
+        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+    if (connectionType == Config::UNIX)
+        return value.substr(pos + 1);
+    std::string address(value.substr(pos + 1));
+    pos = address.find_first_of(':', pos + 1);
+    if (pos == std::string::npos)
+        throw ParserError(0, "Port is not specified.");
     return address.substr(pos + 1);
 }
 
@@ -295,8 +323,10 @@ Config::Config(const MODULE_SETTINGS& settings)
       acct(parseSection("acct", settings.moduleParams)),
       verbose(parseBool("verbose", settings.moduleParams)),
       address(parseString("bind_address", settings.moduleParams)),
-      bindAddress(parseAddress(address)),
       connectionType(parseConnectionType(address)),
+      bindAddress(parseAddress(connectionType, address)),
+      portStr(parsePort(connectionType, address)),
+      port(toPort(portStr)),
       key(parseString("key", settings.moduleParams)),
       sockUID(parseUID("sock_owner", settings.moduleParams)),
       sockGID(parseGID("sock_group", settings.moduleParams)),
