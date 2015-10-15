@@ -57,9 +57,11 @@ static size_t toVPS(const STG_PAIR* pairs, VALUE_PAIR** vps)
 
     while (!emptyPair(pair)) {
         VALUE_PAIR* vp = pairmake(pair->key, pair->value, T_OP_SET);
-        pairadd(vps, vp);
+        if (vp != NULL) {
+            pairadd(vps, vp);
+            ++count;
+        }
         ++pair;
-        ++count;
     }
 
     return count;
