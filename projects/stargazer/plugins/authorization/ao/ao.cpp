@@ -70,15 +70,8 @@ return "Always Online authorizator v.1.0";
 }
 //-----------------------------------------------------------------------------
 AUTH_AO::AUTH_AO()
-    : errorStr(),
-      users(NULL),
-      usersList(),
+    : users(NULL),
       isRunning(false),
-      settings(),
-      BeforeChgAONotifierList(),
-      AfterChgAONotifierList(),
-      BeforeChgIPNotifierList(),
-      AfterChgIPNotifierList(),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
       logger(GetPluginLogger(GetStgLogger(), "auth_ao"))

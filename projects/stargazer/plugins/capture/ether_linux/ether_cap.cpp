@@ -78,9 +78,7 @@ return "cap_ether v.1.2";
 }
 //-----------------------------------------------------------------------------
 ETHER_CAP::ETHER_CAP()
-    : errorStr(),
-      thread(),
-      nonstop(false),
+    : nonstop(false),
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),

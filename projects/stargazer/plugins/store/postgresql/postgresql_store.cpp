@@ -64,14 +64,11 @@ return pgsc.GetPlugin();
 //-----------------------------------------------------------------------------
 POSTGRESQL_STORE::POSTGRESQL_STORE()
     : versionString("postgresql_store v.1.3"),
-      strError(),
       server("localhost"),
       database("stargazer"),
       user("stg"),
       password("123456"),
       clientEncoding("KOI8"),
-      settings(),
-      mutex(),
       version(0),
       retries(3),
       connection(NULL),
@@ -96,26 +93,28 @@ std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
+    if (i->value.empty())
+        continue;
     s = ToLower(i->param);
     if (s == "server")
         {
-        server = *(i->value.begin());
+        server = i->value.front();
         }
     if (s == "database")
         {
-        database = *(i->value.begin());
+        database = i->value.front();
         }
     if (s == "user")
         {
-        user = *(i->value.begin());
+        user = i->value.front();
         }
     if (s == "password")
         {
-        password = *(i->value.begin());
+        password = i->value.front();
         }
     if (s == "retries")
         {
-        if (str2x(*(i->value.begin()), retries))
+        if (str2x(i->value.front(), retries))
             {
             strError = "Invalid 'retries' value";
             printfd(__FILE__, "POSTGRESQL_STORE::ParseSettings(): '%s'\n", strError.c_str());

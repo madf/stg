@@ -33,8 +33,7 @@ PLUGIN_CREATOR<RPC_CONFIG> rpcc;
 extern "C" PLUGIN * GetPlugin();
 
 RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
-    : errorStr(),
-      port(0),
+    : port(0),
       cookieTimeout(0)
 {
 }
@@ -45,7 +44,7 @@ PARAM_VALUE pv;
 pv.param = "Port";
 std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Port\' not found.";
     printfd(__FILE__, "Parameter 'Port' not found\n");
@@ -62,7 +61,7 @@ port = static_cast<uint16_t>(p);
 
 pv.param = "CookieTimeout";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     cookieTimeout = 1800; // 30 * 60
     }
@@ -85,22 +84,15 @@ return rpcc.GetPlugin();
 }
 
 RPC_CONFIG::RPC_CONFIG()
-    : errorStr(),
-      rpcConfigSettings(),
-      users(NULL),
+    : users(NULL),
       admins(NULL),
       tariffs(NULL),
       store(NULL),
-      settings(),
       fd(-1),
-      rpcRegistry(),
       rpcServer(NULL),
       running(false),
       stopped(true),
-      tid(),
-      cookies(),
       dayFee(0),
-      dirNames(),
       logger(GetPluginLogger(GetStgLogger(), "conf_rpc"))
 {
 }

@@ -73,12 +73,7 @@ return rsc.GetPlugin();
 //-----------------------------------------------------------------------------
 RS::SETTINGS::SETTINGS()
     : sendPeriod(0),
-      port(0),
-      errorStr(),
-      netRouters(),
-      userParams(),
-      password(),
-      subnetFile()
+      port(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -91,7 +86,7 @@ netRouters.clear();
 ///////////////////////////
 pv.param = "Port";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Port\' not found.";
     printfd(__FILE__, "Parameter 'Port' not found\n");
@@ -107,7 +102,7 @@ port = static_cast<uint16_t>(p);
 ///////////////////////////
 pv.param = "SendPeriod";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'SendPeriod\' not found.";
     printfd(__FILE__, "Parameter 'SendPeriod' not found\n");
@@ -123,7 +118,7 @@ if (ParseIntInRange(pvi->value[0], 5, 600, &sendPeriod))
 ///////////////////////////
 pv.param = "UserParams";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'UserParams\' not found.";
     printfd(__FILE__, "Parameter 'UserParams' not found\n");
@@ -133,7 +128,7 @@ userParams = pvi->value;
 ///////////////////////////
 pv.param = "Password";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Password\' not found.";
     printfd(__FILE__, "Parameter 'Password' not found\n");
@@ -143,7 +138,7 @@ password = pvi->value[0];
 ///////////////////////////
 pv.param = "SubnetFile";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'SubnetFile\' not found.";
     printfd(__FILE__, "Parameter 'SubnetFile' not found\n");

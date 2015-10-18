@@ -63,13 +63,10 @@ return "cap_ipq v.1.2";
 //-----------------------------------------------------------------------------
 IPQ_CAP::IPQ_CAP()
     : ipq_h(NULL),
-      errorStr(),
-      thread(),
       nonstop(false),
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      buf(),
       logger(GetPluginLogger(GetStgLogger(), "cap_ipq"))
 {
 memset(buf, 0, BUFSIZE);

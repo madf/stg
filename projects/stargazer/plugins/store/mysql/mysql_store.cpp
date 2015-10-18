@@ -111,28 +111,23 @@ return msc.GetPlugin();
 }
 //-----------------------------------------------------------------------------
 MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
-    : settings(NULL),
-      errorStr(),
-      dbUser(),
-      dbPass(),
-      dbName(),
-      dbHost()
+    : settings(NULL)
 {
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE_SETTINGS::ParseParam(const std::vector<PARAM_VALUE> & moduleParams, 
-                        const std::string & name, std::string & result)
+int MYSQL_STORE_SETTINGS::ParseParam(const std::vector<PARAM_VALUE> & moduleParams,
+                                     const std::string & name, std::string & result)
 {
 PARAM_VALUE pv;
 pv.param = name;
 std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
-if (pvi == moduleParams.end())
+if (pvi == moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'" + name + "\' not found.";
     return -1;
     }
-    
+
 result = pvi->value[0];
 
 return 0;
@@ -159,10 +154,7 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 MYSQL_STORE::MYSQL_STORE()
-    : errorStr(),
-      version("mysql_store v.0.67"),
-      storeSettings(),
-      settings(),
+    : version("mysql_store v.0.67"),
       schemaVersion(0),
       logger(GetPluginLogger(GetStgLogger(), "store_mysql"))
 {
