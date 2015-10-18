@@ -59,9 +59,6 @@ return cnc.GetPlugin();
 
 NF_CAP::NF_CAP()
     : traffCnt(NULL),
-      settings(),
-      tidTCP(),
-      tidUDP(),
       runningTCP(false),
       runningUDP(false),
       stoppedTCP(true),
@@ -70,7 +67,6 @@ NF_CAP::NF_CAP()
       portU(0),
       sockTCP(-1),
       sockUDP(-1),
-      errorStr(),
       logger(GetPluginLogger(GetStgLogger(), "cap_nf"))
 {
 }
@@ -84,7 +80,7 @@ int NF_CAP::ParseSettings()
 std::vector<PARAM_VALUE>::iterator it;
 for (it = settings.moduleParams.begin(); it != settings.moduleParams.end(); ++it)
     {
-    if (it->param == "TCPPort")
+    if (it->param == "TCPPort" && !it->value.empty())
         {
         if (str2x(it->value[0], portT))
             {
@@ -94,7 +90,7 @@ for (it = settings.moduleParams.begin(); it != settings.moduleParams.end(); ++it
             }
         continue;
         }
-    if (it->param == "UDPPort")
+    if (it->param == "UDPPort" && !it->value.empty())
         {
         if (str2x(it->value[0], portU))
             {
