@@ -169,6 +169,8 @@ T toInt(const std::vector<std::string>& values)
 
 uint16_t toPort(const std::string& value)
 {
+    if (value.empty())
+        return 0;
     uint16_t res = 0;
     if (str2x(value, res) == 0)
         return res;
@@ -257,7 +259,7 @@ std::string parsePort(Config::Type connectionType, const std::string& value)
     if (pos == std::string::npos)
         throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
     if (connectionType == Config::UNIX)
-        return value.substr(pos + 1);
+        return "";
     std::string address(value.substr(pos + 1));
     pos = address.find_first_of(':', pos + 1);
     if (pos == std::string::npos)
