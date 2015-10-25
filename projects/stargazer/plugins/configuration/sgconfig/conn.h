@@ -23,6 +23,8 @@
 
 #include "parser.h"
 
+#include "dumphelpers.h"
+
 #include "stg/os_int.h"
 #include "stg/const.h"
 
@@ -62,6 +64,8 @@ class Conn
         int Sock() const { return m_sock; }
         uint32_t IP() const { return *(uint32_t *)(&m_addr.sin_addr); }
         uint16_t Port() const { return ntohs(m_addr.sin_port); }
+
+        std::string endpoint() const { return inet_ntostring(IP()) + ":" + x2str(Port()); }
 
         bool Read();
 
@@ -126,6 +130,10 @@ class Conn
             bool final;
             Conn & conn;
         } m_dataState;
+
+#ifdef DUMPCRYPTO
+        Dumper m_dumper;
+#endif
 
         static bool DataCallback(const void * block, size_t size, void * data);
         static void ParseXMLStart(void * data, const char * el, const char ** attr);
