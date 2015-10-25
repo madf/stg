@@ -46,7 +46,7 @@ void GET_SERVER_INFO::CreateAnswer()
                        utsn.machine + " " +
                        utsn.nodename;
 
-    m_answer = GetOpenTag() + "<version value=\"" + SERVER_VERSION + "\"/>" +
+    m_answer = std::string("<ServerInfo><version value=\"") + SERVER_VERSION + "\"/>" +
                "<tariff_num value=\"" + x2str(m_tariffs.Count()) + "\"/>" +
                "<tariff value=\"2\"/>" +
                "<user_num value=\"" + x2str(m_users.Count()) + "\"/>" +
@@ -57,5 +57,5 @@ void GET_SERVER_INFO::CreateAnswer()
     for (size_t i = 0; i< DIR_NUM; i++)
         m_answer += "<dir_name_" + x2str(i) + " value=\"" + Encode12str(m_settings.GetDirName(i)) + "\"/>";
 
-    m_answer += GetCloseTag();
+    m_answer += "</ServerInfo>";
 }

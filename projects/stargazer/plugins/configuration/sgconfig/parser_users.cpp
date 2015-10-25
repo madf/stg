@@ -52,9 +52,9 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     std::string answer;
 
     if (loginInStart)
-        answer += "<User result=\"ok\">";
+        answer += "<User login=\"" + user.GetLogin() + "\" result=\"ok\">";
     else
-        answer += "<User result=\"ok\" login=\"" + user.GetLogin() + "\">";
+        answer += "<User result=\"ok\">";
 
     answer += "<Login value=\"" + user.GetLogin() + "\"/>";
 
