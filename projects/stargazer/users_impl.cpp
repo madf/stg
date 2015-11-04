@@ -344,6 +344,7 @@ if (store->GetUsersList(&usersList) < 0)
 
 user_iter ui;
 
+unsigned errors = 0;
 for (unsigned int i = 0; i < usersList.size(); i++)
     {
     USER_IMPL u(settings, store, tariffs, sysAdmin, this, m_services);
@@ -355,12 +356,14 @@ for (unsigned int i = 0; i < usersList.size(); i++)
     AddUserIntoIndexes(ui);
 
     if (ui->ReadConf() < 0)
-        return -1;
+        errors++;
 
     if (ui->ReadStat() < 0)
-        return -1;
+        errors++;
     }
 
+if (errors > 0)
+    return -1;
 return 0;
 }
 //-----------------------------------------------------------------------------
