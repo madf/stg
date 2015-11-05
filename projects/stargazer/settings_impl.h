@@ -128,6 +128,7 @@ private:
     unsigned    dayResetTraff;
     bool        spreadFee;
     bool        freeMbAllowInet;
+    bool        stopOnError;
     bool        dayFeeIsLastDay;
     bool        writeFreeMbTraffCost;
     bool        showFeeInCash;
