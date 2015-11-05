@@ -88,6 +88,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
       dayResetTraff(rval.dayResetTraff),
       spreadFee(rval.spreadFee),
       freeMbAllowInet(rval.freeMbAllowInet),
+      stopOnError(rval.stopOnError),
       dayFeeIsLastDay(rval.dayFeeIsLastDay),
       writeFreeMbTraffCost(rval.writeFreeMbTraffCost),
       showFeeInCash(rval.showFeeInCash),
