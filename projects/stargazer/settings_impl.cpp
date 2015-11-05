@@ -57,6 +57,7 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       spreadFee(false),
       freeMbAllowInet(false),
       dayFeeIsLastDay(false),
+      stopOnError(true),
       writeFreeMbTraffCost(false),
       showFeeInCash(true),
       messageTimeout(0),
