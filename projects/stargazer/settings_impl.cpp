@@ -297,6 +297,15 @@ while (node)
             }
         }
 
+    if (strcasecmp(node->getName(), "StopOnError") == 0)
+        {
+        if (ParseYesNo(node->getValue(0), &stopOnError) != 0)
+            {
+            strError = "Incorrect StopOnError value: \'" + std::string(node->getValue(0)) + "\'";
+            return -1;
+            }
+        }
+
     if (strcasecmp(node->getName(), "WriteFreeMbTraffCost") == 0)
         {
         if (ParseYesNo(node->getValue(0), &writeFreeMbTraffCost) != 0)
