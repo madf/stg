@@ -355,11 +355,21 @@ for (unsigned int i = 0; i < usersList.size(); i++)
 
     AddUserIntoIndexes(ui);
 
-    if (ui->ReadConf() < 0)
-        errors++;
+    if (settings->GetStopOnError())
+        {
+        if (ui->ReadConf() < 0)
+            return -1;
 
-    if (ui->ReadStat() < 0)
-        errors++;
+        if (ui->ReadStat() < 0)
+            return -1;
+        } else
+                {
+                if (ui->ReadConf() < 0)
+                    errors++;
+
+                if (ui->ReadStat() < 0)
+                    errors++;
+                }
     }
 
 if (errors > 0)
