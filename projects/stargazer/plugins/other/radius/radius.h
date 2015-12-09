@@ -31,6 +31,7 @@
 
 #include <string>
 #include <deque>
+#include <set>
 
 #include <pthread.h>
 #include <unistd.h>
@@ -59,11 +60,14 @@ public:
     bool IsRunning() { return m_running; }
 
     const std::string& GetStrError() const { return m_error; }
-    std::string GetVersion() const { return "RADIUS data access plugin v 1.0"; }
+    std::string GetVersion() const { return "RADIUS data access plugin v. 2.0"; }
     uint16_t GetStartPosition() const { return 30; }
     uint16_t GetStopPosition() const { return 30; }
 
     int SendMessage(const STG_MSG&, uint32_t) const { return 0; }
+
+    void authorize(const USER& user);
+    void unauthorize(const std::string& login, const std::string& reason);
 
 private:
     RADIUS(const RADIUS & rvalue);
@@ -96,6 +100,7 @@ private:
 
     int m_listenSocket;
     std::deque<STG::Conn*> m_conns;
+    std::set<std::string> m_logins;
 
     pthread_t m_thread;
 

@@ -91,6 +91,11 @@ int RADIUS::Start()
 
 int RADIUS::Stop()
 {
+    std::set<std::string>::const_iterator it = m_logins.begin();
+    for (; it != m_logins.end(); ++it)
+        m_users->Unauthorize(*it, this, "Stopping RADIUS plugin.");
+    m_logins.clear();
+
     if (m_stopped)
         return 0;
 
@@ -342,7 +347,7 @@ void RADIUS::acceptUNIX()
         return;
     }
     printfd(__FILE__, "New UNIX connection: '%s'\n", addr.sun_path);
-    m_conns.push_back(new Conn(*m_users, m_logger, m_config, res, addr.sun_path));
+    m_conns.push_back(new Conn(*m_users, m_logger, *this, m_config, res, addr.sun_path));
 }
 
 void RADIUS::acceptTCP()
@@ -359,5 +364,27 @@ void RADIUS::acceptTCP()
     }
     std::string remote = inet_ntostring(addr.sin_addr.s_addr) + ":" + x2str(ntohs(addr.sin_port));
     printfd(__FILE__, "New TCP connection: '%s'\n", remote.c_str());
-    m_conns.push_back(new Conn(*m_users, m_logger, m_config, res, remote));
+    m_conns.push_back(new Conn(*m_users, m_logger, *this, m_config, res, remote));
+}
+
+void RADIUS::authorize(const USER& user)
+{
+    uint32_t ip = 0;
+    const std::string& login(user.GetLogin());
+    if (!m_users->Authorize(login, ip, 0xffFFffFF, this))
+    {
+        m_error = "Unable to authorize user '" + login + "' with ip " + inet_ntostring(ip) + ".";
+        m_logger(m_error);
+    }
+    else
+        m_logins.insert(login);
+}
+
+void RADIUS::unauthorize(const std::string& login, const std::string& reason)
+{
+    const std::set<std::string>::const_iterator it = m_logins.find(login);
+    if (it == m_logins.end())
+        return;
+    m_logins.erase(it);
+    m_users->Unauthorize(login, this, reason);
 }

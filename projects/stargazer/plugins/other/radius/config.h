@@ -31,6 +31,8 @@
 #include <unistd.h> // uid_t, gid_t
 #include <sys/stat.h> // mode_t
 
+class USER;
+
 namespace STG
 {
 
@@ -52,15 +54,29 @@ struct Config
         UPDATED   // Module sends some updates.
     };
 
+    class Authorize
+    {
+        public:
+            Authorize() : m_auth(false) {}
+            Authorize(const Pairs& cond) : m_auth(true), m_cond(cond) {}
+
+            bool check(const USER& user, const Pairs& radiusData) const;
+            bool exists() const { return m_auth; }
+        private:
+            bool m_auth;
+            Pairs m_cond;
+    };
+
     struct Section
     {
         Section() {}
-        Section(const Pairs& ma, const Pairs& mo, const Pairs& re, ReturnCode code)
-            : match(ma), modify(mo), reply(re), returnCode(code) {}
+        Section(const Pairs& ma, const Pairs& mo, const Pairs& re, ReturnCode code, const Authorize& auth)
+            : match(ma), modify(mo), reply(re), returnCode(code), authorize(auth) {}
         Pairs match;
         Pairs modify;
         Pairs reply;
         ReturnCode returnCode;
+        Authorize authorize;
     };
 
     Config() {}

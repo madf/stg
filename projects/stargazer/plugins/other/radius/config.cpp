@@ -20,6 +20,7 @@
 
 #include "config.h"
 
+#include "stg/user.h"
 #include "stg/common.h"
 
 #include <vector>
@@ -34,6 +35,11 @@ namespace
 
 struct ParserError : public std::runtime_error
 {
+    ParserError(const std::string& message)
+        : runtime_error("Config is not valid. " + message),
+          position(0),
+          error(message)
+    {}
     ParserError(size_t pos, const std::string& message)
         : runtime_error("Parsing error at position " + x2str(pos) + ". " + message),
           position(pos),
@@ -132,7 +138,7 @@ uid_t toUID(const std::vector<std::string>& values)
         return -1;
     uid_t res = str2uid(values[0]);
     if (res == static_cast<uid_t>(-1))
-        throw ParserError(0, "Invalid user name: '" + values[0] + "'");
+        throw ParserError("Invalid user name: '" + values[0] + "'");
     return res;
 }
 
@@ -142,7 +148,7 @@ gid_t toGID(const std::vector<std::string>& values)
         return -1;
     gid_t res = str2gid(values[0]);
     if (res == static_cast<gid_t>(-1))
-        throw ParserError(0, "Invalid group name: '" + values[0] + "'");
+        throw ParserError("Invalid group name: '" + values[0] + "'");
     return res;
 }
 
@@ -152,7 +158,7 @@ mode_t toMode(const std::vector<std::string>& values)
         return -1;
     mode_t res = str2mode(values[0]);
     if (res == static_cast<mode_t>(-1))
-        throw ParserError(0, "Invalid mode: '" + values[0] + "'");
+        throw ParserError("Invalid mode: '" + values[0] + "'");
     return res;
 }
 
@@ -174,7 +180,7 @@ uint16_t toPort(const std::string& value)
     uint16_t res = 0;
     if (str2x(value, res) == 0)
         return res;
-    throw ParserError(0, "'" + value + "' is not a valid port number.");
+    throw ParserError("'" + value + "' is not a valid port number.");
 }
 
 typedef std::map<std::string, Config::ReturnCode> Codes;
@@ -215,6 +221,14 @@ Config::Pairs parseVector(const std::string& paramName, const std::vector<PARAM_
     return Config::Pairs();
 }
 
+Config::Authorize parseAuthorize(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+{
+    for (size_t i = 0; i < params.size(); ++i)
+        if (params[i].param == paramName)
+            return Config::Authorize(toPairs(params[i].value));
+    return Config::Authorize();
+}
+
 Config::ReturnCode parseReturnCode(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
@@ -243,13 +257,13 @@ std::string parseAddress(Config::Type connectionType, const std::string& value)
 {
     size_t pos = value.find_first_of(':');
     if (pos == std::string::npos)
-        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+        throw ParserError("Connection type is not specified. Should be either 'unix' or 'tcp'.");
     if (connectionType == Config::UNIX)
         return value.substr(pos + 1);
     std::string address(value.substr(pos + 1));
     pos = address.find_first_of(':', pos + 1);
     if (pos == std::string::npos)
-        throw ParserError(0, "Port is not specified.");
+        throw ParserError("Port is not specified.");
     return address.substr(0, pos - 1);
 }
 
@@ -257,13 +271,13 @@ std::string parsePort(Config::Type connectionType, const std::string& value)
 {
     size_t pos = value.find_first_of(':');
     if (pos == std::string::npos)
-        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+        throw ParserError("Connection type is not specified. Should be either 'unix' or 'tcp'.");
     if (connectionType == Config::UNIX)
         return "";
     std::string address(value.substr(pos + 1));
     pos = address.find_first_of(':', pos + 1);
     if (pos == std::string::npos)
-        throw ParserError(0, "Port is not specified.");
+        throw ParserError("Port is not specified.");
     return address.substr(pos + 1);
 }
 
@@ -271,13 +285,13 @@ Config::Type parseConnectionType(const std::string& address)
 {
     size_t pos = address.find_first_of(':');
     if (pos == std::string::npos)
-        throw ParserError(0, "Connection type is not specified. Should be either 'unix' or 'tcp'.");
+        throw ParserError("Connection type is not specified. Should be either 'unix' or 'tcp'.");
     std::string type = ToLower(address.substr(0, pos));
     if (type == "unix")
         return Config::UNIX;
     else if (type == "tcp")
         return Config::TCP;
-    throw ParserError(0, "Invalid connection type. Should be either 'unix' or 'tcp', got '" + type + "'");
+    throw ParserError("Invalid connection type. Should be either 'unix' or 'tcp', got '" + type + "'");
 }
 
 Config::Section parseSection(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
@@ -287,7 +301,8 @@ Config::Section parseSection(const std::string& paramName, const std::vector<PAR
             return Config::Section(parseVector("match", params[i].sections),
                                    parseVector("modify", params[i].sections),
                                    parseVector("reply", params[i].sections),
-                                   parseReturnCode("no_match", params[i].sections));
+                                   parseReturnCode("no_match", params[i].sections),
+                                   parseAuthorize("authorize", params[i].sections));
     return Config::Section();
 }
 
@@ -317,6 +332,27 @@ mode_t parseMode(const std::string& paramName, const std::vector<PARAM_VALUE>& p
 
 } // namespace anonymous
 
+bool Config::Authorize::check(const USER& user, const Config::Pairs& radiusData) const
+{
+    if (!m_auth)
+        return false; // No flag - no authorization.
+
+    if (m_cond.empty())
+        return true; // Empty parameter - always authorize.
+
+    Config::Pairs::const_iterator it = m_cond.begin();
+    for (; it != m_cond.end(); ++it)
+    {
+        const Config::Pairs::const_iterator pos = radiusData.find(it->first);
+        if (pos == radiusData.end())
+            return false; // No required Radius parameter.
+        if (user.GetParamValue(it->second) != pos->second)
+            return false; // No match with the user.
+    }
+
+    return true;
+}
+
 Config::Config(const MODULE_SETTINGS& settings)
     : autz(parseSection("autz", settings.moduleParams)),
       auth(parseSection("auth", settings.moduleParams)),
@@ -334,4 +370,17 @@ Config::Config(const MODULE_SETTINGS& settings)
       sockGID(parseGID("sock_group", settings.moduleParams)),
       sockMode(parseMode("sock_mode", settings.moduleParams))
 {
+    size_t count = 0;
+    if (autz.authorize.exists())
+        ++count;
+    if (auth.authorize.exists())
+        ++count;
+    if (postauth.authorize.exists())
+        ++count;
+    if (preacct.authorize.exists())
+        ++count;
+    if (acct.authorize.exists())
+        ++count;
+    if (count > 0)
+        throw ParserError("Authorization flag is specified in more than one section.");
 }

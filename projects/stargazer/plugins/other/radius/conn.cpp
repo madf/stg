@@ -20,6 +20,7 @@
 
 #include "conn.h"
 
+#include "radius.h"
 #include "config.h"
 
 #include "stg/json_parser.h"
@@ -225,7 +226,7 @@ std::string toString(Config::ReturnCode code)
 class Conn::Impl
 {
     public:
-        Impl(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int fd, const std::string& remote);
+        Impl(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
         ~Impl();
 
         int sock() const { return m_sock; }
@@ -238,6 +239,7 @@ class Conn::Impl
     private:
         USERS& m_users;
         PLUGIN_LOGGER& m_logger;
+        RADIUS& m_plugin;
         const Config& m_config;
         int m_sock;
         std::string m_remote;
@@ -245,6 +247,7 @@ class Conn::Impl
         time_t m_lastPing;
         time_t m_lastActivity;
         ProtoParser m_parser;
+        std::set<std::string> m_authorized;
 
         template <typename T>
         const T& stageMember(T Config::Section::* member) const
@@ -264,6 +267,7 @@ class Conn::Impl
         const Config::Pairs& modify() const { return stageMember(&Config::Section::modify); }
         const Config::Pairs& reply() const { return stageMember(&Config::Section::reply); }
         Config::ReturnCode returnCode() const { return stageMember(&Config::Section::returnCode); }
+        const Config::Authorize& authorize() const { return stageMember(&Config::Section::authorize); }
 
         static void process(void* data);
         void processPing();
@@ -277,8 +281,8 @@ class Conn::Impl
         static bool write(void* data, const char* buf, size_t size);
 };
 
-Conn::Conn(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int fd, const std::string& remote)
-    : m_impl(new Impl(users, logger, config, fd, remote))
+Conn::Conn(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
+    : m_impl(new Impl(users, logger, plugin, config, fd, remote))
 {
 }
 
@@ -306,9 +310,10 @@ bool Conn::isOk() const
     return m_impl->isOk();
 }
 
-Conn::Impl::Impl(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int fd, const std::string& remote)
+Conn::Impl::Impl(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
     : m_users(users),
       m_logger(logger),
+      m_plugin(plugin),
       m_config(config),
       m_sock(fd),
       m_remote(remote),
@@ -322,6 +327,10 @@ Conn::Impl::Impl(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int 
 Conn::Impl::~Impl()
 {
     close(m_sock);
+
+    std::set<std::string>::const_iterator it = m_authorized.begin();
+    for (; it != m_authorized.end(); ++it)
+        m_plugin.unauthorize(*it, "Lost connection to RADIUS server " + m_remote + ".");
 }
 
 bool Conn::Impl::read()
@@ -433,6 +442,11 @@ void Conn::Impl::processData()
         if (!matched)
             continue;
         answer(*user);
+        if (authorize().check(*user, m_parser.data()))
+        {
+            m_plugin.authorize(*user);
+            m_authorized.insert(user->GetLogin());
+        }
         break;
     }
 

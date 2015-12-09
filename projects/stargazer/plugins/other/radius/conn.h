@@ -28,6 +28,7 @@
 class USER;
 class USERS;
 class PLUGIN_LOGGER;
+class RADIUS;
 
 namespace STG
 {
@@ -37,7 +38,7 @@ struct Config;
 class Conn
 {
     public:
-        Conn(USERS& users, PLUGIN_LOGGER& logger, const Config& config, int fd, const std::string& remote);
+        Conn(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
         ~Conn();
 
         int sock() const;
