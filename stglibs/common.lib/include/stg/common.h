@@ -151,6 +151,7 @@ std::string ToPrintable(const std::string & src);
 //-----------------------------------------------------------------------------
 int str2x(const std::string & str, int32_t & x);
 int str2x(const std::string & str, uint32_t & x);
+int str2x(const std::string & str, double & x);
 #ifndef WIN32
 int str2x(const std::string & str, int64_t & x);
 int str2x(const std::string & str, uint64_t & x);
