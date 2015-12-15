@@ -362,14 +362,15 @@ for (unsigned int i = 0; i < usersList.size(); i++)
 
         if (ui->ReadStat() < 0)
             return -1;
-        } else
-                {
-                if (ui->ReadConf() < 0)
-                    errors++;
+        }
+    else
+        {
+        if (ui->ReadConf() < 0)
+            errors++;
 
-                if (ui->ReadStat() < 0)
-                    errors++;
-                }
+        if (ui->ReadStat() < 0)
+            errors++;
+        }
     }
 
 if (errors > 0)
