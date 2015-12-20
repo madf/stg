@@ -31,6 +31,13 @@
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 
+namespace
+{
+
+const int pt_mega = 1024 * 1024;
+
+}
+
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
@@ -305,8 +312,8 @@ try
     st->Get(7, td->dirPrice[dir].priceNightB);
     td->dirPrice[dir].priceNightB /= 1024*1024;
     st->Get(8, td->dirPrice[dir].threshold);
-    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 &&
-        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 / pt_mega &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3 / pt_mega)
         {
         td->dirPrice[dir].singlePrice = true;
         }

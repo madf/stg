@@ -56,6 +56,16 @@ std::string AOS2String(const A & array, size_t size, const F C::* field, F multi
     return res;
 }
 
+template <typename T>
+bool str2res(const std::string& source, RESETABLE<T>& dest, T divisor)
+{
+    T value = 0;
+    if (str2x(source, value))
+        return false;
+    dest = value / divisor;
+    return true;
+}
+
 template <typename A, typename C, typename F>
 bool String2AOS(const std::string & source, A & array, size_t size, RESETABLE<F> C::* field, F divisor)
 {
@@ -64,15 +74,13 @@ bool String2AOS(const std::string & source, A & array, size_t size, RESETABLE<F>
     std::string::size_type pos = 0;
     while (index < size && (pos = source.find('/', from)) != std::string::npos)
     {
-        if (str2x(source.substr(from, pos - from), (array[index].*field).data()))
+        if (!str2res(source.substr(from, pos - from), array[index].*field, divisor))
             return false;
-        (array[index].*field).data() /= divisor;
         from = pos + 1;
         ++index;
     }
-    if (str2x(source.substr(from), (array[index].*field).data()))
+    if (str2res(source.substr(from), array[index].*field, divisor))
         return false;
-    (array[index].*field).data() /= divisor;
     return true;
 }
 
