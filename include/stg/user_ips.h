@@ -166,7 +166,7 @@ return false;
 inline
 bool USER_IPS::OnlyOneIP() const
 {
-if (ips.size() == 1 && ips.front().mask == 32)
+if (ips.size() == 1 && ips.front().mask == 32 && ips.front().ip != 0)
     return true;
 
 return false;
