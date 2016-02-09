@@ -526,6 +526,24 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
+int AUTH_IA::Reload()
+{
+AUTH_IA_SETTINGS newIaSettings;
+MODULE_SETTINGS newSettings = settings;
+if (newIaSettings.ParseSettings(newSettings))
+    {
+    STG_LOGGER & WriteServLog = GetStgLogger();
+    printfd(__FILE__, "AUTH_IA::Reload() - Failed to reload InetAccess.\n");
+    WriteServLog("AUTH_IA: Cannot reload InetAccess. Errors found.");
+    return -1;
+    }
+
+STG_LOGGER & WriteServLog = GetStgLogger();
+printfd(__FILE__, "AUTH_IA::Reload() -  Reloaded InetAccess successfully.\n");
+WriteServLog("AUTH_IA: Reloaded InetAccess successfully.");
+return 0;
+}
+//-----------------------------------------------------------------------------
 int AUTH_IA::PrepareNet()
 {
 struct sockaddr_in listenAddr;
