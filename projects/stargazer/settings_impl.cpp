@@ -99,6 +99,42 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
 {
 }
 //-----------------------------------------------------------------------------
+SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & set)
+{
+    if (&set == this)
+        return *this;
+
+    modulesPath = set.modulesPath;
+    dirName = set.dirName;
+    confDir = set.confDir;
+    scriptsDir = set.scriptsDir;
+    rules = set.rules;
+    logFile = set.logFile;
+    pidFile = set.pidFile;
+    monitorDir = set.monitorDir;
+    scriptParams = set.scriptParams;
+    monitoring = set.monitoring;
+    detailStatWritePeriod = set.detailStatWritePeriod;
+    statWritePeriod = set.statWritePeriod;
+    stgExecMsgKey = set.stgExecMsgKey;
+    executersNum = set.executersNum;
+    fullFee = set.fullFee;
+    dayFee = set.dayFee;
+    dayResetTraff = set.dayResetTraff;
+    spreadFee = set.spreadFee;
+    freeMbAllowInet = set.freeMbAllowInet;
+    dayFeeIsLastDay = set.dayFeeIsLastDay;
+    writeFreeMbTraffCost = set.writeFreeMbTraffCost;
+    showFeeInCash = set.showFeeInCash;
+    messageTimeout = set.messageTimeout;
+    feeChargeType = set.feeChargeType;
+    reconnectOnTariffChange = set.reconnectOnTariffChange;
+
+    modulesSettings = set.modulesSettings;
+    storeModuleSettings = set.storeModuleSettings;
+    return *this;
+}
+//-----------------------------------------------------------------------------
 int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
 {
 const DOTCONFDocumentNode * childNode;
