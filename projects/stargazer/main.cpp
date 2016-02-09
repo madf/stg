@@ -221,7 +221,6 @@ if (getuid())
     }
 
 SETTINGS_IMPL settings(argc == 2 ? argv[1] : "");
-SETTINGS_IMPL newSettings = settings;
 
 if (settings.ReadSettings())
     {
@@ -339,6 +338,8 @@ while (running)
     switch (sig)
         {
         case SIGHUP:
+            {
+            SETTINGS_IMPL newSettings(settings);
             if (newSettings.ReadSettings())
                 {
                 STG_LOGGER & WriteServLog = GetStgLogger();
@@ -349,8 +350,10 @@ while (running)
                 WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
                 return -1;
                 }
+            settings = newSettings;
             traffCnt.Reload();
             manager.reload();
+            }
             break;
         case SIGTERM:
             running = false;
