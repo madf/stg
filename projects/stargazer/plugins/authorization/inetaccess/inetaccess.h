@@ -247,7 +247,7 @@ public:
 
     int                 Start();
     int                 Stop();
-    int                 Reload() { return 0; }
+    int                 Reload();
     bool                IsRunning() { return isRunningRunTimeouter || isRunningRun; }
 
     const std::string & GetStrError() const { return errorStr; }
