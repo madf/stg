@@ -101,9 +101,6 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & set)
 {
-    if (&set == this)
-        return *this;
-
     modulesPath = set.modulesPath;
     dirName = set.dirName;
     confDir = set.confDir;
