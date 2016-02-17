@@ -118,7 +118,7 @@ PluginManager::~PluginManager()
         delete m_modules[i];
 }
 
-void PluginManager::reload()
+void PluginManager::reload(const SETTINGS_IMPL& settings)
 {
     for (size_t i = 0; i < m_modules.size(); ++i)
     {
