@@ -352,7 +352,7 @@ while (running)
                 }
             settings = newSettings;
             traffCnt.Reload();
-            manager.reload();
+            manager.reload(settings);
             }
             break;
         case SIGTERM:
