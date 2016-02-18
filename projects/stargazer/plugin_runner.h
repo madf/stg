@@ -46,6 +46,7 @@ public:
     };
 
     PLUGIN_RUNNER(const std::string & pluginFileName,
+                  const std::string & pluginName,
                   const MODULE_SETTINGS & ms,
                   ADMINS & admins,
                   TARIFFS & tariffs,
@@ -66,6 +67,7 @@ public:
     const std::string & GetStrError() const { return errorStr; }
     PLUGIN &        GetPlugin() { return m_plugin; }
     const std::string & GetFileName() const { return pluginFileName; }
+    const std::string & GetName() const { return pluginName; }
 
     uint16_t        GetStartPosition() const { return m_plugin.GetStartPosition(); }
     uint16_t        GetStopPosition() const { return m_plugin.GetStopPosition(); }
@@ -85,6 +87,7 @@ private:
                   const SETTINGS & settings);
 
     std::string     pluginFileName;
+    std::string     pluginName;
     void *          libHandle;
 
     PLUGIN &        m_plugin;
