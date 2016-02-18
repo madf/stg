@@ -60,11 +60,12 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
     for (size_t i = 0; i < modSettings.size(); i++)
     {
         std::string modulePath = basePath + "/mod_" + modSettings[i].moduleName + ".so";
+        std::string moduleName = modSettings[i].moduleName;
         printfd(__FILE__, "Module: %s\n", modulePath.c_str());
         try
         {
             m_modules.push_back(
-                new PLUGIN_RUNNER(modulePath, modSettings[i], admins, tariffs,
+                new PLUGIN_RUNNER(modulePath, moduleName, modSettings[i], admins, tariffs,
                                   users, services, corporations, traffcounter,
                                   store, settings)
             );
