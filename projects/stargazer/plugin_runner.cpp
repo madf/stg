@@ -28,6 +28,7 @@
 
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & fileName,
+                             const std::string & name,
                              const MODULE_SETTINGS & ms,
                              ADMINS & admins,
                              TARIFFS & tariffs,
@@ -38,6 +39,7 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & fileName,
                              STORE & store,
                              const SETTINGS & settings)
     : pluginFileName(fileName),
+      pluginName(name),
       libHandle(NULL),
       m_plugin(Load(ms, admins, tariffs, users, services, corporations,
                     traffcounter, store, settings))
