@@ -60,7 +60,7 @@ public:
 
     int             Start();
     int             Stop();
-    int             Reload();
+    int             Reload(const MODULE_SETTINGS & ms);
     int             Restart();
     bool            IsRunning() { return m_plugin.IsRunning(); }
 
