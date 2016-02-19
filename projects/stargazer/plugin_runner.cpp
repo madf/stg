@@ -69,7 +69,7 @@ errorStr = m_plugin.GetStrError();
 return res;
 }
 //-----------------------------------------------------------------------------
-int PLUGIN_RUNNER::Reload()
+int PLUGIN_RUNNER::Reload(const MODULE_SETTINGS & ms)
 {
 int res = m_plugin.Reload();
 errorStr = m_plugin.GetStrError();
