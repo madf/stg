@@ -121,15 +121,22 @@ PluginManager::~PluginManager()
 
 void PluginManager::reload(const SETTINGS_IMPL& settings)
 {
+    const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
     for (size_t i = 0; i < m_modules.size(); ++i)
     {
-        PLUGIN & plugin = m_modules[i]->GetPlugin();
-        if (m_modules[i]->Reload())
+        for (size_t j = 0; j < modSettings.size(); j++)
         {
-            m_log("Error reloading module '%s': '%s'", plugin.GetVersion().c_str(),
-                                                       plugin.GetStrError().c_str());
-            printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
-                                                                     plugin.GetStrError().c_str());
+           if (modSettings[j].moduleName == m_modules[i]->GetName()) 
+           {
+                PLUGIN & plugin = m_modules[i]->GetPlugin();
+                if (m_modules[i]->Reload(modSettings[j]))
+                {
+                    m_log("Error reloading module '%s': '%s'", plugin.GetVersion().c_str(),
+                                                               plugin.GetStrError().c_str());
+                    printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
+                                                                             plugin.GetStrError().c_str());
+                }
+           }
         }
     }
 }
