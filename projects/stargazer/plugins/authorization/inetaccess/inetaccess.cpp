@@ -526,11 +526,10 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Reload()
+int AUTH_IA::Reload(const MODULE_SETTINGS & ms)
 {
 AUTH_IA_SETTINGS newIaSettings;
-MODULE_SETTINGS newSettings = settings;
-if (newIaSettings.ParseSettings(newSettings))
+if (newIaSettings.ParseSettings(ms))
     {
     STG_LOGGER & WriteServLog = GetStgLogger();
     printfd(__FILE__, "AUTH_IA::Reload() - Failed to reload InetAccess.\n");
