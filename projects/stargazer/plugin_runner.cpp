@@ -71,7 +71,7 @@ return res;
 //-----------------------------------------------------------------------------
 int PLUGIN_RUNNER::Reload(const MODULE_SETTINGS & ms)
 {
-int res = m_plugin.Reload();
+int res = m_plugin.Reload(ms);
 errorStr = m_plugin.GetStrError();
 return res;
 }
