@@ -272,7 +272,7 @@ printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;
 }
 
-int SMUX::Reload()
+int SMUX::Reload(const MODULE_SETTINGS & ms)
 {
 if (Stop())
     return -1;
