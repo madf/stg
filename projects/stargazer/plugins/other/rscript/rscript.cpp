@@ -301,7 +301,7 @@ if (isRunning)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int REMOTE_SCRIPT::Reload()
+int REMOTE_SCRIPT::Reload(const MODULE_SETTINGS & ms)
 {
 NRMapParser nrMapParser;
 
