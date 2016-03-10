@@ -112,7 +112,7 @@ public:
 
     int Start();
     int Stop();
-    int Reload() { return 0; }
+    int Reload(const MODULE_SETTINGS & ms) { return 0; }
     bool IsRunning();
 
     const std::string & GetStrError() const { return errorStr; }
