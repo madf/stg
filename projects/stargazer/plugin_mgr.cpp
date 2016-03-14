@@ -126,8 +126,8 @@ void PluginManager::reload(const SETTINGS_IMPL& settings)
     {
         for (size_t j = 0; j < modSettings.size(); j++)
         {
-           if (modSettings[j].moduleName == m_modules[i]->GetName()) 
-           {
+            if (modSettings[j].moduleName == m_modules[i]->GetName())
+            {
                 PLUGIN & plugin = m_modules[i]->GetPlugin();
                 if (m_modules[i]->Reload(modSettings[j]))
                 {
@@ -136,7 +136,7 @@ void PluginManager::reload(const SETTINGS_IMPL& settings)
                     printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
                                                                              plugin.GetStrError().c_str());
                 }
-           }
+            }
         }
     }
 }
