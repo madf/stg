@@ -142,10 +142,6 @@ else if (ParseYesNo(pvi->value[0], &logProtocolErrors))
     printfd(__FILE__, "Cannot parse parameter 'LogProtocolErrors'\n");
     return -1;
     }
-if (logProtocolErrors)
-    printfd(__FILE__, "LogProtocolErrors: true\n");
-else
-    printfd(__FILE__, "LogProtocolErrors: false\n");
 /////////////////////////////////////////////////////////////
 std::string freeMbType;
 int n = 0;
