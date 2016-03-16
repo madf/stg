@@ -266,6 +266,11 @@ for (size_t i = 0; i < settings.GetExecutersNum(); i++)
 
 PIDFile pidFile(settings.GetPIDFileName());
 
+struct sigaction sa;
+memset(&sa, 0, sizeof(sa));
+sa.sa_handler = SIG_DFL;
+sigaction(SIGHUP, &sa, NULL); // Apparently FreeBSD ignores SIGHUP by default when launched from rc.d at bot time.
+
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
