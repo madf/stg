@@ -319,6 +319,7 @@ STG_LOCKER lock(&mutex);
 if (FindByNameNonLock(login, &iter))
     {
     WriteServLog("Attempt to unauthorize non-existant user '%s'", login.c_str());
+    printfd(__FILE__, "Attempt to unauthorize non-existant user '%s'", login.c_str());
     return false;
     }
 
@@ -424,15 +425,7 @@ while (us->nonstop)
     stgUsleep(100000);
     } //while (us->nonstop)
 
-user_iter ui = us->users.begin();
-while (ui != us->users.end())
-    {
-    us->DelUserFromIndexes(ui);
-    ++ui;
-    }
-
-std::list<USER_TO_DEL>::iterator iter;
-iter = us->usersToDelete.begin();
+std::list<USER_TO_DEL>::iterator iter(us->usersToDelete.begin());
 while (iter != us->usersToDelete.end())
     {
     iter->delTime -= 2 * userDeleteDelayTime;

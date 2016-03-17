@@ -557,6 +557,8 @@ if (authorizedBy.empty())
     lastDisconnectReason = reason;
     lastIPForDisconnect = currIP;
     currIP = 0; // DelUser in traffcounter
+    if (connected)
+        Disconnect(false, "not authorized");
     return;
     }
 }

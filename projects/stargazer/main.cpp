@@ -377,6 +377,8 @@ while (running)
 
 WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
+manager.stop();
+
 if (loop.Stop())
     WriteServLog("Event loop not stopped.");
 

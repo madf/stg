@@ -98,23 +98,7 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
 
 PluginManager::~PluginManager()
 {
-    std::sort(m_modules.begin(), m_modules.end(), StopModCmp);
-    for (size_t i = 0; i < m_modules.size(); ++i)
-    {
-        PLUGIN & plugin = m_modules[i]->GetPlugin();
-        if (m_modules[i]->Stop())
-        {
-            m_log("Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),
-                                                      plugin.GetStrError().c_str());
-            printfd(__FILE__, "Failed to stop module '%s': '%s'\n", plugin.GetVersion().c_str(),
-                                                                  plugin.GetStrError().c_str());
-        }
-        else
-        {
-            m_log("Module '%s' stopped successfully.", plugin.GetVersion().c_str());
-            printfd(__FILE__, "Module '%s' stopped successfully.\n", plugin.GetVersion().c_str());
-        }
-    }
+    stop();
     for (size_t i = 0; i < m_modules.size(); ++i)
         delete m_modules[i];
 }
@@ -137,6 +121,29 @@ void PluginManager::reload(const SETTINGS_IMPL& settings)
                                                                              plugin.GetStrError().c_str());
                 }
             }
+        }
+    }
+}
+
+void PluginManager::stop()
+{
+    std::sort(m_modules.begin(), m_modules.end(), StopModCmp);
+    for (size_t i = 0; i < m_modules.size(); ++i)
+    {
+        if (!m_modules[i]->IsRunning())
+            continue;
+        PLUGIN & plugin = m_modules[i]->GetPlugin();
+        if (m_modules[i]->Stop())
+        {
+            m_log("Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),
+                                                      plugin.GetStrError().c_str());
+            printfd(__FILE__, "Failed to stop module '%s': '%s'\n", plugin.GetVersion().c_str(),
+                                                                    plugin.GetStrError().c_str());
+        }
+        else
+        {
+            m_log("Module '%s' stopped successfully.", plugin.GetVersion().c_str());
+            printfd(__FILE__, "Module '%s' stopped successfully.\n", plugin.GetVersion().c_str());
         }
     }
 }

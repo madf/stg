@@ -431,4 +431,40 @@ namespace tut
         ensure_equals("DecryptString(EncryptString(longTest)) == longTest", source, std::string(longTest));
     }
 
+    template<>
+    template<>
+    void testobject::test<8>()
+    {
+        set_test_name("Check old string encryption");
+
+        BLOWFISH_CTX ctx;
+        InitContext("123456", 7, &ctx);
+        const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
+                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
+                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
+                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb};
+        char res[32];
+        DecryptString(res, source, 32, &ctx);
+
+        ensure_equals("DecryptString(...) == 'admin'", std::string(res), "admin");
+    }
+
+    template<>
+    template<>
+    void testobject::test<9>()
+    {
+        set_test_name("Check new string encryption");
+
+        BLOWFISH_CTX ctx;
+        InitContext("123456", 7, &ctx);
+        const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
+                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        char res[32];
+        DecryptString(res, source, 32, &ctx);
+
+        ensure_equals("DecryptString(...) == 'admin'", std::string(res), "admin");
+    }
+
 }

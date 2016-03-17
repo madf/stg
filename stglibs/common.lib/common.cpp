@@ -752,6 +752,11 @@ if (errno == ERANGE)
 
 return 0;
 }
+//---------------------------------------------------------------------------
+int str2x(const std::string & str, double & x)
+{
+return strtodouble2(str.c_str(), x);
+}
 #ifndef WIN32
 //---------------------------------------------------------------------------
 int str2x(const std::string & str, int64_t & x)

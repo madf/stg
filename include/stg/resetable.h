@@ -50,6 +50,11 @@ public:
             is_set = true;
         }
     }
+    void maybeSet(value_type& dest) const
+    {
+        if (is_set)
+            dest = value;
+    }
 
 private:
     value_type value;

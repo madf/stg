@@ -49,6 +49,7 @@ class PluginManager
         ~PluginManager();
 
         void reload(const SETTINGS_IMPL& settings);
+        void stop();
 
     private:
         std::vector<PLUGIN_RUNNER*> m_modules;

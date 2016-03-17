@@ -121,15 +121,9 @@ return "cap_bpf v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
-    : capSettings(),
-      errorStr(),
-      bpfData(),
-      polld(),
-      thread(),
-      nonstop(false),
+    : nonstop(false),
       isRunning(false),
       capSock(-1),
-      settings(),
       traffCnt(NULL),
       logger(GetPluginLogger(GetStgLogger(), "cap_bpf"))
 {

@@ -93,9 +93,7 @@ return "cap_nfqueue v.1.0";
 }
 //-----------------------------------------------------------------------------
 NFQ_CAP::NFQ_CAP()
-    : errorStr(),
-      thread(),
-      nonstop(false),
+    : nonstop(false),
       isRunning(false),
       queueNumber(0),
       nfqHandle(NULL),
@@ -108,8 +106,8 @@ NFQ_CAP::NFQ_CAP()
 int NFQ_CAP::ParseSettings()
 {
 for (size_t i = 0; i < settings.moduleParams.size(); i++)
-    if (settings.moduleParams[i].param == "queueNumber")
-        if (str2x(settings.moduleParams[i].param, queueNumber) < 0)
+    if (settings.moduleParams[i].param == "queueNumber" && !settings.moduleParams[i].value.empty())
+        if (str2x(settings.moduleParams[i].value[0], queueNumber) < 0)
             {
             errorStr = "Queue number should be a number. Got: '" + settings.moduleParams[i].param + "'";
             logger(errorStr);
