@@ -538,6 +538,7 @@ if (newIaSettings.ParseSettings(ms))
 STG_LOGGER & WriteServLog = GetStgLogger();
 printfd(__FILE__, "AUTH_IA::Reload() -  Reloaded InetAccess successfully.\n");
 WriteServLog("AUTH_IA: Reloaded InetAccess successfully.");
+iaSettings = newIaSettings;
 return 0;
 }
 //-----------------------------------------------------------------------------
