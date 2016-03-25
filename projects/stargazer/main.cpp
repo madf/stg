@@ -342,8 +342,6 @@ while (running)
             SETTINGS_IMPL newSettings(settings);
             if (newSettings.ReadSettings())
                 {
-                STG_LOGGER & WriteServLog = GetStgLogger();
-
                 if (newSettings.GetLogFileName() != "")
                     WriteServLog.SetLogFileName(newSettings.GetLogFileName());
 
