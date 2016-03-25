@@ -348,9 +348,11 @@ while (running)
                     WriteServLog.SetLogFileName(newSettings.GetLogFileName());
 
                 WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
-                return -1;
                 }
-            settings = newSettings;
+            else
+                {
+                settings = newSettings;
+                }
             traffCnt.Reload();
             manager.reload(settings);
             }
