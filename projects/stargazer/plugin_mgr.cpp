@@ -121,6 +121,7 @@ void PluginManager::reload(const SETTINGS_IMPL& settings)
                                                                              plugin.GetStrError().c_str());
                 }
             }
+            break;
         }
     }
 }
