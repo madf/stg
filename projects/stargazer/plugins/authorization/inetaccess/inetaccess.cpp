@@ -529,15 +529,13 @@ int AUTH_IA::Reload(const MODULE_SETTINGS & ms)
 AUTH_IA_SETTINGS newIaSettings;
 if (newIaSettings.ParseSettings(ms))
     {
-    STG_LOGGER & WriteServLog = GetStgLogger();
     printfd(__FILE__, "AUTH_IA::Reload() - Failed to reload InetAccess.\n");
-    WriteServLog("AUTH_IA: Cannot reload InetAccess. Errors found.");
+    logger("AUTH_IA: Cannot reload InetAccess. Errors found.");
     return -1;
     }
 
-STG_LOGGER & WriteServLog = GetStgLogger();
 printfd(__FILE__, "AUTH_IA::Reload() -  Reloaded InetAccess successfully.\n");
-WriteServLog("AUTH_IA: Reloaded InetAccess successfully.");
+logger("AUTH_IA: Reloaded InetAccess successfully.");
 iaSettings = newIaSettings;
 return 0;
 }
