@@ -99,36 +99,36 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
 {
 }
 //-----------------------------------------------------------------------------
-SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & set)
+SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
 {
-    modulesPath = set.modulesPath;
-    dirName = set.dirName;
-    confDir = set.confDir;
-    scriptsDir = set.scriptsDir;
-    rules = set.rules;
-    logFile = set.logFile;
-    pidFile = set.pidFile;
-    monitorDir = set.monitorDir;
-    scriptParams = set.scriptParams;
-    monitoring = set.monitoring;
-    detailStatWritePeriod = set.detailStatWritePeriod;
-    statWritePeriod = set.statWritePeriod;
-    stgExecMsgKey = set.stgExecMsgKey;
-    executersNum = set.executersNum;
-    fullFee = set.fullFee;
-    dayFee = set.dayFee;
-    dayResetTraff = set.dayResetTraff;
-    spreadFee = set.spreadFee;
-    freeMbAllowInet = set.freeMbAllowInet;
-    dayFeeIsLastDay = set.dayFeeIsLastDay;
-    writeFreeMbTraffCost = set.writeFreeMbTraffCost;
-    showFeeInCash = set.showFeeInCash;
-    messageTimeout = set.messageTimeout;
-    feeChargeType = set.feeChargeType;
-    reconnectOnTariffChange = set.reconnectOnTariffChange;
+    modulesPath = rhs.modulesPath;
+    dirName = rhs.dirName;
+    confDir = rhs.confDir;
+    scriptsDir = rhs.scriptsDir;
+    rules = rhs.rules;
+    logFile = rhs.logFile;
+    pidFile = rhs.pidFile;
+    monitorDir = rhs.monitorDir;
+    scriptParams = rhs.scriptParams;
+    monitoring = rhs.monitoring;
+    detailStatWritePeriod = rhs.detailStatWritePeriod;
+    statWritePeriod = rhs.statWritePeriod;
+    stgExecMsgKey = rhs.stgExecMsgKey;
+    executersNum = rhs.executersNum;
+    fullFee = rhs.fullFee;
+    dayFee = rhs.dayFee;
+    dayResetTraff = rhs.dayResetTraff;
+    spreadFee = rhs.spreadFee;
+    freeMbAllowInet = rhs.freeMbAllowInet;
+    dayFeeIsLastDay = rhs.dayFeeIsLastDay;
+    writeFreeMbTraffCost = rhs.writeFreeMbTraffCost;
+    showFeeInCash = rhs.showFeeInCash;
+    messageTimeout = rhs.messageTimeout;
+    feeChargeType = rhs.feeChargeType;
+    reconnectOnTariffChange = rhs.reconnectOnTariffChange;
 
-    modulesSettings = set.modulesSettings;
-    storeModuleSettings = set.storeModuleSettings;
+    modulesSettings = rhs.modulesSettings;
+    storeModuleSettings = rhs.storeModuleSettings;
     return *this;
 }
 //-----------------------------------------------------------------------------
