@@ -59,8 +59,8 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
     const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
     for (size_t i = 0; i < modSettings.size(); i++)
     {
-        std::string modulePath = basePath + "/mod_" + modSettings[i].moduleName + ".so";
         std::string moduleName = modSettings[i].moduleName;
+        std::string modulePath = basePath + "/mod_" + moduleName + ".so";
         printfd(__FILE__, "Module: %s\n", modulePath.c_str());
         try
         {
