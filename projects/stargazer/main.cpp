@@ -341,16 +341,9 @@ while (running)
             {
             SETTINGS_IMPL newSettings(settings);
             if (newSettings.ReadSettings())
-                {
-                if (newSettings.GetLogFileName() != "")
-                    WriteServLog.SetLogFileName(newSettings.GetLogFileName());
-
                 WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
-                }
             else
-                {
                 settings = newSettings;
-                }
             traffCnt.Reload();
             manager.reload(settings);
             }
