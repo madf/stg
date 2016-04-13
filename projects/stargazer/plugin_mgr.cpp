@@ -120,8 +120,8 @@ void PluginManager::reload(const SETTINGS_IMPL& settings)
                     printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
                                                                              plugin.GetStrError().c_str());
                 }
+                break;
             }
-            break;
         }
     }
 }
