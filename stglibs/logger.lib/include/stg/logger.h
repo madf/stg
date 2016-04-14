@@ -44,18 +44,19 @@ private:
     mutable pthread_mutex_t mutex;
 };
 //-----------------------------------------------------------------------------
-class PLUGIN_LOGGER : private STG_LOGGER
+class PLUGIN_LOGGER
 {
-friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName);
+friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER& logger, const std::string& pluginName);
 
 public:
-    PLUGIN_LOGGER(const PLUGIN_LOGGER & rhs);
-    void operator()(const char * fmt, ...) const;
-    void operator()(const std::string & line) const;
+    PLUGIN_LOGGER(const PLUGIN_LOGGER& rhs) : m_parent(rhs.m_parent), m_pluginName(rhs.m_pluginName) {}
+    void operator()(const char* fmt, ...) const;
+    void operator()(const std::string& line) const;
 
 private:
     PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn);
-    std::string pluginName;
+    const STG_LOGGER& m_parent;
+    std::string m_pluginName;
 };
 
 PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName);

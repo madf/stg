@@ -70,7 +70,7 @@ public:
 
     int                 Start();
     int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & ms) { return 0; }
+    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
     bool                IsRunning() { return running && !stopped; }
 
     const std::string & GetStrError() const { return errorStr; }

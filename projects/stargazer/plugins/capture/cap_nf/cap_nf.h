@@ -99,7 +99,7 @@ public:
 
     int             Start();
     int             Stop();
-    int             Reload(const MODULE_SETTINGS & ms) { return 0; }
+    int             Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
     bool            IsRunning() { return runningTCP || runningUDP; }
     const std::string & GetStrError() const { return errorStr; }
     std::string     GetVersion() const { return VERSION; }
