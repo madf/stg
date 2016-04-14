@@ -185,7 +185,7 @@ public:
 
     int                 Start();
     int                 Stop();
-    int                 Reload();
+    int                 Reload(const MODULE_SETTINGS & ms);
     bool                IsRunning() { return isRunning; }
 
     const std::string & GetStrError() const { return errorStr; }

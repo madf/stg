@@ -343,8 +343,15 @@ while (running)
     switch (sig)
         {
         case SIGHUP:
+            {
+            SETTINGS_IMPL newSettings(settings);
+            if (newSettings.ReadSettings())
+                WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
+            else
+                settings = newSettings;
             traffCnt.Reload();
-            manager.reload();
+            manager.reload(settings);
+            }
             break;
         case SIGTERM:
             running = false;

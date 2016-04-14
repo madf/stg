@@ -42,7 +42,6 @@
 
 #include "stg/settings.h"
 #include "stg/common.h"
-#include "stg/logger.h"
 #include "stg/module_settings.h"
 
 //-----------------------------------------------------------------------------
@@ -61,6 +60,8 @@ public:
     SETTINGS_IMPL(const std::string &);
     SETTINGS_IMPL(const SETTINGS_IMPL &);
     virtual ~SETTINGS_IMPL() {}
+    SETTINGS_IMPL & operator=(const SETTINGS_IMPL &);
+
     int Reload() { return ReadSettings(); }
     int ReadSettings();
 

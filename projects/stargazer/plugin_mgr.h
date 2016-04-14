@@ -48,7 +48,7 @@ class PluginManager
                       USERS_IMPL& users, TRAFFCOUNTER_IMPL& traffcounter);
         ~PluginManager();
 
-        void reload();
+        void reload(const SETTINGS_IMPL& settings);
         void stop();
 
     private:
