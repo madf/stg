@@ -70,6 +70,31 @@ public:
 };
 
 inline
+std::string TARIFF::ChangePolicyToString(TARIFF::CHANGE_POLICY change_policy)
+{
+switch (change_policy)
+    {
+    case ALLOW: return "allow";
+    case TO_CHEAP: return "to_cheap";
+    case TO_EXPENSIVE: return "to_expensive";
+    case DENY: return "deny";
+    }
+return "allow"; // Classic behaviour.
+}
+
+inline
+TARIFF::CHANGE_POLICY TARIFF::StringToChangePolicy(const std::string& value)
+{
+if (strcasecmp(value.c_str(), "to_cheap") == 0)
+    return TO_CHEAP;
+if (strcasecmp(value.c_str(), "to_expensive") == 0)
+    return TO_EXPENSIVE;
+if (strcasecmp(value.c_str(), "deny") == 0)
+    return DENY;
+return ALLOW; // Classic behaviour.
+}
+
+inline
 std::string TARIFF::PeriodToString(TARIFF::PERIOD period)
 {
 switch (period)
