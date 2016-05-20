@@ -59,12 +59,13 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
     const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
     for (size_t i = 0; i < modSettings.size(); i++)
     {
-        std::string modulePath = basePath + "/mod_" + modSettings[i].moduleName + ".so";
+        std::string moduleName = modSettings[i].moduleName;
+        std::string modulePath = basePath + "/mod_" + moduleName + ".so";
         printfd(__FILE__, "Module: %s\n", modulePath.c_str());
         try
         {
             m_modules.push_back(
-                new PLUGIN_RUNNER(modulePath, modSettings[i], admins, tariffs,
+                new PLUGIN_RUNNER(modulePath, moduleName, modSettings[i], admins, tariffs,
                                   users, services, corporations, traffcounter,
                                   store, settings)
             );
@@ -97,38 +98,53 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
 
 PluginManager::~PluginManager()
 {
+    stop();
+    for (size_t i = 0; i < m_modules.size(); ++i)
+        delete m_modules[i];
+}
+
+void PluginManager::reload(const SETTINGS_IMPL& settings)
+{
+    const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
+    for (size_t i = 0; i < m_modules.size(); ++i)
+    {
+        for (size_t j = 0; j < modSettings.size(); j++)
+        {
+            if (modSettings[j].moduleName == m_modules[i]->GetName())
+            {
+                PLUGIN & plugin = m_modules[i]->GetPlugin();
+                if (m_modules[i]->Reload(modSettings[j]))
+                {
+                    m_log("Error reloading module '%s': '%s'", plugin.GetVersion().c_str(),
+                                                               plugin.GetStrError().c_str());
+                    printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
+                                                                             plugin.GetStrError().c_str());
+                }
+                break;
+            }
+        }
+    }
+}
+
+void PluginManager::stop()
+{
     std::sort(m_modules.begin(), m_modules.end(), StopModCmp);
     for (size_t i = 0; i < m_modules.size(); ++i)
     {
+        if (!m_modules[i]->IsRunning())
+            continue;
         PLUGIN & plugin = m_modules[i]->GetPlugin();
         if (m_modules[i]->Stop())
         {
             m_log("Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),
                                                       plugin.GetStrError().c_str());
             printfd(__FILE__, "Failed to stop module '%s': '%s'\n", plugin.GetVersion().c_str(),
-                                                                  plugin.GetStrError().c_str());
+                                                                    plugin.GetStrError().c_str());
         }
         else
         {
             m_log("Module '%s' stopped successfully.", plugin.GetVersion().c_str());
             printfd(__FILE__, "Module '%s' stopped successfully.\n", plugin.GetVersion().c_str());
-        }
-    }
-    for (size_t i = 0; i < m_modules.size(); ++i)
-        delete m_modules[i];
-}
-
-void PluginManager::reload()
-{
-    for (size_t i = 0; i < m_modules.size(); ++i)
-    {
-        PLUGIN & plugin = m_modules[i]->GetPlugin();
-        if (m_modules[i]->Reload())
-        {
-            m_log("Error reloading module '%s': '%s'", plugin.GetVersion().c_str(),
-                                                       plugin.GetStrError().c_str());
-            printfd(__FILE__, "Error reloading module '%s': '%s'\n", plugin.GetVersion().c_str(),
-                                                                     plugin.GetStrError().c_str());
         }
     }
 }

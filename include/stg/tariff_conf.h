@@ -98,18 +98,17 @@ struct DIRPRICE_DATA_RES
     DIRPRICE_DATA GetData() const
         {
         DIRPRICE_DATA dd;
-        dd.hDay        = hDay.data();
-        dd.hNight      = hNight.data();
-        dd.mDay        = mDay.data();
-        dd.mNight      = mNight.data();
-        dd.noDiscount  = noDiscount.data();
-        dd.priceDayA   = priceDayA.data();
-        dd.priceDayB   = priceDayB.data();
-
-        dd.priceNightA = priceNightA.data();
-        dd.priceNightB = priceNightB.data();
-        dd.singlePrice = singlePrice.data();
-        dd.threshold   = threshold.data();
+        hDay.maybeSet(dd.hDay);
+        hNight.maybeSet(dd.hNight);
+        mDay.maybeSet(dd.mDay);
+        mNight.maybeSet(dd.mNight);
+        noDiscount.maybeSet(dd.noDiscount);
+        priceDayA.maybeSet(dd.priceDayA);
+        priceDayB.maybeSet(dd.priceDayB);
+        priceNightA.maybeSet(dd.priceNightA);
+        priceNightB.maybeSet(dd.priceNightB);
+        singlePrice.maybeSet(dd.singlePrice);
+        threshold.maybeSet(dd.threshold);
         return dd;
         }
 
@@ -194,12 +193,12 @@ struct TARIFF_CONF_RES
     TARIFF_CONF GetData() const
         {
         TARIFF_CONF tc;
-        tc.fee         = fee.data();
-        tc.free        = free.data();
-        tc.name        = name.data();
-        tc.passiveCost = passiveCost.data();
-        tc.traffType   = traffType.data();
-        tc.period      = period.data();
+        fee.maybeSet(tc.fee);
+        free.maybeSet(tc.free);
+        name.maybeSet(tc.name);
+        passiveCost.maybeSet(tc.passiveCost);
+        traffType.maybeSet(tc.traffType);
+        period.maybeSet(tc.period);
         return tc;
         }
 

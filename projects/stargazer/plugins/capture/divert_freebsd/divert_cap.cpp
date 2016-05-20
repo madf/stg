@@ -84,11 +84,8 @@ return "cap_divert v.1.0";
 }
 //-----------------------------------------------------------------------------
 DIVERT_CAP::DIVERT_CAP()
-    : settings(),
-      port(0),
+    : port(0),
       disableForwarding(false),
-      errorStr(),
-      thread(),
       nonstop(false),
       isRunning(false),
       traffCnt(NULL),
@@ -290,7 +287,7 @@ std::vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "Port";
 pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
-if (pvi == settings.moduleParams.end())
+if (pvi == settings.moduleParams.end() || pvi->value.empty())
     {
     p = 15701;
     }
@@ -306,7 +303,7 @@ port = p;
 bool d = false;
 pv.param = "DisableForwarding";
 pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);
-if (pvi == settings.moduleParams.end())
+if (pvi == settings.moduleParams.end() || pvi->value.empty())
     {
     disableForwarding = false;
     }

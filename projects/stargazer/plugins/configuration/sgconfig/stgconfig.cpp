@@ -42,7 +42,7 @@ bool STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
     ///////////////////////////
     pv.param = "Port";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi == s.moduleParams.end())
+    if (pvi == s.moduleParams.end() || pvi->value.empty())
         {
         errorStr = "Parameter \'Port\' is not found.";
         printfd(__FILE__, "%s\n", errorStr.c_str());
@@ -59,7 +59,7 @@ bool STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 
     pv.param = "BindAddress";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi != s.moduleParams.end())
+    if (pvi != s.moduleParams.end() && !pvi->value.empty())
         m_bindAddress = pvi->value[0];
 
     return true;
