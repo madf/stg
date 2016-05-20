@@ -32,6 +32,8 @@ struct TARIFF_DATA;
 
 class TARIFF {
 public:
+    enum CHANGE_POLICY { ALLOW = 0, TO_CHEAP, TO_EXPENSIVE, DENY };
+
     enum PERIOD { DAY = 0, MONTH };
 
     enum TRAFF_TYPE { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
