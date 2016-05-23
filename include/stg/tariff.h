@@ -58,7 +58,7 @@ public:
     virtual double  GetFee() const = 0;
     virtual double  GetFree() const = 0;
     virtual PERIOD  GetPeriod() const = 0;
-    virtual CHANGE_POLICY  GetChangePolicy() const = 0;
+    virtual CHANGE_POLICY GetChangePolicy() const = 0;
 
     virtual const   std::string & GetName() const = 0;
     virtual void    SetName(const std::string & name) = 0;
