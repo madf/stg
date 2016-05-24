@@ -148,6 +148,7 @@ struct TARIFF_CONF
     double             passiveCost;
     std::string        name;
     TARIFF::PERIOD     period;
+    TARIFF::CHANGE_POLICY changePolicy;
 
     TARIFF_CONF()
         : fee(0),
