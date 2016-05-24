@@ -191,6 +191,7 @@ struct TARIFF_CONF_RES
         passiveCost = tc.passiveCost;
         name        = tc.name;
         period      = tc.period;
+        changePolicy = tc.changePolicy;
         return *this;
         }
 
