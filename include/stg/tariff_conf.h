@@ -214,6 +214,7 @@ struct TARIFF_CONF_RES
     RESETABLE<double>             passiveCost;
     RESETABLE<std::string>        name;
     RESETABLE<TARIFF::PERIOD>     period;
+    RESETABLE<TARIFF::CHANGE_POLICY> changePolicy;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
