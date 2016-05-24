@@ -179,7 +179,8 @@ struct TARIFF_CONF_RES
           traffType(),
           passiveCost(),
           name(),
-          period()
+          period(),
+          changePolicy()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
