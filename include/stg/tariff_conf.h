@@ -204,6 +204,7 @@ struct TARIFF_CONF_RES
         passiveCost.maybeSet(tc.passiveCost);
         traffType.maybeSet(tc.traffType);
         period.maybeSet(tc.period);
+        changePolicy.maybeSet(tc.changePolicy);
         return tc;
         }
 
