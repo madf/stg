@@ -156,7 +156,8 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -165,7 +166,8 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(n),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW)
         {}
 };
 //-----------------------------------------------------------------------------
