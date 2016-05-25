@@ -1465,6 +1465,11 @@ if (conf.ReadString("Period", &str, "month") < 0)
     td->tariffConf.period = TARIFF::MONTH;
 else
     td->tariffConf.period = TARIFF::StringToPeriod(str);
+
+if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
+    td->tariffConf.changePolicy = TARIFF::ALLOW;
+else
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
 return 0;
 }
 //-----------------------------------------------------------------------------
