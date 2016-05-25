@@ -38,7 +38,7 @@ public:
 
     enum TRAFF_TYPE { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
 
-    static std::string ChangePolicyToString(CHANGE_POLICY change_policy);
+    static std::string ChangePolicyToString(CHANGE_POLICY changePolicy);
     static CHANGE_POLICY StringToChangePolicy(const std::string& value);
 
     static std::string PeriodToString(PERIOD period);
