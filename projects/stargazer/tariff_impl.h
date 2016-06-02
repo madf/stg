@@ -72,7 +72,7 @@ public:
     double  GetFee() const { return tariffData.tariffConf.fee; }
     double  GetFree() const { return tariffData.tariffConf.free; }
     PERIOD  GetPeriod() const { return tariffData.tariffConf.period; }
-    CHANGE_POLICY  GetChangePolicy() const { return tariffData.tariffConf.changePolicy; }
+    CHANGE_POLICY GetChangePolicy() const { return tariffData.tariffConf.changePolicy; }
 
     void    Print() const;
 
