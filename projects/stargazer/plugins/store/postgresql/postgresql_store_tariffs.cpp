@@ -458,6 +458,9 @@ query << "SELECT pk_tariff, \
 if (version > 6)
     query << ", period";
 
+if (version > 7)
+    query << ", change_policy";
+
 query << " FROM tb_tariffs WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
