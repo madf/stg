@@ -511,6 +511,9 @@ int id;
 if (version > 6)
     td->tariffConf.period = TARIFF::StringToPeriod(PQgetvalue(result, 0, 5));
 
+if (version > 7)
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(PQgetvalue(result, 0, 6));
+
 PQclear(result);
 
 query.str("");
