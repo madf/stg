@@ -317,6 +317,9 @@ int32_t id;
     if (version > 6)
         query << ", period = '" << TARIFF::PeriodToString(td.tariffConf.period) << "'";
 
+    if (version > 7)
+        query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "'";
+
     query << " WHERE pk_tariff = " << id;
 
     result = PQexec(connection, query.str().c_str());
