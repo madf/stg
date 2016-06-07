@@ -70,9 +70,9 @@ public:
 };
 
 inline
-std::string TARIFF::ChangePolicyToString(TARIFF::CHANGE_POLICY change_policy)
+std::string TARIFF::ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
 {
-switch (change_policy)
+switch (changePolicy)
     {
     case ALLOW: return "allow";
     case TO_CHEAP: return "to_cheap";
