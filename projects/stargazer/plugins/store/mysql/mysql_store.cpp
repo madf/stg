@@ -443,7 +443,7 @@ if(!IsTablePresent("tariffs",sock))
         mysql_close(sock);
         return -1;
     }
-    schemaVersion = 1;
+    schemaVersion = 2;
 }
 
 //users-----------------------------------------------------------------------
