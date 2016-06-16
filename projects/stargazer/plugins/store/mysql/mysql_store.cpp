@@ -601,6 +601,26 @@ if (schemaVersion  < 1)
     schemaVersion = 1;
     logger("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
     }
+
+if (schemaVersion  < 2)
+    {
+    if (MysqlQuery("ALTER TABLE tariffs ADD change_policy VARCHAR(32) NOT NULL DEFAULT 'allow'", sock))
+        {
+        errorStr = "Couldn't update tariffs table to version 2. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    if (MysqlQuery("UPDATE info SET version = 2", sock))
+        {
+        errorStr = "Couldn't update DB schema version to 2. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    schemaVersion = 2;
+    logger("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
+    }
 return 0;
 }
 //-----------------------------------------------------------------------------
