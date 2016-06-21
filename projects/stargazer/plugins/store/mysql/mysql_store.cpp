@@ -1661,6 +1661,26 @@ else
     td->tariffConf.period = TARIFF::MONTH;
     }
 
+if (schemaVersion > 1)
+{
+    str = row[6+8*DIR_NUM];
+    param = "ChangePolicy";
+
+    if (str.length() == 0)
+        {
+        mysql_free_result(res);
+        errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
+        mysql_close(sock);
+        return -1;
+        }
+
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+    }
+else
+    {
+    td->tariffConf.changePolicy = TARIFF::ALLOW;
+    }
+
 mysql_free_result(res);
 mysql_close(sock);
 return 0;
