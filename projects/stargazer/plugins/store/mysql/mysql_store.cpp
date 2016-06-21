@@ -1748,6 +1748,9 @@ res += " TraffType='" + TARIFF::TraffTypeToString(td.tariffConf.traffType) + "'"
 if (schemaVersion > 0)
     res += ", Period='" + TARIFF::PeriodToString(td.tariffConf.period) + "'";
 
+if (schemaVersion > 1)
+    res += ", change_policy='" + TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) + "'";
+
 strprintf(&param, " WHERE name='%s' LIMIT 1", tariffName.c_str());
 res += param;
 
