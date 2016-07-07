@@ -175,7 +175,7 @@ try
                     free = ?, \
                     passive_cost = ?, \
                     traff_type = ?, \
-                    period = ? \
+                    period = ?, \
                     change_policy = ? \
                     where pk_tariff = ?");
             st->Set(1, td.tariffConf.fee);
