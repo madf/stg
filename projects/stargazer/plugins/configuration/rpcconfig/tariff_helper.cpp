@@ -13,6 +13,7 @@ structVal["freemb"] = xmlrpc_c::value_double(data.tariffConf.free);
 structVal["passivecost"] = xmlrpc_c::value_double(data.tariffConf.passiveCost);
 structVal["traffType"] = xmlrpc_c::value_int(data.tariffConf.traffType);
 structVal["period"] = xmlrpc_c::value_string(TARIFF::PeriodToString(data.tariffConf.period));
+structVal["changePolicy"] = xmlrpc_c::value_string(TARIFF::ChangePolicyToString(data.tariffConf.changePolicy));
 
 std::vector<xmlrpc_c::value> prices(DIR_NUM);
 
