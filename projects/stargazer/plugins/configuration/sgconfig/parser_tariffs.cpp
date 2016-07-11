@@ -289,6 +289,12 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
             td.tariffConf.period = TARIFF::StringToPeriod(attr[1]);
             return 0;
         }
+
+        if (strcasecmp(el, "ChangePolicy") == 0)
+        {
+            td.tariffConf.changePolicy = TARIFF::StringToChangePolicy(attr[1]);
+            return 0;
+        }
     }
     return -1;
 }
