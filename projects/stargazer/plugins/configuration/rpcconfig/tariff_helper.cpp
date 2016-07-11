@@ -72,6 +72,11 @@ if ((it = structVal.find("period")) != structVal.end())
     data.tariffConf.period = TARIFF::StringToPeriod(xmlrpc_c::value_string(it->second));
     }
 
+if ((it = structVal.find("changePolicy")) != structVal.end())
+    {
+    data.tariffConf.changePolicy = TARIFF::StringToChangePolicy(xmlrpc_c::value_string(it->second));
+    }
+
 if ((it = structVal.find("dirprices")) != structVal.end())
     {
     std::vector<xmlrpc_c::value> prices(
