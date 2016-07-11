@@ -114,6 +114,7 @@ void GET_TARIFFS::CreateAnswer()
                   "<Free value=\"" + x2str(it->tariffConf.free) + "\"/>" +
                   "<TraffType value=\"" + TARIFF::TraffTypeToString(it->tariffConf.traffType) + "\"/>" +
                   "<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>" +
+                  "<ChangePolicy value=\"" + TARIFF::ChangePolicyToString(it->tariffConf.changePolicy) + "\"/>" +
                   "</tariff>";
         }
 
