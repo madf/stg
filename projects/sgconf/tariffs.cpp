@@ -226,7 +226,8 @@ std::cout << Indent(level, true) << "name: " << conf.name << "\n"
           << Indent(level)       << "free mb: " << conf.free << "\n"
           << Indent(level)       << "passive cost: " << conf.passiveCost << "\n"
           << Indent(level)       << "traff type: " << TraffTypeToString(conf.traffType) << "\n"
-          << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n";
+          << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n"
+          << Indent(level)       << "change policy: " << CyangePolicyToString(conf.changePolicy) << "\n";
 }
 
 void PrintTariff(const STG::GET_TARIFF::INFO & info, size_t level = 0)
