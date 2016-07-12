@@ -385,6 +385,7 @@ SGCONF::MaybeSet(options, "free", conf.tariffConf.free);
 SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
 SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
 SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
+SGCONF::MaybeSet(options, "change-policy", conf.tariffConf.changePolicy, ConvChangePolicy);
 SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
 SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
 SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
