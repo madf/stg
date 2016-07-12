@@ -246,6 +246,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("free", "<free mb>", "\tprepaid traff
 params.push_back(SGCONF::API_ACTION::PARAM("passive-cost", "<cost>", "\tpassive cost"));
 params.push_back(SGCONF::API_ACTION::PARAM("traff-type", "<type>", "\ttraffic type (up, down, up+down, max)"));
 params.push_back(SGCONF::API_ACTION::PARAM("period", "<period>", "\ttarification period (daily, monthly)"));
+params.push_back(SGCONF::API_ACTION::PARAM("change-policy", "<change-policy>", "\ttarification change-policy (allow, to_cheap, to_expensive, deny)"));
 params.push_back(SGCONF::API_ACTION::PARAM("times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("day-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated night prices for each direction"));
