@@ -28,6 +28,18 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
+std::string ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
+{
+switch (changePolicy)
+    {
+    case ALLOW: return "allow";
+    case TO_CHEAP: return "to_cheap";
+    case TO_EXPENSIVE: return "to_expensive";
+    case DENY: return "deny";
+    }
+return "unknown";
+}
+
 std::string PeriodToString(TARIFF::PERIOD period)
 {
 switch (period)
