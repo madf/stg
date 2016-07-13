@@ -97,6 +97,31 @@ else
 return true;
 }
 
+bool GetChangePolicy(const char ** attr, T & value, const std::string & attrName)
+{
+if (!CheckValue(attr, attrName))
+    return false;
+std::string type(attr[1]);
+switch (type)
+    {
+    case "allow":
+        value = TARIFF::ALLOW;
+        break;
+    case "to_cheap":
+        value = TARIFF::TO_CHEAP;
+        break;
+    case "to_expensive":
+        value = TARIFF::TO_EXPENSIVE;
+        break;
+    case "deny":
+        value = TARIFF::DENY;
+        break;
+    default:
+        return false;
+    }
+return true;
+}
+
 template <typename A, typename T>
 bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
 {
