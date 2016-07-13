@@ -166,9 +166,7 @@ try
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
         st->Set(6, id);
         }
-    else
-        {
-        if (schemaVersion > 1)
+    else if (schemaVersion > 1)
             {
             st->Prepare("update tb_tariffs set \
                     fee = ?, \
@@ -186,20 +184,19 @@ try
             st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
             st->Set(7, id);
             }
-        else
-            {
-            st->Prepare("update tb_tariffs set \
-                    fee = ?, \
-                    free = ?, \
-                    passive_cost = ?, \
-                    traff_type = ? \
-                    where pk_tariff = ?");
-            st->Set(1, td.tariffConf.fee);
-            st->Set(2, td.tariffConf.free);
-            st->Set(3, td.tariffConf.passiveCost);
-            st->Set(4, td.tariffConf.traffType);
-            st->Set(5, id);
-            }
+    else
+        {
+        st->Prepare("update tb_tariffs set \
+                fee = ?, \
+                free = ?, \
+                passive_cost = ?, \
+                traff_type = ? \
+                where pk_tariff = ?");
+        st->Set(1, td.tariffConf.fee);
+        st->Set(2, td.tariffConf.free);
+        st->Set(3, td.tariffConf.passiveCost);
+        st->Set(4, td.tariffConf.traffType);
+        st->Set(5, id);
         }
     st->Execute();
     st->Close();
