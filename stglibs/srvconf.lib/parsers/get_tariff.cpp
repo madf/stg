@@ -156,6 +156,7 @@ GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "free", info.tariffConf.free);
     AddParser(propertyParsers, "traffType", info.tariffConf.traffType, GetTraffType);
     AddParser(propertyParsers, "period", info.tariffConf.period, GetPeriod);
+    AddParser(propertyParsers, "changePolicy", info.tariffConf.changePolicy, GetChangePolicy);
     for (size_t i = 0; i < DIR_NUM; ++i)
         AddParser(propertyParsers, "time" + unsigned2str(i), info.dirPrice[i], GetTimeSpan);
     AddAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DIRPRICE_DATA::priceDayA, GetSlashedValue);
