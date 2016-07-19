@@ -40,13 +40,16 @@
 
 #include "postgresql_store.h"
 
+#include "postgresql_store_utils.h"
+#include "postgresql_store.h"
+
 #include "stg/module_settings.h"
 #include "stg/plugin_creator.h"
 
-#include <libpq-fe.h>
-
 #include <string>
 #include <vector>
+
+#include <libpq-fe.h>
 
 namespace
 {
@@ -64,14 +67,11 @@ return pgsc.GetPlugin();
 //-----------------------------------------------------------------------------
 POSTGRESQL_STORE::POSTGRESQL_STORE()
     : versionString("postgresql_store v.1.3"),
-      strError(),
       server("localhost"),
       database("stargazer"),
       user("stg"),
       password("123456"),
       clientEncoding("KOI8"),
-      settings(),
-      mutex(),
       version(0),
       retries(3),
       connection(NULL),
@@ -95,22 +95,34 @@ std::vector<PARAM_VALUE>::iterator i;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
-    std::string param(ToLower(i->param));
-    if (param == "server")
-        server = *(i->value.begin());
-    else if (param == "database")
-        database = *(i->value.begin());
-    else if (param == "user")
-        user = *(i->value.begin());
-    else if (param == "password")
-        password = *(i->value.begin());
-    else if (param == "retries")
-        if (str2x(*(i->value.begin()), retries))
+    if (i->value.empty())
+        continue;
+    std::string s = ToLower(i->param);
+    if (s == "server")
+        {
+        server = i->value.front();
+        }
+    if (s == "database")
+        {
+        database = i->value.front();
+        }
+    if (s == "user")
+        {
+        user = i->value.front();
+        }
+    if (s == "password")
+        {
+        password = i->value.front();
+        }
+    if (s == "retries")
+        {
+        if (str2x(i->value.front(), retries))
             {
             strError = "Invalid 'retries' value";
             printfd(__FILE__, "POSTGRESQL_STORE::ParseSettings(): '%s'\n", strError.c_str());
             return -1;
             }
+        }
     }
 
 clientEncoding = "KOI8";

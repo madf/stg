@@ -61,6 +61,8 @@ public:
     SETTINGS_IMPL(const std::string &);
     SETTINGS_IMPL(const SETTINGS_IMPL &);
     virtual ~SETTINGS_IMPL() {}
+    SETTINGS_IMPL & operator=(const SETTINGS_IMPL &);
+
     int Reload() { return ReadSettings(); }
     int ReadSettings();
 

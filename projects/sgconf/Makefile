@@ -75,9 +75,11 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/sbin
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/sbin
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/sbin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_LIBSRC) install
 

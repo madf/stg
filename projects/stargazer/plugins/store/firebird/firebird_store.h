@@ -136,4 +136,13 @@ time_t ts2time_t(const IBPP::Timestamp & ts);
 void time_t2ts(time_t t, IBPP::Timestamp * ts);
 void ym2date(int year, int month, IBPP::Date * date);
 
+template <typename T>
+inline
+T Get(IBPP::Statement st, size_t pos)
+{
+    T value;
+    st->Get(pos, value);
+    return value;
+}
+
 #endif //FIREBIRD_STORE_H

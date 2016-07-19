@@ -33,9 +33,6 @@
 
 #include <string>
 #include <vector>
-#include <algorithm>
-
-#include <cctype>
 
 namespace
 {
@@ -53,14 +50,10 @@ return frsc.GetPlugin();
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::FIREBIRD_STORE()
     : version("firebird_store v.1.4"),
-      strError(),
       db_server("localhost"),
       db_database("/var/stg/stargazer.fdb"),
       db_user("stg"),
       db_password("123456"),
-      settings(),
-      db(),
-      mutex(),
       til(IBPP::ilConcurrency),
       tlr(IBPP::lrWait),
       schemaVersion(0),
@@ -81,41 +74,41 @@ std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {
-    s = i->param;
-
-    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+    if (i->value.empty())
+        continue;
+    s = ToLower(i->param);
 
     if (s == "server")
-        db_server = *(i->value.begin());
+        db_server = i->value.front();
 
     if (s == "database")
-        db_database = *(i->value.begin());
+        db_database = i->value.front();
 
     if (s == "user")
-        db_user = *(i->value.begin());
+        db_user = i->value.front();
 
     if (s == "password")
-        db_password = *(i->value.begin());
+        db_password = i->value.front();
 
     // Advanced settings block
 
     if (s == "isolationLevel")
         {
-        if (*(i->value.begin()) == "Concurrency")
+        if (i->value.front() == "Concurrency")
             til = IBPP::ilConcurrency;
-        else if (*(i->value.begin()) == "DirtyRead")
+        else if (i->value.front() == "DirtyRead")
             til = IBPP::ilReadDirty;
-        else if (*(i->value.begin()) == "ReadCommitted")
+        else if (i->value.front() == "ReadCommitted")
             til = IBPP::ilReadCommitted;
-        else if (*(i->value.begin()) == "Consistency")
+        else if (i->value.front() == "Consistency")
             til = IBPP::ilConsistency;
         }
 
     if (s == "lockResolution")
         {
-        if (*(i->value.begin()) == "Wait")
+        if (i->value.front() == "Wait")
             tlr = IBPP::lrWait;
-        else if (*(i->value.begin()) == "NoWait")
+        else if (i->value.front() == "NoWait")
             tlr = IBPP::lrNoWait;
         }
     }

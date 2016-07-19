@@ -7,7 +7,8 @@
 
 OS=unknown
 sys=`uname -s`
-release=`uname -r | cut -b1`
+release=`uname -r`
+major=`printf "%s" "$release" | cut -d. -f1`
 BUILD_DIR=`pwd`
 CONFFILE="../../Makefile.conf"
 PREFIX="/"
@@ -36,13 +37,12 @@ LDFLAGS="$LDFLAGS -L/usr/local/lib"
 if [ "$sys" = "Linux" ]
 then
     OS=linux
-    release=""
     MAKE="make"
 fi
 
 if [ "$sys" = "FreeBSD" ]
 then
-    case $release in
+    case $major in
         4) OS=bsd;;
         5) OS=bsd5;;
         6) OS=bsd5;;
@@ -62,7 +62,7 @@ fi
 if [ "$OS" = "unknown" ]
 then
     printf "#############################################################################\n"
-    printf "# Sorry, but sgconv currently supported by Linux, FreeBSD 4.x, 5.x, 6.x     #\n"
+    printf "# Sorry, but sgconv is currently supported by Linux, FreeBSD and Darwin.    #\n"
     printf "#############################################################################\n"
     exit 1
 fi
@@ -85,6 +85,7 @@ then
     DEFS="$DEFS -DLINUX"
     LIB_THREAD=-lpthread
 else
+    LIBICONV="-liconv"
     if [ "$OS" = "bsd" ]
     then
         DEFS="$DEFS -DFREE_BSD"
@@ -99,6 +100,7 @@ else
             then
                 DEFS="$DEFS -DDARWIN"
                 LIB_THREAD=-lpthread
+                LIBICONV=""
             else
                 LIB_THREAD=-lc_r
             fi
@@ -160,17 +162,59 @@ else
 fi
 rm -f fake
 
-printf "Checking for -lfbclient... "
-$CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+printf "Checking for iconv 2nd argument... "
+printf "#include <iconv.h>\nint main(){ const char** src = 0; iconv(0, src, 0, 0, 0); }\n" > build_check.c
+$CC $CFLAGS $LDFLAGS -Werror build_check.c $LIBICONV -o fake > /dev/null 2> /dev/null
 if [ $? != 0 ]
 then
-    CHECK_FBCLIENT=no
-    printf "no\n"
+    printf "non-const\n"
 else
-    CHECK_FBCLIENT=yes
-    printf "yes\n"
+    DEFS="$DEFS -DCONST_ICONV"
+    printf "const\n"
 fi
 rm -f fake
+
+printf "Checking for fb_config... "
+FB_VERSION=`fb_config --version 2> /dev/null`
+if [ "$?" != "0" ]
+then
+    printf "no\n"
+    printf "Checking for -lfbclient... "
+    printf "int main() { return 0; }\n" > build_check.c
+    $CC $CFLAGS $LDFLAGS build_check.c -lfbclient $LIB_THREAD -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        FB_CFLAGS=""
+        FB_LDFLAGS="-lfbclient"
+        CHECK_FBCLIENT=yes
+        printf "yes\n"
+    fi
+    rm -f fake
+else
+    printf "yes\n"
+    printf "Checking for fb_config --cflags... "
+    FB_CFLAGS=`fb_config --cflags`
+    if [ "$?" != "0" ]
+    then
+        CHECK_FBCLIENT=no
+        printf "no\n"
+    else
+        printf "[$FB_CFLAGS]\n"
+        printf "Checking for fb_config --libs "
+        FB_LDFLAGS=`fb_config --libs`
+        if [ "$?" != "0" ]
+        then
+            CHECK_FBCLIENT=no
+            printf "no\n"
+        else
+            CHECK_FBCLIENT=yes
+            printf "[$FB_LDFLAGS]\n"
+        fi
+    fi
+fi
 
 printf "Checking for mysql_config... "
 printf "#include <mysql.h>\nint main() { return 0; }\n" > build_check.c
@@ -232,7 +276,7 @@ then
 else
     printf "yes\n";
     printf "Checking for pg_config --includedir... "
-    PG_CFLAGS=`pg_config --includedir 2> /dev/null`
+    PG_CFLAGS="-I"`pg_config --includedir 2> /dev/null`
     if [ $? != 0 ]
     then
         CHECK_PQ=no
@@ -240,7 +284,7 @@ else
     else
         printf "[$PG_CFLAGS]\n"
         printf "Checking for pg_config --libdir... "
-        PG_LDFLAGS=`pg_config --libdir 2> /dev/null`
+        PG_LDFLAGS="-L"`pg_config --libdir 2> /dev/null`
         if [ $? != 0 ]
         then
             CHECK_PQ=no
@@ -285,6 +329,23 @@ printf "DIR_MOD=\$(DIR_BUILD)/../stargazer/modules\n" >> $CONFFILE
 printf "DIR_PLUGINS=\$(DIR_BUILD)/../stargazer/plugins\n" >> $CONFFILE
 printf "ARCH=$ARCH\n" >> $CONFFILE
 printf "CHECK_FBCLIENT=$CHECK_FBCLIENT\n" >> $CONFFILE
+if [ "$CHECK_FBCLIENT" = "yes" ]
+then
+    printf "FB_CFLAGS=$FB_CFLAGS\n" >> $CONFFILE
+    printf "FB_LDFLAGS=$FB_LDFLAGS\n" >> $CONFFILE
+fi
+printf "CHECK_MYSQLCLIENT=$CHECK_MYSQLCLIENT\n" >> $CONFFILE
+if [ "$CHECK_MYSQLCLIENT" = "yes" ]
+then
+    printf "MYSQL_CFLAGS=$MYSQL_CFLAGS\n" >> $CONFFILE
+    printf "MYSQL_LDFLAGS=$MYSQL_LDFLAGS\n" >> $CONFFILE
+fi
+printf "CHECK_PQ=$CHECK_PQ\n" >> $CONFFILE
+if [ "$CHECK_PQ" = "yes" ]
+then
+    printf "PG_CFLAGS=$PG_CFLAGS\n" >> $CONFFILE
+    printf "PG_LDFLAGS=$PG_LDFLAGS\n" >> $CONFFILE
+fi
 printf "DEFS=$DEFS\n" >> $CONFFILE
 printf "STG_LIBS=" >> $CONFFILE
 for lib in $STG_LIBS
@@ -298,10 +359,13 @@ do
     printf "$plugin " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
 printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
+printf "LIBICONV=$LIBICONV\n" >> $CONFFILE
 printf "PREFIX=$PREFIX\n" >> $CONFFILE
 printf "BIN_MODE=$BIN_MODE\n" >> $CONFFILE
 printf "DATA_MODE=$DATA_MODE\n" >> $CONFFILE

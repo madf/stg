@@ -22,9 +22,6 @@ STGLIBS = ibpp \
 	  logger \
 	  crypto
 
-FB_CFLAGS = $(shell fb_config --cflags)
-FB_LDFLAGS = $(shell fb_config --libs)
-
 CXXFLAGS +=  $(FB_CFLAGS)
 LDFLAGS += $(FB_LDFLAGS)
 

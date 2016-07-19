@@ -110,7 +110,7 @@ PARAM_VALUE pv;
 pv.param = owner;
 std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
-if (pvi == moduleParams.end())
+if (pvi == moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'" + owner + "\' not found.";
     printfd(__FILE__, "%s\n", errorStr.c_str());
@@ -131,7 +131,7 @@ PARAM_VALUE pv;
 pv.param = group;
 std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
-if (pvi == moduleParams.end())
+if (pvi == moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'" + group + "\' not found.";
     printfd(__FILE__, "%s\n", errorStr.c_str());
@@ -169,7 +169,7 @@ PARAM_VALUE pv;
 pv.param = modeStr;
 std::vector<PARAM_VALUE>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
-if (pvi == moduleParams.end())
+if (pvi == moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'" + modeStr + "\' not found.";
     printfd(__FILE__, "%s\n", errorStr.c_str());
@@ -211,7 +211,7 @@ std::vector<PARAM_VALUE>::const_iterator pvi;
 PARAM_VALUE pv;
 pv.param = "RemoveBak";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     removeBak = true;
     }
@@ -226,7 +226,7 @@ else
 
 pv.param = "ReadBak";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     readBak = false;
     }
@@ -241,7 +241,7 @@ else
 
 pv.param = "WorkDir";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'WorkDir\' not found.";
     printfd(__FILE__, "Parameter 'WorkDir' not found\n");

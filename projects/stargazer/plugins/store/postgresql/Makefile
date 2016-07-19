@@ -19,11 +19,8 @@ STGLIBS = common \
 	  crypto \
 	  logger
 
-PG_CFLAGS = $(shell pg_config --includedir)
-PG_LDFLAGS = $(shell pg_config --libdir)
-
-CXXFLAGS +=  -I $(PG_CFLAGS)
-LDFLAGS += -L $(PG_LDFLAGS)
+CXXFLAGS +=  $(PG_CFLAGS)
+LDFLAGS += $(PG_LDFLAGS)
 
 LIBS += -lpq
 

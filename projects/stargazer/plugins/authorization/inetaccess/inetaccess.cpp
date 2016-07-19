@@ -86,7 +86,7 @@ std::vector<PARAM_VALUE>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Port\' not found.";
     printfd(__FILE__, "Parameter 'Port' not found\n");
@@ -102,7 +102,7 @@ port = static_cast<uint16_t>(p);
 ///////////////////////////
 pv.param = "UserDelay";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'UserDelay\' not found.";
     printfd(__FILE__, "Parameter 'UserDelay' not found\n");
@@ -118,7 +118,7 @@ if (ParseIntInRange(pvi->value[0], 5, 600, &userDelay))
 ///////////////////////////
 pv.param = "UserTimeout";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'UserTimeout\' not found.";
     printfd(__FILE__, "Parameter 'UserTimeout' not found\n");
@@ -134,7 +134,7 @@ if (ParseIntInRange(pvi->value[0], 15, 1200, &userTimeout))
 ///////////////////////////
 pv.param = "LogProtocolErrors";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     logProtocolErrors = false;
 else if (ParseYesNo(pvi->value[0], &logProtocolErrors))
     {
@@ -147,7 +147,7 @@ std::string freeMbType;
 int n = 0;
 pv.param = "FreeMb";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'FreeMb\' not found.";
     printfd(__FILE__, "Parameter 'FreeMb' not found\n");
@@ -188,15 +188,13 @@ return 0;
 #ifdef IA_PHASE_DEBUG
 IA_PHASE::IA_PHASE()
     : phase(1),
-      phaseTime(),
       flog(NULL)
 {
 gettimeofday(&phaseTime, NULL);
 }
 #else
 IA_PHASE::IA_PHASE()
-    : phase(1),
-      phaseTime()
+    : phase(1)
 {
 gettimeofday(&phaseTime, NULL);
 }
@@ -524,6 +522,22 @@ int ret = iaSettings.ParseSettings(settings);
 if (ret)
     errorStr = iaSettings.GetStrError();
 return ret;
+}
+//-----------------------------------------------------------------------------
+int AUTH_IA::Reload(const MODULE_SETTINGS & ms)
+{
+AUTH_IA_SETTINGS newIaSettings;
+if (newIaSettings.ParseSettings(ms))
+    {
+    printfd(__FILE__, "AUTH_IA::Reload() - Failed to reload InetAccess.\n");
+    logger("AUTH_IA: Cannot reload InetAccess. Errors found.");
+    return -1;
+    }
+
+printfd(__FILE__, "AUTH_IA::Reload() -  Reloaded InetAccess successfully.\n");
+logger("AUTH_IA: Reloaded InetAccess successfully.");
+iaSettings = newIaSettings;
+return 0;
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::PrepareNet()

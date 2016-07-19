@@ -11,8 +11,6 @@ SRCS = common.cpp \
 
 INCS = common.h
 
-ifneq ($(OS),linux)
-LIBS += -liconv
-endif
+LIBS += $(LIBICONV)
 
 include ../Makefile.in
