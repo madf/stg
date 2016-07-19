@@ -83,7 +83,6 @@ int CONFIGPROTO::Prepare()
     sigaddset(&sigmask, SIGUSR1);
     sigaddset(&sigmask, SIGHUP);
     pthread_sigmask(SIG_BLOCK, &sigmask, &oldmask);
-
     m_listenSocket = socket(PF_INET, SOCK_STREAM, 0);
 
     if (m_listenSocket < 0)

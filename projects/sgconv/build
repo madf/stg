@@ -72,7 +72,6 @@ printf "       Building sgconv for $sys $release\n"
 printf "#############################################################################\n"
 
 STG_LIBS="logger.lib
-          locker.lib
           crypto.lib
           common.lib
           conffiles.lib
