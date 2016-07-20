@@ -12,9 +12,6 @@ STGLIBS = common \
 	  crypto \
 	  logger
 
-MYSQL_CFLAGS = $(shell mysql_config --cflags)
-MYSQL_LDFLAGS = $(shell mysql_config --libs_r)
-
 CXXFLAGS += $(MYSQL_CFLAGS)
 LIBS += $(MYSQL_LDFLAGS)
 

@@ -61,9 +61,9 @@ public:
     void SetAdmins(ADMINS * admins) { m_admins = admins; }
     void SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
     void SetUsers(USERS * users) { m_users = users; }
+    void SetStore(STORE * store) { m_store = store; }
     void SetServices(SERVICES * services) { m_services = services; }
     void SetCorporations(CORPORATIONS * corporations) { m_corporations = corporations; }
-    void SetStore(STORE * store) { m_store = store; }
 
     int Prepare();
     int Stop();

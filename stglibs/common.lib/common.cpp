@@ -48,6 +48,7 @@
 #include <iconv.h>
 
 #include <algorithm>
+
 #include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
@@ -342,20 +343,6 @@ for (size_t i = 0; i < src.length() / 2; i++)
 
     dst.push_back(static_cast<char>(c1 + (c2 << 4)));
     }
-}
-//---------------------------------------------------------------------------
-std::string Encode12str(const std::string & src)
-{
-std::string res;
-Encode12str(res, src);
-return res;
-}
-//---------------------------------------------------------------------------
-std::string Decode21str(const std::string & src)
-{
-std::string res;
-Decode21str(res, src);
-return res;
 }
 //---------------------------------------------------------------------------
 void Encode12(char * dst, const char * src, size_t srcLen)
@@ -934,7 +921,7 @@ strncpy(inBuf, source.c_str(), source.length());
 
 inBuf[source.length()] = 0;
 
-#if defined(FREE_BSD) || defined(FREE_BSD5) || defined(WIN32)
+#if defined(CONST_ICONV)
 const char * srcPos = inBuf;
 #else
 char * srcPos = inBuf;

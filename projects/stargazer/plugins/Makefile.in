@@ -13,8 +13,8 @@ STGLIBS_PATHS = $(addprefix -L ../../../../../stglibs/,$(addsuffix .lib,$(STGLIB
 
 STGLIBS_LIBS = $(addprefix -lstg,$(STGLIBS))
 
-CXXFLAGS += -fPIC $(STGLIBS_INCS)
-CFLAGS += -fPIC $(STGLIBS_INCS)
+CXXFLAGS += -fPIC $(DEFS) $(SEARCH_DIRS) $(STGLIBS_INCS)
+CFLAGS += -fPIC $(DEFS) $(SEARCH_DIRS) $(STGLIBS_INCS)
 
 ifneq ($(OS),darwin)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg
@@ -25,7 +25,7 @@ endif
 all: $(PROG)
 
 $(PROG): $(OBJS)
-	$(CXX) $^ $(STGLIBS_PATHS) $(STGLIBS_LIBS) $(LIBS) $(LDFLAGS) -o $(PROG)
+	$(CXX) $^ $(LDFLAGS) $(STGLIBS_PATHS) $(STGLIBS_LIBS) $(LIBS) -o $(PROG)
 	$(LN) -fs "`pwd`/$(PROG)" $(DIR_MOD)/$(PROG)
 
 clean:
@@ -34,9 +34,9 @@ clean:
 install: $(PROG)
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/lib/stg
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/lib/stg/$(PROG)
 endif
 
 uninstall:

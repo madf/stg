@@ -18,15 +18,10 @@
  *    Author : Maxim Mamontiv <faust@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.6 $
- $Date: 2010/11/08 10:13:18 $
- */
-
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
 // Stargazer version
-#define SERVER_VERSION "2.409-alpha" 
+#define SERVER_VERSION "2.5"
 
 #endif

@@ -10,20 +10,20 @@ SRCS = ./main.cpp \
        ./settings_impl.cpp
 
 STGLIBS = dotconfpp \
-	  conffiles \
-	  logger \
-	  crypto \
+          conffiles \
+          logger \
+          crypto \
           common
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 
-LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD)
+LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD) $(LIBICONV)
 
 ifeq ($(OS),linux)
 LIBS += -ldl
 else
-LIBS += -lc -liconv
+LIBS += -lc
 endif
 
 SEARCH_DIRS = -I ../../include
@@ -45,7 +45,7 @@ all: libs plugins $(PROG) ../../Makefile.conf
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-plugins: libs 
+plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS)
@@ -67,9 +67,11 @@ install: install-bin
 
 install-bin:
 ifeq ($(DEBUG), yes)
-	install -D -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/bin
+	install -m $(BIN_MODE) -o $(OWNER) $(PROG) $(PREFIX)/usr/bin/$(PROG)
 else
-	install -D -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
+	mkdir -m $(DIR_MODE) -p $(PREFIX)/usr/bin
+	install -m $(BIN_MODE) -o $(OWNER) -s $(PROG) $(PREFIX)/usr/bin/$(PROG)
 endif
 	$(MAKE) -C $(DIR_PLUGINS) install
 

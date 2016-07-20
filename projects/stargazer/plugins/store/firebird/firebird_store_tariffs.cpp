@@ -31,6 +31,13 @@
 #include "firebird_store.h"
 #include "stg/ibpp.h"
 
+namespace
+{
+
+const int pt_mega = 1024 * 1024;
+
+}
+
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
@@ -275,14 +282,9 @@ try
     st->Get(3, td->tariffConf.fee);
     st->Get(4, td->tariffConf.free);
     st->Get(5, td->tariffConf.passiveCost);
-//    st->Get(6, td->tariffConf.traffType);
     td->tariffConf.traffType = TARIFF::IntToTraffType(Get<int>(st, 6));
     if (schemaVersion > 0)
-        {
-        std::string period;
-        st->Get(7, period);
-        td->tariffConf.period = TARIFF::StringToPeriod(period);
-        }
+        td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);
@@ -309,8 +311,8 @@ try
     st->Get(7, td->dirPrice[dir].priceNightB);
     td->dirPrice[dir].priceNightB /= 1024*1024;
     st->Get(8, td->dirPrice[dir].threshold);
-    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 &&
-        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 / pt_mega &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3 / pt_mega)
         {
         td->dirPrice[dir].singlePrice = true;
         }

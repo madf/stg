@@ -108,7 +108,7 @@ void CreateRequest(REQUEST * req, char * r)
 char str[10024];
 r[0] = 0;
 
-if (!req->strReq.res_empty())
+if (!req->strReq.empty())
     {
     sprintf(str, "%s", req->strReq.const_data().c_str());
     strcat(r, str);
@@ -140,7 +140,7 @@ char str[2048];
 
 NETTRANSACT nt;
 nt.SetServer(r->server.const_data().c_str());
-nt.SetServerPort(r->port);
+nt.SetServerPort(r->port.const_data());
 nt.SetLogin(r->admLogin.const_data().c_str());
 nt.SetPassword(r->admPasswd.const_data().c_str());
 nt.SetRxCallback(NULL, ParseReply);
@@ -169,13 +169,13 @@ return 0;
 //-----------------------------------------------------------------------------
 int CheckParameters(REQUEST * req)
 {
-int a = !req->admLogin.res_empty()
-        && !req->admPasswd.res_empty()
-        && !req->server.res_empty()
-        && !req->port.res_empty();
+int a = !req->admLogin.empty()
+        && !req->admPasswd.empty()
+        && !req->server.empty()
+        && !req->port.empty();
 
-int b = !req->fileReq.res_empty()
-        || !req->strReq.res_empty();
+int b = !req->fileReq.empty()
+        || !req->strReq.empty();
 
 return a && b;
 }

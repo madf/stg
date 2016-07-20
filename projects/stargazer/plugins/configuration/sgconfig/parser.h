@@ -38,8 +38,7 @@ class BASE_PARSER
         BASE_PARSER(const ADMIN & admin, const std::string & t)
             : m_currAdmin(admin),
               m_depth(0),
-              m_tag(t),
-              m_done(false)
+              m_tag(t)
         {}
         virtual ~BASE_PARSER() {}
         virtual int Start(void * data, const char * el, const char ** attr);
@@ -50,8 +49,6 @@ class BASE_PARSER
         std::string GetOpenTag() const { return "<" + m_tag + ">"; }
         std::string GetCloseTag() const { return "</" + m_tag + ">"; }
 
-        bool IsDone() const { return m_done; }
-
     protected:
         BASE_PARSER(const BASE_PARSER & rvalue);
         BASE_PARSER & operator=(const BASE_PARSER & rvalue);
@@ -60,7 +57,6 @@ class BASE_PARSER
         size_t        m_depth;
         std::string   m_answer;
         std::string   m_tag;
-        bool          m_done;
 
     private:
         virtual void CreateAnswer() = 0;

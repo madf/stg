@@ -52,9 +52,9 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     std::string answer;
 
     if (loginInStart)
-        answer += "<User result=\"ok\">";
+        answer += "<User login=\"" + user.GetLogin() + "\" result=\"ok\">";
     else
-        answer += "<User result=\"ok\" login=\"" + user.GetLogin() + "\">";
+        answer += "<User result=\"ok\">";
 
     answer += "<Login value=\"" + user.GetLogin() + "\"/>";
 
@@ -126,8 +126,8 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
         answer += "<IP value=\"" + user.GetProperty().ips.Get().GetIpStr() + "\"/>";
 
     answer += "<Traff";
-    const DIR_TRAFF & upload(user.GetProperty().down.Get());
-    const DIR_TRAFF & download(user.GetProperty().up.Get());
+    const DIR_TRAFF & upload(user.GetProperty().up.Get());
+    const DIR_TRAFF & download(user.GetProperty().down.Get());
     if (user.GetProperty().up.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
             answer += " MU" + x2str(j) + "=\"" + x2str(upload[j]) + "\"";
@@ -574,8 +574,8 @@ int CHG_USER::ApplyChanges()
         if (!u->GetProperty().realName.Set(m_ucr.realName.const_data(), &m_currAdmin, m_login, &m_store))
             return -1;
 
-
     if (!m_usr.cash.empty())
+    {
         if (m_cashMustBeAdded)
         {
             if (!u->GetProperty().cash.Set(m_usr.cash.const_data() + u->GetProperty().cash,
@@ -584,11 +584,13 @@ int CHG_USER::ApplyChanges()
                                            &m_store,
                                            m_cashMsg))
                 return -1;
-            else
-                if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
-                    return -1;
         }
-
+        else
+        {
+            if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
+                return -1;
+        }
+    }
 
     if (!m_ucr.tariffName.empty())
     {
@@ -682,8 +684,6 @@ int DEL_USER::End(void *, const char *el)
         if (!res)
             m_users.Del(u->GetLogin(), &m_currAdmin);
 
-        m_done = true;
-
         return 0;
     }
     return -1;
@@ -733,10 +733,7 @@ int CHECK_USER::Start(void *, const char *el, const char **attr)
 int CHECK_USER::End(void *, const char *el)
 {
     if (strcasecmp(el, m_tag.c_str()) == 0)
-    {
-        m_done = true;
         return 0;
-    }
     return -1;
 }
 

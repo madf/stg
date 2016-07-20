@@ -50,7 +50,7 @@ std::vector<PARAM_VALUE>::const_iterator pvi;
 
 pv.param = "PingDelay";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'PingDelay\' not found.";
     printfd(__FILE__, "Parameter 'PingDelay' not found\n");
@@ -67,18 +67,9 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 PING::PING()
-    : errorStr(),
-      pingSettings(),
-      settings(),
-      users(NULL),
-      usersList(),
-      thread(),
-      mutex(),
+    : users(NULL),
       nonstop(false),
       isRunning(false),
-      pinger(),
-      ChgCurrIPNotifierList(),
-      ChgIPNotifierList(),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
       logger(GetPluginLogger(GetStgLogger(), "ping"))

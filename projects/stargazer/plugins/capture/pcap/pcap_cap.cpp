@@ -63,9 +63,7 @@ return "pcap_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 PCAP_CAP::PCAP_CAP()
-    : errorStr(),
-      thread(),
-      nonstop(false),
+    : nonstop(false),
       isRunning(false),
       traffCnt(NULL),
       logger(GetPluginLogger(GetStgLogger(), "pcap_cap"))

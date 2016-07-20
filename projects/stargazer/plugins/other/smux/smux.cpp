@@ -25,9 +25,6 @@ namespace
 PLUGIN_CREATOR<SMUX> smc;
 
 bool SPrefixLess(const Sensors::value_type & a,
-                 const Sensors::value_type & b);
-
-bool SPrefixLess(const Sensors::value_type & a,
                  const Sensors::value_type & b)
 {
 return a.first.PrefixLess(b.first);
@@ -57,7 +54,7 @@ int p;
 
 pv.param = "Port";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Port\' not found.";
     printfd(__FILE__, "Parameter 'Port' not found\n");
@@ -73,7 +70,7 @@ port = static_cast<uint16_t>(p);
 
 pv.param = "Password";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Password\' not found.";
     printfd(__FILE__, "Parameter 'Password' not found\n");
@@ -86,7 +83,7 @@ else
 
 pv.param = "Server";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-if (pvi == s.moduleParams.end())
+if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Server\' not found.";
     printfd(__FILE__, "Parameter 'Server' not found\n");
@@ -272,7 +269,7 @@ printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;
 }
 
-int SMUX::Reload()
+int SMUX::Reload(const MODULE_SETTINGS & /*ms*/)
 {
 if (Stop())
     return -1;

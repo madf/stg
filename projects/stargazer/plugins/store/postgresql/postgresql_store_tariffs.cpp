@@ -36,6 +36,13 @@
 #include "postgresql_store.h"
 #include "stg/locker.h"
 
+namespace
+{
+
+const int pt_mega = 1024 * 1024;
+
+}
+
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
@@ -568,8 +575,8 @@ for (int i = 0; i < std::min(tuples, DIR_NUM); ++i)
         tuple >> td->dirPrice[dir].mNight;
         }
 
-    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) > 1.0e-3 &&
-        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) > 1.0e-3)
+    if (std::fabs(td->dirPrice[dir].priceDayA - td->dirPrice[dir].priceNightA) < 1.0e-3 / pt_mega &&
+        std::fabs(td->dirPrice[dir].priceDayB - td->dirPrice[dir].priceNightB) < 1.0e-3 / pt_mega)
         {
         td->dirPrice[dir].singlePrice = true;
         }
