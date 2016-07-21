@@ -32,10 +32,10 @@ std::string ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
 {
 switch (changePolicy)
     {
-    case ALLOW: return "allow";
-    case TO_CHEAP: return "to_cheap";
-    case TO_EXPENSIVE: return "to_expensive";
-    case DENY: return "deny";
+    case TARIFF::ALLOW: return "allow";
+    case TARIFF::TO_CHEAP: return "to_cheap";
+    case TARIFF::TO_EXPENSIVE: return "to_expensive";
+    case TARIFF::DENY: return "deny";
     }
 return "unknown";
 }
@@ -77,6 +77,21 @@ else if (lowered == "monthly")
     res = TARIFF::MONTH;
 else
     throw SGCONF::ACTION::ERROR("Period should be 'daily' or 'monthly'. Got: '" + value + "'");
+}
+
+void ConvChangePolicy(const std::string & value, RESETABLE<TARIFF::CHANGE_POLICY> & res)
+{
+std::string lowered = ToLower(value);
+if (lowered == "allow")
+    res = TARIFF::ALLOW;
+else if (lowered == "to_cheap")
+    res = TARIFF::TO_CHEAP;
+else if (lowered == "to_expensive")
+    res = TARIFF::TO_EXPENSIVE;
+else if (lowered == "deny")
+    res = TARIFF::DENY;
+else
+    throw SGCONF::ACTION::ERROR("Change policy should be 'allow', 'to_cheap', 'to_expensive' or 'deny'. Got: '" + value + "'");
 }
 
 void ConvTraffType(const std::string & value, RESETABLE<TARIFF::TRAFF_TYPE> & res)
@@ -227,7 +242,7 @@ std::cout << Indent(level, true) << "name: " << conf.name << "\n"
           << Indent(level)       << "passive cost: " << conf.passiveCost << "\n"
           << Indent(level)       << "traff type: " << TraffTypeToString(conf.traffType) << "\n"
           << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n"
-          << Indent(level)       << "change policy: " << CyangePolicyToString(conf.changePolicy) << "\n";
+          << Indent(level)       << "change policy: " << ChangePolicyToString(conf.changePolicy) << "\n";
 }
 
 void PrintTariff(const STG::GET_TARIFF::INFO & info, size_t level = 0)
@@ -246,7 +261,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("free", "<free mb>", "\tprepaid traff
 params.push_back(SGCONF::API_ACTION::PARAM("passive-cost", "<cost>", "\tpassive cost"));
 params.push_back(SGCONF::API_ACTION::PARAM("traff-type", "<type>", "\ttraffic type (up, down, up+down, max)"));
 params.push_back(SGCONF::API_ACTION::PARAM("period", "<period>", "\ttarification period (daily, monthly)"));
-params.push_back(SGCONF::API_ACTION::PARAM("change-policy", "<change-policy>", "\ttarification change-policy (allow, to_cheap, to_expensive, deny)"));
+params.push_back(SGCONF::API_ACTION::PARAM("change-policy", "<policy>", "tariff change policy (allow, to_cheap, to_expensive, deny)"));
 params.push_back(SGCONF::API_ACTION::PARAM("times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("day-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated night prices for each direction"));
