@@ -97,6 +97,7 @@ else
 return true;
 }
 
+template <typename T>
 bool GetChangePolicy(const char ** attr, T & value, const std::string & attrName)
 {
 if (!CheckValue(attr, attrName))
