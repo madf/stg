@@ -103,23 +103,16 @@ bool GetChangePolicy(const char ** attr, T & value, const std::string & attrName
 if (!CheckValue(attr, attrName))
     return false;
 std::string type(attr[1]);
-switch (type)
-    {
-    case "allow":
+if (type == "allow")
         value = TARIFF::ALLOW;
-        break;
-    case "to_cheap":
+else if (type == "to_cheap")
         value = TARIFF::TO_CHEAP;
-        break;
-    case "to_expensive":
+else if (type == "to_expensive")
         value = TARIFF::TO_EXPENSIVE;
-        break;
-    case "deny":
+else if (type == "deny")
         value = TARIFF::DENY;
-        break;
-    default:
-        return false;
-    }
+else
+    return false;
 return true;
 }
 
