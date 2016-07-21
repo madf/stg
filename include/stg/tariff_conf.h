@@ -148,6 +148,7 @@ struct TARIFF_CONF
     double             passiveCost;
     std::string        name;
     TARIFF::PERIOD     period;
+    TARIFF::CHANGE_POLICY changePolicy;
 
     TARIFF_CONF()
         : fee(0),
@@ -155,7 +156,8 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -164,7 +166,8 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(n),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW)
         {}
 };
 //-----------------------------------------------------------------------------
@@ -176,7 +179,8 @@ struct TARIFF_CONF_RES
           traffType(),
           passiveCost(),
           name(),
-          period()
+          period(),
+          changePolicy()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
@@ -187,6 +191,7 @@ struct TARIFF_CONF_RES
         passiveCost = tc.passiveCost;
         name        = tc.name;
         period      = tc.period;
+        changePolicy = tc.changePolicy;
         return *this;
         }
 
@@ -199,6 +204,7 @@ struct TARIFF_CONF_RES
         passiveCost.maybeSet(tc.passiveCost);
         traffType.maybeSet(tc.traffType);
         period.maybeSet(tc.period);
+        changePolicy.maybeSet(tc.changePolicy);
         return tc;
         }
 
@@ -208,6 +214,7 @@ struct TARIFF_CONF_RES
     RESETABLE<double>             passiveCost;
     RESETABLE<std::string>        name;
     RESETABLE<TARIFF::PERIOD>     period;
+    RESETABLE<TARIFF::CHANGE_POLICY> changePolicy;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA

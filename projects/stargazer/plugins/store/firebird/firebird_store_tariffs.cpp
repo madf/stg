@@ -150,7 +150,7 @@ try
     int32_t id;
     st->Get(1, id);
     st->Close();
-    if (schemaVersion > 0)
+    if (schemaVersion == 1)
         {
         st->Prepare("update tb_tariffs set \
                 fee = ?, \
@@ -166,6 +166,24 @@ try
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
         st->Set(6, id);
         }
+    else if (schemaVersion > 1)
+            {
+            st->Prepare("update tb_tariffs set \
+                    fee = ?, \
+                    free = ?, \
+                    passive_cost = ?, \
+                    traff_type = ?, \
+                    period = ?, \
+                    change_policy = ? \
+                    where pk_tariff = ?");
+            st->Set(1, td.tariffConf.fee);
+            st->Set(2, td.tariffConf.free);
+            st->Set(3, td.tariffConf.passiveCost);
+            st->Set(4, td.tariffConf.traffType);
+            st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
+            st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+            st->Set(7, id);
+            }
     else
         {
         st->Prepare("update tb_tariffs set \
@@ -285,6 +303,8 @@ try
     td->tariffConf.traffType = TARIFF::IntToTraffType(Get<int>(st, 6));
     if (schemaVersion > 0)
         td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
+    if (schemaVersion > 1)
+        td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(Get<std::string>(st, 8));
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);

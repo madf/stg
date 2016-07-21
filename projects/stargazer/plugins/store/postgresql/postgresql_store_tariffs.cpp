@@ -317,6 +317,9 @@ int32_t id;
     if (version > 6)
         query << ", period = '" << TARIFF::PeriodToString(td.tariffConf.period) << "'";
 
+    if (version > 7)
+        query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "'";
+
     query << " WHERE pk_tariff = " << id;
 
     result = PQexec(connection, query.str().c_str());
@@ -455,6 +458,9 @@ query << "SELECT pk_tariff, \
 if (version > 6)
     query << ", period";
 
+if (version > 7)
+    query << ", change_policy";
+
 query << " FROM tb_tariffs WHERE name = '" << ename << "'";
 
 result = PQexec(connection, query.str().c_str());
@@ -504,6 +510,9 @@ int id;
 
 if (version > 6)
     td->tariffConf.period = TARIFF::StringToPeriod(PQgetvalue(result, 0, 5));
+
+if (version > 7)
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(PQgetvalue(result, 0, 6));
 
 PQclear(result);
 

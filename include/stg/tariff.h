@@ -32,9 +32,14 @@ struct TARIFF_DATA;
 
 class TARIFF {
 public:
+    enum CHANGE_POLICY { ALLOW = 0, TO_CHEAP, TO_EXPENSIVE, DENY };
+
     enum PERIOD { DAY = 0, MONTH };
 
     enum TRAFF_TYPE { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
+
+    static std::string ChangePolicyToString(CHANGE_POLICY changePolicy);
+    static CHANGE_POLICY StringToChangePolicy(const std::string& value);
 
     static std::string PeriodToString(PERIOD period);
     static PERIOD StringToPeriod(const std::string& value);
@@ -53,6 +58,7 @@ public:
     virtual double  GetFee() const = 0;
     virtual double  GetFree() const = 0;
     virtual PERIOD  GetPeriod() const = 0;
+    virtual CHANGE_POLICY GetChangePolicy() const = 0;
 
     virtual const   std::string & GetName() const = 0;
     virtual void    SetName(const std::string & name) = 0;
@@ -62,6 +68,31 @@ public:
     virtual int     GetThreshold(int dir) const = 0;
     virtual const TARIFF_DATA & GetTariffData() const = 0;
 };
+
+inline
+std::string TARIFF::ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
+{
+switch (changePolicy)
+    {
+    case ALLOW: return "allow";
+    case TO_CHEAP: return "to_cheap";
+    case TO_EXPENSIVE: return "to_expensive";
+    case DENY: return "deny";
+    }
+return "allow"; // Classic behaviour.
+}
+
+inline
+TARIFF::CHANGE_POLICY TARIFF::StringToChangePolicy(const std::string& value)
+{
+if (strcasecmp(value.c_str(), "to_cheap") == 0)
+    return TO_CHEAP;
+if (strcasecmp(value.c_str(), "to_expensive") == 0)
+    return TO_EXPENSIVE;
+if (strcasecmp(value.c_str(), "deny") == 0)
+    return DENY;
+return ALLOW; // Classic behaviour.
+}
 
 inline
 std::string TARIFF::PeriodToString(TARIFF::PERIOD period)

@@ -368,7 +368,8 @@ if(!IsTablePresent("tariffs",sock))
     
     res += "PassiveCost DOUBLE DEFAULT 0.0, Fee DOUBLE DEFAULT 0.0,"
         "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '',"
-        "period VARCHAR(32) NOT NULL DEFAULT 'month')";
+        "period VARCHAR(32) NOT NULL DEFAULT 'month',"
+        "change_policy VARCHAR(32) NOT NULL DEFAULT 'allow')";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -422,7 +423,8 @@ if(!IsTablePresent("tariffs",sock))
     
     res += "PassiveCost=0.0, Fee=10.0, Free=0,"\
         "SinglePrice0=1, SinglePrice1=1,PriceDayA1=0.75,PriceDayB1=0.75,"\
-        "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month'";
+        "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month',"\
+        "change_policy='allow'";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -441,7 +443,7 @@ if(!IsTablePresent("tariffs",sock))
         mysql_close(sock);
         return -1;
     }
-    schemaVersion = 1;
+    schemaVersion = 2;
 }
 
 //users-----------------------------------------------------------------------
@@ -597,6 +599,26 @@ if (schemaVersion  < 1)
         return -1;
         }
     schemaVersion = 1;
+    logger("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
+    }
+
+if (schemaVersion  < 2)
+    {
+    if (MysqlQuery("ALTER TABLE tariffs ADD change_policy VARCHAR(32) NOT NULL DEFAULT 'allow'", sock))
+        {
+        errorStr = "Couldn't update tariffs table to version 2. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    if (MysqlQuery("UPDATE info SET version = 2", sock))
+        {
+        errorStr = "Couldn't update DB schema version to 2. With error:\n";
+        errorStr += mysql_error(sock);
+        mysql_close(sock);
+        return -1;
+        }
+    schemaVersion = 2;
     logger("MYSQL_STORE: Updated DB schema to version %d", schemaVersion);
     }
 return 0;
@@ -1639,6 +1661,26 @@ else
     td->tariffConf.period = TARIFF::MONTH;
     }
 
+if (schemaVersion > 1)
+{
+    str = row[6+8*DIR_NUM];
+    param = "ChangePolicy";
+
+    if (str.length() == 0)
+        {
+        mysql_free_result(res);
+        errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
+        mysql_close(sock);
+        return -1;
+        }
+
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+    }
+else
+    {
+    td->tariffConf.changePolicy = TARIFF::ALLOW;
+    }
+
 mysql_free_result(res);
 mysql_close(sock);
 return 0;
@@ -1705,6 +1747,9 @@ res += " TraffType='" + TARIFF::TraffTypeToString(td.tariffConf.traffType) + "'"
 
 if (schemaVersion > 0)
     res += ", Period='" + TARIFF::PeriodToString(td.tariffConf.period) + "'";
+
+if (schemaVersion > 1)
+    res += ", change_policy='" + TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) + "'";
 
 strprintf(&param, " WHERE name='%s' LIMIT 1", tariffName.c_str());
 res += param;
