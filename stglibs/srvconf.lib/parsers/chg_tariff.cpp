@@ -72,10 +72,10 @@ if (!data.tariffConf.period.empty())
 if (!data.tariffConf.changePolicy.empty())
     switch (data.tariffConf.changePolicy.data())
         {
-        case TARIFF::DAY: stream << "<changePolicy value=\"allow\"/>"; break;
-        case TARIFF::MONTH: stream << "<changePolicy value=\"to_cheap\"/>"; break;
-        case TARIFF::MONTH: stream << "<changePolicy value=\"to_expensive\"/>"; break;
-        case TARIFF::MONTH: stream << "<changePolicy value=\"deny\"/>"; break;
+        case TARIFF::ALLOW: stream << "<changePolicy value=\"allow\"/>"; break;
+        case TARIFF::TO_CHEAP: stream << "<changePolicy value=\"to_cheap\"/>"; break;
+        case TARIFF::TO_EXPENSIVE: stream << "<changePolicy value=\"to_expensive\"/>"; break;
+        case TARIFF::DENY: stream << "<changePolicy value=\"deny\"/>"; break;
         }
 
 for (size_t i = 0; i < DIR_NUM; ++i)
