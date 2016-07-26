@@ -150,54 +150,30 @@ try
     int32_t id;
     st->Get(1, id);
     st->Close();
-    if (schemaVersion == 1)
-        {
-        st->Prepare("update tb_tariffs set \
-                fee = ?, \
-                free = ?, \
-                passive_cost = ?, \
-                traff_type = ?, \
-                period = ? \
-                where pk_tariff = ?");
-        st->Set(1, td.tariffConf.fee);
-        st->Set(2, td.tariffConf.free);
-        st->Set(3, td.tariffConf.passiveCost);
-        st->Set(4, td.tariffConf.traffType);
+
+    std::string query = "update tb_tariffs set \
+                            fee = ?, \
+                            free = ?, \
+                            passive_cost = ?, \
+                            traff_type = ?";
+
+    if (schemaVersion > 0)
+        query += ", period = ?";
+    if (schemaVersion > 1)
+        query += ", change_policy = ?";
+
+    query += " where pk_tariff = ?";
+
+    st->Set(1, td.tariffConf.fee);
+    st->Set(2, td.tariffConf.free);
+    st->Set(3, td.tariffConf.passiveCost);
+    st->Set(4, td.tariffConf.traffType);
+
+    if (schemaVersion > 0)
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
-        st->Set(6, id);
-        }
-    else if (schemaVersion > 1)
-            {
-            st->Prepare("update tb_tariffs set \
-                    fee = ?, \
-                    free = ?, \
-                    passive_cost = ?, \
-                    traff_type = ?, \
-                    period = ?, \
-                    change_policy = ? \
-                    where pk_tariff = ?");
-            st->Set(1, td.tariffConf.fee);
-            st->Set(2, td.tariffConf.free);
-            st->Set(3, td.tariffConf.passiveCost);
-            st->Set(4, td.tariffConf.traffType);
-            st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
-            st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
-            st->Set(7, id);
-            }
-    else
-        {
-        st->Prepare("update tb_tariffs set \
-                fee = ?, \
-                free = ?, \
-                passive_cost = ?, \
-                traff_type = ? \
-                where pk_tariff = ?");
-        st->Set(1, td.tariffConf.fee);
-        st->Set(2, td.tariffConf.free);
-        st->Set(3, td.tariffConf.passiveCost);
-        st->Set(4, td.tariffConf.traffType);
-        st->Set(5, id);
-        }
+    if (schemaVersion > 1)
+        st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+
     st->Execute();
     st->Close();
 
