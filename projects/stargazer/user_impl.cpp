@@ -1181,7 +1181,47 @@ if (nextTariff.ConstData() != "")
         WriteServLog("Cannot change tariff for user %s. Tariff %s not exist.",
                      login.c_str(), property.tariffName.Get().c_str());
     else
-        property.tariffName.Set(nextTariff, sysAdmin, login, store);
+        {
+        switch (tariff->GetChangePolicy())
+            {
+            case TARIFF::ALLOW:
+                {
+                property.tariffName.Set(nextTariff, sysAdmin, login, store);
+                break;
+                }
+            case TARIFF::TO_CHEAP:
+                {
+                if (nt->GetFee() < tariff->GetFee())
+                    property.tariffName.Set(nextTariff, sysAdmin, login, store);
+                else
+                    WriteServLog("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more cheap than new tariff %s.",
+                                 login.c_str(),
+                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
+                                 property.tariffName.Get().c_str(),
+                                 property.nextTariff.Get().c_str());
+                break;
+                }
+            case TARIFF::TO_EXPENSIVE:
+                {
+                if (nt->GetFee() > tariff->GetFee())
+                    property.tariffName.Set(nextTariff, sysAdmin, login, store);
+                else
+                    WriteServLog("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more expensive than new tariff %s.",
+                                 login.c_str(),
+                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
+                                 property.tariffName.Get().c_str(),
+                                 property.nextTariff.Get().c_str());
+                break;
+                }
+            case TARIFF::DENY:
+                {
+                WriteServLog("Tariff change is prohibited for user %s. Tariff %s.",
+                             login.c_str(),
+                             property.tariffName.Get().c_str());
+                break;
+                }
+            }
+        }
     ResetNextTariff();
     WriteConf();
     }
