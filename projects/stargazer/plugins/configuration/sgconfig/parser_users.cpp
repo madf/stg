@@ -594,6 +594,8 @@ int CHG_USER::ApplyChanges()
 
     if (!m_ucr.tariffName.empty())
     {
+        const TARIFF * tariff = u->GetTariff();
+        const TARIFF * newTariff = m_tariffs.FindByName(m_ucr.tariffName.const_data());
         if (m_tariffs.FindByName(m_ucr.tariffName.const_data()))
         {
             if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
