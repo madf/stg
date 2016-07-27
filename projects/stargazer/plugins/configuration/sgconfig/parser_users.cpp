@@ -596,11 +596,57 @@ int CHG_USER::ApplyChanges()
     {
         const TARIFF * tariff = u->GetTariff();
         const TARIFF * newTariff = m_tariffs.FindByName(m_ucr.tariffName.const_data());
-        if (m_tariffs.FindByName(m_ucr.tariffName.const_data()))
+        if (newTariff)
         {
-            if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
-                return -1;
-            u->ResetNextTariff();
+        switch (tariff->GetChangePolicy())
+            {
+            case TARIFF::ALLOW:
+                {
+                if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
+                    return -1;
+                u->ResetNextTariff();
+                break;
+                }
+            case TARIFF::TO_CHEAP:
+                {
+                if (newTariff->GetFee() < tariff->GetFee())
+                    {
+                    if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
+                        return -1;
+                u->ResetNextTariff();
+                    }
+                else
+                    GetStgLogger()("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more cheap than new tariff %s.",
+                                 u->GetLogin().c_str(),
+                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
+                                 u->GetTariff()->GetName().c_str(),
+                                 newTariff->GetName().c_str());
+                break;
+                }
+            case TARIFF::TO_EXPENSIVE:
+                {
+                if (newTariff->GetFee() > tariff->GetFee())
+                {
+                     if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
+                        return -1;
+                u->ResetNextTariff();
+                }
+                else
+                    GetStgLogger()("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more expensive than new tariff %s.",
+                                 u->GetLogin().c_str(),
+                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
+                                 u->GetTariff()->GetName().c_str(),
+                                 newTariff->GetName().c_str());
+                break;
+                }
+            case TARIFF::DENY:
+                {
+                GetStgLogger()("Tariff change is prohibited for user %s. Tariff %s.",
+                             u->GetLogin().c_str(),
+                             u->GetTariff()->GetName().c_str());
+                break;
+                }
+            }
         }
         else
         {
