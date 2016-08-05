@@ -145,3 +145,32 @@ else
     return tariffData.dirPrice[dir].priceDayA;
 }
 //-----------------------------------------------------------------------------
+std::string TARIFF_IMPL::TariffChangelsAllowed(const TARIFF & to) const
+{
+switch (GetChangePolicy())
+    {
+    case TARIFF::ALLOW:
+        {
+        return "";
+        }
+    case TARIFF::TO_CHEAP:
+        {
+        if (to.GetFee() < GetFee())
+            return "";
+        else
+            return "Current tariff " + GetName() + " is more cheap than new tariff " + to.GetName() + ". The policy is " + TARIFF::ChangePolicyToString(GetChangePolicy()).c_str() + ".";
+        }
+    case TARIFF::TO_EXPENSIVE:
+        {
+        if (to.GetFee() > GetFee())
+            return "";
+        else
+            return "Current tariff " + GetName() + " is more expensive than new tariff " + to.GetName() + ". The policy is " + TARIFF::ChangePolicyToString(GetChangePolicy()).c_str() + ".";
+        }
+    case TARIFF::DENY:
+        {
+        return "Current tariff " + GetName() + ", new tariff " + to.GetName() + ".";
+        }
+    }
+}
+//-----------------------------------------------------------------------------
