@@ -1178,48 +1178,22 @@ if (nextTariff.ConstData() != "")
     {
     const TARIFF * nt = tariffs->FindByName(nextTariff);
     if (nt == NULL)
+        {
         WriteServLog("Cannot change tariff for user %s. Tariff %s not exist.",
                      login.c_str(), property.tariffName.Get().c_str());
+        }
     else
         {
-        switch (tariff->GetChangePolicy())
+        if (tariff->TariffChangelsAllowed(*nt) == "")
             {
-            case TARIFF::ALLOW:
-                {
-                property.tariffName.Set(nextTariff, sysAdmin, login, store);
-                break;
-                }
-            case TARIFF::TO_CHEAP:
-                {
-                if (nt->GetFee() < tariff->GetFee())
-                    property.tariffName.Set(nextTariff, sysAdmin, login, store);
-                else
-                    WriteServLog("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more cheap than new tariff %s.",
-                                 login.c_str(),
-                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
-                                 property.tariffName.Get().c_str(),
-                                 property.nextTariff.Get().c_str());
-                break;
-                }
-            case TARIFF::TO_EXPENSIVE:
-                {
-                if (nt->GetFee() > tariff->GetFee())
-                    property.tariffName.Set(nextTariff, sysAdmin, login, store);
-                else
-                    WriteServLog("Tariff change is prohibited for user %s due to the policy %s. Current tariff %s is more expensive than new tariff %s.",
-                                 login.c_str(),
-                                 TARIFF::ChangePolicyToString(tariff->GetChangePolicy()).c_str(),
-                                 property.tariffName.Get().c_str(),
-                                 property.nextTariff.Get().c_str());
-                break;
-                }
-            case TARIFF::DENY:
-                {
-                WriteServLog("Tariff change is prohibited for user %s. Tariff %s.",
-                             login.c_str(),
-                             property.tariffName.Get().c_str());
-                break;
-                }
+            property.tariffName.Set(nextTariff, sysAdmin, login, store);
+            }
+        else
+            {
+            std::string message = tariff->TariffChangelsAllowed(*nt);
+            WriteServLog("Tariff change is prohibited for user %s. %s",
+                         login.c_str(),
+                         message.c_str());
             }
         }
     ResetNextTariff();
