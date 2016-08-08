@@ -145,7 +145,7 @@ else
     return tariffData.dirPrice[dir].priceDayA;
 }
 //-----------------------------------------------------------------------------
-std::string TARIFF_IMPL::TariffChangelsAllowed(const TARIFF & to) const
+std::string TARIFF_IMPL::TariffChangeIsAllowed(const TARIFF & to) const
 {
 switch (GetChangePolicy())
     {
