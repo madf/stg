@@ -1184,13 +1184,13 @@ if (nextTariff.ConstData() != "")
         }
     else
         {
-        if (tariff->TariffChangelsAllowed(*nt) == "")
+        if (tariff->TariffChangeIsAllowed(*nt) == "")
             {
             property.tariffName.Set(nextTariff, sysAdmin, login, store);
             }
         else
             {
-            std::string message = tariff->TariffChangelsAllowed(*nt);
+            std::string message = tariff->TariffChangeIsAllowed(*nt);
             WriteServLog("Tariff change is prohibited for user %s. %s",
                          login.c_str(),
                          message.c_str());
