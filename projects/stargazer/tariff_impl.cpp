@@ -162,7 +162,7 @@ switch (GetChangePolicy())
         else
             return "Current tariff " + GetName() + " is more expensive than new tariff " + to.GetName() + ". The policy is " + TARIFF::ChangePolicyToString(GetChangePolicy()) + ".";
     case TARIFF::DENY:
-        return "Current tariff " + GetName() + ", new tariff " + to.GetName() + ".";
+        return "Current tariff " + GetName() + ", new tariff " + to.GetName() + ". The policy is " + TARIFF::ChangePolicyToString(GetChangePolicy()) + ".";
     }
 }
 //-----------------------------------------------------------------------------
