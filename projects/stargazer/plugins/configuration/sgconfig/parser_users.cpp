@@ -598,7 +598,8 @@ int CHG_USER::ApplyChanges()
         if (newTariff)
         {
             const TARIFF * tariff = u->GetTariff();
-            if (tariff->TariffChangeIsAllowed(*newTariff) == "")
+            std::string message = tariff->TariffChangeIsAllowed(*newTariff);
+            if (message == "")
             {
                 if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
                     return -1;
@@ -606,7 +607,6 @@ int CHG_USER::ApplyChanges()
             }
             else
             {
-                std::string message = tariff->TariffChangeIsAllowed(*newTariff);
                 GetStgLogger()("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
             }
         }
