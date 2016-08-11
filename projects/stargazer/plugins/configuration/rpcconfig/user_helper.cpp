@@ -433,13 +433,27 @@ if ((it = structVal.find("tariff")) != structVal.end())
         tariff = tariff.substr(0, pos);
         }
 
-    if (tariffs->FindByName(tariff))
-        if (ptr->GetProperty().tariffName.Get() != tariff)
-            if (!ptr->GetProperty().tariffName.Set(tariff,
-                                               admin,
-                                               login,
-                                               &store))
-                return true;
+    const TARIFF * newTariff = tariffs->FindByName(tariff);
+    if (newTariff)
+        {
+        const TARIFF * currentTariff = ptr->GetTariff();
+        std::string message = currentTariff->TariffChangeIsAllowed(*newTariff);
+        if (message.empty())
+            {
+            if (ptr->GetProperty().tariffName.Get() != tariff)
+                {
+                if (!ptr->GetProperty().tariffName.Set(tariff,
+                                                   admin,
+                                                   login,
+                                                   &store))
+                    return true;
+                }
+            }
+        else
+            {
+            GetStgLogger()("Tariff change is prohibited for user %s. %s", ptr->GetLogin().c_str(), message.c_str());
+            }
+        }
 
     if (nextTariff != "" &&
         tariffs->FindByName(nextTariff))
