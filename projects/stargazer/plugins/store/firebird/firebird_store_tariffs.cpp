@@ -164,6 +164,7 @@ try
 
     query += " where pk_tariff = ?";
 
+    st->Prepare(query);
     st->Set(1, td.tariffConf.fee);
     st->Set(2, td.tariffConf.free);
     st->Set(3, td.tariffConf.passiveCost);
@@ -174,6 +175,7 @@ try
     if (schemaVersion > 1)
         st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
 
+    st->Set(7, id);
     st->Execute();
     st->Close();
 
