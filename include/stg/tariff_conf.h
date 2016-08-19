@@ -255,6 +255,12 @@ struct TARIFF_DATA_RES
           dirPrice(DIR_NUM)
         {}
 
+    TARIFF_DATA_RES & operator=(const TARIFF_DATA & td)
+        {
+        tariffConf = td.tariffConf;
+        return *this;
+        }
+
     TARIFF_DATA GetData() const
         {
         TARIFF_DATA td;
