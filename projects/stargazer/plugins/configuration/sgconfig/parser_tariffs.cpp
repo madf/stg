@@ -174,6 +174,8 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
             const TARIFF * tariff = m_tariffs.FindByName(attr[1]);
             if (tariff != NULL)
                 td = tariff->GetTariffData();
+            else
+                return -1;
             return 0;
         }
     }
