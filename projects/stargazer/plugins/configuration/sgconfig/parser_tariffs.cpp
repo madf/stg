@@ -171,7 +171,9 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
     {
         if (strcasecmp(el, m_tag.c_str()) == 0)
         {
-            td.tariffConf.name = attr[1];
+            const TARIFF * tariff = m_tariffs.FindByName(attr[1]);
+            if (tariff != NULL)
+                td = tariff->GetTariffData();
             return 0;
         }
     }
