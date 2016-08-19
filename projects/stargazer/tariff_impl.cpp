@@ -155,12 +155,12 @@ switch (GetChangePolicy())
         if (to.GetFee() < GetFee())
             return "";
         else
-            return "Current tariff '" + GetName() + "' is more cheap than new tariff '" + to.GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
+            return "New tariff '" + to.GetName() + "' is more expensive than current tariff '" + GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
     case TARIFF::TO_EXPENSIVE:
         if (to.GetFee() > GetFee())
             return "";
         else
-            return "Current tariff '" + GetName() + "' is more expensive than new tariff '" + to.GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
+            return "New tariff '" + to.GetName() + "' is more cheap than current tariff '" + GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
     case TARIFF::DENY:
         return "Current tariff '" + GetName() + "', new tariff '" + to.GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
     }
