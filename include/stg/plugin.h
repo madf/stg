@@ -59,7 +59,7 @@ public:
 
     virtual int                 Start() = 0;
     virtual int                 Stop() = 0;
-    virtual int                 Reload() = 0;
+    virtual int                 Reload(const MODULE_SETTINGS &) = 0;
     virtual bool                IsRunning() = 0;
     virtual const std::string & GetStrError() const = 0;
     virtual std::string         GetVersion() const = 0;

@@ -266,6 +266,11 @@ for (size_t i = 0; i < settings.GetExecutersNum(); i++)
 
 PIDFile pidFile(settings.GetPIDFileName());
 
+struct sigaction sa;
+memset(&sa, 0, sizeof(sa));
+sa.sa_handler = SIG_DFL;
+sigaction(SIGHUP, &sa, NULL); // Apparently FreeBSD ignores SIGHUP by default when launched from rc.d at bot time.
+
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
@@ -338,8 +343,16 @@ while (running)
     switch (sig)
         {
         case SIGHUP:
+            {
+            SETTINGS_IMPL newSettings(settings);
+            if (newSettings.ReadSettings())
+                WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
+            else
+                settings = newSettings;
+            WriteServLog.SetLogFileName(settings.GetLogFileName());
             traffCnt.Reload();
-            manager.reload();
+            manager.reload(settings);
+            }
             break;
         case SIGTERM:
             running = false;

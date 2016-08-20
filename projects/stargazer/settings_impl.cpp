@@ -119,6 +119,111 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
 {
 }
 //-----------------------------------------------------------------------------
+SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
+    : SETTINGS(),
+      strError(),
+      modulesPath(rval.modulesPath),
+      dirName(rval.dirName),
+      confDir(rval.confDir),
+      scriptsDir(rval.scriptsDir),
+      rules(rval.rules),
+      logFile(rval.logFile),
+      pidFile(rval.pidFile),
+      monitorDir(rval.monitorDir),
+      monitoring(rval.monitoring),
+      detailStatWritePeriod(rval.detailStatWritePeriod),
+      statWritePeriod(rval.statWritePeriod),
+      stgExecMsgKey(rval.stgExecMsgKey),
+      executersNum(rval.executersNum),
+      fullFee(rval.fullFee),
+      dayFee(rval.dayFee),
+      dayResetTraff(rval.dayResetTraff),
+      spreadFee(rval.spreadFee),
+      freeMbAllowInet(rval.freeMbAllowInet),
+      dayFeeIsLastDay(rval.dayFeeIsLastDay),
+      writeFreeMbTraffCost(rval.writeFreeMbTraffCost),
+      showFeeInCash(rval.showFeeInCash),
+      messageTimeout(rval.messageTimeout),
+      feeChargeType(rval.feeChargeType),
+      reconnectOnTariffChange(rval.reconnectOnTariffChange),
+      modulesSettings(rval.modulesSettings),
+      storeModuleSettings(rval.storeModuleSettings),
+      logger(GetStgLogger())
+{
+}
+//-----------------------------------------------------------------------------
+SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
+{
+    modulesPath = rhs.modulesPath;
+    dirName = rhs.dirName;
+    confDir = rhs.confDir;
+    scriptsDir = rhs.scriptsDir;
+    rules = rhs.rules;
+    logFile = rhs.logFile;
+    pidFile = rhs.pidFile;
+    monitorDir = rhs.monitorDir;
+    scriptParams = rhs.scriptParams;
+    monitoring = rhs.monitoring;
+    detailStatWritePeriod = rhs.detailStatWritePeriod;
+    statWritePeriod = rhs.statWritePeriod;
+    stgExecMsgKey = rhs.stgExecMsgKey;
+    executersNum = rhs.executersNum;
+    fullFee = rhs.fullFee;
+    dayFee = rhs.dayFee;
+    dayResetTraff = rhs.dayResetTraff;
+    spreadFee = rhs.spreadFee;
+    freeMbAllowInet = rhs.freeMbAllowInet;
+    dayFeeIsLastDay = rhs.dayFeeIsLastDay;
+    writeFreeMbTraffCost = rhs.writeFreeMbTraffCost;
+    showFeeInCash = rhs.showFeeInCash;
+    messageTimeout = rhs.messageTimeout;
+    feeChargeType = rhs.feeChargeType;
+    reconnectOnTariffChange = rhs.reconnectOnTariffChange;
+
+    modulesSettings = rhs.modulesSettings;
+    storeModuleSettings = rhs.storeModuleSettings;
+    return *this;
+}
+//-----------------------------------------------------------------------------
+int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
+{
+const DOTCONFDocumentNode * childNode;
+PARAM_VALUE pv;
+const char * value;
+
+pv.param = node->getName();
+
+if (node->getValue(1))
+    {
+    strError = "Unexpected value \'" + std::string(node->getValue(1)) + "\'.";
+    return -1;
+    }
+
+value = node->getValue(0);
+
+if (!value)
+    {
+    strError = "Module name expected.";
+    return -1;
+    }
+
+childNode = node->getChildNode();
+while (childNode)
+    {
+    pv.param = childNode->getName();
+    int i = 0;
+    while ((value = childNode->getValue(i++)) != NULL)
+        {
+        pv.value.push_back(value);
+        }
+    params->push_back(pv);
+    pv.value.clear();
+    childNode = childNode->getNextNode();
+    }
+
+return 0;
+}
+//-----------------------------------------------------------------------------
 void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
 {
     printfd(__FILE__, "SETTINGS_IMPL::ErrorCallback() - %s\n", buf);

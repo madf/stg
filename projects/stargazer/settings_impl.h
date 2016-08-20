@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "stg/settings.h"
+#include "stg/common.h"
 #include "stg/module_settings.h"
 #include "stg/ref.h"
 
@@ -42,7 +43,10 @@ class DOTCONFDocumentNode;
 class SETTINGS_IMPL : public SETTINGS {
 public:
     SETTINGS_IMPL(const std::string &);
+    SETTINGS_IMPL(const SETTINGS_IMPL & rhs);
     virtual ~SETTINGS_IMPL() {}
+    SETTINGS_IMPL & operator=(const SETTINGS_IMPL &);
+
     int Reload() { return ReadSettings(); }
     int ReadSettings();
 
@@ -80,6 +84,8 @@ public:
     const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
         { return modulesSettings; }
     const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
+
+    int ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params);
 
 private:
 

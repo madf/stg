@@ -524,6 +524,22 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
+int AUTH_IA::Reload(const MODULE_SETTINGS & ms)
+{
+AUTH_IA_SETTINGS newIaSettings;
+if (newIaSettings.ParseSettings(ms))
+    {
+    printfd(__FILE__, "AUTH_IA::Reload() - Failed to reload InetAccess.\n");
+    logger("AUTH_IA: Cannot reload InetAccess. Errors found.");
+    return -1;
+    }
+
+printfd(__FILE__, "AUTH_IA::Reload() -  Reloaded InetAccess successfully.\n");
+logger("AUTH_IA: Reloaded InetAccess successfully.");
+iaSettings = newIaSettings;
+return 0;
+}
+//-----------------------------------------------------------------------------
 int AUTH_IA::PrepareNet()
 {
 struct sockaddr_in listenAddr;
