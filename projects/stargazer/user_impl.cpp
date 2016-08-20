@@ -1563,13 +1563,18 @@ else if (!oldValue && newValue && user->IsInetable())
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
 {
+STG_LOCKER lock(&user->mutex);
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
     user->Disconnect(false, "Change tariff");
 user->tariff = user->tariffs->FindByName(newTariff);
 if (user->settings->GetReconnectOnTariffChange() &&
     !user->authorizedBy.empty() &&
     user->IsInetable())
+    {
+    // This notifier gets called *before* changing the tariff, and in Connect we want to see new tariff name.
+    user->property.Conf().tariffName = newTariff;
     user->Connect(false);
+    }
 }
 //-----------------------------------------------------------------------------
 void CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
