@@ -85,8 +85,6 @@ public:
         { return modulesSettings; }
     const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
 
-    int ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params);
-
 private:
 
     static void ErrorCallback(void * data, const char * buf);

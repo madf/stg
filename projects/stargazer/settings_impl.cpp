@@ -185,45 +185,6 @@ SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
     return *this;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
-{
-const DOTCONFDocumentNode * childNode;
-PARAM_VALUE pv;
-const char * value;
-
-pv.param = node->getName();
-
-if (node->getValue(1))
-    {
-    strError = "Unexpected value \'" + std::string(node->getValue(1)) + "\'.";
-    return -1;
-    }
-
-value = node->getValue(0);
-
-if (!value)
-    {
-    strError = "Module name expected.";
-    return -1;
-    }
-
-childNode = node->getChildNode();
-while (childNode)
-    {
-    pv.param = childNode->getName();
-    int i = 0;
-    while ((value = childNode->getValue(i++)) != NULL)
-        {
-        pv.value.push_back(value);
-        }
-    params->push_back(pv);
-    pv.value.clear();
-    childNode = childNode->getNextNode();
-    }
-
-return 0;
-}
-//-----------------------------------------------------------------------------
 void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
 {
     printfd(__FILE__, "SETTINGS_IMPL::ErrorCallback() - %s\n", buf);
