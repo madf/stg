@@ -258,6 +258,8 @@ struct TARIFF_DATA_RES
     TARIFF_DATA_RES & operator=(const TARIFF_DATA & td)
         {
         tariffConf = td.tariffConf;
+        for (size_t i = 0; i < DIR_NUM; ++i)
+            dirPrice[i] = td.dirPrice[i];
         return *this;
         }
 
