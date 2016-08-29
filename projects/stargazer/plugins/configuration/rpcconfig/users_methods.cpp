@@ -381,16 +381,29 @@ if (tariffs->FindByName(tariff))
         }
     else
         {
-        if (u->GetProperty().tariffName.Set(tariff,
+        const TARIFF * newTariff = tariffs->FindByName(tariff);
+        if (newTariff)
+            {
+            const TARIFF * currentTariff = u->GetTariff();
+            std::string message = currentTariff->TariffChangeIsAllowed(*newTariff);
+            if (message.empty())
+                {
+                if (u->GetProperty().tariffName.Set(tariff,
                                             admin,
                                             login,
                                             store,
                                             comment))
-            {
-            u->ResetNextTariff();
-            u->WriteConf();
-            *retvalPtr = xmlrpc_c::value_boolean(true);
-            return;
+                    {
+                    u->ResetNextTariff();
+                    u->WriteConf();
+                    *retvalPtr = xmlrpc_c::value_boolean(true);
+                    return;
+                    }
+                }
+            else
+                {
+                GetStgLogger()("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
+                }
             }
         }
     }
