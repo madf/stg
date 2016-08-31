@@ -44,6 +44,7 @@ lt.tm_mon  = 7 - 1;      // Nov
 lt.tm_hour = 23;          // 23 h
 lt.tm_min = 57;           // 50 min
 lt.tm_sec = 0;            // 00 sec
+lt.tm_isdst = -1;
 
 switch (START_TIME)
     {
