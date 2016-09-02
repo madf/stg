@@ -18,6 +18,7 @@ $Author: faust $
 
 #include "stg/logger.h"
 #include "stg/locker.h"
+#include "stg/settings.h"
 #include "stg/scriptexecuter.h"
 #include "stg/common.h"
 
@@ -76,7 +77,7 @@ public:
                          bool isPassword,
                          bool isStat,
                          STG_LOGGER & logger,
-                         const std::string & sd,
+                         const SETTINGS & s,
                          REGISTRY & properties);
     virtual ~USER_PROPERTY_LOGGED() {}
 
@@ -112,7 +113,7 @@ private:
     bool              isPassword;
     bool              isStat;
     std::string       name;
-    const std::string scriptsDir;
+    const SETTINGS&   settings;
 };
 //-----------------------------------------------------------------------------
 class USER_PROPERTIES : private NONCOPYABLE {
@@ -130,7 +131,7 @@ private:
 
     REGISTRY properties;
 public:
-    USER_PROPERTIES(const std::string & sd);
+    USER_PROPERTIES(const SETTINGS& s);
 
     USER_STAT & Stat() { return stat; }
     USER_CONF & Conf() { return conf; }
@@ -282,7 +283,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
                                                  bool isPass,
                                                  bool isSt,
                                                  STG_LOGGER & logger,
-                                                 const std::string & sd,
+                                                 const SETTINGS& s,
                                                  REGISTRY & properties)
 
     : USER_PROPERTY<varT>(val),
@@ -290,7 +291,7 @@ USER_PROPERTY_LOGGED<varT>::USER_PROPERTY_LOGGED(varT & val,
       isPassword(isPass),
       isStat(isSt),
       name(n),
-      scriptsDir(sd)
+      settings(s)
 {
 properties.insert(std::make_pair(ToLower(name), this));
 }
@@ -367,7 +368,12 @@ stgLogger("%s User \'%s\': \'%s\' parameter changed from \'%s\' to \'%s\'. %s",
           newValue.c_str(),
           msg.c_str());
 
-store->WriteUserChgLog(login, admin->GetLogin(), admin->GetIP(), parameter, oldValue, newValue, msg);
+for (size_t i = 0; i < settings.GetFilterParamsLog().size(); ++i)
+    if (settings.GetFilterParamsLog()[i] == "*" || strcasecmp(settings.GetFilterParamsLog()[i].c_str(), parameter.c_str()) == 0)
+        {
+        store->WriteUserChgLog(login, admin->GetLogin(), admin->GetIP(), parameter, oldValue, newValue, msg);
+        return;
+        }
 }
 //-------------------------------------------------------------------------
 template <typename varT>
@@ -377,7 +383,7 @@ void USER_PROPERTY_LOGGED<varT>::OnChange(const std::string & login,
                                           const std::string & newValue,
                                           const ADMIN * admin)
 {
-std::string filePath = scriptsDir + "/OnChange";
+static std::string filePath = settings.GetScriptsDir() + "/OnChange";
 
 if (access(filePath.c_str(), X_OK) == 0)
     {

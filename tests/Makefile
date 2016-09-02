@@ -8,7 +8,7 @@ INCS = -I . \
        -I ../projects/stargazer
 DEFS = -DLINUX \
        -DUSE_ABSTRACT_SETTINGS
-CFLAGS += -g3 -Wall -W -Wextra $(INCS) $(DEFS)
+CFLAGS += -g3 -Wall -W -Wextra -Wno-unused-function $(INCS) $(DEFS)
 CXXFLAGS += $(CFLAGS)
 LIBS = -lpthread
 PROG = tests
@@ -20,6 +20,8 @@ SOURCES = main.cpp \
 	  test_conffiles.cpp \
 	  test_fee_charge_rules.cpp \
 	  test_reconnect_on_tariff_change.cpp \
+	  test_disable_session_log.cpp \
+	  test_filter_params_log.cpp \
 	  test_crypto.cpp \
 	  test_bfstream.cpp \
 	  ../projects/stargazer/tariff_impl.cpp \

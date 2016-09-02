@@ -5,7 +5,7 @@
 
 class TEST_SETTINGS : public SETTINGS {
     public:
-        TEST_SETTINGS() {}
+        TEST_SETTINGS() { filterParamsLog.push_back("*"); }
 
         const std::string & GetDirName(size_t) const { return dirName; }
         const std::string & GetScriptsDir() const { return scriptsDir; }
@@ -25,12 +25,15 @@ class TEST_SETTINGS : public SETTINGS {
         const std::string & GetMonitorDir() const { return monitorDir; }
         bool                GetMonitoring() const { return false; }
         const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
+        bool                GetDisableSessionLog() const { return false; }
+        const std::vector<std::string>& GetFilterParamsLog() const { return filterParamsLog; }
 
     private:
         std::string dirName;
         std::string scriptsDir;
         std::string monitorDir;
         std::vector<std::string> scriptParams;
+        std::vector<std::string> filterParamsLog;
 };
 
 #endif

@@ -9,9 +9,9 @@ class TEST_SERVICES : public SERVICES
         virtual int Add(const SERVICE_CONF & /*service*/, const ADMIN * /*admin*/) { return 0; }
         virtual int Del(const std::string & /*name*/, const ADMIN * /*admin*/) { return 0; }
         virtual int Change(const SERVICE_CONF & /*service*/, const ADMIN * /*admin*/) { return 0; }
-        virtual bool Find(const std::string & name, SERVICE_CONF * service) const { return false; }
-        virtual bool Find(const std::string & name, SERVICE_CONF_RES * service) const { return false; }
-        virtual bool Exists(const std::string & name) const { return false; }
+        virtual bool Find(const std::string & /*name*/, SERVICE_CONF * /*service*/) const { return false; }
+        virtual bool Find(const std::string & /*name*/, SERVICE_CONF_RES * /*service*/) const { return false; }
+        virtual bool Exists(const std::string & /*name*/) const { return false; }
         virtual const std::string & GetStrError() const { return m_errorStr; }
         virtual size_t Count() const { return 0; }
 
