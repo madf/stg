@@ -86,6 +86,14 @@ namespace tut
         note.Set("another note", &admin, "", &store, "");
 
         ensure_equals("entries = 4", store.GetEntries(), 4);
+
+        address.Set("new address", &admin, "", &store, "");
+
+        ensure_equals("entries = 5", store.GetEntries(), 5);
+
+        group.Set("administrative group", &admin, "", &store, "");
+
+        ensure_equals("entries = 6", store.GetEntries(), 6);
     }
 
 
@@ -120,6 +128,10 @@ namespace tut
         ensure_equals("entries = 1", store.GetEntries(), 1);
 
         address.Set("new address", &admin, "", &store, "");
+
+        ensure_equals("entries = 2", store.GetEntries(), 2);
+
+        group.Set("administrative group", &admin, "", &store, "");
 
         ensure_equals("entries = 2", store.GetEntries(), 2);
     }
@@ -162,5 +174,43 @@ namespace tut
         group.Set("administrative group", &admin, "", &store, "");
 
         ensure_equals("entries = 4", store.GetEntries(), 4);
+    }
+
+    template<>
+    template<>
+    void testobject::test<4>()
+    {
+        set_test_name("Check empty filter.");
+
+        TEST_SETTINGS_LOCAL settings;
+        TEST_TARIFFS tariffs;
+        TEST_ADMIN admin;
+        TEST_STORE_LOCAL store;
+        TEST_AUTH auth;
+        TEST_USERS users;
+        TEST_SERVICES services;
+        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+
+        USER_PROPERTY_LOGGED<std::string> & address(user.GetProperty().address);
+        USER_PROPERTY_LOGGED<std::string> & note(user.GetProperty().note);
+        USER_PROPERTY_LOGGED<std::string> & group(user.GetProperty().group);
+
+        address.Set("address", &admin, "", &store, "");
+        note.Set("note", &admin, "", &store, "");
+        group.Set("group", &admin, "", &store, "");
+
+        ensure_equals("entries = 0", store.GetEntries(), 0);
+
+        note.Set("another note", &admin, "", &store, "");
+
+        ensure_equals("entries = 0", store.GetEntries(), 0);
+
+        address.Set("new address", &admin, "", &store, "");
+
+        ensure_equals("entries = 0", store.GetEntries(), 0);
+
+        group.Set("administrative group", &admin, "", &store, "");
+
+        ensure_equals("entries = 0", store.GetEntries(), 0);
     }
 }
