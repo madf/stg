@@ -371,4 +371,31 @@ namespace tut
 
         ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive).empty(), true);
     }
+
+    template<>
+    template<>
+    void testobject::test<8>()
+    {
+        set_test_name("Check changePolicy - TO_CHEAP");
+
+        TARIFF_DATA td("test");
+        td.tariffConf.changePolicy = TARIFF::CHANGE_POLICY TO_CHEAP;
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL tariff(td);
+
+        td.tariffConf.fee = 50;
+        TARIFF_IMPL cheaper(td);
+
+        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
+
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL equals(td);
+
+        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
+
+        td.tariffConf.fee = 150;
+        TARIFF_IMPL expensive(td);
+
+        ensure_equals("Allow expensive", !tariff.TariffChangeIsAllowed(expensive).empty(), true);
+    }
 }
