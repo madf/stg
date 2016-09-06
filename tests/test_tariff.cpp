@@ -343,5 +343,32 @@ namespace tut
         ensure_equals("1101 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 6 > 4 DA (ignore night)
         ensure_equals("1110 == 0", tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA (ignore night)
         ensure_equals("1111 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 6 > 4 DA (ignore night)
+   }
+
+    template<>
+    template<>
+    void testobject::test<7>()
+    {
+        set_test_name("Check changePolicy - ALLOW");
+
+        TARIFF_DATA td("test");
+        td.tariffConf.changePolicy = TARIFF::CHANGE_POLICY ALLOW;
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL tariff(td);
+
+        td.tariffConf.fee = 50;
+        TARIFF_IMPL cheaper(td);
+
+        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
+
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL equals(td);
+
+        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal).empty(), true);
+
+        td.tariffConf.fee = 150;
+        TARIFF_IMPL expensive(td);
+
+        ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive).empty(), true);
     }
 }
