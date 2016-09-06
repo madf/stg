@@ -352,7 +352,7 @@ namespace tut
         set_test_name("Check changePolicy - ALLOW");
 
         TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::CHANGE_POLICY ALLOW;
+        td.tariffConf.changePolicy = TARIFF::ALLOW;
         td.tariffConf.fee = 100;
         TARIFF_IMPL tariff(td);
 
@@ -379,7 +379,7 @@ namespace tut
         set_test_name("Check changePolicy - TO_CHEAP");
 
         TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::CHANGE_POLICY TO_CHEAP;
+        td.tariffConf.changePolicy = TARIFF::TO_CHEAP;
         td.tariffConf.fee = 100;
         TARIFF_IMPL tariff(td);
 
