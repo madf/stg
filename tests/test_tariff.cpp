@@ -440,16 +440,16 @@ namespace tut
         td.tariffConf.fee = 50;
         TARIFF_IMPL cheaper(td);
 
-        ensure_equals("Allow cheaper", !tariff.TariffChangeIsAllowed(cheaper).empty(), true);
+        ensure_equals("Prohibit cheaper", !tariff.TariffChangeIsAllowed(cheaper).empty(), true);
 
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
+        ensure_equals("Prohibit equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
 
-        ensure_equals("Allow expensive", !tariff.TariffChangeIsAllowed(expensive).empty(), true);
+        ensure_equals("Prohibit expensive", !tariff.TariffChangeIsAllowed(expensive).empty(), true);
     }
 }
