@@ -362,9 +362,9 @@ namespace tut
         ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equals(td);
+        TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equals).empty(), true);
+        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
@@ -389,9 +389,9 @@ namespace tut
         ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equals(td);
+        TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equals).empty(), true);
+        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
@@ -416,9 +416,9 @@ namespace tut
         ensure_equals("Allow cheaper", !tariff.TariffChangeIsAllowed(cheaper).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equals(td);
+        TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equals).empty(), true);
+        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
@@ -443,9 +443,9 @@ namespace tut
         ensure_equals("Allow cheaper", !tariff.TariffChangeIsAllowed(cheaper).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equals(td);
+        TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equals).empty(), true);
+        ensure_equals("Allow equal", !tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
