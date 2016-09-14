@@ -418,7 +418,7 @@ namespace tut
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal).empty(), false);
+        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
