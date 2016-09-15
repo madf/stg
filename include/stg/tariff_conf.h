@@ -149,6 +149,7 @@ struct TARIFF_CONF
     std::string        name;
     TARIFF::PERIOD     period;
     TARIFF::CHANGE_POLICY changePolicy;
+    time_t changePolicyTimeout;
 
     TARIFF_CONF()
         : fee(0),
@@ -157,7 +158,8 @@ struct TARIFF_CONF
           passiveCost(0),
           name(),
           period(TARIFF::MONTH),
-          changePolicy(TARIFF::ALLOW)
+          changePolicy(TARIFF::ALLOW),
+          changePolicyTimeout(0)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -167,7 +169,8 @@ struct TARIFF_CONF
           passiveCost(0),
           name(n),
           period(TARIFF::MONTH),
-          changePolicy(TARIFF::ALLOW)
+          changePolicy(TARIFF::ALLOW),
+          changePolicyTimeout(0)
         {}
 };
 //-----------------------------------------------------------------------------
