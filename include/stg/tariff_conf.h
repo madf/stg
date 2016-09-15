@@ -183,7 +183,8 @@ struct TARIFF_CONF_RES
           passiveCost(),
           name(),
           period(),
-          changePolicy()
+          changePolicy(),
+          changePolicyTimeout()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
@@ -195,6 +196,7 @@ struct TARIFF_CONF_RES
         name        = tc.name;
         period      = tc.period;
         changePolicy = tc.changePolicy;
+        changePolicyTimeout = tc.changePolicyTimeout;
         return *this;
         }
 
@@ -208,6 +210,7 @@ struct TARIFF_CONF_RES
         traffType.maybeSet(tc.traffType);
         period.maybeSet(tc.period);
         changePolicy.maybeSet(tc.changePolicy);
+        changePolicyTimeout.maybeSet(tc.changePolicyTimeout);
         return tc;
         }
 
@@ -218,6 +221,7 @@ struct TARIFF_CONF_RES
     RESETABLE<std::string>        name;
     RESETABLE<TARIFF::PERIOD>     period;
     RESETABLE<TARIFF::CHANGE_POLICY> changePolicy;
+    RESETABLE<time_t>             changePolicyTimeout;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
