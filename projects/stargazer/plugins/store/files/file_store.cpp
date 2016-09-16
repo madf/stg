@@ -1470,6 +1470,14 @@ if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
     td->tariffConf.changePolicy = TARIFF::ALLOW;
 else
     td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+
+if (conf.ReadTime("ChangePolicyTimeout", &td->tariffConf.changePolicyTimeout, 0) < 0)
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Cannot read tariff " + tariffName + ". Parameter ChangePolicyTimeout";
+    printfd(__FILE__, "FILES_STORE::RestoreTariff - changepolicytimeout read failed for tariff '%s'\n", tariffName.c_str());
+    return -1;
+    }
 return 0;
 }
 //-----------------------------------------------------------------------------
