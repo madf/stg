@@ -73,6 +73,7 @@ public:
     double  GetFree() const { return tariffData.tariffConf.free; }
     PERIOD  GetPeriod() const { return tariffData.tariffConf.period; }
     CHANGE_POLICY GetChangePolicy() const { return tariffData.tariffConf.changePolicy; }
+    time_t GetChangePolicyTimeout() const { return tariffData.tariffConf.changePolicyTimeout; }
 
     void    Print() const;
 
