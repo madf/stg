@@ -18,7 +18,7 @@ class TEST_AUTH : public AUTH {
 
         int Start() { return 0; }
         int Stop() { return 0; }
-        int Reload() { return 0; }
+        int Reload(const MODULE_SETTINGS&) { return 0; }
         bool IsRunning() { return true; }
         const std::string & GetStrError() const { return strError; }
         std::string GetVersion() const { return ""; }

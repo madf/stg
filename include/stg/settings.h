@@ -45,6 +45,8 @@ public:
     virtual const std::string &              GetMonitorDir() const = 0;
     virtual bool                             GetMonitoring() const = 0;
     virtual const std::vector<std::string> & GetScriptParams() const = 0;
+    virtual bool                             GetDisableSessionLog() const = 0;
+    virtual const std::vector<std::string> & GetFilterParamsLog() const = 0;
 };
 //-----------------------------------------------------------------------------
 
