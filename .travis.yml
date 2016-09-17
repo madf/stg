@@ -1,0 +1,14 @@
+# Enable Trusty dist, Standard is ancient.
+dist: trusty
+# Enable C++ support
+language:
+  - c
+  - cpp
+# # Compiler selection
+compiler:
+  - clang
+  - gcc
+# Build steps
+script:
+  - cd projects/stargazer
+  - ./build debug && make clean && make
