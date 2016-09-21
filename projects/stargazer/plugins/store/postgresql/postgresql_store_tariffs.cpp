@@ -318,7 +318,8 @@ int32_t id;
         query << ", period = '" << TARIFF::PeriodToString(td.tariffConf.period) << "'";
 
     if (version > 7)
-        query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "'";
+        query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "', \
+                  change_policy_timeout = CAST('" << Int2TS(td.tariffConf.changePolicyTimeout) << "' AS TIMESTAMP)";
 
     query << " WHERE pk_tariff = " << id;
 
