@@ -369,7 +369,8 @@ if(!IsTablePresent("tariffs",sock))
     res += "PassiveCost DOUBLE DEFAULT 0.0, Fee DOUBLE DEFAULT 0.0,"
         "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '',"
         "period VARCHAR(32) NOT NULL DEFAULT 'month',"
-        "change_policy VARCHAR(32) NOT NULL DEFAULT 'allow')";
+        "change_policy VARCHAR(32) NOT NULL DEFAULT 'allow',"
+        "change_policy_timeout TIMEZONE NOT NULL DEFAULT '1970-01-01 00:00:00')";
     
     if(MysqlQuery(res.c_str(),sock))
     {
