@@ -425,7 +425,7 @@ if(!IsTablePresent("tariffs",sock))
     res += "PassiveCost=0.0, Fee=10.0, Free=0,"\
         "SinglePrice0=1, SinglePrice1=1,PriceDayA1=0.75,PriceDayB1=0.75,"\
         "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month',"\
-        "change_policy='allow'";
+        "change_policy='allow', change_policy_timeout='1970-01-01 00:00:00'";
     
     if(MysqlQuery(res.c_str(),sock))
     {
