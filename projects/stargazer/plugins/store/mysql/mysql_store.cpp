@@ -606,7 +606,7 @@ if (schemaVersion  < 1)
 if (schemaVersion  < 2)
     {
     if (MysqlQuery("ALTER TABLE tariffs ADD change_policy VARCHAR(32) NOT NULL DEFAULT 'allow'", sock) ||
-        MysqlQuery("ALTER TABLE tariffs ADD change_policy_timeout TIMEZONE NOT NULL DEFAULT '1970-01-01 00:00:00'", sock))
+        MysqlQuery("ALTER TABLE tariffs ADD change_policy_timeout TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00'", sock))
         {
         errorStr = "Couldn't update tariffs table to version 2. With error:\n";
         errorStr += mysql_error(sock);
