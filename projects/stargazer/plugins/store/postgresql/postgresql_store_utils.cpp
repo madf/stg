@@ -112,35 +112,6 @@ delete[] buf;
 return 0;
 }
 
-std::string POSTGRESQL_STORE::Int2TS(time_t ts) const
-{
-char buf[32];
-struct tm brokenTime;
-
-brokenTime.tm_wday = 0;
-brokenTime.tm_yday = 0;
-brokenTime.tm_isdst = 0;
-
-gmtime_r(&ts, &brokenTime);
-
-strftime(buf, 32, "%Y-%m-%d %H:%M:%S", &brokenTime);
-
-return buf;
-}
-
-time_t POSTGRESQL_STORE::TS2Int(const std::string & ts) const
-{
-struct tm brokenTime;
-
-brokenTime.tm_wday = 0;
-brokenTime.tm_yday = 0;
-brokenTime.tm_isdst = 0;
-
-stg_strptime(ts.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime);
-
-return stg_timegm(&brokenTime);
-}
-
 void POSTGRESQL_STORE::MakeDate(std::string & date, int year, int month) const
 {
 struct tm brokenTime;
