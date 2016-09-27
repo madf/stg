@@ -33,6 +33,7 @@
 
 #include <libpq-fe.h>
 
+#include "stg/common.h"
 #include "postgresql_store.h"
 #include "stg/locker.h"
 #include "stg/message.h"
@@ -89,8 +90,8 @@ query << "SELECT sp_add_message("
       << "'" << elogin << "', "
       << "CAST(1 AS SMALLINT), " // Here need to be a version, but, it's uninitiated actually
       << "CAST(" << msg->header.type << " AS SMALLINT), "
-      << "CAST('" << Int2TS(msg->header.lastSendTime) << "' AS TIMESTAMP), "
-      << "CAST('" << Int2TS(msg->header.creationTime) << "' AS TIMESTAMP), "
+      << "CAST('" << formatTime(msg->header.lastSendTime) << "' AS TIMESTAMP), "
+      << "CAST('" << formatTime(msg->header.creationTime) << "' AS TIMESTAMP), "
       << msg->header.showTime << ", "
       << "CAST(" << msg->header.repeat << " AS SMALLINT), "
       << msg->header.repeatPeriod << ", "
@@ -192,8 +193,8 @@ query << "UPDATE tb_messages SET "
           << "fk_user = (SELECT pk_user FROM tb_users WHERE name = '" << elogin << "'), "
           << "ver = " << msg.header.ver << ", "
           << "msg_type = " << msg.header.type << ", "
-          << "last_send_time = CAST('" << Int2TS(msg.header.lastSendTime) << "' AS TIMESTAMP), "
-          << "creation_time = CAST('" << Int2TS(msg.header.creationTime) << "' AS TIMESTAMP), "
+          << "last_send_time = CAST('" << formatTime(msg.header.lastSendTime) << "' AS TIMESTAMP), "
+          << "creation_time = CAST('" << formatTime(msg.header.creationTime) << "' AS TIMESTAMP), "
           << "show_time = " << msg.header.showTime << ", "
           << "repeat = " << msg.header.repeat << ", "
           << "repeat_period = " << msg.header.repeatPeriod << ", "
@@ -287,8 +288,8 @@ if (tuples != 1)
 
 str2x(PQgetvalue(result, 0, 0), msg->header.ver);
 str2x(PQgetvalue(result, 0, 1), msg->header.type);
-msg->header.lastSendTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, 0, 2)));
-msg->header.creationTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, 0, 3)));
+msg->header.lastSendTime = static_cast<unsigned int>(readTime(PQgetvalue(result, 0, 2)));
+msg->header.creationTime = static_cast<unsigned int>(readTime(PQgetvalue(result, 0, 3)));
 str2x(PQgetvalue(result, 0, 4), msg->header.showTime);
 str2x(PQgetvalue(result, 0, 5), msg->header.repeat);
 str2x(PQgetvalue(result, 0, 6), msg->header.repeatPeriod);
@@ -424,8 +425,8 @@ for (int i = 0; i < tuples; ++i)
     tuple << PQgetvalue(result, i, 0) << " ";
     tuple << PQgetvalue(result, i, 1) << " ";
     tuple << PQgetvalue(result, i, 2) << " ";
-    header.lastSendTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, i, 3)));
-    header.creationTime = static_cast<unsigned int>(TS2Int(PQgetvalue(result, i, 4)));
+    header.lastSendTime = static_cast<unsigned int>(readTime(PQgetvalue(result, i, 3)));
+    header.creationTime = static_cast<unsigned int>(readTime(PQgetvalue(result, i, 4)));
     tuple << PQgetvalue(result, i, 5) << " ";
     tuple << PQgetvalue(result, i, 6) << " ";
     tuple << PQgetvalue(result, i, 7) << " ";
