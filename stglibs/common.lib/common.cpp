@@ -733,6 +733,35 @@ void SwapBytes(int64_t & value)
     value = temp;
 }
 //---------------------------------------------------------------------------
+std::string formatTime(time_t ts)
+{
+char buf[32];
+struct tm brokenTime;
+
+brokenTime.tm_wday = 0;
+brokenTime.tm_yday = 0;
+brokenTime.tm_isdst = 0;
+
+gmtime_r(&ts, &brokenTime);
+
+strftime(buf, 32, "%Y-%m-%d %H:%M:%S", &brokenTime);
+
+return buf;
+}
+//---------------------------------------------------------------------------
+time_t readTime(const std::string & ts)
+{
+struct tm brokenTime;
+
+brokenTime.tm_wday = 0;
+brokenTime.tm_yday = 0;
+brokenTime.tm_isdst = 0;
+
+stg_strptime(ts.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime);
+
+return stg_timegm(&brokenTime);
+}
+//---------------------------------------------------------------------------
 int str2x(const std::string & str, int32_t & x)
 {
 x = static_cast<int32_t>(strtol(str.c_str(), NULL, 10));
