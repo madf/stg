@@ -33,6 +33,7 @@
 
 #include <libpq-fe.h>
 
+#include "stg/common.h"
 #include "postgresql_store.h"
 #include "stg/locker.h"
 
@@ -319,7 +320,7 @@ int32_t id;
 
     if (version > 7)
         query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "', \
-                  change_policy_timeout = CAST('" << Int2TS(td.tariffConf.changePolicyTimeout) << "' AS TIMESTAMP)";
+                  change_policy_timeout = CAST('" << formatTime(td.tariffConf.changePolicyTimeout) << "' AS TIMESTAMP)";
 
     query << " WHERE pk_tariff = " << id;
 
@@ -516,7 +517,7 @@ if (version > 6)
 if (version > 7)
     {
     td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(PQgetvalue(result, 0, 6));
-    td->tariffConf.changePolicyTimeout = TS2Int(PQgetvalue(result, 0, 7));
+    td->tariffConf.changePolicyTimeout = readTime(PQgetvalue(result, 0, 7));
     }
 
 PQclear(result);
