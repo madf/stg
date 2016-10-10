@@ -7,6 +7,7 @@
 #include <mysql.h>
 #include <errmsg.h>
 
+#include "stg/common.h"
 #include "stg/user_ips.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
@@ -370,7 +371,7 @@ if(!IsTablePresent("tariffs",sock))
         "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '',"
         "period VARCHAR(32) NOT NULL DEFAULT 'month',"
         "change_policy VARCHAR(32) NOT NULL DEFAULT 'allow',"
-        "change_policy_timeout TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00')";
+        "change_policy_timeout TIMESTAMP NOT NULL DEFAULT 0)";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -425,7 +426,7 @@ if(!IsTablePresent("tariffs",sock))
     res += "PassiveCost=0.0, Fee=10.0, Free=0,"\
         "SinglePrice0=1, SinglePrice1=1,PriceDayA1=0.75,PriceDayB1=0.75,"\
         "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month',"\
-        "change_policy='allow', change_policy_timeout='1970-01-01 00:00:00'";
+        "change_policy='allow', change_policy_timeout=0";
     
     if(MysqlQuery(res.c_str(),sock))
     {
@@ -606,7 +607,7 @@ if (schemaVersion  < 1)
 if (schemaVersion  < 2)
     {
     if (MysqlQuery("ALTER TABLE tariffs ADD change_policy VARCHAR(32) NOT NULL DEFAULT 'allow'", sock) ||
-        MysqlQuery("ALTER TABLE tariffs ADD change_policy_timeout TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00'", sock))
+        MysqlQuery("ALTER TABLE tariffs ADD change_policy_timeout TIMESTAMP NOT NULL DEFAULT 0", sock))
         {
         errorStr = "Couldn't update tariffs table to version 2. With error:\n";
         errorStr += mysql_error(sock);
@@ -1664,7 +1665,7 @@ else
     }
 
 if (schemaVersion > 1)
-{
+    {
     str = row[6+8*DIR_NUM];
     param = "ChangePolicy";
 
@@ -1677,10 +1678,24 @@ if (schemaVersion > 1)
         }
 
     td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+
+    str = row[7+8*DIR_NUM];
+    param = "ChangePolicyTimeout";
+
+    if (str.length() == 0)
+        {
+        mysql_free_result(res);
+        errorStr = "Cannot read tariff " + tariffName + ". Parameter " + param;
+        mysql_close(sock);
+        return -1;
+        }
+
+    td->tariffConf.changePolicyTimeout = readTime(str);
     }
 else
     {
     td->tariffConf.changePolicy = TARIFF::ALLOW;
+    td->tariffConf.changePolicyTimeout = 0;
     }
 
 mysql_free_result(res);
