@@ -751,6 +751,9 @@ return buf;
 //---------------------------------------------------------------------------
 time_t readTime(const std::string & ts)
 {
+if (ts == "0000-00-00 00:00:00")
+    return 0;
+
 struct tm brokenTime;
 
 brokenTime.tm_wday = 0;
