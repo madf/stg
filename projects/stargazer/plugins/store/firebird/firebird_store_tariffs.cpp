@@ -283,7 +283,10 @@ try
     if (schemaVersion > 0)
         td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
     if (schemaVersion > 1)
+        {
         td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(Get<std::string>(st, 8));
+        td->tariffConf.changePolicyTimeout = ts2time_t(Get<IBPP::Timestamp>(st, 9));
+        }
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);
