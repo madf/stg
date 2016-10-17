@@ -173,7 +173,12 @@ try
     if (schemaVersion > 0)
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
     if (schemaVersion > 1)
+        {
         st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+        IBPP::Timestamp policyTimeout;
+        time_t2ts(td.tariffConf.changePolicyTimeout, &policyTimeout);
+        st->Set(7, policyTimeout);
+        }
 
     st->Set(7, id);
     st->Execute();
