@@ -115,6 +115,7 @@ void GET_TARIFFS::CreateAnswer()
                   "<TraffType value=\"" + TARIFF::TraffTypeToString(it->tariffConf.traffType) + "\"/>" +
                   "<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>" +
                   "<ChangePolicy value=\"" + TARIFF::ChangePolicyToString(it->tariffConf.changePolicy) + "\"/>" +
+                  "<ChangePolicyTimeout value=\"" + x2str(it->tariffConf.changePolicyTimeout) + "\"/>" +
                   "</tariff>";
         }
 
@@ -297,6 +298,14 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
         if (strcasecmp(el, "ChangePolicy") == 0)
         {
             td.tariffConf.changePolicy = TARIFF::StringToChangePolicy(attr[1]);
+            return 0;
+        }
+
+        if (strcasecmp(el, "ChangePolicyTimeout") == 0)
+        {
+            long int policyTime = 0;
+            if (str2x(attr[1], policyTime) == 0)
+                td.tariffConf.changePolicyTimeout = (time_t)policyTime;
             return 0;
         }
     }
