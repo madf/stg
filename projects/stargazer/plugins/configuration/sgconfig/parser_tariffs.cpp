@@ -303,7 +303,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "ChangePolicyTimeout") == 0)
         {
-            long int policyTime = 0;
+            int64_t policyTime = 0;
             if (str2x(attr[1], policyTime) == 0)
                 td.tariffConf.changePolicyTimeout = (time_t)policyTime;
             return 0;
