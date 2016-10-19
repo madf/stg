@@ -160,7 +160,8 @@ try
     if (schemaVersion > 0)
         query += ", period = ?";
     if (schemaVersion > 1)
-        query += ", change_policy = ?";
+        query += ", change_policy = ?, \
+                    change_policy_timeout = ?";
 
     query += " where pk_tariff = ?";
 
@@ -180,7 +181,7 @@ try
         st->Set(7, policyTimeout);
         }
 
-    st->Set(7, id);
+    st->Set(8, id);
     st->Execute();
     st->Close();
 
