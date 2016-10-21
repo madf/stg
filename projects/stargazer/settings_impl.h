@@ -93,6 +93,8 @@ public:
     unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
     unsigned            GetFeeChargeType() const { return feeChargeType; }
     bool                GetReconnectOnTariffChange() const { return reconnectOnTariffChange; }
+    bool                GetDisableSessionLog() const { return disableSessionLog; }
+    const std::vector<std::string> & GetFilterParamsLog() const { return filterParamsLog; }
 
     const std::string & GetModulesPath() const { return modulesPath; }
     const MODULE_SETTINGS & GetStoreModuleSettings() const
@@ -137,6 +139,8 @@ private:
     unsigned    messageTimeout;
     unsigned    feeChargeType;
     bool        reconnectOnTariffChange;
+    bool        disableSessionLog;
+    std::vector<std::string> filterParamsLog;
 
     std::vector<MODULE_SETTINGS> modulesSettings;
     MODULE_SETTINGS storeModuleSettings;

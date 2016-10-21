@@ -80,7 +80,7 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
            const USERS * u,
            const SERVICES & svcs)
     : users(u),
-      property(s->GetScriptsDir()),
+      property(*s),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
       id(0),
@@ -150,7 +150,7 @@ USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
                      const USERS * u,
                      const SERVICES & svcs)
     : users(u),
-      property(s->GetScriptsDir()),
+      property(*s),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
       id(0),
@@ -237,7 +237,7 @@ pthread_mutex_init(&mutex, &attr);
 USER_IMPL::USER_IMPL(const USER_IMPL & u)
     : USER(),
       users(u.users),
-      property(u.settings->GetScriptsDir()),
+      property(*u.settings),
       WriteServLog(GetStgLogger()),
       lastScanMessages(0),
       login(u.login),
@@ -621,7 +621,7 @@ if (!fakeConnect)
     connected = true;
     }
 
-if (store->WriteUserConnect(login, currIP))
+if (!settings->GetDisableSessionLog() && store->WriteUserConnect(login, currIP))
     {
     WriteServLog("Cannot write connect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -685,8 +685,8 @@ std::string reasonMessage(reason);
 if (!lastDisconnectReason.empty())
     reasonMessage += ": " + lastDisconnectReason;
 
-if (store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload,
-                               cash, freeMb, reasonMessage))
+if (!settings->GetDisableSessionLog() && store->WriteUserDisconnect(login, up, down, sessionUpload, sessionDownload,
+                                                                    cash, freeMb, reasonMessage))
     {
     WriteServLog("Cannot write disconnect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
@@ -1563,13 +1563,18 @@ else if (!oldValue && newValue && user->IsInetable())
 //-----------------------------------------------------------------------------
 void CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
 {
+STG_LOCKER lock(&user->mutex);
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
     user->Disconnect(false, "Change tariff");
 user->tariff = user->tariffs->FindByName(newTariff);
 if (user->settings->GetReconnectOnTariffChange() &&
     !user->authorizedBy.empty() &&
     user->IsInetable())
+    {
+    // This notifier gets called *before* changing the tariff, and in Connect we want to see new tariff name.
+    user->property.Conf().tariffName = newTariff;
     user->Connect(false);
+    }
 }
 //-----------------------------------------------------------------------------
 void CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)

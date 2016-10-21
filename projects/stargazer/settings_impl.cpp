@@ -63,8 +63,10 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       messageTimeout(0),
       feeChargeType(0),
       reconnectOnTariffChange(false),
+      disableSessionLog(false),
       logger(GetStgLogger())
 {
+    filterParamsLog.push_back("*");
 }
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
@@ -93,6 +95,8 @@ SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
       messageTimeout(rval.messageTimeout),
       feeChargeType(rval.feeChargeType),
       reconnectOnTariffChange(rval.reconnectOnTariffChange),
+      disableSessionLog(rval.disableSessionLog),
+      filterParamsLog(rval.filterParamsLog),
       modulesSettings(rval.modulesSettings),
       storeModuleSettings(rval.storeModuleSettings),
       logger(GetStgLogger())
@@ -127,6 +131,8 @@ SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
     messageTimeout = rhs.messageTimeout;
     feeChargeType = rhs.feeChargeType;
     reconnectOnTariffChange = rhs.reconnectOnTariffChange;
+    disableSessionLog = rhs.disableSessionLog;
+    filterParamsLog = rhs.filterParamsLog;
 
     modulesSettings = rhs.modulesSettings;
     storeModuleSettings = rhs.storeModuleSettings;
@@ -395,6 +401,22 @@ while (node)
             }
         }
 
+    if (strcasecmp(node->getName(), "DisableSessionLog") == 0)
+        {
+        if (ParseYesNo(node->getValue(0), &disableSessionLog) != 0)
+            {
+            strError = "Incorrect DisableSessionLog value: \'" + std::string(node->getValue(0)) + "\'";
+            return -1;
+            }
+        }
+
+    if (strcasecmp(node->getName(), "FilterParamsLog") == 0)
+        {
+        filterParamsLog.clear();
+        for (int i = 0; node->getValue(i) != NULL; ++i)
+            filterParamsLog.push_back(node->getValue(i));
+        }
+
     if (strcasecmp(node->getName(), "DirNames") == 0)
         {
         const DOTCONFDocumentNode * child = node->getChildNode();
@@ -464,9 +486,7 @@ while (node)
     if (strcasecmp(node->getName(), "ScriptParams") == 0)
         {
         for (int i = 0; node->getValue(i) != NULL; ++i)
-            {
             scriptParams.push_back(node->getValue(i));
-            }
         }
     node = node->getNextNode();
     }

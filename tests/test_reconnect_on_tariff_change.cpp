@@ -11,6 +11,9 @@
 #include "testusers.h"
 #include "testservices.h"
 
+namespace
+{
+
 class AFTER_CONNECTED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<bool>,
                                  private NONCOPYABLE {
 public:
@@ -40,6 +43,8 @@ class TEST_SETTINGS_LOCAL : public TEST_SETTINGS {
     private:
         bool reconnectOnTariffChange;
 };
+
+}
 
 namespace tut
 {
