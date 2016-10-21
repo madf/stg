@@ -171,14 +171,11 @@ try
     st->Set(2, td.tariffConf.free);
     st->Set(3, td.tariffConf.passiveCost);
     st->Set(4, td.tariffConf.traffType);
-    if (schemaVersion == 0)
-        st->Set(num, id);
 
     if (schemaVersion > 0)
         {
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
-        if (schemaVersion == 1)
-            st->Set(num + 1, id);
+        ++num;
         }
 
     if (schemaVersion > 1)
@@ -187,10 +184,10 @@ try
         IBPP::Timestamp policyTimeout;
         time_t2ts(td.tariffConf.changePolicyTimeout, &policyTimeout);
         st->Set(7, policyTimeout);
-        if (schemaVersion == 2)
-            st->Set(num + 3, id);
+        num += 2;
         }
 
+    st->Set(num, id);
     st->Execute();
     st->Close();
 
