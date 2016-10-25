@@ -1178,10 +1178,24 @@ if (nextTariff.ConstData() != "")
     {
     const TARIFF * nt = tariffs->FindByName(nextTariff);
     if (nt == NULL)
+        {
         WriteServLog("Cannot change tariff for user %s. Tariff %s not exist.",
                      login.c_str(), property.tariffName.Get().c_str());
+        }
     else
-        property.tariffName.Set(nextTariff, sysAdmin, login, store);
+        {
+        std::string message = tariff->TariffChangeIsAllowed(*nt);
+        if (message.empty())
+            {
+            property.tariffName.Set(nextTariff, sysAdmin, login, store);
+            }
+        else
+            {
+            WriteServLog("Tariff change is prohibited for user %s. %s",
+                         login.c_str(),
+                         message.c_str());
+            }
+        }
     ResetNextTariff();
     WriteConf();
     }

@@ -73,6 +73,7 @@ public:
     double  GetFree() const { return tariffData.tariffConf.free; }
     PERIOD  GetPeriod() const { return tariffData.tariffConf.period; }
     CHANGE_POLICY GetChangePolicy() const { return tariffData.tariffConf.changePolicy; }
+    time_t GetChangePolicyTimeout() const { return tariffData.tariffConf.changePolicyTimeout; }
 
     void    Print() const;
 
@@ -88,6 +89,7 @@ public:
     TARIFF_IMPL & operator=(const TARIFF_IMPL & t);
     bool     operator==(const TARIFF_IMPL & rhs) const { return GetName() == rhs.GetName(); }
     bool     operator!=(const TARIFF_IMPL & rhs) const { return GetName() != rhs.GetName(); }
+    std::string TariffChangeIsAllowed(const TARIFF & to) const;
 
 private:
     TARIFF_DATA     tariffData;

@@ -128,9 +128,6 @@ private:
 
     int EscapeString(std::string & value) const;
 
-    std::string Int2TS(time_t value) const;
-    time_t TS2Int(const std::string & value) const;
-
     int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
 
     int SaveUserServices(uint32_t uid, const std::vector<std::string> & services) const;

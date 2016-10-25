@@ -1523,6 +1523,14 @@ if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
     td->tariffConf.changePolicy = TARIFF::ALLOW;
 else
     td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+
+if (conf.ReadTime("ChangePolicyTimeout", &td->tariffConf.changePolicyTimeout, 0) < 0)
+    {
+    STG_LOCKER lock(&mutex);
+    errorStr = "Cannot read tariff " + tariffName + ". Parameter ChangePolicyTimeout";
+    printfd(__FILE__, "FILES_STORE::RestoreTariff - changepolicytimeout read failed for tariff '%s'\n", tariffName.c_str());
+    return -1;
+    }
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1585,6 +1593,7 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
     cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     cf.WriteString("ChangePolicy", TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+    cf.WriteTime("ChangePolicyTimeout", td.tariffConf.changePolicyTimeout);
     }
 
 return 0;
