@@ -147,6 +147,9 @@ else
 //-----------------------------------------------------------------------------
 std::string TARIFF_IMPL::TariffChangeIsAllowed(const TARIFF & to) const
 {
+time_t timeout = GetChangePolicyTimeout();
+if (stgTime > timeout && timeout != 0)
+    return "";
 switch (GetChangePolicy())
     {
     case TARIFF::ALLOW:
