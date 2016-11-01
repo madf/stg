@@ -242,7 +242,8 @@ std::cout << Indent(level, true) << "name: " << conf.name << "\n"
           << Indent(level)       << "passive cost: " << conf.passiveCost << "\n"
           << Indent(level)       << "traff type: " << TraffTypeToString(conf.traffType) << "\n"
           << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n"
-          << Indent(level)       << "change policy: " << ChangePolicyToString(conf.changePolicy) << "\n";
+          << Indent(level)       << "change policy: " << ChangePolicyToString(conf.changePolicy) << "\n"
+          << Indent(level)       << "change policy timeout: " << formatTime(conf.changePolicyTimeout) << "\n";
 }
 
 void PrintTariff(const STG::GET_TARIFF::INFO & info, size_t level = 0)
@@ -262,6 +263,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("passive-cost", "<cost>", "\tpassive 
 params.push_back(SGCONF::API_ACTION::PARAM("traff-type", "<type>", "\ttraffic type (up, down, up+down, max)"));
 params.push_back(SGCONF::API_ACTION::PARAM("period", "<period>", "\ttarification period (daily, monthly)"));
 params.push_back(SGCONF::API_ACTION::PARAM("change-policy", "<policy>", "tariff change policy (allow, to_cheap, to_expensive, deny)"));
+params.push_back(SGCONF::API_ACTION::PARAM("change-policy-timeout", "<yyyy-mm-dd hh:mm:ss>", "tariff change policy timeout"));
 params.push_back(SGCONF::API_ACTION::PARAM("times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("day-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated night prices for each direction"));
