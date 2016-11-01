@@ -116,6 +116,15 @@ else
 return true;
 }
 
+template <typename T>
+bool GetChangePolicyTimeout(const char ** attr, T & value, const std::string & attrName)
+{
+if (!CheckValue(attr, attrName))
+    return false;
+value = readTime(attr[1]);
+return true;
+}
+
 template <typename A, typename T>
 bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
 {
