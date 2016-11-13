@@ -396,6 +396,7 @@ while (it != pending.end() && count < 256)
             {
             printfd(__FILE__, "Disconnect user '%s'\n", it->login.c_str());
             // Disconnect existing user
+            uit->params = it->params;
             Disconnect(*uit);
             users.erase(uit);
             }
