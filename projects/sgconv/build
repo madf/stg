@@ -99,7 +99,6 @@ else
             then
                 DEFS="$DEFS -DDARWIN"
                 LIB_THREAD=-lpthread
-                LIBICONV=""
             else
                 LIB_THREAD=-lc_r
             fi
