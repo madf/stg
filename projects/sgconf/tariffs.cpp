@@ -94,6 +94,14 @@ else
     throw SGCONF::ACTION::ERROR("Change policy should be 'allow', 'to_cheap', 'to_expensive' or 'deny'. Got: '" + value + "'");
 }
 
+void ConvChangePolicyTimeout(const std::string & value, RESETABLE<time_t> & res)
+{
+struct tm brokenTime;
+if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
+    throw SGCONF::ACTION::ERROR("Credit expiration should be in format 'YYYY-MM-DD HH:MM:SS'. Got: '" + value + "'");
+res = stg_timegm(&brokenTime);
+}
+
 void ConvTraffType(const std::string & value, RESETABLE<TARIFF::TRAFF_TYPE> & res)
 {
 std::string lowered = ToLower(value);
@@ -369,7 +377,7 @@ SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
 SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
 SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
 SGCONF::MaybeSet(options, "change-policy", conf.tariffConf.changePolicy, ConvChangePolicy);
-SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, readTime(conf.tariffConf.changePolicyTimeout));
+SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, ConvChangePolicyTimeout);
 SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
 SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
 SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
@@ -404,7 +412,7 @@ SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
 SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
 SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
 SGCONF::MaybeSet(options, "change-policy", conf.tariffConf.changePolicy, ConvChangePolicy);
-SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, readTime(conf.tariffConf.changePolicyTimeout));
+SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, ConvChangePolicyTimeout);
 SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
 SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
 SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
