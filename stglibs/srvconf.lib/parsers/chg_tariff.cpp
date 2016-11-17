@@ -78,9 +78,7 @@ if (!data.tariffConf.changePolicy.empty())
         case TARIFF::DENY: stream << "<changePolicy value=\"deny\"/>"; break;
         }
 
-if (!data.tariffConf.changePolicyTimeout.empty())
-    stream << "<changePolicyTimeout value=\"" + formatTime(data.tariffConf.changePolicyTimeout.data()) + "\"/>";
-
+appendResetableTag(stream, "changePolicyTimeout", data.tariffConf.changePolicyTimeout);
 for (size_t i = 0; i < DIR_NUM; ++i)
     if (!data.dirPrice[i].hDay.empty() &&
         !data.dirPrice[i].mDay.empty() &&
