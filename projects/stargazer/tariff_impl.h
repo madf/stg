@@ -89,7 +89,7 @@ public:
     TARIFF_IMPL & operator=(const TARIFF_IMPL & t);
     bool     operator==(const TARIFF_IMPL & rhs) const { return GetName() == rhs.GetName(); }
     bool     operator!=(const TARIFF_IMPL & rhs) const { return GetName() != rhs.GetName(); }
-    std::string TariffChangeIsAllowed(const TARIFF & to) const;
+    std::string TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const;
 
 private:
     TARIFF_DATA     tariffData;
