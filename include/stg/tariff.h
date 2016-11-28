@@ -68,7 +68,7 @@ public:
     virtual int64_t GetTraffByType(uint64_t up, uint64_t down) const = 0;
     virtual int     GetThreshold(int dir) const = 0;
     virtual const TARIFF_DATA & GetTariffData() const = 0;
-    virtual std::string TariffChangeIsAllowed(const TARIFF & to) const = 0;
+    virtual std::string TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const = 0;
 };
 
 inline
