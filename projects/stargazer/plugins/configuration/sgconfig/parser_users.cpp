@@ -598,7 +598,7 @@ int CHG_USER::ApplyChanges()
         if (newTariff)
         {
             const TARIFF * tariff = u->GetTariff();
-            std::string message = tariff->TariffChangeIsAllowed(*newTariff);
+            std::string message = tariff->TariffChangeIsAllowed(*newTariff, stgTime);
             if (message.empty())
             {
                 if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
