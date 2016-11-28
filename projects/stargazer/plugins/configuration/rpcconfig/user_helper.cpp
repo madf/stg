@@ -437,7 +437,7 @@ if ((it = structVal.find("tariff")) != structVal.end())
     if (newTariff)
         {
         const TARIFF * currentTariff = ptr->GetTariff();
-        std::string message = currentTariff->TariffChangeIsAllowed(*newTariff);
+        std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, stgTime);
         if (message.empty())
             {
             if (ptr->GetProperty().tariffName.Get() != tariff)
