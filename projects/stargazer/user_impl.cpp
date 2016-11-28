@@ -1184,7 +1184,7 @@ if (nextTariff.ConstData() != "")
         }
     else
         {
-        std::string message = tariff->TariffChangeIsAllowed(*nt);
+        std::string message = tariff->TariffChangeIsAllowed(*nt, stgTime);
         if (message.empty())
             {
             property.tariffName.Set(nextTariff, sysAdmin, login, store);
