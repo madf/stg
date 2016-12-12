@@ -148,7 +148,7 @@ else
 std::string TARIFF_IMPL::TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const
 {
 time_t timeout = GetChangePolicyTimeout();
-if ((currentTime > timeout) && (timeout != 0))
+if (currentTime > timeout && timeout != 0)
     return "";
 switch (GetChangePolicy())
     {
@@ -167,5 +167,6 @@ switch (GetChangePolicy())
     case TARIFF::DENY:
         return "Current tariff '" + GetName() + "', new tariff '" + to.GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
     }
+return "";
 }
 //-----------------------------------------------------------------------------
