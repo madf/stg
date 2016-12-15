@@ -35,7 +35,7 @@ class TARIFFS;
 class ADMINS;
 class TRAFFCOUNTER;
 class SETTINGS;
-class RAW_PACKET;
+struct RAW_PACKET;
 
 class TRAFFCOUNTER;
 
