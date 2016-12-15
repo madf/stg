@@ -31,6 +31,7 @@
 #include <time.h>
 #else
 #include <ctime>
+#include <climits> // NAME_MAX
 #endif
 #include <string>
 #include <sstream>
