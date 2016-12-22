@@ -28,6 +28,18 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
+std::string ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
+{
+switch (changePolicy)
+    {
+    case TARIFF::ALLOW: return "allow";
+    case TARIFF::TO_CHEAP: return "to_cheap";
+    case TARIFF::TO_EXPENSIVE: return "to_expensive";
+    case TARIFF::DENY: return "deny";
+    }
+return "unknown";
+}
+
 std::string PeriodToString(TARIFF::PERIOD period)
 {
 switch (period)
@@ -65,6 +77,29 @@ else if (lowered == "monthly")
     res = TARIFF::MONTH;
 else
     throw SGCONF::ACTION::ERROR("Period should be 'daily' or 'monthly'. Got: '" + value + "'");
+}
+
+void ConvChangePolicy(const std::string & value, RESETABLE<TARIFF::CHANGE_POLICY> & res)
+{
+std::string lowered = ToLower(value);
+if (lowered == "allow")
+    res = TARIFF::ALLOW;
+else if (lowered == "to_cheap")
+    res = TARIFF::TO_CHEAP;
+else if (lowered == "to_expensive")
+    res = TARIFF::TO_EXPENSIVE;
+else if (lowered == "deny")
+    res = TARIFF::DENY;
+else
+    throw SGCONF::ACTION::ERROR("Change policy should be 'allow', 'to_cheap', 'to_expensive' or 'deny'. Got: '" + value + "'");
+}
+
+void ConvChangePolicyTimeout(const std::string & value, RESETABLE<time_t> & res)
+{
+struct tm brokenTime;
+if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
+    throw SGCONF::ACTION::ERROR("Credit expiration should be in format 'YYYY-MM-DD HH:MM:SS'. Got: '" + value + "'");
+res = stg_timegm(&brokenTime);
 }
 
 void ConvTraffType(const std::string & value, RESETABLE<TARIFF::TRAFF_TYPE> & res)
@@ -214,7 +249,9 @@ std::cout << Indent(level, true) << "name: " << conf.name << "\n"
           << Indent(level)       << "free mb: " << conf.free << "\n"
           << Indent(level)       << "passive cost: " << conf.passiveCost << "\n"
           << Indent(level)       << "traff type: " << TraffTypeToString(conf.traffType) << "\n"
-          << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n";
+          << Indent(level)       << "period: " << PeriodToString(conf.period) << "\n"
+          << Indent(level)       << "change policy: " << ChangePolicyToString(conf.changePolicy) << "\n"
+          << Indent(level)       << "change policy timeout: " << formatTime(conf.changePolicyTimeout) << "\n";
 }
 
 void PrintTariff(const STG::GET_TARIFF::INFO & info, size_t level = 0)
@@ -233,6 +270,8 @@ params.push_back(SGCONF::API_ACTION::PARAM("free", "<free mb>", "\tprepaid traff
 params.push_back(SGCONF::API_ACTION::PARAM("passive-cost", "<cost>", "\tpassive cost"));
 params.push_back(SGCONF::API_ACTION::PARAM("traff-type", "<type>", "\ttraffic type (up, down, up+down, max)"));
 params.push_back(SGCONF::API_ACTION::PARAM("period", "<period>", "\ttarification period (daily, monthly)"));
+params.push_back(SGCONF::API_ACTION::PARAM("change-policy", "<policy>", "tariff change policy (allow, to_cheap, to_expensive, deny)"));
+params.push_back(SGCONF::API_ACTION::PARAM("change-policy-timeout", "<yyyy-mm-dd hh:mm:ss>", "tariff change policy timeout"));
 params.push_back(SGCONF::API_ACTION::PARAM("times", "<hh:mm-hh:mm, ...>", "coma-separated day time-spans for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("day-prices", "<price/price, ...>", "coma-separated day prices for each direction"));
 params.push_back(SGCONF::API_ACTION::PARAM("night-prices", "<price/price, ...>", "coma-separated night prices for each direction"));
@@ -337,6 +376,8 @@ SGCONF::MaybeSet(options, "free", conf.tariffConf.free);
 SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
 SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
 SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
+SGCONF::MaybeSet(options, "change-policy", conf.tariffConf.changePolicy, ConvChangePolicy);
+SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, ConvChangePolicyTimeout);
 SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
 SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
 SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
@@ -370,6 +411,8 @@ SGCONF::MaybeSet(options, "free", conf.tariffConf.free);
 SGCONF::MaybeSet(options, "passive-cost", conf.tariffConf.passiveCost);
 SGCONF::MaybeSet(options, "traff-type", conf.tariffConf.traffType, ConvTraffType);
 SGCONF::MaybeSet(options, "period", conf.tariffConf.period, ConvPeriod);
+SGCONF::MaybeSet(options, "change-policy", conf.tariffConf.changePolicy, ConvChangePolicy);
+SGCONF::MaybeSet(options, "change-policy-timeout", conf.tariffConf.changePolicyTimeout, ConvChangePolicyTimeout);
 SGCONF::MaybeSet(options, "times", conf.dirPrice, ConvTimes);
 SGCONF::MaybeSet(options, "day-prices", conf.dirPrice, ConvDayPrices);
 SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);

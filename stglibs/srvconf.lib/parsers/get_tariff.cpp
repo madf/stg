@@ -97,6 +97,34 @@ else
 return true;
 }
 
+template <typename T>
+bool GetChangePolicy(const char ** attr, T & value, const std::string & attrName)
+{
+if (!CheckValue(attr, attrName))
+    return false;
+std::string type(attr[1]);
+if (type == "allow")
+        value = TARIFF::ALLOW;
+else if (type == "to_cheap")
+        value = TARIFF::TO_CHEAP;
+else if (type == "to_expensive")
+        value = TARIFF::TO_EXPENSIVE;
+else if (type == "deny")
+        value = TARIFF::DENY;
+else
+    return false;
+return true;
+}
+
+template <typename T>
+bool GetChangePolicyTimeout(const char ** attr, T & value, const std::string & attrName)
+{
+if (!CheckValue(attr, attrName))
+    return false;
+value = readTime(attr[1]);
+return true;
+}
+
 template <typename A, typename T>
 bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
 {
@@ -131,6 +159,8 @@ GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "free", info.tariffConf.free);
     AddParser(propertyParsers, "traffType", info.tariffConf.traffType, GetTraffType);
     AddParser(propertyParsers, "period", info.tariffConf.period, GetPeriod);
+    AddParser(propertyParsers, "changePolicy", info.tariffConf.changePolicy, GetChangePolicy);
+    AddParser(propertyParsers, "changePolicyTimeout", info.tariffConf.changePolicyTimeout, GetChangePolicyTimeout);
     for (size_t i = 0; i < DIR_NUM; ++i)
         AddParser(propertyParsers, "time" + unsigned2str(i), info.dirPrice[i], GetTimeSpan);
     AddAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DIRPRICE_DATA::priceDayA, GetSlashedValue);
