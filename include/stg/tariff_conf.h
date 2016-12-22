@@ -148,6 +148,8 @@ struct TARIFF_CONF
     double             passiveCost;
     std::string        name;
     TARIFF::PERIOD     period;
+    TARIFF::CHANGE_POLICY changePolicy;
+    time_t changePolicyTimeout;
 
     TARIFF_CONF()
         : fee(0),
@@ -155,7 +157,9 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW),
+          changePolicyTimeout(0)
         {}
 
     TARIFF_CONF(const std::string & n)
@@ -164,7 +168,9 @@ struct TARIFF_CONF
           traffType(TARIFF::TRAFF_UP_DOWN),
           passiveCost(0),
           name(n),
-          period(TARIFF::MONTH)
+          period(TARIFF::MONTH),
+          changePolicy(TARIFF::ALLOW),
+          changePolicyTimeout(0)
         {}
 };
 //-----------------------------------------------------------------------------
@@ -176,7 +182,9 @@ struct TARIFF_CONF_RES
           traffType(),
           passiveCost(),
           name(),
-          period()
+          period(),
+          changePolicy(),
+          changePolicyTimeout()
         {}
 
     TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
@@ -187,6 +195,8 @@ struct TARIFF_CONF_RES
         passiveCost = tc.passiveCost;
         name        = tc.name;
         period      = tc.period;
+        changePolicy = tc.changePolicy;
+        changePolicyTimeout = tc.changePolicyTimeout;
         return *this;
         }
 
@@ -199,6 +209,8 @@ struct TARIFF_CONF_RES
         passiveCost.maybeSet(tc.passiveCost);
         traffType.maybeSet(tc.traffType);
         period.maybeSet(tc.period);
+        changePolicy.maybeSet(tc.changePolicy);
+        changePolicyTimeout.maybeSet(tc.changePolicyTimeout);
         return tc;
         }
 
@@ -208,6 +220,8 @@ struct TARIFF_CONF_RES
     RESETABLE<double>             passiveCost;
     RESETABLE<std::string>        name;
     RESETABLE<TARIFF::PERIOD>     period;
+    RESETABLE<TARIFF::CHANGE_POLICY> changePolicy;
+    RESETABLE<time_t>             changePolicyTimeout;
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA
@@ -247,6 +261,14 @@ struct TARIFF_DATA_RES
         : tariffConf(),
           dirPrice(DIR_NUM)
         {}
+
+    TARIFF_DATA_RES & operator=(const TARIFF_DATA & td)
+        {
+        tariffConf = td.tariffConf;
+        for (size_t i = 0; i < DIR_NUM; ++i)
+            dirPrice[i] = td.dirPrice[i];
+        return *this;
+        }
 
     TARIFF_DATA GetData() const
         {

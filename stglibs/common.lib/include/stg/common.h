@@ -33,6 +33,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <climits> // NAME_MAX
 
 #include <unistd.h> // uid_t, gid_t
 #include <sys/stat.h> // mode_t
@@ -148,6 +149,8 @@ bool WriteAll(int sd, const void * source, size_t size);
 
 std::string ToPrintable(const std::string & src);
 
+std::string formatTime(time_t value);
+time_t readTime(const std::string & value);
 //-----------------------------------------------------------------------------
 int str2x(const std::string & str, int32_t & x);
 int str2x(const std::string & str, uint32_t & x);

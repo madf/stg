@@ -1465,6 +1465,16 @@ if (conf.ReadString("Period", &str, "month") < 0)
     td->tariffConf.period = TARIFF::MONTH;
 else
     td->tariffConf.period = TARIFF::StringToPeriod(str);
+
+if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
+    td->tariffConf.changePolicy = TARIFF::ALLOW;
+else
+    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+
+if (conf.ReadString("ChangePolicyTimeout", &str, "1970-01-01 00:00:00") < 0)
+    td->tariffConf.changePolicyTimeout = 0;
+else
+    td->tariffConf.changePolicyTimeout = readTime(str);
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -1526,6 +1536,8 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteDouble("Free", td.tariffConf.free);
     cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
     cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
+    cf.WriteString("ChangePolicy", TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+    cf.WriteTime("ChangePolicyTimeout", td.tariffConf.changePolicyTimeout);
     }
 
 return 0;

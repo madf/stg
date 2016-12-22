@@ -33,6 +33,7 @@
 
 #include <libpq-fe.h>
 
+#include "stg/common.h"
 #include "stg/const.h"
 #include "stg/locker.h"
 #include "../../../stg_timer.h"
@@ -270,9 +271,9 @@ std::ostringstream query;
 query << "UPDATE tb_users SET "
             "cash = " << stat.cash << ", "
             "free_mb = " << stat.freeMb << ", "
-            "last_activity_time = CAST('" << Int2TS(stat.lastActivityTime) << "' AS TIMESTAMP), "
+            "last_activity_time = CAST('" << formatTime(stat.lastActivityTime) << "' AS TIMESTAMP), "
             "last_cash_add = " << stat.lastCashAdd << ", "
-            "last_cash_add_time = CAST('" << Int2TS(stat.lastCashAddTime) << "' AS TIMESTAMP), "
+            "last_cash_add_time = CAST('" << formatTime(stat.lastCashAddTime) << "' AS TIMESTAMP), "
             "passive_time = " << stat.passiveTime << " "
          "WHERE name = '" << elogin << "'";
 
@@ -527,7 +528,7 @@ query << "UPDATE tb_users SET "
              "address = '" << eaddress << "', "
              "always_online = " << (conf.alwaysOnline ? "'t'" : "'f'") << ", "
              "credit = " << conf.credit << ", "
-             "credit_expire = CAST('" << Int2TS(conf.creditExpire) << "' AS TIMESTAMP), "
+             "credit_expire = CAST('" << formatTime(conf.creditExpire) << "' AS TIMESTAMP), "
              "disabled = " << (conf.disabled ? "'t'" : "'f'") << ", "
              "disabled_detail_stat = " << (conf.disabledDetailStat ? "'t'" : "'f'") << ", "
              "email = '" << eemail << "', "
@@ -681,9 +682,9 @@ if (tuples != 1)
     std::stringstream tuple;
     tuple << PQgetvalue(result, 0, 0) << " ";
     tuple << PQgetvalue(result, 0, 1) << " ";
-    stat->lastActivityTime = TS2Int(PQgetvalue(result, 0, 2));
+    stat->lastActivityTime = readTime(PQgetvalue(result, 0, 2));
     tuple << PQgetvalue(result, 0, 3) << " ";
-    stat->lastCashAddTime = TS2Int(PQgetvalue(result, 0, 4));
+    stat->lastCashAddTime = readTime(PQgetvalue(result, 0, 4));
     tuple << PQgetvalue(result, 0, 5) << " ";
 
     PQclear(result);
@@ -699,7 +700,7 @@ if (tuples != 1)
     query << "SELECT dir_num, upload, download "
              "FROM tb_stats_traffic "
              "WHERE fk_user IN (SELECT pk_user FROM tb_users WHERE name = '" << elogin << "') AND "
-                   "DATE_TRUNC('month', stats_date) = DATE_TRUNC('month', CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP))";
+                   "DATE_TRUNC('month', stats_date) = DATE_TRUNC('month', CAST('" << formatTime(stgTime) << "' AS TIMESTAMP))";
 
     result = PQexec(connection, query.str().c_str());
     }
@@ -832,7 +833,7 @@ uint32_t uid;
     conf->address = PQgetvalue(result, 0, 1);               // address
     conf->alwaysOnline = !strncmp(PQgetvalue(result, 0, 2), "t", 1);
     tuple << PQgetvalue(result, 0, 3) << " ";               // credit
-    conf->creditExpire = TS2Int(PQgetvalue(result, 0, 4));  // creditExpire
+    conf->creditExpire = readTime(PQgetvalue(result, 0, 4));  // creditExpire
     conf->disabled = !strncmp(PQgetvalue(result, 0, 5), "t", 1);
     conf->disabledDetailStat = !strncmp(PQgetvalue(result, 0, 6), "t", 1);
     conf->email = PQgetvalue(result, 0, 7);                 // email
@@ -1078,7 +1079,7 @@ query << "SELECT sp_add_param_log_entry("
             "'" << eadminLogin << "', CAST('"
             << inet_ntostring(admIP) << "/32' AS INET), "
             "'" << eparam << "', "
-            "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
+            "CAST('" << formatTime(stgTime) << "' AS TIMESTAMP), "
             "'" << eold << "', "
             "'" << enew << "', "
             "'" << emessage << "')";
@@ -1149,7 +1150,7 @@ if (version < 6)
     {
     query << "SELECT sp_add_session_log_entry("
                  "'" << elogin << "', "
-                 "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
+                 "CAST('" << formatTime(stgTime) << "' AS TIMESTAMP), "
                  "'c', CAST('"
                  << inet_ntostring(ip) << "/32' AS INET), 0)";
     }
@@ -1157,7 +1158,7 @@ else
     {
     query << "SELECT sp_add_session_log_entry("
                  "'" << elogin << "', "
-                 "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
+                 "CAST('" << formatTime(stgTime) << "' AS TIMESTAMP), "
                  "'c', CAST('"
                  << inet_ntostring(ip) << "/32' AS INET), 0, 0, '')";
     }
@@ -1249,7 +1250,7 @@ if (EscapeString(ereason))
         // Old database version - no freeMb logging support
         query << "SELECT sp_add_session_log_entry("
                     "'" << elogin << "', "
-                    "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
+                    "CAST('" << formatTime(stgTime) << "' AS TIMESTAMP), "
                     "'d', CAST('0.0.0.0/0' AS INET), "
                     << cash << ")";
         }
@@ -1257,7 +1258,7 @@ if (EscapeString(ereason))
         {
         query << "SELECT sp_add_session_log_entry("
                     "'" << elogin << "', "
-                    "CAST('" << Int2TS(stgTime) << "' AS TIMESTAMP), "
+                    "CAST('" << formatTime(stgTime) << "' AS TIMESTAMP), "
                     "'d', CAST('0.0.0.0/0' AS INET), "
                     << cash << ", " << freeMb << ", '" << ereason << "')";
         }
@@ -1397,8 +1398,8 @@ for (it = statTree.begin(); it != statTree.end(); ++it)
                 "(till_time, from_time, fk_user, "
                  "dir_num, ip, download, upload, cost) "
              "VALUES ("
-                "CAST('" << Int2TS(currTime) << "' AS TIMESTAMP), "
-                "CAST('" << Int2TS(lastStat) << "' AS TIMESTAMP), "
+                "CAST('" << formatTime(currTime) << "' AS TIMESTAMP), "
+                "CAST('" << formatTime(lastStat) << "' AS TIMESTAMP), "
                 "(SELECT pk_user FROM tb_users WHERE name = '" << elogin << "'), "
                 << it->first.dir << ", "
                 << "CAST('" << inet_ntostring(it->first.ip) << "' AS INET), "

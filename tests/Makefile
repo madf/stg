@@ -29,6 +29,7 @@ SOURCES = main.cpp \
 	  ../projects/stargazer/user_property.cpp \
 	  ../stglibs/conffiles.lib/conffiles.cpp \
 	  ../stglibs/common.lib/common.cpp \
+	  ../stglibs/common.lib/strptime.cpp \
 	  ../stglibs/logger.lib/logger.cpp \
 	  ../stglibs/scriptexecuter.lib/scriptexecuter.cpp \
 	  ../stglibs/crypto.lib/bfstream.cpp \
