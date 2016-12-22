@@ -35,6 +35,7 @@
 
 #include <cerrno> // E*
 #include <cstring>
+#include <sstream>
 #include <cstdlib>
 #include <cstdio>
 
@@ -342,6 +343,14 @@ void CONFIGFILE::WriteInt(const std::string & param, int64_t val)
 char buf[32];
 snprintf(buf, sizeof(buf), "%lld", static_cast<long long int>(val));
 param_val[param] = buf;
+changed = true;
+}
+//---------------------------------------------------------------------------
+void CONFIGFILE::WriteTime(const std::string & param, time_t val)
+{
+std::stringstream ss;
+ss<<val;
+param_val[param] = ss.str();
 changed = true;
 }
 //---------------------------------------------------------------------------

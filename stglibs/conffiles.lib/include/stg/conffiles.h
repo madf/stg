@@ -67,6 +67,7 @@ public:
     void WriteString(const std::string & param, const std::string& val);
     void WriteInt(const std::string & param, int64_t val);
     void WriteDouble(const std::string & param, double val);
+    void WriteTime(const std::string & param, time_t val);
 
     int Error() const;
     int Flush() const;

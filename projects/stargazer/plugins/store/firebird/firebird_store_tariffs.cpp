@@ -150,36 +150,44 @@ try
     int32_t id;
     st->Get(1, id);
     st->Close();
+
+    std::string query = "update tb_tariffs set \
+                            fee = ?, \
+                            free = ?, \
+                            passive_cost = ?, \
+                            traff_type = ?";
+
+    if (schemaVersion > 0)
+        query += ", period = ?";
+    if (schemaVersion > 1)
+        query += ", change_policy = ?, \
+                    change_policy_timeout = ?";
+
+    query += " where pk_tariff = ?";
+
+    unsigned num = 5;
+    st->Prepare(query);
+    st->Set(1, td.tariffConf.fee);
+    st->Set(2, td.tariffConf.free);
+    st->Set(3, td.tariffConf.passiveCost);
+    st->Set(4, td.tariffConf.traffType);
+
     if (schemaVersion > 0)
         {
-        st->Prepare("update tb_tariffs set \
-                fee = ?, \
-                free = ?, \
-                passive_cost = ?, \
-                traff_type = ?, \
-                period = ? \
-                where pk_tariff = ?");
-        st->Set(1, td.tariffConf.fee);
-        st->Set(2, td.tariffConf.free);
-        st->Set(3, td.tariffConf.passiveCost);
-        st->Set(4, td.tariffConf.traffType);
         st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
-        st->Set(6, id);
+        ++num;
         }
-    else
+
+    if (schemaVersion > 1)
         {
-        st->Prepare("update tb_tariffs set \
-                fee = ?, \
-                free = ?, \
-                passive_cost = ?, \
-                traff_type = ? \
-                where pk_tariff = ?");
-        st->Set(1, td.tariffConf.fee);
-        st->Set(2, td.tariffConf.free);
-        st->Set(3, td.tariffConf.passiveCost);
-        st->Set(4, td.tariffConf.traffType);
-        st->Set(5, id);
+        st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+        IBPP::Timestamp policyTimeout;
+        time_t2ts(td.tariffConf.changePolicyTimeout, &policyTimeout);
+        st->Set(7, policyTimeout);
+        num += 2;
         }
+
+    st->Set(num, id);
     st->Execute();
     st->Close();
 
@@ -285,6 +293,11 @@ try
     td->tariffConf.traffType = TARIFF::IntToTraffType(Get<int>(st, 6));
     if (schemaVersion > 0)
         td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
+    if (schemaVersion > 1)
+        {
+        td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(Get<std::string>(st, 8));
+        td->tariffConf.changePolicyTimeout = ts2time_t(Get<IBPP::Timestamp>(st, 9));
+        }
     st->Close();
     st->Prepare("select * from tb_tariffs_params where fk_tariff = ?");
     st->Set(1, id);

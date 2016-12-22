@@ -41,6 +41,8 @@ time_t ts2time_t(const IBPP::Timestamp & ts)
     memset(&time_tm, 0, sizeof(time_tm));
     ts.GetDate(year, month, day);
     ts.GetTime(hour, min, sec);
+    if (year < 1990)
+        return 0;
     sprintf(buf, "%d-%d-%d %d:%d:%d", year, month, day, hour, min, sec);
     stg_strptime(buf, "%Y-%m-%d %H:%M:%S", &time_tm);
 
