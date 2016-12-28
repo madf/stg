@@ -1537,7 +1537,7 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
     cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
     cf.WriteString("ChangePolicy", TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
-    cf.WriteTime("ChangePolicyTimeout", td.tariffConf.changePolicyTimeout);
+    cf.WriteString("ChangePolicyTimeout", formatTime(td.tariffConf.changePolicyTimeout));
     }
 
 return 0;
