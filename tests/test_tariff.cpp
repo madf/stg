@@ -359,17 +359,17 @@ namespace tut
         td.tariffConf.fee = 50;
         TARIFF_IMPL cheaper(td);
 
-        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
+        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
 
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal).empty(), true);
+        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
 
-        ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive).empty(), true);
+        ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), true);
     }
 
     template<>
@@ -386,17 +386,17 @@ namespace tut
         td.tariffConf.fee = 50;
         TARIFF_IMPL cheaper(td);
 
-        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), true);
+        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
 
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal).empty(), false);
+        ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), false);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
 
-        ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive).empty(), false);
+        ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), false);
     }
 
     template<>
@@ -413,17 +413,17 @@ namespace tut
         td.tariffConf.fee = 50;
         TARIFF_IMPL cheaper(td);
 
-        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), false);
+        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
 
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal).empty(), true);
+        ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), true);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
 
-        ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive).empty(), true);
+        ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), true);
     }
 
     template<>
@@ -440,16 +440,70 @@ namespace tut
         td.tariffConf.fee = 50;
         TARIFF_IMPL cheaper(td);
 
-        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper).empty(), false);
+        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
 
         td.tariffConf.fee = 100;
         TARIFF_IMPL equal(td);
 
-        ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal).empty(), false);
+        ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), false);
 
         td.tariffConf.fee = 150;
         TARIFF_IMPL expensive(td);
 
-        ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive).empty(), false);
+        ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), false);
+    }
+
+    template<>
+    template<>
+    void testobject::test<11>()
+    {
+        set_test_name("Check changePolicyTimeout < current time");
+
+        TARIFF_DATA td("test");
+        td.tariffConf.changePolicyTimeout = 1451606400;
+        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL tariff(td);
+
+        td.tariffConf.fee = 50;
+        TARIFF_IMPL cheaper(td);
+
+        ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
+    }
+
+    template<>
+    template<>
+    void testobject::test<12>()
+    {
+        set_test_name("Check changePolicyTimeout > current time");
+
+        TARIFF_DATA td("test");
+        td.tariffConf.changePolicyTimeout = 1483228800;
+        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL tariff(td);
+
+        td.tariffConf.fee = 50;
+        TARIFF_IMPL cheaper(td);
+
+        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
+    }
+
+    template<>
+    template<>
+    void testobject::test<13>()
+    {
+        set_test_name("Check changePolicyTimeout = 0");
+
+        TARIFF_DATA td("test");
+        td.tariffConf.changePolicyTimeout = 0;
+        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.fee = 100;
+        TARIFF_IMPL tariff(td);
+
+        td.tariffConf.fee = 50;
+        TARIFF_IMPL cheaper(td);
+
+        ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
     }
 }
