@@ -1471,16 +1471,7 @@ if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
 else
     td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
 
-if (conf.ReadString("ChangePolicyTimeout", &str, "0") < 0)
-{
-    td->tariffConf.changePolicyTimeout = 0;
-}
-else
-{
-    int64_t policyTime = 0;
-    if (str2x(str, policyTime) == 0)
-        td->tariffConf.changePolicyTimeout = (time_t)policyTime;
-}
+conf.ReadTime("ChangePolicyTimeout", &td->tariffConf.changePolicyTimeout, 0);
 return 0;
 }
 //-----------------------------------------------------------------------------
