@@ -137,7 +137,7 @@ for (size_t i = 0; i < lhs.size() && i < rhs.size(); ++i)
 
 RESETABLE<std::string> ConvString(const std::string & value)
 {
-return value;
+return RESETABLE<std::string>(value);
 }
 
 void ConvStringList(std::string value, std::vector<RESETABLE<std::string> > & res)

@@ -39,7 +39,7 @@ bool GetValue<PRIV>(const char ** attr, PRIV & value, const std::string & attrNa
 uint32_t priv;
 if (!GetValue(attr, priv, attrName))
     return false;
-value = priv;
+value = PRIV(priv);
 return true;
 }
 
