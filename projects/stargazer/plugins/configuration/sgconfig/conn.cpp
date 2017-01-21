@@ -81,6 +81,9 @@ Conn::~Conn()
     close(m_sock);
 
     XML_ParserFree(m_xmlParser);
+
+    delete m_stream;
+    delete m_parser;
 }
 
 bool Conn::Read()
@@ -283,6 +286,8 @@ bool Conn::WriteResponse()
         answer = m_parser->GetAnswer();
     else
         answer = "<Error result=\"Unknown command.\"/>";
+    delete m_parser;
+    m_parser = NULL;
     printfd(__FILE__, "Writing %d bytes of answer.\n", answer.length());
     stream.Put(answer.c_str(), answer.length() + 1 /* including \0 */, true /* final */);
     return stream.IsOk();

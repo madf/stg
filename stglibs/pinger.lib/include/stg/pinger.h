@@ -87,7 +87,7 @@ public:
     typedef std::multimap<uint32_t, time_t> PingIPs;
     typedef PingIPs::size_type SizeType;
 
-            STG_PINGER(time_t delay = 15);
+            explicit STG_PINGER(time_t delay = 15);
             ~STG_PINGER();
 
     int     Start();

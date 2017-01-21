@@ -358,7 +358,6 @@ res = send(outerSocket, str, strlen(str), 0);
 sprintf(str,"        <TD id=\"TraffTableDSCellC\">%s</TD>\n", gettext("Session Download"));
 res = send(outerSocket, str, strlen(str), 0);
 
-rowNum = 0;
 for (j = 0; j < DIR_NUM; j++)
     {
     if (dirName[j][0] == 0)

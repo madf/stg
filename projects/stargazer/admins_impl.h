@@ -31,11 +31,7 @@
 #ifndef ADMINS_IMPL_H
 #define ADMINS_IMPL_H
 
-#include <pthread.h>
-
-#include <list>
-#include <map>
-#include <string>
+#include "admin_impl.h"
 
 #include "stg/admins.h"
 #include "stg/admin.h"
@@ -43,11 +39,16 @@
 #include "stg/store.h"
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
-#include "admin_impl.h"
+
+#include <list>
+#include <map>
+#include <string>
+
+#include <pthread.h>
 
 class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
 public:
-    ADMINS_IMPL(STORE * st);
+    explicit ADMINS_IMPL(STORE * st);
     virtual ~ADMINS_IMPL() {}
 
     int           Add(const std::string & login, const ADMIN * admin);

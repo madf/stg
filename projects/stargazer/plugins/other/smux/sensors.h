@@ -29,7 +29,7 @@ typedef std::map<OID, Sensor *> Sensors;
 
 class TotalUsersSensor : public Sensor {
     public:
-        TotalUsersSensor(const USERS & u) : users(u) {}
+        explicit TotalUsersSensor(const USERS & u) : users(u) {}
         virtual ~TotalUsersSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -49,7 +49,7 @@ class TotalUsersSensor : public Sensor {
 
 class UsersSensor : public Sensor {
     public:
-        UsersSensor(USERS & u) : users(u) {}
+        explicit UsersSensor(USERS & u) : users(u) {}
         virtual ~UsersSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const;
@@ -65,7 +65,7 @@ class UsersSensor : public Sensor {
 
 class ConnectedUsersSensor : public UsersSensor {
     public:
-        ConnectedUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit ConnectedUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~ConnectedUsersSensor() {}
 
     private:
@@ -75,7 +75,7 @@ class ConnectedUsersSensor : public UsersSensor {
 
 class AuthorizedUsersSensor : public UsersSensor {
     public:
-        AuthorizedUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit AuthorizedUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~AuthorizedUsersSensor() {}
 
     private:
@@ -85,7 +85,7 @@ class AuthorizedUsersSensor : public UsersSensor {
 
 class AlwaysOnlineUsersSensor : public UsersSensor {
     public:
-        AlwaysOnlineUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit AlwaysOnlineUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~AlwaysOnlineUsersSensor() {}
 
     private:
@@ -95,7 +95,7 @@ class AlwaysOnlineUsersSensor : public UsersSensor {
 
 class NoCashUsersSensor : public UsersSensor {
     public:
-        NoCashUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit NoCashUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~NoCashUsersSensor() {}
 
     private:
@@ -105,7 +105,7 @@ class NoCashUsersSensor : public UsersSensor {
 
 class DisabledDetailStatsUsersSensor : public UsersSensor {
     public:
-        DisabledDetailStatsUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit DisabledDetailStatsUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~DisabledDetailStatsUsersSensor() {}
 
     private:
@@ -115,7 +115,7 @@ class DisabledDetailStatsUsersSensor : public UsersSensor {
 
 class DisabledUsersSensor : public UsersSensor {
     public:
-        DisabledUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit DisabledUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~DisabledUsersSensor() {}
 
     private:
@@ -125,7 +125,7 @@ class DisabledUsersSensor : public UsersSensor {
 
 class PassiveUsersSensor : public UsersSensor {
     public:
-        PassiveUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit PassiveUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~PassiveUsersSensor() {}
 
     private:
@@ -135,7 +135,7 @@ class PassiveUsersSensor : public UsersSensor {
 
 class CreditUsersSensor : public UsersSensor {
     public:
-        CreditUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit CreditUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~CreditUsersSensor() {}
 
     private:
@@ -145,7 +145,7 @@ class CreditUsersSensor : public UsersSensor {
 
 class FreeMbUsersSensor : public UsersSensor {
     public:
-        FreeMbUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit FreeMbUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~FreeMbUsersSensor() {}
 
     private:
@@ -155,7 +155,7 @@ class FreeMbUsersSensor : public UsersSensor {
 
 class TariffChangeUsersSensor : public UsersSensor {
     public:
-        TariffChangeUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit TariffChangeUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~TariffChangeUsersSensor() {}
 
     private:
@@ -165,7 +165,7 @@ class TariffChangeUsersSensor : public UsersSensor {
 
 class ActiveUsersSensor : public UsersSensor {
     public:
-        ActiveUsersSensor(USERS & u) : UsersSensor(u) {}
+        explicit ActiveUsersSensor(USERS & u) : UsersSensor(u) {}
         virtual ~ActiveUsersSensor() {}
 
     private:
@@ -174,7 +174,7 @@ class ActiveUsersSensor : public UsersSensor {
 
 class TotalTariffsSensor : public Sensor {
     public:
-        TotalTariffsSensor(const TARIFFS & t) : tariffs(t) {}
+        explicit TotalTariffsSensor(const TARIFFS & t) : tariffs(t) {}
         virtual ~TotalTariffsSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -194,7 +194,7 @@ class TotalTariffsSensor : public Sensor {
 
 class TotalAdminsSensor : public Sensor {
     public:
-        TotalAdminsSensor(const ADMINS & a) : admins(a) {}
+        explicit TotalAdminsSensor(const ADMINS & a) : admins(a) {}
         virtual ~TotalAdminsSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -214,7 +214,7 @@ class TotalAdminsSensor : public Sensor {
 
 class TotalServicesSensor : public Sensor {
     public:
-        TotalServicesSensor(const SERVICES & s) : services(s) {}
+        explicit TotalServicesSensor(const SERVICES & s) : services(s) {}
         virtual ~TotalServicesSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -234,7 +234,7 @@ class TotalServicesSensor : public Sensor {
 
 class TotalCorporationsSensor : public Sensor {
     public:
-        TotalCorporationsSensor(const CORPORATIONS & c) : corporations(c) {}
+        explicit TotalCorporationsSensor(const CORPORATIONS & c) : corporations(c) {}
         virtual ~TotalCorporationsSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -254,7 +254,7 @@ class TotalCorporationsSensor : public Sensor {
 
 class TotalRulesSensor : public Sensor {
     public:
-        TotalRulesSensor(const TRAFFCOUNTER & t) : traffcounter(t) {}
+        explicit TotalRulesSensor(const TRAFFCOUNTER & t) : traffcounter(t) {}
         virtual ~TotalRulesSensor() {}
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const
@@ -275,7 +275,7 @@ class TotalRulesSensor : public Sensor {
 template <typename T>
 class ConstSensor : public Sensor {
     public:
-        ConstSensor(const T & v) : value(v) {}
+        explicit ConstSensor(const T & v) : value(v) {}
         virtual ~ConstSensor() {}
 
         bool GetValue(ObjectSyntax * objectSyntax) const

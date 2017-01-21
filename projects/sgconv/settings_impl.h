@@ -39,7 +39,7 @@ class DOTCONFDocumentNode;
 class SETTINGS_IMPL {
 public:
     SETTINGS_IMPL() : confFile("./sgconv.conf") {}
-    SETTINGS_IMPL(const std::string & cf) : confFile(cf) {}
+    explicit SETTINGS_IMPL(const std::string & cf) : confFile(cf) {}
     ~SETTINGS_IMPL() {}
     int ReadSettings();
 

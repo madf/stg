@@ -27,12 +27,13 @@
 #ifndef __SEND_FUNCTOR_H__
 #define __SEND_FUNCTOR_H__
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "stg/os_int.h"
 
 #include <functional>
 
-#include "stg/os_int.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 
 class PacketSender : public std::unary_function<uint32_t, ssize_t> {
     public:

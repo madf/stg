@@ -419,7 +419,7 @@ while (us->nonstop)
         {
         //printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", tc->monitoring, monFile.c_str());
         touchTime = stgTime;
-        TouchFile(monFile.c_str());
+        TouchFile(monFile);
         }
 
     stgUsleep(100000);

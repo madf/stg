@@ -19,14 +19,10 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include <sys/time.h>
+#include "rscript.h"
 
-#include <csignal>
-#include <cassert>
-#include <cstdlib>
-#include <cerrno>
-#include <cstring>
-#include <algorithm>
+#include "ur_functor.h"
+#include "send_functor.h"
 
 #include "stg/common.h"
 #include "stg/locker.h"
@@ -34,9 +30,17 @@
 #include "stg/user_property.h"
 #include "stg/plugin_creator.h"
 #include "stg/logger.h"
-#include "rscript.h"
-#include "ur_functor.h"
-#include "send_functor.h"
+
+#include <algorithm>
+
+#include <csignal>
+#include <cassert>
+#include <cstdlib>
+#include <cerrno>
+#include <cstring>
+
+#include <sys/time.h>
+#include <netinet/ip.h>
 
 extern volatile time_t stgTime;
 
@@ -47,7 +51,7 @@ namespace {
 template<typename T>
 struct USER_IS
 {
-    USER_IS(USER_PTR u) : user(u) {}
+    explicit USER_IS(USER_PTR u) : user(u) {}
     bool operator()(const T & notifier) { return notifier.GetUser() == user; }
 
     USER_PTR user;

@@ -213,13 +213,6 @@ return usr;
 void ConvertKOI8(const string & src, string * dst, int encType)
 {
 iconv_t cd;
-char * ob = new char[src.size() * 2 + 1];
-char * ib = new char[src.size() + 1];
-
-strcpy(ib, src.c_str());
-
-char * outbuf = ob;
-char * inbuf = ib;
 
 setlocale(LC_ALL, "");
 
@@ -239,11 +232,6 @@ else
 
 size_t nconv = 1;
 
-size_t insize = strlen(ib);
-size_t outsize = insize * 2 + 1;
-
-insize = src.size();
-
 cd = iconv_open(charsetT, charsetF);
 if (cd == (iconv_t) -1)
     {
@@ -258,6 +246,19 @@ if (cd == (iconv_t) -1)
 
     exit(ICONV_ERR_CODE);
     }
+
+char * ob = new char[src.size() * 2 + 1];
+char * ib = new char[src.size() + 1];
+
+strcpy(ib, src.c_str());
+
+char * outbuf = ob;
+char * inbuf = ib;
+
+size_t insize = strlen(ib);
+size_t outsize = insize * 2 + 1;
+
+insize = src.size();
 
 #if defined(CONST_ICONV)
 nconv = iconv(cd, (const char **)&inbuf, &insize, &outbuf, &outsize);

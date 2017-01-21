@@ -9,11 +9,11 @@
 
 class OID {
     public:
-        OID(const std::string & str);
+        explicit OID(const std::string & str);
         OID(const char * str, size_t length);
-        OID(const std::vector<unsigned> & arcs);
+        explicit OID(const std::vector<unsigned> & arcs);
         OID(const unsigned * arcs, size_t length);
-        OID(OBJECT_IDENTIFIER_t * oid);
+        explicit OID(OBJECT_IDENTIFIER_t * oid);
         OID(const OID & rvalue);
         ~OID();
 

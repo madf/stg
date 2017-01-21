@@ -29,22 +29,21 @@
  */
 
 #include "admin_impl.h"
+
 #include "stg/common.h"
 
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL()
     : ADMIN(),
       conf(),
-      ip(0),
-      WriteServLog(GetStgLogger())
+      ip(0)
 {
 }
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
     : ADMIN(),
       conf(ac),
-      ip(0),
-      WriteServLog(GetStgLogger())
+      ip(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -53,8 +52,7 @@ ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
                        const std::string & password)
     : ADMIN(),
       conf(priv, login, password),
-      ip(0),
-      WriteServLog(GetStgLogger())
+      ip(0)
 {
 }
 //-----------------------------------------------------------------------------

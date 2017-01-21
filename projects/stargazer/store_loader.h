@@ -31,17 +31,17 @@
 #ifndef __STORE_LOADER_H__
 #define __STORE_LOADER_H__
 
-#include <string>
-
 #include "stg/module_settings.h"
 #include "stg/noncopyable.h"
+
+#include <string>
 
 class STORE;
 class SETTINGS_IMPL;
 
 class STORE_LOADER : private NONCOPYABLE {
 public:
-    STORE_LOADER(const SETTINGS_IMPL & settings);
+    explicit STORE_LOADER(const SETTINGS_IMPL & settings);
     ~STORE_LOADER();
 
     bool Load();

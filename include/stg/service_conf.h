@@ -31,7 +31,7 @@ struct SERVICE_CONF
 SERVICE_CONF()
     : name(), comment(), cost(0), payDay(0)
 {}
-SERVICE_CONF(const std::string & n)
+explicit SERVICE_CONF(const std::string & n)
     : name(n), comment(), cost(0), payDay(0)
 {}
 SERVICE_CONF(const std::string & n, double c)
@@ -58,7 +58,7 @@ SERVICE_CONF_RES()
       cost(), payDay()
 {}
 
-SERVICE_CONF_RES(const SERVICE_CONF & rhs)
+explicit SERVICE_CONF_RES(const SERVICE_CONF & rhs)
     : name(rhs.name), comment(rhs.comment),
       cost(rhs.cost), payDay(rhs.payDay)
 {}

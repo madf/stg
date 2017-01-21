@@ -28,13 +28,6 @@
 #ifndef TRAFFCOUNTER_IMPL_H
 #define TRAFFCOUNTER_IMPL_H
 
-#include <pthread.h>
-
-#include <ctime>
-#include <list>
-#include <map>
-#include <string>
-
 #include "stg/traffcounter.h"
 #include "stg/os_int.h"
 #include "stg/logger.h"
@@ -44,6 +37,13 @@
 #include "actions.h"
 #include "eventloop.h"
 #include "user_impl.h"
+
+#include <ctime>
+#include <list>
+#include <map>
+#include <string>
+
+#include <pthread.h>
 
 #define PROTOMAX    (5)
 
@@ -147,7 +147,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_IMPL_PTR> {
 public:
-            ADD_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
+            explicit ADD_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
                 NOTIFIER_BASE<USER_IMPL_PTR>(),
                 traffCnt(t)
             {}
@@ -163,7 +163,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_IMPL_PTR> {
 public:
-            DEL_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
+            explicit DEL_USER_NONIFIER(TRAFFCOUNTER_IMPL & t) :
                 NOTIFIER_BASE<USER_IMPL_PTR>(),
                 traffCnt(t)
             {}

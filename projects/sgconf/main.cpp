@@ -332,13 +332,6 @@ return stg_timegm(&brokenTime);
 void ParseAnyString(const char * c, string * msg, const char * enc)
 {
 iconv_t cd;
-char * ob = new char[strlen(c) + 1];
-char * ib = new char[strlen(c) + 1];
-
-strcpy(ib, c);
-
-char * outbuf = ob;
-char * inbuf = ib;
 
 setlocale(LC_ALL, "");
 
@@ -348,11 +341,6 @@ strncpy(charsetF, nl_langinfo(CODESET), 255);
 const char * charsetT = enc;
 
 size_t nconv = 1;
-
-size_t insize = strlen(ib);
-size_t outsize = strlen(ib);
-
-insize = strlen(c);
 
 cd = iconv_open(charsetT, charsetF);
 if (cd == (iconv_t) -1)
@@ -368,6 +356,17 @@ if (cd == (iconv_t) -1)
 
     exit(ICONV_ERR_CODE);
     }
+
+char * ob = new char[strlen(c) + 1];
+char * ib = new char[strlen(c) + 1];
+
+strcpy(ib, c);
+
+char * outbuf = ob;
+char * inbuf = ib;
+
+size_t insize = strlen(c);
+size_t outsize = strlen(ib);
 
 #if defined(CONST_ICONV)
 nconv = iconv (cd, (const char**)&inbuf, &insize, &outbuf, &outsize);

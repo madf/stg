@@ -42,7 +42,7 @@ class STORE;
 class PLUGIN_RUNNER {
 public:
     struct Error : public std::runtime_error {
-        Error(const std::string & msg) : runtime_error(msg) {}
+        explicit Error(const std::string & msg) : runtime_error(msg) {}
     };
 
     PLUGIN_RUNNER(const std::string & pluginFileName,

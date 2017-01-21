@@ -7,7 +7,7 @@
 class TARIFF_HELPER
 {
 public:
-    TARIFF_HELPER(TARIFF_DATA & td)
+    explicit TARIFF_HELPER(TARIFF_DATA & td)
         : data(td)
     {}
 

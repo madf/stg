@@ -27,17 +27,6 @@
 #ifndef INETACCESS_H
 #define INETACCESS_H
 
-#include <sys/time.h>
-#include <pthread.h>
-
-#include <cstring>
-#include <ctime>
-#include <string>
-#include <map>
-#include <list>
-#include <functional>
-#include <utility>
-
 #include "stg/os_int.h"
 #include "stg/auth.h"
 #include "stg/store.h"
@@ -50,6 +39,17 @@
 #include "stg/logger.h"
 #include "stg/utime.h"
 #include "stg/logger.h"
+
+#include <cstring>
+#include <ctime>
+#include <string>
+#include <map>
+#include <list>
+#include <functional>
+#include <utility>
+
+#include <sys/time.h>
+#include <pthread.h>
 
 #define IA_PROTO_VER    (6)
 
@@ -204,8 +204,8 @@ public:
     virtual         ~AUTH_IA_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
     int             ParseSettings(const MODULE_SETTINGS & s);
-    int             GetUserDelay() const { return userDelay; }
-    int             GetUserTimeout() const { return userTimeout; }
+    UTIME           GetUserDelay() const { return UTIME(userDelay); }
+    UTIME           GetUserTimeout() const { return UTIME(userTimeout); }
     uint16_t        GetUserPort() const { return port; }
     FREEMB          GetFreeMbShowType() const { return freeMbShowType; }
     bool            LogProtocolErrors() const { return logProtocolErrors; }
@@ -223,7 +223,7 @@ class AUTH_IA;
 //-----------------------------------------------------------------------------
 class DEL_USER_NOTIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
+    explicit DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
     virtual ~DEL_USER_NOTIFIER() {}
 
     void Notify(const USER_PTR & user);
@@ -369,7 +369,7 @@ private:
 //-----------------------------------------------------------------------------
 class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &, void> {
     public:
-        UnauthorizeUser(AUTH_IA * a) : auth(a) {}
+        explicit UnauthorizeUser(AUTH_IA * a) : auth(a) {}
         UnauthorizeUser(const UnauthorizeUser & rvalue) : auth(rvalue.auth) {}
         void operator()(const std::pair<uint32_t, IA_USER> & p)
         {

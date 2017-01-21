@@ -21,12 +21,6 @@
 #ifndef CORPORATIONS_IMPL_H
 #define CORPORATIONS_IMPL_H
 
-#include <pthread.h>
-
-#include <list>
-#include <map>
-#include <string>
-
 #include "stg/corporations.h"
 #include "stg/corp_conf.h"
 #include "stg/locker.h"
@@ -34,11 +28,17 @@
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
+#include <list>
+#include <map>
+#include <string>
+
+#include <pthread.h>
+
 class ADMIN;
 
 class CORPORATIONS_IMPL : private NONCOPYABLE, public CORPORATIONS {
 public:
-    CORPORATIONS_IMPL(STORE * st);
+    explicit CORPORATIONS_IMPL(STORE * st);
     virtual ~CORPORATIONS_IMPL() {}
 
     int Add(const CORP_CONF & corp, const ADMIN * admin);

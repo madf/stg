@@ -44,7 +44,7 @@ class GET_TARIFFS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                explicit FACTORY(const TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_TARIFFS(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, const TARIFFS & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
@@ -69,7 +69,7 @@ class ADD_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                explicit FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, TARIFFS & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
@@ -125,7 +125,7 @@ class CHG_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
+                explicit FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, TARIFFS & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }

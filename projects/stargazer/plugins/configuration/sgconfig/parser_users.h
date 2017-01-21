@@ -48,7 +48,7 @@ class GET_USERS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(USERS & users) : m_users(users) {}
+                explicit FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USERS(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
@@ -76,7 +76,7 @@ class GET_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const USERS & users) : m_users(users) {}
+                explicit FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
@@ -103,7 +103,7 @@ class ADD_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(USERS & users) : m_users(users) {}
+                explicit FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
@@ -176,7 +176,7 @@ class DEL_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(USERS & users) : m_users(users) {}
+                explicit FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
@@ -205,7 +205,7 @@ class CHECK_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const USERS & users) : m_users(users) {}
+                explicit FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHECK_USER(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
