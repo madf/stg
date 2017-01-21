@@ -25,16 +25,16 @@
 #ifndef TARIFFS_IMPL_H
 #define TARIFFS_IMPL_H
 
-#include <pthread.h>
+#include "stg/tariff.h"
+#include "stg/tariffs.h"
+#include "stg/tariff_conf.h"
+#include "tariff_impl.h"
 
 #include <string>
 #include <list>
 #include <set>
 
-#include "stg/tariff.h"
-#include "stg/tariffs.h"
-#include "stg/tariff_conf.h"
-#include "tariff_impl.h"
+#include <pthread.h>
 
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1
@@ -47,7 +47,7 @@ class TARIFFS_IMPL : public TARIFFS {
 public:
     typedef std::list<TARIFF_IMPL> Tariffs;
 
-    TARIFFS_IMPL(STORE * store);
+    explicit TARIFFS_IMPL(STORE * store);
     virtual ~TARIFFS_IMPL();
     int ReadTariffs ();
     const TARIFF * FindByName(const std::string & name) const;

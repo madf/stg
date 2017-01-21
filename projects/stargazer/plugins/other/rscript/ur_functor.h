@@ -21,14 +21,14 @@
 #ifndef __UR_FUNCTOR_H__
 #define __UR_FUNCTOR_H__
 
-#include <functional>
-#include <algorithm>
-#include <utility>
+#include "rscript.h"
 
 #include "stg/os_int.h"
 #include "stg/common.h"
 
-#include "rscript.h"
+#include <functional>
+#include <algorithm>
+#include <utility>
 
 namespace RS
 {
@@ -36,7 +36,7 @@ namespace RS
 class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS::USER>, void>
 {
 public:
-    UpdateRouter(REMOTE_SCRIPT & t)
+    explicit UpdateRouter(REMOTE_SCRIPT & t)
         : obj(t) {}
 
     void operator() (std::pair<const uint32_t, USER> & val)
@@ -60,7 +60,7 @@ public:
                 {
                 obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
                 ++oldIt;
-                } 
+                }
             else if (*oldIt < *newIt)
                 {
                 obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
@@ -73,8 +73,7 @@ public:
                 }
             else
                 {
-                if (oldIt != val.second.routers.end())
-                    ++oldIt;
+                ++oldIt;
                 if (newIt != newRouters.end())
                     ++newIt;
                 }

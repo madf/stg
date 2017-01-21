@@ -1,9 +1,9 @@
 #ifndef STG_LOGGER_H
 #define STG_LOGGER_H
 
-#include <pthread.h>
-
 #include <string>
+
+#include <pthread.h>
 
 class STG_LOGGER;
 STG_LOGGER & GetStgLogger();
@@ -11,7 +11,7 @@ STG_LOGGER & GetStgLogger();
 class STG_LOGGER_LOCKER
 {
 public:
-    STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); }
+    explicit STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); }
     ~STG_LOGGER_LOCKER() { pthread_mutex_unlock(mutex); }
 
 private:

@@ -31,17 +31,16 @@
 #ifndef ADMIN_IMPL_H
 #define ADMIN_IMPL_H
 
-#include <string>
-
 #include "stg/admin.h"
 #include "stg/os_int.h"
 #include "stg/admin_conf.h"
-#include "stg/logger.h"
+
+#include <string>
 
 class ADMIN_IMPL : public ADMIN {
 public:
       ADMIN_IMPL();
-      ADMIN_IMPL(const ADMIN_CONF & ac);
+      explicit ADMIN_IMPL(const ADMIN_CONF & ac);
       ADMIN_IMPL(const PRIV & priv,
                  const std::string & login,
                  const std::string & password);
@@ -68,7 +67,6 @@ public:
 private:
       ADMIN_CONF        conf;
       uint32_t          ip;
-      STG_LOGGER &      WriteServLog;
 };
 
 #endif

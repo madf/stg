@@ -16,19 +16,7 @@ public:
     typedef T value_type;
 
     RESETABLE() : value(), is_set(false) {}
-    RESETABLE(const T & v) : value(v), is_set(true) {}
-
-    RESETABLE(const RESETABLE<T> & rvalue)
-        : value(rvalue.value),
-          is_set(rvalue.is_set)
-    {}
-
-    RESETABLE<T> & operator=(const RESETABLE<T> & rhs)
-    {
-        value = rhs.value;
-        is_set = rhs.is_set;
-        return *this;
-    }
+    explicit RESETABLE(const T & v) : value(v), is_set(true) {}
 
     RESETABLE<T> & operator=(const T & rhs)
     {

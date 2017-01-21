@@ -39,7 +39,7 @@ typedef std::map<std::string, USER_PROPERTY_BASE *> REGISTRY;
 template<typename varT>
 class USER_PROPERTY : public USER_PROPERTY_BASE {
 public:
-    USER_PROPERTY(varT & val);
+    explicit USER_PROPERTY(varT & val);
     virtual ~USER_PROPERTY();
 
     void Set(const varT & rvalue);
@@ -131,7 +131,7 @@ private:
 
     REGISTRY properties;
 public:
-    USER_PROPERTIES(const SETTINGS& s);
+    explicit USER_PROPERTIES(const SETTINGS& s);
 
     USER_STAT & Stat() { return stat; }
     USER_CONF & Conf() { return conf; }

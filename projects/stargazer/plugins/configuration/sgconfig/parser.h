@@ -31,6 +31,7 @@ class BASE_PARSER
     public:
         struct FACTORY
         {
+            virtual ~FACTORY() {}
             virtual BASE_PARSER * create(const ADMIN & admin) = 0;
         };
         typedef std::map<std::string, FACTORY *> REGISTRY;

@@ -126,7 +126,7 @@ private:
 
     class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
+        explicit ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~ADD_USER_NONIFIER() {}
         void Notify(const USER_PTR & user) { auth.AddUser(user); }
 
@@ -139,7 +139,7 @@ private:
 
     class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
     public:
-        DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
+        explicit DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~DEL_USER_NONIFIER() {}
         void Notify(const USER_PTR & user) { auth.DelUser(user); }
 

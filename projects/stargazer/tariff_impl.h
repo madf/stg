@@ -31,14 +31,14 @@
 #ifndef TARIFF_IMPL_H
 #define TARIFF_IMPL_H
 
-#include <ctime>
+#include "stg/tariff.h"
+#include "stg/os_int.h"
+#include "stg/tariff_conf.h"
 
 #include <string>
 #include <list>
 
-#include "stg/tariff.h"
-#include "stg/os_int.h"
-#include "stg/tariff_conf.h"
+#include <ctime>
 
 #define TARIFF_DAY     0
 #define TARIFF_NIGHT   1
@@ -49,17 +49,13 @@ public:
         : TARIFF(),
           tariffData()
     {}
-    TARIFF_IMPL(const std::string & name)
+    explicit TARIFF_IMPL(const std::string & name)
         : TARIFF(),
           tariffData(name)
     {}
-    TARIFF_IMPL(const TARIFF_DATA & td)
+    explicit TARIFF_IMPL(const TARIFF_DATA & td)
         : TARIFF(),
           tariffData(td)
-    {}
-    TARIFF_IMPL(const TARIFF_IMPL & t)
-        : TARIFF(),
-          tariffData(t.tariffData)
     {}
     virtual ~TARIFF_IMPL() {}
 

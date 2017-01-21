@@ -41,7 +41,7 @@ class AUTH_BY : public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const USERS & users) : m_users(users) {}
+                explicit FACTORY(const USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new AUTH_BY(admin, m_users); }
                 static void Register(REGISTRY & registry, const USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }

@@ -53,7 +53,7 @@ class Conn
     public:
         struct Error : public std::runtime_error
         {
-            Error(const std::string& message) : runtime_error(message.c_str()) {}
+            explicit Error(const std::string& message) : runtime_error(message.c_str()) {}
         };
 
         Conn(const BASE_PARSER::REGISTRY & registry,

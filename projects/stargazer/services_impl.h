@@ -21,12 +21,6 @@
 #ifndef SERVICES_IMPL_H
 #define SERVICES_IMPL_H
 
-#include <pthread.h>
-
-#include <list>
-#include <map>
-#include <string>
-
 #include "stg/services.h"
 #include "stg/service_conf.h"
 #include "stg/locker.h"
@@ -34,11 +28,17 @@
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
+#include <list>
+#include <map>
+#include <string>
+
+#include <pthread.h>
+
 class ADMIN;
 
 class SERVICES_IMPL : private NONCOPYABLE, public SERVICES {
 public:
-    SERVICES_IMPL(STORE * st);
+    explicit SERVICES_IMPL(STORE * st);
     virtual ~SERVICES_IMPL() {}
 
     int Add(const SERVICE_CONF & service, const ADMIN * admin);

@@ -188,7 +188,7 @@ while (tc->running)
         std::string monFile(tc->monitorDir + "/traffcounter_r");
         printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", tc->monitoring, monFile.c_str());
         touchTime = stgTime;
-        TouchFile(monFile.c_str());
+        TouchFile(monFile);
         }
 
     if (++c % FLUSH_TIME == 0)
@@ -209,7 +209,7 @@ if (monitoring && (touchTimeP + MONITOR_TIME_DELAY_SEC <= stgTime))
     std::string monFile = monitorDir + "/traffcounter_p";
     printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", monitoring, monFile.c_str());
     touchTimeP = stgTime;
-    TouchFile(monFile.c_str());
+    TouchFile(monFile);
     }
 
 STG_LOCKER lock(&mutex);
@@ -509,10 +509,10 @@ void TRAFFCOUNTER_IMPL::DeterminateDir(const RAW_PACKET & packet,
                                        int * dirU, // Direction for incoming packet
                                        int * dirD) const // Direction for outgoing packet
 {
-bool addrMatchU;
-bool portMatchU;
-bool addrMatchD;
-bool portMatchD;
+bool addrMatchU = false;
+bool portMatchU = false;
+bool addrMatchD = false;
+bool portMatchD = false;
 bool foundU = false; // Was rule for U found ?
 bool foundD = false; // Was rule for D found ?
 //printfd(__FILE__, "foundU=%d, foundD=%d\n", foundU, foundD);
@@ -526,7 +526,6 @@ while (ln != rules.end())
     {
     if (!foundU)
         {
-        addrMatchU = false;
         portMatchU = false;
 
         switch (ln->proto)
@@ -572,7 +571,6 @@ while (ln != rules.end())
 
     if (!foundD)
         {
-        addrMatchD = false;
         portMatchD = false;
 
         switch (ln->proto)
@@ -654,7 +652,7 @@ while (fgets(str, 1023, f))
         continue;
         }
 
-    r = sscanf(str,"%100s %100s %100s", tp, ta, td);
+    r = sscanf(str,"%99s %99s %99s", tp, ta, td);
     if (r != 3)
         {
         printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. There must be 3 parameters.\n", rulesFileName.c_str(), lineNumber);

@@ -22,14 +22,6 @@
 #ifndef RSCRIPT_H
 #define RSCRIPT_H
 
-#include <pthread.h>
-
-#include <string>
-#include <list>
-#include <map>
-#include <functional>
-#include <utility>
-
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/os_int.h"
@@ -40,6 +32,14 @@
 #include "stg/logger.h"
 
 #include "nrmap_parser.h"
+
+#include <string>
+#include <list>
+#include <map>
+#include <functional>
+#include <utility>
+
+#include <pthread.h>
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -60,7 +60,7 @@ class DisconnectUser;
 //-----------------------------------------------------------------------------
 class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
+    explicit ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
         : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~ADD_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
@@ -74,7 +74,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
 public:
-    DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
+    explicit DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
         : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
     virtual ~DEL_USER_NONIFIER() {}
     void Notify(const USER_PTR & user);
@@ -138,7 +138,8 @@ private:
 //-----------------------------------------------------------------------------
 struct USER {
     USER(const std::vector<uint32_t> & r, USER_PTR it)
-        : user(it),
+        : lastSentTime(0),
+          user(it),
           routers(r),
           shortPacketsCount(0),
           ip(user->GetCurrIP())
@@ -257,7 +258,7 @@ private:
 //-----------------------------------------------------------------------------
 class DisconnectUser : public std::unary_function<std::pair<const uint32_t, USER> &, void> {
     public:
-        DisconnectUser(REMOTE_SCRIPT & rs) : rscript(rs) {}
+        explicit DisconnectUser(REMOTE_SCRIPT & rs) : rscript(rs) {}
         void operator()(std::pair<const uint32_t, USER> & p)
         {
             rscript.Send(p.second, true);

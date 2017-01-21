@@ -56,7 +56,7 @@ struct AliveData : public UserData
 
 class IsNotTimedOut : public std::unary_function<const AliveData &, bool> {
     public:
-        IsNotTimedOut(double to) : timeout(to), now(time(NULL)) {}
+        explicit IsNotTimedOut(double to) : timeout(to), now(time(NULL)) {}
         bool operator()(const AliveData & data) const
         {
             return difftime(now, data.lastAlive) < timeout;
@@ -133,7 +133,7 @@ private:
 
 class DisconnectUser : public std::unary_function<const UserData &, void> {
     public:
-        DisconnectUser(LISTENER & l) : listener(l) {};
+        explicit DisconnectUser(LISTENER & l) : listener(l) {};
         void operator()(const UserData & data)
         {
             listener.Disconnect(data);

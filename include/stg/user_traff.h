@@ -45,8 +45,6 @@ public:
     typedef ContainerType::size_type IndexType;
 
     DIR_TRAFF() : traff(DIR_NUM) {}
-    DIR_TRAFF(const DIR_TRAFF & ts) : traff(ts.traff) {}
-    DIR_TRAFF & operator=(const DIR_TRAFF & ts) { traff = ts.traff; return *this; }
     const uint64_t & operator[](IndexType idx) const { return traff[idx]; }
     uint64_t & operator[](IndexType idx) { return traff[idx]; }
     IndexType size() const { return traff.size(); }
@@ -85,11 +83,17 @@ public:
     typedef ContainerType::size_type IndexType;
 
     DIR_TRAFF_RES() : traff(DIR_NUM) {}
-    DIR_TRAFF_RES(const DIR_TRAFF & ts)
+    explicit DIR_TRAFF_RES(const DIR_TRAFF & ts)
         : traff(ts.size())
     {
     for (IndexType i = 0; i < ts.size(); ++i)
         traff[i] = ts[i];
+    }
+    DIR_TRAFF_RES & operator=(const DIR_TRAFF & ts)
+    {
+        for (IndexType i = 0; i < ts.size(); ++i)
+            traff[i] = ts[i];
+        return *this;
     }
     const ValueType & operator[](IndexType idx) const { return traff[idx]; }
     ValueType & operator[](IndexType idx) { return traff[idx]; }

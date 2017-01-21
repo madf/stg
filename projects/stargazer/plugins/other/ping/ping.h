@@ -7,11 +7,6 @@
 #ifndef PING_H
 #define PING_H
 
-#include <pthread.h>
-
-#include <string>
-#include <list>
-
 #include "stg/os_int.h"
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
@@ -20,6 +15,11 @@
 #include "stg/pinger.h"
 #include "stg/users.h"
 #include "stg/logger.h"
+
+#include <string>
+#include <list>
+
+#include <pthread.h>
 
 extern "C" PLUGIN * GetPlugin();
 
@@ -63,7 +63,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
-    ADD_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
+    explicit ADD_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
     virtual ~ADD_USER_NONIFIER_PING() {}
     void Notify(const USER_PTR & user);
 
@@ -76,7 +76,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
 public:
-    DEL_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
+    explicit DEL_USER_NONIFIER_PING(PING & p) : NOTIFIER_BASE<USER_PTR>(), ping(p) {}
     virtual ~DEL_USER_NONIFIER_PING() {}
     void Notify(const USER_PTR & user);
 
@@ -124,7 +124,7 @@ public:
     void DelUser(USER_PTR u);
 
 private:
-    PING(const PING & rvalue);
+    explicit PING(const PING & rvalue);
     PING & operator=(const PING & rvalue);
 
     void GetUsers();

@@ -222,12 +222,13 @@ else
             {
                  if(mysql_select_db(sock, storeSettings.GetDBName().c_str()))
                  {
-                    errorStr = "Couldn't select database! With error:\n";
-                    errorStr += mysql_error(sock);
-                    mysql_close(sock);
-                    ret = -1;
+                     errorStr = "Couldn't select database! With error:\n";
+                     errorStr += mysql_error(sock);
+                     mysql_close(sock);
+                     ret = -1;
                  }
-                 ret = CheckAllTables(sock);
+                 else
+                     ret = CheckAllTables(sock);
             }
         }
         else

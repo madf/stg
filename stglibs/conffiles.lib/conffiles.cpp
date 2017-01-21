@@ -70,7 +70,7 @@ if (pos != std::string::npos)
 return val;
 }
 //---------------------------------------------------------------------------
-std::string Trim(std::string val)
+std::string Trim(const std::string& val)
 {
 return TrimR(TrimL(val));
 }

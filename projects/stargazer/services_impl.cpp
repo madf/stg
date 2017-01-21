@@ -107,7 +107,7 @@ while (csi != searchDescriptors.end())
     {
     if (csi->second == si)
         (csi->second)++;
-    csi++;
+    ++csi;
     }
 
 data.remove(*si);

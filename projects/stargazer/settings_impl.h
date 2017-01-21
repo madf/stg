@@ -21,13 +21,13 @@
 #ifndef SETTINGS_IMPL_H
 #define SETTINGS_IMPL_H
 
-#include <string>
-#include <vector>
-
 #include "stg/settings.h"
 #include "stg/common.h"
 #include "stg/module_settings.h"
 #include "stg/ref.h"
+
+#include <string>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 enum DETAIL_STAT_PERIOD {
@@ -42,7 +42,7 @@ class DOTCONFDocumentNode;
 //-----------------------------------------------------------------------------
 class SETTINGS_IMPL : public SETTINGS {
 public:
-    SETTINGS_IMPL(const std::string &);
+    explicit SETTINGS_IMPL(const std::string &);
     SETTINGS_IMPL(const SETTINGS_IMPL & rhs);
     virtual ~SETTINGS_IMPL() {}
     SETTINGS_IMPL & operator=(const SETTINGS_IMPL &);
