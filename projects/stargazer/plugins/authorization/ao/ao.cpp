@@ -56,7 +56,7 @@ template <typename varType>
 class IS_CONTAINS_USER: public std::binary_function<varType, USER_PTR, bool>
 {
 public:
-    bool operator()(varType notifier, USER_PTR user) const
+    bool operator()(const varType& notifier, USER_PTR user) const
         {
         return notifier.GetUser() == user;
         }

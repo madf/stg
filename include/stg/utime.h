@@ -46,7 +46,7 @@ struct UTIME: public timeval
     tv_usec = 0;
     }
 
-    UTIME(time_t t)
+    explicit UTIME(time_t t)
     {
     tv_sec = t;
     tv_usec = 0;

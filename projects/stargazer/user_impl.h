@@ -66,7 +66,7 @@ private:
 class CHG_PASSIVE_NOTIFIER : public PROPERTY_NOTIFIER_BASE<int>,
                              private NONCOPYABLE {
 public:
-    CHG_PASSIVE_NOTIFIER(USER_IMPL * u) : user(u) {}
+    explicit CHG_PASSIVE_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const int & oldPassive, const int & newPassive);
 
 private:
@@ -76,7 +76,7 @@ private:
 class CHG_DISABLED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<int>,
                              private NONCOPYABLE {
 public:
-    CHG_DISABLED_NOTIFIER(USER_IMPL * u) : user(u) {}
+    explicit CHG_DISABLED_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const int & oldValue, const int & newValue);
 
 private:
@@ -86,7 +86,7 @@ private:
 class CHG_TARIFF_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string>,
                             private NONCOPYABLE {
 public:
-    CHG_TARIFF_NOTIFIER(USER_IMPL * u) : user(u) {}
+    explicit CHG_TARIFF_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const std::string & oldTariff, const std::string & newTariff);
 
 private:
@@ -96,7 +96,7 @@ private:
 class CHG_CASH_NOTIFIER : public PROPERTY_NOTIFIER_BASE<double>,
                           private NONCOPYABLE {
 public:
-    CHG_CASH_NOTIFIER(USER_IMPL * u) : user(u) {}
+    explicit CHG_CASH_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const double & oldCash, const double & newCash);
 
 private:
@@ -106,7 +106,7 @@ private:
 class CHG_IPS_NOTIFIER : public PROPERTY_NOTIFIER_BASE<USER_IPS>,
                          private NONCOPYABLE {
 public:
-    CHG_IPS_NOTIFIER(USER_IMPL * u) : user(u) {}
+    explicit CHG_IPS_NOTIFIER(USER_IMPL * u) : user(u) {}
     void Notify(const USER_IPS & oldIPs, const USER_IPS & newIPs);
 
 private:

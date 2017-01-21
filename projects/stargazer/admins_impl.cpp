@@ -28,19 +28,19 @@
  $Author: faust $
  */
 
-#include <cerrno>
-#include <cassert>
-#include <algorithm>
-
 #include "stg/common.h"
 #include "admins_impl.h"
 #include "admin_impl.h"
 
+#include <cerrno>
+#include <cassert>
+#include <algorithm>
+
 //-----------------------------------------------------------------------------
 ADMINS_IMPL::ADMINS_IMPL(STORE * st)
     : ADMINS(),
-      stg(0xFFFF, "@stargazer", ""),
-      noAdmin(0xFFFF, "NO-ADMIN", ""),
+      stg(PRIV(0xFFFF), "@stargazer", ""),
+      noAdmin(PRIV(0xFFFF), "NO-ADMIN", ""),
       data(),
       store(st),
       WriteServLog(GetStgLogger()),
@@ -66,7 +66,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-ADMIN_IMPL adm(0, login, "");
+ADMIN_IMPL adm(PRIV(0), login, "");
 admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
@@ -95,7 +95,6 @@ return -1;
 int ADMINS_IMPL::Del(const std::string & login, const ADMIN * admin)
 {
 STG_LOCKER lock(&mutex);
-ADMIN_IMPL adm(0, login, "");
 const PRIV * priv = admin->GetPriv();
 
 if (!priv->adminChg)
@@ -106,7 +105,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-admin_iter ai(find(data.begin(), data.end(), adm));
+admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
 
 if (ai == data.end())
     {
@@ -121,7 +120,7 @@ while (si != searchDescriptors.end())
     {
     if (si->second == ai)
         (si->second)++;
-    si++;
+    ++si;
     }
 
 data.remove(*ai);
@@ -150,8 +149,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-ADMIN_IMPL adm(0, ac.login, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), ac.login, "")));
 
 if (ai == data.end())
     {
@@ -186,7 +184,7 @@ if (store->GetAdminsList(&adminsList) < 0)
 
 for (unsigned int i = 0; i < adminsList.size(); i++)
     {
-    ADMIN_CONF ac(0, adminsList[i], "");
+    ADMIN_CONF ac(PRIV(0), adminsList[i], "");
 
     if (store->RestoreAdmin(&ac, adminsList[i]))
         {
@@ -211,8 +209,7 @@ if (data.empty())
     return false;
     }
 
-ADMIN_IMPL adm(0, l, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), l, "")));
 
 if (ai != data.end())
     {
@@ -232,8 +229,7 @@ if (data.empty())
     return true;
     }
 
-ADMIN_IMPL adm(0, login, "");
-const_admin_iter ai(find(data.begin(), data.end(), adm));
+const_admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
 
 if (ai != data.end())
     return true;
@@ -250,8 +246,7 @@ if (data.empty())
     return true;
     }
 
-ADMIN_IMPL adm(0, login, "");
-admin_iter ai(find(data.begin(), data.end(), adm));
+admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
 
 if (ai == data.end())
     {

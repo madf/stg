@@ -28,7 +28,7 @@
 struct CORP_CONF
 {
 CORP_CONF() : name(), cash(0) {}
-CORP_CONF(const std::string & n) : name(n), cash(0) {}
+explicit CORP_CONF(const std::string & n) : name(n), cash(0) {}
 CORP_CONF(const std::string & n, double c) : name(n), cash(c) {}
 
 std::string name;

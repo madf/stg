@@ -162,7 +162,7 @@ struct TARIFF_CONF
           changePolicyTimeout(0)
         {}
 
-    TARIFF_CONF(const std::string & n)
+    explicit TARIFF_CONF(const std::string & n)
         : fee(0),
           free(0),
           traffType(TARIFF::TRAFF_UP_DOWN),
@@ -234,22 +234,10 @@ struct TARIFF_DATA
           dirPrice(DIR_NUM)
         {}
 
-    TARIFF_DATA(const std::string & name)
+    explicit TARIFF_DATA(const std::string & name)
         : tariffConf(name),
           dirPrice(DIR_NUM)
         {}
-
-    TARIFF_DATA(const TARIFF_DATA & td)
-        : tariffConf(td.tariffConf),
-          dirPrice(td.dirPrice)
-        {}
-
-    TARIFF_DATA & operator=(const TARIFF_DATA & td)
-        {
-        tariffConf = td.tariffConf;
-        dirPrice = td.dirPrice;
-        return *this;
-        }
 };
 //-----------------------------------------------------------------------------
 struct TARIFF_DATA_RES

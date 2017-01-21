@@ -48,6 +48,7 @@ PLUGIN_RUNNER::PLUGIN_RUNNER(const std::string & fileName,
 //-----------------------------------------------------------------------------
 PLUGIN_RUNNER::~PLUGIN_RUNNER()
 {
+delete &m_plugin;
 if (dlclose(libHandle))
     {
     errorStr = "Failed to unload plugin '" + pluginFileName + "': " + dlerror();

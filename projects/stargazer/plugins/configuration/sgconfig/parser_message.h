@@ -44,7 +44,7 @@ class SEND_MESSAGE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(USERS & users) : m_users(users) {}
+                explicit FACTORY(USERS & users) : m_users(users) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new SEND_MESSAGE(admin, m_users); }
                 static void Register(REGISTRY & registry, USERS & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }

@@ -480,7 +480,7 @@ while (ia->nonstop)
         {
         touchTime = stgTime;
         std::string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_r";
-        TouchFile(monFile.c_str());
+        TouchFile(monFile);
         }
     }
 
@@ -508,7 +508,7 @@ while (ia->nonstop)
     // TODO change counter to timer and MONITOR_TIME_DELAY_SEC
     if (++a % (50 * 60) == 0 && ia->stgSettings->GetMonitoring())
         {
-        TouchFile(monFile.c_str());
+        TouchFile(monFile);
         }
     }
 
@@ -706,7 +706,7 @@ while (it != ip2user.end())
         && (currTime - it->second.phase.GetTime()) > iaSettings.GetUserDelay())
         {
         if (iaSettings.LogProtocolErrors())
-            logger("User '%s'. Protocol version: %d. Phase 2: connect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay());
+            logger("User '%s'. Protocol version: %d. Phase 2: connect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay().GetSec());
         it->second.phase.SetPhase1();
         printfd(__FILE__, "Phase changed from 2 to 1. Reason: timeout\n");
         ip2user.erase(it++);
@@ -750,7 +750,7 @@ while (it != ip2user.end())
         if ((currTime - it->second.phase.GetTime()) > iaSettings.GetUserTimeout())
             {
             if (iaSettings.LogProtocolErrors())
-                logger("User '%s'. Protocol version: %d. Phase 3: alive timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserTimeout());
+                logger("User '%s'. Protocol version: %d. Phase 3: alive timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserTimeout().GetSec());
             users->Unauthorize(it->second.user->GetLogin(), this);
             ip2user.erase(it++);
             continue;
@@ -761,7 +761,7 @@ while (it != ip2user.end())
         && ((currTime - it->second.phase.GetTime()) > iaSettings.GetUserDelay()))
         {
         if (iaSettings.LogProtocolErrors())
-            logger("User '%s'. Protocol version: %d. Phase 4: disconnect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay());
+            logger("User '%s'. Protocol version: %d. Phase 4: disconnect request timeout (%f > %d).", it->second.login.c_str(), it->second.protoVer, (currTime - it->second.phase.GetTime()).AsDouble(), iaSettings.GetUserDelay().GetSec());
         it->second.phase.SetPhase3();
         printfd(__FILE__, "Phase changed from 4 to 3. Reason: timeout\n");
         }
@@ -1411,8 +1411,8 @@ for (int j = 0; j < DIR_NUM; j++)
 iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck6.rnd = iaUser->rnd;
 
-connSynAck6.userTimeOut = iaSettings.GetUserTimeout();
-connSynAck6.aliveDelay = iaSettings.GetUserDelay();
+connSynAck6.userTimeOut = iaSettings.GetUserTimeout().GetSec();
+connSynAck6.aliveDelay = iaSettings.GetUserDelay().GetSec();
 
 #ifdef ARCH_BE
 SwapBytes(connSynAck6.len);
@@ -1453,8 +1453,8 @@ for (int j = 0; j < DIR_NUM; j++)
 iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck8.rnd = iaUser->rnd;
 
-connSynAck8.userTimeOut = iaSettings.GetUserTimeout();
-connSynAck8.aliveDelay = iaSettings.GetUserDelay();
+connSynAck8.userTimeOut = iaSettings.GetUserTimeout().GetSec();
+connSynAck8.aliveDelay = iaSettings.GetUserDelay().GetSec();
 
 #ifdef ARCH_BE
 SwapBytes(connSynAck8.len);

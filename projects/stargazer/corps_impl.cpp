@@ -18,13 +18,14 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include <cerrno>
-#include <cassert>
-#include <algorithm>
+#include "corps_impl.h"
 
 #include "stg/admin.h"
 #include "stg/common.h"
-#include "corps_impl.h"
+
+#include <cerrno>
+#include <cassert>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 CORPORATIONS_IMPL::CORPORATIONS_IMPL(STORE * st)
@@ -107,7 +108,7 @@ while (csi != searchDescriptors.end())
     {
     if (csi->second == si)
         (csi->second)++;
-    csi++;
+    ++csi;
     }
 
 data.remove(*si);

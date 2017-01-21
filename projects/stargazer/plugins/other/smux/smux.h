@@ -74,7 +74,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA>, private NONCOPYABLE {
 public:
-         ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
+    explicit ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
              : NOTIFIER_BASE<TARIFF_DATA>(), smux(s) {}
     void Notify(const TARIFF_DATA &);
 
@@ -84,7 +84,7 @@ private:
 //-----------------------------------------------------------------------------
 class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-         ADD_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
+    explicit ADD_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
     void Notify(const USER_PTR &);
 
 private:
@@ -93,7 +93,7 @@ private:
 //-----------------------------------------------------------------------------
 class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
 public:
-         DEL_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
+    explicit DEL_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
     void Notify(const USER_PTR &);
 
 private:

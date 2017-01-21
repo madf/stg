@@ -115,6 +115,8 @@ if (!isLoaded)
     return true;
     }
 
+delete plugin;
+
 if (dlclose(handle))
     {
     errorStr = "Failed to unload plugin '";

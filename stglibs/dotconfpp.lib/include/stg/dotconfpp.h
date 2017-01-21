@@ -107,7 +107,7 @@ protected:
     virtual void error(int lineNum, const char * fileName, const char * fmt, ...);
 
 public:
-    DOTCONFDocument(CaseSensitive caseSensitivity = CASESENSITIVE);
+    explicit DOTCONFDocument(CaseSensitive caseSensitivity = CASESENSITIVE);
     virtual ~DOTCONFDocument();
 
     void setErrorCallback(DOTCONFCallback _callback, void * _data) { errorCallback = _callback; errorCallbackData = _data; }

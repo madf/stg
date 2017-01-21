@@ -43,7 +43,7 @@ class GET_ADMINS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const ADMINS & admins) : m_admins(admins) {}
+                explicit FACTORY(const ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_ADMINS(admin, m_admins); }
                 static void Register(REGISTRY & registry, const ADMINS & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
@@ -68,7 +68,7 @@ class ADD_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
@@ -95,7 +95,7 @@ class DEL_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
@@ -122,7 +122,7 @@ class CHG_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(ADMINS & admins) : m_admins(admins) {}
+                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
                 virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, ADMINS & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }

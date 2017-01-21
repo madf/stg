@@ -69,9 +69,16 @@ CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
 
 CONFIGPROTO::~CONFIGPROTO()
 {
+    {
     std::deque<STG::Conn *>::iterator it;
     for (it = m_conns.begin(); it != m_conns.end(); ++it)
         delete *it;
+    }
+    {
+    BASE_PARSER::REGISTRY::iterator it;
+    for (it = m_registry.begin(); it != m_registry.end(); ++it)
+        delete it->second;
+    }
 }
 
 int CONFIGPROTO::Prepare()

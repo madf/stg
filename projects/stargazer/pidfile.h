@@ -35,7 +35,7 @@
 
 class PIDFile {
 public:
-    PIDFile(const std::string & fn);
+    explicit PIDFile(const std::string & fn);
     ~PIDFile();
 private:
     std::string fileName;

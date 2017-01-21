@@ -44,7 +44,7 @@ private:
 class METHOD_LOGIN : public xmlrpc_c::method
 {
 public:
-    METHOD_LOGIN(RPC_CONFIG * c)
+    explicit METHOD_LOGIN(RPC_CONFIG * c)
         : config(c)
     {
     }
@@ -62,7 +62,7 @@ private:
 class METHOD_LOGOUT : public xmlrpc_c::method
 {
 public:
-    METHOD_LOGOUT(RPC_CONFIG * c)
+    explicit METHOD_LOGOUT(RPC_CONFIG * c)
         : config(c)
     {
     }

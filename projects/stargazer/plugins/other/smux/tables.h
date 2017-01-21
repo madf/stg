@@ -11,7 +11,7 @@ class USERS;
 
 class TableSensor {
     public:
-        TableSensor(const std::string & p) : prefix(p) {}
+        explicit TableSensor(const std::string & p) : prefix(p) {}
         virtual ~TableSensor() {}
 
         const std::string & GetPrefix() const { return prefix; }

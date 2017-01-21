@@ -52,7 +52,7 @@ class Conn;
 
 class CONFIGPROTO {
 public:
-    CONFIGPROTO(PLUGIN_LOGGER & l);
+    explicit CONFIGPROTO(PLUGIN_LOGGER & l);
     ~CONFIGPROTO();
 
     void SetPort(uint16_t port) { m_port = port; }

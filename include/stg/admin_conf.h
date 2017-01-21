@@ -29,7 +29,7 @@ struct PRIV
           serviceChg(0),
           corpChg(0)
     {}
-    PRIV(uint32_t p)
+    explicit PRIV(uint32_t p)
         : userStat((p & 0x00000003) >> 0x00),
           userConf((p & 0x0000000C) >> 0x02),
           userCash((p & 0x00000030) >> 0x04),
@@ -61,11 +61,6 @@ struct ADMIN_CONF
         : priv(),
           login(),
           password("* NO PASSWORD *")
-    {}
-    ADMIN_CONF(const ADMIN_CONF & rvalue)
-        : priv(rvalue.priv),
-          login(rvalue.login),
-          password(rvalue.password)
     {}
     ADMIN_CONF(const PRIV & pr, const std::string & l, const std::string & p)
         : priv(pr),
