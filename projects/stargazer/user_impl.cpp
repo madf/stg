@@ -222,6 +222,7 @@ void USER_IMPL::Init()
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
+tariff = tariffs->FindByName(tariffName);
 ips = StrToIPS("*");
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDetailedStat = stgTime;
