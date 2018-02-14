@@ -33,6 +33,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <netinet/ip.h>
 
 class PacketSender : public std::unary_function<uint32_t, ssize_t> {
