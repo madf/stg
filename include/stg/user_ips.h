@@ -27,6 +27,14 @@
 #ifndef USER_IPS_H
 #define USER_IPS_H
 
+#include "stg/common.h"
+#include "os_int.h"
+
+#include <cstring>
+#include <vector>
+#include <string>
+#include <iostream>
+
 #ifdef FREE_BSD
 #include <sys/types.h>
 #endif
@@ -34,15 +42,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include <cstring>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-
-#include "stg/common.h"
-#include "os_int.h"
 
 //-------------------------------------------------------------------------
 struct IP_MASK
@@ -75,29 +74,21 @@ private:
 };
 //-------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
 inline
 std::string USER_IPS::GetIpStr() const
 {
 if (ips.empty())
-    {
     return "";
-    }
 
 if (ips[0].ip == 0)
-    {
     return "*";
-    }
 
 ContainerType::const_iterator it(ips.begin());
-std::ostringstream s;
-s << inet_ntostring(it->ip);
+std::string res = inet_ntostring(it->ip);
 ++it;
 for (; it != ips.end(); ++it)
-    {
-    s << "," << inet_ntostring(it->ip);
-    }
-return s.str();
+    res += "," + inet_ntostring(it->ip);
+return res;
 }
 //-----------------------------------------------------------------------------
 inline
@@ -112,9 +103,7 @@ inline
 bool USER_IPS::IsIPInIPS(uint32_t ip) const
 {
 if (ips.empty())
-    {
     return false;
-    }
 
 if (ips.front().ip == 0)
     return true;
@@ -153,25 +142,20 @@ inline
 const USER_IPS StrToIPS(const std::string & ipsStr)
 {
 USER_IPS ips;
-char * paddr;
-IP_MASK im;
 std::vector<std::string> ipMask;
 if (ipsStr.empty())
-    {
     return ips;
-    }
 
 if (ipsStr[0] == '*' && ipsStr.size() == 1)
     {
-    im.ip = 0;
-    im.mask = 0;
-    ips.ips.push_back(im);
+    ips.ips.push_back(IP_MASK());
     return ips;
     }
 
 char * tmp = new char[ipsStr.size() + 1];
 strcpy(tmp, ipsStr.c_str());
 char * pstr = tmp;
+char * paddr = NULL;
 while ((paddr = strtok(pstr, ",")))
     {
     pstr = NULL;
@@ -188,36 +172,28 @@ for (USER_IPS::IndexType i = 0; i < ipMask.size(); i++)
     strcpy(str, ipMask[i].c_str());
     strIp = strtok(str, "/");
     if (strIp == NULL)
-        {
         return ips;
-        }
     strMask = strtok(NULL, "/");
+
+    IP_MASK im;
 
     im.ip = inet_addr(strIp);
     if (im.ip == INADDR_NONE)
-        {
         return ips;
-        }
 
     im.mask = 32;
     if (strMask != NULL)
         {
         int m = 0;
         if (str2x(strMask, m) != 0)
-            {
             return ips;
-            }
         im.mask = m;
 
         if (im.mask > 32)
-            {
             return ips;
-            }
 
         if ((im.ip & ips.CalcMask(im.mask)) != im.ip)
-            {
             return ips;
-            }
         }
     ips.ips.push_back(im);
     }

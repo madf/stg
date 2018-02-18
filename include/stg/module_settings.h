@@ -14,10 +14,6 @@
 //-----------------------------------------------------------------------------
 struct PARAM_VALUE
 {
-    PARAM_VALUE()
-        : param(),
-          value()
-    {}
     bool operator==(const PARAM_VALUE & rhs) const
         { return !strcasecmp(param.c_str(), rhs.param.c_str()); }
 
@@ -30,14 +26,6 @@ struct PARAM_VALUE
 //-----------------------------------------------------------------------------
 struct MODULE_SETTINGS
 {
-    MODULE_SETTINGS()
-        : moduleName(),
-          moduleParams()
-    {}
-    MODULE_SETTINGS(const MODULE_SETTINGS & rvalue)
-        : moduleName(rvalue.moduleName),
-          moduleParams(rvalue.moduleParams)
-    {}
     bool operator==(const MODULE_SETTINGS & rhs) const
         { return !strcasecmp(moduleName.c_str(), rhs.moduleName.c_str()); }
 
