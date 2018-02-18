@@ -290,11 +290,6 @@ void ConvertFromKOI8(const string & src, string * dst)
 ConvertKOI8(src, dst, FROM_KOI8);
 }
 //-----------------------------------------------------------------------------
-void ConvertToKOI8(const string & src, string * dst)
-{
-ConvertKOI8(src, dst, TO_KOI8);
-}
-//-----------------------------------------------------------------------------
 int RecvSetUserAnswer(const char * ans, void * d)
 {
 GetUserCbData * gucbd = static_cast<GetUserCbData*>(d);
