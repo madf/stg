@@ -73,19 +73,6 @@ PACKET_EXTRA_DATA()
       lenD(0)
 {}
 
-PACKET_EXTRA_DATA(const PACKET_EXTRA_DATA & pp)
-    : flushTime(pp.flushTime),
-      updateTime(pp.updateTime),
-      userU(pp.userU),
-      userUPresent(pp.userUPresent),
-      userD(pp.userD),
-      userDPresent(pp.userDPresent),
-      dirU(pp.dirU),
-      dirD(pp.dirD),
-      lenU(pp.lenU),
-      lenD(pp.lenD)
-{}
-
 time_t      flushTime;          // Last flush time
 time_t      updateTime;         // Last update time
 USER_IMPL * userU;              // Uploader
@@ -196,8 +183,8 @@ public:
     size_t      RulesCount() const { return rules.size(); }
 
 private:
-    TRAFFCOUNTER_IMPL(const TRAFFCOUNTER_IMPL & rvalue);
-    TRAFFCOUNTER_IMPL & operator=(const TRAFFCOUNTER_IMPL & rvalue);
+    TRAFFCOUNTER_IMPL(const TRAFFCOUNTER_IMPL &);
+    TRAFFCOUNTER_IMPL & operator=(const TRAFFCOUNTER_IMPL &);
 
     bool        ParseAddress(const char * ta, RULE * rule) const;
     uint32_t    CalcMask(uint32_t msk) const;

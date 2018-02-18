@@ -1,14 +1,15 @@
-#include <cstdio>
-#include <cassert>
-#include <csignal>
-#include <ctime>
-#include <algorithm>
+#include "ping.h"
 
 #include "stg/user.h"
 #include "stg/locker.h"
 #include "stg/user_property.h"
 #include "stg/plugin_creator.h"
-#include "ping.h"
+
+#include <cstdio>
+#include <cassert>
+#include <csignal>
+#include <ctime>
+#include <algorithm>
 
 namespace
 {
@@ -17,12 +18,11 @@ PLUGIN_CREATOR<PING> pc;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-// Класс для поиска юзера в списке нотификаторов
 template <typename varType>
-class IS_CONTAINS_USER: public std::binary_function<varType, USER_PTR, bool>
+class HAS_USER: public std::binary_function<varType, USER_PTR, bool>
 {
 public:
-    IS_CONTAINS_USER(const USER_PTR & u) : user(u) {}
+    explicit HAS_USER(const USER_PTR & u) : user(u) {}
     bool operator()(varType notifier) const
         {
         return notifier.GetUser() == user;
@@ -164,7 +164,7 @@ PING * ping = static_cast<PING *>(d);
 ping->isRunning = true;
 
 long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
- 
+
 while (ping->nonstop)
     {
     std::list<USER_PTR>::iterator iter = ping->usersList.begin();
@@ -227,8 +227,8 @@ u->GetProperty().ips.AddAfterNotifier(&(*ChgIPNotifierList.begin()));
 void PING::UnSetUserNotifiers(USER_PTR u)
 {
 // ---          CurrIP              ---
-IS_CONTAINS_USER<CHG_CURRIP_NOTIFIER_PING> IsContainsUserCurrIP(u);
-IS_CONTAINS_USER<CHG_IPS_NOTIFIER_PING> IsContainsUserIP(u);
+HAS_USER<CHG_CURRIP_NOTIFIER_PING> IsContainsUserCurrIP(u);
+HAS_USER<CHG_IPS_NOTIFIER_PING> IsContainsUserIP(u);
 
 std::list<CHG_CURRIP_NOTIFIER_PING>::iterator currIPter;
 std::list<CHG_IPS_NOTIFIER_PING>::iterator IPIter;
@@ -277,9 +277,7 @@ while (users->SearchNext(h, &u) == 0)
         {
         uint32_t ip = u->GetCurrIP();
         if (ip)
-            {
             pinger.AddIP(ip);
-            }
         }
     }
 
@@ -318,22 +316,16 @@ void CHG_CURRIP_NOTIFIER_PING::Notify(const uint32_t & oldIP, const uint32_t & n
 {
 ping.pinger.DelIP(oldIP);
 if (newIP)
-    {
     ping.pinger.AddIP(newIP);
-    }
 }
 //-----------------------------------------------------------------------------
 void CHG_IPS_NOTIFIER_PING::Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS)
 {
 if (oldIPS.OnlyOneIP())
-    {
     ping.pinger.DelIP(oldIPS[0].ip);
-    }
 
 if (newIPS.OnlyOneIP())
-    {
     ping.pinger.AddIP(newIPS[0].ip);
-    }
 }
 //-----------------------------------------------------------------------------
 void ADD_USER_NONIFIER_PING::Notify(const USER_PTR & user)

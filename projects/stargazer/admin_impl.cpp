@@ -34,15 +34,12 @@
 
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL()
-    : ADMIN(),
-      conf(),
-      ip(0)
+    : ip(0)
 {
 }
 //-----------------------------------------------------------------------------
 ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
-    : ADMIN(),
-      conf(ac),
+    : conf(ac),
       ip(0)
 {
 }
@@ -50,20 +47,9 @@ ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
 ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
                        const std::string & login,
                        const std::string & password)
-    : ADMIN(),
-      conf(priv, login, password),
+    : conf(priv, login, password),
       ip(0)
 {
-}
-//-----------------------------------------------------------------------------
-ADMIN_IMPL & ADMIN_IMPL::operator=(const ADMIN_IMPL & adm)
-{
-if (&adm == this)
-    return *this;
-
-conf = adm.conf;
-ip = adm.ip;
-return *this;
 }
 //-----------------------------------------------------------------------------
 ADMIN_IMPL & ADMIN_IMPL::operator=(const ADMIN_CONF & ac)
