@@ -42,7 +42,6 @@ $Date: 2008/01/05 12:11:34 $
 char fileName[FN_LEN];
 char strReq[2048];
 
-//int ParseReply(void * data, SLIST * ans);
 int ParseReply(void * data, list<string> * ans);
 
 struct option long_options[] = {
@@ -105,19 +104,17 @@ return pass;
 //-----------------------------------------------------------------------------
 void CreateRequest(REQUEST * req, char * r)
 {
-char str[10024];
 r[0] = 0;
 
 if (!req->strReq.empty())
     {
+    char str[10024];
     sprintf(str, "%s", req->strReq.const_data().c_str());
     strcat(r, str);
     return;
     } else
     {
-    FILE *f;
-    f = NULL;
-    f = fopen(fileName, "rt");
+    FILE *f = fopen(fileName, "rt");
     if (!f)
         {
         printf("Can't open request file\n");
@@ -246,18 +243,15 @@ printf("  </SetUser>\n\n");
 printf("  <Message login=\"LOGIN\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"MESSAGE\" />\n");
 }
 //---------------------------------------------------------------------------
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
-int c;
-//int digit_optind = 0;
 REQUEST req;
 
 while (1)
     {
-    //int this_option_optind = optind ? optind : 1;
     int option_index = -1;
 
-    c = getopt_long(argc, argv, "s:p:a:w:f:r:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "s:p:a:w:f:r:", long_options, &option_index);
     if (c == -1)
         break;
 
@@ -269,7 +263,6 @@ while (1)
 
         case 'p': //port
             req.port = ParseServerPort(optarg);
-            //req.portReq = 1;
             break;
 
         case 'a': //admin
@@ -290,7 +283,6 @@ while (1)
             break;
 
         case '?':
-            //printf ("Unknown option \n");
             break;
 
         default:
@@ -309,7 +301,6 @@ if (optind < argc)
 
 if (CheckParameters(&req) == 0)
     {
-    //printf("Parameter needed\n");
     Usage();
     exit(PARAMETER_PARSING_ERR_CODE);
     }
