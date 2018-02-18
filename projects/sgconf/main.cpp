@@ -24,10 +24,11 @@
  $Date: 2010/03/25 14:37:43 $
  */
 
-#include <unistd.h>
-#include <getopt.h>
-#include <iconv.h>
-#include <langinfo.h>
+#include "stg/common.h"
+#include "stg/netunit.h"
+#include "request.h"
+#include "common_sg.h"
+#include "sg_error_codes.h"
 
 #include <cerrno>
 #include <clocale>
@@ -37,18 +38,16 @@
 #include <list>
 #include <sstream>
 
-#include "stg/common.h"
-#include "stg/netunit.h"
-#include "request.h"
-#include "common_sg.h"
-#include "sg_error_codes.h"
+#include <unistd.h>
+#include <getopt.h>
+#include <iconv.h>
+#include <langinfo.h>
 
 using namespace std;
 
 time_t stgTime;
 
 int ParseReplyGet(void * data, list<string> * ans);
-//int ParseReplySet(void * data, list<string> * ans);
 
 struct option long_options_get[] = {
 {"server",      1, 0, 's'},  //Server
@@ -57,7 +56,6 @@ struct option long_options_get[] = {
 {"admin_pass",  1, 0, 'w'},  //passWord
 {"user",        1, 0, 'u'},  //User
 {"addcash",     0, 0, 'c'},  //Add Cash
-//{"setcash",     0, 0, 'v'},  //Set Cash
 {"credit",      0, 0, 'r'},  //cRedit
 {"tariff",      0, 0, 't'},  //Tariff
 {"message",     0, 0, 'm'},  //message
@@ -171,7 +169,7 @@ struct option long_options_set[] = {
 {"email",       1, 0, 'L'},  //emaiL
 {"phone",       1, 0, 'P'},  //phone
 {"group",       1, 0, 'G'},  //Group
-{"ip",		0, 0, 'I'},  //IP-address of user
+{"ip",          0, 0, 'I'},  //IP-address of user
 
 {0, 0, 0, 0}};
 
@@ -272,8 +270,6 @@ if (strlen(s1) >= TARIFF_NAME_LEN)
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-//*tariff = s;
-
 if (CheckLogin(s1))
     {
     printf("Incorrect tariff value %s\n", t);
@@ -373,7 +369,6 @@ nconv = iconv (cd, (const char**)&inbuf, &insize, &outbuf, &outsize);
 #else
 nconv = iconv (cd, &inbuf, &insize, &outbuf, &outsize);
 #endif
-//printf("nconv=%d outsize=%d\n", nconv, outsize);
 if (nconv == (size_t) -1)
     {
     if (errno != EINVAL)
@@ -405,7 +400,6 @@ if (!req->usrMsg.empty())
     string msg;
     Encode12str(msg, req->usrMsg.const_data());
     sprintf(str, "<Message login=\"%s\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"%s\"/>", req->login.const_data().c_str(), msg.c_str());
-    //sprintf(str, "<message login=\"%s\" priority=\"0\" text=\"%s\"/>\n", req->login, msg);
     strcat(r, str);
     return;
     }
@@ -414,7 +408,6 @@ if (req->deleteUser)
     {
     sprintf(str, "<DelUser login=\"%s\"/>", req->login.const_data().c_str());
     strcat(r, str);
-    //printf("%s\n", r);
     return;
     }
 
@@ -422,7 +415,6 @@ if (req->createUser)
     {
     sprintf(str, "<AddUser> <login value=\"%s\"/> </AddUser>", req->login.const_data().c_str());
     strcat(r, str);
-    //printf("%s\n", r);
     return;
     }
 
@@ -515,7 +507,6 @@ for (int i = 0; i < DIR_NUM; i++)
 
         stringstream ss;
         ss << req->u[i].const_data();
-        //sprintf(str, "MU%d=\"%lld\" ", i, req->u[i].const_data());
         sprintf(str, "MU%d=\"%s\" ", i, ss.str().c_str());
         strcat(r, str);
         }
@@ -538,8 +529,6 @@ if (uPresent || dPresent)
     {
     strcat(r, "/>");
     }
-
-//printf("%s\n", r);
 
 if (!req->tariff.empty())
     {
@@ -648,7 +637,7 @@ int b = !req->cash.empty()
     || !req->email.empty()
     || !req->phone.empty()
     || !req->group.empty()
-    || !req->ips.empty()	// IP-address of user
+    || !req->ips.empty() // IP-address of user
 
     || !req->createUser
     || !req->deleteUser;
@@ -681,24 +670,11 @@ for (int i = 0; i < DIR_NUM; i++)
         }
     }
 
-
-//printf("a=%d, b=%d, u=%d, d=%d ud=%d\n", a, b, u, d, ud);
 return a && (b || u || d || ud);
-}
-//-----------------------------------------------------------------------------
-int CheckParametersGet(REQUEST * req)
-{
-return CheckParameters(req);
-}
-//-----------------------------------------------------------------------------
-int CheckParametersSet(REQUEST * req)
-{
-return CheckParameters(req);
 }
 //-----------------------------------------------------------------------------
 int mainGet(int argc, char **argv)
 {
-int c;
 REQUEST req;
 RESETABLE<string>   t1;
 int missedOptionArg = false;
@@ -709,7 +685,7 @@ int option_index = -1;
 while (1)
     {
     option_index = -1;
-    c = getopt_long(argc, argv, short_options_get, long_options_get, &option_index);
+    int c = getopt_long(argc, argv, short_options_get, long_options_get, &option_index);
     if (c == -1)
         break;
 
@@ -721,7 +697,6 @@ while (1)
 
         case 'p': //port
             req.port = ParseServerPort(optarg);
-            //req.portReq = 1;
             break;
 
         case 'a': //admin
@@ -791,10 +766,10 @@ while (1)
         case 'G': //Group
             req.group = " ";
             break;
-	
-	case 'I': //IP-address of user
-	    req.ips = " ";
-	    break;
+
+        case 'I': //IP-address of user
+            req.ips = " ";
+            break;
 
         case 'S': //Detail stat status
             req.disableDetailStat = " ";
@@ -814,7 +789,6 @@ while (1)
         case 507:
         case 508:
         case 509:
-            //printf("U%d\n", c - 500);
             req.u[c - 500] = 1;
             break;
 
@@ -828,7 +802,6 @@ while (1)
         case 607:
         case 608:
         case 609:
-            //printf("D%d\n", c - 600);
             req.d[c - 600] = 1;
             break;
 
@@ -842,7 +815,6 @@ while (1)
         case 707:
         case 708:
         case 709:
-            //printf("UD%d\n", c - 700);
             req.ud[c - 700] = " ";
             break;
 
@@ -852,7 +824,6 @@ while (1)
 
         case '?':
         case ':':
-            //printf ("Unknown option \n");
             missedOptionArg = true;
             break;
 
@@ -870,9 +841,8 @@ if (optind < argc)
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-if (missedOptionArg || !CheckParametersGet(&req))
+if (missedOptionArg || !CheckParameters(&req))
     {
-    //printf("Parameter needed\n");
     UsageInfo();
     exit(PARAMETER_PARSING_ERR_CODE);
     }
@@ -887,7 +857,6 @@ int mainSet(int argc, char **argv)
 {
 string str;
 
-int c;
 bool isMessage = false;
 REQUEST req;
 
@@ -901,7 +870,7 @@ while (1)
     {
     int option_index = -1;
 
-    c = getopt_long(argc, argv, short_options_set, long_options_set, &option_index);
+    int c = getopt_long(argc, argv, short_options_set, long_options_set, &option_index);
 
     if (c == -1)
         break;
@@ -914,7 +883,6 @@ while (1)
 
         case 'p': //port
             req.port = ParseServerPort(optarg);
-            //req.portReq = 1;
             break;
 
         case 'a': //admin
@@ -997,7 +965,6 @@ while (1)
         case 'L': //emaiL
             ParseAnyString(optarg, &str, "koi8-ru");
             req.email = str;
-            //printf("EMAIL=%s\n", optarg);
             break;
 
         case 'P': //phone
@@ -1033,7 +1000,6 @@ while (1)
         case 507:
         case 508:
         case 509:
-            //printf("U%d\n", c - 500);
             req.u[c - 500] = ParseTraff(optarg);
             break;
 
@@ -1047,7 +1013,6 @@ while (1)
         case 607:
         case 608:
         case 609:
-            //printf("D%d\n", c - 600);
             req.d[c - 600] = ParseTraff(optarg);
             break;
 
@@ -1062,17 +1027,14 @@ while (1)
         case 708:
         case 709:
             ParseAnyString(optarg, &str, "koi8-ru");
-            //printf("UD%d\n", c - 700);
             req.ud[c - 700] = str;
             break;
 
         case '?':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 
         case ':':
-            //printf("Missing option argument\n");
             missedOptionArg = true;
             break;
 
@@ -1090,9 +1052,8 @@ if (optind < argc)
     exit(PARAMETER_PARSING_ERR_CODE);
     }
 
-if (missedOptionArg || !CheckParametersSet(&req))
+if (missedOptionArg || !CheckParameters(&req))
     {
-    //printf("Parameter needed\n");
     UsageConf();
     exit(PARAMETER_PARSING_ERR_CODE);
     }
@@ -1115,7 +1076,6 @@ if (argc <= 2)
 
 if (strcmp(argv[1], "get") == 0)
     {
-    //printf("get\n");
     return mainGet(argc - 1, argv + 1);
     }
 else if (strcmp(argv[1], "set") == 0)
