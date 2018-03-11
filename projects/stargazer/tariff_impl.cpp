@@ -28,23 +28,18 @@
  $Author: faust $
  */
 
+#include "tariff_impl.h"
+
+#include "stg_timer.h"
+#include "stg/common.h"
+
 #include <ctime>
 #include <algorithm> // std::max
-
-#include "stg/common.h"
-#include "tariff_impl.h"
-#include "stg_timer.h"
 
 //-----------------------------------------------------------------------------
 TARIFF_IMPL & TARIFF_IMPL::operator=(const TARIFF_DATA & td)
 {
 tariffData = td;
-return *this;
-}
-//-----------------------------------------------------------------------------
-TARIFF_IMPL & TARIFF_IMPL::operator=(const TARIFF_IMPL & t)
-{
-tariffData = t.tariffData;
 return *this;
 }
 //-----------------------------------------------------------------------------

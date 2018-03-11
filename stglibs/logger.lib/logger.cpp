@@ -1,8 +1,8 @@
+#include "stg/logger.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <syslog.h>
-
-#include "stg/logger.h"
 
 #ifdef STG_TIME
 extern const volatile time_t stgTime;

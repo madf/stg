@@ -37,10 +37,7 @@ struct PARAM_VALUE
 //-----------------------------------------------------------------------------
 struct MODULE_SETTINGS
 {
-    MODULE_SETTINGS()
-        : moduleName(),
-          moduleParams()
-    {}
+    MODULE_SETTINGS() {}
     MODULE_SETTINGS(const std::string& name, const std::vector<PARAM_VALUE>& params)
         : moduleName(name),
           moduleParams(params)

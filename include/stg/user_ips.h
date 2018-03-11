@@ -27,6 +27,14 @@
 #ifndef USER_IPS_H
 #define USER_IPS_H
 
+#include "stg/common.h"
+#include "os_int.h"
+
+#include <cstring>
+#include <vector>
+#include <string>
+#include <iostream>
+
 #ifdef FREE_BSD
 #include <sys/types.h>
 #endif
@@ -35,20 +43,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <cstring>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-
-#include "stg/common.h"
-#include "os_int.h"
-
 //-------------------------------------------------------------------------
 struct IP_MASK
 {
 IP_MASK() : ip(0), mask(0) {}
-IP_MASK(const IP_MASK & ipm) : ip(ipm.ip), mask(ipm.mask)  {}
 uint32_t ip;
 uint32_t mask;
 };
@@ -56,24 +54,19 @@ uint32_t mask;
 class USER_IPS
 {
     friend std::ostream & operator<< (std::ostream & o, const USER_IPS & i);
-    //friend stringstream & operator<< (stringstream & s, const USER_IPS & i);
     friend const USER_IPS StrToIPS(const std::string & ipsStr);
 
 public:
     typedef std::vector<IP_MASK> ContainerType;
     typedef ContainerType::size_type IndexType;
 
-    USER_IPS();
-    USER_IPS(const USER_IPS &);
-    USER_IPS & operator=(const USER_IPS &);
-    const IP_MASK & operator[](IndexType idx) const;
+    const IP_MASK & operator[](IndexType idx) const { return ips[idx]; }
     std::string GetIpStr() const;
     bool IsIPInIPS(uint32_t ip) const;
     bool OnlyOneIP() const;
     bool IsAnyIP() const;
-    size_t  Count() const;
-    void Add(const IP_MASK &im);
-    void Erase();
+    size_t Count() const { return ips.size(); }
+    void Add(const IP_MASK &im) { ips.push_back(im); }
 
 private:
     uint32_t CalcMask(unsigned int msk) const;
@@ -81,58 +74,21 @@ private:
 };
 //-------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
-inline
-USER_IPS::USER_IPS()
-    : ips()
-{}
-//-----------------------------------------------------------------------------
-inline
-USER_IPS::USER_IPS(const USER_IPS & i)
-    : ips(i.ips)
-{}
-//-----------------------------------------------------------------------------
-inline
-USER_IPS & USER_IPS::operator=(const USER_IPS & i)
-{
-ips = i.ips;
-return *this;
-}
-//-----------------------------------------------------------------------------
-inline
-const IP_MASK & USER_IPS::operator[](IndexType idx) const
-{
-return ips[idx];
-}
-//-----------------------------------------------------------------------------
 inline
 std::string USER_IPS::GetIpStr() const
 {
 if (ips.empty())
-    {
     return "";
-    }
 
 if (ips[0].ip == 0)
-    {
     return "*";
-    }
 
 ContainerType::const_iterator it(ips.begin());
-std::ostringstream s;
-s << inet_ntostring(it->ip);
+std::string res = inet_ntostring(it->ip);
 ++it;
 for (; it != ips.end(); ++it)
-    {
-    s << "," << inet_ntostring(it->ip);
-    }
-return s.str();
-}
-//-----------------------------------------------------------------------------
-inline
-size_t USER_IPS::Count() const
-{
-return ips.size();
+    res += "," + inet_ntostring(it->ip);
+return res;
 }
 //-----------------------------------------------------------------------------
 inline
@@ -147,9 +103,7 @@ inline
 bool USER_IPS::IsIPInIPS(uint32_t ip) const
 {
 if (ips.empty())
-    {
     return false;
-    }
 
 if (ips.front().ip == 0)
     return true;
@@ -179,53 +133,29 @@ bool USER_IPS::IsAnyIP() const
 }
 //-----------------------------------------------------------------------------
 inline
-void USER_IPS::Add(const IP_MASK &im)
-{
-ips.push_back(im);
-}
-//-----------------------------------------------------------------------------
-inline
-void USER_IPS::Erase()
-{
-ips.erase(ips.begin(), ips.end());
-}
-//-----------------------------------------------------------------------------
-inline
 std::ostream & operator<<(std::ostream & o, const USER_IPS & i)
 {
 return o << i.GetIpStr();
 }
 //-----------------------------------------------------------------------------
-/*inline
-stringstream & operator<<(std::stringstream & s, const USER_IPS & i)
-{
-s << i.GetIpStr();
-return s;
-}*/
-//-----------------------------------------------------------------------------
 inline
 const USER_IPS StrToIPS(const std::string & ipsStr)
 {
 USER_IPS ips;
-char * paddr;
-IP_MASK im;
 std::vector<std::string> ipMask;
 if (ipsStr.empty())
-    {
     return ips;
-    }
 
 if (ipsStr[0] == '*' && ipsStr.size() == 1)
     {
-    im.ip = 0;
-    im.mask = 0;
-    ips.ips.push_back(im);
+    ips.ips.push_back(IP_MASK());
     return ips;
     }
 
 char * tmp = new char[ipsStr.size() + 1];
 strcpy(tmp, ipsStr.c_str());
 char * pstr = tmp;
+char * paddr = NULL;
 while ((paddr = strtok(pstr, ",")))
     {
     pstr = NULL;
@@ -242,36 +172,28 @@ for (USER_IPS::IndexType i = 0; i < ipMask.size(); i++)
     strcpy(str, ipMask[i].c_str());
     strIp = strtok(str, "/");
     if (strIp == NULL)
-        {
         return ips;
-        }
     strMask = strtok(NULL, "/");
+
+    IP_MASK im;
 
     im.ip = inet_addr(strIp);
     if (im.ip == INADDR_NONE)
-        {
         return ips;
-        }
 
     im.mask = 32;
     if (strMask != NULL)
         {
         int m = 0;
         if (str2x(strMask, m) != 0)
-            {
             return ips;
-            }
         im.mask = m;
 
         if (im.mask > 32)
-            {
             return ips;
-            }
 
         if ((im.ip & ips.CalcMask(im.mask)) != im.ip)
-            {
             return ips;
-            }
         }
     ips.ips.push_back(im);
     }

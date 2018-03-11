@@ -49,11 +49,13 @@ class PLUGIN_LOGGER
 friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER& logger, const std::string& pluginName);
 
 public:
-    PLUGIN_LOGGER(const PLUGIN_LOGGER& rhs) : m_parent(rhs.m_parent), m_pluginName(rhs.m_pluginName) {}
+    PLUGIN_LOGGER(const PLUGIN_LOGGER& rhs) : m_parent(rhs.m_parent), m_pluginName(rhs.m_pluginName) {} // Need move here.
     void operator()(const char* fmt, ...) const;
     void operator()(const std::string& line) const;
 
 private:
+    PLUGIN_LOGGER& operator=(const PLUGIN_LOGGER&); // Copy assignment is prohibited.
+
     PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn);
     const STG_LOGGER& m_parent;
     std::string m_pluginName;

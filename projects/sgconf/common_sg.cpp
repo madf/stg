@@ -24,6 +24,10 @@
  $Date: 2009/06/08 10:02:28 $
  */
 
+#include "stg/common.h"
+#include "sg_error_codes.h"
+#include "common_sg.h"
+#include "version_sg.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -33,11 +37,6 @@
 #include <langinfo.h>
 #include <iostream>
 #include <iconv.h>
-
-#include "stg/common.h"
-#include "sg_error_codes.h"
-#include "common_sg.h"
-#include "version_sg.h"
 
 using namespace std;
 
@@ -90,7 +89,7 @@ HelpParams hp[] =
     {"set credit expire",       "get credit expire",    "-E",   "<credit_expire_date>"},
     {"set password",            "get password",         "-o",   "<new_password>"},
     {"set prepaid traffic",     "get prepaid traffic",  "-e",   "<prepaid>"},
-    {"set IP-addresses",	"get IP-addresses",	"-I",	"<*|ip_addr[,ip_addr...]>"},
+    {"set IP-addresses",        "get IP-addresses",     "-I",   "<*|ip_addr[,ip_addr...]>"},
     {"set name",                "get name",             "-A",   "<name>"},
     {"set note",                "get note",             "-N",   "<note>"},
     {"set street address",      "get street address",   "-D",   "<address>"},
@@ -291,21 +290,12 @@ void ConvertFromKOI8(const string & src, string * dst)
 ConvertKOI8(src, dst, FROM_KOI8);
 }
 //-----------------------------------------------------------------------------
-void ConvertToKOI8(const string & src, string * dst)
-{
-ConvertKOI8(src, dst, TO_KOI8);
-}
-//-----------------------------------------------------------------------------
 int RecvSetUserAnswer(const char * ans, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
+GetUserCbData * gucbd = static_cast<GetUserCbData*>(d);
 
 bool * result = gucbd->result;
 
-//REQUEST * req = (REQUEST *)gucbd->data;
-
-//printf("ans=%s\n", ans);
 if (strcasecmp("Ok", ans) == 0)
     *result = true;
 else
@@ -323,8 +313,7 @@ struct StringReqParams
 //-----------------------------------------------------------------------------
 void RecvUserData(USERDATA * ud, void * d)
 {
-GetUserCbData * gucbd;
-gucbd = (GetUserCbData *)d;
+GetUserCbData * gucbd = static_cast<GetUserCbData*>(d);
 
 bool * result = gucbd->result;
 
@@ -405,7 +394,7 @@ StringReqParams strReqParams[] =
     {"group",    req->group,       &ud->group},
     {"tariff",   req->tariff,      &ud->tariff},
     {"password", req->usrPasswd,   &ud->password},
-    {"ip",	 req->ips,	   &ud->ips}	// IP-address of user
+    {"ip",       req->ips,         &ud->ips} // IP-address of user
 };
 for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
     {
@@ -421,8 +410,7 @@ for (unsigned i = 0; i < sizeof(strReqParams) / sizeof(StringReqParams); i++)
 //-----------------------------------------------------------------------------
 void RecvAuthByData(const std::vector<std::string> & list, void * d)
 {
-AuthByCbData * abcbd;
-abcbd = (AuthByCbData *)d;
+AuthByCbData * abcbd = static_cast<AuthByCbData*>(d);
 
 bool * result = abcbd->result;
 

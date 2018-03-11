@@ -954,26 +954,22 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
 
 tuples = PQntuples(result);
 
-conf->ips.Erase();
+USER_IPS ips;
 for (int i = 0; i < tuples; ++i)
     {
-    IP_MASK ipm;
+    IP_MASK im;
 
-    int ip, mask;
+    im.ip = inet_strington(PQgetvalue(result, i, 0));
 
-    ip = inet_strington(PQgetvalue(result, i, 0));
-
-    if (str2x(PQgetvalue(result, i, 1), mask))
+    if (str2x(PQgetvalue(result, i, 1), im.mask))
         {
         printfd(__FILE__, "POSTGRESQL_STORE::RestoreUserConf(): 'Failed to fetch mask'\n");
         continue;
         }
 
-    ipm.ip = ip;
-    ipm.mask = mask;
-
-    conf->ips.Add(ipm);
+    ips.Add(im);
     }
+conf->ips = ips;
 
 PQclear(result);
 
