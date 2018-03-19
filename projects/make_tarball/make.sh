@@ -1,9 +1,16 @@
 #!/bin/sh
 
-SRC_DIR=stg-2.4-`date "+%Y.%m.%d-%H.%M.%S"`
+if [ "$1" != "" ]
+then
+    SRC_DIR="$1"
+else
+    PREFIX="stg-2.4"
+    SRC_DIR=$(date "+${PREFIX}-%Y.%m.%d-%H.%M.%S")
+fi
+
 ARC_NAME=$SRC_DIR.tar.gz
 
-git clone git://gitorious.org/stg/stg.git $SRC_DIR
+git clone git@stg.codes:stg.git $SRC_DIR
 
 if [ $? != 0 ]
 then
@@ -14,17 +21,19 @@ fi
 rm -rf $SRC_DIR/.git
 rm -f $SRC_DIR/.gitignore
 rm -r $SRC_DIR/projects/make_tarball
-rm -r $SRC_DIR/projects/traffcounter
 rm -r $SRC_DIR/projects/sgauthstress
+rm -r $SRC_DIR/projects/rlm_stg
 rm -r $SRC_DIR/projects/stargazer/plugins/authorization/stress
-rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig2
-rm -r $SRC_DIR/projects/stargazer/plugins/configuration/sgconfig-ng
-rm -r $SRC_DIR/projects/stargazer/plugins/configuration/xrconfig
-rm -r $SRC_DIR/projects/stargazer/plugins/other/userstat
-rm -r $SRC_DIR/projects/stargazer/plugins/store/db
 rm -r $SRC_DIR/doc/help
 rm $SRC_DIR/doc/help.odt
 
-make -C $SRC_DIR/doc/xmlrpc
+if [ -f /usr/share/sgml/docbook/xsl-stylesheets/html/chunk.xsl ]
+then
+    echo "Building doc..."
+    make -C $SRC_DIR/doc/xmlrpc
+    make -C $SRC_DIR/doc/help
+else
+    echo "No XSL stylesheets, skipping doc build"
+fi
 
 tar -zcf $ARC_NAME $SRC_DIR
