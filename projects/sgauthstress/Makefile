@@ -30,7 +30,12 @@ OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
 CXXFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
-LDFLAGS += -Wl,-E $(STGLIBS_LIBS)
+
+ifneq ($(OS),darwin)
+LDFLAGS += -Wl,-E
+endif
+
+LDFLAGS += $(STGLIBS_LIBS)
 
 .PHONY: all clean distclean libs plugins
 all: libs plugins $(PROG) ../../Makefile.conf

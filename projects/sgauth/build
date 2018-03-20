@@ -55,7 +55,7 @@ if [ "$sys" = "Darwin" ]
 then
     OS=darwin
     ETC_DIR="./inst/freebsd/etc/stargazer"
-    MAKE="gmake"
+    MAKE="make"
     CFLAGS="$CFLAGS -I/opt/local/include"
     CXXFLAGS="$CFLAGS -I/opt/local/include"
     LDFLAGS="$LDFLAGS -L/opt/local/lib"

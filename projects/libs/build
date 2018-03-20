@@ -65,7 +65,7 @@ fi
 if [ "$sys" = "Darwin" ]
 then
     OS=darwin
-    MAKE="gmake"
+    MAKE="make"
 fi
 
 if [ "$OS" = "unknown" ]
