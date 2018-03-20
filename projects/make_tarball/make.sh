@@ -10,7 +10,7 @@ fi
 
 ARC_NAME=$SRC_DIR.tar.gz
 
-git clone git@stg.codes:stg.git $SRC_DIR
+git clone git@stg.codes:stg.git -b stg-2.409 $SRC_DIR
 
 if [ $? != 0 ]
 then
