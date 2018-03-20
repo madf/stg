@@ -35,7 +35,8 @@
 
 #include "stg/common.h"
 #include "stg/netunit.h"
-#include "stg/request.h"
+
+#include "request.h"
 
 using namespace std;
 

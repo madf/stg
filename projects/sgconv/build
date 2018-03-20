@@ -56,7 +56,7 @@ if [ "$sys" = "Darwin" ]
 then
     OS=darwin
     ETC_DIR="./inst/freebsd/etc/stargazer"
-    MAKE="gmake"
+    MAKE="make"
 fi
 
 if [ "$OS" = "unknown" ]
