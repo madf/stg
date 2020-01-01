@@ -105,7 +105,6 @@ PLUGINS="authorization/ao
          configuration/sgconfig
          other/ping
          other/rscript
-         other/radius
          other/smux
          store/files
          capture/cap_nf"
@@ -431,6 +430,55 @@ else
 fi
 rm -f fake
 
+printf "Checking for -lyajl... "
+pkg-config --version > /dev/null 2> /dev/null
+if [ "$?" = "0" ]
+then
+    pkg-config --atleast-version=2.0.0 yajl
+    if [ "$?" != "0" ]
+    then
+        CHECK_YAJL=no
+        printf "no\n"
+    else
+        CHECK_YAJL=yes
+        printf `pkg-config --modversion yajl`"\n"
+    fi
+else
+    printf "#include <stdio.h>\n" > build_check.c
+    printf "#include <yajl/yajl_version.h>\n" >> build_check.c
+    printf "int main() { printf(\"%%d\", yajl_version()); return 0; }\n" >> build_check.c
+    $CC $CFLAGS $LDFLAGS build_check.c -lyajl -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_YAJL=no
+        printf "no\n"
+    else
+        YAJL_VERSION=`./fake`
+        if [ $YAJL_VERSION -ge 20000 ]
+        then
+            CHECK_YAJL=yes
+            printf "${YAJL_VERSION}\n"
+        else
+            CHECK_YAJL=no
+            printf "no. Need at least version 2.0.0, existing version is ${YAJL_VERSION}\n"
+        fi
+    fi
+    rm -f fake
+fi
+
+printf "Checking for boost::scoped_ptr... "
+printf "#include <boost/scoped_ptr.hpp>\nint main() { boost::scoped_ptr<int> test(new int(1)); return 0; }\n" > build_check.cpp
+$CXX $CXXFLAGS $LDFLAGS build_check.cpp -o fake # > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_BOOST_SCOPED_PTR=no
+    printf "no\n"
+else
+    CHECK_BOOST_SCOPED_PTR=yes
+    printf "yes\n"
+fi
+rm -f fake
+
 if [ "$OS" = "linux" ]
 then
     printf "Checking for linux/netfilter_ipv4/ip_queue.h... "
@@ -453,6 +501,7 @@ then
 fi
 
 rm -f build_check.c
+rm -f build_check.cpp
 
 if [ "$CHECK_EXPAT" != "yes" ]
 then
@@ -496,6 +545,14 @@ if [ "$CHECK_NFNETLINK" = "yes" -a "$CHECK_NFQ" = "yes" ]
 then
     PLUGINS="$PLUGINS
              capture/nfqueue"
+fi
+
+if [ "$CHECK_YAJL" = "yes" -a "$CHECK_BOOST_SCOPED_PTR" = "yes" ]
+then
+    PLUGINS="$PLUGINS
+             other/radius"
+    STG_LIBS="$STG_LIBS
+              json.lib"
 fi
 
 printf "OS=$OS\n" > $CONFFILE

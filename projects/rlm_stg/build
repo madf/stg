@@ -20,6 +20,7 @@ if [ "$1" = "debug" ]
 then
    DEFS="$DEFS -DDEBUG"
    MAKEOPTS="$MAKEOPTS -j1"
+   CFLAGS="$CFLAGS -ggdb3 -W -Wall -Wextra"
    CXXFLAGS="$CXXFLAGS -ggdb3 -W -Wall -Wextra"
    DEBUG="yes"
 else
@@ -27,6 +28,7 @@ else
    DEBUG="no"
 fi
 
+CFLAGS="$CFLAGS -I/usr/local/include"
 CXXFLAGS="$CXXFLAGS -I/usr/local/include"
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
@@ -61,7 +63,7 @@ printf "########################################################################
 printf "       Building rlm_stg for $sys $release\n"
 printf "#############################################################################\n"
 
-STG_LIBS="crypto.lib common.lib"
+STG_LIBS="crypto.lib common.lib json.lib"
 
 if [ "$OS" = "linux" ]
 then
@@ -150,6 +152,68 @@ else
 fi
 rm -f fake
 
+printf "Checking for -lyajl... "
+pkg-config --version > /dev/null 2> /dev/null
+if [ "$?" = "0" ]
+then
+    pkg-config --atleast-version=2.0.0 yajl
+    if [ "$?" != "0" ]
+    then
+        CHECK_YAJL=no
+        printf "no\n"
+        exit;
+    else
+        CHECK_YAJL=yes
+        printf `pkg-config --modversion yajl`"\n"
+    fi
+else
+    printf "#include <stdio.h>\n" > build_check.c
+    printf "#include <yajl/yajl_version.h>\n" >> build_check.c
+    printf "int main() { printf(\"%%d\", yajl_version()); return 0; }\n" >> build_check.c
+    $CC $CFLAGS $LDFLAGS build_check.c -lyajl -o fake > /dev/null 2> /dev/null
+    if [ $? != 0 ]
+    then
+        CHECK_YAJL=no
+        printf "no\n"
+        exit;
+    else
+        YAJL_VERSION=`./fake`
+        if [ $YAJL_VERSION -ge 20000 ]
+        then
+            CHECK_YAJL=yes
+            printf "${YAJL_VERSION}\n"
+        else
+            CHECK_YAJL=no
+            printf "no. Need at least version 2.0.0, existing version is ${YAJL_VERSION}\n"
+            exit;
+        fi
+    fi
+    rm -f fake
+fi
+
+printf "Checking for boost::scoped_ptr... "
+printf "#include <boost/scoped_ptr.hpp>\nint main() { boost::scoped_ptr<int> test(new int(1)); return 0; }\n" > build_check.cpp
+$CXX $CXXFLAGS $LDFLAGS build_check.cpp -o fake # > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    CHECK_BOOST_SCOPED_PTR=no
+    printf "no\n"
+    exit;
+else
+    CHECK_BOOST_SCOPED_PTR=yes
+    printf "yes\n"
+fi
+rm -f fake
+
+rm -f build_check.c
+rm -f build_check.cpp
+
+if [ "$CHECK_YAJL" = "yes" -a "$CHECK_BOOST_SCOPED_PTR" = "yes" ]
+then
+    STG_LIBS="$STG_LIBS
+              json.lib"
+fi
+
 printf "OS=$OS\n" > $CONFFILE
 printf "STG_TIME=yes\n" >> $CONFFILE
 printf "DEBUG=$DEBUG\n" >> $CONFFILE
@@ -165,6 +229,8 @@ do
     printf "$lib " >> $CONFFILE
 done
 printf "\n" >> $CONFFILE
+printf "CC=$CC\n" >> $CONFFILE
+printf "CXX=$CXX\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE

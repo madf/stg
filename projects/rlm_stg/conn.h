@@ -18,8 +18,8 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_RLM_CLIENT_H__
-#define __STG_RLM_CLIENT_H__
+#ifndef __STG_RLM_CONN_H__
+#define __STG_RLM_CONN_H__
 
 #include "types.h"
 
@@ -28,31 +28,36 @@
 #include <boost/scoped_ptr.hpp>
 
 #include <string>
+#include <stdexcept>
 
 namespace STG
 {
 namespace RLM
 {
 
-class Client
+class Conn
 {
-public:
-    explicit Client(const std::string& address);
-    ~Client();
+    public:
+        struct Error : std::runtime_error {
+            explicit Error(const std::string& message) : runtime_error(message) {}
+        };
 
-    bool stop();
+        typedef bool (*Callback)(void* /*data*/, const RESULT& /*result*/);
 
-    static Client* get();
-    static bool configure(const std::string& address);
+        Conn(const std::string& address, Callback callback, void* data);
+        ~Conn();
 
-    RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
+        bool stop();
+        bool connected() const;
 
-private:
-    class Impl;
-    boost::scoped_ptr<Impl> m_impl;
+        bool request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
+
+    private:
+        class Impl;
+        boost::scoped_ptr<Impl> m_impl;
 };
 
-} // namespace RLM
-} // namespace STG
+}
+}
 
 #endif

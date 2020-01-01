@@ -15,26 +15,79 @@
  */
 
 /*
- *    Date: 27.10.2002
- */
-
-/*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
-$Revision: 1.45 $
-$Date: 2010/08/19 13:42:30 $
-$Author: faust $
-*/
-
-#include <cstring>
-#include <cerrno>
-#include <string>
+#include "settings_impl.h"
 
 #include "stg/logger.h"
 #include "stg/dotconfpp.h"
-#include "settings_impl.h"
+#include "stg/common.h"
+
+#include <stdexcept>
+#include <cstring>
+#include <cerrno>
+
+namespace
+{
+
+struct Error : public std::runtime_error
+{
+    Error(const std::string& message) : runtime_error(message) {}
+};
+
+std::vector<std::string> toValues(const DOTCONFDocumentNode& node)
+{
+    std::vector<std::string> values;
+
+    size_t i = 0;
+    const char* value = NULL;
+    while ((value = node.getValue(i++)) != NULL)
+        values.push_back(value);
+
+    return values;
+}
+
+std::vector<PARAM_VALUE> toPVS(const DOTCONFDocumentNode& node)
+{
+    std::vector<PARAM_VALUE> pvs;
+
+    const DOTCONFDocumentNode* child = node.getChildNode();
+    while (child != NULL)
+        {
+        if (child->getName() == NULL)
+            continue;
+
+        if (child->getChildNode() == NULL)
+            pvs.push_back(PARAM_VALUE(child->getName(), toValues(*child)));
+        else
+            pvs.push_back(PARAM_VALUE(child->getName(), toValues(*child), toPVS(*child)));
+
+        child = child->getNextNode();
+        }
+
+    return pvs;
+}
+
+unsigned toPeriod(const char* value)
+{
+    if (value == NULL)
+        throw Error("No detail stat period value.");
+
+    std::string period(value);
+    if (period == "1")
+        return dsPeriod_1;
+    else if (period == "1/2")
+        return dsPeriod_1_2;
+    else if (period == "1/4")
+        return dsPeriod_1_4;
+    else if (period == "1/6")
+        return dsPeriod_1_6;
+
+    throw Error("Invalid detail stat period value: '" + period + "'. Should be one of '1', '1/2', '1/4' or '1/6'.");
+}
+
+}
 
 //-----------------------------------------------------------------------------
 SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
@@ -139,45 +192,6 @@ SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
     return *this;
 }
 //-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ParseModuleSettings(const DOTCONFDocumentNode * node, std::vector<PARAM_VALUE> * params)
-{
-const DOTCONFDocumentNode * childNode;
-PARAM_VALUE pv;
-const char * value;
-
-pv.param = node->getName();
-
-if (node->getValue(1))
-    {
-    strError = "Unexpected value \'" + std::string(node->getValue(1)) + "\'.";
-    return -1;
-    }
-
-value = node->getValue(0);
-
-if (!value)
-    {
-    strError = "Module name expected.";
-    return -1;
-    }
-
-childNode = node->getChildNode();
-while (childNode)
-    {
-    pv.param = childNode->getName();
-    int i = 0;
-    while ((value = childNode->getValue(i++)) != NULL)
-        {
-        pv.value.push_back(value);
-        }
-    params->push_back(pv);
-    pv.value.clear();
-    childNode = childNode->getNextNode();
-    }
-
-return 0;
-}
-//-----------------------------------------------------------------------------
 void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
 {
     printfd(__FILE__, "SETTINGS_IMPL::ErrorCallback() - %s\n", buf);
@@ -247,11 +261,15 @@ while (node)
 
     if (strcasecmp(node->getName(), "DetailStatWritePeriod") == 0)
         {
-        if (ParseDetailStatWritePeriod(node->getValue(0)) != 0)
-            {
-            strError = "Incorrect DetailStatWritePeriod value: \'" + std::string(node->getValue(0)) + "\'";
+        try
+        {
+            detailStatWritePeriod = toPeriod(node->getValue(0));
+        }
+        catch (const Error& error)
+        {
+            strError = error.what();
             return -1;
-            }
+        }
         }
 
     if (strcasecmp(node->getName(), "StatWritePeriod") == 0)
@@ -452,8 +470,13 @@ while (node)
             }
         storeModulesCount++;
 
+        if (node->getValue(0) == NULL)
+            {
+            strError = "No module name in the StoreModule section.";
+            return -1;
+            }
         storeModuleSettings.moduleName = node->getValue(0);
-        ParseModuleSettings(node, &storeModuleSettings.moduleParams);
+        storeModuleSettings.moduleParams = toPVS(*node);
         }
 
     if (strcasecmp(node->getName(), "Modules") == 0)
@@ -471,13 +494,14 @@ while (node)
                 child = child->getNextNode();
                 continue;
                 }
-            MODULE_SETTINGS modSettings;
-            modSettings.moduleParams.clear();
-            modSettings.moduleName = child->getValue();
 
-            ParseModuleSettings(child, &modSettings.moduleParams);
+            if (child->getValue(0) == NULL)
+                {
+                strError = "No module name in the Module section.";
+                return -1;
+                }
 
-            modulesSettings.push_back(modSettings);
+            modulesSettings.push_back(MODULE_SETTINGS(child->getValue(0), toPVS(*child)));
 
             child = child->getNextNode();
             }
@@ -492,31 +516,5 @@ while (node)
     }
 
 return 0;
-}
-//-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ParseDetailStatWritePeriod(const std::string & detailStatPeriodStr)
-{
-if (detailStatPeriodStr == "1")
-    {
-    detailStatWritePeriod = dsPeriod_1;
-    return 0;
-    }
-else if (detailStatPeriodStr == "1/2")
-    {
-    detailStatWritePeriod = dsPeriod_1_2;
-    return 0;
-    }
-else if (detailStatPeriodStr == "1/4")
-    {
-    detailStatWritePeriod = dsPeriod_1_4;
-    return 0;
-    }
-else if (detailStatPeriodStr == "1/6")
-    {
-    detailStatWritePeriod = dsPeriod_1_6;
-    return 0;
-    }
-
-return -1;
 }
 //-----------------------------------------------------------------------------

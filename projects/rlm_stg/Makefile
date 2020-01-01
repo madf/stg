@@ -8,12 +8,15 @@ LIB_NAME = rlm_stg
 
 PROG = $(LIB_NAME).so
 
-SRCS = ./rlm_stg.c \
-       ./iface.cpp \
-       ./stg_client.cpp
+SRCS = rlm_stg.c \
+       iface.cpp \
+       stg_client.cpp \
+       conn.cpp \
+       radlog.c
 
 STGLIBS = crypto \
-          common
+          common \
+          json
 
 STGLIBS_INCS = $(addprefix -I ../../stglibs/,$(addsuffix .lib/include,$(STGLIBS)))
 STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
@@ -21,16 +24,19 @@ STGLIBS_LIBS = $(addprefix -L ../../stglibs/,$(addsuffix .lib,$(STGLIBS)))
 LIBS += $(addprefix -lstg,$(STGLIBS)) $(LIB_THREAD) $(LIBICONV)
 
 ifeq ($(OS),linux)
-LIBS += -ldl
+LIBS += -ldl \
+	-lyajl
 else
 LIBS += -lintl \
-        -lc
+        -lc \
+	-lyajl
 endif
 
 SEARCH_DIRS = -I ../../include
 
 OBJS = $(notdir $(patsubst %.cpp, %.o, $(patsubst %.c, %.o, $(SRCS))))
 
+CFLAGS += -fPIC $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CXXFLAGS += -fPIC $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 CFLAGS += $(DEFS) $(STGLIBS_INCS) $(SEARCH_DIRS)
 LDFLAGS += -shared -Wl,-rpath,$(PREFIX)/usr/lib/stg -Wl,-E $(STGLIBS_LIBS)

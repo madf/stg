@@ -18,41 +18,41 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_RLM_CLIENT_H__
-#define __STG_RLM_CLIENT_H__
-
-#include "types.h"
-
-#include "stg/os_int.h"
+#ifndef __STG_SGCONFIG_CONN_H__
+#define __STG_SGCONFIG_CONN_H__
 
 #include <boost/scoped_ptr.hpp>
 
 #include <string>
 
+class USER;
+class USERS;
+class PLUGIN_LOGGER;
+class RADIUS;
+
 namespace STG
 {
-namespace RLM
+
+struct Config;
+
+class Conn
 {
+    public:
+        Conn(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
+        ~Conn();
 
-class Client
-{
-public:
-    explicit Client(const std::string& address);
-    ~Client();
+        int sock() const;
 
-    bool stop();
+        bool read();
+        bool tick();
 
-    static Client* get();
-    static bool configure(const std::string& address);
+        bool isOk() const;
 
-    RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
-
-private:
-    class Impl;
-    boost::scoped_ptr<Impl> m_impl;
+    private:
+        class Impl;
+        boost::scoped_ptr<Impl> m_impl;
 };
 
-} // namespace RLM
-} // namespace STG
+}
 
 #endif

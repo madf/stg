@@ -27,17 +27,16 @@
 #ifndef common_h
 #define common_h
 
-#ifdef __BORLANDC__
-#include <time.h>
-#else
-#include <ctime>
-#include <climits> // NAME_MAX
-#endif
-#include <string>
-#include <sstream>
-
 #include "stg/os_int.h"
 #include "stg/const.h"
+
+#include <string>
+#include <sstream>
+#include <ctime>
+#include <climits> // NAME_MAX
+
+#include <unistd.h> // uid_t, gid_t
+#include <sys/stat.h> // mode_t
 
 #define STAT_TIME_3         (1)
 #define STAT_TIME_2         (2)
@@ -313,5 +312,9 @@ const std::string & unsigned2str(varT x, std::string & s)
 //-----------------------------------------------------------------------------
 char * stg_strptime(const char *, const char *, struct tm *);
 time_t stg_timegm(struct tm *);
+
+uid_t str2uid(const std::string& name);
+gid_t str2gid(const std::string& name);
+mode_t str2mode(const std::string& mode);
 
 #endif

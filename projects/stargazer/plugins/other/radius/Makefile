@@ -4,16 +4,19 @@
 
 include ../../../../../Makefile.conf
 
-LIBS += $(LIB_THREAD)
+LIBS += $(LIB_THREAD) -lyajl
 
 PROG = mod_radius.so
 
-SRCS = ./radius.cpp
+SRCS = radius.cpp \
+       config.cpp \
+       conn.cpp
 
 STGLIBS = common \
 	  crypto \
 	  logger \
-	  scriptexecuter
+	  scriptexecuter \
+	  json
 
 include ../../Makefile.in
 

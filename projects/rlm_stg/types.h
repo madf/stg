@@ -18,15 +18,10 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_RLM_CLIENT_H__
-#define __STG_RLM_CLIENT_H__
+#ifndef __STG_RLM_CLIENT_CONN_H__
+#define __STG_RLM_CLIENT_CONN_H__
 
-#include "types.h"
-
-#include "stg/os_int.h"
-
-#include <boost/scoped_ptr.hpp>
-
+#include <vector>
 #include <string>
 
 namespace STG
@@ -34,22 +29,21 @@ namespace STG
 namespace RLM
 {
 
-class Client
+typedef std::vector<std::pair<std::string, std::string> > PAIRS;
+
+struct RESULT
 {
-public:
-    explicit Client(const std::string& address);
-    ~Client();
+    PAIRS modify;
+    PAIRS reply;
+    int returnCode;
+};
 
-    bool stop();
-
-    static Client* get();
-    static bool configure(const std::string& address);
-
-    RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
-
-private:
-    class Impl;
-    boost::scoped_ptr<Impl> m_impl;
+enum REQUEST_TYPE {
+    AUTHORIZE,
+    AUTHENTICATE,
+    POST_AUTH,
+    PRE_ACCT,
+    ACCOUNT
 };
 
 } // namespace RLM

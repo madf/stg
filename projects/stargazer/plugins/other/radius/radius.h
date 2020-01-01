@@ -18,154 +18,93 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  Radius data access plugin for Stargazer
- *
- *  $Revision: 1.10 $
- *  $Date: 2009/12/13 14:17:13 $
- *
- */
-
-#ifndef RADIUS_H
-#define RADIUS_H
-
-#include <pthread.h>
-
-#include <cstring>
-#include <cstdlib>
-#include <string>
-#include <list>
-#include <map>
-#include <vector>
+#ifndef __STG_RADIUS_H__
+#define __STG_RADIUS_H__
 
 #include "stg/os_int.h"
 #include "stg/auth.h"
 #include "stg/module_settings.h"
-#include "stg/notifer.h"
-#include "stg/user_ips.h"
-#include "stg/user.h"
-#include "stg/users.h"
-#include "stg/blowfish.h"
-#include "stg/rad_packets.h"
 #include "stg/logger.h"
+
+#include "config.h"
+#include "conn.h"
+
+#include <string>
+#include <deque>
+#include <set>
+
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/select.h>
+#include <sys/types.h>
 
 extern "C" PLUGIN * GetPlugin();
 
-#define RAD_DEBUG (1)
+class STORE;
+class USERS;
 
-class RADIUS;
-//-----------------------------------------------------------------------------
-class RAD_SETTINGS {
+class RADIUS : public AUTH {
 public:
-    RAD_SETTINGS()
-        : port(0), errorStr(), password(),
-          authServices(), acctServices()
-    {}
-    virtual ~RAD_SETTINGS() {}
-    const std::string & GetStrError() const { return errorStr; }
-    int ParseSettings(const MODULE_SETTINGS & s);
-    uint16_t GetPort() const { return port; }
-    const std::string & GetPassword() const { return password; }
-    const std::list<std::string> & GetAuthServices() const { return authServices; }
-    const std::list<std::string> & GetAcctServices() const { return acctServices; }
+    RADIUS();
+    virtual ~RADIUS() {}
 
-private:
-    int ParseServices(const std::vector<std::string> & str, std::list<std::string> * lst);
+    void SetUsers(USERS* u) { m_users = u; }
+    void SetStore(STORE* s) { m_store = s; }
+    void SetStgSettings(const SETTINGS*) {}
+    void SetSettings(const MODULE_SETTINGS& s) { m_settings = s; }
+    int ParseSettings();
 
-    uint16_t port;
-    std::string errorStr;
-    std::string password;
-    std::list<std::string> authServices;
-    std::list<std::string> acctServices;
-};
-//-----------------------------------------------------------------------------
-struct RAD_SESSION {
-    RAD_SESSION() : userName(), serviceType() {}
-    std::string userName;
-    std::string serviceType;
-};
-//-----------------------------------------------------------------------------
-class RADIUS :public AUTH {
-public:
-                        RADIUS();
-    virtual             ~RADIUS() {}
+    int Start();
+    int Stop();
+    int Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
+    bool IsRunning() { return m_running; }
 
-    void                SetUsers(USERS * u) { users = u; }
-    void                SetStore(STORE * s) { store = s; }
-    void                SetStgSettings(const SETTINGS *) {}
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    const std::string& GetStrError() const { return m_error; }
+    std::string GetVersion() const { return "RADIUS data access plugin v. 2.0"; }
+    uint16_t GetStartPosition() const { return 30; }
+    uint16_t GetStopPosition() const { return 30; }
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool                IsRunning() { return isRunning; }
+    int SendMessage(const STG_MSG&, uint32_t) const { return 0; }
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return "RADIUS data access plugin v 0.6"; }
-    uint16_t            GetStartPosition() const { return 30; }
-    uint16_t            GetStopPosition() const { return 30; }
-
-    int SendMessage(const STG_MSG &, uint32_t) const { return 0; }
+    void authorize(const USER& user);
+    void unauthorize(const std::string& login, const std::string& reason);
 
 private:
     RADIUS(const RADIUS & rvalue);
     RADIUS & operator=(const RADIUS & rvalue);
 
-    static void *       Run(void *);
-    int                 PrepareNet();
-    int                 FinalizeNet();
+    static void* run(void*);
 
-    ssize_t             Send(const RAD_PACKET & packet, struct sockaddr_in * outerAddr);
-    int                 RecvData(RAD_PACKET * packet, struct sockaddr_in * outerAddr);
-    int                 ProcessData(RAD_PACKET * packet);
+    bool reconnect();
+    int createUNIX() const;
+    int createTCP() const;
+    void runImpl();
+    int maxFD() const;
+    void buildFDSet(fd_set & fds) const;
+    void cleanupConns();
+    void handleEvents(const fd_set & fds);
+    void acceptConnection();
+    void acceptUNIX();
+    void acceptTCP();
 
-    int                 ProcessAutzPacket(RAD_PACKET * packet);
-    int                 ProcessAuthPacket(RAD_PACKET * packet);
-    int                 ProcessPostAuthPacket(RAD_PACKET * packet);
-    int                 ProcessAcctStartPacket(RAD_PACKET * packet);
-    int                 ProcessAcctStopPacket(RAD_PACKET * packet);
-    int                 ProcessAcctUpdatePacket(RAD_PACKET * packet);
-    int                 ProcessAcctOtherPacket(RAD_PACKET * packet);
+    mutable std::string m_error;
+    STG::Config m_config;
 
-    bool                FindUser(USER_PTR * ui, const std::string & login) const;
-    bool                CanAuthService(const std::string & svc) const;
-    bool                CanAcctService(const std::string & svc) const;
-    bool                IsAllowedService(const std::string & svc) const;
+    MODULE_SETTINGS m_settings;
 
-    struct SPrinter : public std::unary_function<std::pair<std::string, RAD_SESSION>, void>
-    {
-        void operator()(const std::pair<std::string, RAD_SESSION> & it)
-        {
-            printfd("radius.cpp", "%s - ('%s', '%s')\n", it.first.c_str(), it.second.userName.c_str(), it.second.serviceType.c_str());
-        }
-    };
+    bool m_running;
+    bool m_stopped;
 
-    BLOWFISH_CTX        ctx;
+    USERS* m_users;
+    const STORE* m_store;
 
-    mutable std::string errorStr;
-    RAD_SETTINGS        radSettings;
-    MODULE_SETTINGS     settings;
-    std::list<std::string> authServices;
-    std::list<std::string> acctServices;
-    std::map<std::string, RAD_SESSION> sessions;
+    int m_listenSocket;
+    std::deque<STG::Conn*> m_conns;
+    std::set<std::string> m_logins;
 
-    bool                nonstop;
-    bool                isRunning;
+    pthread_t m_thread;
 
-    USERS *             users;
-    const SETTINGS *    stgSettings;
-    const STORE *       store;
-
-    pthread_t           thread;
-    pthread_mutex_t     mutex;
-
-    int                 sock;
-
-    RAD_PACKET          packet;
-
-    PLUGIN_LOGGER       logger;
+    PLUGIN_LOGGER m_logger;
 };
-//-----------------------------------------------------------------------------
 
 #endif

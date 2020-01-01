@@ -32,7 +32,8 @@
 // Like FreeBSD4
 #include <sys/types.h>
 #include <sys/time.h>
-#include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include <sys/select.h>
 
@@ -1127,4 +1128,38 @@ std::string ToPrintable(const std::string & src)
             dest += "\\" + x2str(src[i]);
 
     return dest;
+}
+
+uid_t str2uid(const std::string& name)
+{
+    const passwd* res = getpwnam(name.c_str());
+    if (res == NULL)
+        return -1;
+    return res->pw_uid;
+}
+
+gid_t str2gid(const std::string& name)
+{
+    const group* res = getgrnam(name.c_str());
+    if (res == NULL)
+        return -1;
+    return res->gr_gid;
+}
+
+mode_t str2mode(const std::string& name)
+{
+    if (name.length() < 3 || name.length() > 4)
+        return -1;
+
+    if (name.length() == 4 && name[0] != '0')
+        return -1;
+
+    mode_t res = 0;
+    for (size_t i = 0; i < name.length(); ++i)
+    {
+        if (name[i] > '7' || name[i] < '0')
+            return -1;
+        res = (res << 3) + (name[i] - '0');
+    }
+    return res;
 }

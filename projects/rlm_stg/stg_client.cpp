@@ -18,278 +18,133 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  Realization of data access via Stargazer for RADIUS
- *
- *  $Revision: 1.8 $
- *  $Date: 2010/04/16 12:30:02 $
- *
- */
-
-#include <netdb.h>
-#include <sys/types.h>
-#include <unistd.h> // close
-
-#include <cerrno>
-#include <cstring>
-#include <vector>
-#include <utility>
-
-#include <stdexcept>
-
 #include "stg_client.h"
 
-typedef std::vector<std::pair<std::string, std::string> > PAIRS;
+#include "conn.h"
+#include "radlog.h"
 
-//-----------------------------------------------------------------------------
+#include "stg/locker.h"
+#include "stg/common.h"
 
-STG_CLIENT::STG_CLIENT(const std::string & host, uint16_t port, uint16_t lp, const std::string & pass)
-    : password(pass),
-      framedIP(0)
+#include <map>
+#include <utility>
+
+using STG::RLM::Client;
+using STG::RLM::Conn;
+using STG::RLM::RESULT;
+
+namespace {
+
+Client* stgClient = NULL;
+
+}
+
+class Client::Impl
 {
-/*sock = socket(AF_INET, SOCK_DGRAM, 0);
-if (sock == -1)
+    public:
+        explicit Impl(const std::string& address);
+        ~Impl();
+
+        bool stop() { return m_conn ? m_conn->stop() : true; }
+
+        RESULT request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs);
+
+    private:
+        std::string m_address;
+        boost::scoped_ptr<Conn> m_conn;
+
+        pthread_mutex_t m_mutex;
+        pthread_cond_t m_cond;
+        bool m_done;
+        RESULT m_result;
+
+        static bool callback(void* data, const RESULT& result)
+        {
+            Impl& impl = *static_cast<Impl*>(data);
+            STG_LOCKER lock(impl.m_mutex);
+            impl.m_result = result;
+            impl.m_done = true;
+            pthread_cond_signal(&impl.m_cond);
+            return true;
+        }
+};
+
+Client::Impl::Impl(const std::string& address)
+    : m_address(address)
+{
+    try
     {
-    std::string message = strerror(errno);
-    message = "Socket create error: '" + message + "'";
-    throw std::runtime_error(message);
+        m_conn.reset(new Conn(m_address, &Impl::callback, this));
     }
-
-struct hostent * he = NULL;
-he = gethostbyname(host.c_str());
-if (he == NULL)
+    catch (const std::runtime_error& ex)
     {
-    throw std::runtime_error("gethostbyname error");
+        RadLog("Connection error: %s.", ex.what());
     }
-
-outerAddr.sin_family = AF_INET;
-outerAddr.sin_port = htons(port);
-outerAddr.sin_addr.s_addr = *(uint32_t *)he->h_addr;
-
-InitEncrypt(&ctx, password);
-
-PrepareNet();*/
+    pthread_mutex_init(&m_mutex, NULL);
+    pthread_cond_init(&m_cond, NULL);
+    m_done = false;
 }
 
-STG_CLIENT::~STG_CLIENT()
+Client::Impl::~Impl()
 {
-/*close(sock);*/
+    pthread_cond_destroy(&m_cond);
+    pthread_mutex_destroy(&m_mutex);
 }
 
-int STG_CLIENT::PrepareNet()
+RESULT Client::Impl::request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
 {
-return 0;
+    STG_LOCKER lock(m_mutex);
+    if (!m_conn || !m_conn->connected())
+        m_conn.reset(new Conn(m_address, &Impl::callback, this));
+    if (!m_conn->connected())
+        throw Conn::Error("Failed to create connection to '" + m_address + "'.");
+
+    m_done = false;
+    m_conn->request(type, userName, password, pairs);
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += 5;
+    int res = 0;
+    while (!m_done && res == 0)
+        res = pthread_cond_timedwait(&m_cond, &m_mutex, &ts);
+    if (res != 0)
+        throw Conn::Error("Request failed.");
+    return m_result;
 }
 
-int STG_CLIENT::Send(const RAD_PACKET & packet)
+Client::Client(const std::string& address)
+    : m_impl(new Impl(address))
 {
-/*char buf[RAD_MAX_PACKET_LEN];
-    
-Encrypt(&ctx, buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
-
-int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, sizeof(outerAddr));
-
-if (res == -1)
-    errorStr = "Error sending data";
-
-return res;*/
 }
 
-int STG_CLIENT::RecvData(RAD_PACKET * packet)
+Client::~Client()
 {
-/*char buf[RAD_MAX_PACKET_LEN];
-int res;
-
-struct sockaddr_in addr;
-socklen_t len = sizeof(struct sockaddr_in);
-
-res = recvfrom(sock, buf, RAD_MAX_PACKET_LEN, 0, reinterpret_cast<struct sockaddr *>(&addr), &len);
-if (res == -1)
-    {
-    errorStr = "Error receiving data";
-    return -1;
-    }
-
-Decrypt(&ctx, (char *)packet, buf, res / 8);
-
-return 0;*/
 }
 
-int STG_CLIENT::Request(RAD_PACKET * packet, const std::string & login, const std::string & svc, uint8_t packetType)
+bool Client::stop()
 {
-/*int res;
-
-memcpy((void *)&packet->magic, (void *)RAD_ID, RAD_MAGIC_LEN);
-packet->protoVer[0] = '0';
-packet->protoVer[1] = '1';
-packet->packetType = packetType;
-packet->ip = 0;
-strncpy((char *)packet->login, login.c_str(), RAD_LOGIN_LEN);
-strncpy((char *)packet->service, svc.c_str(), RAD_SERVICE_LEN);
-
-res = Send(*packet);
-if (res == -1)
-    return -1;
-
-res = RecvData(packet);
-if (res == -1)
-    return -1;
-
-if (strncmp((char *)packet->magic, RAD_ID, RAD_MAGIC_LEN))
-    {
-    errorStr = "Magic invalid. Wanted: '";
-    errorStr += RAD_ID;
-    errorStr += "', got: '";
-    errorStr += (char *)packet->magic;
-    errorStr += "'";
-    return -1;
-    }
-
-return 0;*/
+    return m_impl->stop();
 }
 
-//-----------------------------------------------------------------------------
-
-const STG_PAIRS * STG_CLIENT::Authorize(const std::string & login, const std::string & svc)
+RESULT Client::request(REQUEST_TYPE type, const std::string& userName, const std::string& password, const PAIRS& pairs)
 {
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_AUTZ_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
-
-userPassword = (char *)packet.password;*/
-
-PAIRS pairs;
-pairs.push_back(std::make_pair("Cleartext-Password", userPassword));
-
-return ToSTGPairs(pairs);
+    return m_impl->request(type, userName, password, pairs);
 }
 
-const STG_PAIRS * STG_CLIENT::Authenticate(const std::string & login, const std::string & svc)
+Client* Client::get()
 {
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_AUTH_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;*/
-
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::PostAuth(const std::string & login, const std::string & svc)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-
-if (Request(&packet, login, svc, RAD_POST_AUTH_PACKET))
-    return -1;
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;
-
-if (svc == "Framed-User")
-    framedIP = packet.ip;
-else
-    framedIP = 0;*/
-
-PAIRS pairs;
-pairs.push_back(std::make_pair("Framed-IP-Address", inet_ntostring(framedIP)));
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::PreAcct(const std::string & login, const std::String & service)
-{
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-const STG_PAIRS * STG_CLIENT::Account(const std::string & type, const std::string & login, const std::string & svc, const std::string & sessid)
-{
-/*RAD_PACKET packet;
-
-userPassword = "";
-strncpy((char *)packet.sessid, sessid.c_str(), RAD_SESSID_LEN);
-
-if (type == "Start")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_START_PACKET))
-        return -1;
-    }
-else if (type == "Stop")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_STOP_PACKET))
-        return -1;
-    }
-else if (type == "Interim-Update")
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_UPDATE_PACKET))
-        return -1;
-    }
-else
-    {
-    if (Request(&packet, login, svc, RAD_ACCT_OTHER_PACKET))
-        return -1;
-    }
-
-if (packet.packetType != RAD_ACCEPT_PACKET)
-    return -1;*/
-
-PAIRS pairs;
-
-return ToSTGPairs(pairs);
-}
-
-//-----------------------------------------------------------------------------
-
-std::string STG_CLIENT_ST::m_host;
-uint16_t STG_CLIENT_ST::m_port(6666);
-std::string STG_CLIENT_ST::m_password;
-
-//-----------------------------------------------------------------------------
-
-STG_CLIENT * STG_CLIENT_ST::Get()
-{
-    static STG_CLIENT * stgClient = NULL;
-    if ( stgClient == NULL )
-        stgClient = new STG_CLIENT(m_host, m_port, m_password);
     return stgClient;
 }
 
-void STG_CLIENT_ST::Configure(const std::string & host, uint16_t port, const std::string & password)
+bool Client::configure(const std::string& address)
 {
-    m_host = host;
-    m_port = port;
-    m_password = password;
-}
-
-//-----------------------------------------------------------------------------
-
-const STG_PAIR * ToSTGPairs(const PAIRS & source)
-{
-    STG_PAIR * pairs = new STG_PAIR[source.size() + 1];
-    for (size_t pos = 0; pos < source.size(); ++pos) {
-        bzero(pairs[pos].key, sizeof(STG_PAIR::key));
-        bzero(pairs[pos].value, sizeof(STG_PAIR::value));
-        strncpy(pairs[pos].key, source[pos].first.c_str(), sizeof(STG_PAIR::key));
-        strncpy(pairs[pos].value, source[pos].second.c_str(), sizeof(STG_PAIR::value));
-        ++pos;
+    if ( stgClient != NULL )
+        return stgClient->configure(address);
+    try {
+        stgClient = new Client(address);
+        return true;
+    } catch (const std::exception& ex) {
+        RadLog("Client configuration error: %s.", ex.what());
     }
-    bzero(pairs[sources.size()].key, sizeof(STG_PAIR::key));
-    bzero(pairs[sources.size()].value, sizeof(STG_PAIR::value));
-
-    return pairs;
+    return false;
 }
