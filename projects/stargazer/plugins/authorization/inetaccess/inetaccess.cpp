@@ -1203,7 +1203,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         return -1;
         }
     }
-printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), connAck->rnd);
+printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d, expected: %d\n", iaUser->phase.GetPhase(), connAck->rnd, iaUser->rnd + 1);
 if (iaSettings.LogProtocolErrors())
     {
     if (iaUser->phase.GetPhase() != 2)
@@ -1248,7 +1248,7 @@ if ((iaUser->phase.GetPhase() == 2) && (connAck->rnd == iaUser->rnd + 1))
         return -1;
         }
     }
-printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d\n", iaUser->phase.GetPhase(), connAck->rnd);
+printfd(__FILE__, "Invalid phase or control number. Phase: %d. Control number: %d, expected: %d\n", iaUser->phase.GetPhase(), connAck->rnd, iaUser->rnd + 1);
 if (iaSettings.LogProtocolErrors())
     {
     if (iaUser->phase.GetPhase() != 2)
@@ -1411,6 +1411,8 @@ for (int j = 0; j < DIR_NUM; j++)
 iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck6.rnd = iaUser->rnd;
 
+printfd(__FILE__, "Sending CONN_SYN_ACK with control number %d.\n", iaUser->rnd);
+
 connSynAck6.userTimeOut = iaSettings.GetUserTimeout().GetSec();
 connSynAck6.aliveDelay = iaSettings.GetUserDelay().GetSec();
 
@@ -1452,6 +1454,8 @@ for (int j = 0; j < DIR_NUM; j++)
 
 iaUser->rnd = static_cast<uint32_t>(random());
 connSynAck8.rnd = iaUser->rnd;
+
+printfd(__FILE__, "Sending CONN_SYN_ACK with control number %d.\n", iaUser->rnd);
 
 connSynAck8.userTimeOut = iaSettings.GetUserTimeout().GetSec();
 connSynAck8.aliveDelay = iaSettings.GetUserDelay().GetSec();

@@ -1,11 +1,11 @@
+#include "stg/common.h"
+#include "stg/netunit.h"
+#include "request.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <expat.h>
 #include <string.h>
-
-#include "stg/common.h"
-#include "stg/netunit.h"
-#include "request.h"
 
 int parse_depth = 0;
 XML_Parser parser;
@@ -92,16 +92,14 @@ if (strncasecmp(el, "dir_name_", 9) == 0 || strcasecmp(el, "address") == 0 || st
 
 if (strcasecmp(el, "traff") == 0)
     {
-//      printf ("<traff>\n");
     int j = 0;
-    uint64_t t;
     while (attr[j])
         {
+        uint64_t t;
         str2x(attr[j+1], t);
         printf ("<%s>%lld</%s>\n", attr[j], t, attr[j]);
         j+=2;
         }
-//      printf ("</traff>\n");
     return;
     }
 else
@@ -109,7 +107,6 @@ else
     printf ("<%s>%s</%s>\n", el, attr[1], el);
     return;
     }
-//    }
 parse_depth++;
 if (parse_depth == 1)
     {
@@ -130,17 +127,17 @@ if (parse_depth == 1)
 void EndElement(void *, const char *el)
 {
 parse_depth--;
-if (strcasecmp(el, "ServerInfo") == 0 || strcasecmp(el, "Tariffs") == 0 || strcasecmp(el, "Admins") == 0 || strcasecmp(el, "Users") == 0 || strcasecmp(el, "tariff") == 0 || strcasecmp(el, "user") == 0)
-    {
+if (strcasecmp(el, "ServerInfo") == 0 ||
+    strcasecmp(el, "Tariffs") == 0 ||
+    strcasecmp(el, "Admins") == 0 ||
+    strcasecmp(el, "Users") == 0 ||
+    strcasecmp(el, "tariff") == 0 ||
+    strcasecmp(el, "user") == 0)
     printf ("</%s>\n", el);
-    }
 }
 //---------------------------------------------------------------------------
 int ParseReply(void *, list<string> * ans)
-//int ParseReply(void * data, SLIST * ans)
 {
-//char answ[ENC_MSG_LEN + 1];
-int len;
 int done = 0;
 
 parse_depth = 0;
@@ -158,7 +155,7 @@ XML_SetElementHandler(parser, StartElement, EndElement);
 list<string>::iterator n = ans->begin();
 while (n != ans->end())
     {
-    len = strlen(n->c_str());
+    int len = strlen(n->c_str());
 
     if (++n == ans->end())
         done = 1;

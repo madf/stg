@@ -46,7 +46,6 @@ public:
                  const std::string & password);
       virtual ~ADMIN_IMPL() {}
 
-      ADMIN_IMPL & operator=(const ADMIN_IMPL &);
       ADMIN_IMPL & operator=(const ADMIN_CONF &);
       bool         operator==(const ADMIN_IMPL & rhs) const;
       bool         operator!=(const ADMIN_IMPL & rhs) const;

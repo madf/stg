@@ -59,23 +59,13 @@ tcp = 0, udp, icmp, tcp_udp, all
 
 //-----------------------------------------------------------------------------
 TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
-    : TRAFFCOUNTER(),
-      rules(),
-      packets(),
-      ip2packets(),
-      dirName(),
-      WriteServLog(GetStgLogger()),
+    : WriteServLog(GetStgLogger()),
       rulesFileName(fn),
-      monitorDir(),
       monitoring(false),
       touchTimeP(stgTime - MONITOR_TIME_DELAY_SEC),
       users(u),
       running(false),
       stopped(true),
-      mutex(),
-      thread(),
-      ipBeforeNotifiers(),
-      ipAfterNotifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this)
 {
@@ -115,9 +105,7 @@ assert(h && "USERS::OpenSearch is always correct");
 USER_IMPL * u;
 
 while (users->SearchNext(h, &u) == 0)
-    {
     SetUserNotifiers(u);
-    }
 users->CloseSearch(h);
 
 running = true;
@@ -142,9 +130,7 @@ assert(h && "USERS::OpenSearch is always correct");
 
 USER_IMPL * u;
 while (users->SearchNext(h, &u) == 0)
-    {
     UnSetUserNotifiers(u);
-    }
 users->CloseSearch(h);
 
 //5 seconds to thread stops itself
@@ -385,7 +371,7 @@ while (pi.first != pi.second)
     {
     if (pi.first->second->first.GetSrcIP() == uip)
         {
-        assert((!pi.first->second->second.userUPresent || 
+        assert((!pi.first->second->second.userUPresent ||
                  pi.first->second->second.userU == user) &&
                "U user present but it's not current user");
 
@@ -396,7 +382,7 @@ while (pi.first != pi.second)
 
     if (pi.first->second->first.GetDstIP() == uip)
         {
-        assert((!pi.first->second->second.userDPresent || 
+        assert((!pi.first->second->second.userDPresent ||
                  pi.first->second->second.userD == user) &&
                "D user present but it's not current user");
 
@@ -835,8 +821,6 @@ if (r == 0)
 
 rule->ip = ipaddr.s_addr;
 rule->mask = CalcMask(msk);
-//msk = 1;
-//printfd(__FILE__, "msk=%d mask=%08X   mask=%08X\n", msk, rule->mask, (0xFFffFFff << (32 - msk)));
 
 if ((ipaddr.s_addr & rule->mask) != ipaddr.s_addr)
     {

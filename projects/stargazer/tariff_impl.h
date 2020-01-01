@@ -45,10 +45,6 @@
 
 class TARIFF_IMPL : public TARIFF {
 public:
-    TARIFF_IMPL()
-        : TARIFF(),
-          tariffData()
-    {}
     explicit TARIFF_IMPL(const std::string & name)
         : TARIFF(),
           tariffData(name)
@@ -82,7 +78,6 @@ public:
     const TARIFF_DATA & GetTariffData() const { return tariffData; }
 
     TARIFF_IMPL & operator=(const TARIFF_DATA & td);
-    TARIFF_IMPL & operator=(const TARIFF_IMPL & t);
     bool     operator==(const TARIFF_IMPL & rhs) const { return GetName() == rhs.GetName(); }
     bool     operator!=(const TARIFF_IMPL & rhs) const { return GetName() != rhs.GetName(); }
     std::string TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const;

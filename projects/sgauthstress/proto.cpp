@@ -507,8 +507,8 @@ hdr.protoVer[0] = 0;
 hdr.protoVer[1] = 8; // IA_PROTO_VER
 
 unsigned char buffer[2048];
-memcpy(buffer, packet, length);
 memcpy(buffer, &hdr, sizeof(hdr));
+memcpy(buffer + sizeof(hdr), packet, length);
 
 size_t offset = sizeof(HDR_8);
 for (size_t i = 0; i < IA_LOGIN_LEN / 8; i++)

@@ -537,14 +537,15 @@ try
                  where fk_user = ?");
     st->Set(1, uid);
     st->Execute();
-    conf->ips.Erase();
+    USER_IPS ips;
     while (st->Fetch())
         {
         IP_MASK im;
         st->Get(1, (int32_t &)im.ip);
         st->Get(2, (int32_t &)im.mask);
-        conf->ips.Add(im);
+        ips.Add(im);
         }
+    conf->ips = ips;
 
     tr->Commit();
     }
