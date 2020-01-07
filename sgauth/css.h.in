@@ -1,0 +1,10 @@
+#pragma once
+
+namespace SGAuth
+{
+
+const auto css = R"EOR(
+@CSS_DATA@
+)EOR";
+
+}
