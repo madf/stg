@@ -10,5 +10,6 @@ compiler:
   - gcc
 # Build steps
 script:
-  - cd projects/stargazer
-  - ./build debug && make clean && make
+  - mkdir build && cd build
+  - cmake -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_ALL_MODS=ON -DBUILD_TESTS=ON ..
+  - make
