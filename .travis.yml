@@ -1,5 +1,5 @@
 # Enable Trusty dist, Standard is ancient.
-dist: trusty
+#dist: trusty
 # Enable C++ support
 language:
   - c
@@ -17,3 +17,4 @@ before_install:
   - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get -qq update; fi
   - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get install -y libyajl-dev; fi
   - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get install -y libpcap-dev; fi
+  - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get install -y libboost-all-dev; fi
