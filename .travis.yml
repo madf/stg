@@ -11,5 +11,9 @@ compiler:
 # Build steps
 script:
   - mkdir build && cd build
-  - cmake -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_ALL_MODS=ON -DBUILD_TESTS=ON ..
+  - cmake -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_MOD_CAP_PCAP=ON -DBUILD_MOD_RADIUS=ON -DBUILD_TESTS=ON ..
   - make
+before_install:
+  - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get -qq update; fi
+  - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get install -y libyajl-dev; fi
+  - if [[ $TRAVIS_OS_NAME = linux ]]; then sudo apt-get install -y libpcap-dev; fi
