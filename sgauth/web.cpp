@@ -426,7 +426,7 @@ const char * replyHeader =
 const char * replyFooter= "\n\n";
 
 send(outerSocket, replyHeader, strlen(replyHeader), 0);
-send(outerSocket, css, strlen(css), 0);
+send(outerSocket, SGAuth::css, strlen(SGAuth::css), 0);
 send(outerSocket, replyFooter, strlen(replyFooter), 0);
 
 return 0;
