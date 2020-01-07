@@ -1,0 +1,116 @@
+#ifndef __RPC_CONFIG_H__
+#define __RPC_CONFIG_H__
+
+#include <pthread.h>
+
+#include <ctime>
+#include <cstdint>
+#include <string>
+#include <map>
+#include <vector>
+
+#include <xmlrpc-c/base.hpp>
+#include <xmlrpc-c/registry.hpp>
+#include <xmlrpc-c/server_abyss.hpp>
+
+#include "stg/plugin.h"
+#include "stg/admin_conf.h"
+#include "stg/module_settings.h"
+#include "stg/logger.h"
+
+#define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
+
+class ADMINS;
+class TARIFFS;
+class USERS;
+class STORE;
+
+class RPC_CONFIG_SETTINGS
+{
+public:
+                         RPC_CONFIG_SETTINGS();
+    virtual              ~RPC_CONFIG_SETTINGS() {}
+    const std::string &  GetStrError() const { return errorStr; }
+    int                  ParseSettings(const MODULE_SETTINGS & s);
+    uint16_t             GetPort() const { return port; }
+    double               GetCookieTimeout() const { return cookieTimeout; }
+
+private:
+    std::string  errorStr;
+    uint16_t     port;
+    double       cookieTimeout;
+};
+
+struct ADMIN_INFO
+{
+    ADMIN_INFO()
+        : admin(),
+          accessTime(0),
+          priviledges()
+    {}
+
+    std::string admin;
+    time_t      accessTime;
+    PRIV        priviledges;
+};
+
+class RPC_CONFIG : public PLUGIN
+{
+public:
+    RPC_CONFIG();
+    virtual ~RPC_CONFIG();
+
+    void                SetUsers(USERS * u) { users = u; }
+    void                SetTariffs(TARIFFS * t) { tariffs = t; }
+    void                SetAdmins(ADMINS * a) { admins = a; }
+    void                SetStore(STORE * s) { store = s; }
+    void                SetStgSettings(const SETTINGS * s);
+    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
+    int                 ParseSettings();
+
+    int                 Start();
+    int                 Stop();
+    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
+    bool                IsRunning() { return running && !stopped; }
+
+    const std::string & GetStrError() const { return errorStr; }
+    std::string         GetVersion() const { return RPC_CONFIG_VERSION; }
+    uint16_t            GetStartPosition() const { return 20; }
+    uint16_t            GetStopPosition() const { return 20; }
+
+    bool                GetAdminInfo(const std::string & cookie,
+                                     ADMIN_INFO * info);
+    bool                CheckAdmin(const std::string & login,
+                                   const std::string & password,
+                                   std::string * cookie);
+    bool                LogoutAdmin(const std::string & cookie);
+
+private:
+    RPC_CONFIG(const RPC_CONFIG & rvalue);
+    RPC_CONFIG & operator=(const RPC_CONFIG & rvalue);
+
+    static void *           Run(void *);
+    std::string             GetCookie() const;
+    void                    InitiateRegistry();
+
+    mutable std::string     errorStr;
+    RPC_CONFIG_SETTINGS     rpcConfigSettings;
+    USERS *                 users;
+    ADMINS *                admins;
+    TARIFFS *               tariffs;
+    STORE *                 store;
+    MODULE_SETTINGS         settings;
+    int                     fd;
+    xmlrpc_c::registry      rpcRegistry;
+    xmlrpc_c::serverAbyss * rpcServer;
+    bool                    running;
+    bool                    stopped;
+    pthread_t               tid;
+    std::map<std::string,
+             ADMIN_INFO>    cookies;
+    size_t                  dayFee;
+    std::vector<std::string> dirNames;
+    PLUGIN_LOGGER           logger;
+};
+
+#endif

@@ -34,7 +34,7 @@
 
 #define RS_ID "RSP00"
 
-#include "os_int.h"
+#include <cstdint>
 
 namespace RS
 {

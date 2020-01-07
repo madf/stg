@@ -28,9 +28,9 @@
 #define USER_IPS_H
 
 #include "stg/common.h"
-#include "os_int.h"
 
 #include <cstring>
+#include <cstdint>
 #include <vector>
 #include <string>
 #include <iostream>

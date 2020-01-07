@@ -9,10 +9,10 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "const.h"
 #include "user_ips.h"
 #include "resetable.h"
-#include "os_int.h"
 
 //-----------------------------------------------------------------------------
 struct USER_CONF

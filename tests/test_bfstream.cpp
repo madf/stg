@@ -3,11 +3,11 @@
 #include "longstring.h"
 
 #include "stg/bfstream.h"
-#include "stg/os_int.h"
 
 #include <algorithm>
 #include <string>
 #include <cstring>
+#include <cstdint>
 
 namespace
 {

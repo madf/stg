@@ -11,9 +11,8 @@
  */
 
 #include <ctime>
+#include <cstdint>
 #include <string>
-
-#include "os_int.h"
 
 //-----------------------------------------------------------------------------
 struct STG_MSG_HDR

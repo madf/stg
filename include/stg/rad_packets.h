@@ -23,7 +23,7 @@
 
 #define RAD_ID "00100"
 
-#include "os_int.h"
+#include <cstdint>
 
 struct RAD_PACKET
 {

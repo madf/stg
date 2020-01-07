@@ -29,9 +29,9 @@
 #define PLUGIN_H
 
 #include <string>
+#include <cstdint>
 
 #include "noncopyable.h"
-#include "os_int.h"
 #include "admins.h"
 #include "users.h"
 #include "tariffs.h"

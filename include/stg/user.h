@@ -25,12 +25,12 @@
 #include "message.h"
 #include "tariff.h"
 #include "user_traff.h"
-#include "os_int.h"
 
 #include <vector>
 #include <string>
 
 #include <ctime>
+#include <cstdint>
 
 class USER_PROPERTIES;
 class AUTH;

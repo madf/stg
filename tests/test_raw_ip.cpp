@@ -3,12 +3,12 @@
 #include <arpa/inet.h>
 
 #include <cstdlib>
+#include <cstdint>
 #include <ctime>
 #include <iostream>
 
 #include "tut/tut.hpp"
 
-#include "stg/os_int.h"
 #include "raw_ip_packet_old.h"
 #include "stg/raw_ip_packet.h"
 

@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "os_int.h"
+#include <cstdint>
 
 #define ADM_LOGIN_LEN   (32)
 #define ADM_PASSWD_LEN  (32)

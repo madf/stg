@@ -28,11 +28,11 @@
 #define USER_STAT_H
 
 #include <ctime>
+#include <cstdint>
 #include <map>
 #include <utility>
 #include <string>
 
-#include "os_int.h"
 #include "resetable.h"
 #include "user_traff.h"
 //-----------------------------------------------------------------------------

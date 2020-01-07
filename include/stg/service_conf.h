@@ -22,9 +22,9 @@
 #define SERVICE_CONF_H
 
 #include "resetable.h"
-#include "os_int.h"
 
 #include <string>
+#include <cstdint>
 
 struct SERVICE_CONF
 {

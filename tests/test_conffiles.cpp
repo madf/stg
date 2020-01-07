@@ -64,7 +64,7 @@ namespace tut
         {
             std::ofstream f("/tmp/test.cf");
 
-            ensure("Correct construction (part 3)", f);
+            ensure("Correct construction (part 3)", static_cast<bool>(f));
 
             f << "\n"
               << "a=a-string# a string\n"

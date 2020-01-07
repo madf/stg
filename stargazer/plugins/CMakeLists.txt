@@ -1,0 +1,5 @@
+add_subdirectory ( authorization )
+add_subdirectory ( capture )
+add_subdirectory ( configuration )
+add_subdirectory ( other )
+add_subdirectory ( store )

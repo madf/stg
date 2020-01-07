@@ -22,9 +22,9 @@
 #define ADMIN_H
 
 #include <string>
+#include <cstdint>
 
 #include "admin_conf.h"
-#include "os_int.h"
 
 class ADMIN {
 public:

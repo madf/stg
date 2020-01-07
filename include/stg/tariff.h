@@ -21,12 +21,11 @@
 #ifndef TARIFF_H
 #define TARIFF_H
 
-#include "os_int.h"
-
 #include <string>
+#include <istream>
 #include <cstring>
 #include <ctime>
-#include <istream>
+#include <cstdint>
 
 struct TARIFF_DATA;
 

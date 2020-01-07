@@ -1,7 +1,7 @@
 #ifndef PACKETH
 #define PACKETH
 
-#include "os_int.h"
+#include <cstdint>
 
 #define CONN_SYN_N          0
 #define CONN_SYN_ACK_N      1

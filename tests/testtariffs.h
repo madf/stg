@@ -7,7 +7,7 @@
 
 class TEST_TARIFFS : public TARIFFS {
     public:
-        TEST_TARIFFS() {}
+        TEST_TARIFFS() : testTariff("") {}
 
         int            ReadTariffs () { return 0; }
         const TARIFF * FindByName(const std::string & /*name*/) const { return &testTariff; }

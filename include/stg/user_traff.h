@@ -29,10 +29,10 @@
 
 #include "resetable.h"
 #include "const.h"
-#include "os_int.h"
 
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 enum TRAFF_DIRECTION {TRAFF_UPLOAD, TRAFF_DOWNLOAD};
 
