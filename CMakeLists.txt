@@ -32,6 +32,7 @@ option ( BUILD_MOD_CAP_PCAP "Build PCap capture STG module." OFF )
 option ( BUILD_MOD_CAP_NFQUEUE "Build NFQueue capture STG module." OFF )
 option ( BUILD_MOD_RADIUS "Build rlm_stg backend STG module." OFF )
 
+# Grouping
 option ( BUILD_ALL_MODS "Build all modules." OFF )
 option ( BUILD_ALL_LIBS "Build all libraries." OFF )
 option ( BUILD_TESTS "Build tests." OFF )
@@ -80,17 +81,6 @@ if ( BUILD_STG OR BUILD_ALL_LIBS )
     set ( BUILD_LIB_DOTCONFPP ON )
     set ( BUILD_LIB_LOGGER ON )
     set ( BUILD_LIB_SCRIPTEXECUTER ON )
-
-    #    if ( BUILD_STG )
-    #    set ( BUILD_MOD_AO ON )
-    #    set ( BUILD_MOD_IA ON )
-    #    set ( BUILD_MOD_SGCONFIG ON )
-    #    set ( BUILD_MOD_PING ON )
-    #    set ( BUILD_MOD_RSCRYPT ON )
-    #    set ( BUILD_MOD_SMUX ON )
-    #    set ( BUILD_MOD_STORE_FILES ON )
-    #    set ( BUILD_MOD_CAP_NF ON )
-    #endif ( BUILD_STG )
 endif ( BUILD_STG OR BUILD_ALL_LIBS )
 
 if ( BUILD_ALL_MODS )
@@ -148,9 +138,6 @@ else ()
 endif ()
 
 include_directories ( include )
-
-#find_package ( OpenSSL 1.0.0 REQUIRED )
-#find_package ( Boost 1.66.0 REQUIRED COMPONENTS system unit_test_framework )
 
 add_subdirectory ( libs )
 
