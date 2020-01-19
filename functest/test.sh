@@ -16,7 +16,7 @@ then
     exit -1
 fi
 
-STGPATH="$BASEPATH/stg/projects/stargazer"
+STGPATH="$BASEPATH/stg/build/stargazer"
 
 cp "stuff/stargazer-files.conf" "$STGPATH/stargazer.conf"
 cp "stuff/rules" "$STGPATH/"

@@ -14,12 +14,8 @@ then
     exit -1
 fi
 
-cd "$BASEPATH/stg/projects/stargazer"
-./build debug
-make clean
-make
-
-cd "$BASEPATH/stg/projects/sgconf"
-./build debug
-make clean
+cd "$BASEPATH/stg"
+mkdir build
+cd build
+cmake -DBUILD_STG=ON -DBUILD_SGCONF=ON ..
 make
