@@ -171,22 +171,9 @@ int str2x(const std::string & str, int64_t & x);
 int str2x(const std::string & str, uint64_t & x);
 #endif
 //-----------------------------------------------------------------------------
-const std::string & x2str(uint32_t x, std::string & s);
-const std::string & x2str(uint64_t x, std::string & s);
-//-----------------------------------------------------------------------------
-const std::string & x2str(double x, std::string & s);
-//-----------------------------------------------------------------------------
 
 template <typename varT>
 int str2x(const std::string & str, varT & x);
-template <typename varT>
-const std::string & x2str(varT x, std::string & s);
-template <typename varT>
-std::string x2str(varT x) { std::string s; return x2str(x, s); }
-template <typename varT>
-const std::string & unsigned2str(varT x, std::string & s);
-template <typename varT>
-std::string unsigned2str(varT x) { std::string s; return unsigned2str(x, s); }
 
 //-----------------------------------------------------------------------------
 template <typename varT>
@@ -225,89 +212,6 @@ int str2x(const std::string & str, varT & x)
     x *= minus;
 
     return 0;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-inline
-const std::string & x2str(varT x, std::string & s)
-{
-    varT xx = x;
-    int pos = 1;
-
-    x /= 10;
-    while (x != 0)
-    {
-        x /= 10;
-        pos++;
-    }
-
-    if (xx < 0)
-    {
-        pos++;
-        s.resize(pos, 0);
-        s[0] = '-';
-    }
-    else if (xx > 0)
-    {
-        s.resize(pos, 0);
-    }
-    else
-    {
-        s.resize(1, 0);
-        s[0] = '0';
-        return s;
-    }
-
-    x = xx;
-
-    while (x != 0)
-    {
-        if (x < 0)
-            s[--pos] = -(x % 10) + '0';
-        else
-            s[--pos] = x % 10 + '0';
-
-        x /= 10;
-    }
-
-    return s;
-}
-//-----------------------------------------------------------------------------
-template <typename varT>
-inline
-const std::string & unsigned2str(varT x, std::string & s)
-{
-    varT xx = x;
-    int pos = 1;
-
-    x /= 10;
-    while (x != 0)
-    {
-        x /= 10;
-        pos++;
-    }
-
-    if (xx > 0)
-    {
-        s.resize(pos, 0);
-    }
-    else
-    {
-        s.resize(1, 0);
-        s[0] = '0';
-        return s;
-    }
-
-    x = xx;
-
-    while (x != 0)
-    {
-        s[--pos] = x % 10 + '0';
-
-        x /= 10;
-    }
-
-    return s;
 }
 //-----------------------------------------------------------------------------
 char * stg_strptime(const char *, const char *, struct tm *);

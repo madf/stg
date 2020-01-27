@@ -1840,9 +1840,8 @@ stIter = statTree.begin();
 
 while (stIter != statTree.end())
     {
-    std::string u, d;
-    x2str(stIter->second.up, u);
-    x2str(stIter->second.down, d);
+    const auto u = std::to_string(stIter->second.up);
+    const auto d = std::to_string(stIter->second.down);
     #ifdef TRAFF_STAT_WITH_PORTS
     if (fprintf(statFile, "%17s:%hu\t%15d\t%15s\t%15s\t%f\n",
                 inet_ntostring(stIter->first.ip).c_str(),
@@ -1944,12 +1943,10 @@ strprintf(&fileName, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(),
 
 if (access(fileName.c_str(), F_OK) != 0)
     {
-    std::string idstr;
-    x2str(msg.header.id, idstr);
     STG_LOCKER lock(&mutex);
     errorStr = "Message for user \'";
     errorStr += login + "\' with ID \'";
-    errorStr += idstr + "\' does not exist.";
+    errorStr += std::to_string(msg.header.id) + "\' does not exist.";
     printfd(__FILE__, "FILES_STORE::EditMessage - %s\n", errorStr.c_str());
     return -1;
     }

@@ -153,7 +153,7 @@ GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "changePolicy", info.tariffConf.changePolicy, GetChangePolicy);
     AddParser(propertyParsers, "changePolicyTimeout", info.tariffConf.changePolicyTimeout);
     for (size_t i = 0; i < DIR_NUM; ++i)
-        AddParser(propertyParsers, "time" + unsigned2str(i), info.dirPrice[i], GetTimeSpan);
+        AddParser(propertyParsers, "time" + std::to_string(i), info.dirPrice[i], GetTimeSpan);
     AddAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DIRPRICE_DATA::priceDayA, GetSlashedValue);
     AddAOSParser(propertyParsers, "priceDayB", info.dirPrice, &DIRPRICE_DATA::priceDayB, GetSlashedValue);
     AddAOSParser(propertyParsers, "priceNightA", info.dirPrice, &DIRPRICE_DATA::priceNightA, GetSlashedValue);

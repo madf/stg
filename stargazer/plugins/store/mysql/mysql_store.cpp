@@ -701,7 +701,7 @@ int MYSQL_STORE::AddUser(const std::string & login) const
 std::string query = "INSERT INTO users SET login='" + login + "',Note='',NAS=''";
 
 for (int i = 0; i < USERDATA_NUM; i++)
-    query += ",Userdata" + x2str(i) + "=''";
+    query += ",Userdata" + std::to_string(i) + "=''";
 
 if(MysqlSetQuery(query.c_str()))
 {

@@ -70,11 +70,11 @@ struct CONFIG
     if (!server.empty())
         res += "server: '" + server.data() + "'\n";
     if (!port.empty())
-        res += "port: " + x2str(port.data()) + "\n";
+        res += "port: " + std::to_string(port.data()) + "\n";
     if (!localAddress.empty())
         res += "local address: '" + localAddress.data() + "'\n";
     if (!localPort.empty())
-        res += "local port: " + x2str(localPort.data()) + "\n";
+        res += "local port: " + std::to_string(localPort.data()) + "\n";
     if (!userName.empty())
         res += "userName: '" + userName.data() + "'\n";
     if (!userPass.empty())

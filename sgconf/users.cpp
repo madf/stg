@@ -189,7 +189,7 @@ void ConvSessionTraff(std::string value, USER_STAT_RES & res)
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
 if (traff.size() != DIR_NUM)
-    throw SGCONF::ACTION::ERROR("There should be prcisely " + x2str(DIR_NUM) + " records of session traffic.");
+    throw SGCONF::ACTION::ERROR("There should be prcisely " + std::to_string(DIR_NUM) + " records of session traffic.");
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
     res.sessionUp[i] = traff[i].up;
@@ -202,7 +202,7 @@ void ConvMonthTraff(std::string value, USER_STAT_RES & res)
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
 if (traff.size() != DIR_NUM)
-    throw SGCONF::ACTION::ERROR("There should be prcisely " + x2str(DIR_NUM) + " records of month traffic.");
+    throw SGCONF::ACTION::ERROR("There should be prcisely " + std::to_string(DIR_NUM) + " records of month traffic.");
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
     res.monthUp[i] = traff[i].up;

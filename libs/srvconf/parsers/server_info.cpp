@@ -44,7 +44,7 @@ SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "tariff_num", info.tariffNum);
 
     for (size_t i = 0; i < DIR_NUM; i++)
-        AddParser(propertyParsers, "dir_name_" + unsigned2str(i), info.dirName[i], GetEncodedValue);
+        AddParser(propertyParsers, "dir_name_" + std::to_string(i), info.dirName[i], GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 int SERVER_INFO::PARSER::ParseStart(const char *el, const char **attr)

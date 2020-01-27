@@ -146,14 +146,14 @@ if (nfq_bind_pf(nfqHandle, AF_INET) < 0)
 queueHandle = nfq_create_queue(nfqHandle, queueNumber, &Callback, this);
 if (queueHandle == NULL)
     {
-    errorStr = "Failed to create queue " + x2str(queueNumber) + ".";
+    errorStr = "Failed to create queue " + std::to_string(queueNumber) + ".";
     logger(errorStr);
     return -1;
     }
 
 if (nfq_set_mode(queueHandle, NFQNL_COPY_PACKET, 0xffFF) < 0)
     {
-    errorStr = "Failed to set queue " + x2str(queueNumber) + " mode.";
+    errorStr = "Failed to set queue " + std::to_string(queueNumber) + " mode.";
     logger(errorStr);
     return -1;
     }

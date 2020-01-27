@@ -41,7 +41,7 @@ struct ParserError : public std::runtime_error
           error(message)
     {}
     ParserError(size_t pos, const std::string& message)
-        : runtime_error("Parsing error at position " + x2str(pos) + ". " + message),
+        : runtime_error("Parsing error at position " + std::to_string(pos) + ". " + message),
           position(pos),
           error(message)
     {}

@@ -53,8 +53,8 @@ void GET_SERVICES::CreateAnswer()
     {
         m_answer += "<Service name=\"" + conf.name +
                     "\" comment=\"" + Encode12str(conf.comment) +
-                    "\" cost=\"" + x2str(conf.cost) +
-                    "\" payDay=\"" + x2str(conf.payDay) + "\"/>";
+                    "\" cost=\"" + std::to_string(conf.cost) +
+                    "\" payDay=\"" + std::to_string(conf.payDay) + "\"/>";
     }
     m_services.CloseSearch(h);
     m_answer += "</Services>";
@@ -86,8 +86,8 @@ void GET_SERVICE::CreateAnswer()
     else
         m_answer += "<" + m_tag + " name=\"" + conf.name +
                     "\" comment=\"" + Encode12str(conf.comment) +
-                    "\" cost=\"" + x2str(conf.cost) +
-                    "\" payDay=\"" + x2str(conf.payDay) + "\"/>";
+                    "\" cost=\"" + std::to_string(conf.cost) +
+                    "\" payDay=\"" + std::to_string(conf.payDay) + "\"/>";
 }
 
 int ADD_SERVICE::Start(void *, const char * el, const char ** attr)

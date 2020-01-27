@@ -51,7 +51,7 @@ std::string AOS2String(const A & array, size_t size, const F C::* field, F multi
     {
         if (!res.empty())
             res += "/";
-        res += x2str((array[i].*field) * multiplier);
+        res += std::to_string((array[i].*field) * multiplier);
     }
     return res;
 }
@@ -98,9 +98,9 @@ void GET_TARIFFS::CreateAnswer()
         m_answer += "<tariff name=\"" + it->tariffConf.name + "\">";
 
         for (size_t i = 0; i < DIR_NUM; i++)
-            m_answer += "<Time" + x2str(i) + " value=\"" +
-                x2str(it->dirPrice[i].hDay)   + ":" + x2str(it->dirPrice[i].mDay)   + "-" +
-                x2str(it->dirPrice[i].hNight) + ":" + x2str(it->dirPrice[i].mNight) + "\"/>";
+            m_answer += "<Time" + std::to_string(i) + " value=\"" +
+                std::to_string(it->dirPrice[i].hDay)   + ":" + std::to_string(it->dirPrice[i].mDay)   + "-" +
+                std::to_string(it->dirPrice[i].hNight) + ":" + std::to_string(it->dirPrice[i].mNight) + "\"/>";
 
         m_answer += "<PriceDayA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayA, pt_mega) + "\"/>" +
                   "<PriceDayB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayB, pt_mega) + "\"/>" +
@@ -109,13 +109,13 @@ void GET_TARIFFS::CreateAnswer()
                   "<Threshold value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::threshold, 1) + "\"/>" +
                   "<SinglePrice value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::singlePrice, 1) + "\"/>" +
                   "<NoDiscount value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::noDiscount, 1) + "\"/>" +
-                  "<Fee value=\"" + x2str(it->tariffConf.fee) + "\"/>" +
-                  "<PassiveCost value=\"" + x2str(it->tariffConf.passiveCost) + "\"/>" +
-                  "<Free value=\"" + x2str(it->tariffConf.free) + "\"/>" +
+                  "<Fee value=\"" + std::to_string(it->tariffConf.fee) + "\"/>" +
+                  "<PassiveCost value=\"" + std::to_string(it->tariffConf.passiveCost) + "\"/>" +
+                  "<Free value=\"" + std::to_string(it->tariffConf.free) + "\"/>" +
                   "<TraffType value=\"" + TARIFF::TraffTypeToString(it->tariffConf.traffType) + "\"/>" +
                   "<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>" +
                   "<ChangePolicy value=\"" + TARIFF::ChangePolicyToString(it->tariffConf.changePolicy) + "\"/>" +
-                  "<ChangePolicyTimeout value=\"" + x2str(it->tariffConf.changePolicyTimeout) + "\"/>" +
+                  "<ChangePolicyTimeout value=\"" + std::to_string(it->tariffConf.changePolicyTimeout) + "\"/>" +
                   "</tariff>";
         }
 

@@ -67,11 +67,11 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     }
 
     if (user.GetProperty().cash.ModificationTime() > lastTime)
-        answer += "<Cash value=\"" + x2str(user.GetProperty().cash.Get()) + "\"/>";
+        answer += "<Cash value=\"" + std::to_string(user.GetProperty().cash.Get()) + "\"/>";
     if (user.GetProperty().freeMb.ModificationTime() > lastTime)
-        answer += "<FreeMb value=\"" + x2str(user.GetProperty().freeMb.Get()) + "\"/>";
+        answer += "<FreeMb value=\"" + std::to_string(user.GetProperty().freeMb.Get()) + "\"/>";
     if (user.GetProperty().credit.ModificationTime() > lastTime)
-        answer += "<Credit value=\"" + x2str(user.GetProperty().credit.Get()) + "\"/>";
+        answer += "<Credit value=\"" + std::to_string(user.GetProperty().credit.Get()) + "\"/>";
 
     if (user.GetProperty().nextTariff.Get() != "")
     {
@@ -108,7 +108,7 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
 
     for (size_t i = 0; i < userdata.size(); i++)
         if (userdata[i]->ModificationTime() > lastTime)
-            answer += "<UserData" + x2str(i) + " value=\"" + Encode12str(userdata[i]->Get()) + "\" />";
+            answer += "<UserData" + std::to_string(i) + " value=\"" + Encode12str(userdata[i]->Get()) + "\" />";
 
     if (user.GetProperty().realName.ModificationTime() > lastTime)
         answer += "<Name value=\"" + Encode12str(user.GetProperty().realName) + "\"/>";
@@ -121,7 +121,7 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     if (user.GetCurrIPModificationTime() > lastTime)
         answer += "<CurrIP value=\"" + inet_ntostring(user.GetCurrIP()) + "\"/>";
     if (user.GetPingTime() > lastTime)
-        answer += "<PingTime value=\"" + x2str(user.GetPingTime()) + "\"/>";
+        answer += "<PingTime value=\"" + std::to_string(user.GetPingTime()) + "\"/>";
     if (user.GetProperty().ips.ModificationTime() > lastTime)
         answer += "<IP value=\"" + user.GetProperty().ips.Get().GetIpStr() + "\"/>";
 
@@ -130,16 +130,16 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     const DIR_TRAFF & download(user.GetProperty().down.Get());
     if (user.GetProperty().up.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
-            answer += " MU" + x2str(j) + "=\"" + x2str(upload[j]) + "\"";
+            answer += " MU" + std::to_string(j) + "=\"" + std::to_string(upload[j]) + "\"";
     if (user.GetProperty().down.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
-            answer += " MD" + x2str(j) + "=\"" + x2str(download[j]) + "\"";
+            answer += " MD" + std::to_string(j) + "=\"" + std::to_string(download[j]) + "\"";
     if (user.GetSessionUploadModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
-            answer += " SU" + x2str(j) + "=\"" + x2str(user.GetSessionUpload()[j]) + "\"";
+            answer += " SU" + std::to_string(j) + "=\"" + std::to_string(user.GetSessionUpload()[j]) + "\"";
     if (user.GetSessionDownloadModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
-            answer += " SD" + x2str(j) + "=\"" + x2str(user.GetSessionDownload()[j]) + "\"";
+            answer += " SD" + std::to_string(j) + "=\"" + std::to_string(user.GetSessionDownload()[j]) + "\"";
     answer += "/>";
 
     if (user.GetProperty().disabled.ModificationTime() > lastTime)
@@ -149,13 +149,13 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
     if (user.GetProperty().passive.ModificationTime() > lastTime)
         answer += std::string("<Passive value=\"") + (user.GetProperty().passive.Get() ? "1" : "0") + "\"/>";
     if (user.GetProperty().lastCashAdd.ModificationTime() > lastTime)
-        answer += "<LastCash value=\"" + x2str(user.GetProperty().lastCashAdd.Get()) + "\"/>";
+        answer += "<LastCash value=\"" + std::to_string(user.GetProperty().lastCashAdd.Get()) + "\"/>";
     if (user.GetProperty().lastCashAddTime.ModificationTime() > lastTime)
-        answer += "<LastTimeCash value=\"" + x2str(user.GetProperty().lastCashAddTime.Get()) + "\"/>";
+        answer += "<LastTimeCash value=\"" + std::to_string(user.GetProperty().lastCashAddTime.Get()) + "\"/>";
     if (user.GetProperty().lastActivityTime.ModificationTime() > lastTime)
-        answer += "<LastActivityTime value=\"" + x2str(user.GetProperty().lastActivityTime.Get()) + "\"/>";
+        answer += "<LastActivityTime value=\"" + std::to_string(user.GetProperty().lastActivityTime.Get()) + "\"/>";
     if (user.GetProperty().creditExpire.ModificationTime() > lastTime)
-        answer += "<CreditExpire value=\"" + x2str(user.GetProperty().creditExpire.Get()) + "\"/>";
+        answer += "<CreditExpire value=\"" + std::to_string(user.GetProperty().creditExpire.Get()) + "\"/>";
 
     if (lastTime == 0)
     {
@@ -197,7 +197,7 @@ void GET_USERS::CreateAnswer()
     assert(h);
 
     if (m_lastUserUpdateTime > 0)
-        m_answer = "<Users LastUpdate=\"" + x2str(time(NULL)) + "\">";
+        m_answer = "<Users LastUpdate=\"" + std::to_string(time(NULL)) + "\">";
     else
         m_answer = "<Users>";
 

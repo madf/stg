@@ -73,13 +73,13 @@ class Dumper
 
         std::string twoDigit(int value) const
         {
-            std::string res = x2str(value);
+            std::string res = std::to_string(value);
             if (res.length() < 2)
                 res = "0" + res;
             return res;
         }
 };
 
-} // namespace Caster
+} // namespace STG
 
 #endif

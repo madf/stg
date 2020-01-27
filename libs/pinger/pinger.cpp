@@ -174,8 +174,7 @@ while (iter != pingIP.end())
     {
     uint32_t ip = iter->first;
     time_t t = iter->second;
-    std::string s;
-    x2str(t, s);
+    std::string s = std::to_string(t);
     printf("ip = %s, time = %9s\n", inet_ntostring(ip).c_str(), s.c_str());
     ++iter;
     }

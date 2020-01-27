@@ -47,15 +47,15 @@ void GET_SERVER_INFO::CreateAnswer()
                        utsn.nodename;
 
     m_answer = std::string("<ServerInfo><version value=\"") + SERVER_VERSION + "\"/>" +
-               "<tariff_num value=\"" + x2str(m_tariffs.Count()) + "\"/>" +
+               "<tariff_num value=\"" + std::to_string(m_tariffs.Count()) + "\"/>" +
                "<tariff value=\"2\"/>" +
-               "<user_num value=\"" + x2str(m_users.Count()) + "\"/>" +
+               "<user_num value=\"" + std::to_string(m_users.Count()) + "\"/>" +
                "<uname value=\"" + name + "\"/>" +
-               "<dir_num value=\"" + x2str(DIR_NUM) + "\"/>" +
-               "<day_fee value=\"" + x2str(m_settings.GetDayFee()) + "\"/>";
+               "<dir_num value=\"" + std::to_string(DIR_NUM) + "\"/>" +
+               "<day_fee value=\"" + std::to_string(m_settings.GetDayFee()) + "\"/>";
 
     for (size_t i = 0; i< DIR_NUM; i++)
-        m_answer += "<dir_name_" + x2str(i) + " value=\"" + Encode12str(m_settings.GetDirName(i)) + "\"/>";
+        m_answer += "<dir_name_" + std::to_string(i) + " value=\"" + Encode12str(m_settings.GetDirName(i)) + "\"/>";
 
     m_answer += "</ServerInfo>";
 }

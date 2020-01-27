@@ -50,8 +50,8 @@ void USER_INFO::CreateAnswer()
         return;
     }
 
-    m_answer = "<UserInfo lastAuthTime=\"" + x2str(u->GetAuthorizedModificationTime()) + "\"" +
-             " lastDisconnectTime=\"" + x2str(u->GetConnectedModificationTime()) + "\"" +
+    m_answer = "<UserInfo lastAuthTime=\"" + std::to_string(u->GetAuthorizedModificationTime()) + "\"" +
+             " lastDisconnectTime=\"" + std::to_string(u->GetConnectedModificationTime()) + "\"" +
              " connected=\"" + (u->GetConnected() ? "true" : "false") + "\"" +
              " lastDisconnectReason=\"" + u->GetLastDisconnectReason() + "\">";
     std::vector<std::string> list(u->GetAuthorizers());

@@ -94,15 +94,10 @@ supload = ptr->GetSessionDownload();
 
 for (int j = 0; j < DIR_NUM; j++)
     {
-    std::string value;
-    x2str(upload[j], value);
-    mu[j] = xmlrpc_c::value_string(value);
-    x2str(download[j], value);
-    md[j] = xmlrpc_c::value_string(value);
-    x2str(supload[j], value);
-    su[j] = xmlrpc_c::value_string(value);
-    x2str(sdownload[j], value);
-    sd[j] = xmlrpc_c::value_string(value);
+    mu[j] = xmlrpc_c::value_string(std::to_string(upload[j]));
+    md[j] = xmlrpc_c::value_string(std::to_string(download[j]));
+    su[j] = xmlrpc_c::value_string(std::to_string(supload[j]));
+    sd[j] = xmlrpc_c::value_string(std::to_string(sdownload[j]));
     }
 
 traffInfo["mu"] = xmlrpc_c::value_array(mu);

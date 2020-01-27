@@ -362,7 +362,7 @@ void RADIUS::acceptTCP()
         m_logger(m_error);
         return;
     }
-    std::string remote = inet_ntostring(addr.sin_addr.s_addr) + ":" + x2str(ntohs(addr.sin_port));
+    std::string remote = inet_ntostring(addr.sin_addr.s_addr) + ":" + std::to_string(ntohs(addr.sin_port));
     printfd(__FILE__, "New TCP connection: '%s'\n", remote.c_str());
     m_conns.push_back(new Conn(*m_users, m_logger, *this, m_config, res, remote));
 }

@@ -41,9 +41,7 @@ while (!users.SearchNext(handle, &user))
 
 users.CloseSearch(handle);
 
-std::string res;
-x2str(count, res);
-return res;
+return std::to_string(count);
 }
 #endif
 

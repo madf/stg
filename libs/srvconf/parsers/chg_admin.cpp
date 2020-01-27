@@ -35,6 +35,6 @@ if (!conf.login.empty())
 if (!conf.password.empty())
     params += " password=\"" + conf.password.data() + "\"";
 if (!conf.priv.empty())
-    params += " priv=\"" + unsigned2str(conf.priv.data().ToInt()) + "\"";
+    params += " priv=\"" + std::to_string(conf.priv.data().ToInt()) + "\"";
 return params;
 }

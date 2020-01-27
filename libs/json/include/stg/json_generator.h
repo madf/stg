@@ -69,7 +69,7 @@ class NumberGen : public Gen
     public:
         explicit NumberGen(const std::string& value) : m_value(value) {}
         template <typename T>
-        explicit NumberGen(const T& value) : m_value(x2str(value)) {}
+        explicit NumberGen(const T& value) : m_value(std::to_string(value)) {}
         virtual void run(yajl_gen_t* handle) const;
     private:
         std::string m_value;

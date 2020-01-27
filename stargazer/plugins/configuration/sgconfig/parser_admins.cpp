@@ -57,7 +57,7 @@ void GET_ADMINS::CreateAnswer()
                          (ac.priv.userAddDel << 8) +
                          (ac.priv.adminChg << 10) +
                          (ac.priv.tariffChg << 12);
-        m_answer += "<admin login=\"" + ac.login + "\" priv=\"" + x2str(p) + "\"/>";
+        m_answer += "<admin login=\"" + ac.login + "\" priv=\"" + std::to_string(p) + "\"/>";
     }
     m_admins.CloseSearch(h);
     m_answer += "</Admins>";

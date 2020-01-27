@@ -41,10 +41,10 @@ if (!attr)
 std::map<std::string, long long *> props;
 for (size_t i = 0; i < DIR_NUM; ++i)
     {
-    props.insert(std::pair<std::string, long long *>("su" + unsigned2str(i), &value.su[i]));
-    props.insert(std::pair<std::string, long long *>("sd" + unsigned2str(i), &value.sd[i]));
-    props.insert(std::pair<std::string, long long *>("mu" + unsigned2str(i), &value.mu[i]));
-    props.insert(std::pair<std::string, long long *>("md" + unsigned2str(i), &value.md[i]));
+    props.insert(std::pair<std::string, long long *>("su" + std::to_string(i), &value.su[i]));
+    props.insert(std::pair<std::string, long long *>("sd" + std::to_string(i), &value.sd[i]));
+    props.insert(std::pair<std::string, long long *>("mu" + std::to_string(i), &value.mu[i]));
+    props.insert(std::pair<std::string, long long *>("md" + std::to_string(i), &value.md[i]));
     }
 size_t pos = 0;
 while (attr[pos])
@@ -95,7 +95,7 @@ GET_USER::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
     AddParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        AddParser(propertyParsers, "userData" + unsigned2str(i), info.userData[i], "koi8-ru", GetEncodedValue);
+        AddParser(propertyParsers, "userData" + std::to_string(i), info.userData[i], "koi8-ru", GetEncodedValue);
 }
 //-----------------------------------------------------------------------------
 GET_USER::PARSER::~PARSER()

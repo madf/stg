@@ -824,24 +824,6 @@ return 0;
 }
 #endif
 //---------------------------------------------------------------------------
-const std::string & x2str(uint32_t x, std::string & s)
-{
-return unsigned2str(x, s);
-}
-//---------------------------------------------------------------------------
-const std::string & x2str(uint64_t x, std::string & s)
-{
-return unsigned2str(x, s);
-}
-//---------------------------------------------------------------------------
-const std::string & x2str(double x, std::string & s)
-{
-char buf[256];
-snprintf(buf, sizeof(buf), "%f", x);
-s = buf;
-return s;
-}
-//---------------------------------------------------------------------------
 std::string & TrimL(std::string & val)
 {
 size_t pos = val.find_first_not_of(" \t");
@@ -1125,7 +1107,7 @@ std::string ToPrintable(const std::string & src)
         if (std::isprint(src[i]))
             dest += src[i];
         else
-            dest += "\\" + x2str(src[i]);
+            dest += "\\" + std::to_string(src[i]);
 
     return dest;
 }

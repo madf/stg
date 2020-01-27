@@ -44,7 +44,7 @@ for (typename A::size_type i = 0; i < array.size(); ++i)
         return;
     if (!res.empty())
         res += "/";
-    res += x2str((array[i].*field).data());
+    res += std::to_string((array[i].*field).data());
     }
 stream << "<" << name << " value=\"" << res << "\"/>";
 }

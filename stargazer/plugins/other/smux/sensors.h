@@ -40,7 +40,7 @@ class TotalUsersSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(users.Count(), res); return res; }
+        { std::string res; std::to_string(users.Count(), res); return res; }
 #endif
 
     private:
@@ -185,7 +185,7 @@ class TotalTariffsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(tariffs.Count(), res); return res; }
+        { std::string res; std::to_string(tariffs.Count(), res); return res; }
 #endif
 
     private:
@@ -205,7 +205,7 @@ class TotalAdminsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(admins.Count(), res); return res; }
+        { std::string res; std::to_string(admins.Count(), res); return res; }
 #endif
 
     private:
@@ -225,7 +225,7 @@ class TotalServicesSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(services.Count(), res); return res; }
+        { std::string res; std::to_string(services.Count(), res); return res; }
 #endif
 
     private:
@@ -245,7 +245,7 @@ class TotalCorporationsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(corporations.Count(), res); return res; }
+        { std::string res; std::to_string(corporations.Count(), res); return res; }
 #endif
 
     private:
@@ -265,7 +265,7 @@ class TotalRulesSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(traffcounter.RulesCount(), res); return res; }
+        { std::string res; std::to_string(traffcounter.RulesCount(), res); return res; }
 #endif
 
     private:
@@ -283,7 +283,7 @@ class ConstSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const
-        { std::string res; x2str(value, res); return res; }
+        { std::string res; std::to_string(value, res); return res; }
 #endif
 
     private:

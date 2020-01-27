@@ -109,7 +109,7 @@ template <typename T>
 inline
 std::string PARAM_ACTION<T>::DefaultDescription() const
 {
-return m_hasDefault ? " (default: '" + x2str(m_defaltValue) + "')"
+return m_hasDefault ? " (default: '" + std::to_string(m_defaltValue) + "')"
                     : "";
 }
 
