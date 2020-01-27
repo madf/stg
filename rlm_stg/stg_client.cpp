@@ -51,7 +51,7 @@ class Client::Impl
 
     private:
         std::string m_address;
-        boost::scoped_ptr<Conn> m_conn;
+        std::unique_ptr<Conn> m_conn;
 
         pthread_mutex_t m_mutex;
         pthread_cond_t m_cond;

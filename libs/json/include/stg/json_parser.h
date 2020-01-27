@@ -25,8 +25,7 @@
 
 #include <string>
 #include <map>
-
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 namespace STG
 {
@@ -59,7 +58,7 @@ class Parser
 
     private:
         class Impl;
-        boost::scoped_ptr<Impl> m_impl;
+        std::unique_ptr<Impl> m_impl;
 };
 
 template <typename T>

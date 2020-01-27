@@ -21,9 +21,8 @@
 #ifndef __STG_SGCONFIG_CONN_H__
 #define __STG_SGCONFIG_CONN_H__
 
-#include <boost/scoped_ptr.hpp>
-
 #include <string>
+#include <memory>
 
 class USER;
 class USERS;
@@ -50,7 +49,7 @@ class Conn
 
     private:
         class Impl;
-        boost::scoped_ptr<Impl> m_impl;
+        std::unique_ptr<Impl> m_impl;
 };
 
 }

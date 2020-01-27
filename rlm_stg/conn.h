@@ -23,9 +23,8 @@
 
 #include "types.h"
 
-#include <boost/scoped_ptr.hpp>
-
 #include <string>
+#include <memory>
 #include <stdexcept>
 #include <cstdint>
 
@@ -53,7 +52,7 @@ class Conn
 
     private:
         class Impl;
-        boost::scoped_ptr<Impl> m_impl;
+        std::unique_ptr<Impl> m_impl;
 };
 
 }

@@ -26,8 +26,6 @@
 #include <vector>
 #include <utility>
 
-#include <boost/scoped_ptr.hpp>
-
 struct yajl_gen_t;
 
 namespace STG
