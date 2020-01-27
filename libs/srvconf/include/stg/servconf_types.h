@@ -21,11 +21,11 @@
 #ifndef __STG_STGLIBS_SRVCONF_TYPES_H__
 #define __STG_STGLIBS_SRVCONF_TYPES_H__
 
-#include "stg/array.h"
 #include "stg/const.h" // DIR_NUM
 
 #include <string>
 #include <vector>
+#include <array>
 #include <ctime>
 #include <cstdint>
 
@@ -90,7 +90,7 @@ struct INFO
     int         usersNum;
     std::string uname;
     int         dirNum;
-    ARRAY<std::string, DIR_NUM> dirName;
+    std::array<std::string, DIR_NUM> dirName;
 };
 typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
 
@@ -108,10 +108,10 @@ namespace GET_USER
 
 struct STAT
 {
-    ARRAY<long long, DIR_NUM> su;
-    ARRAY<long long, DIR_NUM> sd;
-    ARRAY<long long, DIR_NUM> mu;
-    ARRAY<long long, DIR_NUM> md;
+    std::array<long long, DIR_NUM> su;
+    std::array<long long, DIR_NUM> sd;
+    std::array<long long, DIR_NUM> mu;
+    std::array<long long, DIR_NUM> md;
 };
 
 struct INFO
@@ -143,7 +143,7 @@ struct INFO
     STAT        stat;
     time_t      pingTime;
     time_t      lastActivityTime;
-    ARRAY<std::string, USERDATA_NUM> userData;
+    std::array<std::string, USERDATA_NUM> userData;
     std::vector<std::string> services;
     std::vector<std::string> authBy;
 };
