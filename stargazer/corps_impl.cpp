@@ -111,7 +111,7 @@ while (csi != searchDescriptors.end())
     ++csi;
     }
 
-data.remove(*si);
+data.erase(si);
 if (store->DelCorp(name) < 0)
     {
     strError = "Corporation \'" + name + "\' was not deleted. Error: " + store->GetStrError();

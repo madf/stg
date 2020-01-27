@@ -123,7 +123,7 @@ while (si != searchDescriptors.end())
     ++si;
     }
 
-data.remove(*ai);
+data.erase(ai);
 if (store->DelAdmin(login) < 0)
     {
     strError = "Administrator \'" + login + "\' was not deleted. Error: " + store->GetStrError();

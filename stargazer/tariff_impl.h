@@ -35,7 +35,6 @@
 #include "stg/tariff_conf.h"
 
 #include <string>
-#include <list>
 
 #include <ctime>
 #include <cstdint>

@@ -28,7 +28,7 @@
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
-#include <list>
+#include <vector>
 #include <map>
 #include <string>
 
@@ -59,12 +59,12 @@ private:
     SERVICES_IMPL(const SERVICES_IMPL & rvalue);
     SERVICES_IMPL & operator=(const SERVICES_IMPL & rvalue);
 
-    typedef std::list<SERVICE_CONF>::iterator       iterator;
-    typedef std::list<SERVICE_CONF>::const_iterator const_iterator;
+    typedef std::vector<SERVICE_CONF>::iterator       iterator;
+    typedef std::vector<SERVICE_CONF>::const_iterator const_iterator;
 
     bool Read();
 
-    std::list<SERVICE_CONF> data;
+    std::vector<SERVICE_CONF> data;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
     mutable std::map<int, const_iterator> searchDescriptors;

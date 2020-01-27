@@ -40,7 +40,7 @@
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
-#include <list>
+#include <vector>
 #include <map>
 #include <string>
 
@@ -73,14 +73,14 @@ private:
     ADMINS_IMPL(const ADMINS_IMPL & rvalue);
     ADMINS_IMPL & operator=(const ADMINS_IMPL & rvalue);
 
-    typedef std::list<ADMIN_IMPL>::iterator admin_iter;
-    typedef std::list<ADMIN_IMPL>::const_iterator const_admin_iter;
+    typedef std::vector<ADMIN_IMPL>::iterator admin_iter;
+    typedef std::vector<ADMIN_IMPL>::const_iterator const_admin_iter;
 
     int             Read();
 
     ADMIN_IMPL              stg;
     ADMIN_IMPL              noAdmin;
-    std::list<ADMIN_IMPL>   data;
+    std::vector<ADMIN_IMPL> data;
     STORE *                 store;
     STG_LOGGER &            WriteServLog;
     mutable std::map<int, const_admin_iter> searchDescriptors;

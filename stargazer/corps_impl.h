@@ -28,7 +28,7 @@
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
-#include <list>
+#include <vector>
 #include <map>
 #include <string>
 
@@ -58,12 +58,12 @@ private:
     CORPORATIONS_IMPL(const CORPORATIONS_IMPL & rvalue);
     CORPORATIONS_IMPL & operator=(const CORPORATIONS_IMPL & rvalue);
 
-    typedef std::list<CORP_CONF>::iterator       crp_iter;
-    typedef std::list<CORP_CONF>::const_iterator const_crp_iter;
+    typedef std::vector<CORP_CONF>::iterator       crp_iter;
+    typedef std::vector<CORP_CONF>::const_iterator const_crp_iter;
 
     bool Read();
 
-    std::list<CORP_CONF> data;
+    std::vector<CORP_CONF> data;
     STORE * store;
     STG_LOGGER & WriteServLog;
     mutable std::map<int, const_crp_iter> searchDescriptors;

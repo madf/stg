@@ -110,7 +110,7 @@ while (csi != searchDescriptors.end())
     ++csi;
     }
 
-data.remove(*si);
+data.erase(si);
 if (store->DelService(name) < 0)
     {
     strError = "Service \'" + name + "\' was not deleted. Error: " + store->GetStrError();
