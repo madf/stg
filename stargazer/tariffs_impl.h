@@ -31,7 +31,7 @@
 #include "tariff_impl.h"
 
 #include <string>
-#include <list>
+#include <vector>
 #include <set>
 
 #include <pthread.h>
@@ -45,7 +45,7 @@ class ADMIN;
 
 class TARIFFS_IMPL : public TARIFFS {
 public:
-    typedef std::list<TARIFF_IMPL> Tariffs;
+    using Tariffs = std::vector<TARIFF_IMPL>;
 
     explicit TARIFFS_IMPL(STORE * store);
     virtual ~TARIFFS_IMPL();
@@ -63,7 +63,7 @@ public:
     void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
     void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
 
-    void GetTariffsData(std::list<TARIFF_DATA> * tdl) const;
+    void GetTariffsData(std::vector<TARIFF_DATA> * tdl) const;
 
     const std::string & GetStrError() const { return strError; }
 

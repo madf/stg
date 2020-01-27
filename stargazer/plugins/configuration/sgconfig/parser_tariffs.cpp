@@ -90,9 +90,9 @@ void GET_TARIFFS::CreateAnswer()
 {
     m_answer = "<Tariffs>";
 
-    std::list<TARIFF_DATA> dataList;
+    std::vector<TARIFF_DATA> dataList;
     m_tariffs.GetTariffsData(&dataList);
-    std::list<TARIFF_DATA>::const_iterator it = dataList.begin();
+    auto it = dataList.begin();
     for (; it != dataList.end(); ++it)
         {
         m_answer += "<tariff name=\"" + it->tariffConf.name + "\">";

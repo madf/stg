@@ -99,8 +99,7 @@ if (name == NO_TARIFF_NAME)
     return &noTariff;
 
 STG_LOCKER lock(&mutex);
-std::list<TARIFF_IMPL>::const_iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
 if (ti != tariffs.end())
     return &(*ti);
@@ -123,8 +122,7 @@ if (!priv->tariffChg)
 
 STG_LOCKER lock(&mutex);
 
-std::list<TARIFF_IMPL>::iterator ti;
-ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
+auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
 
 if (ti == tariffs.end())
     {
@@ -166,8 +164,7 @@ TARIFF_DATA td;
     {
     STG_LOCKER lock(&mutex);
 
-    std::list<TARIFF_IMPL>::iterator ti;
-    ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+    const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
     if (ti == tariffs.end())
         {
@@ -188,7 +185,7 @@ TARIFF_DATA td;
     tariffs.erase(ti);
     }
 
-std::set<NOTIFIER_BASE<TARIFF_DATA> *>::iterator ni = onDelNotifiers.begin();
+auto ni = onDelNotifiers.begin();
 while (ni != onDelNotifiers.end())
     {
     (*ni)->Notify(td);
@@ -217,8 +214,7 @@ if (!priv->tariffChg)
     {
     STG_LOCKER lock(&mutex);
 
-    std::list<TARIFF_IMPL>::iterator ti;
-    ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+    const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
 
     if (ti != tariffs.end())
         {
@@ -238,7 +234,7 @@ if (store->AddTariff(name) < 0)
     }
 
 // Fire all "on add" notifiers
-std::set<NOTIFIER_BASE<TARIFF_DATA> *>::iterator ni = onAddNotifiers.begin();
+auto ni = onAddNotifiers.begin();
 while (ni != onAddNotifiers.end())
     {
     (*ni)->Notify(tariffs.back().GetTariffData());
@@ -251,12 +247,12 @@ WriteServLog("%s Tariff \'%s\' added.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::GetTariffsData(std::list<TARIFF_DATA> * tdl) const
+void TARIFFS_IMPL::GetTariffsData(std::vector<TARIFF_DATA> * tdl) const
 {
 assert(tdl != NULL && "Tariffs data list is not null");
 STG_LOCKER lock(&mutex);
 
-Tariffs::const_iterator it = tariffs.begin();
+auto it = tariffs.begin();
 for (; it != tariffs.end(); ++it)
     {
     tdl->push_back(it->GetTariffData());

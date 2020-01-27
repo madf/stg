@@ -15,7 +15,7 @@ void TariffUsersTable::UpdateSensors(Sensors & sensors) const
 {
 std::map<std::string, size_t> data;
 
-std::list<TARIFF_DATA> tdl;
+std::vector<TARIFF_DATA> tdl;
 tariffs.GetTariffsData(&tdl);
 std::transform(tdl.begin(),
                tdl.end(),

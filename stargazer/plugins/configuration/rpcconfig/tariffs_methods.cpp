@@ -107,9 +107,9 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 std::vector<xmlrpc_c::value> tariffsInfo;
 
 
-std::list<TARIFF_DATA> dataList;
+std::vector<TARIFF_DATA> dataList;
 tariffs->GetTariffsData(&dataList);
-std::list<TARIFF_DATA>::const_iterator it = dataList.begin();
+auto it = dataList.begin();
 for (; it != dataList.end(); ++it)
     {
     xmlrpc_c::value info;

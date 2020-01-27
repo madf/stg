@@ -22,7 +22,7 @@ class TEST_TARIFFS : public TARIFFS {
         void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> *) {}
         void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> *) {}
 
-        void           GetTariffsData(std::list<TARIFF_DATA> * /*tdl*/) const {}
+        void           GetTariffsData(std::vector<TARIFF_DATA> * /*tdl*/) const {}
 
         size_t         Count() const { return 0; }
 

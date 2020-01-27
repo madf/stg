@@ -22,7 +22,7 @@
 #define TARIFFS_H
 
 #include <string>
-#include <list>
+#include <vector>
 
 #include "notifer.h"
 
@@ -32,8 +32,6 @@ struct TARIFF_DATA;
 
 class TARIFFS {
 public:
-    typedef std::list<TARIFF> Tariffs;
-
     virtual ~TARIFFS() {}
     virtual int ReadTariffs () = 0;
     virtual const TARIFF * FindByName(const std::string & name) const = 0;
@@ -48,7 +46,7 @@ public:
     virtual void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
     virtual void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
 
-    virtual void GetTariffsData(std::list<TARIFF_DATA> * tdl) const = 0;
+    virtual void GetTariffsData(std::vector<TARIFF_DATA> * tdl) const = 0;
 
     virtual size_t Count() const = 0;
 
