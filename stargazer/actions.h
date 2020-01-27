@@ -14,7 +14,7 @@
 // actionsList.InvokeAll();
 
 #include <pthread.h>
-#include <list>
+#include <vector>
 #include <functional>
 
 // Generalized actor type - a method of some class with one argument
@@ -54,11 +54,11 @@ private:
 
 // A list of an actions
 // All methods are thread-safe
-class ACTIONS_LIST : private std::list<BASE_ACTION *>
+class ACTIONS_LIST : private std::vector<BASE_ACTION *>
 {
 public:
     // Just a typedef for parent class
-    typedef std::list<BASE_ACTION *> parent;
+    typedef std::vector<BASE_ACTION *> parent;
 
     // Initialize mutex
     ACTIONS_LIST();

@@ -29,7 +29,7 @@ ACTIONS_LIST::~ACTIONS_LIST()
     STG_LOCKER lock(&mutex);
 
     parent::iterator it(parent::begin());
-    while (it != parent::end()) 
+    while (it != parent::end())
         {
         delete *it++;
         }
@@ -40,28 +40,28 @@ pthread_mutex_destroy(&mutex);
 
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::begin()
-{ 
+{
 STG_LOCKER lock(&mutex);
 return parent::begin();
 }
 
 inline
 ACTIONS_LIST::parent::iterator ACTIONS_LIST::end()
-{ 
+{
 STG_LOCKER lock(&mutex);
 return parent::end();
 }
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::begin() const
-{ 
+{
 STG_LOCKER lock(&mutex);
 return parent::begin();
 }
 
 inline
 ACTIONS_LIST::parent::const_iterator ACTIONS_LIST::end() const
-{ 
+{
 STG_LOCKER lock(&mutex);
 return parent::end();
 }
