@@ -29,6 +29,7 @@ if ( BUILD_LIB_IA )
 endif ( BUILD_LIB_IA )
 
 if ( BUILD_LIB_IBPP )
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast -Wno-useless-cast")
     add_library ( ibpp STATIC ibpp/all_in_one.cpp )
     target_include_directories ( ibpp PUBLIC ibpp/include )
 endif ( BUILD_LIB_IBPP )
