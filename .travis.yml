@@ -1,5 +1,5 @@
 # Enable Trusty dist, Standard is ancient.
-#dist: trusty
+dist: bionic
 # Enable C++ support
 language:
   - c
