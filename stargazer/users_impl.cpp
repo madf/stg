@@ -407,7 +407,7 @@ while (us->nonstop)
     //printfd(__FILE__,"New Minute. old = %02d current = %02d\n", min, t->tm_min);
     //printfd(__FILE__,"New Day.    old = %2d current = %2d\n", day, t->tm_mday);
 
-    for_each(us->users.begin(), us->users.end(), std::mem_fun_ref(&USER_IMPL::Run));
+    for_each(us->users.begin(), us->users.end(), [](auto& user){ user.Run(); });
 
     tt = stgTime;
     localtime_r(&tt, &t);
@@ -458,7 +458,7 @@ void USERS_IMPL::NewMinute(const struct tm & t)
 if (t.tm_hour == 23 && t.tm_min == 59)
     {
     printfd(__FILE__,"MidnightResetSessionStat\n");
-    for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::MidnightResetSessionStat));
+    for_each(users.begin(), users.end(), [](auto& user){ user.MidnightResetSessionStat(); });
     }
 
 if (TimeToWriteDetailStat(t))
@@ -474,7 +474,7 @@ if (TimeToWriteDetailStat(t))
         usr->WriteDetailStat();
         ++usr;
         if (usersCnt % 10 == 0)
-            for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::Run));
+            for_each(users.begin(), users.end(), [](auto& user){ user.Run(); });
         }
     }
 
@@ -505,19 +505,19 @@ if (!settings->GetDayFeeIsLastDay())
 if (settings->GetSpreadFee())
     {
     printfd(__FILE__, "Spread DayFee\n");
-    for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDayFeeSpread));
+    for_each(users.begin(), users.end(), [](auto& user){ user.ProcessDayFeeSpread(); });
     }
 else
     {
     if (t.tm_mday == dayFee)
         {
         printfd(__FILE__, "DayFee\n");
-        for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDayFee));
+        for_each(users.begin(), users.end(), [](auto& user){ user.ProcessDayFee(); });
         }
     }
 
-std::for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessDailyFee));
-std::for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessServices));
+std::for_each(users.begin(), users.end(), [](auto& user){ user.ProcessDailyFee(); });
+std::for_each(users.begin(), users.end(), [](auto& user){ user.ProcessServices(); });
 
 if (settings->GetDayFeeIsLastDay())
     {
@@ -534,7 +534,7 @@ if (dayResetTraff == 0)
 if (t1.tm_mday == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
-    for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::ProcessNewMonth));
+    for_each(users.begin(), users.end(), [](auto& user){ user.ProcessNewMonth(); });
     //for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::SetPrepaidTraff));
     }
 }
@@ -593,7 +593,7 @@ if (isRunning)
     }
 
 printfd(__FILE__, "Before USERS::Run()\n");
-for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::Run));
+for_each(users.begin(), users.end(), [](auto& user){ user.Run(); });
 
 // 'cause bind2st accepts only constant first param
 for (std::list<USER_IMPL>::iterator it = users.begin();
@@ -601,7 +601,7 @@ for (std::list<USER_IMPL>::iterator it = users.begin();
      ++it)
     it->WriteDetailStat(true);
 
-for_each(users.begin(), users.end(), std::mem_fun_ref(&USER_IMPL::WriteStat));
+for_each(users.begin(), users.end(), [](auto& user){ user.WriteStat(); });
 //for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteConf));
 
 printfd(__FILE__, "USERS::Stop()\n");

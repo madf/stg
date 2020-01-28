@@ -52,18 +52,6 @@ return aoc.GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-template <typename varType>
-class IS_CONTAINS_USER: public std::binary_function<varType, USER_PTR, bool>
-{
-public:
-    bool operator()(const varType& notifier, USER_PTR user) const
-        {
-        return notifier.GetUser() == user;
-        }
-};
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 std::string AUTH_AO::GetVersion() const
 {
 return "Always Online authorizator v.1.0";
@@ -86,7 +74,7 @@ GetUsers();
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
-std::for_each(usersList.begin(), usersList.end(), std::bind1st(std::mem_fun(&AUTH_AO::UpdateUserAuthorization), this));
+std::for_each(usersList.begin(), usersList.end(), [this](auto user){ UpdateUserAuthorization(user); });
 
 isRunning = true;
 
@@ -143,15 +131,12 @@ u->GetProperty().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
 void AUTH_AO::UnSetUserNotifiers(USER_PTR u)
 {
 // ---      AlwaysOnline        ---
-IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<int> > IsContainsUserAOB;
-IS_CONTAINS_USER<CHG_AFTER_NOTIFIER<int> > IsContainsUserAOA;
-
 std::list<CHG_BEFORE_NOTIFIER<int> >::iterator aoBIter;
 std::list<CHG_AFTER_NOTIFIER<int> >::iterator  aoAIter;
 
 aoBIter = find_if(BeforeChgAONotifierList.begin(),
                   BeforeChgAONotifierList.end(),
-                  bind2nd(IsContainsUserAOB, u));
+                  [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (aoBIter != BeforeChgAONotifierList.end())
     {
@@ -161,7 +146,7 @@ if (aoBIter != BeforeChgAONotifierList.end())
 
 aoAIter = find_if(AfterChgAONotifierList.begin(),
                   AfterChgAONotifierList.end(),
-                  bind2nd(IsContainsUserAOA, u));
+                  [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (aoAIter != AfterChgAONotifierList.end())
     {
@@ -171,15 +156,12 @@ if (aoAIter != AfterChgAONotifierList.end())
 // ---      AlwaysOnline end    ---
 
 // ---          IP              ---
-IS_CONTAINS_USER<CHG_BEFORE_NOTIFIER<USER_IPS> > IsContainsUserIPB;
-IS_CONTAINS_USER<CHG_AFTER_NOTIFIER<USER_IPS> >  IsContainsUserIPA;
-
 std::list<CHG_BEFORE_NOTIFIER<USER_IPS> >::iterator ipBIter;
 std::list<CHG_AFTER_NOTIFIER<USER_IPS> >::iterator  ipAIter;
 
 ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
                        BeforeChgIPNotifierList.end(),
-                       bind2nd(IsContainsUserIPB, u));
+                       [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
@@ -189,7 +171,7 @@ if (ipBIter != BeforeChgIPNotifierList.end())
 
 ipAIter = find_if(AfterChgIPNotifierList.begin(),
                   AfterChgIPNotifierList.end(),
-                  bind2nd(IsContainsUserIPA, u));
+                  [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (ipAIter != AfterChgIPNotifierList.end())
     {

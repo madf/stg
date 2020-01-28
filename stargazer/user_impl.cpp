@@ -581,7 +581,7 @@ std::vector<std::string> USER_IMPL::GetAuthorizers() const
 {
     STG_LOCKER lock(&mutex);
     std::vector<std::string> list;
-    std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), std::mem_fun(&AUTH::GetVersion));
+    std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), [](const auto auth){ return auth->GetVersion(); });
     return list;
 }
 //-----------------------------------------------------------------------------

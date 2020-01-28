@@ -198,7 +198,7 @@ if (!m_description.empty())
     std::cout << m_description << ":\n";
 std::for_each(m_options.begin(),
               m_options.end(),
-              std::bind2nd(std::mem_fun_ref(&OPTION::Help), level + 1));
+              [&level](const auto& opt){ opt.Help(level + 1); });
 }
 
 PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv, void * data)
@@ -208,12 +208,11 @@ if (state.argc == 0)
     return state;
 while (state.argc > 0 && !state.stop)
     {
-    std::vector<OPTION>::iterator it = std::find_if(m_options.begin(), m_options.end(), std::bind2nd(std::mem_fun_ref(&OPTION::Check), *state.argv));
+    const auto it = std::find_if(m_options.begin(), m_options.end(), [&state](const auto& opt){ return opt.Check(*state.argv); });
     if (it != m_options.end())
         state = it->Parse(--state.argc, ++state.argv, data);
     else
         break;
-    ++it;
     }
 return state;
 }

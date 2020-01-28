@@ -104,8 +104,7 @@ STG_LOCKER lock(&mutex);
 std::for_each(
         parent::begin(),
         parent::end(),
-        std::mem_fun(&BASE_ACTION::Invoke)
-);
+        [](auto action){ action->Invoke(); });
 }
 
 #endif

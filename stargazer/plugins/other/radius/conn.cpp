@@ -41,6 +41,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#ifndef MSG_NOSIGNAL
+// On OSX this flag does not exist.
+#define MSG_NOSIGNAL 0
+#endif
+
 using STG::Conn;
 using STG::Config;
 using STG::JSON::Parser;

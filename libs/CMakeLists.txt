@@ -1,8 +1,10 @@
 set ( CMAKE_POSITION_INDEPENDENT_CODE ON )
 
 if ( BUILD_LIB_COMMON )
+    find_package ( Iconv REQUIRED )
     add_library ( common STATIC common/blockio.cpp common/common.cpp common/strptime.cpp )
     target_include_directories ( common PUBLIC common/include )
+    target_link_libraries ( common Iconv::Iconv )
 endif ( BUILD_LIB_COMMON )
 
 if ( BUILD_LIB_CONFFILES )
@@ -32,9 +34,10 @@ if ( BUILD_LIB_IBPP )
 endif ( BUILD_LIB_IBPP )
 
 if ( BUILD_LIB_JSON )
+    find_package ( YAJL REQUIRED )
     add_library ( json STATIC json/generator.cpp json/parser.cpp )
     target_include_directories ( json PUBLIC json/include )
-    target_link_libraries ( json common )
+    target_link_libraries ( json common YAJL::YAJL )
 endif ( BUILD_LIB_JSON )
 
 if ( BUILD_LIB_LOGGER )
