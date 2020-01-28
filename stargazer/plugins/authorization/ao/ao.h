@@ -30,6 +30,7 @@
 #include <pthread.h>
 
 #include <string>
+#include <vector>
 #include <list>
 
 #include "stg/auth.h"
@@ -114,7 +115,7 @@ private:
 
     mutable std::string errorStr;
     USERS *             users;
-    std::list<USER_PTR> usersList;
+    std::vector<USER_PTR> userList;
     bool                isRunning;
     MODULE_SETTINGS     settings;
 

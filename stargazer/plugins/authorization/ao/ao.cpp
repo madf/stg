@@ -74,7 +74,7 @@ GetUsers();
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
-std::for_each(usersList.begin(), usersList.end(), [this](auto user){ UpdateUserAuthorization(user); });
+std::for_each(userList.begin(), userList.end(), [this](auto user){ UpdateUserAuthorization(user); });
 
 isRunning = true;
 
@@ -90,14 +90,13 @@ if (!isRunning)
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
-std::list<USER_PTR>::iterator users_iter;
-users_iter = usersList.begin();
-while (users_iter != usersList.end())
+auto it = userList.begin();
+while (it != userList.end())
     {
-    if ((*users_iter)->IsAuthorizedBy(this))
-        users->Unauthorize((*users_iter)->GetLogin(), this);
-    UnSetUserNotifiers(*users_iter);
-    ++users_iter;
+    if ((*it)->IsAuthorizedBy(this))
+        users->Unauthorize((*it)->GetLogin(), this);
+    UnSetUserNotifiers(*it);
+    ++it;
     }
 isRunning = false;
 return 0;
@@ -131,12 +130,9 @@ u->GetProperty().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
 void AUTH_AO::UnSetUserNotifiers(USER_PTR u)
 {
 // ---      AlwaysOnline        ---
-std::list<CHG_BEFORE_NOTIFIER<int> >::iterator aoBIter;
-std::list<CHG_AFTER_NOTIFIER<int> >::iterator  aoAIter;
-
-aoBIter = find_if(BeforeChgAONotifierList.begin(),
-                  BeforeChgAONotifierList.end(),
-                  [u](auto notifier){ return notifier.GetUser() == u; });
+auto aoBIter = find_if(BeforeChgAONotifierList.begin(),
+                       BeforeChgAONotifierList.end(),
+                       [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (aoBIter != BeforeChgAONotifierList.end())
     {
@@ -144,9 +140,9 @@ if (aoBIter != BeforeChgAONotifierList.end())
     BeforeChgAONotifierList.erase(aoBIter);
     }
 
-aoAIter = find_if(AfterChgAONotifierList.begin(),
-                  AfterChgAONotifierList.end(),
-                  [u](auto notifier){ return notifier.GetUser() == u; });
+auto aoAIter = find_if(AfterChgAONotifierList.begin(),
+                       AfterChgAONotifierList.end(),
+                       [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (aoAIter != AfterChgAONotifierList.end())
     {
@@ -156,12 +152,9 @@ if (aoAIter != AfterChgAONotifierList.end())
 // ---      AlwaysOnline end    ---
 
 // ---          IP              ---
-std::list<CHG_BEFORE_NOTIFIER<USER_IPS> >::iterator ipBIter;
-std::list<CHG_AFTER_NOTIFIER<USER_IPS> >::iterator  ipAIter;
-
-ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
-                       BeforeChgIPNotifierList.end(),
-                       [u](auto notifier){ return notifier.GetUser() == u; });
+auto ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
+                            BeforeChgIPNotifierList.end(),
+                            [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
@@ -169,9 +162,9 @@ if (ipBIter != BeforeChgIPNotifierList.end())
     BeforeChgIPNotifierList.erase(ipBIter);
     }
 
-ipAIter = find_if(AfterChgIPNotifierList.begin(),
-                  AfterChgIPNotifierList.end(),
-                  [u](auto notifier){ return notifier.GetUser() == u; });
+auto ipAIter = find_if(AfterChgIPNotifierList.begin(),
+                       AfterChgIPNotifierList.end(),
+                       [u](auto notifier){ return notifier.GetUser() == u; });
 
 if (ipAIter != AfterChgIPNotifierList.end())
     {
@@ -189,7 +182,7 @@ assert(h && "USERS::OpenSearch is always correct");
 
 while (!users->SearchNext(h, &u))
     {
-    usersList.push_back(u);
+    userList.push_back(u);
     SetUserNotifiers(u);
     }
 
@@ -211,7 +204,7 @@ if (u->GetProperty().alwaysOnline)
 void AUTH_AO::AddUser(USER_PTR u)
 {
 SetUserNotifiers(u);
-usersList.push_back(u);
+userList.push_back(u);
 UpdateUserAuthorization(u);
 }
 //-----------------------------------------------------------------------------
@@ -220,7 +213,7 @@ void AUTH_AO::DelUser(USER_PTR u)
 if (u->IsAuthorizedBy(this))
     users->Unauthorize(u->GetLogin(), this);
 UnSetUserNotifiers(u);
-usersList.remove(u);
+userList.erase(std::remove(userList.begin(), userList.end(), u), userList.end());
 }
 //-----------------------------------------------------------------------------
 int AUTH_AO::SendMessage(const STG_MSG &, uint32_t) const
