@@ -29,9 +29,9 @@ if ( BUILD_LIB_IA )
 endif ( BUILD_LIB_IA )
 
 if ( BUILD_LIB_IBPP )
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-old-style-cast -Wno-useless-cast")
     add_library ( ibpp STATIC ibpp/all_in_one.cpp )
     target_include_directories ( ibpp PUBLIC ibpp/include )
+    target_compile_options ( ibpp PRIVATE -Wno-old-style-cast $<$<CXX_COMPILER_ID:GNU>:-Wno-useless-cast> )
 endif ( BUILD_LIB_IBPP )
 
 if ( BUILD_LIB_JSON )
