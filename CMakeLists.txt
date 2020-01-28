@@ -4,6 +4,10 @@ project ( Stargazer )
 
 set ( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
 
+if ( CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2 )
+    message ( FATAL_ERROR "Require at least gcc-5.2" )
+endif( CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.2 )
+
 option ( BUILD_STG "Build Stargazer server." OFF )
 option ( BUILD_SGCONF "Build SGConf client." OFF )
 option ( BUILD_RSCRIPTD "Build RScriptD server." OFF )
@@ -113,8 +117,13 @@ if ( BUILD_MOD_SMUX OR BUILD_ALL_LIBS )
 endif ( BUILD_MOD_SMUX OR BUILD_ALL_LIBS )
 
 enable_language (CXX)
-set (CMAKE_CXX_STANDARD 17)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -Wshadow -Wlogical-op -Wuseless-cast -Wno-long-long -Wold-style-cast -Wstrict-aliasing -pedantic")
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -Wshadow -Wno-long-long -Wold-style-cast -Wstrict-aliasing -pedantic")
+
+if ( CMAKE_COMPILER_IS_GNUCC )
+    # GCC-specific
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wlogical-op -Wuseless-cast")
+endif ( CMAKE_COMPILER_IS_GNUCC )
 
 if ( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
     add_definitions ( -DLINUX )
