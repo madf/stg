@@ -14,8 +14,7 @@
 namespace
 {
 
-class TEST_STORE_LOCAL : public TEST_STORE,
-                         private NONCOPYABLE {
+class TEST_STORE_LOCAL : public TEST_STORE {
 public:
     TEST_STORE_LOCAL()
         : entries(0)
@@ -27,7 +26,7 @@ public:
                         const std::string & /*paramName*/,
                         const std::string & /*oldValue*/,
                         const std::string & /*newValue*/,
-                        const std::string & /*message*/) const { ++entries; return 0; }
+                        const std::string & /*message*/) const override { ++entries; return 0; }
 
     size_t GetEntries() const { return entries; }
 
@@ -71,27 +70,27 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY_LOGGED<std::string> & address(user.GetProperty().address);
-        USER_PROPERTY_LOGGED<std::string> & note(user.GetProperty().note);
-        USER_PROPERTY_LOGGED<std::string> & group(user.GetProperty().group);
+        auto & address = user.GetProperties().address;
+        auto & note = user.GetProperties().note;
+        auto & group = user.GetProperties().group;
 
-        address.Set("address", &admin, "", &store, "");
-        note.Set("note", &admin, "", &store, "");
-        group.Set("group", &admin, "", &store, "");
+        address.Set("address", admin, "", store, "");
+        note.Set("note", admin, "", store, "");
+        group.Set("group", admin, "", store, "");
 
         ensure_equals("entries = 3", store.GetEntries(), 3);
 
-        note.Set("another note", &admin, "", &store, "");
+        note.Set("another note", admin, "", store, "");
 
         ensure_equals("entries = 4", store.GetEntries(), 4);
 
-        address.Set("new address", &admin, "", &store, "");
+        address.Set("new address", admin, "", store, "");
 
         ensure_equals("entries = 5", store.GetEntries(), 5);
 
-        group.Set("administrative group", &admin, "", &store, "");
+        group.Set("administrative group", admin, "", store, "");
 
         ensure_equals("entries = 6", store.GetEntries(), 6);
     }
@@ -111,27 +110,27 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY_LOGGED<std::string> & address(user.GetProperty().address);
-        USER_PROPERTY_LOGGED<std::string> & note(user.GetProperty().note);
-        USER_PROPERTY_LOGGED<std::string> & group(user.GetProperty().group);
+        auto & address = user.GetProperties().address;
+        auto & note = user.GetProperties().note;
+        auto & group = user.GetProperties().group;
 
-        address.Set("address", &admin, "", &store, "");
-        note.Set("note", &admin, "", &store, "");
-        group.Set("group", &admin, "", &store, "");
-
-        ensure_equals("entries = 1", store.GetEntries(), 1);
-
-        note.Set("another note", &admin, "", &store, "");
+        address.Set("address", admin, "", store, "");
+        note.Set("note", admin, "", store, "");
+        group.Set("group", admin, "", store, "");
 
         ensure_equals("entries = 1", store.GetEntries(), 1);
 
-        address.Set("new address", &admin, "", &store, "");
+        note.Set("another note", admin, "", store, "");
+
+        ensure_equals("entries = 1", store.GetEntries(), 1);
+
+        address.Set("new address", admin, "", store, "");
 
         ensure_equals("entries = 2", store.GetEntries(), 2);
 
-        group.Set("administrative group", &admin, "", &store, "");
+        group.Set("administrative group", admin, "", store, "");
 
         ensure_equals("entries = 2", store.GetEntries(), 2);
     }
@@ -151,27 +150,27 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY_LOGGED<std::string> & address(user.GetProperty().address);
-        USER_PROPERTY_LOGGED<std::string> & note(user.GetProperty().note);
-        USER_PROPERTY_LOGGED<std::string> & group(user.GetProperty().group);
+        auto & address = user.GetProperties().address;
+        auto & note = user.GetProperties().note;
+        auto & group = user.GetProperties().group;
 
-        address.Set("address", &admin, "", &store, "");
-        note.Set("note", &admin, "", &store, "");
-        group.Set("group", &admin, "", &store, "");
-
-        ensure_equals("entries = 2", store.GetEntries(), 2);
-
-        note.Set("another note", &admin, "", &store, "");
+        address.Set("address", admin, "", store, "");
+        note.Set("note", admin, "", store, "");
+        group.Set("group", admin, "", store, "");
 
         ensure_equals("entries = 2", store.GetEntries(), 2);
 
-        address.Set("new address", &admin, "", &store, "");
+        note.Set("another note", admin, "", store, "");
+
+        ensure_equals("entries = 2", store.GetEntries(), 2);
+
+        address.Set("new address", admin, "", store, "");
 
         ensure_equals("entries = 3", store.GetEntries(), 3);
 
-        group.Set("administrative group", &admin, "", &store, "");
+        group.Set("administrative group", admin, "", store, "");
 
         ensure_equals("entries = 4", store.GetEntries(), 4);
     }
@@ -189,27 +188,27 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY_LOGGED<std::string> & address(user.GetProperty().address);
-        USER_PROPERTY_LOGGED<std::string> & note(user.GetProperty().note);
-        USER_PROPERTY_LOGGED<std::string> & group(user.GetProperty().group);
+        auto & address = user.GetProperties().address;
+        auto & note = user.GetProperties().note;
+        auto & group = user.GetProperties().group;
 
-        address.Set("address", &admin, "", &store, "");
-        note.Set("note", &admin, "", &store, "");
-        group.Set("group", &admin, "", &store, "");
-
-        ensure_equals("entries = 0", store.GetEntries(), 0);
-
-        note.Set("another note", &admin, "", &store, "");
+        address.Set("address", admin, "", store, "");
+        note.Set("note", admin, "", store, "");
+        group.Set("group", admin, "", store, "");
 
         ensure_equals("entries = 0", store.GetEntries(), 0);
 
-        address.Set("new address", &admin, "", &store, "");
+        note.Set("another note", admin, "", store, "");
 
         ensure_equals("entries = 0", store.GetEntries(), 0);
 
-        group.Set("administrative group", &admin, "", &store, "");
+        address.Set("new address", admin, "", store, "");
+
+        ensure_equals("entries = 0", store.GetEntries(), 0);
+
+        group.Set("administrative group", admin, "", store, "");
 
         ensure_equals("entries = 0", store.GetEntries(), 0);
     }

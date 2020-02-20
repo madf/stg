@@ -14,23 +14,22 @@
 namespace
 {
 
-class TEST_STORE_LOCAL : public TEST_STORE,
-                         private NONCOPYABLE {
+class TEST_STORE_LOCAL : public TEST_STORE {
 public:
     TEST_STORE_LOCAL()
         : connects(0),
           disconnects(0)
     {}
-    int WriteUserConnect(const std::string & /*login*/, uint32_t /*ip*/) const { ++connects; return 0; }
+    int WriteUserConnect(const std::string & /*login*/, uint32_t /*ip*/) const override { ++connects; return 0; }
 
     int WriteUserDisconnect(const std::string & /*login*/,
-                            const DIR_TRAFF & /*up*/,
-                            const DIR_TRAFF & /*down*/,
-                            const DIR_TRAFF & /*sessionUp*/,
-                            const DIR_TRAFF & /*sessionDown*/,
+                            const STG::DirTraff & /*up*/,
+                            const STG::DirTraff & /*down*/,
+                            const STG::DirTraff & /*sessionUp*/,
+                            const STG::DirTraff & /*sessionDown*/,
                             double /*cash*/,
                             double /*freeMb*/,
-                            const std::string & /*reason*/) const { ++disconnects; return 0; }
+                            const std::string & /*reason*/) const override { ++disconnects; return 0; }
 
     size_t GetConnects() const { return connects; }
     size_t GetDisconnects() const { return disconnects; }
@@ -43,8 +42,7 @@ private:
 class TEST_SETTINGS_LOCAL : public TEST_SETTINGS {
     public:
         TEST_SETTINGS_LOCAL(bool _disableSessionLog)
-            : TEST_SETTINGS(),
-              disableSessionLog(_disableSessionLog)
+            : disableSessionLog(_disableSessionLog)
         {}
 
         bool GetDisableSessionLog() const { return disableSessionLog; }
@@ -78,11 +76,11 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
+        STG::UserProperty<STG::UserIPs> & ips(user.GetProperties().ips);
 
-        ips = StrToIPS("*");
+        ips = STG::UserIPs::parse("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
         ensure_equals("connects = 0", store.GetConnects(), static_cast<size_t>(0));
@@ -121,11 +119,11 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-        USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
+        STG::UserProperty<STG::UserIPs> & ips(user.GetProperties().ips);
 
-        ips = StrToIPS("*");
+        ips = STG::UserIPs::parse("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
         ensure_equals("connects = 0", store.GetConnects(), static_cast<size_t>(0));

@@ -28,22 +28,24 @@
  $Author: faust $
  */
 
-#include "stg/common.h"
 #include "admins_impl.h"
 #include "admin_impl.h"
 
+#include "stg/common.h"
+
+#include <algorithm>
 #include <cerrno>
 #include <cassert>
-#include <algorithm>
+
+using STG::AdminsImpl;
 
 //-----------------------------------------------------------------------------
-ADMINS_IMPL::ADMINS_IMPL(STORE * st)
-    : ADMINS(),
-      stg(PRIV(0xFFFF), "@stargazer", ""),
-      noAdmin(PRIV(0xFFFF), "NO-ADMIN", ""),
+AdminsImpl::AdminsImpl(Store * st)
+    : stg(Priv(0xFFFF), "@stargazer", ""),
+      noAdmin(Priv(0xFFFF), "NO-ADMIN", ""),
       data(),
       store(st),
-      WriteServLog(GetStgLogger()),
+      WriteServLog(Logger::get()),
       searchDescriptors(),
       handle(0),
       mutex(),
@@ -53,10 +55,10 @@ pthread_mutex_init(&mutex, NULL);
 Read();
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Add(const std::string & login, const ADMIN * admin)
+int AdminsImpl::Add(const std::string & login, const Admin * admin)
 {
 STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+const Priv * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
@@ -66,7 +68,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-ADMIN_IMPL adm(PRIV(0), login, "");
+AdminImpl adm(Priv(0), login, "");
 admin_iter ai(find(data.begin(), data.end(), adm));
 
 if (ai != data.end())
@@ -92,10 +94,10 @@ WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Del(const std::string & login, const ADMIN * admin)
+int AdminsImpl::Del(const std::string & login, const Admin * admin)
 {
 STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+const Priv * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
@@ -105,7 +107,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
+admin_iter ai(find(data.begin(), data.end(), AdminImpl(Priv(0), login, "")));
 
 if (ai == data.end())
     {
@@ -136,10 +138,10 @@ WriteServLog("%s Administrator \'%s\' deleted.", admin->GetLogStr().c_str(), log
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Change(const ADMIN_CONF & ac, const ADMIN * admin)
+int AdminsImpl::Change(const AdminConf & ac, const Admin * admin)
 {
 STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+const Priv * priv = admin->GetPriv();
 
 if (!priv->adminChg)
     {
@@ -149,7 +151,7 @@ if (!priv->adminChg)
     return -1;
     }
 
-admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), ac.login, "")));
+admin_iter ai(find(data.begin(), data.end(), AdminImpl(Priv(0), ac.login, "")));
 
 if (ai == data.end())
     {
@@ -172,7 +174,7 @@ WriteServLog("%s Administrator \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::Read()
+int AdminsImpl::Read()
 {
 STG_LOCKER lock(&mutex);
 std::vector<std::string> adminsList;
@@ -184,7 +186,7 @@ if (store->GetAdminsList(&adminsList) < 0)
 
 for (unsigned int i = 0; i < adminsList.size(); i++)
     {
-    ADMIN_CONF ac(PRIV(0), adminsList[i], "");
+    AdminConf ac(Priv(0), adminsList[i], "");
 
     if (store->RestoreAdmin(&ac, adminsList[i]))
         {
@@ -192,12 +194,12 @@ for (unsigned int i = 0; i < adminsList.size(); i++)
         return -1;
         }
 
-    data.push_back(ADMIN_IMPL(ac));
+    data.push_back(AdminImpl(ac));
     }
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Find(const std::string & l, ADMIN ** admin)
+bool AdminsImpl::Find(const std::string & l, Admin ** admin)
 {
 assert(admin != NULL && "Pointer to admin is not null");
 
@@ -209,7 +211,7 @@ if (data.empty())
     return false;
     }
 
-admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), l, "")));
+admin_iter ai(find(data.begin(), data.end(), AdminImpl(Priv(0), l, "")));
 
 if (ai != data.end())
     {
@@ -220,7 +222,7 @@ if (ai != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Exists(const std::string & login) const
+bool AdminsImpl::Exists(const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 if (data.empty())
@@ -229,7 +231,7 @@ if (data.empty())
     return true;
     }
 
-const_admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
+const_admin_iter ai(find(data.begin(), data.end(), AdminImpl(Priv(0), login, "")));
 
 if (ai != data.end())
     return true;
@@ -237,7 +239,7 @@ if (ai != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-bool ADMINS_IMPL::Correct(const std::string & login, const std::string & password, ADMIN ** admin)
+bool AdminsImpl::Correct(const std::string & login, const std::string & password, Admin ** admin)
 {
 STG_LOCKER lock(&mutex);
 if (data.empty())
@@ -246,7 +248,7 @@ if (data.empty())
     return true;
     }
 
-admin_iter ai(find(data.begin(), data.end(), ADMIN_IMPL(PRIV(0), login, "")));
+admin_iter ai(find(data.begin(), data.end(), AdminImpl(Priv(0), login, "")));
 
 if (ai == data.end())
     {
@@ -263,7 +265,7 @@ if (ai->GetPassword() != password)
 return true;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::OpenSearch() const
+int AdminsImpl::OpenSearch() const
 {
 STG_LOCKER lock(&mutex);
 handle++;
@@ -271,7 +273,7 @@ searchDescriptors[handle] = data.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::SearchNext(int h, ADMIN_CONF * ac) const
+int AdminsImpl::SearchNext(int h, AdminConf * ac) const
 {
 STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
@@ -283,14 +285,14 @@ if (searchDescriptors.find(h) == searchDescriptors.end())
 if (searchDescriptors[h] == data.end())
     return -1;
 
-ADMIN_IMPL a = *searchDescriptors[h]++;
+AdminImpl a = *searchDescriptors[h]++;
 
 *ac = a.GetConf();
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int ADMINS_IMPL::CloseSearch(int h) const
+int AdminsImpl::CloseSearch(int h) const
 {
 STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())

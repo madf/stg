@@ -18,33 +18,32 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include <cerrno>
-#include <cassert>
-#include <algorithm>
-
-#include "stg/admin.h"
-#include "stg/common.h"
 #include "services_impl.h"
 
+#include "stg/admin.h"
+#include "stg/admin_conf.h"
+#include "stg/store.h"
+#include "stg/common.h"
+
+#include <algorithm>
+#include <cassert>
+
+using STG::ServicesImpl;
+
 //-----------------------------------------------------------------------------
-SERVICES_IMPL::SERVICES_IMPL(STORE * st)
-    : SERVICES(),
-      data(),
-      store(st),
-      WriteServLog(GetStgLogger()),
+ServicesImpl::ServicesImpl(Store * st)
+    : store(st),
+      WriteServLog(Logger::get()),
       searchDescriptors(),
-      handle(0),
-      mutex(),
-      strError()
+      handle(0)
 {
-pthread_mutex_init(&mutex, NULL);
 Read();
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::Add(const SERVICE_CONF & service, const ADMIN * admin)
+int ServicesImpl::Add(const ServiceConf & service, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->serviceChg)
     {
@@ -79,10 +78,10 @@ WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::Del(const std::string & name, const ADMIN * admin)
+int ServicesImpl::Del(const std::string & name, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->serviceChg)
     {
@@ -92,7 +91,7 @@ if (!priv->serviceChg)
     return -1;
     }
 
-iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
+iterator si(std::find(data.begin(), data.end(), ServiceConf(name)));
 
 if (si == data.end())
     {
@@ -123,10 +122,10 @@ WriteServLog("%s Service \'%s\' deleted.", admin->GetLogStr().c_str(), name.c_st
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::Change(const SERVICE_CONF & service, const ADMIN * admin)
+int ServicesImpl::Change(const ServiceConf & service, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->serviceChg)
     {
@@ -161,9 +160,9 @@ WriteServLog("%s Service \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Read()
+bool ServicesImpl::Read()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 std::vector<std::string> servicesList;
 if (store->GetServicesList(&servicesList) < 0)
     {
@@ -173,7 +172,7 @@ if (store->GetServicesList(&servicesList) < 0)
 
 for (size_t i = 0; i < servicesList.size(); i++)
     {
-    SERVICE_CONF service;
+    ServiceConf service;
 
     if (store->RestoreService(&service, servicesList[i]))
         {
@@ -186,15 +185,15 @@ for (size_t i = 0; i < servicesList.size(); i++)
 return false;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF * service) const
+bool ServicesImpl::Find(const std::string & name, ServiceConf * service) const
 {
 assert(service != NULL && "Pointer to service is not null");
 
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (data.empty())
     return true;
 
-const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(std::find(data.begin(), data.end(), ServiceConf(name)));
 
 if (si != data.end())
     {
@@ -205,15 +204,15 @@ if (si != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Find(const std::string & name, SERVICE_CONF_RES * service) const
+bool ServicesImpl::Find(const std::string & name, ServiceConfOpt * service) const
 {
 assert(service != NULL && "Pointer to service is not null");
 
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (data.empty())
     return true;
 
-const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(std::find(data.begin(), data.end(), ServiceConf(name)));
 
 if (si != data.end())
     {
@@ -224,16 +223,16 @@ if (si != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool SERVICES_IMPL::Exists(const std::string & name) const
+bool ServicesImpl::Exists(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (data.empty())
     {
     printfd(__FILE__, "No services in the system!\n");
     return true;
     }
 
-const_iterator si(std::find(data.begin(), data.end(), SERVICE_CONF(name)));
+const_iterator si(std::find(data.begin(), data.end(), ServiceConf(name)));
 
 if (si != data.end())
     return true;
@@ -241,17 +240,17 @@ if (si != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::OpenSearch() const
+int ServicesImpl::OpenSearch() const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 handle++;
 searchDescriptors[handle] = data.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::SearchNext(int h, SERVICE_CONF * service) const
+int ServicesImpl::SearchNext(int h, ServiceConf * service) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
     WriteServLog("SERVICES. Incorrect search handle.");
@@ -266,9 +265,9 @@ if (searchDescriptors[h] == data.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int SERVICES_IMPL::CloseSearch(int h) const
+int ServicesImpl::CloseSearch(int h) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));

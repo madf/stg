@@ -18,58 +18,54 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef CORPORATIONS_IMPL_H
-#define CORPORATIONS_IMPL_H
+#pragma once
 
 #include "stg/corporations.h"
 #include "stg/corp_conf.h"
 #include "stg/locker.h"
-#include "stg/store.h"
-#include "stg/noncopyable.h"
 #include "stg/logger.h"
 
 #include <vector>
 #include <map>
 #include <string>
+#include <mutex>
 
-#include <pthread.h>
+namespace STG
+{
 
-class ADMIN;
+struct Admin;
+struct Store;
 
-class CORPORATIONS_IMPL : private NONCOPYABLE, public CORPORATIONS {
+class CorporationsImpl : public Corporations {
 public:
-    explicit CORPORATIONS_IMPL(STORE * st);
-    virtual ~CORPORATIONS_IMPL() {}
+    explicit CorporationsImpl(Store* st);
 
-    int Add(const CORP_CONF & corp, const ADMIN * admin);
-    int Del(const std::string & name, const ADMIN * admin);
-    int Change(const CORP_CONF & corp, const ADMIN * admin);
-    bool Find(const std::string & name, CORP_CONF * corp);
-    bool Exists(const std::string & name) const;
-    const std::string & GetStrError() const { return strError; }
+    int Add(const CorpConf& corp, const Admin* admin) override;
+    int Del(const std::string& name, const Admin* admin) override;
+    int Change(const CorpConf& corp, const Admin* admin) override;
+    bool Find(const std::string& name, CorpConf* corp) override;
+    bool Exists(const std::string& name) const override;
+    const std::string& GetStrError() const override { return strError; }
 
-    size_t Count() const { return data.size(); }
+    size_t Count() const override { return data.size(); }
 
-    int OpenSearch() const;
-    int SearchNext(int, CORP_CONF * corp) const;
-    int CloseSearch(int) const;
+    int OpenSearch() const override;
+    int SearchNext(int, CorpConf* corp) const override;
+    int CloseSearch(int) const override;
 
 private:
-    CORPORATIONS_IMPL(const CORPORATIONS_IMPL & rvalue);
-    CORPORATIONS_IMPL & operator=(const CORPORATIONS_IMPL & rvalue);
-
-    typedef std::vector<CORP_CONF>::iterator       crp_iter;
-    typedef std::vector<CORP_CONF>::const_iterator const_crp_iter;
+    typedef std::vector<CorpConf>::iterator       crp_iter;
+    typedef std::vector<CorpConf>::const_iterator const_crp_iter;
 
     bool Read();
 
-    std::vector<CORP_CONF> data;
-    STORE * store;
-    STG_LOGGER & WriteServLog;
+    std::vector<CorpConf> data;
+    Store* store;
+    Logger& WriteServLog;
     mutable std::map<int, const_crp_iter> searchDescriptors;
     mutable unsigned int handle;
-    mutable pthread_mutex_t mutex;
+    mutable std::mutex mutex;
     std::string strError;
 };
 
-#endif
+}

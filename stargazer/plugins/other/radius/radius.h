@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_RADIUS_H__
-#define __STG_RADIUS_H__
+#pragma once
 
 #include "stg/auth.h"
 #include "stg/module_settings.h"
@@ -38,25 +37,27 @@
 #include <sys/select.h>
 #include <sys/types.h>
 
-extern "C" PLUGIN * GetPlugin();
+namespace STG
+{
+struct Store;
+struct Users;
+struct User;
+}
 
-class STORE;
-class USERS;
-
-class RADIUS : public AUTH {
+class RADIUS : public STG::Auth {
 public:
     RADIUS();
     virtual ~RADIUS() {}
 
-    void SetUsers(USERS* u) { m_users = u; }
-    void SetStore(STORE* s) { m_store = s; }
-    void SetStgSettings(const SETTINGS*) {}
-    void SetSettings(const MODULE_SETTINGS& s) { m_settings = s; }
+    void SetUsers(STG::Users* u) { m_users = u; }
+    void SetStore(STG::Store* s) { m_store = s; }
+    void SetStgSettings(const STG::Settings*) {}
+    void SetSettings(const STG::ModuleSettings& s) { m_settings = s; }
     int ParseSettings();
 
     int Start();
     int Stop();
-    int Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
+    int Reload(const STG::ModuleSettings & /*ms*/) { return 0; }
     bool IsRunning() { return m_running; }
 
     const std::string& GetStrError() const { return m_error; }
@@ -64,9 +65,9 @@ public:
     uint16_t GetStartPosition() const { return 30; }
     uint16_t GetStopPosition() const { return 30; }
 
-    int SendMessage(const STG_MSG&, uint32_t) const { return 0; }
+    int SendMessage(const STG::Message&, uint32_t) const { return 0; }
 
-    void authorize(const USER& user);
+    void authorize(const STG::User& user);
     void unauthorize(const std::string& login, const std::string& reason);
 
 private:
@@ -90,13 +91,13 @@ private:
     mutable std::string m_error;
     STG::Config m_config;
 
-    MODULE_SETTINGS m_settings;
+    STG::ModuleSettings m_settings;
 
     bool m_running;
     bool m_stopped;
 
-    USERS* m_users;
-    const STORE* m_store;
+    STG::Users* m_users;
+    const STG::Store* m_store;
 
     int m_listenSocket;
     std::deque<STG::Conn*> m_conns;
@@ -104,7 +105,5 @@ private:
 
     pthread_t m_thread;
 
-    PLUGIN_LOGGER m_logger;
+    STG::PluginLogger m_logger;
 };
-
-#endif

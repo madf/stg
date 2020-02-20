@@ -18,7 +18,10 @@
 
 void genVector(uint8_t * buf);
 
-std::ostream & operator<<(std::ostream & stream, const RAW_PACKET & p);
+namespace STG
+{
+std::ostream & operator<<(std::ostream & stream, const RawPacket & p);
+}
 
 namespace tut
 {
@@ -26,7 +29,7 @@ namespace tut
     };
 
     typedef test_group<rp_data> tg;
-    tg rp_test_group("RAW_PACKET tests group");
+    tg rp_test_group("STG::RawPacket tests group");
 
     typedef tg::object testobject;
 
@@ -36,7 +39,7 @@ namespace tut
     {
         set_test_name("Check structure consistency");
 
-        RAW_PACKET rp;
+        STG::RawPacket rp;
         rp.rawPacket.header.ipHeader.ip_v = 4;
         rp.rawPacket.header.ipHeader.ip_hl = 5;
         rp.rawPacket.header.ipHeader.ip_tos = 0;
@@ -65,15 +68,15 @@ namespace tut
         srand(time(NULL));
         for (size_t i = 0; i < ITERATIONS; ++i) {
             RAW_PACKET_OLD p1;
-            RAW_PACKET p2;
-            RAW_PACKET p3;
+            STG::RawPacket p2;
+            STG::RawPacket p3;
 
             uint8_t buf[68];
             genVector(buf);
 
             memcpy(p1.pckt, buf, 68);
-            memcpy(p2.rawPacket.pckt, buf, 68);
-            memcpy(p3.rawPacket.pckt, buf, 68);
+            memcpy(p2.rawPacket.data, buf, 68);
+            memcpy(p3.rawPacket.data, buf, 68);
 
             ensure_equals("IP versions", p1.GetIPVersion(), p2.GetIPVersion());
             ensure_equals("IP headers length", p1.GetHeaderLen(), p2.GetHeaderLen());
@@ -98,12 +101,12 @@ void genVector(uint8_t * buf)
     buf[0] = (buf[0] & 0xF0) | 0x05; // Fix header length
 }
 
-std::ostream & operator<<(std::ostream & stream, const RAW_PACKET & p)
+std::ostream & STG::operator<<(std::ostream & stream, const RawPacket & p)
 {
     stream.unsetf(std::ios::dec);
     stream.setf(std::ios::hex);
-    for (size_t i = 0; i < sizeof(p.rawPacket.pckt); ++i) {
-        stream << static_cast<unsigned>(p.rawPacket.pckt[i]);
+    for (size_t i = 0; i < sizeof(p.rawPacket.data); ++i) {
+        stream << static_cast<unsigned>(p.rawPacket.data[i]);
     }
     stream.unsetf(std::ios::hex);
     stream.setf(std::ios::dec);

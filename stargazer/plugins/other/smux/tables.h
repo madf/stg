@@ -6,8 +6,11 @@
 
 #include "sensors.h"
 
-class TARIFFS;
-class USERS;
+namespace STG
+{
+struct Tariffs;
+struct Users;
+}
 
 class TableSensor {
     public:
@@ -24,8 +27,8 @@ class TableSensor {
 class TariffUsersTable : public TableSensor {
     public:
         TariffUsersTable(const std::string & p,
-                         TARIFFS & t,
-                         USERS & u)
+                         STG::Tariffs & t,
+                         STG::Users & u)
             : TableSensor(p),
               tariffs(t),
               users(u)
@@ -35,8 +38,8 @@ class TariffUsersTable : public TableSensor {
         void UpdateSensors(Sensors & sensors) const;
 
     private:
-        TARIFFS & tariffs;
-        USERS & users;
+        STG::Tariffs & tariffs;
+        STG::Users & users;
 };
 
 typedef std::map<std::string, TableSensor *> Tables;

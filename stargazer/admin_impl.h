@@ -22,14 +22,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.14 $
- $Date: 2010/10/04 20:15:43 $
- $Author: faust $
- */
-
-#ifndef ADMIN_IMPL_H
-#define ADMIN_IMPL_H
+#pragma once
 
 #include "stg/admin.h"
 #include "stg/admin_conf.h"
@@ -37,35 +30,45 @@
 #include <string>
 #include <cstdint>
 
-class ADMIN_IMPL : public ADMIN {
-public:
-      ADMIN_IMPL();
-      explicit ADMIN_IMPL(const ADMIN_CONF & ac);
-      ADMIN_IMPL(const PRIV & priv,
-                 const std::string & login,
-                 const std::string & password);
-      virtual ~ADMIN_IMPL() {}
+namespace STG
+{
 
-      ADMIN_IMPL & operator=(const ADMIN_CONF &);
-      bool         operator==(const ADMIN_IMPL & rhs) const;
-      bool         operator!=(const ADMIN_IMPL & rhs) const;
-      bool         operator<(const ADMIN_IMPL & rhs) const;
-      bool         operator<=(const ADMIN_IMPL & rhs) const;
+class AdminImpl : public Admin {
+    public:
+          AdminImpl() noexcept : ip(0) {}
 
-      const std::string & GetPassword() const { return conf.password; }
-      const std::string & GetLogin() const { return conf.login; }
-      PRIV const *        GetPriv() const { return &conf.priv; }
-      uint32_t            GetPrivAsInt() const { return conf.priv.ToInt(); }
-      const ADMIN_CONF &  GetConf() const { return conf; }
-      void                Print() const;
-      uint32_t            GetIP() const { return ip; }
-      std::string         GetIPStr() const;
-      void                SetIP(uint32_t v) { ip = v; }
-      const std::string   GetLogStr() const;
+          explicit AdminImpl(const AdminConf& ac) noexcept : conf(ac), ip(0) {}
+          AdminImpl(const Priv& priv,
+                     const std::string& login,
+                     const std::string& password) noexcept
+              : conf(priv, login, password), ip(0)
+          {}
 
-private:
-      ADMIN_CONF        conf;
-      uint32_t          ip;
+          AdminImpl(const AdminImpl&) = default;
+          AdminImpl& operator=(const AdminImpl&) = default;
+          AdminImpl(AdminImpl&&) = default;
+          AdminImpl& operator=(AdminImpl&&) = default;
+
+          AdminImpl& operator=(const AdminConf& ac) noexcept { conf = ac; return *this; }
+          bool       operator==(const AdminImpl& rhs) const noexcept { return conf.login == rhs.conf.login; }
+          bool       operator!=(const AdminImpl& rhs) const noexcept { return !(*this == rhs); }
+          bool       operator<(const AdminImpl& rhs) const noexcept { return conf.login < rhs.conf.login; }
+          //bool       operator<=(const AdminImpl & rhs) const;
+
+          const std::string& GetPassword() const override { return conf.password; }
+          const std::string& GetLogin() const override { return conf.login; }
+          const Priv*        GetPriv() const override { return &conf.priv; }
+          uint32_t           GetPrivAsInt() const override { return conf.priv.toInt(); }
+          const AdminConf&   GetConf() const override { return conf; }
+          void               Print() const;
+          uint32_t           GetIP() const override { return ip; }
+          std::string        GetIPStr() const override;
+          void               SetIP(uint32_t v) override { ip = v; }
+          const std::string  GetLogStr() const override;
+
+    private:
+          AdminConf conf;
+          uint32_t  ip;
 };
 
-#endif
+}

@@ -20,7 +20,7 @@
 
 #include "chg_tariff.h"
 
-#include "resetable_utils.h"
+#include "optional_utils.h"
 
 #include "stg/tariff_conf.h"
 #include "stg/common.h"
@@ -35,67 +35,67 @@ namespace
 {
 
 template <typename A, typename T>
-void appendSlashedResetable(std::ostream & stream, const std::string & name, const A & array, T A::value_type:: * field)
+void appendSlashedResetable(std::ostream& stream, const std::string& name, const A& array, T A::value_type::* field)
 {
-std::string res;
-for (typename A::size_type i = 0; i < array.size(); ++i)
+    std::string res;
+    for (typename A::size_type i = 0; i < array.size(); ++i)
     {
-    if ((array[i].*field).empty()) // All values must be set
-        return;
-    if (!res.empty())
-        res += "/";
-    res += std::to_string((array[i].*field).data());
+        if ((array[i].*field).empty()) // All values must be set
+            return;
+        if (!res.empty())
+            res += "/";
+        res += std::to_string((array[i].*field).data());
     }
-stream << "<" << name << " value=\"" << res << "\"/>";
+    stream << "<" << name << " value=\"" << res << "\"/>";
 }
 
 } // namespace anonymous
 
-std::string CHG_TARIFF::Serialize(const TARIFF_DATA_RES & data, const std::string & /*encoding*/)
+std::string ChgTariff::serialize(const TariffDataOpt& data, const std::string& /*encoding*/)
 {
-std::ostringstream stream;
+    std::ostringstream stream;
 
-appendResetableTag(stream, "fee", data.tariffConf.fee);
-appendResetableTag(stream, "passiveCost", data.tariffConf.passiveCost);
-appendResetableTag(stream, "free", data.tariffConf.free);
+    appendResetableTag(stream, "fee", data.tariffConf.fee);
+    appendResetableTag(stream, "passiveCost", data.tariffConf.passiveCost);
+    appendResetableTag(stream, "free", data.tariffConf.free);
 
-if (!data.tariffConf.traffType.empty())
-    stream << "<traffType value=\"" + TARIFF::TraffTypeToString(data.tariffConf.traffType.data()) + "\"/>";
+    if (!data.tariffConf.traffType.empty())
+        stream << "<traffType value=\"" + Tariff::toString(data.tariffConf.traffType.data()) + "\"/>";
 
-if (!data.tariffConf.period.empty())
-    switch (data.tariffConf.period.data())
+    if (!data.tariffConf.period.empty())
+        switch (data.tariffConf.period.data())
         {
-        case TARIFF::DAY: stream << "<period value=\"day\"/>"; break;
-        case TARIFF::MONTH: stream << "<period value=\"month\"/>"; break;
+            case Tariff::DAY: stream << "<period value=\"day\"/>"; break;
+            case Tariff::MONTH: stream << "<period value=\"month\"/>"; break;
         }
 
-if (!data.tariffConf.changePolicy.empty())
-    switch (data.tariffConf.changePolicy.data())
+    if (!data.tariffConf.changePolicy.empty())
+        switch (data.tariffConf.changePolicy.data())
         {
-        case TARIFF::ALLOW: stream << "<changePolicy value=\"allow\"/>"; break;
-        case TARIFF::TO_CHEAP: stream << "<changePolicy value=\"to_cheap\"/>"; break;
-        case TARIFF::TO_EXPENSIVE: stream << "<changePolicy value=\"to_expensive\"/>"; break;
-        case TARIFF::DENY: stream << "<changePolicy value=\"deny\"/>"; break;
+            case Tariff::ALLOW: stream << "<changePolicy value=\"allow\"/>"; break;
+            case Tariff::TO_CHEAP: stream << "<changePolicy value=\"to_cheap\"/>"; break;
+            case Tariff::TO_EXPENSIVE: stream << "<changePolicy value=\"to_expensive\"/>"; break;
+            case Tariff::DENY: stream << "<changePolicy value=\"deny\"/>"; break;
         }
 
-appendResetableTag(stream, "changePolicyTimeout", data.tariffConf.changePolicyTimeout);
-for (size_t i = 0; i < DIR_NUM; ++i)
-    if (!data.dirPrice[i].hDay.empty() &&
-        !data.dirPrice[i].mDay.empty() &&
-        !data.dirPrice[i].hNight.empty() &&
-        !data.dirPrice[i].mNight.empty())
-        stream << "<time" << i << " value=\"" << data.dirPrice[i].hDay.data() << ":"
-                                              << data.dirPrice[i].mDay.data() << "-"
-                                              << data.dirPrice[i].hNight.data() << ":"
-                                              << data.dirPrice[i].mNight.data() << "\"/>";
+    appendResetableTag(stream, "changePolicyTimeout", data.tariffConf.changePolicyTimeout);
+    for (size_t i = 0; i < DIR_NUM; ++i)
+        if (!data.dirPrice[i].hDay.empty() &&
+            !data.dirPrice[i].mDay.empty() &&
+            !data.dirPrice[i].hNight.empty() &&
+            !data.dirPrice[i].mNight.empty())
+            stream << "<time" << i << " value=\"" << data.dirPrice[i].hDay.data() << ":"
+                                                  << data.dirPrice[i].mDay.data() << "-"
+                                                  << data.dirPrice[i].hNight.data() << ":"
+                                                  << data.dirPrice[i].mNight.data() << "\"/>";
 
-appendSlashedResetable(stream, "priceDayA", data.dirPrice, &DIRPRICE_DATA_RES::priceDayA);
-appendSlashedResetable(stream, "priceDayB", data.dirPrice, &DIRPRICE_DATA_RES::priceDayB);
-appendSlashedResetable(stream, "priceNightA", data.dirPrice, &DIRPRICE_DATA_RES::priceNightA);
-appendSlashedResetable(stream, "priceNightB", data.dirPrice, &DIRPRICE_DATA_RES::priceNightB);
-appendSlashedResetable(stream, "singlePrice", data.dirPrice, &DIRPRICE_DATA_RES::singlePrice);
-appendSlashedResetable(stream, "noDiscount", data.dirPrice, &DIRPRICE_DATA_RES::noDiscount);
-appendSlashedResetable(stream, "threshold", data.dirPrice, &DIRPRICE_DATA_RES::threshold);
+    appendSlashedResetable(stream, "priceDayA", data.dirPrice, &DirPriceDataOpt::priceDayA);
+    appendSlashedResetable(stream, "priceDayB", data.dirPrice, &DirPriceDataOpt::priceDayB);
+    appendSlashedResetable(stream, "priceNightA", data.dirPrice, &DirPriceDataOpt::priceNightA);
+    appendSlashedResetable(stream, "priceNightB", data.dirPrice, &DirPriceDataOpt::priceNightB);
+    appendSlashedResetable(stream, "singlePrice", data.dirPrice, &DirPriceDataOpt::singlePrice);
+    appendSlashedResetable(stream, "noDiscount", data.dirPrice, &DirPriceDataOpt::noDiscount);
+    appendSlashedResetable(stream, "threshold", data.dirPrice, &DirPriceDataOpt::threshold);
 
-return stream.str();
+    return stream.str();
 }

@@ -17,37 +17,37 @@
 /*
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
-
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <string>
 #include <vector>
 
-class SETTINGS {
-public:
-    virtual ~SETTINGS() {}
-    virtual const std::string &              GetDirName(size_t num) const = 0;
-    virtual const std::string &              GetScriptsDir() const = 0;
-    virtual unsigned                         GetDetailStatWritePeriod() const = 0;
-    virtual unsigned                         GetStatWritePeriod() const = 0;
-    virtual unsigned                         GetDayFee() const = 0;
-    virtual bool                             GetFullFee() const = 0;
-    virtual unsigned                         GetDayResetTraff() const = 0;
-    virtual bool                             GetSpreadFee() const = 0;
-    virtual bool                             GetFreeMbAllowInet() const = 0;
-    virtual bool                             GetDayFeeIsLastDay() const = 0;
-    virtual bool                             GetWriteFreeMbTraffCost() const = 0;
-    virtual bool                             GetShowFeeInCash() const = 0;
-    virtual unsigned                         GetMessageTimeout() const = 0;
-    virtual unsigned                         GetFeeChargeType() const = 0;
-    virtual bool                             GetReconnectOnTariffChange() const = 0;
-    virtual const std::string &              GetMonitorDir() const = 0;
-    virtual bool                             GetMonitoring() const = 0;
-    virtual const std::vector<std::string> & GetScriptParams() const = 0;
-    virtual bool                             GetDisableSessionLog() const = 0;
-    virtual const std::vector<std::string> & GetFilterParamsLog() const = 0;
-};
-//-----------------------------------------------------------------------------
+namespace STG
+{
 
-#endif
+struct Settings {
+    virtual ~Settings() = default;
+
+    virtual const std::string&              GetDirName(size_t num) const = 0;
+    virtual const std::string&              GetScriptsDir() const = 0;
+    virtual unsigned                        GetDetailStatWritePeriod() const = 0;
+    virtual unsigned                        GetStatWritePeriod() const = 0;
+    virtual unsigned                        GetDayFee() const = 0;
+    virtual bool                            GetFullFee() const = 0;
+    virtual unsigned                        GetDayResetTraff() const = 0;
+    virtual bool                            GetSpreadFee() const = 0;
+    virtual bool                            GetFreeMbAllowInet() const = 0;
+    virtual bool                            GetDayFeeIsLastDay() const = 0;
+    virtual bool                            GetWriteFreeMbTraffCost() const = 0;
+    virtual bool                            GetShowFeeInCash() const = 0;
+    virtual unsigned                        GetMessageTimeout() const = 0;
+    virtual unsigned                        GetFeeChargeType() const = 0;
+    virtual bool                            GetReconnectOnTariffChange() const = 0;
+    virtual const std::string&              GetMonitorDir() const = 0;
+    virtual bool                            GetMonitoring() const = 0;
+    virtual const std::vector<std::string>& GetScriptParams() const = 0;
+    virtual bool                            GetDisableSessionLog() const = 0;
+    virtual const std::vector<std::string>& GetFilterParamsLog() const = 0;
+};
+
+}

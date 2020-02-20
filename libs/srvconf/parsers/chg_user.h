@@ -19,41 +19,40 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_USER_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_CHG_USER_H__
+#pragma once
 
 #include "base.h"
 
 #include "stg/servconf_types.h"
 
-struct USER_CONF_RES;
-struct USER_STAT_RES;
-
 namespace STG
 {
-namespace CHG_USER
+
+struct UserConfOpt;
+struct UserStatOpt;
+
+namespace ChgUser
 {
 
-class PARSER: public STG::PARSER
+class Parser: public STG::Parser
 {
-public:
-    PARSER(SIMPLE::CALLBACK f, void * data, const std::string & encoding);
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void Failure(const std::string & reason) { callback(false, reason, data); }
+    public:
+        Parser(Simple::Callback f, void* data, const std::string& encoding);
 
-private:
-    SIMPLE::CALLBACK callback;
-    void * data;
-    std::string encoding;
-    int depth;
+        int  ParseStart(const char* el, const char** attr) override;
+        void ParseEnd(const char* el) override;
+        void Failure(const std::string & reason) override { callback(false, reason, data); }
 
-    void ParseAnswer(const char * el, const char ** attr);
+    private:
+        Simple::Callback callback;
+        void* data;
+        std::string encoding;
+        int depth;
+
+        void ParseAnswer(const char* el, const char** attr);
 };
 
-std::string Serialize(const USER_CONF_RES & conf, const USER_STAT_RES & stat, const std::string & encoding);
+std::string serialize(const UserConfOpt& conf, const UserStatOpt& stat, const std::string& encoding);
 
-} // namespace CHG_USER
+} // namespace ChgUser
 } // namespace STG
-
-#endif

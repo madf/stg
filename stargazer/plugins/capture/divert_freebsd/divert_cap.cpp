@@ -22,6 +22,21 @@
 $Revision: 1.13 $
 $Date: 2010/09/10 06:43:03 $
 */
+
+#include "divert_cap.h"
+
+#include "stg/common.h"
+#include "stg/traffcounter.h"
+
+#include <algorithm>
+#include <vector>
+
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
+#include <cstdlib>
+#include <csignal>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -33,20 +48,6 @@ $Date: 2010/09/10 06:43:03 $
 
 #include <fcntl.h>
 #include <unistd.h>
-
-#include <cstdio>
-#include <cstring>
-#include <cerrno>
-#include <cstdlib>
-#include <csignal>
-
-#include <algorithm>
-#include <vector>
-
-#include "stg/common.h"
-#include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
-#include "divert_cap.h"
 
 #define BUFF_LEN (16384) /* max mtu -> lo=16436  TODO why?*/
 
@@ -62,18 +63,11 @@ DIVERT_DATA cddiv;  //capture data
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-namespace
-{
-PLUGIN_CREATOR<DIVERT_CAP> dcc;
-}
 
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+extern "C" Plugin* GetPlugin()
 {
-return dcc.GetPlugin();
+    static DIVERT_CAP plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -89,7 +83,7 @@ DIVERT_CAP::DIVERT_CAP()
       nonstop(false),
       isRunning(false),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_divert"))
+      logger(PluginLogger::get("cap_divert"))
 {
 }
 //-----------------------------------------------------------------------------

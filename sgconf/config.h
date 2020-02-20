@@ -18,11 +18,10 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_CONFIG_H__
-#define __STG_SGCONF_CONFIG_H__
+#pragma once
 
 #include "stg/common.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 #include <cstdint>
@@ -32,14 +31,14 @@ namespace SGCONF
 
 struct CONFIG
 {
-    RESETABLE<std::string> configFile;
-    RESETABLE<std::string> server;
-    RESETABLE<uint16_t> port;
-    RESETABLE<std::string> localAddress;
-    RESETABLE<uint16_t> localPort;
-    RESETABLE<std::string> userName;
-    RESETABLE<std::string> userPass;
-    RESETABLE<bool> showConfig;
+    STG::Optional<std::string> configFile;
+    STG::Optional<std::string> server;
+    STG::Optional<uint16_t> port;
+    STG::Optional<std::string> localAddress;
+    STG::Optional<uint16_t> localPort;
+    STG::Optional<std::string> userName;
+    STG::Optional<std::string> userPass;
+    STG::Optional<bool> showConfig;
 
     CONFIG & operator=(const CONFIG & rhs)
     {
@@ -84,5 +83,3 @@ struct CONFIG
 };
 
 } // namespace SGCONF
-
-#endif

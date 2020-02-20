@@ -24,7 +24,7 @@
 
 using namespace STG;
 
-AUTH_BY::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+AuthBy::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
@@ -33,48 +33,48 @@ AUTH_BY::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
 {
 }
 //-----------------------------------------------------------------------------
-int AUTH_BY::PARSER::ParseStart(const char *el, const char **attr)
+int AuthBy::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
+    depth++;
+    if (depth == 1)
     {
-    if (strcasecmp(el, "AuthorizedBy") == 0)
-        if (attr && attr[0] && attr[1])
+        if (strcasecmp(el, "AuthorizedBy") == 0)
+            if (attr && attr[0] && attr[1])
             {
-            if (strcasecmp(attr[1], "error") == 0)
+                if (strcasecmp(attr[1], "error") == 0)
                 {
-                if (attr[2] && attr[3])
-                    error = attr[3];
-                else
-                    error = "User not found.";
+                    if (attr[2] && attr[3])
+                        error = attr[3];
+                    else
+                        error = "User not found.";
                 }
-            else
-                parsingAnswer = true;
+                else
+                    parsingAnswer = true;
             }
     }
-else
+    else
     {
-    if (depth == 2)
+        if (depth == 2)
         {
-        if (parsingAnswer && strcasecmp(el, "Auth") == 0)
+            if (parsingAnswer && strcasecmp(el, "Auth") == 0)
             {
-            if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "name") == 0)
-                info.push_back(attr[1]);
-            return 0;
+                if (attr && attr[0] && attr[1] && strcasecmp(attr[0], "name") == 0)
+                    info.push_back(attr[1]);
+                return 0;
             }
         }
     }
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void AUTH_BY::PARSER::ParseEnd(const char * /*el*/)
+void AuthBy::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0)
+    depth--;
+    if (depth == 0)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    info.clear();
-    error.clear();
+        if (callback)
+            callback(error.empty(), error, info, data);
+        info.clear();
+        error.clear();
     }
 }

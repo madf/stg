@@ -61,347 +61,345 @@
 
 #define START_FILE "/._ST_ART_ED_"
 
+using STG::SettingsImpl;
+using STG::AdminsImpl;
+using STG::TraffCounterImpl;
+using STG::UsersImpl;
+using STG::TariffsImpl;
+using STG::ServicesImpl;
+using STG::CorporationsImpl;
+using STG::StoreLoader;
+
 namespace
 {
 std::set<pid_t> executers;
 
 void StartTimer();
-int StartScriptExecuter(char * procName, int msgKey, int * msgID);
-int ForkAndWait(const std::string & confDir);
+int StartScriptExecuter(char* procName, int msgKey, int* msgID);
+int ForkAndWait(const std::string& confDir);
 void KillExecuters();
 
 //-----------------------------------------------------------------------------
 void StartTimer()
 {
-STG_LOGGER & WriteServLog = GetStgLogger();
+    auto& WriteServLog = STG::Logger::get();
 
-if (RunStgTimer())
+    if (RunStgTimer())
     {
-    WriteServLog("Cannot start timer. Fatal.");
-    //printfd(__FILE__, "Cannot start timer. Fatal.\n");
-    exit(1);
+        WriteServLog("Cannot start timer. Fatal.");
+        exit(1);
     }
-else
-    {
-    WriteServLog("Timer thread started successfully.");
-    //printfd(__FILE__, "Timer thread started successfully.\n");
-    }
+    else
+        WriteServLog("Timer thread started successfully.");
 }
 //-----------------------------------------------------------------------------
 #if defined(LINUX) || defined(DARWIN)
-int StartScriptExecuter(char * procName, int msgKey, int * msgID)
+int StartScriptExecuter(char* procName, int msgKey, int* msgID)
 #else
-int StartScriptExecuter(char *, int msgKey, int * msgID)
+int StartScriptExecuter(char*, int msgKey, int* msgID)
 #endif
 {
-STG_LOGGER & WriteServLog = GetStgLogger();
+    auto& WriteServLog = STG::Logger::get();
 
-if (*msgID == -11)   // If msgID == -11 - first call. Create queue
+    if (*msgID == -11)   // If msgID == -11 - first call. Create queue
     {
-    for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 2; i++)
         {
-        *msgID = msgget(msgKey, IPC_CREAT | IPC_EXCL | 0600);
+            *msgID = msgget(msgKey, IPC_CREAT | IPC_EXCL | 0600);
 
-        if (*msgID == -1)
-            {
-            *msgID = msgget(msgKey, 0);
             if (*msgID == -1)
-                {
-                WriteServLog("Message queue not created.");
-                return -1;
-                }
-            else
-                {
-                msgctl(*msgID, IPC_RMID, NULL);
-                }
-            }
-        else
             {
-            WriteServLog("Message queue created successfully. msgKey=%d msgID=%d", msgKey, *msgID);
-            break;
+                *msgID = msgget(msgKey, 0);
+                if (*msgID == -1)
+                {
+                    WriteServLog("Message queue not created.");
+                    return -1;
+                }
+                else
+                    msgctl(*msgID, IPC_RMID, NULL);
+            }
+            else
+            {
+                WriteServLog("Message queue created successfully. msgKey=%d msgID=%d", msgKey, *msgID);
+                break;
             }
         }
     }
 
-pid_t pid = fork();
+    const auto pid = fork();
 
-switch (pid)
+    switch (pid)
     {
-    case -1:
-        WriteServLog("Fork error!");
-        return -1;
+        case -1:
+            WriteServLog("Fork error!");
+            return -1;
 
-    case 0:
+        case 0:
 #if defined(LINUX) || defined(DARWIN)
-        Executer(*msgID, pid, procName);
-#else
-        Executer(*msgID, pid);
-#endif
-        return 1;
-
-    default:
-        if (executers.empty()) {
-#if defined(LINUX) || defined(DARWIN)
-            Executer(*msgID, pid, NULL);
+            Executer(*msgID, pid, procName);
 #else
             Executer(*msgID, pid);
 #endif
-        }
-        executers.insert(pid);
+            return 1;
+
+        default:
+            if (executers.empty()) {
+#if defined(LINUX) || defined(DARWIN)
+                Executer(*msgID, pid, NULL);
+#else
+                Executer(*msgID, pid);
+#endif
+            }
+            executers.insert(pid);
     }
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
 #ifndef NO_DAEMON
-int ForkAndWait(const std::string & confDir)
+int ForkAndWait(const std::string& confDir)
 #else
-int ForkAndWait(const std::string &)
+int ForkAndWait(const std::string&)
 #endif
 {
 #ifndef NO_DAEMON
-pid_t pid = fork();
-std::string startFile = confDir + START_FILE;
-unlink(startFile.c_str());
+    const auto pid = fork();
+    const auto startFile = confDir + START_FILE;
+    unlink(startFile.c_str());
 
-switch (pid)
+    switch (pid)
     {
-    case -1:
-        return -1;
-        break;
+        case -1:
+            return -1;
+            break;
 
-    case 0:
-        close(1);
-        close(2);
-        setsid();
-        break;
+        case 0:
+            close(1);
+            close(2);
+            setsid();
+            break;
 
-    default:
-        struct timespec ts = {0, 200000000};
-        for (int i = 0; i < 120 * 5; i++)
+        default:
+            struct timespec ts = {0, 200000000};
+            for (int i = 0; i < 120 * 5; i++)
             {
-            if (access(startFile.c_str(), F_OK) == 0)
+                if (access(startFile.c_str(), F_OK) == 0)
                 {
-                unlink(startFile.c_str());
-                exit(0);
+                    unlink(startFile.c_str());
+                    exit(0);
                 }
 
-            nanosleep(&ts, NULL);
+                nanosleep(&ts, NULL);
             }
-        unlink(startFile.c_str());
-        exit(1);
-        break;
+            unlink(startFile.c_str());
+            exit(1);
+            break;
     }
 #endif
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
-std::set<pid_t>::iterator pid(executers.begin());
-while (pid != executers.end())
+    auto pid = executers.begin();
+    while (pid != executers.end())
     {
-    printfd(__FILE__, "KillExecuters pid=%d\n", *pid);
-    kill(*pid, SIGUSR1);
-    ++pid;
+        printfd(__FILE__, "KillExecuters pid=%d\n", *pid);
+        kill(*pid, SIGUSR1);
+        ++pid;
     }
 }
 //-----------------------------------------------------------------------------
 } // namespace anonymous
 //-----------------------------------------------------------------------------
-int main(int argc, char * argv[])
+int main(int argc, char* argv[])
 {
-int msgID = -11;
+    int msgID = -11;
 
-GetStgLogger().SetLogFileName("/var/log/stargazer.log");
+    STG::Logger::get().setFileName("/var/log/stargazer.log");
 
-if (getuid())
+    if (getuid())
     {
-    printf("You must be root. Exit.\n");
-    return 1;
+        printf("You must be root. Exit.\n");
+        return 1;
     }
 
-SETTINGS_IMPL settings(argc == 2 ? argv[1] : "");
+    SettingsImpl settings(argc == 2 ? argv[1] : "");
 
-if (settings.ReadSettings())
+    if (settings.ReadSettings())
     {
-    STG_LOGGER & WriteServLog = GetStgLogger();
+        auto& WriteServLog = STG::Logger::get();
 
-    if (settings.GetLogFileName() != "")
-        WriteServLog.SetLogFileName(settings.GetLogFileName());
+        if (settings.GetLogFileName() != "")
+            WriteServLog.setFileName(settings.GetLogFileName());
 
-    WriteServLog("ReadSettings error. %s", settings.GetStrError().c_str());
-    return -1;
-    }
-
-#ifndef NO_DAEMON
-std::string startFile(settings.GetConfDir() + START_FILE);
-#endif
-
-if (ForkAndWait(settings.GetConfDir()) < 0)
-    {
-    STG_LOGGER & WriteServLog = GetStgLogger();
-    WriteServLog("Fork error!");
-    return -1;
-    }
-
-STG_LOGGER & WriteServLog = GetStgLogger();
-WriteServLog.SetLogFileName(settings.GetLogFileName());
-WriteServLog("Stg v. %s", SERVER_VERSION);
-
-for (size_t i = 0; i < settings.GetExecutersNum(); i++)
-    {
-    int ret = StartScriptExecuter(argv[0], settings.GetExecMsgKey(), &msgID);
-    if (ret < 0)
-        {
-        STG_LOGGER & WriteServLog = GetStgLogger();
-        WriteServLog("Start Script Executer error!");
+        WriteServLog("ReadSettings error. %s", settings.GetStrError().c_str());
         return -1;
-        }
-    if (ret == 1)
-        {
-        // Stopping child
-        return 0;
-        }
     }
-
-PIDFile pidFile(settings.GetPIDFileName());
-
-struct sigaction sa;
-memset(&sa, 0, sizeof(sa));
-sa.sa_handler = SIG_DFL;
-sigaction(SIGHUP, &sa, NULL); // Apparently FreeBSD ignores SIGHUP by default when launched from rc.d at bot time.
-
-sigset_t signalSet;
-sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
-
-StartTimer();
-WaitTimer();
-if (!IsStgTimerRunning())
-    {
-    printfd(__FILE__, "Timer thread not started in 1 sec!\n");
-    WriteServLog("Timer thread not started in 1 sec!");
-    return -1;
-    }
-
-EVENT_LOOP & loop(EVENT_LOOP_SINGLETON::GetInstance());
-
-STORE_LOADER storeLoader(settings);
-if (storeLoader.Load())
-    {
-    printfd(__FILE__, "Storage plugin: '%s'\n", storeLoader.GetStrError().c_str());
-    WriteServLog("Storage plugin: '%s'", storeLoader.GetStrError().c_str());
-    return -1;
-    }
-
-if (loop.Start())
-    {
-    printfd(__FILE__, "Event loop not started.\n");
-    WriteServLog("Event loop not started.");
-    return -1;
-    }
-
-STORE & store(storeLoader.GetStore());
-WriteServLog("Storage plugin: %s. Loading successfull.", store.GetVersion().c_str());
-
-ADMINS_IMPL admins(&store);
-TARIFFS_IMPL tariffs(&store);
-SERVICES_IMPL services(&store);
-CORPORATIONS_IMPL corps(&store);
-USERS_IMPL users(&settings, &store, &tariffs, services, admins.GetSysAdmin());
-TRAFFCOUNTER_IMPL traffCnt(&users, settings.GetRulesFileName());
-traffCnt.SetMonitorDir(settings.GetMonitorDir());
-
-if (users.Start())
-    return -1;
-
-WriteServLog("Users started successfully.");
-
-if (traffCnt.Start())
-    return -1;
-
-WriteServLog("Traffcounter started successfully.");
-
-STG::PluginManager manager(settings, store, admins, tariffs, services, corps, users, traffCnt);
-
-srandom(static_cast<unsigned int>(stgTime));
-
-WriteServLog("Stg started successfully.");
-WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
 #ifndef NO_DAEMON
-creat(startFile.c_str(), S_IRUSR);
+    const auto startFile = settings.GetConfDir() + START_FILE;
 #endif
 
-bool running = true;
-while (running)
+    if (ForkAndWait(settings.GetConfDir()) < 0)
     {
-    sigfillset(&signalSet);
-    int sig = 0;
-    sigwait(&signalSet, &sig);
-    int status;
-    switch (sig)
+        STG::Logger::get()("Fork error!");
+        return -1;
+    }
+
+    auto& WriteServLog = STG::Logger::get();
+    WriteServLog.setFileName(settings.GetLogFileName());
+    WriteServLog("Stg v. %s", SERVER_VERSION);
+
+    for (size_t i = 0; i < settings.GetExecutersNum(); i++)
+    {
+        auto ret = StartScriptExecuter(argv[0], settings.GetExecMsgKey(), &msgID);
+        if (ret < 0)
         {
-        case SIGHUP:
+            STG::Logger::get()("Start Script Executer error!");
+            return -1;
+        }
+        if (ret == 1)
+            return 0;
+    }
+
+    PIDFile pidFile(settings.GetPIDFileName());
+
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SIG_DFL;
+    sigaction(SIGHUP, &sa, NULL); // Apparently FreeBSD ignores SIGHUP by default when launched from rc.d at bot time.
+
+    sigset_t signalSet;
+    sigfillset(&signalSet);
+    pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
+    StartTimer();
+    WaitTimer();
+    if (!IsStgTimerRunning())
+    {
+        printfd(__FILE__, "Timer thread not started in 1 sec!\n");
+        WriteServLog("Timer thread not started in 1 sec!");
+        return -1;
+    }
+
+    auto& loop = EVENT_LOOP_SINGLETON::GetInstance();
+
+    StoreLoader storeLoader(settings);
+    if (storeLoader.load())
+    {
+        printfd(__FILE__, "Storage plugin: '%s'\n", storeLoader.GetStrError().c_str());
+        WriteServLog("Storage plugin: '%s'", storeLoader.GetStrError().c_str());
+        return -1;
+    }
+
+    if (loop.Start())
+    {
+        printfd(__FILE__, "Event loop not started.\n");
+        WriteServLog("Event loop not started.");
+        return -1;
+    }
+
+    auto& store = storeLoader.get();
+    WriteServLog("Storage plugin: %s. Loading successfull.", store.GetVersion().c_str());
+
+    AdminsImpl admins(&store);
+    TariffsImpl tariffs(&store);
+    ServicesImpl services(&store);
+    CorporationsImpl corps(&store);
+    UsersImpl users(&settings, &store, &tariffs, services, admins.GetSysAdmin());
+    TraffCounterImpl traffCnt(&users, settings.GetRulesFileName());
+    traffCnt.SetMonitorDir(settings.GetMonitorDir());
+
+    if (users.Start())
+        return -1;
+
+    WriteServLog("Users started successfully.");
+
+    if (traffCnt.Start())
+        return -1;
+
+    WriteServLog("Traffcounter started successfully.");
+
+    STG::PluginManager manager(settings, store, admins, tariffs, services, corps, users, traffCnt);
+
+    srandom(static_cast<unsigned int>(stgTime));
+
+    WriteServLog("Stg started successfully.");
+    WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
+
+#ifndef NO_DAEMON
+    creat(startFile.c_str(), S_IRUSR);
+#endif
+
+    bool running = true;
+    while (running)
+    {
+        sigfillset(&signalSet);
+        int sig = 0;
+        sigwait(&signalSet, &sig);
+        int status;
+        switch (sig)
+        {
+            case SIGHUP:
             {
-            SETTINGS_IMPL newSettings(settings);
-            if (newSettings.ReadSettings())
-                WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
-            else
-                settings = newSettings;
-            WriteServLog.SetLogFileName(settings.GetLogFileName());
-            traffCnt.Reload();
-            manager.reload(settings);
+                SettingsImpl newSettings(settings);
+                if (newSettings.ReadSettings())
+                    WriteServLog("ReadSettings error. %s", newSettings.GetStrError().c_str());
+                else
+                    settings = newSettings;
+                WriteServLog.setFileName(settings.GetLogFileName());
+                traffCnt.Reload();
+                manager.reload(settings);
+                break;
             }
-            break;
-        case SIGTERM:
-            running = false;
-            break;
-        case SIGINT:
-            running = false;
-            break;
-        case SIGPIPE:
-            WriteServLog("Broken pipe!");
-            break;
-        case SIGCHLD:
-            executers.erase(waitpid(-1, &status, WNOHANG));
-            if (executers.empty())
+            case SIGTERM:
                 running = false;
-            break;
-        default:
-            WriteServLog("Ignore signal %d", sig);
-            break;
+                break;
+            case SIGINT:
+                running = false;
+                break;
+            case SIGPIPE:
+                WriteServLog("Broken pipe!");
+                break;
+            case SIGCHLD:
+                executers.erase(waitpid(-1, &status, WNOHANG));
+                if (executers.empty())
+                    running = false;
+                break;
+            default:
+                WriteServLog("Ignore signal %d", sig);
+                break;
         }
     }
 
-WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
+    WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-manager.stop();
+    manager.stop();
 
-if (loop.Stop())
-    WriteServLog("Event loop not stopped.");
+    if (loop.Stop())
+        WriteServLog("Event loop not stopped.");
 
-if (!traffCnt.Stop())
-    WriteServLog("Traffcounter: Stop successfull.");
+    if (!traffCnt.Stop())
+        WriteServLog("Traffcounter: Stop successfull.");
 
-if (!users.Stop())
-    WriteServLog("Users: Stop successfull.");
+    if (!users.Stop())
+        WriteServLog("Users: Stop successfull.");
 
-sleep(1);
-int res = msgctl(msgID, IPC_RMID, NULL);
-if (res)
-    WriteServLog("Queue was not removed. id=%d", msgID);
-else
-    WriteServLog("Queue removed successfully.");
+    sleep(1);
+    int res = msgctl(msgID, IPC_RMID, NULL);
+    if (res)
+        WriteServLog("Queue was not removed. id=%d", msgID);
+    else
+        WriteServLog("Queue removed successfully.");
 
-KillExecuters();
+    KillExecuters();
 
-StopStgTimer();
-WriteServLog("StgTimer: Stop successfull.");
+    StopStgTimer();
+    WriteServLog("StgTimer: Stop successfull.");
 
-WriteServLog("Stg stopped successfully.");
-WriteServLog("---------------------------------------------");
+    WriteServLog("Stg stopped successfully.");
+    WriteServLog("---------------------------------------------");
 
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------

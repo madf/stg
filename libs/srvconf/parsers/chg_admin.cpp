@@ -27,14 +27,14 @@
 
 using namespace STG;
 
-std::string CHG_ADMIN::Serialize(const ADMIN_CONF_RES & conf, const std::string & /*encoding*/)
+std::string ChgAdmin::serialize(const AdminConfOpt& conf, const std::string& /*encoding*/)
 {
-std::string params;
-if (!conf.login.empty())
-    params += " login=\"" + conf.login.data() + "\"";
-if (!conf.password.empty())
-    params += " password=\"" + conf.password.data() + "\"";
-if (!conf.priv.empty())
-    params += " priv=\"" + std::to_string(conf.priv.data().ToInt()) + "\"";
-return params;
+    std::string params;
+    if (!conf.login.empty())
+        params += " login=\"" + conf.login.data() + "\"";
+    if (!conf.password.empty())
+        params += " password=\"" + conf.password.data() + "\"";
+    if (!conf.priv.empty())
+        params += " priv=\"" + std::to_string(conf.priv.data().toInt()) + "\"";
+    return params;
 }

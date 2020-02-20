@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_AUTH_BY_H__
+#pragma once
 
 #include "base.h"
 
@@ -29,28 +28,27 @@
 
 namespace STG
 {
-namespace AUTH_BY
+namespace AuthBy
 {
 
-class PARSER: public STG::PARSER
+class Parser: public STG::Parser
 {
-public:
-    PARSER(CALLBACK f, void * data, const std::string & encoding);
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void Failure(const std::string & reason) { callback(false, reason, info, data); }
+    public:
+        Parser(Callback f, void* data, const std::string& encoding);
 
-private:
-    CALLBACK callback;
-    void * data;
-    std::string encoding;
-    int depth;
-    bool parsingAnswer;
-    INFO info;
-    std::string error;
+        int  ParseStart(const char* el, const char** attr) override;
+        void ParseEnd(const char* el) override;
+        void Failure(const std::string& reason) override { callback(false, reason, info, data); }
+
+    private:
+        Callback callback;
+        void* data;
+        std::string encoding;
+        int depth;
+        bool parsingAnswer;
+        Info info;
+        std::string error;
 };
 
-} // namespace AUTH_BY
+} // namespace AuthBy
 } // namespace STG
-
-#endif

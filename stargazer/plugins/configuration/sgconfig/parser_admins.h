@@ -19,21 +19,21 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_ADMINS_H__
-#define __STG_SGCONFIG_PARSER_ADMINS_H__
+#pragma once
 
 #include "parser.h"
 
 #include "stg/common.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 
-class ADMINS;
-class ADMIN;
-
 namespace STG
 {
+
+struct Admins;
+struct Admin;
+
 namespace PARSER
 {
 
@@ -43,21 +43,21 @@ class GET_ADMINS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(const ADMINS & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_ADMINS(admin, m_admins); }
-                static void Register(REGISTRY & registry, const ADMINS & admins)
+                explicit FACTORY(const Admins & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new GET_ADMINS(admin, m_admins); }
+                static void Register(REGISTRY & registry, const Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
-                const ADMINS & m_admins;
+                const Admins & m_admins;
         };
 
         static const char * tag;
 
-        GET_ADMINS(const ADMIN & admin, const ADMINS & admins)
+        GET_ADMINS(const Admin & admin, const Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
 
     private:
-        const ADMINS & m_admins;
+        const Admins & m_admins;
 
         void CreateAnswer();
 };
@@ -68,23 +68,23 @@ class ADD_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_ADMIN(admin, m_admins); }
-                static void Register(REGISTRY & registry, ADMINS & admins)
+                explicit FACTORY(Admins & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
-                ADMINS & m_admins;
+                Admins & m_admins;
         };
 
         static const char * tag;
 
-        ADD_ADMIN(const ADMIN & admin, ADMINS & admins)
+        ADD_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         std::string m_admin;
-        ADMINS & m_admins;
+        Admins & m_admins;
 
         void CreateAnswer();
 };
@@ -95,23 +95,23 @@ class DEL_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_ADMIN(admin, m_admins); }
-                static void Register(REGISTRY & registry, ADMINS & admins)
+                explicit FACTORY(Admins & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
-                ADMINS & m_admins;
+                Admins & m_admins;
         };
 
         static const char * tag;
 
-        DEL_ADMIN(const ADMIN & admin, ADMINS & admins)
+        DEL_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         std::string m_admin;
-        ADMINS & m_admins;
+        Admins & m_admins;
 
         void CreateAnswer();
 };
@@ -122,30 +122,28 @@ class CHG_ADMIN: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(ADMINS & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_ADMIN(admin, m_admins); }
-                static void Register(REGISTRY & registry, ADMINS & admins)
+                explicit FACTORY(Admins & admins) : m_admins(admins) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_ADMIN(admin, m_admins); }
+                static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
-                ADMINS & m_admins;
+                Admins & m_admins;
         };
 
         static const char * tag;
 
-        CHG_ADMIN(const ADMIN & admin, ADMINS & admins)
+        CHG_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         std::string login;
-        RESETABLE<std::string> password;
-        RESETABLE<std::string> privAsString;
-        ADMINS & m_admins;
+        Optional<std::string> password;
+        Optional<std::string> privAsString;
+        Admins & m_admins;
 
         void CreateAnswer();
 };
 
 } // namespace PARSER
 } // namespace STG
-
-#endif

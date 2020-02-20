@@ -19,8 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef CONFIGPROTO_H
-#define CONFIGPROTO_H
+#pragma once
 
 #include "parser.h"
 
@@ -34,17 +33,17 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-class SETTINGS;
-class ADMINS;
-class TARIFFS;
-class USERS;
-class SERVICES;
-class CORPORATIONS;
-class STORE;
-class PLUGIN_LOGGER;
-
 namespace STG
 {
+
+struct Settings;
+struct Admins;
+struct Tariffs;
+struct Users;
+struct Services;
+struct Corporations;
+struct Store;
+class PluginLogger;
 
 class Conn;
 
@@ -52,18 +51,18 @@ class Conn;
 
 class CONFIGPROTO {
 public:
-    explicit CONFIGPROTO(PLUGIN_LOGGER & l);
+    explicit CONFIGPROTO(STG::PluginLogger & l);
     ~CONFIGPROTO();
 
     void SetPort(uint16_t port) { m_port = port; }
     void SetBindAddress(const std::string & address) { m_bindAddress = address; }
-    void SetSettings(const SETTINGS * settings) { m_settings = settings; }
-    void SetAdmins(ADMINS * admins) { m_admins = admins; }
-    void SetTariffs(TARIFFS * tariffs) { m_tariffs = tariffs; }
-    void SetUsers(USERS * users) { m_users = users; }
-    void SetStore(STORE * store) { m_store = store; }
-    void SetServices(SERVICES * services) { m_services = services; }
-    void SetCorporations(CORPORATIONS * corporations) { m_corporations = corporations; }
+    void SetSettings(const STG::Settings * settings) { m_settings = settings; }
+    void SetAdmins(STG::Admins * admins) { m_admins = admins; }
+    void SetTariffs(STG::Tariffs * tariffs) { m_tariffs = tariffs; }
+    void SetUsers(STG::Users * users) { m_users = users; }
+    void SetStore(STG::Store * store) { m_store = store; }
+    void SetServices(STG::Services * services) { m_services = services; }
+    void SetCorporations(STG::Corporations * corporations) { m_corporations = corporations; }
 
     int Prepare();
     int Stop();
@@ -74,19 +73,19 @@ private:
     CONFIGPROTO(const CONFIGPROTO & rvalue);
     CONFIGPROTO & operator=(const CONFIGPROTO & rvalue);
 
-    const SETTINGS * m_settings;
-    ADMINS *         m_admins;
-    TARIFFS *        m_tariffs;
-    USERS *          m_users;
-    SERVICES *       m_services;
-    CORPORATIONS *   m_corporations;
-    STORE *          m_store;
+    const STG::Settings * m_settings;
+    STG::Admins *         m_admins;
+    STG::Tariffs *        m_tariffs;
+    STG::Users *          m_users;
+    STG::Services *       m_services;
+    STG::Corporations *   m_corporations;
+    STG::Store *          m_store;
 
     uint16_t         m_port;
     std::string      m_bindAddress;
     bool             m_running;
     bool             m_stopped;
-    PLUGIN_LOGGER &  m_logger;
+    STG::PluginLogger &   m_logger;
     int              m_listenSocket;
 
     std::string      m_errorStr;
@@ -104,5 +103,3 @@ private:
     void HandleEvents(const fd_set & fds);
     void AcceptConnection();
 };
-
-#endif //CONFIGPROTO_H

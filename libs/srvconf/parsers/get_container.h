@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_CONTAINER_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_GET_CONTAINER_H__
+#pragma once
 
 #include "base.h"
 
@@ -29,76 +28,76 @@
 
 namespace STG
 {
-namespace GET_CONTAINER
+namespace GetContainer
 {
 
-template <typename ELEMENT_PARSER>
-class PARSER: public STG::PARSER
+template <typename ElementParser>
+class Parser: public STG::Parser
 {
-public:
-    typedef std::vector<typename ELEMENT_PARSER::INFO> INFO;
-    typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
-    PARSER(const std::string & t, CALLBACK f, void * d, const std::string & e)
-        : tag(t), callback(f), data(d), encoding(e),
-          elementParser(&PARSER<ELEMENT_PARSER>::ElementCallback, this, e),
-          depth(0), parsingAnswer(false)
-    {}
-    int  ParseStart(const char * el, const char ** attr)
-    {
-    depth++;
-    if (depth == 1 && strcasecmp(el, tag.c_str()) == 0)
-        parsingAnswer = true;
+    public:
+        using Info = std::vector<typename ElementParser::Info>;
+        using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-    if (depth > 1 && parsingAnswer)
-        elementParser.ParseStart(el, attr);
+        Parser(const std::string& t, Callback f, void* d, const std::string& e)
+            : tag(t), callback(f), data(d), encoding(e),
+              elementParser(&Parser<ElementParser>::ElementCallback, this, e),
+              depth(0), parsingAnswer(false)
+        {}
 
-    return 0;
-    }
-    void ParseEnd(const char * el)
-    {
-    depth--;
-    if (depth > 0 && parsingAnswer)
-        elementParser.ParseEnd(el);
-
-    if (depth == 0 && parsingAnswer)
+        int  ParseStart(const char* el, const char** attr) override
         {
-        if (callback)
-            callback(error.empty(), error, info, data);
-        error.clear();
-        info.clear();
-        parsingAnswer = false;
+            depth++;
+            if (depth == 1 && strcasecmp(el, tag.c_str()) == 0)
+                parsingAnswer = true;
+
+            if (depth > 1 && parsingAnswer)
+                elementParser.ParseStart(el, attr);
+
+            return 0;
         }
-    }
-    void Failure(const std::string & reason) { callback(false, reason, info, data); }
+        void ParseEnd(const char* el) override
+        {
+            depth--;
+            if (depth > 0 && parsingAnswer)
+                elementParser.ParseEnd(el);
 
-private:
-    std::string tag;
-    CALLBACK callback;
-    void * data;
-    std::string encoding;
-    ELEMENT_PARSER elementParser;
-    INFO info;
-    int depth;
-    bool parsingAnswer;
-    std::string error;
+            if (depth == 0 && parsingAnswer)
+            {
+                if (callback)
+                    callback(error.empty(), error, info, data);
+                error.clear();
+                info.clear();
+                parsingAnswer = false;
+            }
+        }
+        void Failure(const std::string & reason) override { callback(false, reason, info, data); }
 
-    void AddElement(const typename ELEMENT_PARSER::INFO & elementInfo)
-    {
-    info.push_back(elementInfo);
-    }
-    void SetError(const std::string & e) { error = e; }
+    private:
+        std::string tag;
+        Callback callback;
+        void* data;
+        std::string encoding;
+        ElementParser elementParser;
+        Info info;
+        int depth;
+        bool parsingAnswer;
+        std::string error;
 
-    static void ElementCallback(bool result, const std::string& reason, const typename ELEMENT_PARSER::INFO & info, void * data)
-    {
-    PARSER<ELEMENT_PARSER> * parser = static_cast<PARSER<ELEMENT_PARSER> *>(data);
-    if (!result)
-        parser->SetError(reason);
-    else
-        parser->AddElement(info);
-    }
+        void AddElement(const typename ElementParser::Info& elementInfo)
+        {
+            info.push_back(elementInfo);
+        }
+        void SetError(const std::string& e) { error = e; }
+
+        static void ElementCallback(bool result, const std::string& reason, const typename ElementParser::Info& info, void* data)
+        {
+            auto parser = static_cast<Parser<ElementParser>*>(data);
+            if (!result)
+                parser->SetError(reason);
+            else
+                parser->AddElement(info);
+        }
 };
 
 } // namespace GET_CONTAINER
 } // namespace STG
-
-#endif

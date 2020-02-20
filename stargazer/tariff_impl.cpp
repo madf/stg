@@ -36,14 +36,16 @@
 #include <ctime>
 #include <algorithm> // std::max
 
+using STG::TariffImpl;
+
 //-----------------------------------------------------------------------------
-TARIFF_IMPL & TARIFF_IMPL::operator=(const TARIFF_DATA & td)
+TariffImpl & TariffImpl::operator=(const TariffData & td)
 {
 tariffData = td;
 return *this;
 }
 //-----------------------------------------------------------------------------
-double TARIFF_IMPL::GetPriceWithTraffType(uint64_t up,
+double TariffImpl::GetPriceWithTraffType(uint64_t up,
                                      uint64_t down,
                                      int dir,
                                      time_t t) const
@@ -51,7 +53,7 @@ double TARIFF_IMPL::GetPriceWithTraffType(uint64_t up,
 return GetPriceWithoutFreeMb(dir, GetTraffByType(up, down) / (1024 * 1024), t);
 }
 //-----------------------------------------------------------------------------
-int64_t TARIFF_IMPL::GetTraffByType(uint64_t up, uint64_t down) const
+int64_t TariffImpl::GetTraffByType(uint64_t up, uint64_t down) const
 {
 switch (tariffData.tariffConf.traffType)
     {
@@ -69,17 +71,17 @@ switch (tariffData.tariffConf.traffType)
     }
 }
 //-----------------------------------------------------------------------------
-int TARIFF_IMPL::GetThreshold(int dir) const
+int TariffImpl::GetThreshold(int dir) const
 {
     return tariffData.dirPrice[dir].threshold;
 }
 //-----------------------------------------------------------------------------
-void TARIFF_IMPL::Print() const
+void TariffImpl::Print() const
 {
 printfd(__FILE__, "Traiff name: %s\n", tariffData.tariffConf.name.c_str());
 }
 //-----------------------------------------------------------------------------
-int TARIFF_IMPL::Interval(int dir, time_t t) const
+int TariffImpl::Interval(int dir, time_t t) const
 {
 // Start of the day (and end of the night) in sec from 00:00:00
 int s1 = tariffData.dirPrice[dir].hDay * 3600 +
@@ -114,7 +116,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-double TARIFF_IMPL::GetPriceWithoutFreeMb(int dir, int64_t mb, time_t t) const
+double TariffImpl::GetPriceWithoutFreeMb(int dir, int64_t mb, time_t t) const
 {
 int interval = Interval(dir, t);
 
@@ -140,27 +142,27 @@ else
     return tariffData.dirPrice[dir].priceDayA;
 }
 //-----------------------------------------------------------------------------
-std::string TARIFF_IMPL::TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const
+std::string TariffImpl::TariffChangeIsAllowed(const Tariff & to, time_t currentTime) const
 {
 time_t timeout = GetChangePolicyTimeout();
 if (currentTime > timeout && timeout != 0)
     return "";
 switch (GetChangePolicy())
     {
-    case TARIFF::ALLOW:
+    case Tariff::ALLOW:
         return "";
-    case TARIFF::TO_CHEAP:
+    case Tariff::TO_CHEAP:
         if (to.GetFee() < GetFee())
             return "";
         else
-            return "New tariff '" + to.GetName() + "' is more expensive than current tariff '" + GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
-    case TARIFF::TO_EXPENSIVE:
+            return "New tariff '" + to.GetName() + "' is more expensive than current tariff '" + GetName() + "'. The policy is '" + Tariff::toString(GetChangePolicy()) + "'.";
+    case Tariff::TO_EXPENSIVE:
         if (to.GetFee() >= GetFee())
             return "";
         else
-            return "New tariff '" + to.GetName() + "' is more cheap than current tariff '" + GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
-    case TARIFF::DENY:
-        return "Current tariff '" + GetName() + "', new tariff '" + to.GetName() + "'. The policy is '" + TARIFF::ChangePolicyToString(GetChangePolicy()) + "'.";
+            return "New tariff '" + to.GetName() + "' is more cheap than current tariff '" + GetName() + "'. The policy is '" + Tariff::toString(GetChangePolicy()) + "'.";
+    case Tariff::DENY:
+        return "Current tariff '" + GetName() + "', new tariff '" + to.GetName() + "'. The policy is '" + Tariff::toString(GetChangePolicy()) + "'.";
     }
 return "";
 }

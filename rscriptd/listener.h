@@ -105,7 +105,7 @@ private:
     bool                Connect(const UserData & data) const;
 
     BLOWFISH_CTX        ctxS;
-    STG_LOGGER &        WriteServLog;
+    STG::Logger&        WriteServLog;
 
     mutable std::string errorStr;
     std::string         scriptOnConnect;

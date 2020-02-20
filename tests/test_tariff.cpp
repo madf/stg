@@ -19,10 +19,10 @@ namespace tut
     {
         set_test_name("Check construction");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -35,7 +35,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         ensure("freeMb = 2", tariff.GetFreeMb() == td.tariffConf.free);
         ensure("passiveCost = 4", tariff.GetPassiveCost() == td.tariffConf.passiveCost);
@@ -59,10 +59,10 @@ namespace tut
     {
         set_test_name("Check traff types");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -75,9 +75,9 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
-        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TARIFF::TRAFF_UP);
+        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == STG::Tariff::TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for UP", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for UP", tariff.GetTraffByType(4, 2), 4);
@@ -86,10 +86,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 1 for UP", tariff.GetTraffByType(1, 5), 1);
         ensure_equals("traffByType(0, 6) = 0 for UP", tariff.GetTraffByType(0, 6), 0);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_DOWN);
+        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == STG::Tariff::TRAFF_DOWN);
         ensure_equals("traffByType(6, 0) = 0 for DOWN", tariff.GetTraffByType(6, 0), 0);
         ensure_equals("traffByType(5, 1) = 1 for DOWN", tariff.GetTraffByType(5, 1), 1);
         ensure_equals("traffByType(4, 2) = 2 for DOWN", tariff.GetTraffByType(4, 2), 2);
@@ -98,10 +98,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for DOWN", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for DOWN", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_MAX;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_MAX;
         tariff = td;
 
-        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TARIFF::TRAFF_MAX);
+        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == STG::Tariff::TRAFF_MAX);
         ensure_equals("traffByType(6, 0) = 6 for MAX", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for MAX", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for MAX", tariff.GetTraffByType(4, 2), 4);
@@ -110,10 +110,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for MAX", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for MAX", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_UP_DOWN);
+        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == STG::Tariff::TRAFF_UP_DOWN);
         ensure_equals("traffByType(6, 0) = 6 for UP_DOWN", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 6 for UP_DOWN", tariff.GetTraffByType(5, 1), 6);
         ensure_equals("traffByType(4, 2) = 6 for UP_DOWN", tariff.GetTraffByType(4, 2), 6);
@@ -129,10 +129,10 @@ namespace tut
     {
         set_test_name("Check normal interval prices");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 9;
@@ -145,7 +145,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         ensure_equals("0000 == 0", tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
         ensure_equals("0001 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 1); // Near 17:30, 6 > 4 DB
@@ -185,10 +185,10 @@ namespace tut
     {
         set_test_name("Check construction for day-night inversion");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
@@ -201,7 +201,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         ensure("freeMb = 2", tariff.GetFreeMb() == td.tariffConf.free);
         ensure("passiveCost = 4", tariff.GetPassiveCost() == td.tariffConf.passiveCost);
@@ -225,10 +225,10 @@ namespace tut
     {
         set_test_name("Check traff types for day-night inversion");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
@@ -241,9 +241,9 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
-        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == TARIFF::TRAFF_UP);
+        ensure("traffType = TRAFF_UP", tariff.GetTraffType() == STG::Tariff::TRAFF_UP);
         ensure_equals("traffByType(6, 0) = 6 for UP", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for UP", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for UP", tariff.GetTraffByType(4, 2), 4);
@@ -252,10 +252,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 1 for UP", tariff.GetTraffByType(1, 5), 1);
         ensure_equals("traffByType(0, 6) = 0 for UP", tariff.GetTraffByType(0, 6), 0);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_DOWN);
+        ensure("traffType = TRAFF_DOWN", tariff.GetTraffType() == STG::Tariff::TRAFF_DOWN);
         ensure_equals("traffByType(6, 0) = 0 for DOWN", tariff.GetTraffByType(6, 0), 0);
         ensure_equals("traffByType(5, 1) = 1 for DOWN", tariff.GetTraffByType(5, 1), 1);
         ensure_equals("traffByType(4, 2) = 2 for DOWN", tariff.GetTraffByType(4, 2), 2);
@@ -264,10 +264,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for DOWN", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for DOWN", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_MAX;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_MAX;
         tariff = td;
 
-        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == TARIFF::TRAFF_MAX);
+        ensure("traffType = TRAFF_MAX", tariff.GetTraffType() == STG::Tariff::TRAFF_MAX);
         ensure_equals("traffByType(6, 0) = 6 for MAX", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 5 for MAX", tariff.GetTraffByType(5, 1), 5);
         ensure_equals("traffByType(4, 2) = 4 for MAX", tariff.GetTraffByType(4, 2), 4);
@@ -276,10 +276,10 @@ namespace tut
         ensure_equals("traffByType(1, 5) = 5 for MAX", tariff.GetTraffByType(1, 5), 5);
         ensure_equals("traffByType(0, 6) = 6 for MAX", tariff.GetTraffByType(0, 6), 6);
 
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         tariff = td;
 
-        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == TARIFF::TRAFF_UP_DOWN);
+        ensure("traffType = TRAFF_UP_DOWN", tariff.GetTraffType() == STG::Tariff::TRAFF_UP_DOWN);
         ensure_equals("traffByType(6, 0) = 6 for UP_DOWN", tariff.GetTraffByType(6, 0), 6);
         ensure_equals("traffByType(5, 1) = 6 for UP_DOWN", tariff.GetTraffByType(5, 1), 6);
         ensure_equals("traffByType(4, 2) = 6 for UP_DOWN", tariff.GetTraffByType(4, 2), 6);
@@ -295,10 +295,10 @@ namespace tut
     {
         set_test_name("Check normal interval prices for day-night inversion");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.fee = 1;
         td.tariffConf.free = 2;
-        td.tariffConf.traffType = TARIFF::TRAFF_UP_DOWN;
+        td.tariffConf.traffType = STG::Tariff::TRAFF_UP_DOWN;
         td.tariffConf.passiveCost = 4;
         td.dirPrice[0].mDay = 30;
         td.dirPrice[0].hDay = 21;
@@ -311,7 +311,7 @@ namespace tut
         td.dirPrice[0].threshold = 4;
         td.dirPrice[0].singlePrice = 0;
         td.dirPrice[0].noDiscount = 0;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         ensure_equals("0000 == 0", tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 2); // Near 17:30, 0 < 4 NA
         ensure_equals("0001 == 0", tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 3); // Near 17:30, 6 > 4 NB
@@ -351,23 +351,23 @@ namespace tut
     {
         set_test_name("Check changePolicy - ALLOW");
 
-        TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::ALLOW;
+        STG::TariffData td("test");
+        td.tariffConf.changePolicy = STG::Tariff::ALLOW;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equal(td);
+        STG::TariffImpl equal(td);
 
         ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), true);
 
         td.tariffConf.fee = 150;
-        TARIFF_IMPL expensive(td);
+        STG::TariffImpl expensive(td);
 
         ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), true);
     }
@@ -378,23 +378,23 @@ namespace tut
     {
         set_test_name("Check changePolicy - TO_CHEAP");
 
-        TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::TO_CHEAP;
+        STG::TariffData td("test");
+        td.tariffConf.changePolicy = STG::Tariff::TO_CHEAP;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equal(td);
+        STG::TariffImpl equal(td);
 
         ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), false);
 
         td.tariffConf.fee = 150;
-        TARIFF_IMPL expensive(td);
+        STG::TariffImpl expensive(td);
 
         ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), false);
     }
@@ -405,23 +405,23 @@ namespace tut
     {
         set_test_name("Check changePolicy - TO_EXPENSIVE");
 
-        TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        STG::TariffData td("test");
+        td.tariffConf.changePolicy = STG::Tariff::TO_EXPENSIVE;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equal(td);
+        STG::TariffImpl equal(td);
 
         ensure_equals("Allow equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), true);
 
         td.tariffConf.fee = 150;
-        TARIFF_IMPL expensive(td);
+        STG::TariffImpl expensive(td);
 
         ensure_equals("Allow expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), true);
     }
@@ -432,23 +432,23 @@ namespace tut
     {
         set_test_name("Check changePolicy - DENY");
 
-        TARIFF_DATA td("test");
-        td.tariffConf.changePolicy = TARIFF::DENY;
+        STG::TariffData td("test");
+        td.tariffConf.changePolicy = STG::Tariff::DENY;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
 
         td.tariffConf.fee = 100;
-        TARIFF_IMPL equal(td);
+        STG::TariffImpl equal(td);
 
         ensure_equals("Prohibit equal", tariff.TariffChangeIsAllowed(equal, 1461606400).empty(), false);
 
         td.tariffConf.fee = 150;
-        TARIFF_IMPL expensive(td);
+        STG::TariffImpl expensive(td);
 
         ensure_equals("Prohibit expensive", tariff.TariffChangeIsAllowed(expensive, 1461606400).empty(), false);
     }
@@ -459,14 +459,14 @@ namespace tut
     {
         set_test_name("Check changePolicyTimeout < current time");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.changePolicyTimeout = 1451606400;
-        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.changePolicy = STG::Tariff::TO_EXPENSIVE;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Allow cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), true);
     }
@@ -477,14 +477,14 @@ namespace tut
     {
         set_test_name("Check changePolicyTimeout > current time");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.changePolicyTimeout = 1483228800;
-        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.changePolicy = STG::Tariff::TO_EXPENSIVE;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
     }
@@ -495,14 +495,14 @@ namespace tut
     {
         set_test_name("Check changePolicyTimeout = 0");
 
-        TARIFF_DATA td("test");
+        STG::TariffData td("test");
         td.tariffConf.changePolicyTimeout = 0;
-        td.tariffConf.changePolicy = TARIFF::TO_EXPENSIVE;
+        td.tariffConf.changePolicy = STG::Tariff::TO_EXPENSIVE;
         td.tariffConf.fee = 100;
-        TARIFF_IMPL tariff(td);
+        STG::TariffImpl tariff(td);
 
         td.tariffConf.fee = 50;
-        TARIFF_IMPL cheaper(td);
+        STG::TariffImpl cheaper(td);
 
         ensure_equals("Prohibit cheaper", tariff.TariffChangeIsAllowed(cheaper, 1461606400).empty(), false);
     }

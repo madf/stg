@@ -19,8 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_SEND_MESSAGE_H__
-#define __STG_SGCONFIG_PARSER_SEND_MESSAGE_H__
+#pragma once
 
 #include "parser.h"
 
@@ -30,11 +29,12 @@
 #include <vector>
 #include <string>
 
-class USERS;
-class USER;
-
 namespace STG
 {
+
+struct Users;
+struct User;
+
 namespace PARSER
 {
 
@@ -44,27 +44,27 @@ class SEND_MESSAGE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new SEND_MESSAGE(admin, m_users); }
-                static void Register(REGISTRY & registry, USERS & users)
+                explicit FACTORY(Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new SEND_MESSAGE(admin, m_users); }
+                static void Register(REGISTRY & registry, Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                USERS & m_users;
+                Users & m_users;
         };
 
         static const char * tag;
 
-        SEND_MESSAGE(const ADMIN & admin, USERS & users)
+        SEND_MESSAGE(const Admin & admin, Users & users)
             : BASE_PARSER(admin, tag), m_users(users), m_result(res_ok), m_user(NULL) {}
         int Start(void *data, const char *el, const char **attr);
         int End(void *data, const char *el);
 
     private:
-        USERS & m_users;
+        Users & m_users;
         std::vector<std::string> m_logins;
         enum { res_ok, res_params_error, res_unknown } m_result;
-        STG_MSG m_msg;
-        USER * m_user;
+        STG::Message m_msg;
+        User * m_user;
 
         int ParseLogins(const char * logins);
         void CreateAnswer();
@@ -72,5 +72,3 @@ class SEND_MESSAGE: public BASE_PARSER
 
 } // namespace PARSER
 } // namespace STG
-
-#endif

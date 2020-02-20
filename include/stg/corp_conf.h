@@ -18,52 +18,36 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef CORP_CONF_H
-#define CORP_CONF_H
+#pragma once
 
-#include "resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 
-struct CORP_CONF
+namespace STG
 {
-CORP_CONF() : name(), cash(0) {}
-explicit CORP_CONF(const std::string & n) : name(n), cash(0) {}
-CORP_CONF(const std::string & n, double c) : name(n), cash(c) {}
 
-std::string name;
-double      cash;
+struct CorpConf
+{
+    CorpConf() noexcept : cash(0) {}
+    explicit CorpConf(const std::string & n) noexcept : name(n), cash(0) {}
+    CorpConf(const std::string & n, double c) noexcept : name(n), cash(c) {}
+
+    CorpConf(const CorpConf&) = default;
+    CorpConf& operator=(const CorpConf&) = default;
+    CorpConf(CorpConf&&) = default;
+    CorpConf& operator=(CorpConf&&) = default;
+
+    bool operator==(const CorpConf& rhs) const noexcept { return name == rhs.name; }
+
+    std::string name;
+    double      cash;
 };
 
-struct CORP_CONF_RES
+struct CorpConfOpt
 {
-CORP_CONF_RES()
-    : name(), cash()
-{}
-
-CORP_CONF_RES & operator=(const CORP_CONF & conf)
-{
-name = conf.name;
-cash = conf.cash;
-return *this;
-}
-
-CORP_CONF GetData() const
-{
-CORP_CONF cc;
-cc.name = name.data();
-cc.cash = cash.data();
-return cc;
-}
-
-RESETABLE<std::string> name;
-RESETABLE<double>      cash;
+    Optional<std::string> name;
+    Optional<double>      cash;
 };
 
-inline
-bool operator==(const CORP_CONF & a, const CORP_CONF & b)
-{
-return a.name == b.name;
 }
-
-#endif //CORP_CONF_H

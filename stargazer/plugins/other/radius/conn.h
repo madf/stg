@@ -18,26 +18,25 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_CONN_H__
-#define __STG_SGCONFIG_CONN_H__
+#pragma once
 
 #include <string>
 #include <memory>
 
-class USER;
-class USERS;
-class PLUGIN_LOGGER;
 class RADIUS;
 
 namespace STG
 {
+
+struct Users;
+class PluginLogger;
 
 struct Config;
 
 class Conn
 {
     public:
-        Conn(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
+        Conn(Users& users, PluginLogger& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
         ~Conn();
 
         int sock() const;
@@ -53,5 +52,3 @@ class Conn
 };
 
 }
-
-#endif

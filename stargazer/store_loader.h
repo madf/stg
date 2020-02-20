@@ -18,49 +18,40 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.3 $
- $Date: 2010/03/04 12:24:19 $
- $Author: faust $
- */
-
-/*
- *  Header file for RAII store plugin loader
- */
-
-#ifndef __STORE_LOADER_H__
-#define __STORE_LOADER_H__
+#pragma once
 
 #include "stg/module_settings.h"
-#include "stg/noncopyable.h"
 
 #include <string>
 
-class STORE;
-class SETTINGS_IMPL;
+namespace STG
+{
 
-class STORE_LOADER : private NONCOPYABLE {
-public:
-    explicit STORE_LOADER(const SETTINGS_IMPL & settings);
-    ~STORE_LOADER();
+struct Store;
+class SettingsImpl;
 
-    bool Load();
-    bool Unload();
+class StoreLoader {
+    public:
+        explicit StoreLoader(const SettingsImpl& settings) noexcept;
+        ~StoreLoader();
 
-    STORE & GetStore() { return *plugin; }
+        StoreLoader(const StoreLoader&) = delete;
+        StoreLoader& operator=(const StoreLoader&) = delete;
 
-    const std::string & GetStrError() const { return errorStr; }
+        bool load() noexcept;
+        bool unload() noexcept;
 
-private:
-    STORE_LOADER(const STORE_LOADER & rvalue);
-    STORE_LOADER & operator=(const STORE_LOADER & rvalue);
+        Store& get() noexcept { return *plugin; }
 
-    bool isLoaded;
-    void * handle;
-    STORE * plugin;
-    std::string errorStr;
-    MODULE_SETTINGS storeSettings;
-    std::string pluginFileName;
+        const std::string& GetStrError() const noexcept { return errorStr; }
+
+    private:
+        bool isLoaded;
+        void* handle;
+        Store* plugin;
+        std::string errorStr;
+        ModuleSettings storeSettings;
+        std::string pluginFileName;
 };
 
-#endif
+}

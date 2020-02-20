@@ -18,98 +18,85 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.7 $
- $Date: 2010/10/07 19:48:52 $
- $Author: faust $
- */
+#pragma once
 
-#ifndef USER_TRAFF_H
-#define USER_TRAFF_H
-
-#include "resetable.h"
+#include "stg/optional.h"
 #include "const.h"
 
-#include <iostream>
+#include <ostream>
 #include <vector>
 #include <cstdint>
 
-enum TRAFF_DIRECTION {TRAFF_UPLOAD, TRAFF_DOWNLOAD};
-
-class DIR_TRAFF
+namespace STG
 {
-    friend std::ostream & operator<< (std::ostream & o, const DIR_TRAFF & traff);
 
-public:
-    typedef std::vector<uint64_t> ContainerType;
-    typedef ContainerType::size_type IndexType;
+enum TraffDirection {TRAFF_UPLOAD, TRAFF_DOWNLOAD};
 
-    DIR_TRAFF() : traff(DIR_NUM) {}
-    const uint64_t & operator[](IndexType idx) const { return traff[idx]; }
-    uint64_t & operator[](IndexType idx) { return traff[idx]; }
-    IndexType size() const { return traff.size(); }
+class DirTraff
+{
+    friend std::ostream& operator<< (std::ostream& stream, const DirTraff& traff);
 
-    void Reset()
-    {
-    for (IndexType i = 0; i < traff.size(); ++i)
-        traff[i] = 0;
-    }
+    public:
+        using ContainerType = std::vector<uint64_t>;
+        using IndexType = ContainerType::size_type;
 
-private:
-    ContainerType traff;
+        DirTraff() noexcept : traff(DIR_NUM) {}
+        const uint64_t & operator[](IndexType idx) const noexcept { return traff[idx]; }
+        uint64_t & operator[](IndexType idx) noexcept { return traff[idx]; }
+        IndexType size() const noexcept { return traff.size(); }
+
+        void reset() noexcept
+        {
+            for (IndexType i = 0; i < traff.size(); ++i)
+                traff[i] = 0;
+        }
+
+    private:
+        ContainerType traff;
 };
 
 //-----------------------------------------------------------------------------
 inline
-std::ostream & operator<<(std::ostream & o, const DIR_TRAFF & traff)
+std::ostream& operator<<(std::ostream& stream, const DirTraff& traff)
 {
-bool first = true;
-for (DIR_TRAFF::IndexType i = 0; i < traff.size(); ++i)
+    bool first = true;
+    for (DirTraff::IndexType i = 0; i < traff.size(); ++i)
     {
-    if (first)
-        first = false;
-    else
-        o << ",";
-    o << traff[i];
+        if (first)
+            first = false;
+        else
+            stream << ",";
+        stream << traff[i];
     }
-return o;
+    return stream;
 }
 
-class DIR_TRAFF_RES
+class DirTraffOpt
 {
-public:
-    typedef RESETABLE<uint64_t> value_type;
-    typedef RESETABLE<uint64_t> ValueType;
-    typedef std::vector<ValueType> ContainerType;
-    typedef ContainerType::size_type IndexType;
+    public:
+        using ValueType = Optional<uint64_t>;
+        using ContainerType = std::vector<ValueType>;
+        using IndexType = ContainerType::size_type;
 
-    DIR_TRAFF_RES() : traff(DIR_NUM) {}
-    explicit DIR_TRAFF_RES(const DIR_TRAFF & ts)
-        : traff(ts.size())
-    {
-    for (IndexType i = 0; i < ts.size(); ++i)
-        traff[i] = ts[i];
-    }
-    DIR_TRAFF_RES & operator=(const DIR_TRAFF & ts)
-    {
-        for (IndexType i = 0; i < ts.size(); ++i)
-            traff[i] = ts[i];
-        return *this;
-    }
-    const ValueType & operator[](IndexType idx) const { return traff[idx]; }
-    ValueType & operator[](IndexType idx) { return traff[idx]; }
-    IndexType size() const { return traff.size(); }
-    DIR_TRAFF GetData() const
-    {
-    DIR_TRAFF res;
-    for (IndexType i = 0; i < traff.size(); ++i)
-        if (!traff[i].empty())
-            res[i] = traff[i].data();
-    return res;
-    }
+        DirTraffOpt()  noexcept: traff(DIR_NUM) {}
+        explicit DirTraffOpt(const DirTraff & ts) noexcept
+            : traff(ts.size())
+        {
+            for (IndexType i = 0; i < ts.size(); ++i)
+                traff[i] = ts[i];
+        }
+        DirTraffOpt& operator=(const DirTraff& ts) noexcept
+        {
+            for (IndexType i = 0; i < ts.size(); ++i)
+                traff[i] = ts[i];
+            return *this;
+        }
+        const ValueType & operator[](IndexType idx) const noexcept { return traff[idx]; }
+        ValueType & operator[](IndexType idx) noexcept { return traff[idx]; }
+        IndexType size() const noexcept { return traff.size(); }
 
-private:
-    ContainerType traff;
+    private:
+        ContainerType traff;
 };
 
-#endif
+}

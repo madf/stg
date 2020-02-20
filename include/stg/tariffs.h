@@ -18,39 +18,41 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef TARIFFS_H
-#define TARIFFS_H
+#pragma once
 
 #include <string>
 #include <vector>
 
 #include "notifer.h"
 
-class ADMIN;
-class TARIFF;
-struct TARIFF_DATA;
+namespace STG
+{
 
-class TARIFFS {
-public:
-    virtual ~TARIFFS() {}
-    virtual int ReadTariffs () = 0;
-    virtual const TARIFF * FindByName(const std::string & name) const = 0;
-    virtual const TARIFF * GetNoTariff() const = 0;
-    virtual int Del(const std::string & name, const ADMIN * admin) = 0;
-    virtual int Add(const std::string & name, const ADMIN * admin) = 0;
-    virtual int Chg(const TARIFF_DATA & td, const ADMIN * admin) = 0;
+struct Admin;
+struct Tariff;
+struct TariffData;
 
-    virtual void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
-    virtual void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+struct Tariffs {
+    virtual ~Tariffs() = default;
 
-    virtual void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
-    virtual void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier) = 0;
+    virtual int ReadTariffs() = 0;
+    virtual const Tariff* FindByName(const std::string& name) const = 0;
+    virtual const Tariff* GetNoTariff() const = 0;
+    virtual int Del(const std::string& name, const Admin* admin) = 0;
+    virtual int Add(const std::string& name, const Admin* admin) = 0;
+    virtual int Chg(const TariffData& td, const Admin* admin) = 0;
 
-    virtual void GetTariffsData(std::vector<TARIFF_DATA> * tdl) const = 0;
+    virtual void AddNotifierAdd(NotifierBase<TariffData>* notifier) = 0;
+    virtual void DelNotifierAdd(NotifierBase<TariffData>* notifier) = 0;
+
+    virtual void AddNotifierDel(NotifierBase<TariffData>* notifier) = 0;
+    virtual void DelNotifierDel(NotifierBase<TariffData>* notifier) = 0;
+
+    virtual void GetTariffsData(std::vector<TariffData>* tdl) const = 0;
 
     virtual size_t Count() const = 0;
 
-    virtual const std::string & GetStrError() const = 0;
+    virtual const std::string& GetStrError() const = 0;
 };
 
-#endif
+}

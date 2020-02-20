@@ -18,16 +18,6 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.6 $
- $Date: 2010/03/04 12:24:19 $
- $Author: faust $
- */
-
-/*
- *  An implementation of RAII store plugin loader
- */
-
 #include <dlfcn.h>
 
 #include "stg/common.h"
@@ -35,98 +25,96 @@
 #include "store_loader.h"
 #include "settings_impl.h"
 
-STORE_LOADER::STORE_LOADER(const SETTINGS_IMPL & settings)
+using STG::StoreLoader;
+
+StoreLoader::StoreLoader(const SettingsImpl& settings) noexcept
     : isLoaded(false),
       handle(NULL),
       plugin(NULL),
-      errorStr(),
       storeSettings(settings.GetStoreModuleSettings()),
       pluginFileName(settings.GetModulesPath() + "/mod_" + storeSettings.moduleName + ".so")
 {
 }
 
-STORE_LOADER::~STORE_LOADER()
+StoreLoader::~StoreLoader()
 {
-Unload();
+    unload();
 }
 
-bool STORE_LOADER::Load()
+bool StoreLoader::load() noexcept
 {
-if (isLoaded)
+    if (isLoaded)
     {
-    errorStr = "Store plugin '" + pluginFileName + "' was already loaded!";
-    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
+        errorStr = "Store plugin '" + pluginFileName + "' was already loaded!";
+        printfd(__FILE__, "StoreLoader::load() - %s\n", errorStr.c_str());
+        return false;
+    }
+
+    if (pluginFileName.empty())
+    {
+        errorStr = "Empty store plugin filename";
+        printfd(__FILE__, "StoreLoader::load() - %s\n", errorStr.c_str());
+        return true;
+    }
+
+    handle = dlopen(pluginFileName.c_str(), RTLD_NOW);
+
+    if (!handle)
+    {
+        errorStr = "Error loading plugin '"
+            + pluginFileName + "': '" + dlerror() + "'";
+        printfd(__FILE__, "StoreLoader::Load() - %s\n", errorStr.c_str());
+        return true;
+    }
+
+    isLoaded = true;
+
+    using Getter = Store* (*)();
+    auto GetStore = reinterpret_cast<Getter>(dlsym(handle, "GetStore"));
+    if (!GetStore)
+    {
+        errorStr = std::string("GetStore() not found! ") + dlerror();
+        printfd(__FILE__, "StoreLoader::load() - %s\n", errorStr.c_str());
+        return true;
+    }
+
+    plugin = GetStore();
+
+    if (!plugin)
+    {
+        errorStr = "Plugin was not created!";
+        printfd(__FILE__, "StoreLoader::Load() - %s\n");
+        return true;
+    }
+
+    plugin->SetSettings(storeSettings);
+    if (plugin->ParseSettings())
+    {
+        errorStr = plugin->GetStrError();
+        printfd(__FILE__, "StoreLoader::Load() - Failed to parse settings. Plugin reports: '%s'\n", errorStr.c_str());
+        return true;
+    }
+
     return false;
-    }
-
-if (pluginFileName.empty())
-    {
-    errorStr = "Empty store plugin filename";
-    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
-    return true;
-    }
-
-handle = dlopen(pluginFileName.c_str(), RTLD_NOW);
-
-if (!handle)
-    {
-    errorStr = "Error loading plugin '"
-        + pluginFileName + "': '" + dlerror() + "'";
-    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
-    return true;
-    }
-
-isLoaded = true;
-
-STORE * (*GetStore)();
-GetStore = reinterpret_cast<STORE * (*)()>(dlsym(handle, "GetStore"));
-if (!GetStore)
-    {
-    errorStr = std::string("GetStore() not found! ") + dlerror();
-    printfd(__FILE__, "STORE_LOADER::Load() - %s\n", errorStr.c_str());
-    return true;
-    }
-
-plugin = GetStore();
-
-if (!plugin)
-    {
-    errorStr = "Plugin was not created!";
-    printfd(__FILE__, "STORE_LOADER::Load() - %s\n");
-    return true;
-    }
-
-plugin->SetSettings(storeSettings);
-if (plugin->ParseSettings())
-    {
-    errorStr = plugin->GetStrError();
-    printfd(__FILE__, "STORE_LOADER::Load() - Failed to parse settings. Plugin reports: '%s'\n", errorStr.c_str());
-    return true;
-    }
-
-return false;
 }
 
-bool STORE_LOADER::Unload()
+bool StoreLoader::unload() noexcept
 {
-printfd(__FILE__, "STORE_LOADER::Unload()\n");
-if (!isLoaded)
+    if (!isLoaded)
+        return true;
+
+    delete plugin;
+
+    if (dlclose(handle))
     {
-    return true;
+        errorStr = "Failed to unload plugin '";
+        errorStr += pluginFileName + "': ";
+        errorStr += dlerror();
+        printfd(__FILE__, "StoreLoader::Unload() - %s\n", errorStr.c_str());
+        return true;
     }
 
-delete plugin;
+    isLoaded = false;
 
-if (dlclose(handle))
-    {
-    errorStr = "Failed to unload plugin '";
-    errorStr += pluginFileName + "': ";
-    errorStr += dlerror();
-    printfd(__FILE__, "STORE_LOADER::Unload() - %s\n", errorStr.c_str());
-    return true;
-    }
-
-isLoaded = false;
-
-return false;
+    return false;
 }

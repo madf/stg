@@ -19,26 +19,26 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_USERS_H__
-#define __STG_SGCONFIG_PARSER_USERS_H__
+#pragma once
 
 #include "parser.h"
 
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
 #include "stg/common.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 
-class USERS;
-class USER;
-class TARIFFS;
-class ADMIN;
-class STORE;
-
 namespace STG
 {
+
+struct Users;
+struct User;
+struct Tariffs;
+struct Admin;
+struct Store;
+
 namespace PARSER
 {
 
@@ -48,23 +48,23 @@ class GET_USERS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USERS(admin, m_users); }
-                static void Register(REGISTRY & registry, USERS & users)
+                explicit FACTORY(Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new GET_USERS(admin, m_users); }
+                static void Register(REGISTRY & registry, Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                USERS & m_users;
+                Users & m_users;
         };
 
         static const char * tag;
 
-        GET_USERS(const ADMIN & admin, USERS & users)
+        GET_USERS(const Admin & admin, Users & users)
             : BASE_PARSER(admin, tag), m_users(users),
               m_lastUserUpdateTime(0) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        USERS & m_users;
+        Users & m_users;
         time_t m_lastUserUpdateTime;
 
         void CreateAnswer();
@@ -76,22 +76,22 @@ class GET_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(const USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_USER(admin, m_users); }
-                static void Register(REGISTRY & registry, const USERS & users)
+                explicit FACTORY(const Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new GET_USER(admin, m_users); }
+                static void Register(REGISTRY & registry, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                const USERS & m_users;
+                const Users & m_users;
         };
 
         static const char * tag;
 
-        GET_USER(const ADMIN & admin, const USERS & users)
+        GET_USER(const Admin & admin, const Users & users)
             : BASE_PARSER(admin, tag), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        const USERS & m_users;
+        const Users & m_users;
         std::string m_login;
 
         void CreateAnswer();
@@ -103,22 +103,22 @@ class ADD_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_USER(admin, m_users); }
-                static void Register(REGISTRY & registry, USERS & users)
+                explicit FACTORY(Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_USER(admin, m_users); }
+                static void Register(REGISTRY & registry, Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                USERS & m_users;
+                Users & m_users;
         };
 
         static const char * tag;
 
-        ADD_USER(const ADMIN & admin, USERS & users)
+        ADD_USER(const Admin & admin, Users & users)
             : BASE_PARSER(admin, tag), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        USERS & m_users;
+        Users & m_users;
         std::string m_login;
 
         void CreateAnswer();
@@ -130,22 +130,22 @@ class CHG_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(USERS & users, STORE & store, const TARIFFS & tariffs)
+                FACTORY(Users & users, Store & store, const Tariffs & tariffs)
                     : m_users(users), m_store(store), m_tariffs(tariffs)
                 {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_USER(admin, m_users, m_store, m_tariffs); }
-                static void Register(REGISTRY & registry, USERS & users, STORE & store, const TARIFFS & tariffs)
+                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_USER(admin, m_users, m_store, m_tariffs); }
+                static void Register(REGISTRY & registry, Users & users, Store & store, const Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(users, store, tariffs); }
             private:
-                USERS & m_users;
-                STORE & m_store;
-                const TARIFFS & m_tariffs;
+                Users & m_users;
+                Store & m_store;
+                const Tariffs & m_tariffs;
         };
 
         static const char * tag;
 
-        CHG_USER(const ADMIN & admin, USERS & users,
-                 STORE & store, const TARIFFS & tariffs)
+        CHG_USER(const Admin & admin, Users & users,
+                 Store & store, const Tariffs & tariffs)
             : BASE_PARSER(admin, tag),
               m_users(users),
               m_store(store),
@@ -155,13 +155,13 @@ class CHG_USER: public BASE_PARSER
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        USERS & m_users;
-        STORE & m_store;
-        const TARIFFS & m_tariffs;
-        USER_STAT_RES m_usr;
-        USER_CONF_RES m_ucr;
-        RESETABLE<uint64_t> m_upr[DIR_NUM];
-        RESETABLE<uint64_t> m_downr[DIR_NUM];
+        Users & m_users;
+        Store & m_store;
+        const Tariffs & m_tariffs;
+        UserStatOpt m_usr;
+        UserConfOpt m_ucr;
+        Optional<uint64_t> m_upr[DIR_NUM];
+        Optional<uint64_t> m_downr[DIR_NUM];
         std::string m_cashMsg;
         std::string m_login;
         bool m_cashMustBeAdded;
@@ -176,25 +176,25 @@ class DEL_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_USER(admin, m_users); }
-                static void Register(REGISTRY & registry, USERS & users)
+                explicit FACTORY(Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_USER(admin, m_users); }
+                static void Register(REGISTRY & registry, Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                USERS & m_users;
+                Users & m_users;
         };
 
         static const char * tag;
 
-        DEL_USER(const ADMIN & admin, USERS & users)
+        DEL_USER(const Admin & admin, Users & users)
             : BASE_PARSER(admin, tag), m_users(users), res(0), u(NULL) {}
         int Start(void * data, const char * el, const char ** attr);
         int End(void * data, const char * el);
 
     private:
-        USERS & m_users;
+        Users & m_users;
         int res;
-        USER * u;
+        User * u;
 
         void CreateAnswer();
 };
@@ -205,23 +205,23 @@ class CHECK_USER: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(const USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHECK_USER(admin, m_users); }
-                static void Register(REGISTRY & registry, const USERS & users)
+                explicit FACTORY(const Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new CHECK_USER(admin, m_users); }
+                static void Register(REGISTRY & registry, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                const USERS & m_users;
+                const Users & m_users;
         };
 
         static const char * tag;
 
-        CHECK_USER(const ADMIN & admin, const USERS & users)
+        CHECK_USER(const Admin & admin, const Users & users)
             : BASE_PARSER(admin, tag), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
         int End(void * data, const char * el);
 
     private:
-        const USERS & m_users;
+        const Users & m_users;
 
         void CreateAnswer(const char * error);
         void CreateAnswer() {} // dummy
@@ -229,5 +229,3 @@ class CHECK_USER: public BASE_PARSER
 
 } // namespace PARSER
 } // namespace STG
-
-#endif

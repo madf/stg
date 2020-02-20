@@ -22,6 +22,7 @@
 #include "parser_message.h"
 
 #include "stg/users.h"
+#include "stg/user.h"
 
 extern volatile time_t stgTime; // So sad...
 

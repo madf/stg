@@ -87,7 +87,7 @@ bool RawXMLFunction(const SGCONF::CONFIG & config,
                     const std::string & arg,
                     const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

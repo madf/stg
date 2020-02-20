@@ -19,23 +19,20 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_H__
+#pragma once
 
 #include <string>
 
 namespace STG
 {
 
-class PARSER
+struct Parser
 {
-public:
-    virtual ~PARSER() {}
-    virtual int ParseStart(const char * el, const char ** attr) = 0;
-    virtual void ParseEnd(const char * el) = 0;
-    virtual void Failure(const std::string & reason) = 0;
+    virtual ~Parser() = default;
+
+    virtual int ParseStart(const char* el, const char** attr) = 0;
+    virtual void ParseEnd(const char* el) = 0;
+    virtual void Failure(const std::string& reason) = 0;
 };
 
 } // namespace STG
-
-#endif

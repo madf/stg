@@ -41,7 +41,8 @@ int AUTH_BY::Start(void * /*data*/, const char *el, const char **attr)
 
 void AUTH_BY::CreateAnswer()
 {
-    CONST_USER_PTR u;
+    using ConstUserPtr = const User*;
+    ConstUserPtr u;
     if (m_users.FindByName(m_login, &u))
     {
         m_answer = "<AuthorizedBy result=\"error\" reason=\"User not found.\"/>";

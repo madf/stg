@@ -18,30 +18,32 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef SERVICES_H
-#define SERVICES_H
-
-#include "service_conf.h"
+#pragma once
 
 #include <string>
 
-class ADMIN;
+namespace STG
+{
 
-class SERVICES {
-public:
-    virtual ~SERVICES() {}
-    virtual int Add(const SERVICE_CONF & service, const ADMIN * admin) = 0;
-    virtual int Del(const std::string & name, const ADMIN * admin) = 0;
-    virtual int Change(const SERVICE_CONF & service, const ADMIN * admin) = 0;
-    virtual bool Find(const std::string & name, SERVICE_CONF * service) const = 0;
-    virtual bool Find(const std::string & name, SERVICE_CONF_RES * service) const = 0;
-    virtual bool Exists(const std::string & name) const = 0;
-    virtual const std::string & GetStrError() const = 0;
+struct Admin;
+struct ServiceConf;
+struct ServiceConfOpt;
+
+struct Services {
+    virtual ~Services() = default;
+
+    virtual int Add(const ServiceConf& service, const Admin* admin) = 0;
+    virtual int Del(const std::string& name, const Admin* admin) = 0;
+    virtual int Change(const ServiceConf& service, const Admin* admin) = 0;
+    virtual bool Find(const std::string& name, ServiceConf* service) const = 0;
+    virtual bool Find(const std::string& name, ServiceConfOpt* service) const = 0;
+    virtual bool Exists(const std::string& name) const = 0;
+    virtual const std::string& GetStrError() const = 0;
     virtual size_t Count() const = 0;
 
     virtual int OpenSearch() const = 0;
-    virtual int SearchNext(int, SERVICE_CONF * service) const = 0;
+    virtual int SearchNext(int, ServiceConf* service) const = 0;
     virtual int CloseSearch(int) const = 0;
 };
 
-#endif
+}

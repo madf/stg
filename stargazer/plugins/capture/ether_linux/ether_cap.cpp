@@ -27,6 +27,17 @@ $Revision: 1.23 $
 $Date: 2009/12/13 13:45:13 $
 */
 
+#include "ether_cap.h"
+
+#include "stg/common.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/traffcounter.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <csignal>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -38,36 +49,12 @@ $Date: 2009/12/13 13:45:13 $
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
-#include <csignal>
-
-#include "stg/common.h"
-#include "stg/raw_ip_packet.h"
-#include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
-
-#include "ether_cap.h"
-
 //#define CAP_DEBUG 1
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-namespace
+extern "C" Plugin* GetPlugin()
 {
-PLUGIN_CREATOR<ETHER_CAP> ecc;
-}
-
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
-{
-return ecc.GetPlugin();
+static ETHER_CAP plugin;
+return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -82,7 +69,7 @@ ETHER_CAP::ETHER_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_ether"))
+      logger(PluginLogger::get("cap_ether"))
 {
 }
 //-----------------------------------------------------------------------------

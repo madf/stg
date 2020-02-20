@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_SIMPLE_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_SIMPLE_H__
+#pragma once
 
 #include "base.h"
 
@@ -29,28 +28,27 @@
 
 namespace STG
 {
-namespace SIMPLE
+namespace Simple
 {
 
-class PARSER: public STG::PARSER
+class Parser: public STG::Parser
 {
-public:
-    PARSER(const std::string & tag, CALLBACK f, void * data, const std::string & encoding);
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void Failure(const std::string & reason) { callback(false, reason, data); }
+    public:
+        Parser(const std::string& tag, Callback f, void* data, const std::string& encoding);
 
-private:
-    std::string tag;
-    CALLBACK callback;
-    void * data;
-    std::string encoding;
-    int depth;
+        int  ParseStart(const char* el, const char** attr) override;
+        void ParseEnd(const char* el) override;
+        void Failure(const std::string& reason) override { callback(false, reason, data); }
 
-    void ParseAnswer(const char * el, const char ** attr);
+    private:
+        std::string tag;
+        Callback callback;
+        void* data;
+        std::string encoding;
+        int depth;
+
+        void ParseAnswer(const char* el, const char** attr);
 };
 
 } // namespace SIMPLE
 } // namespace STG
-
-#endif

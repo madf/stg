@@ -1,5 +1,4 @@
-#ifndef __STG_SGCONF_USERS_H__
-#define __STG_SGCONF_USERS_H__
+#pragma once
 
 namespace SGCONF
 {
@@ -10,5 +9,3 @@ class COMMANDS;
 void AppendUsersOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks);
 
 }
-
-#endif

@@ -14,8 +14,7 @@
 namespace
 {
 
-class AFTER_CONNECTED_NOTIFIER : public PROPERTY_NOTIFIER_BASE<bool>,
-                                 private NONCOPYABLE {
+class AFTER_CONNECTED_NOTIFIER : public STG::PropertyNotifierBase<bool> {
 public:
     AFTER_CONNECTED_NOTIFIER()
         : connects(0),
@@ -69,22 +68,22 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 
         user.AddConnectedAfterNotifier(&connectionNotifier);
 
-        USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
-        USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
+        STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
+        STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
 
-        ips = StrToIPS("*");
+        ips = STG::UserIPs::parse("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
         ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
         ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
-        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperty().tariffName.ConstData(), NO_TARIFF_NAME);
+        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
 
         user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
         user.Run();
@@ -96,7 +95,7 @@ namespace tut
         ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         tariffName = "test";
-        ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
+        ensure_equals("user.tariffName == 'test'", user.GetProperties().tariffName.ConstData(), "test");
 
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 
@@ -115,7 +114,7 @@ namespace tut
         TEST_SETTINGS_LOCAL settings(true);
 
         TEST_SETTINGS * s1 = &settings;
-        SETTINGS * s2 = &settings;
+        STG::Settings * s2 = &settings;
 
         ensure("settings.GetReconnectOnTariffChange() == true", settings.GetReconnectOnTariffChange());
         ensure("s1->GetReconnectOnTariffChange() == true", s1->GetReconnectOnTariffChange());
@@ -127,22 +126,22 @@ namespace tut
         TEST_AUTH auth;
         TEST_USERS users;
         TEST_SERVICES services;
-        USER_IMPL user(&settings, &store, &tariffs, &admin, &users, services);
+        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
         AFTER_CONNECTED_NOTIFIER connectionNotifier;
 
         user.AddConnectedAfterNotifier(&connectionNotifier);
 
-        USER_PROPERTY<std::string> & tariffName(user.GetProperty().tariffName);
-        USER_PROPERTY<USER_IPS> & ips(user.GetProperty().ips);
+        STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
+        STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
 
-        ips = StrToIPS("*");
+        ips = STG::UserIPs::parse("*");
 
         ensure_equals("user.connected = false", user.GetConnected(), false);
         ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
         ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
-        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperty().tariffName.ConstData(), NO_TARIFF_NAME);
+        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
 
         user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
         user.Run();
@@ -154,7 +153,7 @@ namespace tut
         ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
 
         tariffName = "test";
-        ensure_equals("user.tariffName == 'test'", user.GetProperty().tariffName.ConstData(), "test");
+        ensure_equals("user.tariffName == 'test'", user.GetProperties().tariffName.ConstData(), "test");
 
         ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
 

@@ -33,30 +33,31 @@
 #include "stg/logger.h"
 
 using STG::PluginManager;
+using STG::PluginRunner;
 
 namespace
 {
 
-bool StartModCmp(const PLUGIN_RUNNER * lhs, const PLUGIN_RUNNER * rhs)
+bool StartModCmp(const PluginRunner * lhs, const PluginRunner * rhs)
 {
     return lhs->GetStartPosition() < rhs->GetStartPosition();
 }
 
-bool StopModCmp(const PLUGIN_RUNNER * lhs, const PLUGIN_RUNNER * rhs)
+bool StopModCmp(const PluginRunner * lhs, const PluginRunner * rhs)
 {
     return lhs->GetStopPosition() > rhs->GetStopPosition();
 }
 
 } // namespace anonymous
 
-PluginManager::PluginManager(const SETTINGS_IMPL& settings,
-                             STORE& store, ADMINS_IMPL& admins, TARIFFS_IMPL& tariffs,
-                             SERVICES_IMPL& services, CORPORATIONS_IMPL& corporations,
-                             USERS_IMPL& users, TRAFFCOUNTER_IMPL& traffcounter)
-    : m_log(GetStgLogger())
+PluginManager::PluginManager(const SettingsImpl& settings,
+                             Store& store, AdminsImpl& admins, TariffsImpl& tariffs,
+                             ServicesImpl& services, CorporationsImpl& corporations,
+                             UsersImpl& users, TraffCounterImpl& traffcounter)
+    : m_log(Logger::get())
 {
     std::string basePath = settings.GetModulesPath();
-    const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
+    const std::vector<ModuleSettings> & modSettings(settings.GetModulesSettings());
     for (size_t i = 0; i < modSettings.size(); i++)
     {
         std::string moduleName = modSettings[i].moduleName;
@@ -65,12 +66,12 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
         try
         {
             m_modules.push_back(
-                new PLUGIN_RUNNER(modulePath, moduleName, modSettings[i], admins, tariffs,
+                new PluginRunner(modulePath, moduleName, modSettings[i], admins, tariffs,
                                   users, services, corporations, traffcounter,
                                   store, settings)
             );
         }
-        catch (const PLUGIN_RUNNER::Error & ex)
+        catch (const PluginRunner::Error & ex)
         {
             m_log(ex.what());
             printfd(__FILE__, "%s\n", ex.what());
@@ -80,7 +81,7 @@ PluginManager::PluginManager(const SETTINGS_IMPL& settings,
     std::sort(m_modules.begin(), m_modules.end(), StartModCmp);
     for (size_t i = 0; i < m_modules.size(); ++i)
     {
-        PLUGIN & plugin = m_modules[i]->GetPlugin();
+        auto& plugin = m_modules[i]->GetPlugin();
         if (m_modules[i]->Start())
         {
             m_log("Failed to start module '%s': '%s'", plugin.GetVersion().c_str(),
@@ -103,16 +104,16 @@ PluginManager::~PluginManager()
         delete m_modules[i];
 }
 
-void PluginManager::reload(const SETTINGS_IMPL& settings)
+void PluginManager::reload(const SettingsImpl& settings)
 {
-    const std::vector<MODULE_SETTINGS> & modSettings(settings.GetModulesSettings());
+    const std::vector<ModuleSettings> & modSettings(settings.GetModulesSettings());
     for (size_t i = 0; i < m_modules.size(); ++i)
     {
         for (size_t j = 0; j < modSettings.size(); j++)
         {
             if (modSettings[j].moduleName == m_modules[i]->GetName())
             {
-                PLUGIN & plugin = m_modules[i]->GetPlugin();
+                auto& plugin = m_modules[i]->GetPlugin();
                 if (m_modules[i]->Reload(modSettings[j]))
                 {
                     m_log("Error reloading module '%s': '%s'", plugin.GetVersion().c_str(),
@@ -133,7 +134,7 @@ void PluginManager::stop()
     {
         if (!m_modules[i]->IsRunning())
             continue;
-        PLUGIN & plugin = m_modules[i]->GetPlugin();
+        auto& plugin = m_modules[i]->GetPlugin();
         if (m_modules[i]->Stop())
         {
             m_log("Failed to stop module '%s': '%s'", plugin.GetVersion().c_str(),

@@ -22,14 +22,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.10 $
- $Date: 2010/10/04 20:17:12 $
- $Author: faust $
- */
-
-#ifndef ADMINS_IMPL_H
-#define ADMINS_IMPL_H
+#pragma once
 
 #include "admin_impl.h"
 
@@ -46,47 +39,50 @@
 
 #include <pthread.h>
 
-class ADMINS_IMPL : private NONCOPYABLE, public ADMINS {
-public:
-    explicit ADMINS_IMPL(STORE * st);
-    virtual ~ADMINS_IMPL() {}
+namespace STG
+{
 
-    int           Add(const std::string & login, const ADMIN * admin);
-    int           Del(const std::string & login, const ADMIN * admin);
-    int           Change(const ADMIN_CONF & ac, const ADMIN * admin);
-    const ADMIN * GetSysAdmin() const { return &stg; }
-    const ADMIN * GetNoAdmin() const { return &noAdmin; }
-    bool          Find(const std::string & l, ADMIN ** admin);
-    bool          Exists(const std::string & login) const;
-    bool          Correct(const std::string & login,
-                          const std::string & password,
-                          ADMIN ** admin);
-    const std::string & GetStrError() const { return strError; }
+class AdminsImpl : public Admins {
+    public:
+        explicit AdminsImpl(Store * st);
+        virtual ~AdminsImpl() {}
 
-    size_t        Count() const { return data.size(); }
+        int           Add(const std::string & login, const Admin * admin);
+        int           Del(const std::string & login, const Admin * admin);
+        int           Change(const AdminConf & ac, const Admin * admin);
+        const Admin * GetSysAdmin() const { return &stg; }
+        const Admin * GetNoAdmin() const { return &noAdmin; }
+        bool          Find(const std::string & l, Admin ** admin);
+        bool          Exists(const std::string & login) const;
+        bool          Correct(const std::string & login,
+                              const std::string & password,
+                              Admin ** admin);
+        const std::string & GetStrError() const { return strError; }
 
-    int OpenSearch() const;
-    int SearchNext(int, ADMIN_CONF * ac) const;
-    int CloseSearch(int) const;
+        size_t        Count() const { return data.size(); }
 
-private:
-    ADMINS_IMPL(const ADMINS_IMPL & rvalue);
-    ADMINS_IMPL & operator=(const ADMINS_IMPL & rvalue);
+        int OpenSearch() const;
+        int SearchNext(int, AdminConf * ac) const;
+        int CloseSearch(int) const;
 
-    typedef std::vector<ADMIN_IMPL>::iterator admin_iter;
-    typedef std::vector<ADMIN_IMPL>::const_iterator const_admin_iter;
+    private:
+        AdminsImpl(const AdminsImpl & rvalue);
+        AdminsImpl & operator=(const AdminsImpl & rvalue);
 
-    int             Read();
+        typedef std::vector<AdminImpl>::iterator admin_iter;
+        typedef std::vector<AdminImpl>::const_iterator const_admin_iter;
 
-    ADMIN_IMPL              stg;
-    ADMIN_IMPL              noAdmin;
-    std::vector<ADMIN_IMPL> data;
-    STORE *                 store;
-    STG_LOGGER &            WriteServLog;
-    mutable std::map<int, const_admin_iter> searchDescriptors;
-    mutable unsigned int    handle;
-    mutable pthread_mutex_t mutex;
-    std::string             strError;
+        int             Read();
+
+        AdminImpl              stg;
+        AdminImpl              noAdmin;
+        std::vector<AdminImpl> data;
+        Store *                 store;
+        Logger &            WriteServLog;
+        mutable std::map<int, const_admin_iter> searchDescriptors;
+        mutable unsigned int    handle;
+        mutable pthread_mutex_t mutex;
+        std::string             strError;
 };
 
-#endif
+}

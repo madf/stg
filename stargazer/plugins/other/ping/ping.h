@@ -1,11 +1,4 @@
- /*
- $Revision: 1.16 $
- $Date: 2009/06/23 11:32:28 $
- $Author: faust $
- */
-
-#ifndef PING_H
-#define PING_H
+#pragma once
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
@@ -21,44 +14,48 @@
 
 #include <pthread.h>
 
-extern "C" PLUGIN * GetPlugin();
-
 class PING;
-class USER;
-class SETTINGS;
+
+namespace STG
+{
+struct USER;
+struct SETTINGS;
+}
+
+using UserPtr = STG::User*;
 //-----------------------------------------------------------------------------*/
-class CHG_CURRIP_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<uint32_t> {
+class CHG_CURRIP_NOTIFIER_PING: public STG::PropertyNotifierBase<uint32_t> {
 public:
-    CHG_CURRIP_NOTIFIER_PING(const PING & p, USER_PTR u)
+    CHG_CURRIP_NOTIFIER_PING(const PING & p, UserPtr u)
         : user(u), ping(p) {}
     void Notify(const uint32_t & oldIP, const uint32_t & newIP);
-    USER_PTR GetUser() const { return user; }
+    UserPtr GetUser() const { return user; }
 
 private:
     CHG_CURRIP_NOTIFIER_PING & operator=(const CHG_CURRIP_NOTIFIER_PING &);
 
-    USER_PTR user;
+    UserPtr user;
     const PING & ping;
 };
 //-----------------------------------------------------------------------------
-class CHG_IPS_NOTIFIER_PING: public PROPERTY_NOTIFIER_BASE<USER_IPS> {
+class CHG_IPS_NOTIFIER_PING: public STG::PropertyNotifierBase<STG::UserIPs> {
 public:
-    CHG_IPS_NOTIFIER_PING(const PING & p, USER_PTR u)
+    CHG_IPS_NOTIFIER_PING(const PING & p, UserPtr u)
         : user(u), ping(p) {}
-    void Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS);
-    USER_PTR GetUser() const { return user; }
+    void Notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS);
+    UserPtr GetUser() const { return user; }
 
 private:
     CHG_IPS_NOTIFIER_PING & operator=(const CHG_IPS_NOTIFIER_PING &);
 
-    USER_PTR user;
+    UserPtr user;
     const PING & ping;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
+class ADD_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
 public:
     explicit ADD_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void Notify(const USER_PTR & user);
+    void Notify(const UserPtr & user);
 
 private:
     ADD_USER_NONIFIER_PING(const ADD_USER_NONIFIER_PING &);
@@ -67,10 +64,10 @@ private:
     PING & ping;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER_PING: public NOTIFIER_BASE<USER_PTR> {
+class DEL_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void Notify(const USER_PTR & user);
+    void Notify(const UserPtr & user);
 
 private:
     DEL_USER_NONIFIER_PING(const DEL_USER_NONIFIER_PING &);
@@ -83,51 +80,51 @@ class PING_SETTINGS {
 public:
     PING_SETTINGS() : pingDelay(0) {}
     const std::string & GetStrError() const { return errorStr; }
-    int ParseSettings(const MODULE_SETTINGS & s);
+    int ParseSettings(const STG::ModuleSettings & s);
     int GetPingDelay() const { return pingDelay; }
 private:
     int pingDelay;
     mutable std::string errorStr;
 };
 //-----------------------------------------------------------------------------
-class PING : public PLUGIN {
+class PING : public STG::Plugin {
 friend class CHG_CURRIP_NOTIFIER_PING;
 friend class CHG_IPS_NOTIFIER_PING;
 public:
     PING();
-    virtual ~PING();
+    ~PING() override;
 
-    void SetUsers(USERS * u) { users = u; }
-    void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int ParseSettings();
+    void SetUsers(STG::Users * u) override { users = u; }
+    void SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int ParseSettings() override;
 
-    int Start();
-    int Stop();
-    int Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool IsRunning();
+    int Start() override;
+    int Stop() override;
+    int Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+    bool IsRunning() override;
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string GetVersion() const { return "Pinger v.1.01"; }
-    uint16_t GetStartPosition() const { return 10; }
-    uint16_t GetStopPosition() const { return 10; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string GetVersion() const override { return "Pinger v.1.01"; }
+    uint16_t GetStartPosition() const override { return 10; }
+    uint16_t GetStopPosition() const override { return 10; }
 
-    void AddUser(USER_PTR u);
-    void DelUser(USER_PTR u);
+    void AddUser(UserPtr u);
+    void DelUser(UserPtr u);
 
 private:
     explicit PING(const PING & rvalue);
     PING & operator=(const PING & rvalue);
 
     void GetUsers();
-    void SetUserNotifiers(USER_PTR u);
-    void UnSetUserNotifiers(USER_PTR u);
+    void SetUserNotifiers(UserPtr u);
+    void UnSetUserNotifiers(UserPtr u);
     static void * Run(void * d);
 
     mutable std::string errorStr;
     PING_SETTINGS pingSettings;
-    MODULE_SETTINGS settings;
-    USERS * users;
-    std::list<USER_PTR> usersList;
+    STG::ModuleSettings settings;
+    STG::Users * users;
+    std::list<UserPtr> usersList;
 
     pthread_t thread;
     pthread_mutex_t mutex;
@@ -141,8 +138,5 @@ private:
     ADD_USER_NONIFIER_PING onAddUserNotifier;
     DEL_USER_NONIFIER_PING onDelUserNotifier;
 
-    PLUGIN_LOGGER logger;
+    STG::PluginLogger logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif

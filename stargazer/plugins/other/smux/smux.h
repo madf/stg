@@ -21,26 +21,32 @@
 #include "tables.h"
 #include "types.h"
 
-class USER;
-class SETTINGS;
+namespace STG
+{
+struct User;
+struct Settings;
+struct Users;
+struct Tariffs;
+struct Services;
+struct Corporations;
+struct TraffCounter;
+}
+
 class SMUX;
-class USERS;
-class TARIFFS;
-class SERVICES;
-class CORPORATIONS;
-class TRAFFCOUNTER;
 
 typedef bool (SMUX::*SMUXPacketHandler)(const SMUX_PDUs_t * pdus);
 typedef bool (SMUX::*PDUsHandler)(const PDUs_t * pdus);
 typedef std::map<SMUX_PDUs_PR, SMUXPacketHandler> SMUXHandlers;
 typedef std::map<PDUs_PR, PDUsHandler> PDUsHandlers;
+
+using UserPtr = STG::User*;
 //-----------------------------------------------------------------------------
 class SMUX_SETTINGS {
 public:
     SMUX_SETTINGS();
     virtual ~SMUX_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
-    int ParseSettings(const MODULE_SETTINGS & s);
+    int ParseSettings(const STG::ModuleSettings & s);
 
     uint32_t GetIP() const { return ip; }
     uint16_t GetPort() const { return port; }
@@ -54,69 +60,69 @@ private:
     std::string password;
 };
 //-----------------------------------------------------------------------------
-class CHG_AFTER_NOTIFIER : public PROPERTY_NOTIFIER_BASE<std::string> {
+class CHG_AFTER_NOTIFIER : public STG::PropertyNotifierBase<std::string> {
 public:
-             CHG_AFTER_NOTIFIER(SMUX & s, const USER_PTR & u)
-                 : PROPERTY_NOTIFIER_BASE<std::string>(),
+             CHG_AFTER_NOTIFIER(SMUX & s, const UserPtr & u)
+                 : STG::PropertyNotifierBase<std::string>(),
                    smux(s), userPtr(u) {}
              CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER & rvalue)
-                 : PROPERTY_NOTIFIER_BASE<std::string>(),
+                 : STG::PropertyNotifierBase<std::string>(),
                    smux(rvalue.smux), userPtr(rvalue.userPtr) {}
     void     Notify(const std::string &, const std::string &);
 
-    USER_PTR GetUserPtr() const { return userPtr; }
+    UserPtr GetUserPtr() const { return userPtr; }
 
 private:
     CHG_AFTER_NOTIFIER & operator=(const CHG_AFTER_NOTIFIER & rvalue);
     SMUX & smux;
-    USER_PTR userPtr;
+    UserPtr userPtr;
 };
 //-----------------------------------------------------------------------------
-class ADD_DEL_TARIFF_NOTIFIER : public NOTIFIER_BASE<TARIFF_DATA>, private NONCOPYABLE {
+class ADD_DEL_TARIFF_NOTIFIER : public STG::NotifierBase<STG::TariffData> {
 public:
     explicit ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
-             : NOTIFIER_BASE<TARIFF_DATA>(), smux(s) {}
-    void Notify(const TARIFF_DATA &);
+             : STG::NotifierBase<STG::TariffData>(), smux(s) {}
+    void Notify(const STG::TariffData &);
 
 private:
     SMUX & smux;
 };
 //-----------------------------------------------------------------------------
-class ADD_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
+class ADD_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
 public:
-    explicit ADD_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
-    void Notify(const USER_PTR &);
+    explicit ADD_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<STG::User*>(), smux(s) {}
+    void Notify(const UserPtr &);
 
 private:
     SMUX & smux;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NOTIFIER : public NOTIFIER_BASE<USER_PTR>, private NONCOPYABLE {
+class DEL_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
 public:
-    explicit DEL_USER_NOTIFIER(SMUX & s) : NOTIFIER_BASE<USER_PTR>(), smux(s) {}
-    void Notify(const USER_PTR &);
+    explicit DEL_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<UserPtr>(), smux(s) {}
+    void Notify(const UserPtr &);
 
 private:
     SMUX & smux;
 };
 //-----------------------------------------------------------------------------
-class SMUX : public PLUGIN {
+class SMUX : public STG::Plugin {
 public:
     SMUX();
     virtual ~SMUX();
 
-    void SetUsers(USERS * u) { users = u; }
-    void SetTariffs(TARIFFS * t) { tariffs = t; }
-    void SetAdmins(ADMINS * a) { admins = a; }
-    void SetServices(SERVICES * s) { services = s; }
-    void SetTraffcounter(TRAFFCOUNTER * tc) { traffcounter = tc; }
-    void SetCorporations(CORPORATIONS * c) { corporations = c; }
-    void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
+    void SetUsers(STG::Users * u) { users = u; }
+    void SetTariffs(STG::Tariffs * t) { tariffs = t; }
+    void SetAdmins(STG::Admins * a) { admins = a; }
+    void SetServices(STG::Services * s) { services = s; }
+    void SetTraffcounter(STG::TraffCounter * tc) { traffcounter = tc; }
+    void SetCorporations(STG::Corporations * c) { corporations = c; }
+    void SetSettings(const STG::ModuleSettings & s) { settings = s; }
     int ParseSettings();
 
     int Start();
     int Stop();
-    int Reload(const MODULE_SETTINGS & ms);
+    int Reload(const STG::ModuleSettings & ms);
     bool IsRunning() { return running && !stopped; }
 
     const std::string & GetStrError() const { return errorStr; }
@@ -126,8 +132,8 @@ public:
 
     bool UpdateTables();
 
-    void SetNotifier(USER_PTR userPtr);
-    void UnsetNotifier(USER_PTR userPtr);
+    void SetNotifier(UserPtr userPtr);
+    void UnsetNotifier(UserPtr userPtr);
 
 private:
     SMUX(const SMUX & rvalue);
@@ -152,16 +158,16 @@ private:
     void SetNotifiers();
     void ResetNotifiers();
 
-    USERS * users;
-    TARIFFS * tariffs;
-    ADMINS * admins;
-    SERVICES * services;
-    CORPORATIONS * corporations;
-    TRAFFCOUNTER * traffcounter;
+    STG::Users * users;
+    STG::Tariffs * tariffs;
+    STG::Admins * admins;
+    STG::Services * services;
+    STG::Corporations * corporations;
+    STG::TraffCounter * traffcounter;
 
     mutable std::string errorStr;
     SMUX_SETTINGS smuxSettings;
-    MODULE_SETTINGS settings;
+    STG::ModuleSettings settings;
 
     pthread_t thread;
     pthread_mutex_t mutex;
@@ -184,7 +190,7 @@ private:
     DEL_USER_NOTIFIER delUserNotifier;
     ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
 
-    PLUGIN_LOGGER logger;
+    STG::PluginLogger logger;
 };
 //-----------------------------------------------------------------------------
 
@@ -195,20 +201,20 @@ smux.UpdateTables();
 }
 
 inline
-void ADD_DEL_TARIFF_NOTIFIER::Notify(const TARIFF_DATA &)
+void ADD_DEL_TARIFF_NOTIFIER::Notify(const STG::TariffData &)
 {
 smux.UpdateTables();
 }
 
 inline
-void ADD_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
+void ADD_USER_NOTIFIER::Notify(const UserPtr & userPtr)
 {
 smux.SetNotifier(userPtr);
 smux.UpdateTables();
 }
 
 inline
-void DEL_USER_NOTIFIER::Notify(const USER_PTR & userPtr)
+void DEL_USER_NOTIFIER::Notify(const UserPtr & userPtr)
 {
 smux.UnsetNotifier(userPtr);
 smux.UpdateTables();

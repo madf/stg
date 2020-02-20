@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_CORP_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_CHG_CORP_H__
+#pragma once
 
 #include "base.h"
 
@@ -27,16 +26,15 @@
 
 #include <string>
 
-struct CORP_CONF_RES;
-
 namespace STG
 {
-namespace CHG_CORP
+
+struct CorpConfOpt;
+
+namespace ChgCorp
 {
 
-std::string Serialize(const CORP_CONF_RES & conf, const std::string & encoding);
+std::string serialize(const CorpConfOpt& conf, const std::string& encoding);
 
-} // namespace CHG_CORP
+} // namespace ChgCorp
 } // namespace STG
-
-#endif

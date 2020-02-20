@@ -27,34 +27,70 @@ $Revision: 1.11 $
 $Date: 2010/09/10 06:41:06 $
 $Author: faust $
 */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+
+#include "cap_nf.h"
+
+#include "stg/common.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/traffcounter.h"
+
+#include <vector>
 
 #include <csignal>
 #include <cerrno>
 #include <cstring>
 
-#include <vector>
-
-#include "stg/common.h"
-#include "stg/raw_ip_packet.h"
-#include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
-#include "cap_nf.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 namespace
 {
-PLUGIN_CREATOR<NF_CAP> cnc;
+
+struct NF_HEADER {
+    uint16_t version;   // Protocol version
+    uint16_t count;     // Flows count
+    uint32_t uptime;    // System uptime
+    uint32_t timestamp; // UNIX timestamp
+    uint32_t nsecs;     // Residual nanoseconds
+    uint32_t flowSeq;   // Sequence counter
+    uint8_t  eType;     // Engine type
+    uint8_t  eID;       // Engine ID
+    uint16_t sInterval; // Sampling mode and interval
+};
+
+struct NF_DATA {
+    uint32_t srcAddr;   // Flow source address
+    uint32_t dstAddr;   // Flow destination address
+    uint32_t nextHop;   // IP addres on next hop router
+    uint16_t inSNMP;    // SNMP index of input iface
+    uint16_t outSNMP;   // SNMP index of output iface
+    uint32_t packets;   // Packets in flow
+    uint32_t octets;    // Total number of bytes in flow
+    uint32_t timeStart; // Uptime on first packet in flow
+    uint32_t timeFinish;// Uptime on last packet in flow
+    uint16_t srcPort;   // Flow source port
+    uint16_t dstPort;   // Flow destination port
+    uint8_t  pad1;      // 1-byte padding
+    uint8_t  TCPFlags;  // Cumulative OR of TCP flags
+    uint8_t  proto;     // IP protocol type (tcp, udp, etc.)
+    uint8_t  tos;       // IP Type of Service (ToS)
+    uint16_t srcAS;     // Source BGP autonomous system number
+    uint16_t dstAS;     // Destination BGP autonomus system number
+    uint8_t  srcMask;   // Source address mask in "slash" notation
+    uint8_t  dstMask;   // Destination address mask in "slash" notation
+    uint16_t pad2;      // 2-byte padding
+};
+
+#define BUF_SIZE (sizeof(NF_HEADER) + 30 * sizeof(NF_DATA))
+
 }
 
-extern "C" PLUGIN * GetPlugin();
-
-PLUGIN * GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-return cnc.GetPlugin();
+    static NF_CAP plugin;
+    return &plugin;
 }
 
 NF_CAP::NF_CAP()
@@ -67,17 +103,13 @@ NF_CAP::NF_CAP()
       portU(0),
       sockTCP(-1),
       sockUDP(-1),
-      logger(GetPluginLogger(GetStgLogger(), "cap_nf"))
-{
-}
-
-NF_CAP::~NF_CAP()
+      logger(STG::PluginLogger::get("cap_nf"))
 {
 }
 
 int NF_CAP::ParseSettings()
 {
-std::vector<PARAM_VALUE>::iterator it;
+std::vector<STG::ParamValue>::iterator it;
 for (it = settings.moduleParams.begin(); it != settings.moduleParams.end(); ++it)
     {
     if (it->param == "TCPPort" && !it->value.empty())
@@ -371,7 +403,7 @@ return NULL;
 
 void NF_CAP::ParseBuffer(uint8_t * buf, ssize_t size)
 {
-RAW_PACKET ip;
+STG::RawPacket ip;
 NF_HEADER * hdr = reinterpret_cast<NF_HEADER *>(buf);
 if (htons(hdr->version) != 5)
     {
@@ -404,6 +436,6 @@ for (int i = 0; i < packets; ++i)
     ip.rawPacket.header.sPort = data->srcPort;
     ip.rawPacket.header.dPort = data->dstPort;
 
-    traffCnt->Process(ip);
+    traffCnt->process(ip);
     }
 }

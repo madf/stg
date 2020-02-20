@@ -1,13 +1,6 @@
- /*
- $Revision: 1.9 $
- $Date: 2010/09/10 05:02:08 $
- $Author: faust $
- */
+#pragma once
 
-#ifndef ADMIN_CONF_H
-#define ADMIN_CONF_H
-
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 
@@ -15,10 +8,13 @@
 
 #define ADM_LOGIN_LEN   (32)
 #define ADM_PASSWD_LEN  (32)
-//-----------------------------------------------------------------------------
-struct PRIV
+
+namespace STG
 {
-    PRIV()
+
+struct Priv
+{
+    Priv() noexcept
         : userStat(0),
           userConf(0),
           userCash(0),
@@ -29,7 +25,7 @@ struct PRIV
           serviceChg(0),
           corpChg(0)
     {}
-    explicit PRIV(uint32_t p)
+    explicit Priv(uint32_t p) noexcept
         : userStat((p & 0x00000003) >> 0x00),
           userConf((p & 0x0000000C) >> 0x02),
           userCash((p & 0x00000030) >> 0x04),
@@ -41,8 +37,24 @@ struct PRIV
           corpChg((p & 0x00030000) >> 0x10)
     {}
 
-    uint32_t ToInt() const;
-    void FromInt(uint32_t p);
+    Priv(const Priv&) = default;
+    Priv& operator=(const Priv&) = default;
+    Priv(Priv&&) = default;
+    Priv& operator=(Priv&&) = default;
+
+    uint32_t toInt() const noexcept
+    {
+        uint32_t p = (userStat   << 0)  |
+                     (userConf   << 2)  |
+                     (userCash   << 4)  |
+                     (userPasswd << 6)  |
+                     (userAddDel << 8)  |
+                     (adminChg   << 10) |
+                     (tariffChg  << 12) |
+                     (serviceChg << 14) |
+                     (corpChg    << 16);
+        return p;
+    }
 
     uint16_t userStat;
     uint16_t userConf;
@@ -55,45 +67,32 @@ struct PRIV
     uint16_t corpChg;
 };
 //-----------------------------------------------------------------------------
-struct ADMIN_CONF
+struct AdminConf
 {
-    ADMIN_CONF()
-        : priv(),
-          login(),
-          password("* NO PASSWORD *")
+    AdminConf()
+        : password("* NO PASSWORD *")
     {}
-    ADMIN_CONF(const PRIV & pr, const std::string & l, const std::string & p)
+    AdminConf(const Priv & pr, const std::string & l, const std::string & p)
         : priv(pr),
           login(l),
           password(p)
     {}
-    PRIV          priv;
+
+    AdminConf(const AdminConf&) = default;
+    AdminConf& operator=(const AdminConf&) = default;
+    AdminConf(AdminConf&&) = default;
+    AdminConf& operator=(AdminConf&&) = default;
+
+    Priv          priv;
     std::string   login;
     std::string   password;
 };
 //-----------------------------------------------------------------------------
-struct ADMIN_CONF_RES
+struct AdminConfOpt
 {
-    ADMIN_CONF_RES() {}
-    ADMIN_CONF_RES(const ADMIN_CONF_RES & rhs)
-        : priv(rhs.priv),
-          login(rhs.login),
-          password(rhs.password)
-    {}
-    ADMIN_CONF_RES & operator=(const ADMIN_CONF_RES & rhs)
-    {
-        priv = rhs.priv;
-        login = rhs.login;
-        password = rhs.password;
-        return *this;
-    }
-    RESETABLE<PRIV> priv;
-    RESETABLE<std::string> login;
-    RESETABLE<std::string> password;
+    Optional<Priv> priv;
+    Optional<std::string> login;
+    Optional<std::string> password;
 };
 
-#include "admin_conf.inc.h"
-
-#endif
-
-
+}

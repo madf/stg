@@ -43,7 +43,8 @@ int USER_INFO::Start(void * /*data*/, const char *el, const char **attr)
 
 void USER_INFO::CreateAnswer()
 {
-    CONST_USER_PTR u;
+    using ConstUserPtr = const User*;
+    ConstUserPtr u;
     if (m_users.FindByName(m_login, &u))
     {
         m_answer = "<UserInfo result=\"error\"/>";

@@ -44,7 +44,7 @@ void Decrypt(BLOWFISH_CTX * ctx, char * dst, const char * src, int len8);
 
 //-----------------------------------------------------------------------------
 LISTENER::LISTENER()
-    : WriteServLog(GetStgLogger()),
+    : WriteServLog(STG::Logger::get()),
       port(0),
       running(false),
       receiverStopped(true),

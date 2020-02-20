@@ -18,26 +18,21 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.9 $
- $Date: 2010/10/05 20:41:11 $
- $Author: faust $
- */
-
-#ifndef TARIFF_CONF_H
-#define TARIFF_CONF_H
+#pragma once
 
 #include "tariff.h"
-#include "resetable.h"
+#include "stg/optional.h"
 #include "const.h"
 
 #include <string>
 #include <vector>
 
-//-----------------------------------------------------------------------------
-struct DIRPRICE_DATA
+namespace STG
 {
-    DIRPRICE_DATA()
+//-----------------------------------------------------------------------------
+struct DirPriceData
+{
+    DirPriceData() noexcept
         : hDay(0),
           mDay(0),
           hNight(0),
@@ -49,7 +44,13 @@ struct DIRPRICE_DATA
           threshold(0),
           singlePrice(0),
           noDiscount(0)
-        {}
+    {}
+
+    DirPriceData(const DirPriceData&) = default;
+    DirPriceData& operator=(const DirPriceData&) = default;
+    DirPriceData(DirPriceData&&) = default;
+    DirPriceData& operator=(DirPriceData&&) = default;
+
     int    hDay;
     int    mDay;
     int    hNight;
@@ -63,57 +64,47 @@ struct DIRPRICE_DATA
     int    noDiscount; // Do not use threshold
 };
 //-----------------------------------------------------------------------------
-struct DIRPRICE_DATA_RES
+struct DirPriceDataOpt
 {
-    DIRPRICE_DATA_RES()
-        : hDay(),
-          mDay(),
-          hNight(),
-          mNight(),
-          priceDayA(),
-          priceNightA(),
-          priceDayB(),
-          priceNightB(),
-          threshold(),
-          singlePrice(),
-          noDiscount()
-        {}
+    DirPriceDataOpt() = default;
 
-    DIRPRICE_DATA_RES & operator= (const DIRPRICE_DATA & rvalue)
-        {
-        hDay        = rvalue.hDay;
-        mDay        = rvalue.mDay;
-        hNight      = rvalue.hNight;
-        mNight      = rvalue.mNight;
-        priceDayA   = rvalue.priceDayA;
-        priceNightA = rvalue.priceNightA;
-        priceDayB   = rvalue.priceDayB;
-        priceNightB = rvalue.priceNightB;
-        threshold   = rvalue.threshold;
-        singlePrice = rvalue.singlePrice;
-        noDiscount  = rvalue.noDiscount;
+    DirPriceDataOpt(const DirPriceData& data) noexcept
+        : hDay(data.hDay),
+          mDay(data.mDay),
+          hNight(data.hNight),
+          mNight(data.mNight),
+          priceDayA(data.priceDayA),
+          priceNightA(data.priceNightA),
+          priceDayB(data.priceDayB),
+          priceNightB(data.priceNightB),
+          threshold(data.threshold),
+          singlePrice(data.singlePrice),
+          noDiscount(data.noDiscount)
+    {}
+
+    DirPriceDataOpt(const DirPriceDataOpt&) = default;
+    DirPriceDataOpt& operator=(const DirPriceDataOpt&) = default;
+    DirPriceDataOpt(DirPriceDataOpt&&) = default;
+    DirPriceDataOpt& operator=(DirPriceDataOpt&&) = default;
+
+    DirPriceDataOpt & operator=(const DirPriceData& rhs) noexcept
+    {
+        hDay        = rhs.hDay;
+        mDay        = rhs.mDay;
+        hNight      = rhs.hNight;
+        mNight      = rhs.mNight;
+        priceDayA   = rhs.priceDayA;
+        priceNightA = rhs.priceNightA;
+        priceDayB   = rhs.priceDayB;
+        priceNightB = rhs.priceNightB;
+        threshold   = rhs.threshold;
+        singlePrice = rhs.singlePrice;
+        noDiscount  = rhs.noDiscount;
         return *this;
-        }
+    }
 
-    DIRPRICE_DATA GetData() const
-        {
-        DIRPRICE_DATA dd;
-        hDay.maybeSet(dd.hDay);
-        hNight.maybeSet(dd.hNight);
-        mDay.maybeSet(dd.mDay);
-        mNight.maybeSet(dd.mNight);
-        noDiscount.maybeSet(dd.noDiscount);
-        priceDayA.maybeSet(dd.priceDayA);
-        priceDayB.maybeSet(dd.priceDayB);
-        priceNightA.maybeSet(dd.priceNightA);
-        priceNightB.maybeSet(dd.priceNightB);
-        singlePrice.maybeSet(dd.singlePrice);
-        threshold.maybeSet(dd.threshold);
-        return dd;
-        }
-
-    void Splice(const DIRPRICE_DATA_RES & rhs)
-        {
+    void splice(const DirPriceDataOpt & rhs) noexcept
+    {
         hDay.splice(rhs.hDay);
         mDay.splice(rhs.mDay);
         hNight.splice(rhs.hNight);
@@ -125,70 +116,91 @@ struct DIRPRICE_DATA_RES
         threshold.splice(rhs.threshold);
         singlePrice.splice(rhs.singlePrice);
         noDiscount.splice(rhs.noDiscount);
-        }
+    }
 
-    RESETABLE<int>    hDay;
-    RESETABLE<int>    mDay;
-    RESETABLE<int>    hNight;
-    RESETABLE<int>    mNight;
-    RESETABLE<double> priceDayA;
-    RESETABLE<double> priceNightA;
-    RESETABLE<double> priceDayB;
-    RESETABLE<double> priceNightB;
-    RESETABLE<int>    threshold;
-    RESETABLE<int>    singlePrice;
-    RESETABLE<int>    noDiscount;
+    DirPriceData get(const DirPriceData& defaultValue) const noexcept
+    {
+        DirPriceData res;
+        res.hDay = hDay.get(defaultValue.hDay);
+        res.mDay = mDay.get(defaultValue.mDay);
+        res.hNight = hNight.get(defaultValue.hNight);
+        res.mNight = mNight.get(defaultValue.mNight);
+        res.priceDayA = priceDayA.get(defaultValue.priceDayA);
+        res.priceNightA = priceNightA.get(defaultValue.priceNightA);
+        res.priceDayB = priceDayB.get(defaultValue.priceDayB);
+        res.priceNightB = priceNightB.get(defaultValue.priceNightB);
+        res.threshold = threshold.get(defaultValue.threshold);
+        res.singlePrice = singlePrice.get(defaultValue.singlePrice);
+        res.noDiscount = noDiscount.get(defaultValue.noDiscount);
+        return res;
+    }
+
+    Optional<int>    hDay;
+    Optional<int>    mDay;
+    Optional<int>    hNight;
+    Optional<int>    mNight;
+    Optional<double> priceDayA;
+    Optional<double> priceNightA;
+    Optional<double> priceDayB;
+    Optional<double> priceNightB;
+    Optional<int>    threshold;
+    Optional<int>    singlePrice;
+    Optional<int>    noDiscount;
 };
 //-----------------------------------------------------------------------------
-struct TARIFF_CONF
+struct TariffConf
 {
     double             fee;
     double             free;
-    TARIFF::TRAFF_TYPE traffType;
+    Tariff::TraffType  traffType;
     double             passiveCost;
     std::string        name;
-    TARIFF::PERIOD     period;
-    TARIFF::CHANGE_POLICY changePolicy;
+    Tariff::Period     period;
+    Tariff::ChangePolicy changePolicy;
     time_t changePolicyTimeout;
 
-    TARIFF_CONF()
+    TariffConf() noexcept
         : fee(0),
           free(0),
-          traffType(TARIFF::TRAFF_UP_DOWN),
+          traffType(Tariff::TRAFF_UP_DOWN),
           passiveCost(0),
-          name(),
-          period(TARIFF::MONTH),
-          changePolicy(TARIFF::ALLOW),
+          period(Tariff::MONTH),
+          changePolicy(Tariff::ALLOW),
           changePolicyTimeout(0)
-        {}
+    {}
 
-    explicit TARIFF_CONF(const std::string & n)
+    explicit TariffConf(const std::string & n) noexcept
         : fee(0),
           free(0),
-          traffType(TARIFF::TRAFF_UP_DOWN),
+          traffType(Tariff::TRAFF_UP_DOWN),
           passiveCost(0),
           name(n),
-          period(TARIFF::MONTH),
-          changePolicy(TARIFF::ALLOW),
+          period(Tariff::MONTH),
+          changePolicy(Tariff::ALLOW),
           changePolicyTimeout(0)
-        {}
+    {}
+
+    TariffConf(const TariffConf&) = default;
+    TariffConf& operator=(const TariffConf&) = default;
+    TariffConf(TariffConf&&) = default;
+    TariffConf& operator=(TariffConf&&) = default;
 };
 //-----------------------------------------------------------------------------
-struct TARIFF_CONF_RES
+struct TariffConfOpt
 {
-    TARIFF_CONF_RES()
-        : fee(),
-          free(),
-          traffType(),
-          passiveCost(),
-          name(),
-          period(),
-          changePolicy(),
-          changePolicyTimeout()
-        {}
-
-    TARIFF_CONF_RES & operator=(const TARIFF_CONF & tc)
-        {
+    TariffConfOpt() = default;
+    TariffConfOpt(const TariffConf& data) noexcept
+        : fee(data.fee),
+          free(data.free),
+          traffType(data.traffType),
+          passiveCost(data.passiveCost),
+          name(data.name),
+          period(data.period),
+          changePolicy(data.changePolicy),
+          changePolicyTimeout(data.changePolicyTimeout)
+    {}
+    TariffConfOpt& operator=(const TariffConf & tc) noexcept
+    {
         fee         = tc.fee;
         free        = tc.free;
         traffType   = tc.traffType;
@@ -198,74 +210,95 @@ struct TARIFF_CONF_RES
         changePolicy = tc.changePolicy;
         changePolicyTimeout = tc.changePolicyTimeout;
         return *this;
-        }
+    }
 
-    TARIFF_CONF GetData() const
-        {
-        TARIFF_CONF tc;
-        fee.maybeSet(tc.fee);
-        free.maybeSet(tc.free);
-        name.maybeSet(tc.name);
-        passiveCost.maybeSet(tc.passiveCost);
-        traffType.maybeSet(tc.traffType);
-        period.maybeSet(tc.period);
-        changePolicy.maybeSet(tc.changePolicy);
-        changePolicyTimeout.maybeSet(tc.changePolicyTimeout);
-        return tc;
-        }
+    TariffConfOpt(const TariffConfOpt&) = default;
+    TariffConfOpt& operator=(const TariffConfOpt&) = default;
+    TariffConfOpt(TariffConfOpt&&) = default;
+    TariffConfOpt& operator=(TariffConfOpt&&) = default;
 
-    RESETABLE<double>             fee;
-    RESETABLE<double>             free;
-    RESETABLE<TARIFF::TRAFF_TYPE> traffType;
-    RESETABLE<double>             passiveCost;
-    RESETABLE<std::string>        name;
-    RESETABLE<TARIFF::PERIOD>     period;
-    RESETABLE<TARIFF::CHANGE_POLICY> changePolicy;
-    RESETABLE<time_t>             changePolicyTimeout;
+    TariffConf get(const TariffConf& defaultValue) const noexcept
+    {
+        TariffConf res;
+        res.fee = fee.get(defaultValue.fee);
+        res.free = free.get(defaultValue.free);
+        res.traffType = traffType.get(defaultValue.traffType);
+        res.passiveCost = passiveCost.get(defaultValue.passiveCost);
+        res.name = name.get(defaultValue.name);
+        res.period = period.get(defaultValue.period);
+        res.changePolicy = changePolicy.get(defaultValue.changePolicy);
+        res.changePolicyTimeout = changePolicyTimeout.get(defaultValue.changePolicyTimeout);
+        return res;
+    }
+
+    Optional<double>             fee;
+    Optional<double>             free;
+    Optional<Tariff::TraffType>  traffType;
+    Optional<double>             passiveCost;
+    Optional<std::string>        name;
+    Optional<Tariff::Period>     period;
+    Optional<Tariff::ChangePolicy> changePolicy;
+    Optional<time_t>             changePolicyTimeout;
 };
 //-----------------------------------------------------------------------------
-struct TARIFF_DATA
+struct TariffData
 {
-    TARIFF_CONF                tariffConf;
-    std::vector<DIRPRICE_DATA> dirPrice;
+    TariffConf                tariffConf;
+    std::vector<DirPriceData> dirPrice;
 
-    TARIFF_DATA()
-        : tariffConf(),
-          dirPrice(DIR_NUM)
-        {}
+    TariffData() noexcept
+        : dirPrice(DIR_NUM)
+    {}
 
-    explicit TARIFF_DATA(const std::string & name)
+    explicit TariffData(const std::string& name) noexcept
         : tariffConf(name),
           dirPrice(DIR_NUM)
-        {}
+    {}
+
+    TariffData(const TariffData&) = default;
+    TariffData& operator=(const TariffData&) = default;
+    TariffData(TariffData&&) = default;
+    TariffData& operator=(TariffData&&) = default;
 };
 //-----------------------------------------------------------------------------
-struct TARIFF_DATA_RES
+struct TariffDataOpt
 {
-    TARIFF_CONF_RES                tariffConf;
-    std::vector<DIRPRICE_DATA_RES> dirPrice;
+    TariffConfOpt                tariffConf;
+    std::vector<DirPriceDataOpt> dirPrice;
 
-    TARIFF_DATA_RES()
-        : tariffConf(),
+    TariffDataOpt()
+        : dirPrice(DIR_NUM)
+    {}
+
+    TariffDataOpt(const TariffData& data) noexcept
+        : tariffConf(data.tariffConf),
           dirPrice(DIR_NUM)
-        {}
+    {
+        for (size_t i = 0; i < DIR_NUM; ++i)
+            dirPrice[i] = data.dirPrice[i];
+    }
 
-    TARIFF_DATA_RES & operator=(const TARIFF_DATA & td)
-        {
+    TariffDataOpt& operator=(const TariffData& td) noexcept
+    {
         tariffConf = td.tariffConf;
         for (size_t i = 0; i < DIR_NUM; ++i)
             dirPrice[i] = td.dirPrice[i];
         return *this;
-        }
+    }
 
-    TARIFF_DATA GetData() const
-        {
-        TARIFF_DATA td;
-        td.tariffConf = tariffConf.GetData();
-        for (size_t i = 0; i < DIR_NUM; i++)
-            td.dirPrice[i] = dirPrice[i].GetData();
-        return td;
-        }
+    TariffDataOpt(const TariffDataOpt&) = default;
+    TariffDataOpt& operator=(const TariffDataOpt&) = default;
+    TariffDataOpt(TariffDataOpt&&) = default;
+    TariffDataOpt& operator=(TariffDataOpt&&) = default;
+
+    TariffData get(const TariffData& defaultValue) const noexcept
+    {
+        TariffData res;
+        res.tariffConf = tariffConf.get(defaultValue.tariffConf);
+        for (size_t i = 0; i < DIR_NUM; ++i)
+            res.dirPrice[i] = dirPrice[i].get(defaultValue.dirPrice[i]);
+        return res;
+    }
 };
 //-----------------------------------------------------------------------------
-#endif
+}

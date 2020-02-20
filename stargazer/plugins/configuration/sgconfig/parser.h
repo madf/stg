@@ -18,13 +18,15 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-#ifndef PARSER_H
-#define PARSER_H
+#pragma once
 
 #include <string>
 #include <map>
 
-class ADMIN;
+namespace STG
+{
+struct Admin;
+}
 
 class BASE_PARSER
 {
@@ -32,11 +34,11 @@ class BASE_PARSER
         struct FACTORY
         {
             virtual ~FACTORY() {}
-            virtual BASE_PARSER * create(const ADMIN & admin) = 0;
+            virtual BASE_PARSER * create(const STG::Admin & admin) = 0;
         };
         typedef std::map<std::string, FACTORY *> REGISTRY;
 
-        BASE_PARSER(const ADMIN & admin, const std::string & t)
+        BASE_PARSER(const STG::Admin & admin, const std::string & t)
             : m_currAdmin(admin),
               m_depth(0),
               m_tag(t)
@@ -54,7 +56,7 @@ class BASE_PARSER
         BASE_PARSER(const BASE_PARSER & rvalue);
         BASE_PARSER & operator=(const BASE_PARSER & rvalue);
 
-        const ADMIN & m_currAdmin;
+        const STG::Admin & m_currAdmin;
         size_t        m_depth;
         std::string   m_answer;
         std::string   m_tag;
@@ -62,5 +64,3 @@ class BASE_PARSER
     private:
         virtual void CreateAnswer() = 0;
 };
-
-#endif //PARSER_H

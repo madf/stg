@@ -24,7 +24,7 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
-void PrintService(const STG::GET_SERVICE::INFO & info, size_t level = 0)
+void PrintService(const STG::GetService::Info & info, size_t level = 0)
 {
 std::cout << Indent(level, true) << "name: " << info.name << "\n"
           << Indent(level)       << "cost: " << info.cost << "\n"
@@ -55,7 +55,7 @@ std::cout << "Success.\n";
 
 void GetServicesCallback(bool result,
                          const std::string & reason,
-                         const std::vector<STG::GET_SERVICE::INFO> & info,
+                         const std::vector<STG::GetService::Info> & info,
                          void * /*data*/)
 {
 if (!result)
@@ -70,7 +70,7 @@ for (size_t i = 0; i < info.size(); ++i)
 
 void GetServiceCallback(bool result,
                         const std::string & reason,
-                        const STG::GET_SERVICE::INFO & info,
+                        const STG::GetService::Info & info,
                         void * /*data*/)
 {
 if (!result)
@@ -85,7 +85,7 @@ bool GetServicesFunction(const SGCONF::CONFIG & config,
                          const std::string & /*arg*/,
                          const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -98,7 +98,7 @@ bool GetServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
                         const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -111,7 +111,7 @@ bool DelServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
                         const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -124,12 +124,12 @@ bool AddServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
                         const std::map<std::string, std::string> & options)
 {
-SERVICE_CONF_RES conf;
+STG::ServiceConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cost", conf.cost);
 SGCONF::MaybeSet(options, "pay-day", conf.payDay);
 SGCONF::MaybeSet(options, "comment", conf.comment);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -142,12 +142,12 @@ bool ChgServiceFunction(const SGCONF::CONFIG & config,
                         const std::string & arg,
                         const std::map<std::string, std::string> & options)
 {
-SERVICE_CONF_RES conf;
+STG::ServiceConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cost", conf.cost);
 SGCONF::MaybeSet(options, "pay-day", conf.payDay);
 SGCONF::MaybeSet(options, "comment", conf.comment);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

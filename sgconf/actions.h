@@ -18,15 +18,14 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_ACTIONS_H__
-#define __STG_SGCONF_ACTIONS_H__
+#pragma once
 
 #include "action.h"
 #include "options.h"
 #include "parser_state.h"
 
 #include "stg/common.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 
@@ -70,7 +69,7 @@ template <typename T>
 class PARAM_ACTION : public ACTION
 {
     public:
-        PARAM_ACTION(RESETABLE<T> & param,
+        PARAM_ACTION(STG::Optional<T> & param,
                      const T & defaultValue,
                      const std::string & paramDescription)
             : m_param(param),
@@ -78,11 +77,11 @@ class PARAM_ACTION : public ACTION
               m_description(paramDescription),
               m_hasDefault(true)
         {}
-        PARAM_ACTION(RESETABLE<T> & param)
+        PARAM_ACTION(STG::Optional<T> & param)
             : m_param(param),
               m_hasDefault(false)
         {}
-        PARAM_ACTION(RESETABLE<T> & param,
+        PARAM_ACTION(STG::Optional<T> & param,
                      const std::string & paramDescription)
             : m_param(param),
               m_description(paramDescription),
@@ -98,7 +97,7 @@ class PARAM_ACTION : public ACTION
         virtual void ParseValue(const std::string & value);
 
     private:
-        RESETABLE<T> & m_param;
+        STG::Optional<T> & m_param;
         T m_defaltValue;
         std::string m_description;
         bool m_hasDefault;
@@ -177,7 +176,7 @@ return PARSER_STATE(false, --argc, ++argv);
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param,
+PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param,
                                   const T & defaultValue,
                                   const std::string & paramDescription)
 {
@@ -186,14 +185,14 @@ return new PARAM_ACTION<T>(param, defaultValue, paramDescription);
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param)
+PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param)
 {
 return new PARAM_ACTION<T>(param);
 }
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(RESETABLE<T> & param,
+PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param,
                                   const std::string & paramDescription)
 {
 return new PARAM_ACTION<T>(param, paramDescription);
@@ -242,5 +241,3 @@ return new KV_ACTION(name, paramDescription);
 }
 
 } // namespace SGCONF
-
-#endif

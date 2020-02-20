@@ -3,29 +3,29 @@
 
 #include "stg/auth.h"
 
-class TEST_AUTH : public AUTH {
+class TEST_AUTH : public STG::Auth {
     public:
         TEST_AUTH() {}
 
-        void SetUsers(USERS * /*u*/) {}
-        void SetTariffs(TARIFFS * /*t*/) {}
-        void SetAdmins(ADMINS * /*a*/) {}
-        void SetTraffcounter(TRAFFCOUNTER * /*tc*/) {}
-        void SetStore(STORE * /*st*/) {}
-        void SetStgSettings(const SETTINGS * /*s*/) {}
-        void SetSettings(const MODULE_SETTINGS & /*s*/) {}
-        int ParseSettings() { return 0; }
+        void SetUsers(STG::Users * /*u*/) override {}
+        void SetTariffs(STG::Tariffs * /*t*/) override {}
+        void SetAdmins(STG::Admins * /*a*/) override {}
+        void SetTraffcounter(STG::TraffCounter * /*tc*/) override {}
+        void SetStore(STG::Store * /*st*/) override {}
+        void SetStgSettings(const STG::Settings * /*s*/) override {}
+        void SetSettings(const STG::ModuleSettings & /*s*/) override {}
+        int ParseSettings() override { return 0; }
 
-        int Start() { return 0; }
-        int Stop() { return 0; }
-        int Reload(const MODULE_SETTINGS&) { return 0; }
-        bool IsRunning() { return true; }
-        const std::string & GetStrError() const { return strError; }
-        std::string GetVersion() const { return ""; }
-        uint16_t GetStartPosition() const { return 0; }
-        uint16_t GetStopPosition() const { return 0; }
+        int Start() override { return 0; }
+        int Stop() override { return 0; }
+        int Reload(const STG::ModuleSettings&) override { return 0; }
+        bool IsRunning() override { return true; }
+        const std::string & GetStrError() const override { return strError; }
+        std::string GetVersion() const override { return ""; }
+        uint16_t GetStartPosition() const override { return 0; }
+        uint16_t GetStopPosition() const override { return 0; }
 
-        int SendMessage(const STG_MSG & /*msg*/, uint32_t /*ip*/) const { return 0; }
+        int SendMessage(const STG::Message & /*msg*/, uint32_t /*ip*/) const override { return 0; }
 
     private:
         std::string strError;

@@ -22,8 +22,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-#ifndef TARIFFS_IMPL_H
-#define TARIFFS_IMPL_H
+#pragma once
 
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
@@ -33,53 +32,49 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <mutex>
 
-#include <pthread.h>
+namespace STG
+{
 
-#define TARIFF_DAY     0
-#define TARIFF_NIGHT   1
+struct Store;
+class Logger;
+struct Admin;
 
-class STORE;
-class STG_LOGGER;
-class ADMIN;
+class TariffsImpl : public Tariffs {
+    public:
+        using Data = std::vector<TariffImpl>;
 
-class TARIFFS_IMPL : public TARIFFS {
-public:
-    using Tariffs = std::vector<TARIFF_IMPL>;
+        explicit TariffsImpl(Store * store);
 
-    explicit TARIFFS_IMPL(STORE * store);
-    virtual ~TARIFFS_IMPL();
-    int ReadTariffs ();
-    const TARIFF * FindByName(const std::string & name) const;
-    const TARIFF * GetNoTariff() const { return &noTariff; }
-    size_t Count() const;
-    int Del(const std::string & name, const ADMIN * admin);
-    int Add(const std::string & name, const ADMIN * admin);
-    int Chg(const TARIFF_DATA & td, const ADMIN * admin);
+        int ReadTariffs () override;
+        const Tariff * FindByName(const std::string & name) const override;
+        const Tariff * GetNoTariff() const override { return &noTariff; }
+        size_t Count() const override;
+        int Del(const std::string & name, const Admin * admin) override;
+        int Add(const std::string & name, const Admin * admin) override;
+        int Chg(const TariffData & td, const Admin * admin) override;
 
-    void AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
-    void DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+        void AddNotifierAdd(NotifierBase<TariffData> * notifier) override;
+        void DelNotifierAdd(NotifierBase<TariffData> * notifier) override;
 
-    void AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
-    void DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * notifier);
+        void AddNotifierDel(NotifierBase<TariffData> * notifier) override;
+        void DelNotifierDel(NotifierBase<TariffData> * notifier) override;
 
-    void GetTariffsData(std::vector<TARIFF_DATA> * tdl) const;
+        void GetTariffsData(std::vector<TariffData> * tdl) const override;
 
-    const std::string & GetStrError() const { return strError; }
+        const std::string & GetStrError() const override { return strError; }
 
-private:
-    TARIFFS_IMPL(const TARIFFS_IMPL & rvalue);
-    TARIFFS_IMPL & operator=(const TARIFFS_IMPL & rvalue);
+    private:
+        Data               tariffs;
+        Store*             store;
+        Logger&            WriteServLog;
+        mutable std::mutex m_mutex;
+        std::string        strError;
+        TariffImpl         noTariff;
 
-    Tariffs                 tariffs;
-    STORE *                 store;
-    STG_LOGGER &            WriteServLog;
-    mutable pthread_mutex_t mutex;
-    std::string             strError;
-    TARIFF_IMPL             noTariff;
-
-    std::set<NOTIFIER_BASE<TARIFF_DATA>*> onAddNotifiers;
-    std::set<NOTIFIER_BASE<TARIFF_DATA>*> onDelNotifiers;
+        std::set<NotifierBase<TariffData>*> onAddNotifiers;
+        std::set<NotifierBase<TariffData>*> onDelNotifiers;
 };
 
-#endif
+}

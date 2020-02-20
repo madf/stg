@@ -22,16 +22,6 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.61 $
- $Date: 2010/09/13 05:56:42 $
- $Author: faust $
- */
-
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <pthread.h>
 
 #include <csignal>
@@ -43,23 +33,24 @@
 
 #include "stg/settings.h"
 #include "stg/common.h"
+
 #include "users_impl.h"
 #include "stg_timer.h"
 
 extern volatile time_t stgTime;
 
-//#define USERS_DEBUG 1
+using STG::UsersImpl;
 
 //-----------------------------------------------------------------------------
-USERS_IMPL::USERS_IMPL(SETTINGS_IMPL * s, STORE * st,
-                       TARIFFS * t, SERVICES & svcs,
-                       const ADMIN * sa)
+UsersImpl::UsersImpl(SettingsImpl * s, Store * st,
+                    Tariffs * t, Services & svcs,
+                    const Admin * sa)
     : settings(s),
       tariffs(t),
       m_services(svcs),
       store(st),
       sysAdmin(sa),
-      WriteServLog(GetStgLogger()),
+      WriteServLog(Logger::get()),
       nonstop(false),
       isRunning(false),
       handle(0)
@@ -70,12 +61,12 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USERS_IMPL::~USERS_IMPL()
+UsersImpl::~UsersImpl()
 {
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByNameNonLock(const std::string & login, user_iter * user)
+int UsersImpl::FindByNameNonLock(const std::string & login, user_iter * user)
 {
 const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
 if (iter == loginIndex.end())
@@ -85,7 +76,7 @@ if (user)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByNameNonLock(const std::string & login, const_user_iter * user) const
+int UsersImpl::FindByNameNonLock(const std::string & login, const_user_iter * user) const
 {
 const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
 if (iter == loginIndex.end())
@@ -95,7 +86,7 @@ if (user)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByName(const std::string & login, USER_PTR * user)
+int UsersImpl::FindByName(const std::string & login, UserPtr * user)
 {
 STG_LOCKER lock(&mutex);
 user_iter u;
@@ -105,7 +96,7 @@ if (FindByNameNonLock(login, &u))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByName(const std::string & login, CONST_USER_PTR * user) const
+int UsersImpl::FindByName(const std::string & login, ConstUserPtr * user) const
 {
 STG_LOCKER lock(&mutex);
 const_user_iter u;
@@ -115,31 +106,31 @@ if (FindByNameNonLock(login, &u))
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::Exists(const std::string & login) const
+bool UsersImpl::Exists(const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
 return iter != loginIndex.end();
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::TariffInUse(const std::string & tariffName) const
+bool UsersImpl::TariffInUse(const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
-std::list<USER_IMPL>::const_iterator iter;
+std::list<UserImpl>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
     {
-    if (iter->GetProperty().tariffName.Get() == tariffName)
+    if (iter->GetProperties().tariffName.Get() == tariffName)
         return true;
     ++iter;
     }
 return false;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::Add(const std::string & login, const ADMIN * admin)
+int UsersImpl::Add(const std::string & login, const Admin * admin)
 {
 STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 
 if (!priv->userAddDel)
     {
@@ -160,7 +151,7 @@ if (store->AddUser(login))
     }
 //////
 
-USER_IMPL u(settings, store, tariffs, sysAdmin, this, m_services);
+UserImpl u(settings, store, tariffs, sysAdmin, this, m_services);
 
 /*struct tm * tms;
 time_t t = stgTime;
@@ -194,7 +185,7 @@ AddUserIntoIndexes(users.begin());
 
     {
     // Fire all "on add" notifiers
-    std::set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onAddNotifiers.begin();
+    std::set<NotifierBase<UserPtr> *>::iterator ni = onAddNotifiers.begin();
     while (ni != onAddNotifiers.end())
         {
         (*ni)->Notify(&users.front());
@@ -204,7 +195,7 @@ AddUserIntoIndexes(users.begin());
 
     {
     // Fire all "on add" implementation notifiers
-    std::set<NOTIFIER_BASE<USER_IMPL_PTR> *>::iterator ni = onAddNotifiersImpl.begin();
+    std::set<NotifierBase<UserImplPtr> *>::iterator ni = onAddNotifiersImpl.begin();
     while (ni != onAddNotifiersImpl.end())
         {
         (*ni)->Notify(&users.front());
@@ -215,9 +206,9 @@ AddUserIntoIndexes(users.begin());
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::Del(const std::string & login, const ADMIN * admin)
+void UsersImpl::Del(const std::string & login, const Admin * admin)
 {
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 user_iter u;
 
 if (!priv->userAddDel)
@@ -243,7 +234,7 @@ if (!priv->userAddDel)
     }
 
     {
-    std::set<NOTIFIER_BASE<USER_PTR> *>::iterator ni = onDelNotifiers.begin();
+    std::set<NotifierBase<UserPtr> *>::iterator ni = onDelNotifiers.begin();
     while (ni != onDelNotifiers.end())
         {
         (*ni)->Notify(&(*u));
@@ -252,7 +243,7 @@ if (!priv->userAddDel)
     }
 
     {
-    std::set<NOTIFIER_BASE<USER_IMPL_PTR> *>::iterator ni = onDelNotifiersImpl.begin();
+    std::set<NotifierBase<UserImplPtr> *>::iterator ni = onDelNotifiersImpl.begin();
     while (ni != onDelNotifiersImpl.end())
         {
         (*ni)->Notify(&(*u));
@@ -278,8 +269,8 @@ if (!priv->userAddDel)
     }
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::Authorize(const std::string & login, uint32_t ip,
-                           uint32_t enabledDirs, const AUTH * auth)
+bool UsersImpl::Authorize(const std::string & login, uint32_t ip,
+                           uint32_t enabledDirs, const Auth * auth)
 {
 user_iter iter;
 STG_LOCKER lock(&mutex);
@@ -310,8 +301,8 @@ AddToIPIdx(iter);
 return true;
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::Unauthorize(const std::string & login,
-                             const AUTH * auth,
+bool UsersImpl::Unauthorize(const std::string & login,
+                             const Auth * auth,
                              const std::string & reason)
 {
 user_iter iter;
@@ -333,7 +324,7 @@ if (!iter->GetAuthorized())
 return true;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::ReadUsers()
+int UsersImpl::ReadUsers()
 {
 std::vector<std::string> usersList;
 usersList.clear();
@@ -348,7 +339,7 @@ user_iter ui;
 unsigned errors = 0;
 for (unsigned int i = 0; i < usersList.size(); i++)
     {
-    USER_IMPL u(settings, store, tariffs, sysAdmin, this, m_services);
+    UserImpl u(settings, store, tariffs, sysAdmin, this, m_services);
 
     u.SetLogin(usersList[i]);
     users.push_front(u);
@@ -379,14 +370,14 @@ if (errors > 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * USERS_IMPL::Run(void * d)
+void * UsersImpl::Run(void * d)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
-USERS_IMPL * us = static_cast<USERS_IMPL *>(d);
+UsersImpl * us = static_cast<UsersImpl *>(d);
 
 struct tm t;
 time_t tt = stgTime;
@@ -452,7 +443,7 @@ us->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::NewMinute(const struct tm & t)
+void UsersImpl::NewMinute(const struct tm & t)
 {
 //Write traff, reset session traff. Fake disconnect-connect
 if (t.tm_hour == 23 && t.tm_min == 59)
@@ -467,7 +458,7 @@ if (TimeToWriteDetailStat(t))
     int usersCnt = 0;
 
     // Пишем юзеров частями. В перерывах вызываем USER::Run
-    std::list<USER_IMPL>::iterator usr = users.begin();
+    std::list<UserImpl>::iterator usr = users.begin();
     while (usr != users.end())
         {
         usersCnt++;
@@ -481,7 +472,7 @@ if (TimeToWriteDetailStat(t))
 RealDelUser();
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::NewDay(const struct tm & t)
+void UsersImpl::NewDay(const struct tm & t)
 {
 struct tm t1;
 time_t tt = stgTime;
@@ -526,7 +517,7 @@ if (settings->GetDayFeeIsLastDay())
     }
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DayResetTraff(const struct tm & t1)
+void UsersImpl::DayResetTraff(const struct tm & t1)
 {
 int dayResetTraff = settings->GetDayResetTraff();
 if (dayResetTraff == 0)
@@ -535,11 +526,11 @@ if (t1.tm_mday == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
     for_each(users.begin(), users.end(), [](auto& user){ user.ProcessNewMonth(); });
-    //for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::SetPrepaidTraff));
+    //for_each(users.begin(), users.end(), mem_fun_ref(&UserImpl::SetPrepaidTraff));
     }
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::Start()
+int UsersImpl::Start()
 {
 if (ReadUsers())
     {
@@ -556,7 +547,7 @@ if (pthread_create(&thread, NULL, Run, this))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::Stop()
+int UsersImpl::Stop()
 {
 printfd(__FILE__, "USERS::Stop()\n");
 
@@ -596,19 +587,19 @@ printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), [](auto& user){ user.Run(); });
 
 // 'cause bind2st accepts only constant first param
-for (std::list<USER_IMPL>::iterator it = users.begin();
+for (std::list<UserImpl>::iterator it = users.begin();
      it != users.end();
      ++it)
     it->WriteDetailStat(true);
 
 for_each(users.begin(), users.end(), [](auto& user){ user.WriteStat(); });
-//for_each(users.begin(), users.end(), mem_fun_ref(&USER_IMPL::WriteConf));
+//for_each(users.begin(), users.end(), mem_fun_ref(&UserImpl::WriteConf));
 
 printfd(__FILE__, "USERS::Stop()\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::RealDelUser()
+void UsersImpl::RealDelUser()
 {
 STG_LOCKER lock(&mutex);
 
@@ -637,7 +628,7 @@ while (iter != usersToDelete.end())
 return;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddToIPIdx(user_iter user)
+void UsersImpl::AddToIPIdx(user_iter user)
 {
 printfd(__FILE__, "USERS: Add IP Idx\n");
 uint32_t ip = user->GetCurrIP();
@@ -656,7 +647,7 @@ assert((it == ipIndex.end() || it->first != ip) && "User is not in index");
 ipIndex.insert(it, std::make_pair(ip, user));
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelFromIPIdx(uint32_t ip)
+void UsersImpl::DelFromIPIdx(uint32_t ip)
 {
 printfd(__FILE__, "USERS: Del IP Idx\n");
 assert(ip && "User has non-null ip");
@@ -673,7 +664,7 @@ if (it == ipIndex.end())
 ipIndex.erase(it);
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::FindByIPIdx(uint32_t ip, user_iter & iter) const
+bool UsersImpl::FindByIPIdx(uint32_t ip, user_iter & iter) const
 {
 std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 if (it == ipIndex.end())
@@ -682,7 +673,7 @@ iter = it->second;
 return true;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_PTR * usr) const
+int UsersImpl::FindByIPIdx(uint32_t ip, UserPtr * usr) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -696,7 +687,7 @@ if (FindByIPIdx(ip, iter))
 return -1;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::FindByIPIdx(uint32_t ip, USER_IMPL ** usr) const
+int UsersImpl::FindByIPIdx(uint32_t ip, UserImpl ** usr) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -710,7 +701,7 @@ if (FindByIPIdx(ip, iter))
 return -1;
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::IsIPInIndex(uint32_t ip) const
+bool UsersImpl::IsIPInIndex(uint32_t ip) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -719,16 +710,16 @@ std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
 return it != ipIndex.end();
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const
+bool UsersImpl::IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const
 {
 STG_LOCKER lock(&mutex);
-std::list<USER_IMPL>::const_iterator iter;
+std::list<UserImpl>::const_iterator iter;
 iter = users.begin();
 while (iter != users.end())
     {
     if (iter->GetLogin() != login &&
-        !iter->GetProperty().ips.Get().IsAnyIP() &&
-        iter->GetProperty().ips.Get().IsIPInIPS(ip))
+        !iter->GetProperties().ips.Get().isAnyIP() &&
+        iter->GetProperties().ips.Get().find(ip))
         {
         if (user != NULL)
             *user = &(*iter);
@@ -739,55 +730,55 @@ while (iter != users.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
+void UsersImpl::AddNotifierUserAdd(NotifierBase<UserPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onAddNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> * n)
+void UsersImpl::DelNotifierUserAdd(NotifierBase<UserPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onAddNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
+void UsersImpl::AddNotifierUserDel(NotifierBase<UserPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onDelNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> * n)
+void UsersImpl::DelNotifierUserDel(NotifierBase<UserPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+void UsersImpl::AddNotifierUserAdd(NotifierBase<UserImplPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onAddNotifiersImpl.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+void UsersImpl::DelNotifierUserAdd(NotifierBase<UserImplPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onAddNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+void UsersImpl::AddNotifierUserDel(NotifierBase<UserImplPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onDelNotifiersImpl.insert(n);
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> * n)
+void UsersImpl::DelNotifierUserDel(NotifierBase<UserImplPtr> * n)
 {
 STG_LOCKER lock(&mutex);
 onDelNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::OpenSearch()
+int UsersImpl::OpenSearch()
 {
 STG_LOCKER lock(&mutex);
 handle++;
@@ -795,16 +786,16 @@ searchDescriptors[handle] = users.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::SearchNext(int h, USER_PTR * user)
+int UsersImpl::SearchNext(int h, UserPtr * user)
 {
-    USER_IMPL * ptr = NULL;
+    UserImpl * ptr = NULL;
     if (SearchNext(h, &ptr))
         return -1;
     *user = ptr;
     return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::SearchNext(int h, USER_IMPL ** user)
+int UsersImpl::SearchNext(int h, UserImpl ** user)
 {
 STG_LOCKER lock(&mutex);
 
@@ -833,7 +824,7 @@ while (searchDescriptors[h]->GetDeleted())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USERS_IMPL::CloseSearch(int h)
+int UsersImpl::CloseSearch(int h)
 {
 STG_LOCKER lock(&mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
@@ -846,19 +837,19 @@ WriteServLog("USERS. Incorrect search handle.");
 return -1;
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::AddUserIntoIndexes(user_iter user)
+void UsersImpl::AddUserIntoIndexes(user_iter user)
 {
 STG_LOCKER lock(&mutex);
 loginIndex.insert(make_pair(user->GetLogin(), user));
 }
 //-----------------------------------------------------------------------------
-void USERS_IMPL::DelUserFromIndexes(user_iter user)
+void UsersImpl::DelUserFromIndexes(user_iter user)
 {
 STG_LOCKER lock(&mutex);
 loginIndex.erase(user->GetLogin());
 }
 //-----------------------------------------------------------------------------
-bool USERS_IMPL::TimeToWriteDetailStat(const struct tm & t)
+bool UsersImpl::TimeToWriteDetailStat(const struct tm & t)
 {
 int statTime = settings->GetDetailStatWritePeriod();
 

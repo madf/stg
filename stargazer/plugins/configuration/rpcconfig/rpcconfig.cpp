@@ -1,22 +1,3 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
-#include <cstdlib>
-#include <csignal>
-#include <cerrno>
-#include <cstring>
-#include <vector>
-#include <algorithm>
-#include <ostream> // xmlrpc-c devs have missed something :)
-
-#include "stg/common.h"
-#include "stg/admin.h"
-#include "stg/module_settings.h"
-#include "stg/settings.h"
-#include "stg/plugin_creator.h"
 
 #include "rpcconfig.h"
 #include "info_methods.h"
@@ -25,12 +6,24 @@
 #include "admins_methods.h"
 #include "messages_methods.h"
 
-namespace
-{
-PLUGIN_CREATOR<RPC_CONFIG> rpcc;
-}
+#include "stg/common.h"
+#include "stg/admin.h"
+#include "stg/module_settings.h"
+#include "stg/settings.h"
 
-extern "C" PLUGIN * GetPlugin();
+#include <algorithm>
+#include <vector>
+#include <ostream> // xmlrpc-c devs have missed something :)
+#include <cstdlib>
+#include <csignal>
+#include <cerrno>
+#include <cstring>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
     : port(0),
@@ -78,9 +71,10 @@ else
 return 0;
 }
 
-PLUGIN * GetPlugin()
+extern "C" Plugin* GetPlugin()
 {
-return rpcc.GetPlugin();
+    static RPC_CONFIG plugin;
+    return &plugin;
 }
 
 RPC_CONFIG::RPC_CONFIG()
@@ -93,7 +87,7 @@ RPC_CONFIG::RPC_CONFIG()
       running(false),
       stopped(true),
       dayFee(0),
-      logger(GetPluginLogger(GetStgLogger(), "conf_rpc"))
+      logger(PluginLogger::get("conf_rpc"))
 {
 }
 

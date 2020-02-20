@@ -18,36 +18,38 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef TARIFF_H
-#define TARIFF_H
+#pragma once
 
 #include <string>
-#include <istream>
+//#include <istream>
 #include <cstring>
 #include <ctime>
 #include <cstdint>
 
-struct TARIFF_DATA;
+namespace STG
+{
 
-class TARIFF {
-public:
-    enum CHANGE_POLICY { ALLOW = 0, TO_CHEAP, TO_EXPENSIVE, DENY };
+struct TariffData;
 
-    enum PERIOD { DAY = 0, MONTH };
+struct Tariff {
+    enum ChangePolicy { ALLOW = 0, TO_CHEAP, TO_EXPENSIVE, DENY };
 
-    enum TRAFF_TYPE { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
+    enum Period { DAY = 0, MONTH };
 
-    static std::string ChangePolicyToString(CHANGE_POLICY changePolicy);
-    static CHANGE_POLICY StringToChangePolicy(const std::string& value);
+    enum TraffType { TRAFF_UP = 0, TRAFF_DOWN, TRAFF_UP_DOWN, TRAFF_MAX };
 
-    static std::string PeriodToString(PERIOD period);
-    static PERIOD StringToPeriod(const std::string& value);
+    static std::string toString(ChangePolicy changePolicy);
+    static ChangePolicy parseChangePolicy(const std::string& value);
 
-    static std::string TraffTypeToString(TRAFF_TYPE type);
-    static TRAFF_TYPE StringToTraffType(const std::string& value);
-    static TRAFF_TYPE IntToTraffType(int value);
+    static std::string toString(Period period);
+    static Period parsePeriod(const std::string& value);
 
-    virtual ~TARIFF() {}
+    static std::string toString(TraffType type);
+    static TraffType parseTraffType(const std::string& value);
+    static TraffType fromInt(int value);
+
+    virtual ~Tariff() = default;
+
     virtual double  GetPriceWithTraffType(uint64_t up,
                                           uint64_t down,
                                           int dir,
@@ -56,106 +58,106 @@ public:
     virtual double  GetPassiveCost() const = 0;
     virtual double  GetFee() const = 0;
     virtual double  GetFree() const = 0;
-    virtual PERIOD  GetPeriod() const = 0;
-    virtual CHANGE_POLICY GetChangePolicy() const = 0;
+    virtual Period  GetPeriod() const = 0;
+    virtual ChangePolicy GetChangePolicy() const = 0;
     virtual time_t  GetChangePolicyTimeout() const = 0;
 
-    virtual const   std::string & GetName() const = 0;
-    virtual void    SetName(const std::string & name) = 0;
+    virtual const   std::string& GetName() const = 0;
+    virtual void    SetName(const std::string& name) = 0;
 
     virtual int     GetTraffType() const = 0;
     virtual int64_t GetTraffByType(uint64_t up, uint64_t down) const = 0;
     virtual int     GetThreshold(int dir) const = 0;
-    virtual const TARIFF_DATA & GetTariffData() const = 0;
-    virtual std::string TariffChangeIsAllowed(const TARIFF & to, time_t currentTime) const = 0;
+    virtual const TariffData& GetTariffData() const = 0;
+    virtual std::string TariffChangeIsAllowed(const Tariff& to, time_t currentTime) const = 0;
 };
 
 inline
-std::string TARIFF::ChangePolicyToString(TARIFF::CHANGE_POLICY changePolicy)
+std::string Tariff::toString(ChangePolicy changePolicy)
 {
-switch (changePolicy)
+    switch (changePolicy)
     {
-    case ALLOW: return "allow";
-    case TO_CHEAP: return "to_cheap";
-    case TO_EXPENSIVE: return "to_expensive";
-    case DENY: return "deny";
+        case ALLOW: return "allow";
+        case TO_CHEAP: return "to_cheap";
+        case TO_EXPENSIVE: return "to_expensive";
+        case DENY: return "deny";
     }
-return "allow"; // Classic behaviour.
+    return "allow"; // Classic behaviour.
 }
 
 inline
-TARIFF::CHANGE_POLICY TARIFF::StringToChangePolicy(const std::string& value)
+Tariff::ChangePolicy Tariff::parseChangePolicy(const std::string& value)
 {
-if (strcasecmp(value.c_str(), "to_cheap") == 0)
-    return TO_CHEAP;
-if (strcasecmp(value.c_str(), "to_expensive") == 0)
-    return TO_EXPENSIVE;
-if (strcasecmp(value.c_str(), "deny") == 0)
-    return DENY;
-return ALLOW; // Classic behaviour.
+    if (strcasecmp(value.c_str(), "to_cheap") == 0)
+        return TO_CHEAP;
+    if (strcasecmp(value.c_str(), "to_expensive") == 0)
+        return TO_EXPENSIVE;
+    if (strcasecmp(value.c_str(), "deny") == 0)
+        return DENY;
+    return ALLOW; // Classic behaviour.
 }
 
 inline
-std::string TARIFF::PeriodToString(TARIFF::PERIOD period)
+std::string Tariff::toString(Period period)
 {
-switch (period)
+    switch (period)
     {
-    case DAY: return "day";
-    case MONTH: return "month";
+        case DAY: return "day";
+        case MONTH: return "month";
     }
-return "month"; // Classic behaviour.
+    return "month"; // Classic behaviour.
 }
 
 inline
-TARIFF::PERIOD TARIFF::StringToPeriod(const std::string& value)
+Tariff::Period Tariff::parsePeriod(const std::string& value)
 {
-if (strcasecmp(value.c_str(), "day") == 0)
-    return DAY;
-return MONTH; // Classic behaviour.
+    if (strcasecmp(value.c_str(), "day") == 0)
+        return DAY;
+    return MONTH; // Classic behaviour.
 }
 
 inline
-std::string TARIFF::TraffTypeToString(TARIFF::TRAFF_TYPE type)
+std::string Tariff::toString(TraffType type)
 {
-switch (type)
+    switch (type)
     {
-    case TRAFF_UP: return "up";
-    case TRAFF_DOWN: return "down";
-    case TRAFF_UP_DOWN: return "up+down";
-    case TRAFF_MAX: return "max";
+        case TRAFF_UP: return "up";
+        case TRAFF_DOWN: return "down";
+        case TRAFF_UP_DOWN: return "up+down";
+        case TRAFF_MAX: return "max";
     }
-return "up+down";
+    return "up+down";
 }
 
 inline
-TARIFF::TRAFF_TYPE TARIFF::StringToTraffType(const std::string& value)
+Tariff::TraffType Tariff::parseTraffType(const std::string& value)
 {
-if (strcasecmp(value.c_str(), "up") == 0)
-    return TRAFF_UP;
-if (strcasecmp(value.c_str(), "down") == 0)
-    return TRAFF_DOWN;
-if (strcasecmp(value.c_str(), "up+down") == 0)
+    if (strcasecmp(value.c_str(), "up") == 0)
+        return TRAFF_UP;
+    if (strcasecmp(value.c_str(), "down") == 0)
+        return TRAFF_DOWN;
+    if (strcasecmp(value.c_str(), "up+down") == 0)
+        return TRAFF_UP_DOWN;
+    if (strcasecmp(value.c_str(), "max") == 0)
+        return TRAFF_MAX;
     return TRAFF_UP_DOWN;
-if (strcasecmp(value.c_str(), "max") == 0)
-    return TRAFF_MAX;
-return TRAFF_UP_DOWN;
 }
 
-inline
-std::istream & operator>>(std::istream & stream, TARIFF::TRAFF_TYPE & traffType)
+/*inline
+std::istream& operator>>(std::istream& stream, Tariff::TraffType& traffType)
 {
     unsigned val;
     stream >> val;
-    traffType = static_cast<TARIFF::TRAFF_TYPE>(val);
+    traffType = static_cast<Tariff::TraffType>(val);
     return stream;
-}
+}*/
 
 inline
-TARIFF::TRAFF_TYPE TARIFF::IntToTraffType(int value)
+Tariff::TraffType Tariff::fromInt(int value)
 {
     if (value < 0 || value > TRAFF_MAX)
         return TRAFF_UP_DOWN;
-    return static_cast<TRAFF_TYPE>(value);
+    return static_cast<TraffType>(value);
 }
 
-#endif
+}

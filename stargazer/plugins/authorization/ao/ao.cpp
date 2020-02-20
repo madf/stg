@@ -18,36 +18,24 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
-$Revision: 1.30 $
-$Date: 2010/03/04 12:29:06 $
-$Author: faust $
-*/
-
-#include <unistd.h>
-
-#include <csignal>
-#include <cassert>
-#include <algorithm> // for_each
-#include <functional> // mem_fun_ref
+#include "ao.h"
 
 #include "stg/user.h"
 #include "stg/users.h"
 #include "stg/user_property.h"
 #include "stg/common.h"
-#include "stg/plugin_creator.h"
-#include "ao.h"
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-static PLUGIN_CREATOR<AUTH_AO> aoc;
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+#include <algorithm> // for_each
+#include <functional> // mem_fun_ref
+#include <csignal>
+#include <cassert>
+
+#include <unistd.h>
+
+extern "C" STG::Plugin* GetPlugin()
 {
-return aoc.GetPlugin();
+    static AUTH_AO plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -62,7 +50,7 @@ AUTH_AO::AUTH_AO()
       isRunning(false),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
-      logger(GetPluginLogger(GetStgLogger(), "auth_ao"))
+      logger(STG::PluginLogger::get("auth_ao"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -102,7 +90,7 @@ isRunning = false;
 return 0;
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::SetUserNotifiers(USER_PTR u)
+void AUTH_AO::SetUserNotifiers(UserPtr u)
 {
 // ---------- AlwaysOnline -------------------
 CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier(*this, u);
@@ -111,23 +99,23 @@ CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier(*this, u);
 BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
 AfterChgAONotifierList.push_front(AfterChgAONotifier);
 
-u->GetProperty().alwaysOnline.AddBeforeNotifier(&BeforeChgAONotifierList.front());
-u->GetProperty().alwaysOnline.AddAfterNotifier(&AfterChgAONotifierList.front());
+u->GetProperties().alwaysOnline.AddBeforeNotifier(&BeforeChgAONotifierList.front());
+u->GetProperties().alwaysOnline.AddAfterNotifier(&AfterChgAONotifierList.front());
 // ---------- AlwaysOnline end ---------------
 
 // ---------- IP -------------------
-CHG_BEFORE_NOTIFIER<USER_IPS> BeforeChgIPNotifier(*this, u);
-CHG_AFTER_NOTIFIER<USER_IPS>  AfterChgIPNotifier(*this, u);
+CHG_BEFORE_NOTIFIER<STG::UserIPs> BeforeChgIPNotifier(*this, u);
+CHG_AFTER_NOTIFIER<STG::UserIPs>  AfterChgIPNotifier(*this, u);
 
 BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
 AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
 
-u->GetProperty().ips.AddBeforeNotifier(&BeforeChgIPNotifierList.front());
-u->GetProperty().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
+u->GetProperties().ips.AddBeforeNotifier(&BeforeChgIPNotifierList.front());
+u->GetProperties().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
 // ---------- IP end ---------------
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::UnSetUserNotifiers(USER_PTR u)
+void AUTH_AO::UnSetUserNotifiers(UserPtr u)
 {
 // ---      AlwaysOnline        ---
 auto aoBIter = find_if(BeforeChgAONotifierList.begin(),
@@ -136,7 +124,7 @@ auto aoBIter = find_if(BeforeChgAONotifierList.begin(),
 
 if (aoBIter != BeforeChgAONotifierList.end())
     {
-    aoBIter->GetUser()->GetProperty().alwaysOnline.DelBeforeNotifier(&(*aoBIter));
+    aoBIter->GetUser()->GetProperties().alwaysOnline.DelBeforeNotifier(&(*aoBIter));
     BeforeChgAONotifierList.erase(aoBIter);
     }
 
@@ -146,7 +134,7 @@ auto aoAIter = find_if(AfterChgAONotifierList.begin(),
 
 if (aoAIter != AfterChgAONotifierList.end())
     {
-    aoAIter->GetUser()->GetProperty().alwaysOnline.DelAfterNotifier(&(*aoAIter));
+    aoAIter->GetUser()->GetProperties().alwaysOnline.DelAfterNotifier(&(*aoAIter));
     AfterChgAONotifierList.erase(aoAIter);
     }
 // ---      AlwaysOnline end    ---
@@ -158,7 +146,7 @@ auto ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
 
 if (ipBIter != BeforeChgIPNotifierList.end())
     {
-    ipBIter->GetUser()->GetProperty().ips.DelBeforeNotifier(&(*ipBIter));
+    ipBIter->GetUser()->GetProperties().ips.DelBeforeNotifier(&(*ipBIter));
     BeforeChgIPNotifierList.erase(ipBIter);
     }
 
@@ -168,7 +156,7 @@ auto ipAIter = find_if(AfterChgIPNotifierList.begin(),
 
 if (ipAIter != AfterChgIPNotifierList.end())
     {
-    ipAIter->GetUser()->GetProperty().ips.DelAfterNotifier(&(*ipAIter));
+    ipAIter->GetUser()->GetProperties().ips.DelAfterNotifier(&(*ipAIter));
     AfterChgIPNotifierList.erase(ipAIter);
     }
 // ---          IP end          ---
@@ -176,7 +164,7 @@ if (ipAIter != AfterChgIPNotifierList.end())
 //-----------------------------------------------------------------------------
 void AUTH_AO::GetUsers()
 {
-USER_PTR u;
+UserPtr u;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
@@ -189,26 +177,26 @@ while (!users->SearchNext(h, &u))
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::UpdateUserAuthorization(CONST_USER_PTR u) const
+void AUTH_AO::UpdateUserAuthorization(ConstUserPtr u) const
 {
-if (u->GetProperty().alwaysOnline)
+if (u->GetProperties().alwaysOnline)
     {
-    USER_IPS ips = u->GetProperty().ips;
-    if (ips.OnlyOneIP())
+    auto ips = u->GetProperties().ips.get();
+    if (ips.onlyOneIP())
         {
         users->Authorize(u->GetLogin(), ips[0].ip, 0xFFffFFff, this);
         }
     }
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::AddUser(USER_PTR u)
+void AUTH_AO::AddUser(UserPtr u)
 {
 SetUserNotifiers(u);
 userList.push_back(u);
 UpdateUserAuthorization(u);
 }
 //-----------------------------------------------------------------------------
-void AUTH_AO::DelUser(USER_PTR u)
+void AUTH_AO::DelUser(UserPtr u)
 {
 if (u->IsAuthorizedBy(this))
     users->Unauthorize(u->GetLogin(), this);
@@ -216,7 +204,7 @@ UnSetUserNotifiers(u);
 userList.erase(std::remove(userList.begin(), userList.end(), u), userList.end());
 }
 //-----------------------------------------------------------------------------
-int AUTH_AO::SendMessage(const STG_MSG &, uint32_t) const
+int AUTH_AO::SendMessage(const STG::Message &, uint32_t) const
 {
 errorStr = "Authorization modele \'AlwaysOnline\' does not support sending messages";
 return -1;

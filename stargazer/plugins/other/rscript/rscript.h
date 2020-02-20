@@ -19,8 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef RSCRIPT_H
-#define RSCRIPT_H
+#pragma once
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
@@ -41,14 +40,11 @@
 
 #include <pthread.h>
 
-extern "C" PLUGIN * GetPlugin();
-
-#define RS_DEBUG (1)
-
-#define MAX_SHORT_PCKT  (3)
-
-class SETTINGS;
-class USERS;
+namespace STG
+{
+struct Settings;
+struct Settings;
+}
 
 namespace RS
 {
@@ -57,13 +53,14 @@ class REMOTE_SCRIPT;
 class UpdateRouter;
 class DisconnectUser;
 
+using UserPtr = STG::User*;
+
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
+class ADD_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
 public:
     explicit ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
-        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
-    virtual ~ADD_USER_NONIFIER() {}
-    void Notify(const USER_PTR & user);
+        : rs(r) {}
+    void Notify(const UserPtr & user);
 
 private:
     ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rhs);
@@ -72,12 +69,11 @@ private:
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public NOTIFIER_BASE<USER_PTR> {
+class DEL_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
-        : NOTIFIER_BASE<USER_PTR>(), rs(r) {}
-    virtual ~DEL_USER_NONIFIER() {}
-    void Notify(const USER_PTR & user);
+        : rs(r) {}
+    void Notify(const UserPtr & user);
 
 private:
     DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rhs);
@@ -86,12 +82,12 @@ private:
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
-class IP_NOTIFIER: public PROPERTY_NOTIFIER_BASE<uint32_t> {
+class IP_NOTIFIER: public STG::PropertyNotifierBase<uint32_t> {
 public:
-    IP_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
-        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(u), rs(r) { user->AddCurrIPAfterNotifier(this); }
+    IP_NOTIFIER(REMOTE_SCRIPT & r, UserPtr u)
+        : user(u), rs(r) { user->AddCurrIPAfterNotifier(this); }
     IP_NOTIFIER(const IP_NOTIFIER & rhs)
-        : PROPERTY_NOTIFIER_BASE<uint32_t>(), user(rhs.user), rs(rhs.rs) { user->AddCurrIPAfterNotifier(this); }
+        : user(rhs.user), rs(rhs.rs) { user->AddCurrIPAfterNotifier(this); }
     ~IP_NOTIFIER() { user->DelCurrIPAfterNotifier(this); }
 
     IP_NOTIFIER & operator=(const IP_NOTIFIER & rhs)
@@ -103,20 +99,20 @@ public:
     }
 
     void Notify(const uint32_t & oldValue, const uint32_t & newValue);
-    USER_PTR GetUser() const { return user; }
+    UserPtr GetUser() const { return user; }
 
 private:
 
-    USER_PTR user;
+    UserPtr user;
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
-class CONNECTED_NOTIFIER: public PROPERTY_NOTIFIER_BASE<bool> {
+class CONNECTED_NOTIFIER: public STG::PropertyNotifierBase<bool> {
 public:
-    CONNECTED_NOTIFIER(REMOTE_SCRIPT & r, USER_PTR u)
-        : PROPERTY_NOTIFIER_BASE<bool>(), user(u), rs(r) { user->AddConnectedAfterNotifier(this); }
+    CONNECTED_NOTIFIER(REMOTE_SCRIPT & r, UserPtr u)
+        : user(u), rs(r) { user->AddConnectedAfterNotifier(this); }
     CONNECTED_NOTIFIER(const CONNECTED_NOTIFIER & rhs)
-        : PROPERTY_NOTIFIER_BASE<bool>(), user(rhs.user), rs(rhs.rs) { user->AddConnectedAfterNotifier(this); }
+        : user(rhs.user), rs(rhs.rs) { user->AddConnectedAfterNotifier(this); }
     ~CONNECTED_NOTIFIER() { user->DelConnectedAfterNotifier(this); }
 
     CONNECTED_NOTIFIER & operator=(const CONNECTED_NOTIFIER & rhs)
@@ -128,16 +124,16 @@ public:
     }
 
     void Notify(const bool & oldValue, const bool & newValue);
-    USER_PTR GetUser() const { return user; }
+    UserPtr GetUser() const { return user; }
 
 private:
 
-    USER_PTR user;
+    UserPtr user;
     REMOTE_SCRIPT & rs;
 };
 //-----------------------------------------------------------------------------
 struct USER {
-    USER(const std::vector<uint32_t> & r, USER_PTR it)
+    USER(const std::vector<uint32_t> & r, UserPtr it)
         : lastSentTime(0),
           user(it),
           routers(r),
@@ -146,7 +142,7 @@ struct USER {
     {}
 
     time_t lastSentTime;
-    USER_PTR user;
+    UserPtr user;
     std::vector<uint32_t> routers;
     int shortPacketsCount;
     uint32_t ip;
@@ -157,7 +153,7 @@ public:
                         SETTINGS();
     virtual             ~SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
-    int                 ParseSettings(const MODULE_SETTINGS & s);
+    int                 ParseSettings(const STG::ModuleSettings & s);
     int                 GetSendPeriod() const { return sendPeriod; }
     uint16_t            GetPort() const { return port; }
     const std::vector<NET_ROUTER> & GetSubnetsMap() const { return netRouters; }
@@ -175,30 +171,30 @@ private:
     std::string         subnetFile;
 };
 //-----------------------------------------------------------------------------
-class REMOTE_SCRIPT : public PLUGIN {
+class REMOTE_SCRIPT : public STG::Plugin {
 public:
                         REMOTE_SCRIPT();
-    virtual             ~REMOTE_SCRIPT();
+                        ~REMOTE_SCRIPT() override;
 
-    void                SetUsers(USERS * u) { users = u; }
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    void                SetUsers(STG::Users * u) override { users = u; }
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & ms);
-    bool                IsRunning() { return isRunning; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & ms) override;
+    bool                IsRunning() override { return isRunning; }
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return "Remote script v 0.3"; }
-    uint16_t            GetStartPosition() const { return 10; }
-    uint16_t            GetStopPosition() const { return 10; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override { return "Remote script v 0.3"; }
+    uint16_t            GetStartPosition() const override { return 10; }
+    uint16_t            GetStopPosition() const override { return 10; }
 
-    void                DelUser(USER_PTR u) { UnSetUserNotifiers(u); }
-    void                AddUser(USER_PTR u) { SetUserNotifiers(u); }
+    void                DelUser(UserPtr u) { UnSetUserNotifiers(u); }
+    void                AddUser(UserPtr u) { SetUserNotifiers(u); }
 
-    void                AddRSU(USER_PTR user);
-    void                DelRSU(USER_PTR user);
+    void                AddRSU(UserPtr user);
+    void                DelRSU(UserPtr user);
 
 private:
     REMOTE_SCRIPT(const REMOTE_SCRIPT & rhs);
@@ -216,8 +212,8 @@ private:
     std::vector<uint32_t> IP2Routers(uint32_t ip);
     bool                GetUsers();
 
-    void                SetUserNotifiers(USER_PTR u);
-    void                UnSetUserNotifiers(USER_PTR u);
+    void                SetUserNotifiers(UserPtr u);
+    void                UnSetUserNotifiers(UserPtr u);
 
     void                InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password) const;
     void                Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8) const;
@@ -230,14 +226,14 @@ private:
 
     mutable std::string errorStr;
     SETTINGS         rsSettings;
-    MODULE_SETTINGS     settings;
+    STG::ModuleSettings     settings;
     int                 sendPeriod;
     int                 halfPeriod;
 
     bool                nonstop;
     bool                isRunning;
 
-    USERS *             users;
+    STG::Users *             users;
 
     std::vector<NET_ROUTER> netRouters;
 
@@ -249,7 +245,7 @@ private:
     ADD_USER_NONIFIER onAddUserNotifier;
     DEL_USER_NONIFIER onDelUserNotifier;
 
-    PLUGIN_LOGGER       logger;
+    STG::PluginLogger       logger;
 
     friend class RS::UpdateRouter;
     friend class RS::DisconnectUser;
@@ -267,17 +263,15 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, USER
         REMOTE_SCRIPT & rscript;
 };
 //-----------------------------------------------------------------------------
-inline void ADD_USER_NONIFIER::Notify(const USER_PTR & user)
+inline void ADD_USER_NONIFIER::Notify(const UserPtr & user)
 {
 rs.AddUser(user);
 }
 //-----------------------------------------------------------------------------
-inline void DEL_USER_NONIFIER::Notify(const USER_PTR & user)
+inline void DEL_USER_NONIFIER::Notify(const UserPtr & user)
 {
 rs.DelUser(user);
 }
 //-----------------------------------------------------------------------------
 
 } // namespace RS
-
-#endif

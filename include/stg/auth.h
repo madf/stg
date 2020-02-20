@@ -18,21 +18,19 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.6 $
- $Date: 2009/03/18 17:24:57 $
- */
-
-#ifndef AUTH_H
-#define AUTH_H
+#pragma once
 
 #include "plugin.h"
-#include "message.h"
-#include "noncopyable.h"
 
-class AUTH : public PLUGIN {
-public:
-    virtual int SendMessage(const STG_MSG & msg, uint32_t ip) const = 0;
+#include <cstdint>
+
+namespace STG
+{
+
+struct Message;
+
+struct Auth : Plugin {
+    virtual int SendMessage(const Message& msg, uint32_t ip) const = 0;
 };
 
-#endif
+}

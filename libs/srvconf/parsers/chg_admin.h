@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_ADMIN_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_CHG_ADMIN_H__
+#pragma once
 
 #include "base.h"
 
@@ -27,16 +26,15 @@
 
 #include <string>
 
-struct ADMIN_CONF_RES;
-
 namespace STG
 {
-namespace CHG_ADMIN
+
+struct AdminConfOpt;
+
+namespace ChgAdmin
 {
 
-std::string Serialize(const ADMIN_CONF_RES & conf, const std::string & encoding);
+std::string serialize(const AdminConfOpt& conf, const std::string& encoding);
 
-} // namespace CHG_ADMIN
+} // namespace ChgAdmin
 } // namespace STG
-
-#endif

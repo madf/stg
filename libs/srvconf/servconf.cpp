@@ -57,365 +57,361 @@
 
 using namespace STG;
 
-class SERVCONF::IMPL
+class ServConf::Impl
 {
-public:
-    IMPL(const std::string & server, uint16_t port,
-         const std::string & login, const std::string & password);
-    IMPL(const std::string & server, uint16_t port,
-         const std::string & localAddress, uint16_t localPort,
-         const std::string & login, const std::string & password);
-    ~IMPL() { XML_ParserFree(parser); }
+    public:
+        Impl(const std::string& server, uint16_t port,
+             const std::string& login, const std::string& password);
+        Impl(const std::string& server, uint16_t port,
+             const std::string& localAddress, uint16_t localPort,
+             const std::string& login, const std::string& password);
+        ~Impl() { XML_ParserFree(parser); }
 
-    const std::string & GetStrError() const;
-    static void Start(void * data, const char * el, const char ** attr);
-    static void End(void * data, const char * el);
+        const std::string& GetStrError() const;
+        static void Start(void* data, const char* el, const char** attr);
+        static void End(void* data, const char* el);
 
-    int RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data);
+        int RawXML(const std::string& request, RawXML::Callback f, void* data);
 
-    template <class P, typename C>
-    int Exec(const std::string & request, C callback, void * data)
-    {
-        P cp(callback, data, encoding);
-        return ExecImpl(request, cp);
-    }
+        template <class P, typename C>
+        int Exec(const std::string& request, C callback, void* data)
+        {
+            return ExecImpl(request, P(callback, data, encoding));
+        }
 
-    template <class P, typename C>
-    int Exec(const std::string & tag, const std::string & request, C callback, void * data)
-    {
-        P cp(tag, callback, data, encoding);
-        return ExecImpl(request, cp);
-    }
+        template <class P, typename C>
+        int Exec(const std::string& tag, const std::string& request, C callback, void* data)
+        {
+            return ExecImpl(request, P(tag, callback, data, encoding));
+        }
 
-    const std::string & Encoding() const { return encoding; }
+        const std::string& Encoding() const { return encoding; }
 
-private:
-    NETTRANSACT nt;
+    private:
+        NetTransact nt;
 
-    std::string encoding;
-    std::string errorMsg;
-    XML_Parser parser;
+        std::string encoding;
+        std::string errorMsg;
+        XML_Parser parser;
 
-    static bool ParserRecv(const std::string & chunk, bool final, void * data);
-    static bool SimpleRecv(const std::string & chunk, bool final, void * data);
-    int ExecImpl(const std::string & request, PARSER & cp);
+        static bool ParserRecv(const std::string& chunk, bool last, void* data);
+        static bool SimpleRecv(const std::string& chunk, bool last, void* data);
+        int ExecImpl(const std::string& request, Parser&& cp);
 };
 
-bool SERVCONF::IMPL::ParserRecv(const std::string & chunk, bool final, void * data)
+bool ServConf::Impl::ParserRecv(const std::string& chunk, bool last, void* data)
 {
-SERVCONF::IMPL * sc = static_cast<SERVCONF::IMPL *>(data);
+    auto sc = static_cast<ServConf::Impl*>(data);
 
-if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), final) == XML_STATUS_ERROR)
+    if (XML_Parse(sc->parser, chunk.c_str(), chunk.length(), last) == XML_STATUS_ERROR)
     {
-    strprintf(&sc->errorMsg, "XML parse error at line %d, %d: %s. Is final: %d",
-              static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
-              static_cast<int>(XML_GetCurrentColumnNumber(sc->parser)),
-              XML_ErrorString(XML_GetErrorCode(sc->parser)), (int)final);
-    return false;
+        strprintf(&sc->errorMsg, "XML parse error at line %d, %d: %s. Is last: %d",
+                  static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
+                  static_cast<int>(XML_GetCurrentColumnNumber(sc->parser)),
+                  XML_ErrorString(XML_GetErrorCode(sc->parser)), (int)last);
+        return false;
     }
 
-return true;
+    return true;
 }
 
-bool SERVCONF::IMPL::SimpleRecv(const std::string & chunk, bool /*final*/, void * data)
+bool ServConf::Impl::SimpleRecv(const std::string& chunk, bool /*last*/, void* data)
 {
-*static_cast<std::string *>(data) += chunk;
-return true;
+    *static_cast<std::string*>(data) += chunk;
+    return true;
 }
 
-SERVCONF::SERVCONF(const std::string & server, uint16_t port,
-                   const std::string & login, const std::string & password)
-    : pImpl(new IMPL(server, port, login, password))
-{
-}
-
-SERVCONF::SERVCONF(const std::string & server, uint16_t port,
-                   const std::string & localAddress, uint16_t localPort,
-                   const std::string & login, const std::string & password)
-    : pImpl(new IMPL(server, port, localAddress, localPort, login, password))
+ServConf::ServConf(const std::string& server, uint16_t port,
+                   const std::string& login, const std::string& password)
+    : pImpl(new Impl(server, port, login, password))
 {
 }
 
-SERVCONF::~SERVCONF()
+ServConf::ServConf(const std::string& server, uint16_t port,
+                   const std::string& localAddress, uint16_t localPort,
+                   const std::string& login, const std::string& password)
+    : pImpl(new Impl(server, port, localAddress, localPort, login, password))
 {
-delete pImpl;
 }
 
-int SERVCONF::ServerInfo(SERVER_INFO::CALLBACK f, void * data)
+ServConf::~ServConf()
 {
-return pImpl->Exec<SERVER_INFO::PARSER>("<GetServerInfo/>", f, data);
+    delete pImpl;
 }
 
-int SERVCONF::RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data)
+int ServConf::ServerInfo(ServerInfo::Callback f, void* data)
 {
-return pImpl->RawXML(request, f, data);
+    return pImpl->Exec<ServerInfo::Parser>("<GetServerInfo/>", f, data);
+}
+
+int ServConf::RawXML(const std::string& request, RawXML::Callback f, void* data)
+{
+    return pImpl->RawXML(request, f, data);
 }
 
 // -- Admins --
 
-int SERVCONF::GetAdmins(GET_CONTAINER::CALLBACK<GET_ADMIN::INFO>::TYPE f, void * data)
+int ServConf::GetAdmins(GetContainer::Callback<GetAdmin::Info>::Type f, void* data)
 {
-return pImpl->Exec<GET_CONTAINER::PARSER<GET_ADMIN::PARSER> >("admins", "<GetAdmins/>", f, data);
+    return pImpl->Exec<GetContainer::Parser<GetAdmin::Parser> >("admins", "<GetAdmins/>", f, data);
 }
 
-int SERVCONF::GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data)
+int ServConf::GetAdmin(const std::string& login, GetAdmin::Callback f, void* data)
 {
-return pImpl->Exec<GET_ADMIN::PARSER>("<GetAdmin login=\"" + login + "\"/>", f, data);
+    return pImpl->Exec<GetAdmin::Parser>("<GetAdmin login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+int ServConf::ChgAdmin(const AdminConfOpt& conf, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
+    return pImpl->Exec<Simple::Parser>("ChgAdmin", "<ChgAdmin" + ChgAdmin::serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
-int SERVCONF::AddAdmin(const std::string & login,
-                       const ADMIN_CONF_RES & conf,
-                       SIMPLE::CALLBACK f, void * data)
+int ServConf::AddAdmin(const std::string& login,
+                       const AdminConfOpt& conf,
+                       Simple::Callback f, void* data)
 {
-int res = pImpl->Exec<SIMPLE::PARSER>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
-if (res != st_ok)
-    return res;
-return pImpl->Exec<SIMPLE::PARSER>("ChgAdmin", "<ChgAdmin" + CHG_ADMIN::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
+    auto res = pImpl->Exec<Simple::Parser>("AddAdmin", "<AddAdmin login=\"" + login + "\"/>", f, data);
+    if (res != st_ok)
+        return res;
+    return pImpl->Exec<Simple::Parser>("ChgAdmin", "<ChgAdmin" + ChgAdmin::serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
-int SERVCONF::DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data)
+int ServConf::DelAdmin(const std::string& login, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("DelAdmin", "<DelAdmin login=\"" + login + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("DelAdmin", "<DelAdmin login=\"" + login + "\"/>", f, data);
 }
 
 // -- Tariffs --
 
-int SERVCONF::GetTariffs(GET_CONTAINER::CALLBACK<GET_TARIFF::INFO>::TYPE f, void * data)
+int ServConf::GetTariffs(GetContainer::Callback<GetTariff::Info>::Type f, void* data)
 {
-return pImpl->Exec<GET_CONTAINER::PARSER<GET_TARIFF::PARSER> >("tariffs", "<GetTariffs/>", f, data);
+    return pImpl->Exec<GetContainer::Parser<GetTariff::Parser> >("tariffs", "<GetTariffs/>", f, data);
 }
 
-int SERVCONF::GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data)
+int ServConf::GetTariff(const std::string& name, GetTariff::Callback f, void* data)
 {
-return pImpl->Exec<GET_TARIFF::PARSER>("<GetTariff name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<GetTariff::Parser>("<GetTariff name=\"" + name + "\"/>", f, data);
 }
 
-int SERVCONF::ChgTariff(const TARIFF_DATA_RES & tariffData, SIMPLE::CALLBACK f, void * data)
+int ServConf::ChgTariff(const TariffDataOpt& tariffData, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + CHG_TARIFF::Serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
+    return pImpl->Exec<Simple::Parser>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + ChgTariff::serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
 }
 
-int SERVCONF::AddTariff(const std::string & name,
-                       const TARIFF_DATA_RES & tariffData,
-                       SIMPLE::CALLBACK f, void * data)
+int ServConf::AddTariff(const std::string& name,
+                        const TariffDataOpt& tariffData,
+                        Simple::Callback f, void* data)
 {
-int res = pImpl->Exec<SIMPLE::PARSER>("AddTariff", "<AddTariff name=\"" + name + "\"/>", f, data);
-if (res != st_ok)
-    return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetTariff", "<SetTariff name=\"" + name + "\">" + CHG_TARIFF::Serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
+    auto res = pImpl->Exec<Simple::Parser>("AddTariff", "<AddTariff name=\"" + name + "\"/>", f, data);
+    if (res != st_ok)
+        return res;
+    return pImpl->Exec<Simple::Parser>("SetTariff", "<SetTariff name=\"" + name + "\">" + ChgTariff::serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
 }
 
-int SERVCONF::DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data)
+int ServConf::DelTariff(const std::string& name, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("DelTariff", "<DelTariff name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("DelTariff", "<DelTariff name=\"" + name + "\"/>", f, data);
 }
 
 // -- Users --
 
-int SERVCONF::GetUsers(GET_CONTAINER::CALLBACK<GET_USER::INFO>::TYPE f, void * data)
+int ServConf::GetUsers(GetContainer::Callback<GetUser::Info>::Type f, void* data)
 {
-return pImpl->Exec<GET_CONTAINER::PARSER<GET_USER::PARSER> >("users", "<GetUsers/>", f, data);
+    return pImpl->Exec<GetContainer::Parser<GetUser::Parser> >("users", "<GetUsers/>", f, data);
 }
 
-int SERVCONF::GetUser(const std::string & login, GET_USER::CALLBACK f, void * data)
+int ServConf::GetUser(const std::string& login, GetUser::Callback f, void* data)
 {
-return pImpl->Exec<GET_USER::PARSER>("<GetUser login=\"" + login + "\"/>", f, data);
+    return pImpl->Exec<GetUser::Parser>("<GetUser login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::ChgUser(const std::string & login,
-                      const USER_CONF_RES & conf,
-                      const USER_STAT_RES & stat,
-                      SIMPLE::CALLBACK f, void * data)
+int ServConf::ChgUser(const std::string& login,
+                      const UserConfOpt& conf,
+                      const UserStatOpt& stat,
+                      Simple::Callback f, void* data)
 {
-return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat, pImpl->Encoding()) + "</SetUser>", f, data);
+    return pImpl->Exec<ChgUser::Parser>("<SetUser><Login value=\"" + login + "\"/>" + ChgUser::serialize(conf, stat, pImpl->Encoding()) + "</SetUser>", f, data);
 }
 
-int SERVCONF::DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data)
+int ServConf::DelUser(const std::string& login, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("DelUser", "<DelUser login=\"" + login + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("DelUser", "<DelUser login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::AddUser(const std::string & login,
-                      const USER_CONF_RES & conf,
-                      const USER_STAT_RES & stat,
-                      SIMPLE::CALLBACK f, void * data)
+int ServConf::AddUser(const std::string& login,
+                      const UserConfOpt& conf,
+                      const UserStatOpt& stat,
+                      Simple::Callback f, void* data)
 {
-int res = pImpl->Exec<SIMPLE::PARSER>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
-if (res != st_ok)
-    return res;
-return pImpl->Exec<CHG_USER::PARSER>("<SetUser><Login value=\"" + login + "\"/>" + CHG_USER::Serialize(conf, stat, pImpl->Encoding()) + "</SetUser>", f, data);
+    auto res = pImpl->Exec<Simple::Parser>("AddUser", "<AddUser><Login value=\"" + login + "\"/></AddUser>", f, data);
+    if (res != st_ok)
+        return res;
+    return pImpl->Exec<ChgUser::Parser>("<SetUser><Login value=\"" + login + "\"/>" + ChgUser::serialize(conf, stat, pImpl->Encoding()) + "</SetUser>", f, data);
 }
 
-int SERVCONF::AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data)
+int ServConf::AuthBy(const std::string& login, AuthBy::Callback f, void* data)
 {
-return pImpl->Exec<AUTH_BY::PARSER>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
+    return pImpl->Exec<AuthBy::Parser>("<GetUserAuthBy login=\"" + login + "\"/>", f, data);
 }
 
-int SERVCONF::SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data)
+int ServConf::SendMessage(const std::string& login, const std::string& text, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SendMessageResult", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("SendMessageResult", "<Message login=\"" + login + "\" msgver=\"1\" msgtype=\"1\" repeat=\"0\" repeatperiod=\"0\" showtime=\"0\" text=\"" + Encode12str(text) + "\"/>", f, data);
 }
 
-int SERVCONF::CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data)
+int ServConf::CheckUser(const std::string& login, const std::string& password, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("CheckUser", "<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("CheckUser", "<CheckUser login=\"" + login + "\" password=\"" + password + "\"/>", f, data);
 }
 
 // -- Services --
 
-int SERVCONF::GetServices(GET_CONTAINER::CALLBACK<GET_SERVICE::INFO>::TYPE f, void * data)
+int ServConf::GetServices(GetContainer::Callback<GetService::Info>::Type f, void* data)
 {
-return pImpl->Exec<GET_CONTAINER::PARSER<GET_SERVICE::PARSER> >("services", "<GetServices/>", f, data);
+    return pImpl->Exec<GetContainer::Parser<GetService::Parser> >("services", "<GetServices/>", f, data);
 }
 
-int SERVCONF::GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data)
+int ServConf::GetService(const std::string& name, GetService::Callback f, void* data)
 {
-return pImpl->Exec<GET_SERVICE::PARSER>("<GetService name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<GetService::Parser>("<GetService name=\"" + name + "\"/>", f, data);
 }
 
-int SERVCONF::ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+int ServConf::ChgService(const ServiceConfOpt& conf, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService " + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
+    return pImpl->Exec<Simple::Parser>("SetService", "<SetService " + ChgService::serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
-int SERVCONF::AddService(const std::string & name,
-                         const SERVICE_CONF_RES & conf,
-                         SIMPLE::CALLBACK f, void * data)
+int ServConf::AddService(const std::string& name,
+                         const ServiceConfOpt& conf,
+                         Simple::Callback f, void* data)
 {
-int res = pImpl->Exec<SIMPLE::PARSER>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
-if (res != st_ok)
-    return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetService", "<SetService " + CHG_SERVICE::Serialize(conf, pImpl->Encoding()) + "/>", f, data);
+    auto res = pImpl->Exec<Simple::Parser>("AddService", "<AddService name=\"" + name + "\"/>", f, data);
+    if (res != st_ok)
+        return res;
+    return pImpl->Exec<Simple::Parser>("SetService", "<SetService " + ChgService::serialize(conf, pImpl->Encoding()) + "/>", f, data);
 }
 
-int SERVCONF::DelService(const std::string & name, SIMPLE::CALLBACK f, void * data)
+int ServConf::DelService(const std::string& name, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("DelService", "<DelService name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("DelService", "<DelService name=\"" + name + "\"/>", f, data);
 }
 
 // -- Corporations --
 
-int SERVCONF::GetCorporations(GET_CONTAINER::CALLBACK<GET_CORP::INFO>::TYPE f, void * data)
+int ServConf::GetCorporations(GetContainer::Callback<GetCorp::Info>::Type f, void* data)
 {
-return pImpl->Exec<GET_CONTAINER::PARSER<GET_CORP::PARSER> >("corporations", "<GetCorporations/>", f, data);
+    return pImpl->Exec<GetContainer::Parser<GetCorp::Parser> >("corporations", "<GetCorporations/>", f, data);
 }
 
-int SERVCONF::GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data)
+int ServConf::GetCorp(const std::string& name, GetCorp::Callback f, void* data)
 {
-return pImpl->Exec<GET_CORP::PARSER>("<GetCorp name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<GetCorp::Parser>("<GetCorp name=\"" + name + "\"/>", f, data);
 }
 
-int SERVCONF::ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data)
+int ServConf::ChgCorp(const CorpConfOpt & conf, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + CHG_CORP::Serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
+    return pImpl->Exec<Simple::Parser>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + ChgCorp::serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
 }
 
-int SERVCONF::AddCorp(const std::string & name,
-                      const CORP_CONF_RES & conf,
-                      SIMPLE::CALLBACK f, void * data)
+int ServConf::AddCorp(const std::string& name,
+                      const CorpConfOpt& conf,
+                      Simple::Callback f, void* data)
 {
-int res = pImpl->Exec<SIMPLE::PARSER>("AddCorp", "<AddCorp name=\"" + name + "\"/>", f, data);
-if (res != st_ok)
-    return res;
-return pImpl->Exec<SIMPLE::PARSER>("SetCorp", "<SetCorp name=\"" + name + "\">" + CHG_CORP::Serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
+    auto res = pImpl->Exec<Simple::Parser>("AddCorp", "<AddCorp name=\"" + name + "\"/>", f, data);
+    if (res != st_ok)
+        return res;
+    return pImpl->Exec<Simple::Parser>("SetCorp", "<SetCorp name=\"" + name + "\">" + ChgCorp::serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
 }
 
-int SERVCONF::DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data)
+int ServConf::DelCorp(const std::string& name, Simple::Callback f, void* data)
 {
-return pImpl->Exec<SIMPLE::PARSER>("DelCorp", "<DelCorp name=\"" + name + "\"/>", f, data);
+    return pImpl->Exec<Simple::Parser>("DelCorp", "<DelCorp name=\"" + name + "\"/>", f, data);
 }
 
-const std::string & SERVCONF::GetStrError() const
+const std::string& ServConf::GetStrError() const
 {
-return pImpl->GetStrError();
+    return pImpl->GetStrError();
 }
 
 //-----------------------------------------------------------------------------
-SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
-                     const std::string & login, const std::string & password)
+ServConf::Impl::Impl(const std::string& server, uint16_t port,
+                     const std::string& login, const std::string& password)
     : nt(server, port, login, password)
 {
-setlocale(LC_ALL, "");
-setlocale(LC_NUMERIC, "C");
-encoding = nl_langinfo(CODESET);
-parser = XML_ParserCreate(NULL);
+    setlocale(LC_ALL, "");
+    setlocale(LC_NUMERIC, "C");
+    encoding = nl_langinfo(CODESET);
+    parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
-SERVCONF::IMPL::IMPL(const std::string & server, uint16_t port,
-                     const std::string & localAddress, uint16_t localPort,
-                     const std::string & login, const std::string & password)
+ServConf::Impl::Impl(const std::string& server, uint16_t port,
+                     const std::string& localAddress, uint16_t localPort,
+                     const std::string& login, const std::string& password)
     : nt(server, port, localAddress, localPort, login, password)
 {
-setlocale(LC_ALL, "");
-setlocale(LC_NUMERIC, "C");
-encoding = nl_langinfo(CODESET);
-parser = XML_ParserCreate(NULL);
+    setlocale(LC_ALL, "");
+    setlocale(LC_NUMERIC, "C");
+    encoding = nl_langinfo(CODESET);
+    parser = XML_ParserCreate(NULL);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::IMPL::Start(void * data, const char * el, const char ** attr)
+void ServConf::Impl::Start(void* data, const char* el, const char** attr)
 {
-PARSER * currParser = static_cast<PARSER *>(data);
-currParser->ParseStart(el, attr);
+    static_cast<Parser*>(data)->ParseStart(el, attr);
 }
 //-----------------------------------------------------------------------------
-void SERVCONF::IMPL::End(void * data, const char * el)
+void ServConf::Impl::End(void* data, const char* el)
 {
-PARSER * currParser = static_cast<PARSER *>(data);
-currParser->ParseEnd(el);
+    static_cast<Parser*>(data)->ParseEnd(el);
 }
 //-----------------------------------------------------------------------------
-const std::string & SERVCONF::IMPL::GetStrError() const
+const std::string & ServConf::Impl::GetStrError() const
 {
-return errorMsg;
+    return errorMsg;
 }
 //-----------------------------------------------------------------------------
-int SERVCONF::IMPL::ExecImpl(const std::string & request, PARSER & cp)
+int ServConf::Impl::ExecImpl(const std::string& request, Parser&& cp)
 {
-XML_ParserReset(parser, NULL);
-XML_SetElementHandler(parser, Start, End);
-XML_SetUserData(parser, &cp);
+    XML_ParserReset(parser, NULL);
+    XML_SetElementHandler(parser, Start, End);
+    XML_SetUserData(parser, &cp);
 
-int ret = 0;
-if ((ret = nt.Connect()) != st_ok)
+    int ret = 0;
+    if ((ret = nt.Connect()) != st_ok)
     {
-    errorMsg = nt.GetError();
-    cp.Failure(errorMsg);
-    return ret;
+        errorMsg = nt.GetError();
+        cp.Failure(errorMsg);
+        return ret;
     }
-if ((ret = nt.Transact(request, ParserRecv, this)) != st_ok)
+    if ((ret = nt.Transact(request, ParserRecv, this)) != st_ok)
     {
-    errorMsg = nt.GetError();
-    cp.Failure(errorMsg);
-    return ret;
+        errorMsg = nt.GetError();
+        cp.Failure(errorMsg);
+        return ret;
     }
 
-nt.Disconnect();
-return st_ok;
+    nt.Disconnect();
+    return st_ok;
 }
 
-int SERVCONF::IMPL::RawXML(const std::string & request, RAW_XML::CALLBACK callback, void * data)
+int ServConf::Impl::RawXML(const std::string& request, RawXML::Callback callback, void* data)
 {
-int ret = 0;
-if ((ret = nt.Connect()) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    callback(false, errorMsg, "", data);
-    return ret;
-    }
-std::string response;
-if ((ret = nt.Transact(request, SimpleRecv, &response)) != st_ok)
-    {
-    errorMsg = nt.GetError();
-    callback(false, errorMsg, "", data);
-    return ret;
-    }
+    int ret = 0;
+    if ((ret = nt.Connect()) != st_ok)
+        {
+        errorMsg = nt.GetError();
+        callback(false, errorMsg, "", data);
+        return ret;
+        }
+    std::string response;
+    if ((ret = nt.Transact(request, SimpleRecv, &response)) != st_ok)
+        {
+        errorMsg = nt.GetError();
+        callback(false, errorMsg, "", data);
+        return ret;
+        }
 
-nt.Disconnect();
-callback(true, "", response, data);
-return st_ok;
+    nt.Disconnect();
+    callback(true, "", response, data);
+    return st_ok;
 }

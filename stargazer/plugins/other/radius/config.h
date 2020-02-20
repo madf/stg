@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_RADIUS_CONFIG_H__
-#define __STG_RADIUS_CONFIG_H__
+#pragma once
 
 #include "stg/module_settings.h"
 
@@ -30,10 +29,10 @@
 #include <unistd.h> // uid_t, gid_t
 #include <sys/stat.h> // mode_t
 
-class USER;
-
 namespace STG
 {
+
+struct User;
 
 struct Config
 {
@@ -59,7 +58,7 @@ struct Config
             Authorize() : m_auth(false) {}
             Authorize(const Pairs& cond) : m_auth(true), m_cond(cond) {}
 
-            bool check(const USER& user, const Pairs& radiusData) const;
+            bool check(const User& user, const Pairs& radiusData) const;
             bool exists() const { return m_auth; }
         private:
             bool m_auth;
@@ -68,7 +67,7 @@ struct Config
 
     struct Section
     {
-        Section() {}
+        Section() = default;
         Section(const Pairs& ma, const Pairs& mo, const Pairs& re, ReturnCode code, const Authorize& auth)
             : match(ma), modify(mo), reply(re), returnCode(code), authorize(auth) {}
         Pairs match;
@@ -78,8 +77,8 @@ struct Config
         Authorize authorize;
     };
 
-    Config() {}
-    Config(const MODULE_SETTINGS& settings);
+    Config() = default;
+    Config(const ModuleSettings& settings);
 
     Section autz;
     Section auth;
@@ -102,5 +101,3 @@ struct Config
 };
 
 } // namespace STG
-
-#endif

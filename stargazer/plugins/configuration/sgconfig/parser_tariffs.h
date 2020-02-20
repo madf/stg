@@ -19,8 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_TARIFFS_H__
-#define __STG_SGCONFIG_PARSER_TARIFFS_H__
+#pragma once
 
 #include "parser.h"
 
@@ -29,12 +28,13 @@
 
 #include <string>
 
-class TARIFFS;
-class USERS;
-class ADMIN;
-
 namespace STG
 {
+
+struct Tariffs;
+struct Users;
+struct Admin;
+
 namespace PARSER
 {
 
@@ -44,21 +44,21 @@ class GET_TARIFFS: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(const TARIFFS & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_TARIFFS(admin, m_tariffs); }
-                static void Register(REGISTRY & registry, const TARIFFS & tariffs)
+                explicit FACTORY(const Tariffs & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new GET_TARIFFS(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, const Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
-                const TARIFFS & m_tariffs;
+                const Tariffs & m_tariffs;
         };
 
         static const char * tag;
 
-        GET_TARIFFS(const ADMIN & admin, const TARIFFS & tariffs)
+        GET_TARIFFS(const Admin & admin, const Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
 
     private:
-        const TARIFFS & m_tariffs;
+        const Tariffs & m_tariffs;
 
         void CreateAnswer();
 };
@@ -69,23 +69,23 @@ class ADD_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new ADD_TARIFF(admin, m_tariffs); }
-                static void Register(REGISTRY & registry, TARIFFS & tariffs)
+                explicit FACTORY(Tariffs & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_TARIFF(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
-                TARIFFS & m_tariffs;
+                Tariffs & m_tariffs;
         };
 
         static const char * tag;
 
-        ADD_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
+        ADD_TARIFF(const Admin & admin, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         std::string tariff;
-        TARIFFS & m_tariffs;
+        Tariffs & m_tariffs;
 
         void CreateAnswer();
 };
@@ -96,25 +96,25 @@ class DEL_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(TARIFFS & tariffs, const USERS & users) : m_tariffs(tariffs), m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new DEL_TARIFF(admin, m_users, m_tariffs); }
-                static void Register(REGISTRY & registry, TARIFFS & tariffs, const USERS & users)
+                FACTORY(Tariffs & tariffs, const Users & users) : m_tariffs(tariffs), m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_TARIFF(admin, m_users, m_tariffs); }
+                static void Register(REGISTRY & registry, Tariffs & tariffs, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(tariffs, users); }
             private:
-                TARIFFS & m_tariffs;
-                const USERS & m_users;
+                Tariffs & m_tariffs;
+                const Users & m_users;
         };
 
         static const char * tag;
 
-        DEL_TARIFF(const ADMIN & admin, const USERS & users, TARIFFS & tariffs)
+        DEL_TARIFF(const Admin & admin, const Users & users, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_users(users), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
         std::string tariff;
-        const USERS & m_users;
-        TARIFFS & m_tariffs;
+        const Users & m_users;
+        Tariffs & m_tariffs;
 
         void CreateAnswer();
 };
@@ -125,23 +125,23 @@ class CHG_TARIFF: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(TARIFFS & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new CHG_TARIFF(admin, m_tariffs); }
-                static void Register(REGISTRY & registry, TARIFFS & tariffs)
+                explicit FACTORY(Tariffs & tariffs) : m_tariffs(tariffs) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_TARIFF(admin, m_tariffs); }
+                static void Register(REGISTRY & registry, Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
-                TARIFFS & m_tariffs;
+                Tariffs & m_tariffs;
         };
 
         static const char * tag;
 
-        CHG_TARIFF(const ADMIN & admin, TARIFFS & tariffs)
+        CHG_TARIFF(const Admin & admin, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        TARIFF_DATA_RES td;
-        TARIFFS & m_tariffs;
+        TariffDataOpt td;
+        Tariffs & m_tariffs;
 
         int CheckTariffData();
         void CreateAnswer();
@@ -149,5 +149,3 @@ class CHG_TARIFF: public BASE_PARSER
 
 } // namespace PARSER
 } // namespace STG
-
-#endif

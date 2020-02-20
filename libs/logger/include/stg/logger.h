@@ -1,66 +1,59 @@
-#ifndef STG_LOGGER_H
-#define STG_LOGGER_H
+#pragma once
 
 #include <string>
+#include <mutex>
 
-#include <pthread.h>
-
-class STG_LOGGER;
-STG_LOGGER & GetStgLogger();
-//-----------------------------------------------------------------------------
-class STG_LOGGER_LOCKER
+namespace STG
 {
-public:
-    explicit STG_LOGGER_LOCKER(pthread_mutex_t * m) : mutex(m) { pthread_mutex_lock(mutex); }
-    ~STG_LOGGER_LOCKER() { pthread_mutex_unlock(mutex); }
 
-private:
-    STG_LOGGER_LOCKER(const STG_LOGGER_LOCKER & rvalue);
-    STG_LOGGER_LOCKER & operator=(const STG_LOGGER_LOCKER & rvalue);
+class Logger
+{
+    public:
+        void setFileName(const std::string& fn);
+        void operator()(const char * fmt, ...) const;
+        void operator()(const std::string & line) const { logString(line.c_str()); }
 
-    pthread_mutex_t * mutex;
+        static Logger& get();
+
+    private:
+        const char* logDate(time_t t) const;
+        void logString(const char* str) const;
+
+        mutable std::mutex mutex;
+        std::string fileName;
 };
 //-----------------------------------------------------------------------------
-class STG_LOGGER
+class PluginLogger
 {
-friend STG_LOGGER & GetStgLogger();
-friend class PLUGIN_LOGGER;
+    public:
+        static PluginLogger get(std::string pluginName)
+        {
+            return PluginLogger(std::move(pluginName));
+        }
 
-public:
-    ~STG_LOGGER();
-    void SetLogFileName(const std::string & fn);
-    void operator()(const char * fmt, ...) const;
-    void operator()(const std::string & line) const { LogString(line.c_str()); }
+        PluginLogger(PluginLogger&& rhs)
+            : m_parent(Logger::get()),
+              m_pluginName(std::move(rhs.m_pluginName))
+        {}
+        PluginLogger& operator=(PluginLogger&& rhs)
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_pluginName = std::move(rhs.m_pluginName);
+            return *this;
+        }
 
-private:
-    STG_LOGGER();
-    STG_LOGGER(const STG_LOGGER & rvalue);
-    STG_LOGGER & operator=(const STG_LOGGER & rvalue);
+        void operator()(const char* fmt, ...) const;
+        void operator()(const std::string& line) const;
 
-    const char * LogDate(time_t t) const;
-    void LogString(const char * str) const;
+    private:
+        explicit PluginLogger(std::string pn)
+            : m_parent(Logger::get()),
+              m_pluginName(std::move(pn))
+        {}
 
-    std::string fileName;
-    mutable pthread_mutex_t mutex;
-};
-//-----------------------------------------------------------------------------
-class PLUGIN_LOGGER
-{
-friend PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER& logger, const std::string& pluginName);
-
-public:
-    PLUGIN_LOGGER(const PLUGIN_LOGGER& rhs) : m_parent(rhs.m_parent), m_pluginName(rhs.m_pluginName) {} // Need move here.
-    void operator()(const char* fmt, ...) const;
-    void operator()(const std::string& line) const;
-
-private:
-    PLUGIN_LOGGER& operator=(const PLUGIN_LOGGER&); // Copy assignment is prohibited.
-
-    PLUGIN_LOGGER(const STG_LOGGER & logger, const std::string & pn);
-    const STG_LOGGER& m_parent;
-    std::string m_pluginName;
+        mutable std::mutex m_mutex;
+        Logger& m_parent;
+        std::string m_pluginName;
 };
 
-PLUGIN_LOGGER GetPluginLogger(const STG_LOGGER & logger, const std::string & pluginName);
-
-#endif //STG_LOGGER_H
+}

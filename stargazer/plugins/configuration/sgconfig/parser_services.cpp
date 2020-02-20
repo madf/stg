@@ -47,7 +47,7 @@ void GET_SERVICES::CreateAnswer()
     }*/
 
     m_answer = "<Services>";
-    SERVICE_CONF conf;
+    ServiceConf conf;
     int h = m_services.OpenSearch();
     while (m_services.SearchNext(h, &conf) == 0)
     {
@@ -80,7 +80,7 @@ void GET_SERVICE::CreateAnswer()
         return;
     }*/
 
-    SERVICE_CONF conf;
+    ServiceConf conf;
     if (!m_services.Find(m_name, &conf))
         m_answer = "<Error result=\"Service '" + m_name + "' does not exist.\"/>";
     else
@@ -102,7 +102,7 @@ int ADD_SERVICE::Start(void *, const char * el, const char ** attr)
 
 void ADD_SERVICE::CreateAnswer()
 {
-    SERVICE_CONF conf(m_name);
+    ServiceConf conf(m_name);
     if (m_services.Add(conf, &m_currAdmin) == 0)
         m_answer = "<" + m_tag + " result=\"Ok\"/>";
     else
@@ -190,13 +190,13 @@ void CHG_SERVICE::CreateAnswer()
         return;
     }
 
-    SERVICE_CONF orig;
+    ServiceConf orig;
     m_services.Find(m_service.name.const_data(), &orig);
 
-    SERVICE_CONF_RES conf(orig);
-    conf.Splice(m_service);
+    ServiceConfOpt conf(orig);
+    conf.splice(m_service);
 
-    if (m_services.Change(conf.GetData(), &m_currAdmin) != 0)
+    if (m_services.Change(conf.get({}), &m_currAdmin) != 0)
         m_answer = "<" + m_tag + " result = \"" + m_services.GetStrError() + "\"/>";
     else
         m_answer = "<" + m_tag + " result = \"Ok\"/>";

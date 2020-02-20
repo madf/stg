@@ -19,93 +19,89 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SERVCONF_H__
-#define __STG_STGLIBS_SERVCONF_H__
+#pragma once
 
 #include "stg/servconf_types.h"
-
-#include "stg/admin_conf.h"
 
 #include <string>
 #include <cstdint>
 
-struct USER_CONF_RES;
-struct USER_STAT_RES;
-struct TARIFF_DATA_RES;
-struct SERVICE_CONF_RES;
-struct CORP_CONF_RES;
-
 namespace STG
 {
 
-class SERVCONF
+struct AdminConfOpt;
+struct UserConfOpt;
+struct UserStatOpt;
+struct TariffDataOpt;
+struct ServiceConfOpt;
+struct CorpConfOpt;
+
+class ServConf
 {
-public:
-    SERVCONF(const std::string & server, uint16_t port,
-             const std::string & login, const std::string & password);
-    SERVCONF(const std::string & server, uint16_t port,
-             const std::string & localAddress, uint16_t localPort,
-             const std::string & login, const std::string & password);
-    ~SERVCONF();
+    public:
+        ServConf(const std::string& server, uint16_t port,
+                 const std::string& login, const std::string& password);
+        ServConf(const std::string& server, uint16_t port,
+                 const std::string& localAddress, uint16_t localPort,
+                 const std::string& login, const std::string& password);
+        ~ServConf();
 
-    int ServerInfo(SERVER_INFO::CALLBACK f, void * data);
+        int ServerInfo(ServerInfo::Callback f, void* data);
 
-    int RawXML(const std::string & request, RAW_XML::CALLBACK f, void * data);
+        int RawXML(const std::string& request, RawXML::Callback f, void* data);
 
-    int GetAdmins(GET_CONTAINER::CALLBACK<GET_ADMIN::INFO>::TYPE f, void * data);
-    int GetAdmin(const std::string & login, GET_ADMIN::CALLBACK f, void * data);
-    int ChgAdmin(const ADMIN_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
-    int AddAdmin(const std::string & login,
-                 const ADMIN_CONF_RES & conf,
-                 SIMPLE::CALLBACK f, void * data);
-    int DelAdmin(const std::string & login, SIMPLE::CALLBACK f, void * data);
+        int GetAdmins(GetContainer::Callback<GetAdmin::Info>::Type f, void* data);
+        int GetAdmin(const std::string& login, GetAdmin::Callback f, void* data);
+        int ChgAdmin(const AdminConfOpt& conf, Simple::Callback f, void* data);
+        int AddAdmin(const std::string& login,
+                     const AdminConfOpt& conf,
+                     Simple::Callback f, void* data);
+        int DelAdmin(const std::string& login, Simple::Callback f, void* data);
 
-    int GetTariffs(GET_CONTAINER::CALLBACK<GET_TARIFF::INFO>::TYPE f, void * data);
-    int GetTariff(const std::string & name, GET_TARIFF::CALLBACK f, void * data);
-    int ChgTariff(const TARIFF_DATA_RES & conf, SIMPLE::CALLBACK f, void * data);
-    int AddTariff(const std::string & name,
-                  const TARIFF_DATA_RES & conf,
-                  SIMPLE::CALLBACK f, void * data);
-    int DelTariff(const std::string & name, SIMPLE::CALLBACK f, void * data);
+        int GetTariffs(GetContainer::Callback<GetTariff::Info>::Type f, void* data);
+        int GetTariff(const std::string& name, GetTariff::Callback f, void* data);
+        int ChgTariff(const TariffDataOpt& conf, Simple::Callback f, void* data);
+        int AddTariff(const std::string& name,
+                      const TariffDataOpt& conf,
+                      Simple::Callback f, void* data);
+        int DelTariff(const std::string& name, Simple::Callback f, void* data);
 
-    int GetUsers(GET_CONTAINER::CALLBACK<GET_USER::INFO>::TYPE f, void * data);
-    int GetUser(const std::string & login, GET_USER::CALLBACK f, void * data);
-    int ChgUser(const std::string & login,
-                const USER_CONF_RES & conf,
-                const USER_STAT_RES & stat,
-                SIMPLE::CALLBACK f, void * data);
-    int DelUser(const std::string & login, SIMPLE::CALLBACK f, void * data);
-    int AddUser(const std::string & login,
-                const USER_CONF_RES & conf,
-                const USER_STAT_RES & stat,
-                SIMPLE::CALLBACK f, void * data);
-    int AuthBy(const std::string & login, AUTH_BY::CALLBACK f, void * data);
-    int SendMessage(const std::string & login, const std::string & text, SIMPLE::CALLBACK f, void * data);
-    int CheckUser(const std::string & login, const std::string & password, SIMPLE::CALLBACK f, void * data);
+        int GetUsers(GetContainer::Callback<GetUser::Info>::Type f, void* data);
+        int GetUser(const std::string& login, GetUser::Callback f, void* data);
+        int ChgUser(const std::string& login,
+                    const UserConfOpt& conf,
+                    const UserStatOpt& stat,
+                    Simple::Callback f, void* data);
+        int DelUser(const std::string& login, Simple::Callback f, void* data);
+        int AddUser(const std::string& login,
+                    const UserConfOpt& conf,
+                    const UserStatOpt& stat,
+                    Simple::Callback f, void* data);
+        int AuthBy(const std::string& login, AuthBy::Callback f, void* data);
+        int SendMessage(const std::string& login, const std::string& text, Simple::Callback f, void* data);
+        int CheckUser(const std::string& login, const std::string& password, Simple::Callback f, void* data);
 
-    int GetServices(GET_CONTAINER::CALLBACK<GET_SERVICE::INFO>::TYPE f, void * data);
-    int GetService(const std::string & name, GET_SERVICE::CALLBACK f, void * data);
-    int ChgService(const SERVICE_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
-    int AddService(const std::string & name,
-                   const SERVICE_CONF_RES & conf,
-                   SIMPLE::CALLBACK f, void * data);
-    int DelService(const std::string & name, SIMPLE::CALLBACK f, void * data);
+        int GetServices(GetContainer::Callback<GetService::Info>::Type f, void* data);
+        int GetService(const std::string& name, GetService::Callback f, void* data);
+        int ChgService(const ServiceConfOpt& conf, Simple::Callback f, void* data);
+        int AddService(const std::string& name,
+                       const ServiceConfOpt& conf,
+                       Simple::Callback f, void* data);
+        int DelService(const std::string& name, Simple::Callback f, void* data);
 
-    int GetCorporations(GET_CONTAINER::CALLBACK<GET_CORP::INFO>::TYPE f, void * data);
-    int GetCorp(const std::string & name, GET_CORP::CALLBACK f, void * data);
-    int ChgCorp(const CORP_CONF_RES & conf, SIMPLE::CALLBACK f, void * data);
-    int AddCorp(const std::string & name,
-                const CORP_CONF_RES & conf,
-                SIMPLE::CALLBACK f, void * data);
-    int DelCorp(const std::string & name, SIMPLE::CALLBACK f, void * data);
+        int GetCorporations(GetContainer::Callback<GetCorp::Info>::Type f, void* data);
+        int GetCorp(const std::string& name, GetCorp::Callback f, void* data);
+        int ChgCorp(const CorpConfOpt& conf, Simple::Callback f, void* data);
+        int AddCorp(const std::string& name,
+                    const CorpConfOpt& conf,
+                    Simple::Callback f, void* data);
+        int DelCorp(const std::string & name, Simple::Callback f, void* data);
 
-    const std::string & GetStrError() const;
+        const std::string& GetStrError() const;
 
-private:
-    class IMPL;
-    IMPL * pImpl;
+    private:
+        class Impl;
+        Impl* pImpl;
 };
 
 } // namespace STG
-
-#endif

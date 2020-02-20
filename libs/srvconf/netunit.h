@@ -18,58 +18,56 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-#ifndef NetUnitH
-#define NetUnitH
-
-#include <cstdint>
+#pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace STG
 {
 
-class NETTRANSACT
+class NetTransact
 {
-public:
-    typedef bool (* CALLBACK)(const std::string &, bool, void *);
+    public:
+        using Callback = bool (*)(const std::string&, bool, void *);
 
-    NETTRANSACT(const std::string & server, uint16_t port,
-                const std::string & login, const std::string & password);
-    NETTRANSACT(const std::string & server, uint16_t port,
-                const std::string & localAddress, uint16_t localPort,
-                const std::string & login, const std::string & password);
-    ~NETTRANSACT();
-    int Transact(const std::string & request, CALLBACK f, void * data);
-    const std::string & GetError() const { return errorMsg; }
+        NetTransact(const std::string& server, uint16_t port,
+                    const std::string& login, const std::string& password);
+        NetTransact(const std::string& server, uint16_t port,
+                    const std::string& localAddress, uint16_t localPort,
+                    const std::string& login, const std::string& password);
+        ~NetTransact();
 
-    int  Connect();
-    void Disconnect();
-private:
-    int  TxHeader();
-    int  RxHeaderAnswer();
+        int Transact(const std::string& request, Callback f, void* data);
+        const std::string & GetError() const { return errorMsg; }
 
-    int  TxLogin();
-    int  RxLoginAnswer();
+        int  Connect();
+        void Disconnect();
 
-    int  TxLoginS();
-    int  RxLoginSAnswer();
+    private:
+        int  TxHeader();
+        int  RxHeaderAnswer();
 
-    int  TxData(const std::string & text);
-    int  RxDataAnswer(CALLBACK f, void * data);
+        int  TxLogin();
+        int  RxLoginAnswer();
 
-    std::string server;
-    uint16_t  port;
-    std::string localAddress;
-    uint16_t localPort;
-    std::string login;
-    std::string password;
-    int sock;
-    std::string errorMsg;
+        int  TxLoginS();
+        int  RxLoginSAnswer();
 
-    static bool TxCrypto(const void * block, size_t size, void * data);
-    static bool RxCrypto(const void * block, size_t size, void * data);
+        int  TxData(const std::string& text);
+        int  RxDataAnswer(Callback f, void* data);
+
+        std::string server;
+        uint16_t  port;
+        std::string localAddress;
+        uint16_t localPort;
+        std::string login;
+        std::string password;
+        int sock;
+        std::string errorMsg;
+
+        static bool TxCrypto(const void * block, size_t size, void * data);
+        static bool RxCrypto(const void * block, size_t size, void * data);
 };
 
 } // namespace STG
-
-#endif

@@ -29,49 +29,49 @@
 
 using namespace STG;
 
-SERVER_INFO::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+ServerInfo::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
       depth(0),
       parsingAnswer(false)
 {
-    AddParser(propertyParsers, "uname", info.uname);
-    AddParser(propertyParsers, "version", info.version);
-    AddParser(propertyParsers, "tariff", info.tariffType);
-    AddParser(propertyParsers, "dir_num", info.dirNum);
-    AddParser(propertyParsers, "user_num", info.usersNum);
-    AddParser(propertyParsers, "tariff_num", info.tariffNum);
+    addParser(propertyParsers, "uname", info.uname);
+    addParser(propertyParsers, "version", info.version);
+    addParser(propertyParsers, "tariff", info.tariffType);
+    addParser(propertyParsers, "dir_num", info.dirNum);
+    addParser(propertyParsers, "user_num", info.usersNum);
+    addParser(propertyParsers, "tariff_num", info.tariffNum);
 
     for (size_t i = 0; i < DIR_NUM; i++)
-        AddParser(propertyParsers, "dir_name_" + std::to_string(i), info.dirName[i], GetEncodedValue);
+        addParser(propertyParsers, "dir_name_" + std::to_string(i), info.dirName[i], getEncodedValue);
 }
 //-----------------------------------------------------------------------------
-int SERVER_INFO::PARSER::ParseStart(const char *el, const char **attr)
+int ServerInfo::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
+    depth++;
+    if (depth == 1)
     {
-    if (strcasecmp(el, "GetServerInfo") == 0)
-        parsingAnswer = true;
+        if (strcasecmp(el, "GetServerInfo") == 0)
+            parsingAnswer = true;
     }
-else
+    else
     {
-    if (depth == 2 && parsingAnswer)
-        if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
-            error = "Invalid parameter.";
+        if (depth == 2 && parsingAnswer)
+            if (!tryParse(propertyParsers, ToLower(el), attr, encoding))
+                error = "Invalid parameter.";
     }
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void SERVER_INFO::PARSER::ParseEnd(const char * /*el*/)
+void ServerInfo::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0 && parsingAnswer)
+    depth--;
+    if (depth == 0 && parsingAnswer)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    error.clear();
-    parsingAnswer = false;
+        if (callback)
+            callback(error.empty(), error, info, data);
+        error.clear();
+        parsingAnswer = false;
     }
 }

@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_ADMIN_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_GET_ADMIN_H__
+#pragma once
 
 #include "base.h"
 #include "property.h"
@@ -31,35 +30,34 @@
 
 namespace STG
 {
-namespace GET_ADMIN
+namespace GetAdmin
 {
 
-class PARSER: public STG::PARSER
+class Parser: public STG::Parser
 {
-public:
-    typedef GET_ADMIN::INFO INFO;
+    public:
+        using Info = GetAdmin::Info;
 
-    PARSER(CALLBACK f, void * data, const std::string & encoding);
-    virtual ~PARSER();
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void Failure(const std::string & reason) { callback(false, reason, info, data); }
+        Parser(Callback f, void* data, const std::string& encoding);
 
-private:
-    PROPERTY_PARSERS propertyParsers;
-    CALLBACK callback;
-    void * data;
-    std::string encoding;
-    INFO info;
-    int depth;
-    bool parsingAnswer;
-    std::string error;
+        ~Parser() override;
+        int  ParseStart(const char* el, const char** attr) override;
+        void ParseEnd(const char* el) override;
+        void Failure(const std::string& reason) override { callback(false, reason, info, data); }
 
-    void ParseAdmin(const char * el, const char ** attr);
-    //void ParseAdminParams(const char * el, const char ** attr);
+    private:
+        PropertyParsers propertyParsers;
+        Callback callback;
+        void* data;
+        std::string encoding;
+        Info info;
+        int depth;
+        bool parsingAnswer;
+        std::string error;
+
+        void ParseAdmin(const char* el, const char** attr);
+        //void ParseAdminParams(const char* el, const char** attr);
 };
 
-} // namespace GET_ADMIN
+} // namespace GetAdmin
 } // namespace STG
-
-#endif

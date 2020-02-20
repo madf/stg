@@ -22,6 +22,8 @@
 #include "parser_admins.h"
 
 #include "stg/admins.h"
+#include "stg/admin.h"
+#include "stg/admin_conf.h"
 
 #include <strings.h> // strcasecmp
 
@@ -37,7 +39,7 @@ const char * CHG_ADMIN::tag  = "ChgAdmin";
 
 void GET_ADMINS::CreateAnswer()
 {
-    const PRIV * priv = m_currAdmin.GetPriv();
+    const auto priv = m_currAdmin.GetPriv();
     if (!priv->adminChg)
     {
         m_answer = "<Error Result=\"Error. Access denied.\"/>";
@@ -45,7 +47,7 @@ void GET_ADMINS::CreateAnswer()
     }
 
     m_answer = "<Admins>";
-    ADMIN_CONF ac;
+    AdminConf ac;
     int h = m_admins.OpenSearch();
 
     while (m_admins.SearchNext(h, &ac) == 0)
@@ -137,7 +139,7 @@ void CHG_ADMIN::CreateAnswer()
 {
     if (!login.empty())
     {
-        ADMIN * origAdmin = NULL;
+        Admin * origAdmin = NULL;
 
         if (m_admins.Find(login, &origAdmin))
         {
@@ -145,7 +147,7 @@ void CHG_ADMIN::CreateAnswer()
             return;
         }
 
-        ADMIN_CONF conf(origAdmin->GetConf());
+        AdminConf conf(origAdmin->GetConf());
 
         if (!password.empty())
             conf.password = password.data();
@@ -159,7 +161,7 @@ void CHG_ADMIN::CreateAnswer()
                 return;
             }
 
-            conf.priv.FromInt(p);
+            conf.priv = Priv(p);
         }
 
         if (m_admins.Change(conf, &m_currAdmin) != 0)

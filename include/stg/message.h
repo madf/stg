@@ -1,55 +1,60 @@
-#ifndef STG_MESSAGES_H
-#define STG_MESSAGES_H
-
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.3 $
- $Date: 2010/03/04 11:49:52 $
- */
+#pragma once
 
+#include <string>
 #include <ctime>
 #include <cstdint>
-#include <string>
 
-//-----------------------------------------------------------------------------
-struct STG_MSG_HDR
+namespace STG
 {
-STG_MSG_HDR()
-    : id(0),
-      ver(0),
-      type(0),
-      lastSendTime(0),
-      creationTime(0),
-      showTime(0),
-      repeat(0),
-      repeatPeriod(0)
-{}
 
-uint64_t    id;
-unsigned    ver;
-unsigned    type;
-unsigned    lastSendTime;
-unsigned    creationTime;
-unsigned    showTime;
-int         repeat;
-unsigned    repeatPeriod;
+struct Message
+{
+    struct Header
+    {
+        Header() noexcept
+            : id(0),
+              ver(0),
+              type(0),
+              lastSendTime(0),
+              creationTime(0),
+              showTime(0),
+              repeat(0),
+              repeatPeriod(0)
+        {}
+
+        Header(const Header&) = default;
+        Header& operator=(const Header&) = default;
+        Header(Header&&) = default;
+        Header& operator=(Header&&) = default;
+
+        uint64_t    id;
+        unsigned    ver;
+        unsigned    type;
+        unsigned    lastSendTime;
+        unsigned    creationTime;
+        unsigned    showTime;
+        int         repeat;
+        unsigned    repeatPeriod;
+    };
+
+    Message() = default;
+
+    Message(const Message&) = default;
+    Message& operator=(const Message&) = default;
+    Message(Message&&) = default;
+    Message& operator=(Message&&) = default;
+
+    time_t GetNextSendTime() const
+    {
+        return header.lastSendTime + header.repeat * 60;
+    }
+
+    Header header;
+    std::string text;
 };
-//-----------------------------------------------------------------------------
-struct STG_MSG
-{
-STG_MSG() : header(), text() {}
 
-time_t GetNextSendTime() const
-{
-return header.lastSendTime + header.repeat * 60;
 }
-
-STG_MSG_HDR header;
-std::string text;
-};
-//-----------------------------------------------------------------------------
-
-#endif

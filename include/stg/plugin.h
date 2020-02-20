@@ -18,53 +18,46 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.12 $
- $Date: 2010/03/04 11:53:14 $
- $Author: faust $
-*/
-
-
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#pragma once
 
 #include <string>
 #include <cstdint>
 
-#include "noncopyable.h"
-#include "admins.h"
-#include "users.h"
-#include "tariffs.h"
-#include "services.h"
-#include "corporations.h"
+namespace STG
+{
 
-class TRAFFCOUNTER;
-class SETTINGS;
-class STORE;
-struct MODULE_SETTINGS;
+struct TraffCounter;
+struct Settings;
+struct Store;
+struct Admins;
+struct Users;
+struct Tariffs;
+struct Services;
+struct Corporations;
+struct ModuleSettings;
 
-class PLUGIN : private NONCOPYABLE {
-public:
-    virtual ~PLUGIN() {}
-    virtual void                SetUsers(USERS *) {}
-    virtual void                SetTariffs(TARIFFS *) {}
-    virtual void                SetAdmins(ADMINS *) {}
-    virtual void                SetServices(SERVICES *) {}
-    virtual void                SetCorporations(CORPORATIONS *) {}
-    virtual void                SetTraffcounter(TRAFFCOUNTER *) {}
-    virtual void                SetStore(STORE *) {}
-    virtual void                SetStgSettings(const SETTINGS *) {}
-    virtual void                SetSettings(const MODULE_SETTINGS &) {}
-    virtual int                 ParseSettings() = 0;
+struct Plugin {
+    virtual ~Plugin() = default;
 
-    virtual int                 Start() = 0;
-    virtual int                 Stop() = 0;
-    virtual int                 Reload(const MODULE_SETTINGS &) = 0;
-    virtual bool                IsRunning() = 0;
-    virtual const std::string & GetStrError() const = 0;
-    virtual std::string         GetVersion() const = 0;
-    virtual uint16_t            GetStartPosition() const = 0;
-    virtual uint16_t            GetStopPosition() const = 0;
+    virtual void               SetUsers(Users*) {}
+    virtual void               SetTariffs(Tariffs*) {}
+    virtual void               SetAdmins(Admins*) {}
+    virtual void               SetServices(Services*) {}
+    virtual void               SetCorporations(Corporations*) {}
+    virtual void               SetTraffcounter(TraffCounter*) {}
+    virtual void               SetStore(Store*) {}
+    virtual void               SetStgSettings(const Settings*) {}
+    virtual void               SetSettings(const ModuleSettings&) {}
+    virtual int                ParseSettings() = 0;
+
+    virtual int                Start() = 0;
+    virtual int                Stop() = 0;
+    virtual int                Reload(const ModuleSettings&) = 0;
+    virtual bool               IsRunning() = 0;
+    virtual const std::string& GetStrError() const = 0;
+    virtual std::string        GetVersion() const = 0;
+    virtual uint16_t           GetStartPosition() const = 0;
+    virtual uint16_t           GetStopPosition() const = 0;
 };
 
-#endif
+}

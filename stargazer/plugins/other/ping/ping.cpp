@@ -3,7 +3,6 @@
 #include "stg/user.h"
 #include "stg/locker.h"
 #include "stg/user_property.h"
-#include "stg/plugin_creator.h"
 
 #include <cstdio>
 #include <cassert>
@@ -13,40 +12,35 @@
 
 namespace
 {
-PLUGIN_CREATOR<PING> pc;
-
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 template <typename varType>
-class HAS_USER: public std::binary_function<varType, USER_PTR, bool>
+class HAS_USER: public std::binary_function<varType, UserPtr, bool>
 {
 public:
-    explicit HAS_USER(const USER_PTR & u) : user(u) {}
+    explicit HAS_USER(const UserPtr & u) : user(u) {}
     bool operator()(varType notifier) const
         {
         return notifier.GetUser() == user;
         }
 private:
-    const USER_PTR & user;
+    const UserPtr & user;
 };
 }
 
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-return pc.GetPlugin();
+    static PING plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int PING_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int PING_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
-PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+STG::ParamValue pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
 
 pv.param = "PingDelay";
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -72,7 +66,7 @@ PING::PING()
       isRunning(false),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
-      logger(GetPluginLogger(GetStgLogger(), "ping"))
+      logger(STG::PluginLogger::get("ping"))
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -135,7 +129,7 @@ for (int i = 0; i < 25; i++)
 users->DelNotifierUserAdd(&onAddUserNotifier);
 users->DelNotifierUserDel(&onDelUserNotifier);
 
-std::list<USER_PTR>::iterator users_iter;
+std::list<UserPtr>::iterator users_iter;
 users_iter = usersList.begin();
 while (users_iter != usersList.end())
     {
@@ -167,14 +161,14 @@ long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
 
 while (ping->nonstop)
     {
-    std::list<USER_PTR>::iterator iter = ping->usersList.begin();
+    std::list<UserPtr>::iterator iter = ping->usersList.begin();
         {
         STG_LOCKER lock(&ping->mutex);
         while (iter != ping->usersList.end())
             {
-            if ((*iter)->GetProperty().ips.ConstData().OnlyOneIP())
+            if ((*iter)->GetProperties().ips.ConstData().onlyOneIP())
                 {
-                uint32_t ip = (*iter)->GetProperty().ips.ConstData()[0].ip;
+                uint32_t ip = (*iter)->GetProperties().ips.ConstData()[0].ip;
                 time_t t;
                 if (ping->pinger.GetIPTime(ip, &t) == 0)
                     {
@@ -212,7 +206,7 @@ ping->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void PING::SetUserNotifiers(USER_PTR u)
+void PING::SetUserNotifiers(UserPtr u)
 {
 CHG_CURRIP_NOTIFIER_PING ChgCurrIPNotifier(*this, u);
 CHG_IPS_NOTIFIER_PING ChgIPNotifier(*this, u);
@@ -221,10 +215,10 @@ ChgCurrIPNotifierList.push_front(ChgCurrIPNotifier);
 ChgIPNotifierList.push_front(ChgIPNotifier);
 
 u->AddCurrIPAfterNotifier(&(*ChgCurrIPNotifierList.begin()));
-u->GetProperty().ips.AddAfterNotifier(&(*ChgIPNotifierList.begin()));
+u->GetProperties().ips.AddAfterNotifier(&(*ChgIPNotifierList.begin()));
 }
 //-----------------------------------------------------------------------------
-void PING::UnSetUserNotifiers(USER_PTR u)
+void PING::UnSetUserNotifiers(UserPtr u)
 {
 // ---          CurrIP              ---
 HAS_USER<CHG_CURRIP_NOTIFIER_PING> IsContainsUserCurrIP(u);
@@ -251,7 +245,7 @@ IPIter = find_if(ChgIPNotifierList.begin(),
 
 if (IPIter != ChgIPNotifierList.end())
     {
-    IPIter->GetUser()->GetProperty().ips.DelAfterNotifier(&(*IPIter));
+    IPIter->GetUser()->GetProperties().ips.DelAfterNotifier(&(*IPIter));
     ChgIPNotifierList.erase(IPIter);
     }
 // ---          IP end          ---
@@ -261,7 +255,7 @@ void PING::GetUsers()
 {
 STG_LOCKER lock(&mutex);
 
-USER_PTR u;
+UserPtr u;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
@@ -269,9 +263,9 @@ while (users->SearchNext(h, &u) == 0)
     {
     usersList.push_back(u);
     SetUserNotifiers(u);
-    if (u->GetProperty().ips.ConstData().OnlyOneIP())
+    if (u->GetProperties().ips.ConstData().onlyOneIP())
         {
-        pinger.AddIP(u->GetProperty().ips.ConstData()[0].ip);
+        pinger.AddIP(u->GetProperties().ips.ConstData()[0].ip);
         }
     else
         {
@@ -284,7 +278,7 @@ while (users->SearchNext(h, &u) == 0)
 users->CloseSearch(h);
 }
 //-----------------------------------------------------------------------------
-void PING::AddUser(USER_PTR u)
+void PING::AddUser(UserPtr u)
 {
 STG_LOCKER lock(&mutex);
 
@@ -292,13 +286,13 @@ SetUserNotifiers(u);
 usersList.push_back(u);
 }
 //-----------------------------------------------------------------------------
-void PING::DelUser(USER_PTR u)
+void PING::DelUser(UserPtr u)
 {
 STG_LOCKER lock(&mutex);
 
 UnSetUserNotifiers(u);
 
-std::list<USER_PTR>::iterator users_iter;
+std::list<UserPtr>::iterator users_iter;
 users_iter = usersList.begin();
 
 while (users_iter != usersList.end())
@@ -319,21 +313,21 @@ if (newIP)
     ping.pinger.AddIP(newIP);
 }
 //-----------------------------------------------------------------------------
-void CHG_IPS_NOTIFIER_PING::Notify(const USER_IPS & oldIPS, const USER_IPS & newIPS)
+void CHG_IPS_NOTIFIER_PING::Notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS)
 {
-if (oldIPS.OnlyOneIP())
+if (oldIPS.onlyOneIP())
     ping.pinger.DelIP(oldIPS[0].ip);
 
-if (newIPS.OnlyOneIP())
+if (newIPS.onlyOneIP())
     ping.pinger.AddIP(newIPS[0].ip);
 }
 //-----------------------------------------------------------------------------
-void ADD_USER_NONIFIER_PING::Notify(const USER_PTR & user)
+void ADD_USER_NONIFIER_PING::Notify(const UserPtr & user)
 {
 ping.AddUser(user);
 }
 //-----------------------------------------------------------------------------
-void DEL_USER_NONIFIER_PING::Notify(const USER_PTR & user)
+void DEL_USER_NONIFIER_PING::Notify(const UserPtr & user)
 {
 ping.DelUser(user);
 }

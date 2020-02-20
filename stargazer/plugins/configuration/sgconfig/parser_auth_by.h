@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_PARSER_AUTH_BY_H__
-#define __STG_PARSER_AUTH_BY_H__
+#pragma once
 
 #include "parser.h"
 
@@ -27,11 +26,12 @@
 
 #include <string>
 
-class ADMIN;
-class USERS;
-
 namespace STG
 {
+
+struct Admin;
+struct Users;
+
 namespace PARSER
 {
 
@@ -41,22 +41,22 @@ class AUTH_BY : public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                explicit FACTORY(const USERS & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new AUTH_BY(admin, m_users); }
-                static void Register(REGISTRY & registry, const USERS & users)
+                explicit FACTORY(const Users & users) : m_users(users) {}
+                virtual BASE_PARSER * create(const Admin & admin) { return new AUTH_BY(admin, m_users); }
+                static void Register(REGISTRY & registry, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
-                const USERS & m_users;
+                const Users & m_users;
         };
 
         static const char * tag;
 
-        AUTH_BY(const ADMIN & admin, const USERS & users)
+        AUTH_BY(const Admin & admin, const Users & users)
             : BASE_PARSER(admin, tag), m_users(users) {}
         int Start(void * data, const char * el, const char ** attr);
 
     private:
-        const USERS & m_users;
+        const Users & m_users;
         std::string m_login;
 
         void CreateAnswer();
@@ -64,5 +64,3 @@ class AUTH_BY : public BASE_PARSER
 
 } // namespace PARSER
 } // namespace STG
-
-#endif

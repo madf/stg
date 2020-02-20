@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_XML_H__
-#define __STG_SGCONF_XML_H__
+#pragma once
 
 namespace SGCONF
 {
@@ -30,5 +29,3 @@ class COMMANDS;
 void AppendXMLOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks);
 
 }
-
-#endif

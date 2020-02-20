@@ -1,23 +1,20 @@
- /*
- $Revision: 1.12 $
- $Date: 2010/03/11 14:42:05 $
- $Author: faust $
- */
+#pragma once
 
-#ifndef USER_CONF_H
-#define USER_CONF_H
+#include "user_ips.h"
+#include "stg/optional.h"
 
 #include <string>
 #include <vector>
 #include <cstdint>
 #include "const.h"
-#include "user_ips.h"
-#include "resetable.h"
+
+namespace STG
+{
 
 //-----------------------------------------------------------------------------
-struct USER_CONF
+struct UserConf
 {
-    USER_CONF()
+    UserConf() noexcept
         : passive(0),
           disabled(0),
           disabledDetailStat(0),
@@ -26,6 +23,11 @@ struct USER_CONF
           userdata(USERDATA_NUM),
           creditExpire(0)
     {}
+
+    UserConf(const UserConf&) = default;
+    UserConf& operator=(const UserConf&) = default;
+    UserConf(UserConf&&) = default;
+    UserConf& operator=(UserConf&&) = default;
 
     std::string              password;
     int                      passive;
@@ -45,15 +47,39 @@ struct USER_CONF
     std::string              nextTariff;
     std::vector<std::string> userdata;
     time_t                   creditExpire;
-    USER_IPS                 ips;
+    UserIPs                  ips;
 };
 //-----------------------------------------------------------------------------
-struct USER_CONF_RES
+struct UserConfOpt
 {
-    USER_CONF_RES()
+    UserConfOpt() noexcept
         : userdata(USERDATA_NUM)
     {}
-    USER_CONF_RES & operator=(const USER_CONF & uc)
+    UserConfOpt(const UserConf& data) noexcept
+        : password(data.password),
+          passive(data.passive),
+          disabled(data.disabled),
+          disabledDetailStat(data.disabledDetailStat),
+          alwaysOnline(data.alwaysOnline),
+          tariffName(data.tariffName),
+          address(data.address),
+          phone(data.phone),
+          email(data.email),
+          note(data.note),
+          realName(data.realName),
+          corp(data.corp),
+          group(data.group),
+          credit(data.credit),
+          nextTariff(data.nextTariff),
+          userdata(USERDATA_NUM),
+          services(data.services),
+          creditExpire(data.creditExpire),
+          ips(data.ips)
+    {
+        for (size_t i = 0; i < USERDATA_NUM; i++)
+            userdata[i]  = data.userdata[i];
+    }
+    UserConfOpt& operator=(const UserConf& uc) noexcept
     {
         userdata.resize(USERDATA_NUM);
         password     = uc.password;
@@ -77,54 +103,32 @@ struct USER_CONF_RES
         ips          = uc.ips;
         return *this;
     }
-    USER_CONF GetData() const
-    {
-        USER_CONF uc;
-        uc.password     = password.data();
-        uc.passive      = passive.data();
-        uc.disabled     = disabled.data();
-        uc.disabledDetailStat = disabledDetailStat.data();
-        uc.alwaysOnline = alwaysOnline.data();
-        uc.tariffName   = tariffName.data();
-        uc.address      = address.data();
-        uc.phone        = phone.data();
-        uc.email        = email.data();
-        uc.note         = note.data();
-        uc.realName     = realName.data();
-        uc.corp         = corp.data();
-        uc.group        = group.data();
-        uc.credit       = credit.data();
-        uc.nextTariff   = nextTariff.data();
-        for (size_t i = 0; i < USERDATA_NUM; i++)
-            {
-            uc.userdata[i]  = userdata[i].data();
-            }
-        uc.services     = services.data();
-        uc.creditExpire = creditExpire.data();
-        uc.ips          = ips.data();
-        return uc;
-    }
     //-------------------------------------------------------------------------
 
-    RESETABLE<std::string>               password;
-    RESETABLE<int>                       passive;
-    RESETABLE<int>                       disabled;
-    RESETABLE<int>                       disabledDetailStat;
-    RESETABLE<int>                       alwaysOnline;
-    RESETABLE<std::string>               tariffName;
-    RESETABLE<std::string>               address;
-    RESETABLE<std::string>               phone;
-    RESETABLE<std::string>               email;
-    RESETABLE<std::string>               note;
-    RESETABLE<std::string>               realName;
-    RESETABLE<std::string>               corp;
-    RESETABLE<std::string>               group;
-    RESETABLE<double>                    credit;
-    RESETABLE<std::string>               nextTariff;
-    std::vector<RESETABLE<std::string> > userdata;
-    RESETABLE<std::vector<std::string> > services;
-    RESETABLE<time_t>                    creditExpire;
-    RESETABLE<USER_IPS>                  ips;
+    UserConfOpt(const UserConfOpt&) = default;
+    UserConfOpt& operator=(const UserConfOpt&) = default;
+    UserConfOpt(UserConfOpt&&) = default;
+    UserConfOpt& operator=(UserConfOpt&&) = default;
+
+    Optional<std::string>               password;
+    Optional<int>                       passive;
+    Optional<int>                       disabled;
+    Optional<int>                       disabledDetailStat;
+    Optional<int>                       alwaysOnline;
+    Optional<std::string>               tariffName;
+    Optional<std::string>               address;
+    Optional<std::string>               phone;
+    Optional<std::string>               email;
+    Optional<std::string>               note;
+    Optional<std::string>               realName;
+    Optional<std::string>               corp;
+    Optional<std::string>               group;
+    Optional<double>                    credit;
+    Optional<std::string>               nextTariff;
+    std::vector<Optional<std::string> > userdata;
+    Optional<std::vector<std::string> > services;
+    Optional<time_t>                    creditExpire;
+    Optional<UserIPs>                   ips;
 };
 //-----------------------------------------------------------------------------
-#endif
+}

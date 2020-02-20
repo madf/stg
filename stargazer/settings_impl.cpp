@@ -29,6 +29,9 @@
 #include <cstring>
 #include <cerrno>
 
+using STG::SettingsImpl;
+using STG::ParamValue;
+
 namespace
 {
 
@@ -49,9 +52,9 @@ std::vector<std::string> toValues(const DOTCONFDocumentNode& node)
     return values;
 }
 
-std::vector<PARAM_VALUE> toPVS(const DOTCONFDocumentNode& node)
+std::vector<ParamValue> toPVS(const DOTCONFDocumentNode& node)
 {
-    std::vector<PARAM_VALUE> pvs;
+    std::vector<ParamValue> pvs;
 
     const DOTCONFDocumentNode* child = node.getChildNode();
     while (child != NULL)
@@ -60,9 +63,9 @@ std::vector<PARAM_VALUE> toPVS(const DOTCONFDocumentNode& node)
             continue;
 
         if (child->getChildNode() == NULL)
-            pvs.push_back(PARAM_VALUE(child->getName(), toValues(*child)));
+            pvs.push_back(ParamValue(child->getName(), toValues(*child)));
         else
-            pvs.push_back(PARAM_VALUE(child->getName(), toValues(*child), toPVS(*child)));
+            pvs.push_back(ParamValue(child->getName(), toValues(*child), toPVS(*child)));
 
         child = child->getNextNode();
         }
@@ -77,21 +80,27 @@ unsigned toPeriod(const char* value)
 
     std::string period(value);
     if (period == "1")
-        return dsPeriod_1;
+        return STG::dsPeriod_1;
     else if (period == "1/2")
-        return dsPeriod_1_2;
+        return STG::dsPeriod_1_2;
     else if (period == "1/4")
-        return dsPeriod_1_4;
+        return STG::dsPeriod_1_4;
     else if (period == "1/6")
-        return dsPeriod_1_6;
+        return STG::dsPeriod_1_6;
 
     throw Error("Invalid detail stat period value: '" + period + "'. Should be one of '1', '1/2', '1/4' or '1/6'.");
+}
+
+void errorCallback(void* /*data*/, const char* buf)
+{
+    printfd(__FILE__, "SettingsImpl::errorCallback() - %s\n", buf);
+    STG::Logger::get()("%s", buf);
 }
 
 }
 
 //-----------------------------------------------------------------------------
-SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
+SettingsImpl::SettingsImpl(const std::string & cd)
     : modulesPath("/usr/lib/stg"),
       dirName(DIR_NUM),
       confDir(cd.empty() ? "/etc/stargazer" : cd),
@@ -117,90 +126,12 @@ SETTINGS_IMPL::SETTINGS_IMPL(const std::string & cd)
       messageTimeout(0),
       feeChargeType(0),
       reconnectOnTariffChange(false),
-      disableSessionLog(false),
-      logger(GetStgLogger())
+      disableSessionLog(false)
 {
     filterParamsLog.push_back("*");
 }
 //-----------------------------------------------------------------------------
-SETTINGS_IMPL::SETTINGS_IMPL(const SETTINGS_IMPL & rval)
-    : modulesPath(rval.modulesPath),
-      dirName(rval.dirName),
-      confDir(rval.confDir),
-      scriptsDir(rval.scriptsDir),
-      rules(rval.rules),
-      logFile(rval.logFile),
-      pidFile(rval.pidFile),
-      monitorDir(rval.monitorDir),
-      monitoring(rval.monitoring),
-      detailStatWritePeriod(rval.detailStatWritePeriod),
-      statWritePeriod(rval.statWritePeriod),
-      stgExecMsgKey(rval.stgExecMsgKey),
-      executersNum(rval.executersNum),
-      fullFee(rval.fullFee),
-      dayFee(rval.dayFee),
-      dayResetTraff(rval.dayResetTraff),
-      spreadFee(rval.spreadFee),
-      freeMbAllowInet(rval.freeMbAllowInet),
-      dayFeeIsLastDay(rval.dayFeeIsLastDay),
-      stopOnError(rval.stopOnError),
-      writeFreeMbTraffCost(rval.writeFreeMbTraffCost),
-      showFeeInCash(rval.showFeeInCash),
-      messageTimeout(rval.messageTimeout),
-      feeChargeType(rval.feeChargeType),
-      reconnectOnTariffChange(rval.reconnectOnTariffChange),
-      disableSessionLog(rval.disableSessionLog),
-      filterParamsLog(rval.filterParamsLog),
-      modulesSettings(rval.modulesSettings),
-      storeModuleSettings(rval.storeModuleSettings),
-      logger(GetStgLogger())
-{
-}
-//-----------------------------------------------------------------------------
-SETTINGS_IMPL & SETTINGS_IMPL::operator=(const SETTINGS_IMPL & rhs)
-{
-    modulesPath = rhs.modulesPath;
-    dirName = rhs.dirName;
-    confDir = rhs.confDir;
-    scriptsDir = rhs.scriptsDir;
-    rules = rhs.rules;
-    logFile = rhs.logFile;
-    pidFile = rhs.pidFile;
-    monitorDir = rhs.monitorDir;
-    scriptParams = rhs.scriptParams;
-    monitoring = rhs.monitoring;
-    detailStatWritePeriod = rhs.detailStatWritePeriod;
-    statWritePeriod = rhs.statWritePeriod;
-    stgExecMsgKey = rhs.stgExecMsgKey;
-    executersNum = rhs.executersNum;
-    fullFee = rhs.fullFee;
-    dayFee = rhs.dayFee;
-    dayResetTraff = rhs.dayResetTraff;
-    spreadFee = rhs.spreadFee;
-    freeMbAllowInet = rhs.freeMbAllowInet;
-    dayFeeIsLastDay = rhs.dayFeeIsLastDay;
-    stopOnError = rhs.stopOnError;
-    writeFreeMbTraffCost = rhs.writeFreeMbTraffCost;
-    showFeeInCash = rhs.showFeeInCash;
-    messageTimeout = rhs.messageTimeout;
-    feeChargeType = rhs.feeChargeType;
-    reconnectOnTariffChange = rhs.reconnectOnTariffChange;
-    disableSessionLog = rhs.disableSessionLog;
-    filterParamsLog = rhs.filterParamsLog;
-
-    modulesSettings = rhs.modulesSettings;
-    storeModuleSettings = rhs.storeModuleSettings;
-    return *this;
-}
-//-----------------------------------------------------------------------------
-void SETTINGS_IMPL::ErrorCallback(void * data, const char * buf)
-{
-    printfd(__FILE__, "SETTINGS_IMPL::ErrorCallback() - %s\n", buf);
-    SETTINGS_IMPL * settings = static_cast<SETTINGS_IMPL *>(data);
-    settings->logger("%s", buf);
-}
-//-----------------------------------------------------------------------------
-int SETTINGS_IMPL::ReadSettings()
+int SettingsImpl::ReadSettings()
 {
 const char * requiredOptions[] = {
     "ModulesPath",
@@ -221,7 +152,7 @@ int storeModulesCount = 0;
 modulesSettings.clear();
 
 DOTCONFDocument conf(DOTCONFDocument::CASEINSENSITIVE);
-conf.setErrorCallback(SETTINGS_IMPL::ErrorCallback, this);
+conf.setErrorCallback(errorCallback, nullptr);
 conf.setRequiredOptionNames(requiredOptions);
 std::string confFile = confDir + "/stargazer.conf";
 
@@ -231,7 +162,7 @@ if(conf.setContent(confFile.c_str()) != 0)
     return -1;
     }
 
-const DOTCONFDocumentNode * node = conf.getFirstNode();
+auto node = conf.getFirstNode();
 
 while (node)
     {
@@ -502,7 +433,7 @@ while (node)
                 return -1;
                 }
 
-            modulesSettings.push_back(MODULE_SETTINGS(child->getValue(0), toPVS(*child)));
+            modulesSettings.push_back(ModuleSettings(child->getValue(0), toPVS(*child)));
 
             child = child->getNextNode();
             }

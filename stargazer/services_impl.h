@@ -18,59 +18,56 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef SERVICES_IMPL_H
-#define SERVICES_IMPL_H
+#pragma once
 
 #include "stg/services.h"
 #include "stg/service_conf.h"
 #include "stg/locker.h"
-#include "stg/store.h"
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 
 #include <vector>
 #include <map>
 #include <string>
+#include <mutex>
 
-#include <pthread.h>
+namespace STG
+{
 
-class ADMIN;
+struct Admin;
+struct Store;
 
-class SERVICES_IMPL : private NONCOPYABLE, public SERVICES {
-public:
-    explicit SERVICES_IMPL(STORE * st);
-    virtual ~SERVICES_IMPL() {}
+class ServicesImpl : public Services {
+    public:
+        explicit ServicesImpl(Store* st);
 
-    int Add(const SERVICE_CONF & service, const ADMIN * admin);
-    int Del(const std::string & name, const ADMIN * admin);
-    int Change(const SERVICE_CONF & service, const ADMIN * admin);
-    bool Find(const std::string & name, SERVICE_CONF * service) const;
-    bool Find(const std::string & name, SERVICE_CONF_RES * service) const;
-    bool Exists(const std::string & name) const;
-    const std::string & GetStrError() const { return strError; }
+        int Add(const ServiceConf& service, const Admin* admin) override;
+        int Del(const std::string& name, const Admin* admin) override;
+        int Change(const ServiceConf& service, const Admin* admin) override;
+        bool Find(const std::string& name, ServiceConf* service) const override;
+        bool Find(const std::string& name, ServiceConfOpt* service) const override;
+        bool Exists(const std::string& name) const override;
+        const std::string& GetStrError() const override { return strError; }
 
-    size_t Count() const { return data.size(); }
+        size_t Count() const override { return data.size(); }
 
-    int OpenSearch() const;
-    int SearchNext(int, SERVICE_CONF * service) const;
-    int CloseSearch(int) const;
+        int OpenSearch() const override;
+        int SearchNext(int, ServiceConf* service) const override;
+        int CloseSearch(int) const override;
 
-private:
-    SERVICES_IMPL(const SERVICES_IMPL & rvalue);
-    SERVICES_IMPL & operator=(const SERVICES_IMPL & rvalue);
+    private:
+        typedef std::vector<ServiceConf>::iterator       iterator;
+        typedef std::vector<ServiceConf>::const_iterator const_iterator;
 
-    typedef std::vector<SERVICE_CONF>::iterator       iterator;
-    typedef std::vector<SERVICE_CONF>::const_iterator const_iterator;
+        bool Read();
 
-    bool Read();
-
-    std::vector<SERVICE_CONF> data;
-    STORE *                 store;
-    STG_LOGGER &            WriteServLog;
-    mutable std::map<int, const_iterator> searchDescriptors;
-    mutable unsigned int    handle;
-    mutable pthread_mutex_t mutex;
-    std::string             strError;
+        std::vector<ServiceConf> data;
+        Store*                 store;
+        Logger&            WriteServLog;
+        mutable std::map<int, const_iterator> searchDescriptors;
+        mutable unsigned int    handle;
+        mutable std::mutex mutex;
+        std::string             strError;
 };
 
-#endif
+}

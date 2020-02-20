@@ -18,20 +18,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.22 $
- $Date: 2010/01/19 11:06:53 $
- $Author: faust $
- */
-
-
-#ifndef FILE_STORE_H
-#define FILE_STORE_H
-
-#include <sys/types.h>
-#include <pthread.h>
-
-#include <string>
+#pragma once
 
 #include "stg/module_settings.h"
 #include "stg/store.h"
@@ -39,11 +26,16 @@
 #include "stg/user_traff.h"
 #include "stg/logger.h"
 
+#include <string>
+
+#include <sys/types.h>
+#include <pthread.h>
+
 //-----------------------------------------------------------------------------
 class FILES_STORE_SETTINGS {
 public:
     FILES_STORE_SETTINGS();
-    int ParseSettings(const MODULE_SETTINGS & s);
+    int ParseSettings(const STG::ModuleSettings & s);
     const std::string & GetStrError() const;
 
     std::string  GetWorkDir() const { return workDir; }
@@ -73,14 +65,14 @@ private:
     FILES_STORE_SETTINGS(const FILES_STORE_SETTINGS & rvalue);
     FILES_STORE_SETTINGS & operator=(const FILES_STORE_SETTINGS & rvalue);
 
-    const MODULE_SETTINGS * settings;
+    const STG::ModuleSettings * settings;
 
     int     User2UID(const char * user, uid_t * uid);
     int     Group2GID(const char * gr, gid_t * gid);
     int     Str2Mode(const char * str, mode_t * mode);
-    int     ParseOwner(const std::vector<PARAM_VALUE> & moduleParams, const std::string & owner, uid_t * uid);
-    int     ParseGroup(const std::vector<PARAM_VALUE> & moduleParams, const std::string & group, uid_t * uid);
-    int     ParseMode(const std::vector<PARAM_VALUE> & moduleParams, const std::string & modeStr, mode_t * mode);
+    int     ParseOwner(const std::vector<STG::ParamValue> & moduleParams, const std::string & owner, uid_t * uid);
+    int     ParseGroup(const std::vector<STG::ParamValue> & moduleParams, const std::string & group, uid_t * uid);
+    int     ParseMode(const std::vector<STG::ParamValue> & moduleParams, const std::string & modeStr, mode_t * mode);
     int     ParseYesNo(const std::string & value, bool * val);
 
     std::string  errorStr;
@@ -107,92 +99,92 @@ private:
     bool    readBak;
 };
 //-----------------------------------------------------------------------------
-class FILES_STORE: public STORE {
+class FILES_STORE: public STG::Store {
 public:
     FILES_STORE();
-    virtual ~FILES_STORE() {}
-    virtual const std::string & GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const override { return errorStr; }
 
     //User
-    virtual int GetUsersList(std::vector<std::string> * usersList) const;
-    virtual int AddUser(const std::string & login) const;
-    virtual int DelUser(const std::string & login) const;
-    virtual int SaveUserStat(const USER_STAT & stat, const std::string & login) const;
-    virtual int SaveUserConf(const USER_CONF & conf, const std::string & login) const;
+    int GetUsersList(std::vector<std::string> * usersList) const override;
+    int AddUser(const std::string & login) const override;
+    int DelUser(const std::string & login) const override;
+    int SaveUserStat(const STG::UserStat & stat, const std::string & login) const override;
+    int SaveUserConf(const STG::UserConf & conf, const std::string & login) const override;
 
-    virtual int RestoreUserStat(USER_STAT * stat, const std::string & login) const;
-    virtual int RestoreUserConf(USER_CONF * conf, const std::string & login) const;
+    int RestoreUserStat(STG::UserStat * stat, const std::string & login) const override;
+    int RestoreUserConf(STG::UserConf * conf, const std::string & login) const override;
 
-    virtual int WriteUserChgLog(const std::string & login,
-                                const std::string & admLogin,
-                                uint32_t admIP,
-                                const std::string & paramName,
-                                const std::string & oldValue,
-                                const std::string & newValue,
-                                const std::string & message = "") const;
-    virtual int WriteUserConnect(const std::string & login, uint32_t ip) const;
-    virtual int WriteUserDisconnect(const std::string & login,
-                                    const DIR_TRAFF & up,
-                                    const DIR_TRAFF & down,
-                                    const DIR_TRAFF & sessionUp,
-                                    const DIR_TRAFF & sessionDown,
-                                    double cash,
-                                    double freeMb,
-                                    const std::string & reason) const;
+    int WriteUserChgLog(const std::string & login,
+                        const std::string & admLogin,
+                        uint32_t admIP,
+                        const std::string & paramName,
+                        const std::string & oldValue,
+                        const std::string & newValue,
+                        const std::string & message = "") const override;
+    int WriteUserConnect(const std::string & login, uint32_t ip) const override;
+    int WriteUserDisconnect(const std::string & login,
+                            const STG::DirTraff & up,
+                            const STG::DirTraff & down,
+                            const STG::DirTraff & sessionUp,
+                            const STG::DirTraff & sessionDown,
+                            double cash,
+                            double freeMb,
+                            const std::string & reason) const override;
 
-    virtual int WriteDetailedStat(const TRAFF_STAT & statTree,
-                                  time_t lastStat,
-                                  const std::string & login) const;
+    int WriteDetailedStat(const STG::TraffStat & statTree,
+                          time_t lastStat,
+                          const std::string & login) const override;
 
-    virtual int AddMessage(STG_MSG * msg, const std::string & login) const;
-    virtual int EditMessage(const STG_MSG & msg, const std::string & login) const;
-    virtual int GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const;
-    virtual int DelMessage(uint64_t id, const std::string & login) const;
-    virtual int GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const;
-    virtual int ReadMessage(const std::string & fileName,
-                            STG_MSG_HDR * hdr,
-                            std::string * text) const;
+    int AddMessage(STG::Message * msg, const std::string & login) const override;
+    int EditMessage(const STG::Message & msg, const std::string & login) const override;
+    int GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const override;
+    int DelMessage(uint64_t id, const std::string & login) const override;
+    int GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const override;
 
-    virtual int SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const;
+    int SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string & login) const override;
 
     //Admin
-    virtual int GetAdminsList(std::vector<std::string> * adminsList) const;
-    virtual int AddAdmin(const std::string & login) const;
-    virtual int DelAdmin(const std::string & login) const;
-    virtual int RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const;
-    virtual int SaveAdmin(const ADMIN_CONF & ac) const;
+    int GetAdminsList(std::vector<std::string> * adminsList) const override;
+    int AddAdmin(const std::string & login) const override;
+    int DelAdmin(const std::string & login) const override;
+    int RestoreAdmin(STG::AdminConf * ac, const std::string & login) const override;
+    int SaveAdmin(const STG::AdminConf & ac) const override;
 
     //Tariff
-    virtual int GetTariffsList(std::vector<std::string> * tariffsList) const;
-    virtual int AddTariff(const std::string & name) const;
-    virtual int DelTariff(const std::string & name) const;
-    virtual int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
-    virtual int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
+    int GetTariffsList(std::vector<std::string> * tariffsList) const override;
+    int AddTariff(const std::string & name) const override;
+    int DelTariff(const std::string & name) const override;
+    int SaveTariff(const STG::TariffData & td, const std::string & tariffName) const override;
+    int RestoreTariff(STG::TariffData * td, const std::string & tariffName) const override;
 
     //Corparation
-    virtual int GetCorpsList(std::vector<std::string> *) const { return 0; }
-    virtual int SaveCorp(const CORP_CONF &) const { return 0; }
-    virtual int RestoreCorp(CORP_CONF *, const std::string &) const { return 0; }
-    virtual int AddCorp(const std::string &) const { return 0; }
-    virtual int DelCorp(const std::string &) const { return 0; }
+    int GetCorpsList(std::vector<std::string> *) const override { return 0; }
+    int SaveCorp(const STG::CorpConf &) const override { return 0; }
+    int RestoreCorp(STG::CorpConf *, const std::string &) const override { return 0; }
+    int AddCorp(const std::string &) const override { return 0; }
+    int DelCorp(const std::string &) const override { return 0; }
 
     // Services
-    virtual int GetServicesList(std::vector<std::string> *) const;
-    virtual int SaveService(const SERVICE_CONF &) const;
-    virtual int RestoreService(SERVICE_CONF *, const std::string &) const;
-    virtual int AddService(const std::string &) const;
-    virtual int DelService(const std::string &) const;
+    int GetServicesList(std::vector<std::string> *) const override;
+    int SaveService(const STG::ServiceConf &) const override;
+    int RestoreService(STG::ServiceConf *, const std::string &) const override;
+    int AddService(const std::string &) const override;
+    int DelService(const std::string &) const override;
 
-    virtual void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    virtual int ParseSettings();
-    virtual const std::string & GetVersion() const { return version; }
+    void SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int ParseSettings() override;
+    const std::string & GetVersion() const override { return version; }
 
 private:
     FILES_STORE(const FILES_STORE & rvalue);
     FILES_STORE & operator=(const FILES_STORE & rvalue);
 
-    virtual int RestoreUserStat(USER_STAT * stat, const std::string & login, const std::string & fileName) const;
-    virtual int RestoreUserConf(USER_CONF * conf, const std::string & login, const std::string & fileName) const;
+    int ReadMessage(const std::string & fileName,
+                    STG::Message::Header * hdr,
+                    std::string * text) const;
+
+    virtual int RestoreUserStat(STG::UserStat * stat, const std::string & login, const std::string & fileName) const;
+    virtual int RestoreUserConf(STG::UserConf * conf, const std::string & login, const std::string & fileName) const;
 
     virtual int WriteLogString(const std::string & str, const std::string & login) const;
     virtual int WriteLog2String(const std::string & str, const std::string & login) const;
@@ -202,11 +194,8 @@ private:
     mutable std::string errorStr;
     std::string version;
     FILES_STORE_SETTINGS storeSettings;
-    MODULE_SETTINGS settings;
+    STG::ModuleSettings settings;
     mutable pthread_mutex_t mutex;
 
-    PLUGIN_LOGGER logger;
+    STG::PluginLogger logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif

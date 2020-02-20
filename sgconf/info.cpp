@@ -15,7 +15,7 @@
 namespace
 {
 
-void PrintInfo(const STG::SERVER_INFO::INFO& info)
+void PrintInfo(const STG::ServerInfo::Info& info)
 {
     std::cout << "Server version: '" << info.version << "'\n"
               << "Number of tariffs: " << info.tariffNum << "\n"
@@ -28,7 +28,7 @@ void PrintInfo(const STG::SERVER_INFO::INFO& info)
         std::cout << "\t - '" << info.dirName[i] << "'\n";
 }
 
-void InfoCallback(bool result, const std::string & reason, const STG::SERVER_INFO::INFO & info, void * /*data*/)
+void InfoCallback(bool result, const std::string & reason, const STG::ServerInfo::Info & info, void * /*data*/)
 {
 if (!result)
     {
@@ -42,7 +42,7 @@ bool InfoFunction(const SGCONF::CONFIG & config,
                   const std::string& /*arg*/,
                   const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

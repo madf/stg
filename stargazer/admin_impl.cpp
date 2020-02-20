@@ -32,73 +32,30 @@
 
 #include "stg/common.h"
 
+using STG::AdminImpl;
+
 //-----------------------------------------------------------------------------
-ADMIN_IMPL::ADMIN_IMPL()
-    : ip(0)
+std::string AdminImpl::GetIPStr() const
 {
+    return inet_ntostring(ip);
 }
 //-----------------------------------------------------------------------------
-ADMIN_IMPL::ADMIN_IMPL(const ADMIN_CONF & ac)
-    : conf(ac),
-      ip(0)
+void AdminImpl::Print() const
 {
+    printfd(__FILE__, "=======================================\n");
+    printfd(__FILE__, "login %s\n",     conf.login.c_str());
+    printfd(__FILE__, "password %s\n",  conf.password.c_str());
+    printfd(__FILE__, "ChgConf %d\n",   conf.priv.userConf);
+    printfd(__FILE__, "ChgStat %d\n",   conf.priv.userStat);
+    printfd(__FILE__, "ChgCash %d\n",   conf.priv.userCash);
+    printfd(__FILE__, "UsrAddDel %d\n", conf.priv.userAddDel);
+    printfd(__FILE__, "ChgAdmin %d\n",  conf.priv.adminChg);
+    printfd(__FILE__, "ChgTariff %d\n", conf.priv.tariffChg);
+    printfd(__FILE__, "=======================================\n");
 }
 //-----------------------------------------------------------------------------
-ADMIN_IMPL::ADMIN_IMPL(const PRIV & priv,
-                       const std::string & login,
-                       const std::string & password)
-    : conf(priv, login, password),
-      ip(0)
+const std::string AdminImpl::GetLogStr() const
 {
-}
-//-----------------------------------------------------------------------------
-ADMIN_IMPL & ADMIN_IMPL::operator=(const ADMIN_CONF & ac)
-{
-conf = ac;
-return *this;
-}
-//-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator==(const ADMIN_IMPL & rhs) const
-{
-return conf.login == rhs.conf.login;
-}
-//-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator!=(const ADMIN_IMPL & rhs) const
-{
-return conf.login != rhs.conf.login;
-}
-//-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator<(const ADMIN_IMPL & rhs) const
-{
-return conf.login < rhs.conf.login;
-}
-//-----------------------------------------------------------------------------
-bool ADMIN_IMPL::operator<=(const ADMIN_IMPL & rhs) const
-{
-return conf.login <= rhs.conf.login;
-}
-//-----------------------------------------------------------------------------
-std::string ADMIN_IMPL::GetIPStr() const
-{
-return inet_ntostring(ip);
-}
-//-----------------------------------------------------------------------------
-void ADMIN_IMPL::Print() const
-{
-printfd(__FILE__, "=======================================\n");
-printfd(__FILE__, "login %s\n",     conf.login.c_str());
-printfd(__FILE__, "password %s\n",  conf.password.c_str());
-printfd(__FILE__, "ChgConf %d\n",   conf.priv.userConf);
-printfd(__FILE__, "ChgStat %d\n",   conf.priv.userStat);
-printfd(__FILE__, "ChgCash %d\n",   conf.priv.userCash);
-printfd(__FILE__, "UsrAddDel %d\n", conf.priv.userAddDel);
-printfd(__FILE__, "ChgAdmin %d\n",  conf.priv.adminChg);
-printfd(__FILE__, "ChgTariff %d\n", conf.priv.tariffChg);
-printfd(__FILE__, "=======================================\n");
-}
-//-----------------------------------------------------------------------------
-const std::string ADMIN_IMPL::GetLogStr() const
-{
-return "Admin \'" + conf.login + "\', " + GetIPStr() + ":";
+    return "Admin \'" + conf.login + "\', " + GetIPStr() + ":";
 }
 //-----------------------------------------------------------------------------

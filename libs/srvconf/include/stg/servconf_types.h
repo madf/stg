@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_TYPES_H__
-#define __STG_STGLIBS_SRVCONF_TYPES_H__
+#pragma once
 
 #include "stg/const.h" // DIR_NUM
 
@@ -29,60 +28,60 @@
 #include <ctime>
 #include <cstdint>
 
-struct ADMIN_CONF;
-struct TARIFF_DATA;
-struct SERVICE_CONF;
-struct CORP_CONF;
-
 namespace STG
 {
 
+struct AdminConf;
+struct TariffData;
+struct ServiceConf;
+struct CorpConf;
+
 enum status
 {
-st_ok = 0,
-st_conn_fail,
-st_send_fail,
-st_recv_fail,
-st_header_err,
-st_login_err,
-st_logins_err,
-st_data_err,
-st_unknown_err,
-st_dns_err,
-st_xml_parse_error,
-st_data_error
+    st_ok = 0,
+    st_conn_fail,
+    st_send_fail,
+    st_recv_fail,
+    st_header_err,
+    st_login_err,
+    st_logins_err,
+    st_data_err,
+    st_unknown_err,
+    st_dns_err,
+    st_xml_parse_error,
+    st_data_error
 };
 
-namespace SIMPLE
+namespace Simple
 {
 
-typedef void (* CALLBACK)(bool result, const std::string & reason, void * data);
+using Callback = void (*)(bool result, const std::string& reason, void* data);
 
-} // namespace SIMPLE
+} // namespace Simple
 
-namespace GET_CONTAINER
+namespace GetContainer
 {
 
-template <typename INFO>
-struct CALLBACK
+template <typename T>
+struct Callback
 {
-typedef void (* TYPE)(bool result, const std::string & reason, const std::vector<INFO> & info, void * data);
+    using Type = void (*)(bool result, const std::string& reason, const std::vector<T>& info, void* data);
 };
 
-} // namespace GET_CONTAINER
+} // namespace GetContainer
 
-namespace AUTH_BY
+namespace AuthBy
 {
 
-typedef std::vector<std::string> INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Info = std::vector<std::string>;
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace AUTH_BY
+} // namespace AuthBy
 
-namespace SERVER_INFO
+namespace ServerInfo
 {
 
-struct INFO
+struct Info
 {
     std::string version;
     int         tariffNum;
@@ -92,21 +91,21 @@ struct INFO
     int         dirNum;
     std::array<std::string, DIR_NUM> dirName;
 };
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace SERVER_INFO
+} // namespace ServerInfo
 
-namespace RAW_XML
+namespace RawXML
 {
 
-typedef void (* CALLBACK)(bool result, const std::string & reason, const std::string & response, void * data);
+using Callback = void (*)(bool result, const std::string& reason, const std::string& response, void* data);
 
-} // namespace RAW_XML
+} // namespace RawXML
 
-namespace GET_USER
+namespace GetUser
 {
 
-struct STAT
+struct Stat
 {
     std::array<long long, DIR_NUM> su;
     std::array<long long, DIR_NUM> sd;
@@ -114,7 +113,7 @@ struct STAT
     std::array<long long, DIR_NUM> md;
 };
 
-struct INFO
+struct Info
 {
     std::string login;
     std::string password;
@@ -140,7 +139,7 @@ struct INFO
     std::string address;
     std::string phone;
     std::string corp;
-    STAT        stat;
+    Stat        stat;
     time_t      pingTime;
     time_t      lastActivityTime;
     std::array<std::string, USERDATA_NUM> userData;
@@ -148,42 +147,40 @@ struct INFO
     std::vector<std::string> authBy;
 };
 
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace GET_USER
+} // namespace GetUser
 
-namespace GET_ADMIN
+namespace GetAdmin
 {
 
-typedef ADMIN_CONF INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Info = AdminConf;
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace GET_ADMIN
+} // namespace GetAdmin
 
-namespace GET_TARIFF
+namespace GetTariff
 {
 
-typedef TARIFF_DATA INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Info = TariffData;
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace GET_TARIFF
+} // namespace GetTariff
 
-namespace GET_SERVICE
+namespace GetService
 {
 
-typedef SERVICE_CONF INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Info = ServiceConf;
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace GET_SERVICE
+} // namespace GetService
 
-namespace GET_CORP
+namespace GetCorp
 {
 
-typedef CORP_CONF INFO;
-typedef void (* CALLBACK)(bool result, const std::string & reason, const INFO & info, void * data);
+using Info = CorpConf;
+using Callback = void (*)(bool result, const std::string& reason, const Info& info, void* data);
 
-} // namespace GET_CORP
+} // namespace GetCorp
 
 } // namespace STG
-
-#endif

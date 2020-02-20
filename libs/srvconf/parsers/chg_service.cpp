@@ -20,7 +20,7 @@
 
 #include "chg_service.h"
 
-#include "resetable_utils.h"
+#include "optional_utils.h"
 
 #include "stg/service_conf.h"
 #include "stg/common.h"
@@ -29,14 +29,12 @@
 
 using namespace STG;
 
-std::string CHG_SERVICE::Serialize(const SERVICE_CONF_RES & conf, const std::string & /*encoding*/)
+std::string ChgService::serialize(const ServiceConfOpt& conf, const std::string& /*encoding*/)
 {
-std::ostringstream stream;
-
-appendResetableAttr(stream, "name", conf.name);
-appendResetableAttr(stream, "comment", MaybeEncode(conf.comment));
-appendResetableAttr(stream, "cost", conf.cost);
-appendResetableAttr(stream, "payDay", conf.payDay);
-
-return stream.str();
+    std::ostringstream stream;
+    appendResetableAttr(stream, "name", conf.name);
+    appendResetableAttr(stream, "comment", maybeEncode(conf.comment));
+    appendResetableAttr(stream, "cost", conf.cost);
+    appendResetableAttr(stream, "payDay", conf.payDay);
+    return stream.str();
 }

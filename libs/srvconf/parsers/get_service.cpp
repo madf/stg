@@ -28,81 +28,81 @@
 
 using namespace STG;
 
-GET_SERVICE::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+GetService::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
       depth(0),
       parsingAnswer(false)
 {
-    AddParser(propertyParsers, "name", info.name);
-    AddParser(propertyParsers, "comment", info.comment, GetEncodedValue);
-    AddParser(propertyParsers, "cost", info.cost);
-    AddParser(propertyParsers, "payDay", info.payDay);
+    addParser(propertyParsers, "name", info.name);
+    addParser(propertyParsers, "comment", info.comment, getEncodedValue);
+    addParser(propertyParsers, "cost", info.cost);
+    addParser(propertyParsers, "payDay", info.payDay);
 }
 //-----------------------------------------------------------------------------
-GET_SERVICE::PARSER::~PARSER()
+GetService::Parser::~Parser()
 {
-    PROPERTY_PARSERS::iterator it(propertyParsers.begin());
+    auto it = propertyParsers.begin();
     while (it != propertyParsers.end())
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int GET_SERVICE::PARSER::ParseStart(const char * el, const char ** attr)
+int GetService::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
-    ParseService(el, attr);
+    depth++;
+    if (depth == 1)
+        ParseService(el, attr);
 
-/*if (depth == 2 && parsingAnswer)
-    ParseServiceParams(el, attr);*/
+    /*if (depth == 2 && parsingAnswer)
+        ParseServiceParams(el, attr);*/
 
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void GET_SERVICE::PARSER::ParseEnd(const char * /*el*/)
+void GetService::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0 && parsingAnswer)
+    depth--;
+    if (depth == 0 && parsingAnswer)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    error.clear();
-    parsingAnswer = false;
+        if (callback)
+            callback(error.empty(), error, info, data);
+        error.clear();
+        parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_SERVICE::PARSER::ParseService(const char * el, const char ** attr)
+void GetService::Parser::ParseService(const char* el, const char** attr)
 {
-if (strcasecmp(el, "service") == 0)
+    if (strcasecmp(el, "service") == 0)
     {
-    if (attr && attr[0] && attr[1])
+        if (attr && attr[0] && attr[1])
         {
-        if (strcasecmp(attr[1], "error") == 0)
+            if (strcasecmp(attr[1], "error") == 0)
             {
-            if (attr[2] && attr[3])
-                error = attr[3];
-            else
-                error = "Service not found.";
+                if (attr[2] && attr[3])
+                    error = attr[3];
+                else
+                    error = "Service not found.";
             }
-        else
+            else
             {
-            parsingAnswer = true;
-            for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
-                if (!TryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
+                parsingAnswer = true;
+                for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
+                    if (!tryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
                     {
-                    error = std::string("Invalid parameter '") + *pos + "' or value '" + *(pos + 1) + "'.";
-                    break;
+                        error = std::string("Invalid parameter '") + *pos + "' or value '" + *(pos + 1) + "'.";
+                        break;
                     }
             }
         }
-    else
-        parsingAnswer = true;
+        else
+            parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-/*void GET_SERVICE::PARSER::ParseServiceParams(const char * el, const char ** attr)
+/*void GetService::Parser::ParseServiceParams(const char* el, const char** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
-    error = "Invalid parameter.";
+    if (!tryParse(propertyParsers, ToLower(el), attr, encoding))
+        error = "Invalid parameter.";
 }*/

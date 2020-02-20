@@ -21,31 +21,28 @@
 #include "corps_impl.h"
 
 #include "stg/admin.h"
+#include "stg/admin_conf.h"
+#include "stg/store.h"
 #include "stg/common.h"
 
-#include <cerrno>
-#include <cassert>
 #include <algorithm>
+#include <cassert>
+
+using STG::CorporationsImpl;
 
 //-----------------------------------------------------------------------------
-CORPORATIONS_IMPL::CORPORATIONS_IMPL(STORE * st)
-    : CORPORATIONS(),
-      data(),
-      store(st),
-      WriteServLog(GetStgLogger()),
-      searchDescriptors(),
-      handle(0),
-      mutex(),
-      strError()
+CorporationsImpl::CorporationsImpl(Store * st)
+    : store(st),
+      WriteServLog(Logger::get()),
+      handle(0)
 {
-pthread_mutex_init(&mutex, NULL);
 Read();
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::Add(const CORP_CONF & corp, const ADMIN * admin)
+int CorporationsImpl::Add(const CorpConf & corp, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
@@ -80,10 +77,10 @@ WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
 return -1;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::Del(const std::string & name, const ADMIN * admin)
+int CorporationsImpl::Del(const std::string & name, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
@@ -93,7 +90,7 @@ if (!priv->corpChg)
     return -1;
     }
 
-crp_iter si(find(data.begin(), data.end(), CORP_CONF(name)));
+crp_iter si(find(data.begin(), data.end(), CorpConf(name)));
 
 if (si == data.end())
     {
@@ -124,10 +121,10 @@ WriteServLog("%s Corporation \'%s\' deleted.", admin->GetLogStr().c_str(), name.
 return 0;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::Change(const CORP_CONF & corp, const ADMIN * admin)
+int CorporationsImpl::Change(const CorpConf & corp, const Admin * admin)
 {
-STG_LOCKER lock(&mutex);
-const PRIV * priv = admin->GetPriv();
+std::lock_guard<std::mutex> lock(mutex);
+const auto priv = admin->GetPriv();
 
 if (!priv->corpChg)
     {
@@ -160,9 +157,9 @@ WriteServLog("%s Corporation \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool CORPORATIONS_IMPL::Read()
+bool CorporationsImpl::Read()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 std::vector<std::string> corpsList;
 if (store->GetCorpsList(&corpsList) < 0)
     {
@@ -172,7 +169,7 @@ if (store->GetCorpsList(&corpsList) < 0)
 
 for (size_t i = 0; i < corpsList.size(); i++)
     {
-    CORP_CONF corp;
+    CorpConf corp;
 
     if (store->RestoreCorp(&corp, corpsList[i]))
         {
@@ -185,15 +182,15 @@ for (size_t i = 0; i < corpsList.size(); i++)
 return false;
 }
 //-----------------------------------------------------------------------------
-bool CORPORATIONS_IMPL::Find(const std::string & name, CORP_CONF * corp)
+bool CorporationsImpl::Find(const std::string & name, CorpConf * corp)
 {
 assert(corp != NULL && "Pointer to corporation is not null");
 
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (data.empty())
     return false;
 
-crp_iter si(find(data.begin(), data.end(), CORP_CONF(name)));
+crp_iter si(find(data.begin(), data.end(), CorpConf(name)));
 
 if (si != data.end())
     {
@@ -204,16 +201,16 @@ if (si != data.end())
 return true;
 }
 //-----------------------------------------------------------------------------
-bool CORPORATIONS_IMPL::Exists(const std::string & name) const
+bool CorporationsImpl::Exists(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (data.empty())
     {
     printfd(__FILE__, "no admin in system!\n");
     return true;
     }
 
-const_crp_iter si(find(data.begin(), data.end(), CORP_CONF(name)));
+const_crp_iter si(find(data.begin(), data.end(), CorpConf(name)));
 
 if (si != data.end())
     return true;
@@ -221,17 +218,17 @@ if (si != data.end())
 return false;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::OpenSearch() const
+int CorporationsImpl::OpenSearch() const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 handle++;
 searchDescriptors[handle] = data.begin();
 return handle;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::SearchNext(int h, CORP_CONF * corp) const
+int CorporationsImpl::SearchNext(int h, CorpConf * corp) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (searchDescriptors.find(h) == searchDescriptors.end())
     {
     WriteServLog("CORPORATIONS. Incorrect search handle.");
@@ -246,9 +243,9 @@ if (searchDescriptors[h] == data.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int CORPORATIONS_IMPL::CloseSearch(int h) const
+int CorporationsImpl::CloseSearch(int h) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(mutex);
 if (searchDescriptors.find(h) != searchDescriptors.end())
     {
     searchDescriptors.erase(searchDescriptors.find(h));

@@ -22,7 +22,7 @@
 
 #include "stg/store.h"
 #include "stg/users.h"
-#include "stg/plugin_creator.h"
+#include "stg/user.h"
 #include "stg/common.h"
 
 #include <algorithm>
@@ -41,26 +41,19 @@
 using STG::Config;
 using STG::Conn;
 
-namespace
+extern "C" STG::Plugin* GetPlugin()
 {
-
-PLUGIN_CREATOR<RADIUS> creator;
-
-}
-
-extern "C" PLUGIN * GetPlugin()
-{
-    return creator.GetPlugin();
+    static RADIUS plugin;
+    return &plugin;
 }
 
 RADIUS::RADIUS()
-    : m_config(),
-      m_running(false),
+    : m_running(false),
       m_stopped(true),
       m_users(NULL),
       m_store(NULL),
       m_listenSocket(0),
-      m_logger(GetPluginLogger(GetStgLogger(), "radius"))
+      m_logger(STG::PluginLogger::get("radius"))
 {
 }
 
@@ -367,7 +360,7 @@ void RADIUS::acceptTCP()
     m_conns.push_back(new Conn(*m_users, m_logger, *this, m_config, res, remote));
 }
 
-void RADIUS::authorize(const USER& user)
+void RADIUS::authorize(const STG::User& user)
 {
     uint32_t ip = 0;
     const std::string& login(user.GetLogin());

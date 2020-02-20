@@ -18,52 +18,36 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
- $Revision: 1.79 $
- $Date: 2010/03/25 15:18:48 $
- $Author: faust $
- */
- 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h> // close
+#include "inetaccess.h"
 
+#include "stg/common.h"
+#include "stg/locker.h"
+#include "stg/tariff.h"
+#include "stg/settings.h"
+
+#include <algorithm>
 #include <csignal>
 #include <cstdlib>
 #include <cstdio> // snprintf
 #include <cerrno>
 #include <cmath>
-#include <algorithm>
 
-#include "stg/common.h"
-#include "stg/locker.h"
-#include "stg/tariff.h"
-#include "stg/user_property.h"
-#include "stg/settings.h"
-#include "stg/plugin_creator.h"
-#include "inetaccess.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h> // close
+
+#define IA_PROTO_VER    (6)
 
 extern volatile time_t stgTime;
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-namespace
+extern "C" STG::Plugin* GetPlugin()
 {
-PLUGIN_CREATOR<AUTH_IA> iac;
-}
-
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
-{
-return iac.GetPlugin();
+    static AUTH_IA plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -72,17 +56,16 @@ AUTH_IA_SETTINGS::AUTH_IA_SETTINGS()
     : userDelay(0),
       userTimeout(0),
       port(0),
-      errorStr(),
       freeMbShowType(freeMbCash),
       logProtocolErrors(false)
 {
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int AUTH_IA_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 int p;
-PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+STG::ParamValue pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
 ///////////////////////////
 pv.param = "Port";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -301,32 +284,15 @@ return phaseTime;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 AUTH_IA::AUTH_IA()
-    : ctxS(),
-      errorStr(),
-      iaSettings(),
-      settings(),
-      nonstop(false),
+    : nonstop(false),
       isRunningRun(false),
       isRunningRunTimeouter(false),
       users(NULL),
       stgSettings(NULL),
-      ip2user(),
-      recvThread(),
-      timeouterThread(),
-      mutex(),
       listenSocket(-1),
-      connSynAck6(),
-      connSynAck8(),
-      disconnSynAck6(),
-      disconnSynAck8(),
-      aliveSyn6(),
-      aliveSyn8(),
-      fin6(),
-      fin8(),
-      packetTypes(),
       enabledDirs(0xFFffFFff),
       onDelUserNotifier(*this),
-      logger(GetPluginLogger(GetStgLogger(), "auth_ia"))
+      logger(STG::PluginLogger::get("auth_ia"))
 {
 InitContext("pr7Hhen", 7, &ctxS);
 
@@ -524,7 +490,7 @@ if (ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Reload(const MODULE_SETTINGS & ms)
+int AUTH_IA::Reload(const STG::ModuleSettings & ms)
 {
 AUTH_IA_SETTINGS newIaSettings;
 if (newIaSettings.ParseSettings(ms))
@@ -615,7 +581,7 @@ memset(login, 0, PASSWD_LEN);
 
 DecryptString(login, buffer + 8, PASSWD_LEN, &ctxS);
 
-USER_PTR user;
+UserPtr user;
 if (users->FindByName(login, &user))
     {
     logger("User's connect failed: user '%s' not found. IP %s",
@@ -628,21 +594,21 @@ if (users->FindByName(login, &user))
 
 printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
 
-if (user->GetProperty().disabled.Get())
+if (user->GetProperties().disabled.Get())
     {
     logger("Cannont authorize '%s', user is disabled.", login);
     SendError(sip, sport, protoVer, IconvString("Учетная запись заблокирована.", "utf8", "koi8-ru"));
     return 0;
     }
 
-if (user->GetProperty().passive.Get())
+if (user->GetProperties().passive.Get())
     {
     logger("Cannont authorize '%s', user is passive.", login);
     SendError(sip, sport, protoVer, IconvString("Учетная запись заморожена.", "utf8", "koi8-ru"));
     return 0;
     }
 
-if (!user->GetProperty().ips.Get().IsIPInIPS(sip))
+if (!user->GetProperties().ips.Get().find(sip))
     {
     printfd(__FILE__, "User %s. IP address is incorrect. IP %s\n",
             user->GetLogin().c_str(), inet_ntostring(sip).c_str());
@@ -772,7 +738,7 @@ while (it != ip2user.end())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user)
+int AUTH_IA::PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, UserPtr user)
 {
 std::string login(user->GetLogin());
 const size_t offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
@@ -782,7 +748,7 @@ std::map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
 if (it == ip2user.end())
     {
-    USER_PTR userPtr;
+    UserPtr userPtr;
     if (!users->FindByIPIdx(sip, &userPtr))
         {
         if (userPtr->GetID() != user->GetID())
@@ -826,11 +792,11 @@ else if (user->GetID() != it->second.user->GetID())
 
 IA_USER * iaUser = &(it->second);
 
-if (iaUser->password != user->GetProperty().password.Get())
+if (iaUser->password != user->GetProperties().password.Get())
     {
-    const std::string & password = user->GetProperty().password.Get();
+    const std::string & password = user->GetProperties().password.Get();
     InitContext(password.c_str(), password.length(), &iaUser->ctx);
-    iaUser->password = user->GetProperty().password.Get();
+    iaUser->password = user->GetProperties().password.Get();
     }
 
 DecryptString(static_cast<char *>(buff) + offset, static_cast<char *>(buff) + offset, (dataLen - offset), &iaUser->ctx);
@@ -955,7 +921,7 @@ switch (pi->second)
 return -1;
 }
 //-----------------------------------------------------------------------------
-void AUTH_IA::DelUser(USER_PTR u)
+void AUTH_IA::DelUser(UserPtr u)
 {
 
 uint32_t ip = u->GetCurrIP();
@@ -1047,7 +1013,7 @@ if (sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sen
 return -1;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::SendMessage(const STG_MSG & msg, uint32_t ip) const
+int AUTH_IA::SendMessage(const STG::Message & msg, uint32_t ip) const
 {
 printfd(__FILE__, "SendMessage userIP=%s\n", inet_ntostring(ip).c_str());
 
@@ -1064,7 +1030,7 @@ it->second.messagesToSend.push_back(msg);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::RealSendMessage6(const STG_MSG & msg, uint32_t ip, IA_USER & user)
+int AUTH_IA::RealSendMessage6(const STG::Message & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 6 user=%s\n", user.login.c_str());
 
@@ -1088,7 +1054,7 @@ EncryptString(buffer, buffer, len, &user.ctx);
 return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user)
+int AUTH_IA::RealSendMessage7(const STG::Message & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 7 user=%s\n", user.login.c_str());
 
@@ -1117,7 +1083,7 @@ EncryptString(buffer, buffer, len, &user.ctx);
 return Send(ip, iaSettings.GetUserPort(), buffer, len);
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user)
+int AUTH_IA::RealSendMessage8(const STG::Message & msg, uint32_t ip, IA_USER & user)
 {
 printfd(__FILE__, "RealSendMessage 8 user=%s\n", user.login.c_str());
 
@@ -1480,8 +1446,8 @@ strcpy((char*)aliveSyn6.type, "ALIVE_SYN");
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    aliveSyn6.md[i] = iaUser->user->GetProperty().down.Get()[i];
-    aliveSyn6.mu[i] = iaUser->user->GetProperty().up.Get()[i];
+    aliveSyn6.md[i] = iaUser->user->GetProperties().down.Get()[i];
+    aliveSyn6.mu[i] = iaUser->user->GetProperties().up.Get()[i];
 
     aliveSyn6.sd[i] = iaUser->user->GetSessionDownload()[i];
     aliveSyn6.su[i] = iaUser->user->GetSessionUpload()[i];
@@ -1489,7 +1455,7 @@ for (int i = 0; i < DIR_NUM; i++)
 
 //TODO
 int dn = iaSettings.GetFreeMbShowType();
-const TARIFF * tf = iaUser->user->GetTariff();
+const auto tf = iaUser->user->GetTariff();
 
 if (dn < DIR_NUM)
     {
@@ -1504,7 +1470,7 @@ if (dn < DIR_NUM)
         }
     else
         {
-        double fmb = iaUser->user->GetProperty().freeMb;
+        double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
         }
@@ -1517,7 +1483,7 @@ else
         }
     else
         {
-        double fmb = iaUser->user->GetProperty().freeMb;
+        double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
         }
@@ -1531,7 +1497,7 @@ if (iaUser->aliveSent)
 iaUser->aliveSent = true;
 #endif
 
-aliveSyn6.cash =(int64_t) (iaUser->user->GetProperty().cash.Get() * 1000.0);
+aliveSyn6.cash =(int64_t) (iaUser->user->GetProperties().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
     aliveSyn6.cash -= (int64_t)(tf->GetFee() * 1000.0);
 
@@ -1570,8 +1536,8 @@ strcpy((char*)aliveSyn8.type, "ALIVE_SYN");
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    aliveSyn8.md[i] = iaUser->user->GetProperty().down.Get()[i];
-    aliveSyn8.mu[i] = iaUser->user->GetProperty().up.Get()[i];
+    aliveSyn8.md[i] = iaUser->user->GetProperties().down.Get()[i];
+    aliveSyn8.mu[i] = iaUser->user->GetProperties().up.Get()[i];
 
     aliveSyn8.sd[i] = iaUser->user->GetSessionDownload()[i];
     aliveSyn8.su[i] = iaUser->user->GetSessionUpload()[i];
@@ -1582,7 +1548,7 @@ int dn = iaSettings.GetFreeMbShowType();
 
 if (dn < DIR_NUM)
     {
-    const TARIFF * tf = iaUser->user->GetTariff();
+    const auto tf = iaUser->user->GetTariff();
     double p = tf->GetPriceWithTraffType(aliveSyn8.mu[dn],
                                          aliveSyn8.md[dn],
                                          dn,
@@ -1594,7 +1560,7 @@ if (dn < DIR_NUM)
         }
     else
         {
-        double fmb = iaUser->user->GetProperty().freeMb;
+        double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
         }
@@ -1607,7 +1573,7 @@ else
         }
     else
         {
-        double fmb = iaUser->user->GetProperty().freeMb;
+        double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
         snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
         }
@@ -1621,9 +1587,9 @@ if (iaUser->aliveSent)
 iaUser->aliveSent = true;
 #endif
 
-const TARIFF * tf = iaUser->user->GetTariff();
+const auto tf = iaUser->user->GetTariff();
 
-aliveSyn8.cash =(int64_t) (iaUser->user->GetProperty().cash.Get() * 1000.0);
+aliveSyn8.cash =(int64_t) (iaUser->user->GetProperties().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
     aliveSyn8.cash -= (int64_t)(tf->GetFee() * 1000.0);
 

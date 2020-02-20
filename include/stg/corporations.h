@@ -18,29 +18,30 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef CORPORATIONS_H
-#define CORPORATIONS_H
-
-#include "corp_conf.h"
+#pragma once
 
 #include <string>
 
-class ADMIN;
+namespace STG
+{
 
-class CORPORATIONS {
-public:
-    virtual ~CORPORATIONS() {}
-    virtual int Add(const CORP_CONF & corp, const ADMIN * admin) = 0;
-    virtual int Del(const std::string & name, const ADMIN * admin) = 0;
-    virtual int Change(const CORP_CONF & corp, const ADMIN * admin) = 0;
-    virtual bool Find(const std::string & name, CORP_CONF * corp) = 0;
-    virtual bool Exists(const std::string & name) const = 0;
-    virtual const std::string & GetStrError() const = 0;
+struct Admin;
+struct CorpConf;
+
+struct Corporations {
+    virtual ~Corporations() = default;
+
+    virtual int Add(const CorpConf& corp, const Admin* admin) = 0;
+    virtual int Del(const std::string& name, const Admin* admin) = 0;
+    virtual int Change(const CorpConf& corp, const Admin* admin) = 0;
+    virtual bool Find(const std::string& name, CorpConf* corp) = 0;
+    virtual bool Exists(const std::string& name) const = 0;
+    virtual const std::string& GetStrError() const = 0;
     virtual size_t Count() const = 0;
 
     virtual int OpenSearch() const = 0;
-    virtual int SearchNext(int, CORP_CONF * corp) const = 0;
+    virtual int SearchNext(int, CorpConf* corp) const = 0;
     virtual int CloseSearch(int) const = 0;
 };
 
-#endif
+}

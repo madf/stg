@@ -21,7 +21,6 @@
 #include "pcap_cap.h"
 
 #include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 
@@ -32,7 +31,6 @@
 //-----------------------------------------------------------------------------
 namespace
 {
-PLUGIN_CREATOR<PCAP_CAP> pcc;
 
 const size_t SNAP_LEN = 1518;
 const size_t ETHER_ADDR_LEN = 6;
@@ -46,13 +44,13 @@ u_short    ether_type;                     /* IP? ARP? RARP? etc */
 
 }
 
-extern "C" PLUGIN * GetPlugin();
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+extern "C" Plugin* GetPlugin()
 {
-return pcc.GetPlugin();
+static PCAP_CAP plugin;
+return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -66,7 +64,7 @@ PCAP_CAP::PCAP_CAP()
     : nonstop(false),
       isRunning(false),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "pcap_cap"))
+      logger(PluginLogger::get("pcap_cap"))
 {
 }
 //-----------------------------------------------------------------------------

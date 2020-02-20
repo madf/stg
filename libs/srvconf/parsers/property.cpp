@@ -22,33 +22,33 @@
 
 #include <strings.h>
 
-bool STG::CheckValue(const char ** attr, const std::string & attrName)
+bool STG::checkValue(const char** attr, const std::string& attrName)
 {
-return attr && attr[0] && attr[1] && strcasecmp(attr[0], attrName.c_str()) == 0;
+    return attr && attr[0] && attr[1] && strcasecmp(attr[0], attrName.c_str()) == 0;
 }
 
-bool STG::GetEncodedValue(const char ** attr, std::string & value, const std::string & attrName)
+bool STG::getEncodedValue(const char** attr, std::string& value, const std::string& attrName)
 {
-if (!CheckValue(attr, attrName))
-    return false;
-Decode21str(value, attr[1]);
-return true;
+    if (!checkValue(attr, attrName))
+        return false;
+    Decode21str(value, attr[1]);
+    return true;
 }
 
-bool STG::GetIPValue(const char ** attr, uint32_t & value, const std::string & attrName)
+bool STG::getIPValue(const char** attr, uint32_t& value, const std::string& attrName)
 {
-if (!CheckValue(attr, attrName))
-    return false;
-std::string ip(attr[1]);
-value = inet_strington(attr[1]);
-if (value == 0 && ip != "0.0.0.0")
-    return false;
-return true;
+    if (!checkValue(attr, attrName))
+        return false;
+    std::string ip(attr[1]);
+    value = inet_strington(attr[1]);
+    if (value == 0 && ip != "0.0.0.0")
+        return false;
+    return true;
 }
 
-bool STG::TryParse(PROPERTY_PARSERS & parsers, const std::string & name, const char ** attr, const std::string & toEncoding, const std::string & attrName)
+bool STG::tryParse(PropertyParsers& parsers, const std::string& name, const char** attr, const std::string& toEncoding, const std::string& attrName)
 {
-    PROPERTY_PARSERS::iterator it(parsers.find(name));
+    auto it = parsers.find(name);
     if (it != parsers.end())
         return it->second->Parse(attr, attrName, toEncoding);
     return true; // Assume that non-existing params are ok.

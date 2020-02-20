@@ -11,7 +11,7 @@ bool UsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 int handle = users.OpenSearch();
 assert(handle && "USERS::OpenSearch is always correct");
 
-USER_PTR user;
+STG::User* user;
 size_t count = 0;
 while (!users.SearchNext(handle, &user))
     {
@@ -31,7 +31,7 @@ std::string UsersSensor::ToString() const
 int handle = users.OpenSearch();
 assert(handle && "USERS::OpenSearch is always correct");
 
-USER_PTR user;
+STG::User* user;
 size_t count = 0;
 while (!users.SearchNext(handle, &user))
     {
@@ -45,7 +45,7 @@ return std::to_string(count);
 }
 #endif
 
-bool ActiveUsersSensor::UserPredicate(USER_PTR userPtr) const
+bool ActiveUsersSensor::UserPredicate(STG::User* userPtr) const
 {
 if (!userPtr->GetConnected())
     return false;

@@ -1,8 +1,7 @@
-#ifndef __STG_SGCONF_UTILS_H__
-#define __STG_SGCONF_UTILS_H__
+#pragma once
 
 #include "stg/common.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 #include <map>
@@ -12,7 +11,7 @@ namespace SGCONF
 
 template <typename T>
 inline
-void MaybeSet(const std::map<std::string, std::string> & options, const std::string & name, RESETABLE<T> & res)
+void MaybeSet(const std::map<std::string, std::string> & options, const std::string & name, STG::Optional<T> & res)
 {
 std::map<std::string, std::string>::const_iterator it(options.find(name));
 if (it == options.end())
@@ -35,7 +34,7 @@ conv(it->second, res);
 
 template <>
 inline
-void MaybeSet<std::string>(const std::map<std::string, std::string> & options, const std::string & name, RESETABLE<std::string> & res)
+void MaybeSet<std::string>(const std::map<std::string, std::string> & options, const std::string & name, STG::Optional<std::string> & res)
 {
 std::map<std::string, std::string>::const_iterator it(options.find(name));
 if (it == options.end())
@@ -44,5 +43,3 @@ res = it->second;
 }
 
 } // namespace SGCONF
-
-#endif

@@ -18,13 +18,10 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef USER_H
-#define USER_H
+#pragma once
 
 #include "notifer.h"
 #include "message.h"
-#include "tariff.h"
-#include "user_traff.h"
 
 #include <vector>
 #include <string>
@@ -32,67 +29,72 @@
 #include <ctime>
 #include <cstdint>
 
-class USER_PROPERTIES;
-class AUTH;
+namespace STG
+{
 
-typedef PROPERTY_NOTIFIER_BASE<uint32_t> CURR_IP_NOTIFIER;
-typedef PROPERTY_NOTIFIER_BASE<bool> CONNECTED_NOTIFIER;
+struct Tariff;
+class UserProperties;
+class DirTraff;
+struct Auth;
 
-class USER {
-public:
-    virtual ~USER() {}
+using CURR_IP_NOTIFIER = PropertyNotifierBase<uint32_t>;
+using CONNECTED_NOTIFIER = PropertyNotifierBase<bool>;
+
+struct User {
+    virtual ~User() = default;
+
     virtual int                 WriteConf() = 0;
     virtual int                 WriteStat() = 0;
 
-    virtual const std::string & GetLogin() const = 0;
+    virtual const std::string&  GetLogin() const = 0;
 
     virtual uint32_t            GetCurrIP() const = 0;
     virtual time_t              GetCurrIPModificationTime() const = 0;
 
-    virtual void                AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier) = 0;
-    virtual void                DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier) = 0;
+    virtual void                AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER* notifier) = 0;
+    virtual void                DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER* notifier) = 0;
 
-    virtual void                AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier) = 0;
-    virtual void                DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier) = 0;
+    virtual void                AddCurrIPAfterNotifier(CURR_IP_NOTIFIER* notifier) = 0;
+    virtual void                DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER* notifier) = 0;
 
-    virtual void                AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier) = 0;
-    virtual void                DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier) = 0;
+    virtual void                AddConnectedBeforeNotifier(CONNECTED_NOTIFIER* notifier) = 0;
+    virtual void                DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER* notifier) = 0;
 
-    virtual void                AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier) = 0;
-    virtual void                DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier) = 0;
+    virtual void                AddConnectedAfterNotifier(CONNECTED_NOTIFIER* notifier) = 0;
+    virtual void                DelConnectedAfterNotifier(const CONNECTED_NOTIFIER* notifier) = 0;
 
     virtual int                 GetID() const = 0;
 
     virtual double              GetPassiveTimePart() const = 0;
 
-    virtual const TARIFF *      GetTariff() const = 0;
+    virtual const Tariff*       GetTariff() const = 0;
     virtual void                ResetNextTariff() = 0;
 
-    virtual const DIR_TRAFF &   GetSessionUpload() const = 0;
-    virtual const DIR_TRAFF &   GetSessionDownload() const = 0;
+    virtual const DirTraff&     GetSessionUpload() const = 0;
+    virtual const DirTraff&     GetSessionDownload() const = 0;
     virtual time_t              GetSessionUploadModificationTime() const = 0;
     virtual time_t              GetSessionDownloadModificationTime() const = 0;
 
     virtual bool                GetConnected() const = 0;
     virtual time_t              GetConnectedModificationTime() const = 0;
-    virtual const std::string & GetLastDisconnectReason() const = 0;
+    virtual const std::string&  GetLastDisconnectReason() const = 0;
     virtual int                 GetAuthorized() const = 0;
     virtual time_t              GetAuthorizedModificationTime() const = 0;
 
-    virtual bool                IsAuthorizedBy(const AUTH * auth) const = 0;
+    virtual bool                IsAuthorizedBy(const Auth * auth) const = 0;
     virtual std::vector<std::string> GetAuthorizers() const = 0;
 
-    virtual int                 AddMessage(STG_MSG * msg) = 0;
+    virtual int                 AddMessage(Message* msg) = 0;
 
     virtual void                UpdatePingTime(time_t t = 0) = 0;
     virtual time_t              GetPingTime() const = 0;
 
     virtual void                Run() = 0;
 
-    virtual const std::string & GetStrError() const = 0;
+    virtual const std::string&  GetStrError() const = 0;
 
-    virtual USER_PROPERTIES &   GetProperty() = 0;
-    virtual const USER_PROPERTIES & GetProperty() const = 0;
+    virtual UserProperties&     GetProperties() = 0;
+    virtual const UserProperties& GetProperties() const = 0;
 
     virtual bool                GetDeleted() const = 0;
     virtual void                SetDeleted() = 0;
@@ -105,10 +107,7 @@ public:
     virtual void                OnAdd() = 0;
     virtual void                OnDelete() = 0;
 
-    virtual std::string GetParamValue(const std::string & name) const = 0;
+    virtual std::string GetParamValue(const std::string& name) const = 0;
 };
 
-typedef USER * USER_PTR;
-typedef const USER * CONST_USER_PTR;
-
-#endif
+}

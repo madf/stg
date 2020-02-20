@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_GET_TARIFF_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_GET_TARIFF_H__
+#pragma once
 
 #include "base.h"
 #include "property.h"
@@ -31,35 +30,34 @@
 
 namespace STG
 {
-namespace GET_TARIFF
+namespace GetTariff
 {
 
-class PARSER: public STG::PARSER
+class Parser: public STG::Parser
 {
-public:
-    typedef GET_TARIFF::INFO INFO;
+    public:
+        using Info = GetTariff::Info;
 
-    PARSER(CALLBACK f, void * data, const std::string & encoding);
-    virtual ~PARSER();
-    int  ParseStart(const char * el, const char ** attr);
-    void ParseEnd(const char * el);
-    void Failure(const std::string & reason) { callback(false, reason, info, data); }
+        Parser(Callback f, void * data, const std::string & encoding);
 
-private:
-    PROPERTY_PARSERS propertyParsers;
-    CALLBACK callback;
-    void * data;
-    std::string encoding;
-    INFO info;
-    int depth;
-    bool parsingAnswer;
-    std::string error;
+        ~Parser() override;
+        int  ParseStart(const char * el, const char ** attr) override;
+        void ParseEnd(const char * el) override;
+        void Failure(const std::string & reason) override { callback(false, reason, info, data); }
 
-    void ParseTariff(const char * el, const char ** attr);
-    void ParseTariffParams(const char * el, const char ** attr);
+    private:
+        PropertyParsers propertyParsers;
+        Callback callback;
+        void* data;
+        std::string encoding;
+        Info info;
+        int depth;
+        bool parsingAnswer;
+        std::string error;
+
+        void ParseTariff(const char* el, const char** attr);
+        void ParseTariffParams(const char* el, const char** attr);
 };
 
-} // namespace GET_TARIFF
+} // namespace GetTariff
 } // namespace STG
-
-#endif

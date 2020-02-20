@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_CONN_H__
-#define __STG_SGCONFIG_CONN_H__
+#pragma once
 
 #include "parser.h"
 
@@ -35,16 +34,15 @@
 
 #include <netinet/in.h>
 
-class SETTINGS;
-class ADMINS;
-class USERS;
-class TARIFFS;
-class ADMIN;
-class BASE_PARSER;
-class PLUGIN_LOGGER;
-
 namespace STG
 {
+
+struct Settings;
+struct Admins;
+struct Users;
+struct Tariffs;
+struct Admin;
+class PluginLogger;
 
 class DECRYPT_STREAM;
 
@@ -57,8 +55,8 @@ class Conn
         };
 
         Conn(const BASE_PARSER::REGISTRY & registry,
-             ADMINS & admins, int sock, const sockaddr_in& addr,
-             PLUGIN_LOGGER & logger);
+             Admins & admins, int sock, const sockaddr_in& addr,
+             PluginLogger & logger);
         ~Conn();
 
         int Sock() const { return m_sock; }
@@ -87,9 +85,9 @@ class Conn
 
         const BASE_PARSER::REGISTRY & m_registry;
 
-        ADMINS & m_admins;
+        Admins & m_admins;
 
-        ADMIN * m_admin;
+        Admin * m_admin;
 
         int m_sock;
         sockaddr_in m_addr;
@@ -108,7 +106,7 @@ class Conn
         char m_cryptoLogin[ADM_LOGIN_LEN]; // Without \0
         char m_data[1024];
         STG::DECRYPT_STREAM * m_stream;
-        PLUGIN_LOGGER &  m_logger;
+        PluginLogger &  m_logger;
 
         BASE_PARSER * GetParser(const std::string & tag) const;
 
@@ -142,5 +140,3 @@ class Conn
 };
 
 }
-
-#endif

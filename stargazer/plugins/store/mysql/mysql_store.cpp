@@ -156,7 +156,7 @@ return 0;
 MYSQL_STORE::MYSQL_STORE()
     : version("mysql_store v.0.67"),
       schemaVersion(0),
-      logger(GetPluginLogger(GetStgLogger(), "store_mysql"))
+      logger(PluginLogger::get("store_mysql"))
 {
 }
 //-----------------------------------------------------------------------------

@@ -1,6 +1,3 @@
-#ifndef __STG_PLUGIN_MGR_H__
-#define __STG_PLUGIN_MGR_H__
-
 /*
  *    This program is free software; you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -21,41 +18,41 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
+#pragma once
+
 #include "stg/module_settings.h"
 
 #include <vector>
 
-class SETTINGS_IMPL;
-class PLUGIN_RUNNER;
-class STORE;
-class ADMINS_IMPL;
-class TARIFFS_IMPL;
-class SERVICES_IMPL;
-class CORPORATIONS_IMPL;
-class USERS_IMPL;
-class TRAFFCOUNTER_IMPL;
-class STG_LOGGER;
-
 namespace STG
 {
+
+class SettingsImpl;
+class PluginRunner;
+struct Store;
+class AdminsImpl;
+class TariffsImpl;
+class ServicesImpl;
+class CorporationsImpl;
+class UsersImpl;
+class TraffCounterImpl;
+class Logger;
 
 class PluginManager
 {
     public:
-        PluginManager(const SETTINGS_IMPL& settings,
-                      STORE& store, ADMINS_IMPL& admins, TARIFFS_IMPL& tariffs,
-                      SERVICES_IMPL& services, CORPORATIONS_IMPL& corporations,
-                      USERS_IMPL& users, TRAFFCOUNTER_IMPL& traffcounter);
+        PluginManager(const SettingsImpl& settings,
+                      Store& store, AdminsImpl& admins, TariffsImpl& tariffs,
+                      ServicesImpl& services, CorporationsImpl& corporations,
+                      UsersImpl& users, TraffCounterImpl& traffcounter);
         ~PluginManager();
 
-        void reload(const SETTINGS_IMPL& settings);
+        void reload(const SettingsImpl& settings);
         void stop();
 
     private:
-        std::vector<PLUGIN_RUNNER*> m_modules;
-        STG_LOGGER & m_log;
+        std::vector<PluginRunner*> m_modules;
+        Logger & m_log;
 };
 
-} // namespace STG
-
-#endif
+}

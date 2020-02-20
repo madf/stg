@@ -34,193 +34,193 @@ namespace
 {
 
 template <typename A, typename T>
-class AOS_PARSER : public BASE_PROPERTY_PARSER
+class AoSParser : public BasePropertyParser
 {
     public:
-        typedef bool (* FUNC)(const char **, A &, T A::value_type:: *);
-        AOS_PARSER(A & a, T A::value_type:: * fld, FUNC f) : array(a), field(fld), func(f) {}
-        virtual bool Parse(const char ** attr, const std::string & /*attrName*/, const std::string & /*fromEncoding*/) { return func(attr, array, field); }
+        using Func = bool (*)(const char**, A &, T A::value_type::*);
+        AoSParser(A& a, T A::value_type::* fld, Func f) : array(a), field(fld), func(f) {}
+        virtual bool Parse(const char** attr, const std::string& /*attrName*/, const std::string& /*fromEncoding*/) { return func(attr, array, field); }
     private:
-        A & array;
-        T A::value_type:: * field;
-        FUNC func;
+        A& array;
+        T A::value_type::* field;
+        Func func;
 };
 
 template <typename A, typename T>
 inline
-void AddAOSParser(PROPERTY_PARSERS & parsers, const std::string & name, A & array, T A::value_type:: * field, const typename AOS_PARSER<A, T>::FUNC & func)
+void addAOSParser(PropertyParsers& parsers, const std::string& name, A& array, T A::value_type::* field, const typename AoSParser<A, T>::Func& func)
 {
-    parsers.insert(std::make_pair(ToLower(name), new AOS_PARSER<A, T>(array, field, func)));
+    parsers.insert(std::make_pair(ToLower(name), new AoSParser<A, T>(array, field, func)));
 }
 
-bool GetTimeSpan(const char ** attr, DIRPRICE_DATA & value, const std::string & attrName)
+bool getTimeSpan(const char** attr, DirPriceData& value, const std::string& attrName)
 {
-if (CheckValue(attr, attrName))
+    if (checkValue(attr, attrName))
     {
-    int hb = 0;
-    int mb = 0;
-    int he = 0;
-    int me = 0;
-    if (ParseTariffTimeStr(attr[1], hb, mb, he, me) == 0)
+        int hb = 0;
+        int mb = 0;
+        int he = 0;
+        int me = 0;
+        if (ParseTariffTimeStr(attr[1], hb, mb, he, me) == 0)
         {
-        value.hDay = hb;
-        value.mDay = mb;
-        value.hNight = he;
-        value.mNight = me;
-        return true;
+            value.hDay = hb;
+            value.mDay = mb;
+            value.hNight = he;
+            value.mNight = me;
+            return true;
         }
     }
-return false;
+    return false;
 }
 
 template <typename T>
-bool GetTraffType(const char ** attr, T & value, const std::string & attrName)
+bool getTraffType(const char** attr, T& value, const std::string& attrName)
 {
-if (!CheckValue(attr, attrName))
-    return false;
-value = TARIFF::StringToTraffType(attr[1]);
-return true;
+    if (!checkValue(attr, attrName))
+        return false;
+    value = Tariff::parseTraffType(attr[1]);
+    return true;
 }
 
 template <typename T>
-bool GetPeriod(const char ** attr, T & value, const std::string & attrName)
+bool getPeriod(const char** attr, T& value, const std::string& attrName)
 {
-if (!CheckValue(attr, attrName))
-    return false;
-std::string type(attr[1]);
-if (type == "day")
-    value = TARIFF::DAY;
-else if (type == "month")
-    value = TARIFF::MONTH;
-else
-    return false;
-return true;
+    if (!checkValue(attr, attrName))
+        return false;
+    std::string type(attr[1]);
+    if (type == "day")
+        value = Tariff::DAY;
+    else if (type == "month")
+        value = Tariff::MONTH;
+    else
+        return false;
+    return true;
 }
 
 template <typename T>
-bool GetChangePolicy(const char ** attr, T & value, const std::string & attrName)
+bool getChangePolicy(const char** attr, T& value, const std::string& attrName)
 {
-if (!CheckValue(attr, attrName))
-    return false;
-std::string type(attr[1]);
-if (type == "allow")
-        value = TARIFF::ALLOW;
-else if (type == "to_cheap")
-        value = TARIFF::TO_CHEAP;
-else if (type == "to_expensive")
-        value = TARIFF::TO_EXPENSIVE;
-else if (type == "deny")
-        value = TARIFF::DENY;
-else
-    return false;
-return true;
+    if (!checkValue(attr, attrName))
+        return false;
+    std::string type(attr[1]);
+    if (type == "allow")
+        value = Tariff::ALLOW;
+    else if (type == "to_cheap")
+        value = Tariff::TO_CHEAP;
+    else if (type == "to_expensive")
+        value = Tariff::TO_EXPENSIVE;
+    else if (type == "deny")
+        value = Tariff::DENY;
+    else
+        return false;
+    return true;
 }
 
 template <typename A, typename T>
-bool GetSlashedValue(const char ** attr, A & array, T A::value_type:: * field)
+bool getSlashedValue(const char** attr, A& array, T A::value_type::* field)
 {
-if (!CheckValue(attr, "value"))
-    return false;
-const char * start = attr[1];
-size_t item = 0;
-const char * pos = NULL;
-while ((pos = strchr(start, '/')) && item < array.size())
-    {
-    if (str2x(std::string(start, pos), array[item++].*field))
-            return false;
-    start = pos + 1;
-    }
-if (item < array.size())
-    if (str2x(start, array[item].*field))
+    if (!checkValue(attr, "value"))
         return false;
-return true;
+    const char* start = attr[1];
+    size_t item = 0;
+    const char* pos = NULL;
+    while ((pos = strchr(start, '/')) && item < array.size())
+    {
+        if (str2x(std::string(start, pos), array[item++].*field))
+                return false;
+        start = pos + 1;
+    }
+    if (item < array.size())
+        if (str2x(start, array[item].*field))
+            return false;
+    return true;
 }
 
 } // namespace anonymous
 
-GET_TARIFF::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+GetTariff::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
       depth(0),
       parsingAnswer(false)
 {
-    AddParser(propertyParsers, "fee", info.tariffConf.fee);
-    AddParser(propertyParsers, "passiveCost", info.tariffConf.passiveCost);
-    AddParser(propertyParsers, "free", info.tariffConf.free);
-    AddParser(propertyParsers, "traffType", info.tariffConf.traffType, GetTraffType);
-    AddParser(propertyParsers, "period", info.tariffConf.period, GetPeriod);
-    AddParser(propertyParsers, "changePolicy", info.tariffConf.changePolicy, GetChangePolicy);
-    AddParser(propertyParsers, "changePolicyTimeout", info.tariffConf.changePolicyTimeout);
+    addParser(propertyParsers, "fee", info.tariffConf.fee);
+    addParser(propertyParsers, "passiveCost", info.tariffConf.passiveCost);
+    addParser(propertyParsers, "free", info.tariffConf.free);
+    addParser(propertyParsers, "traffType", info.tariffConf.traffType, getTraffType);
+    addParser(propertyParsers, "period", info.tariffConf.period, getPeriod);
+    addParser(propertyParsers, "changePolicy", info.tariffConf.changePolicy, getChangePolicy);
+    addParser(propertyParsers, "changePolicyTimeout", info.tariffConf.changePolicyTimeout);
     for (size_t i = 0; i < DIR_NUM; ++i)
-        AddParser(propertyParsers, "time" + std::to_string(i), info.dirPrice[i], GetTimeSpan);
-    AddAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DIRPRICE_DATA::priceDayA, GetSlashedValue);
-    AddAOSParser(propertyParsers, "priceDayB", info.dirPrice, &DIRPRICE_DATA::priceDayB, GetSlashedValue);
-    AddAOSParser(propertyParsers, "priceNightA", info.dirPrice, &DIRPRICE_DATA::priceNightA, GetSlashedValue);
-    AddAOSParser(propertyParsers, "priceNightB", info.dirPrice, &DIRPRICE_DATA::priceNightB, GetSlashedValue);
-    AddAOSParser(propertyParsers, "singlePrice", info.dirPrice, &DIRPRICE_DATA::singlePrice, GetSlashedValue);
-    AddAOSParser(propertyParsers, "noDiscount", info.dirPrice, &DIRPRICE_DATA::noDiscount, GetSlashedValue);
-    AddAOSParser(propertyParsers, "threshold", info.dirPrice, &DIRPRICE_DATA::threshold, GetSlashedValue);
+        addParser(propertyParsers, "time" + std::to_string(i), info.dirPrice[i], getTimeSpan);
+    addAOSParser(propertyParsers, "priceDayA", info.dirPrice, &DirPriceData::priceDayA, getSlashedValue);
+    addAOSParser(propertyParsers, "priceDayB", info.dirPrice, &DirPriceData::priceDayB, getSlashedValue);
+    addAOSParser(propertyParsers, "priceNightA", info.dirPrice, &DirPriceData::priceNightA, getSlashedValue);
+    addAOSParser(propertyParsers, "priceNightB", info.dirPrice, &DirPriceData::priceNightB, getSlashedValue);
+    addAOSParser(propertyParsers, "singlePrice", info.dirPrice, &DirPriceData::singlePrice, getSlashedValue);
+    addAOSParser(propertyParsers, "noDiscount", info.dirPrice, &DirPriceData::noDiscount, getSlashedValue);
+    addAOSParser(propertyParsers, "threshold", info.dirPrice, &DirPriceData::threshold, getSlashedValue);
 }
 //-----------------------------------------------------------------------------
-GET_TARIFF::PARSER::~PARSER()
+GetTariff::Parser::~Parser()
 {
-    PROPERTY_PARSERS::iterator it(propertyParsers.begin());
+    auto it = propertyParsers.begin();
     while (it != propertyParsers.end())
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int GET_TARIFF::PARSER::ParseStart(const char * el, const char ** attr)
+int GetTariff::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
-    ParseTariff(el, attr);
+    depth++;
+    if (depth == 1)
+        ParseTariff(el, attr);
 
-if (depth == 2 && parsingAnswer)
-    ParseTariffParams(el, attr);
+    if (depth == 2 && parsingAnswer)
+        ParseTariffParams(el, attr);
 
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void GET_TARIFF::PARSER::ParseEnd(const char * /*el*/)
+void GetTariff::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0 && parsingAnswer)
+    depth--;
+    if (depth == 0 && parsingAnswer)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    error.clear();
-    parsingAnswer = false;
+        if (callback)
+            callback(error.empty(), error, info, data);
+        error.clear();
+        parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_TARIFF::PARSER::ParseTariff(const char * el, const char ** attr)
+void GetTariff::Parser::ParseTariff(const char* el, const char** attr)
 {
-if (strcasecmp(el, "tariff") == 0)
+    if (strcasecmp(el, "tariff") == 0)
     {
-    if (attr && attr[0] && attr[1])
+        if (attr && attr[0] && attr[1])
         {
-        if (strcasecmp(attr[1], "error") == 0)
+            if (strcasecmp(attr[1], "error") == 0)
             {
-            if (attr[2] && attr[3])
-                error = attr[3];
-            else
-                error = "Tariff not found.";
+                if (attr[2] && attr[3])
+                    error = attr[3];
+                else
+                    error = "Tariff not found.";
             }
-        else
+            else
             {
-            parsingAnswer = true;
-            if (strcasecmp(attr[0], "name") == 0)
-                info.tariffConf.name = attr[1];
+                parsingAnswer = true;
+                if (strcasecmp(attr[0], "name") == 0)
+                    info.tariffConf.name = attr[1];
             }
         }
-    else
-        parsingAnswer = true;
+        else
+            parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_TARIFF::PARSER::ParseTariffParams(const char * el, const char ** attr)
+void GetTariff::Parser::ParseTariffParams(const char* el, const char** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr, encoding))
-    error = std::string("Invalid parameter '") + el + "'.";
+    if (!tryParse(propertyParsers, ToLower(el), attr, encoding))
+        error = std::string("Invalid parameter '") + el + "'.";
 }

@@ -28,20 +28,7 @@
 #define _GNU_SOURCE
 #endif
 
-#include <pwd.h>
-#include <grp.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <fcntl.h>
-#include <dirent.h>
-
-#include <cstdio>
-#include <ctime>
-#include <cerrno>
-#include <cstring>
-#include <sstream>
-#include <algorithm>
+#include "file_store.h"
 
 #include "stg/common.h"
 #include "stg/user_ips.h"
@@ -51,8 +38,25 @@
 #include "stg/blowfish.h"
 #include "stg/logger.h"
 #include "stg/locker.h"
-#include "stg/plugin_creator.h"
-#include "file_store.h"
+#include "stg/admin_conf.h"
+#include "stg/tariff.h"
+#include "stg/tariff_conf.h"
+#include "stg/service_conf.h"
+
+#include <sstream>
+#include <algorithm>
+#include <cstdio>
+#include <ctime>
+#include <cerrno>
+#include <cstring>
+
+#include <pwd.h>
+#include <grp.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <fcntl.h>
+#include <dirent.h>
 
 #define DELETED_USERS_DIR   "deleted_users"
 
@@ -66,7 +70,6 @@ const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
 namespace
 {
-PLUGIN_CREATOR<FILES_STORE> fsc;
 
 bool CheckAndCreate(const std::string & dir, mode_t mode)
 {
@@ -79,13 +82,10 @@ return false;
 
 }
 
-extern "C" STORE * GetStore();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-STORE * GetStore()
+extern "C" STG::Store* GetStore()
 {
-return fsc.GetPlugin();
+    static FILES_STORE plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
@@ -104,11 +104,11 @@ FILES_STORE_SETTINGS::FILES_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseOwner(const std::vector<PARAM_VALUE> & moduleParams, const std::string & owner, uid_t * uid)
+int FILES_STORE_SETTINGS::ParseOwner(const std::vector<STG::ParamValue> & moduleParams, const std::string & owner, uid_t * uid)
 {
-PARAM_VALUE pv;
+STG::ParamValue pv;
 pv.param = owner;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<STG::ParamValue>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end() || pvi->value.empty())
     {
@@ -125,11 +125,11 @@ if (User2UID(pvi->value[0].c_str(), uid) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseGroup(const std::vector<PARAM_VALUE> & moduleParams, const std::string & group, gid_t * gid)
+int FILES_STORE_SETTINGS::ParseGroup(const std::vector<STG::ParamValue> & moduleParams, const std::string & group, gid_t * gid)
 {
-PARAM_VALUE pv;
+STG::ParamValue pv;
 pv.param = group;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<STG::ParamValue>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end() || pvi->value.empty())
     {
@@ -163,11 +163,11 @@ errorStr = "Incorrect value \'" + value + "\'.";
 return -1;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseMode(const std::vector<PARAM_VALUE> & moduleParams, const std::string & modeStr, mode_t * mode)
+int FILES_STORE_SETTINGS::ParseMode(const std::vector<STG::ParamValue> & moduleParams, const std::string & modeStr, mode_t * mode)
 {
-PARAM_VALUE pv;
+STG::ParamValue pv;
 pv.param = modeStr;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<STG::ParamValue>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end() || pvi->value.empty())
     {
@@ -184,7 +184,7 @@ if (Str2Mode(pvi->value[0].c_str(), mode) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int FILES_STORE_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 if (ParseOwner(s.moduleParams, "StatOwner", &statUID) < 0)
     return -1;
@@ -207,8 +207,8 @@ if (ParseGroup(s.moduleParams, "UserLogGroup", &userLogGID) < 0)
 if (ParseMode(s.moduleParams, "UserLogMode", &userLogMode) < 0)
     return -1;
 
-std::vector<PARAM_VALUE>::const_iterator pvi;
-PARAM_VALUE pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
+STG::ParamValue pv;
 pv.param = "RemoveBak";
 pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end() || pvi->value.empty())
@@ -370,12 +370,8 @@ return mode;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 FILES_STORE::FILES_STORE()
-    : errorStr(),
-      version("file_store v.1.04"),
-      storeSettings(),
-      settings(),
-      mutex(),
-      logger(GetPluginLogger(GetStgLogger(), "store_files"))
+    : version("file_store v.1.04"),
+      logger(STG::PluginLogger::get("store_files"))
 {
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -606,7 +602,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login) const
+int FILES_STORE::RestoreUserConf(STG::UserConf * conf, const std::string & login) const
 {
 std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
@@ -621,7 +617,7 @@ if (RestoreUserConf(conf, login, fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login, const std::string & fileName) const
+int FILES_STORE::RestoreUserConf(STG::UserConf * conf, const std::string & login, const std::string & fileName) const
 {
 CONFIGFILE cf(fileName);
 int e = cf.Error();
@@ -666,10 +662,9 @@ if (conf->tariffName.empty())
 
 std::string ipStr;
 cf.ReadString("IP", &ipStr, "?");
-USER_IPS ips;
 try
     {
-    ips = StrToIPS(ipStr);
+    conf->ips = STG::UserIPs::parse(ipStr);
     }
 catch (const std::string & s)
     {
@@ -678,7 +673,6 @@ catch (const std::string & s)
     printfd(__FILE__, "FILES_STORE::RestoreUserConf - ip read failed for user '%s'\n", login.c_str());
     return -1;
     }
-conf->ips = ips;
 
 if (cf.ReadInt("alwaysOnline", &conf->alwaysOnline, 0) != 0)
     {
@@ -732,7 +726,7 @@ if (cf.ReadDouble("Credit", &conf->credit, 0) != 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login) const
+int FILES_STORE::RestoreUserStat(STG::UserStat * stat, const std::string & login) const
 {
 std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
@@ -748,7 +742,7 @@ if (RestoreUserStat(stat, login, fileName))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login, const std::string & fileName) const
+int FILES_STORE::RestoreUserStat(STG::UserStat * stat, const std::string & login, const std::string & fileName) const
 {
 CONFIGFILE cf(fileName);
 
@@ -839,7 +833,7 @@ if (cf.ReadTime("LastActivityTime", &stat->lastActivityTime, 0) != 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveUserConf(const USER_CONF & conf, const std::string & login) const
+int FILES_STORE::SaveUserConf(const STG::UserConf & conf, const std::string & login) const
 {
 std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/conf";
@@ -895,7 +889,7 @@ cfstat.WriteString("IP", ipStr.str());
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveUserStat(const USER_STAT & stat, const std::string & login) const
+int FILES_STORE::SaveUserStat(const STG::UserStat & stat, const std::string & login) const
 {
 std::string fileName;
 fileName = storeSettings.GetUsersDir() + "/" + login + "/stat";
@@ -1037,10 +1031,10 @@ return WriteLog2String(logStr, login);
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::WriteUserDisconnect(const std::string & login,
-                                     const DIR_TRAFF & monthUp,
-                                     const DIR_TRAFF & monthDown,
-                                     const DIR_TRAFF & sessionUp,
-                                     const DIR_TRAFF & sessionDown,
+                                     const STG::DirTraff & monthUp,
+                                     const STG::DirTraff & monthDown,
+                                     const STG::DirTraff & sessionUp,
+                                     const STG::DirTraff & sessionDown,
                                      double cash,
                                      double freeMb,
                                      const std::string & reason) const
@@ -1072,7 +1066,7 @@ logStr << " freeMb: \'"
 return WriteLog2String(logStr.str(), login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
+int FILES_STORE::SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string & login) const
 {
 // Classic stats
 std::string stat1;
@@ -1160,7 +1154,7 @@ if (unlink(fileName.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int FILES_STORE::SaveAdmin(const ADMIN_CONF & ac) const
+int FILES_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
 std::string fileName;
 
@@ -1215,7 +1209,7 @@ strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), ac.login
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
+int FILES_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
 std::string fileName;
 strprintf(&fileName, "%s/%s.adm", storeSettings.GetAdminsDir().c_str(), login.c_str());
@@ -1379,7 +1373,7 @@ if (unlink(fileName.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const
+int FILES_STORE::RestoreTariff(STG::TariffData * td, const std::string & tariffName) const
 {
 std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 CONFIGFILE conf(fileName);
@@ -1512,23 +1506,23 @@ if (conf.ReadString("TraffType", &str, "") < 0)
     return -1;
     }
 
-td->tariffConf.traffType = TARIFF::StringToTraffType(str);
+td->tariffConf.traffType = STG::Tariff::parseTraffType(str);
 
 if (conf.ReadString("Period", &str, "month") < 0)
-    td->tariffConf.period = TARIFF::MONTH;
+    td->tariffConf.period = STG::Tariff::MONTH;
 else
-    td->tariffConf.period = TARIFF::StringToPeriod(str);
+    td->tariffConf.period = STG::Tariff::parsePeriod(str);
 
 if (conf.ReadString("ChangePolicy", &str, "allow") < 0)
-    td->tariffConf.changePolicy = TARIFF::ALLOW;
+    td->tariffConf.changePolicy = STG::Tariff::ALLOW;
 else
-    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+    td->tariffConf.changePolicy = STG::Tariff::parseChangePolicy(str);
 
 conf.ReadTime("ChangePolicyTimeout", &td->tariffConf.changePolicyTimeout, 0);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const
+int FILES_STORE::SaveTariff(const STG::TariffData & td, const std::string & tariffName) const
 {
 std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
 
@@ -1584,9 +1578,9 @@ std::string fileName = storeSettings.GetTariffsDir() + "/" + tariffName + ".tf";
     cf.WriteDouble("PassiveCost", td.tariffConf.passiveCost);
     cf.WriteDouble("Fee", td.tariffConf.fee);
     cf.WriteDouble("Free", td.tariffConf.free);
-    cf.WriteString("TraffType", TARIFF::TraffTypeToString(td.tariffConf.traffType));
-    cf.WriteString("Period", TARIFF::PeriodToString(td.tariffConf.period));
-    cf.WriteString("ChangePolicy", TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+    cf.WriteString("TraffType", STG::Tariff::toString(td.tariffConf.traffType));
+    cf.WriteString("Period", STG::Tariff::toString(td.tariffConf.period));
+    cf.WriteString("ChangePolicy", STG::Tariff::toString(td.tariffConf.changePolicy));
     cf.WriteTime("ChangePolicyTimeout", td.tariffConf.changePolicyTimeout);
     }
 
@@ -1624,7 +1618,7 @@ if (unlink(fileName.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int FILES_STORE::SaveService(const SERVICE_CONF & conf) const
+int FILES_STORE::SaveService(const STG::ServiceConf & conf) const
 {
 std::string fileName;
 
@@ -1652,7 +1646,7 @@ strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), conf.
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::RestoreService(SERVICE_CONF * conf, const std::string & name) const
+int FILES_STORE::RestoreService(STG::ServiceConf * conf, const std::string & name) const
 {
 std::string fileName;
 strprintf(&fileName, "%s/%s.serv", storeSettings.GetServicesDir().c_str(), name.c_str());
@@ -1703,7 +1697,7 @@ conf->payDay = value;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
+int FILES_STORE::WriteDetailedStat(const STG::TraffStat & statTree,
                                    time_t lastStat,
                                    const std::string & login) const
 {
@@ -1835,8 +1829,7 @@ if (fprintf(statFile, "-> %02d.%02d.%02d - %02d.%02d.%02d\n",
     return -1;
     }
 
-std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
-stIter = statTree.begin();
+auto stIter = statTree.begin();
 
 while (stIter != statTree.end())
     {
@@ -1894,7 +1887,7 @@ if (e)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
+int FILES_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
 std::string fn;
 std::string dn;
@@ -1934,7 +1927,7 @@ if (Touch(fn))
 return EditMessage(*msg, login);
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::EditMessage(const STG_MSG & msg, const std::string & login) const
+int FILES_STORE::EditMessage(const STG::Message & msg, const std::string & login) const
 {
 std::string fileName;
 
@@ -1995,7 +1988,7 @@ if (rename((fileName + ".new").c_str(), fileName.c_str()) < 0)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const
+int FILES_STORE::GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const
 {
 std::string fn;
 strprintf(&fn, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login.c_str(), id);
@@ -2011,7 +2004,7 @@ strprintf(&fn, "%s/%s/messages/%lld", storeSettings.GetUsersDir().c_str(), login
 return unlink(fn.c_str());
 }
 //-----------------------------------------------------------------------------
-int FILES_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const
+int FILES_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const
 {
 std::string dn(storeSettings.GetUsersDir() + "/" + login + "/messages/");
 
@@ -2039,7 +2032,7 @@ for (unsigned i = 0; i < messages.size(); i++)
         continue;
         }
 
-    STG_MSG_HDR hdr;
+    STG::Message::Header hdr;
     if (ReadMessage(dn + messages[i], &hdr, NULL))
         {
         return -1;
@@ -2064,7 +2057,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FILES_STORE::ReadMessage(const std::string & fileName,
-                             STG_MSG_HDR * hdr,
+                             STG::Message::Header * hdr,
                              std::string * text) const
 {
 FILE * msgFile;

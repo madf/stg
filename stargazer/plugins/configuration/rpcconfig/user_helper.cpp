@@ -446,7 +446,7 @@ if ((it = structVal.find("tariff")) != structVal.end())
             }
         else
             {
-            GetStgLogger()("Tariff change is prohibited for user %s. %s", ptr->GetLogin().c_str(), message.c_str());
+                PluginLogger::get("conf_rpc")("Tariff change is prohibited for user %s. %s", ptr->GetLogin().c_str(), message.c_str());
             }
         }
 

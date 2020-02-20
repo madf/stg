@@ -34,91 +34,93 @@ namespace STG
 
 template <>
 inline
-bool GetValue<PRIV>(const char ** attr, PRIV & value, const std::string & attrName)
+bool getValue<Priv>(const char** attr, Priv& value, const std::string& attrName)
 {
-uint32_t priv;
-if (!GetValue(attr, priv, attrName))
-    return false;
-value = PRIV(priv);
-return true;
+    uint32_t priv;
+    if (!getValue(attr, priv, attrName))
+        return false;
+    value = Priv(priv);
+    return true;
 }
 
 } // namespace STG
 
-GET_ADMIN::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+GetAdmin::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
       depth(0),
       parsingAnswer(false)
 {
-    AddParser(propertyParsers, "login", info.login);
-    AddParser(propertyParsers, "password", info.password);
-    AddParser(propertyParsers, "priv", info.priv);
+    addParser(propertyParsers, "login", info.login);
+    addParser(propertyParsers, "password", info.password);
+    addParser(propertyParsers, "priv", info.priv);
 }
 //-----------------------------------------------------------------------------
-GET_ADMIN::PARSER::~PARSER()
+GetAdmin::Parser::~Parser()
 {
-    PROPERTY_PARSERS::iterator it(propertyParsers.begin());
+    auto it = propertyParsers.begin();
     while (it != propertyParsers.end())
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int GET_ADMIN::PARSER::ParseStart(const char * el, const char ** attr)
+int GetAdmin::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
-    ParseAdmin(el, attr);
+    depth++;
+    if (depth == 1)
+        ParseAdmin(el, attr);
 
-/*if (depth == 2 && parsingAnswer)
-    ParseAdminParams(el, attr);*/
+    /*if (depth == 2 && parsingAnswer)
+        ParseAdminParams(el, attr);*/
 
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void GET_ADMIN::PARSER::ParseEnd(const char * /*el*/)
+void GetAdmin::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0 && parsingAnswer)
+    depth--;
+    if (depth == 0 && parsingAnswer)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    error.clear();
-    parsingAnswer = false;
+        if (callback)
+            callback(error.empty(), error, info, data);
+        error.clear();
+        parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_ADMIN::PARSER::ParseAdmin(const char * el, const char ** attr)
+void GetAdmin::Parser::ParseAdmin(const char* el, const char** attr)
 {
-if (strcasecmp(el, "admin") == 0)
+    if (strcasecmp(el, "admin") == 0)
     {
-    if (attr && attr[0] && attr[1])
+        if (attr && attr[0] && attr[1])
         {
-        if (strcasecmp(attr[1], "error") == 0)
+            if (strcasecmp(attr[1], "error") == 0)
             {
-            if (attr[2] && attr[3])
-                error = attr[3];
-            else
-                error = "Admin not found.";
+                if (attr[2] && attr[3])
+                    error = attr[3];
+                else
+                    error = "Admin not found.";
             }
-        else
+            else
             {
-            parsingAnswer = true;
-            for (const char ** pos = attr; *pos != NULL; pos = pos + 2)
-                if (!TryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
+                parsingAnswer = true;
+                for (const char** pos = attr; *pos != NULL; pos = pos + 2)
+                {
+                    if (!tryParse(propertyParsers, ToLower(*pos), pos, encoding, *pos))
                     {
-                    error = std::string("Invalid parameter '") + *pos + "'.";
-                    break;
+                        error = std::string("Invalid parameter '") + *pos + "'.";
+                        break;
                     }
+                }
             }
         }
-    else
-        parsingAnswer = true;
+        else
+            parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-/*void GET_ADMIN::PARSER::ParseAdminParams(const char * el, const char ** attr)
+/*void GetAdmin::Parser::ParseAdminParams(const char* el, const char** attr)
 {
-if (!TryParse(propertyParsers, ToLower(el), attr))
-    error = "Invalid parameter.";
+    if (!TryParse(propertyParsers, ToLower(el), attr))
+        error = "Invalid parameter.";
 }*/

@@ -5,17 +5,18 @@
 
 #include "stg/user_property.h"
 #include "stg/tariffs.h"
+#include "stg/tariff_conf.h"
 #include "stg/users.h"
 
 #include "tables.h"
 
-std::pair<std::string, size_t> TD2Info(const TARIFF_DATA & td);
+std::pair<std::string, size_t> TD2Info(const STG::TariffData & td);
 
 void TariffUsersTable::UpdateSensors(Sensors & sensors) const
 {
 std::map<std::string, size_t> data;
 
-std::vector<TARIFF_DATA> tdl;
+std::vector<STG::TariffData> tdl;
 tariffs.GetTariffsData(&tdl);
 std::transform(tdl.begin(),
                tdl.end(),
@@ -25,12 +26,12 @@ std::transform(tdl.begin(),
 int handle = users.OpenSearch();
 assert(handle && "USERS::OpenSearch is always correct");
 
-USER_PTR user;
+STG::User* user;
 while (!users.SearchNext(handle, &user))
     {
     if (user->GetDeleted())
         continue;
-    std::string tariffName(user->GetProperty().tariffName.ConstData());
+    std::string tariffName(user->GetProperties().tariffName.ConstData());
     std::map<std::string, size_t>::iterator it(data.lower_bound(tariffName));
     if (it == data.end() ||
         it->first != tariffName)
@@ -58,7 +59,7 @@ while (it != data.end())
     }
 }
 
-std::pair<std::string, size_t> TD2Info(const TARIFF_DATA & td)
+std::pair<std::string, size_t> TD2Info(const STG::TariffData & td)
 {
 return std::make_pair(td.tariffConf.name, 0);
 }

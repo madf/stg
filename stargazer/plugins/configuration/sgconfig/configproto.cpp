@@ -50,7 +50,7 @@
 
 namespace SP = STG::PARSER;
 
-CONFIGPROTO::CONFIGPROTO(PLUGIN_LOGGER & l)
+CONFIGPROTO::CONFIGPROTO(STG::PluginLogger & l)
     : m_settings(NULL),
       m_admins(NULL),
       m_tariffs(NULL),

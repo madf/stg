@@ -19,79 +19,78 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef PLUGIN_RUNNER_H
-#define PLUGIN_RUNNER_H
+#pragma once
 
 #include "stg/plugin.h"
-#include "stg/module_settings.h"
 
 #include <string>
 #include <stdexcept>
 #include <cstdint>
 
-class SETTINGS;
-class ADMINS;
-class TARIFFS;
-class USERS;
-class SERVICES;
-class CORPORATIONS;
-class TRAFFCOUNTER;
-class STORE;
+namespace STG
+{
+
+struct ModuleSettings;
+struct Settings;
+struct Admins;
+struct Tariffs;
+struct Users;
+struct Services;
+struct Corporations;
+struct TraffCounter;
+struct Store;
 
 //-----------------------------------------------------------------------------
-class PLUGIN_RUNNER {
+class PluginRunner {
 public:
     struct Error : public std::runtime_error {
         explicit Error(const std::string & msg) : runtime_error(msg) {}
     };
 
-    PLUGIN_RUNNER(const std::string & pluginFileName,
-                  const std::string & pluginName,
-                  const MODULE_SETTINGS & ms,
-                  ADMINS & admins,
-                  TARIFFS & tariffs,
-                  USERS & users,
-                  SERVICES & services,
-                  CORPORATIONS & corporations,
-                  TRAFFCOUNTER & traffcounter,
-                  STORE & store,
-                  const SETTINGS & settings);
-    ~PLUGIN_RUNNER();
+    PluginRunner(const std::string& pluginFileName,
+                 const std::string& pluginName,
+                 const ModuleSettings& ms,
+                 Admins& admins,
+                 Tariffs& tariffs,
+                 Users& users,
+                 Services& services,
+                 Corporations& corporations,
+                 TraffCounter& traffcounter,
+                 Store& store,
+                 const Settings & settings);
+    ~PluginRunner();
 
     int             Start();
     int             Stop();
-    int             Reload(const MODULE_SETTINGS & ms);
+    int             Reload(const ModuleSettings& ms);
     int             Restart();
     bool            IsRunning() { return m_plugin.IsRunning(); }
 
-    const std::string & GetStrError() const { return errorStr; }
-    PLUGIN &        GetPlugin() { return m_plugin; }
-    const std::string & GetFileName() const { return pluginFileName; }
-    const std::string & GetName() const { return pluginName; }
+    const std::string& GetStrError() const { return errorStr; }
+    Plugin& GetPlugin() { return m_plugin; }
+    const std::string& GetFileName() const { return pluginFileName; }
+    const std::string& GetName() const { return pluginName; }
 
     uint16_t        GetStartPosition() const { return m_plugin.GetStartPosition(); }
     uint16_t        GetStopPosition() const { return m_plugin.GetStopPosition(); }
 
 private:
-    PLUGIN_RUNNER(const PLUGIN_RUNNER & rvalue);
-    PLUGIN_RUNNER & operator=(const PLUGIN_RUNNER & rvalue);
+    Plugin & load(const ModuleSettings& ms,
+                  Admins& admins,
+                  Tariffs& tariffs,
+                  Users& users,
+                  Services& services,
+                  Corporations& corporations,
+                  TraffCounter& traffcounter,
+                  Store& store,
+                  const Settings& settings);
 
-    PLUGIN & Load(const MODULE_SETTINGS & ms,
-                  ADMINS & admins,
-                  TARIFFS & tariffs,
-                  USERS & users,
-                  SERVICES & services,
-                  CORPORATIONS & corporations,
-                  TRAFFCOUNTER & traffcounter,
-                  STORE & store,
-                  const SETTINGS & settings);
+    std::string pluginFileName;
+    std::string pluginName;
+    void*       libHandle;
 
-    std::string     pluginFileName;
-    std::string     pluginName;
-    void *          libHandle;
-
-    PLUGIN &        m_plugin;
-    std::string     errorStr;
+    Plugin&     m_plugin;
+    std::string errorStr;
 };
 //-----------------------------------------------------------------------------
-#endif //PLUGIN_RUNNER_H
+}

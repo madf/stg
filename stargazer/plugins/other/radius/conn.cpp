@@ -231,7 +231,7 @@ std::string toString(Config::ReturnCode code)
 class Conn::Impl
 {
     public:
-        Impl(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
+        Impl(Users& users, PluginLogger& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote);
         ~Impl();
 
         int sock() const { return m_sock; }
@@ -242,8 +242,8 @@ class Conn::Impl
         bool isOk() const { return m_ok; }
 
     private:
-        USERS& m_users;
-        PLUGIN_LOGGER& m_logger;
+        Users& m_users;
+        PluginLogger& m_logger;
         RADIUS& m_plugin;
         const Config& m_config;
         int m_sock;
@@ -278,7 +278,7 @@ class Conn::Impl
         void processPing();
         void processPong();
         void processData();
-        bool answer(const USER& user);
+        bool answer(const User& user);
         bool answerNo();
         bool sendPing();
         bool sendPong();
@@ -286,7 +286,7 @@ class Conn::Impl
         static bool write(void* data, const char* buf, size_t size);
 };
 
-Conn::Conn(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
+Conn::Conn(Users& users, PluginLogger& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
     : m_impl(new Impl(users, logger, plugin, config, fd, remote))
 {
 }
@@ -315,7 +315,7 @@ bool Conn::isOk() const
     return m_impl->isOk();
 }
 
-Conn::Impl::Impl(USERS& users, PLUGIN_LOGGER& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
+Conn::Impl::Impl(Users& users, PluginLogger& logger, RADIUS& plugin, const Config& config, int fd, const std::string& remote)
     : m_users(users),
       m_logger(logger),
       m_plugin(plugin),
@@ -422,7 +422,7 @@ void Conn::Impl::processData()
     printfd(__FILE__, "Got data.\n");
     int handle = m_users.OpenSearch();
 
-    USER_PTR user = NULL;
+    User* user = NULL;
     bool matched = false;
     while (m_users.SearchNext(handle, &user) == 0)
     {
@@ -461,7 +461,7 @@ void Conn::Impl::processData()
     m_users.CloseSearch(handle);
 }
 
-bool Conn::Impl::answer(const USER& user)
+bool Conn::Impl::answer(const User& user)
 {
     printfd(__FILE__, "Got match. Sending answer...\n");
     MapGen replyData;

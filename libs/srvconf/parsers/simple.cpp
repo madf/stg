@@ -24,7 +24,7 @@
 
 using namespace STG;
 
-SIMPLE::PARSER::PARSER(const std::string & t, CALLBACK f, void * d, const std::string & e)
+Simple::Parser::Parser(const std::string& t, Callback f, void* d, const std::string& e)
     : tag(t),
       callback(f),
       data(d),
@@ -33,26 +33,26 @@ SIMPLE::PARSER::PARSER(const std::string & t, CALLBACK f, void * d, const std::s
 {
 }
 //-----------------------------------------------------------------------------
-int SIMPLE::PARSER::ParseStart(const char *el, const char **attr)
+int Simple::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
-    if (strcasecmp(el, tag.c_str()) == 0)
-        ParseAnswer(el, attr);
-return 0;
+    depth++;
+    if (depth == 1)
+        if (strcasecmp(el, tag.c_str()) == 0)
+            ParseAnswer(el, attr);
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void SIMPLE::PARSER::ParseEnd(const char *)
+void Simple::Parser::ParseEnd(const char* /*unused*/)
 {
-depth--;
+    depth--;
 }
 //-----------------------------------------------------------------------------
-void SIMPLE::PARSER::ParseAnswer(const char * /*el*/, const char ** attr)
+void Simple::Parser::ParseAnswer(const char* /*el*/, const char** attr)
 {
-if (!callback)
-    return;
-if (attr && attr[0] && attr[1])
-    callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : attr[1], data);
-else
-    callback(false, "Invalid response.", data);
+    if (!callback)
+        return;
+    if (attr && attr[0] && attr[1])
+        callback(strcasecmp(attr[1], "ok") == 0, attr[2] && attr[3] ? attr[3] : attr[1], data);
+    else
+        callback(false, "Invalid response.", data);
 }

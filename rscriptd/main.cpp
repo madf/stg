@@ -77,7 +77,7 @@ int StartScriptExecuter(char * procName, int msgKey, int * msgID)
 int StartScriptExecuter(char *, int msgKey, int * msgID)
 #endif
 {
-STG_LOGGER & WriteServLog = GetStgLogger();
+auto & WriteServLog = STG::Logger::get();
 
 if (*msgID == -11)   // If msgID == -11 - first call. Create queue
     {
@@ -140,7 +140,7 @@ return 0;
 //-----------------------------------------------------------------------------
 void StopScriptExecuter(int msgID)
 {
-STG_LOGGER & WriteServLog = GetStgLogger();
+auto & WriteServLog = STG::Logger::get();
 
 for (int i = 0; i < 5; ++i)
     {
@@ -235,8 +235,8 @@ else
 
 if (cfg->Error())
     {
-    STG_LOGGER & WriteServLog = GetStgLogger();
-    WriteServLog.SetLogFileName("/var/log/rscriptd.log");
+    auto & WriteServLog = STG::Logger::get();
+    WriteServLog.setFileName("/var/log/rscriptd.log");
     WriteServLog("Error reading config file!");
     delete cfg;
     return EXIT_FAILURE;
@@ -254,15 +254,15 @@ cfg->ReadString("ScriptOnDisconnect", &onDisconnect, "/etc/rscriptd/OnDisconnect
 
 if (ForkAndWait(confDir) < 0)
     {
-    STG_LOGGER & WriteServLog = GetStgLogger();
+    auto & WriteServLog = STG::Logger::get();
     WriteServLog("Fork error!");
     delete cfg;
     return EXIT_FAILURE;
     }
 
-STG_LOGGER & WriteServLog = GetStgLogger();
+auto & WriteServLog = STG::Logger::get();
 PIDFile pidFile("/var/run/rscriptd.pid");
-WriteServLog.SetLogFileName(logFileName);
+WriteServLog.setFileName(logFileName);
 WriteServLog("rscriptd v. %s", SERVER_VERSION);
 
 for (int i = 0; i < execNum; i++)
@@ -270,8 +270,7 @@ for (int i = 0; i < execNum; i++)
     int ret = StartScriptExecuter(argv[0], execMsgKey, &msgID);
     if (ret < 0)
         {
-        STG_LOGGER & WriteServLog = GetStgLogger();
-        WriteServLog("Start Script Executer error!");
+        STG::Logger::get()("Start Script Executer error!");
         delete cfg;
         return EXIT_FAILURE;
         }

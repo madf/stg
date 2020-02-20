@@ -19,20 +19,20 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONFIG_PARSER_SERVER_INFO_H__
-#define __STG_SGCONFIG_PARSER_SERVER_INFO_H__
+#pragma once
 
 #include "parser.h"
 
 #include "stg/common.h"
 
-class ADMIN;
-class SETTINGS;
-class USERS;
-class TARIFFS;
-
 namespace STG
 {
+
+struct Admin;
+struct Settings;
+struct Users;
+struct Tariffs;
+
 namespace PARSER
 {
 
@@ -41,23 +41,23 @@ class GET_SERVER_INFO: public BASE_PARSER {
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const SETTINGS & settings, const USERS & users, const TARIFFS & tariffs)
+                FACTORY(const Settings & settings, const Users & users, const Tariffs & tariffs)
                     : m_settings(settings), m_users(users), m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const ADMIN & admin) { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
-                static void Register(REGISTRY & registry, const SETTINGS & settings, const USERS & users, const TARIFFS & tariffs)
+                virtual BASE_PARSER * create(const Admin & admin) { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
+                static void Register(REGISTRY & registry, const Settings & settings, const Users & users, const Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(settings, users, tariffs); }
             private:
-                const SETTINGS & m_settings;
-                const USERS & m_users;
-                const TARIFFS & m_tariffs;
+                const Settings & m_settings;
+                const Users & m_users;
+                const Tariffs & m_tariffs;
         };
 
         static const char * tag;
 
-        GET_SERVER_INFO(const ADMIN & admin,
-                        const SETTINGS & settings,
-                        const USERS & users,
-                        const TARIFFS & tariffs)
+        GET_SERVER_INFO(const Admin & admin,
+                        const Settings & settings,
+                        const Users & users,
+                        const Tariffs & tariffs)
             : BASE_PARSER(admin, tag),
               m_settings(settings),
               m_users(users),
@@ -65,14 +65,12 @@ class GET_SERVER_INFO: public BASE_PARSER {
         {}
 
     private:
-        const SETTINGS & m_settings;
-        const USERS & m_users;
-        const TARIFFS & m_tariffs;
+        const Settings & m_settings;
+        const Users & m_users;
+        const Tariffs & m_tariffs;
 
         void CreateAnswer();
 };
 
 }
 }
-
-#endif

@@ -17,22 +17,16 @@
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
-
-/*
- $Revision: 1.34 $
- $Date: 2010/09/10 06:39:19 $
- $Author: faust $
- */
-
-#ifndef INETACCESS_H
-#define INETACCESS_H
+#pragma once
 
 #include "stg/auth.h"
 #include "stg/store.h"
+#include "stg/module_settings.h"
 #include "stg/notifer.h"
 #include "stg/user_ips.h"
 #include "stg/user.h"
 #include "stg/users.h"
+#include "stg/user_property.h"
 #include "stg/ia_packets.h"
 #include "stg/blowfish.h"
 #include "stg/logger.h"
@@ -50,8 +44,6 @@
 
 #include <sys/time.h>
 #include <pthread.h>
-
-#define IA_PROTO_VER    (6)
 
 //#define IA_DEBUG (1)
 //#define IA_PHASE_DEBUG (1)
@@ -115,15 +107,12 @@ private:
 };
 //-----------------------------------------------------------------------------
 struct IA_USER {
+    using ConstUserPtr = const STG::User*;
     IA_USER()
-        : login(),
-          user(NULL),
-          phase(),
+        : user(NULL),
           lastSendAlive(0),
           rnd(static_cast<uint32_t>(random())),
           port(0),
-          ctx(),
-          messagesToSend(),
           protoVer(0),
           password("NO PASSWORD")
     {
@@ -156,19 +145,17 @@ struct IA_USER {
     }
 
     IA_USER(const std::string & l,
-            CONST_USER_PTR u,
+            ConstUserPtr u,
             uint16_t p,
             int ver)
         : login(l),
           user(u),
-          phase(),
           lastSendAlive(0),
           rnd(static_cast<uint32_t>(random())),
           port(p),
-          ctx(),
           messagesToSend(),
           protoVer(ver),
-          password(user->GetProperty().password.Get())
+          password(user->GetProperties().password.Get())
     {
     unsigned char keyL[PASSWD_LEN];
     memset(keyL, 0, PASSWD_LEN);
@@ -181,13 +168,13 @@ struct IA_USER {
     }
 
     std::string     login;
-    CONST_USER_PTR  user;
+    ConstUserPtr  user;
     IA_PHASE        phase;
     UTIME           lastSendAlive;
     uint32_t        rnd;
     uint16_t        port;
     BLOWFISH_CTX    ctx;
-    std::list<STG_MSG> messagesToSend;
+    std::vector<STG::Message> messagesToSend;
     int             protoVer;
     std::string     password;
     #ifdef IA_DEBUG
@@ -203,7 +190,7 @@ public:
                     AUTH_IA_SETTINGS();
     virtual         ~AUTH_IA_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
-    int             ParseSettings(const MODULE_SETTINGS & s);
+    int             ParseSettings(const STG::ModuleSettings & s);
     UTIME           GetUserDelay() const { return UTIME(userDelay); }
     UTIME           GetUserTimeout() const { return UTIME(userTimeout); }
     uint16_t        GetUserPort() const { return port; }
@@ -220,13 +207,14 @@ private:
 };
 //-----------------------------------------------------------------------------
 class AUTH_IA;
+using UserPtr = STG::User*;
 //-----------------------------------------------------------------------------
-class DEL_USER_NOTIFIER: public NOTIFIER_BASE<USER_PTR> {
+class DEL_USER_NOTIFIER: public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
     virtual ~DEL_USER_NOTIFIER() {}
 
-    void Notify(const USER_PTR & user);
+    void Notify(const UserPtr & user);
 private:
     DEL_USER_NOTIFIER(const DEL_USER_NOTIFIER & rvalue);
     DEL_USER_NOTIFIER & operator=(const DEL_USER_NOTIFIER & rvalue);
@@ -234,28 +222,28 @@ private:
     AUTH_IA & auth;
 };
 //-----------------------------------------------------------------------------
-class AUTH_IA :public AUTH {
+class AUTH_IA : public STG::Auth {
 friend class DEL_USER_NOTIFIER;
 public:
                         AUTH_IA();
-    virtual             ~AUTH_IA();
+                        ~AUTH_IA() override;
 
-    void                SetUsers(USERS * u) { users = u; }
-    void                SetStgSettings(const SETTINGS * s) { stgSettings = s; }
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    void                SetUsers(STG::Users * u) override { users = u; }
+    void                SetStgSettings(const STG::Settings * s) override { stgSettings = s; }
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & ms);
-    bool                IsRunning() { return isRunningRunTimeouter || isRunningRun; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & ms) override;
+    bool                IsRunning() override { return isRunningRunTimeouter || isRunningRun; }
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return "InetAccess authorization plugin v.1.4"; }
-    uint16_t            GetStartPosition() const { return 30; }
-    uint16_t            GetStopPosition() const { return 30; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override { return "InetAccess authorization plugin v.1.4"; }
+    uint16_t            GetStartPosition() const override { return 30; }
+    uint16_t            GetStopPosition() const override { return 30; }
 
-    int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
+    int                 SendMessage(const STG::Message & msg, uint32_t ip) const override;
 
 private:
     AUTH_IA(const AUTH_IA & rvalue);
@@ -265,10 +253,10 @@ private:
     static void *       RunTimeouter(void * d);
     int                 PrepareNet();
     int                 FinalizeNet();
-    void                DelUser(USER_PTR u);
+    void                DelUser(UserPtr u);
     int                 RecvData(char * buffer, int bufferSize);
     int                 CheckHeader(const char * buffer, uint32_t sip, int * protoVer);
-    int                 PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, USER_PTR user);
+    int                 PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t sport, int protoVer, UserPtr user);
 
     int                 Process_CONN_SYN_6(CONN_SYN_6 * connSyn, IA_USER * iaUser, uint32_t sip);
     int                 Process_CONN_SYN_7(CONN_SYN_7 * connSyn, IA_USER * iaUser, uint32_t sip);
@@ -319,23 +307,23 @@ private:
 
     int                 SendError(uint32_t ip, uint16_t port, int protoVer, const std::string & text);
     int                 Send(uint32_t ip, uint16_t port, const char * buffer, size_t len);
-    int                 RealSendMessage6(const STG_MSG & msg, uint32_t ip, IA_USER & user);
-    int                 RealSendMessage7(const STG_MSG & msg, uint32_t ip, IA_USER & user);
-    int                 RealSendMessage8(const STG_MSG & msg, uint32_t ip, IA_USER & user);
+    int                 RealSendMessage6(const STG::Message & msg, uint32_t ip, IA_USER & user);
+    int                 RealSendMessage7(const STG::Message & msg, uint32_t ip, IA_USER & user);
+    int                 RealSendMessage8(const STG::Message & msg, uint32_t ip, IA_USER & user);
 
     BLOWFISH_CTX        ctxS;        //for loginS
 
     mutable std::string errorStr;
     AUTH_IA_SETTINGS    iaSettings;
-    MODULE_SETTINGS     settings;
+    STG::ModuleSettings settings;
 
     bool                nonstop;
 
     bool                isRunningRun;
     bool                isRunningRunTimeouter;
 
-    USERS *             users;
-    const SETTINGS *    stgSettings;
+    STG::Users *             users;
+    const STG::Settings *    stgSettings;
 
     mutable std::map<uint32_t, IA_USER> ip2user;
 
@@ -362,7 +350,7 @@ private:
 
     DEL_USER_NOTIFIER   onDelUserNotifier;
 
-    PLUGIN_LOGGER       logger;
+    STG::PluginLogger   logger;
 
     friend class UnauthorizeUser;
 };
@@ -382,9 +370,7 @@ class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &
 };
 //-----------------------------------------------------------------------------
 inline
-void DEL_USER_NOTIFIER::Notify(const USER_PTR & user)
+void DEL_USER_NOTIFIER::Notify(const UserPtr & user)
 {
     auth.DelUser(user);
 }
-
-#endif

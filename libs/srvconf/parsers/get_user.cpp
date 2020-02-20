@@ -34,149 +34,146 @@ namespace STG
 {
 
 template <>
-bool GetValue<GET_USER::STAT>(const char ** attr, GET_USER::STAT & value, const std::string & /*attrName*/)
+bool getValue<GetUser::Stat>(const char** attr, GetUser::Stat& value, const std::string& /*attrName*/)
 {
-if (!attr)
-    return false;
-std::map<std::string, long long *> props;
-for (size_t i = 0; i < DIR_NUM; ++i)
+    if (!attr)
+        return false;
+    std::map<std::string, long long*> props;
+    for (size_t i = 0; i < DIR_NUM; ++i)
     {
-    props.insert(std::pair<std::string, long long *>("su" + std::to_string(i), &value.su[i]));
-    props.insert(std::pair<std::string, long long *>("sd" + std::to_string(i), &value.sd[i]));
-    props.insert(std::pair<std::string, long long *>("mu" + std::to_string(i), &value.mu[i]));
-    props.insert(std::pair<std::string, long long *>("md" + std::to_string(i), &value.md[i]));
+        props.insert(std::pair<std::string, long long*>("su" + std::to_string(i), &value.su[i]));
+        props.insert(std::pair<std::string, long long*>("sd" + std::to_string(i), &value.sd[i]));
+        props.insert(std::pair<std::string, long long*>("mu" + std::to_string(i), &value.mu[i]));
+        props.insert(std::pair<std::string, long long*>("md" + std::to_string(i), &value.md[i]));
     }
-size_t pos = 0;
-while (attr[pos])
+    size_t pos = 0;
+    while (attr[pos])
     {
-        std::string name(ToLower(attr[pos++]));
-        std::map<std::string, long long *>::iterator it(props.find(name));
+        const auto it = props.find(ToLower(attr[pos++]));
         if (it != props.end())
             if (str2x(attr[pos++], *it->second) < 0)
                 return false;
     }
-return true;
+    return true;
 }
 
 }
 
-GET_USER::PARSER::PARSER(CALLBACK f, void * d, const std::string & e)
+GetUser::Parser::Parser(Callback f, void* d, const std::string& e)
     : callback(f),
       data(d),
       encoding(e),
       depth(0),
       parsingAnswer(false)
 {
-    AddParser(propertyParsers, "login", info.login);
-    AddParser(propertyParsers, "password", info.password);
-    AddParser(propertyParsers, "cash", info.cash);
-    AddParser(propertyParsers, "credit", info.credit);
-    AddParser(propertyParsers, "creditExpire", info.creditExpire);
-    AddParser(propertyParsers, "lastCash", info.lastCashAdd);
-    AddParser(propertyParsers, "lastTimeCash", info.lastCashAddTime);
-    AddParser(propertyParsers, "freeMb", info.prepaidTraff);
-    AddParser(propertyParsers, "down", info.disabled);
-    AddParser(propertyParsers, "passive", info.passive);
-    AddParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
-    AddParser(propertyParsers, "status", info.connected);
-    AddParser(propertyParsers, "aonline", info.alwaysOnline);
-    AddParser(propertyParsers, "currIP", info.ip, GetIPValue);
-    AddParser(propertyParsers, "ip", info.ips);
-    AddParser(propertyParsers, "tariff", info.tariff);
-    AddParser(propertyParsers, "group", info.group, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "note", info.note, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "email", info.email, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "name", info.name, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "address", info.address, "koi8-ru", GetEncodedValue);
-    AddParser(propertyParsers, "phone", info.phone, "cp1251", GetEncodedValue);
-    AddParser(propertyParsers, "corp", info.corp);
-    AddParser(propertyParsers, "traff", info.stat);
-    AddParser(propertyParsers, "pingTime", info.pingTime);
-    AddParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
+    addParser(propertyParsers, "login", info.login);
+    addParser(propertyParsers, "password", info.password);
+    addParser(propertyParsers, "cash", info.cash);
+    addParser(propertyParsers, "credit", info.credit);
+    addParser(propertyParsers, "creditExpire", info.creditExpire);
+    addParser(propertyParsers, "lastCash", info.lastCashAdd);
+    addParser(propertyParsers, "lastTimeCash", info.lastCashAddTime);
+    addParser(propertyParsers, "freeMb", info.prepaidTraff);
+    addParser(propertyParsers, "down", info.disabled);
+    addParser(propertyParsers, "passive", info.passive);
+    addParser(propertyParsers, "disableDetailStat", info.disableDetailStat);
+    addParser(propertyParsers, "status", info.connected);
+    addParser(propertyParsers, "aonline", info.alwaysOnline);
+    addParser(propertyParsers, "currIP", info.ip, getIPValue);
+    addParser(propertyParsers, "ip", info.ips);
+    addParser(propertyParsers, "tariff", info.tariff);
+    addParser(propertyParsers, "group", info.group, "koi8-ru", getEncodedValue);
+    addParser(propertyParsers, "note", info.note, "koi8-ru", getEncodedValue);
+    addParser(propertyParsers, "email", info.email, "koi8-ru", getEncodedValue);
+    addParser(propertyParsers, "name", info.name, "koi8-ru", getEncodedValue);
+    addParser(propertyParsers, "address", info.address, "koi8-ru", getEncodedValue);
+    addParser(propertyParsers, "phone", info.phone, "cp1251", getEncodedValue);
+    addParser(propertyParsers, "corp", info.corp);
+    addParser(propertyParsers, "traff", info.stat);
+    addParser(propertyParsers, "pingTime", info.pingTime);
+    addParser(propertyParsers, "lastActivityTime", info.lastActivityTime);
 
     for (size_t i = 0; i < USERDATA_NUM; ++i)
-        AddParser(propertyParsers, "userData" + std::to_string(i), info.userData[i], "koi8-ru", GetEncodedValue);
+        addParser(propertyParsers, "userData" + std::to_string(i), info.userData[i], "koi8-ru", getEncodedValue);
 }
 //-----------------------------------------------------------------------------
-GET_USER::PARSER::~PARSER()
+GetUser::Parser::~Parser()
 {
-    PROPERTY_PARSERS::iterator it(propertyParsers.begin());
+    auto it = propertyParsers.begin();
     while (it != propertyParsers.end())
         delete (it++)->second;
 }
 //-----------------------------------------------------------------------------
-int GET_USER::PARSER::ParseStart(const char * el, const char ** attr)
+int GetUser::Parser::ParseStart(const char* el, const char** attr)
 {
-depth++;
-if (depth == 1)
-    ParseUser(el, attr);
-
-if (depth == 2 && parsingAnswer)
-    ParseUserParams(el, attr);
-
-if (depth == 3 && parsingAnswer)
+    depth++;
+    if (depth == 1)
+        ParseUser(el, attr);
+    else if (depth == 2 && parsingAnswer)
+        ParseUserParams(el, attr);
+    else if (depth == 3 && parsingAnswer)
     {
-    ParseAuthBy(el, attr);
-    ParseServices(el, attr);
+        ParseAuthBy(el, attr);
+        ParseServices(el, attr);
     }
 
-return 0;
+    return 0;
 }
 //-----------------------------------------------------------------------------
-void GET_USER::PARSER::ParseEnd(const char * /*el*/)
+void GetUser::Parser::ParseEnd(const char* /*el*/)
 {
-depth--;
-if (depth == 0 && parsingAnswer)
+    depth--;
+    if (depth == 0 && parsingAnswer)
     {
-    if (callback)
-        callback(error.empty(), error, info, data);
-    error.clear();
-    parsingAnswer = false;
+        if (callback)
+            callback(error.empty(), error, info, data);
+        error.clear();
+        parsingAnswer = false;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_USER::PARSER::ParseUser(const char * el, const char ** attr)
+void GetUser::Parser::ParseUser(const char* el, const char** attr)
 {
-if (strcasecmp(el, "user") == 0)
+    if (strcasecmp(el, "user") == 0)
     {
-    if (attr && attr[0] && attr[1])
+        if (attr && attr[0] && attr[1])
         {
-        if (strcasecmp(attr[1], "error") == 0)
+            if (strcasecmp(attr[1], "error") == 0)
             {
-            if (attr[2] && attr[3])
-                error = attr[3];
-            else
-                error = "User not found.";
+                if (attr[2] && attr[3])
+                    error = attr[3];
+                else
+                    error = "User not found.";
             }
-        else if (strcasecmp(attr[0], "login") == 0 && attr[1])
-            info.login = attr[1];
+            else if (strcasecmp(attr[0], "login") == 0 && attr[1])
+                info.login = attr[1];
         }
-    parsingAnswer = true;
+        parsingAnswer = true;
     }
 }
 //-----------------------------------------------------------------------------
-void GET_USER::PARSER::ParseUserParams(const char * el, const char ** attr)
+void GetUser::Parser::ParseUserParams(const char* el, const char** attr)
 {
-if (strcasecmp(el, "AuthorizedBy") != 0 &&
-    !TryParse(propertyParsers, ToLower(el), attr, encoding))
-    error = "Invalid parameter.";
-else if (strcasecmp(el, "Services") != 0 &&
-    !TryParse(propertyParsers, ToLower(el), attr, encoding))
-    error = "Invalid parameter.";
+    if (strcasecmp(el, "AuthorizedBy") != 0 &&
+        !tryParse(propertyParsers, ToLower(el), attr, encoding))
+        error = "Invalid parameter.";
+    else if (strcasecmp(el, "Services") != 0 &&
+        !tryParse(propertyParsers, ToLower(el), attr, encoding))
+        error = "Invalid parameter.";
 }
 //-----------------------------------------------------------------------------
-void GET_USER::PARSER::ParseAuthBy(const char * el, const char ** attr)
+void GetUser::Parser::ParseAuthBy(const char* el, const char** attr)
 {
-if (strcasecmp(el, "Auth") == 0 &&
-    attr && attr[0] && attr[1] &&
-    strcasecmp(attr[0], "name") == 0)
-    info.authBy.push_back(attr[1]);
+    if (strcasecmp(el, "Auth") == 0 &&
+        attr && attr[0] && attr[1] &&
+        strcasecmp(attr[0], "name") == 0)
+        info.authBy.push_back(attr[1]);
 }
 //-----------------------------------------------------------------------------
-void GET_USER::PARSER::ParseServices(const char * el, const char ** attr)
+void GetUser::Parser::ParseServices(const char* el, const char** attr)
 {
-if (strcasecmp(el, "Service") == 0 &&
-    attr && attr[0] && attr[1] &&
-    strcasecmp(attr[0], "name") == 0)
-    info.services.push_back(attr[1]);
+    if (strcasecmp(el, "Service") == 0 &&
+        attr && attr[0] && attr[1] &&
+        strcasecmp(attr[0], "name") == 0)
+        info.services.push_back(attr[1]);
 }

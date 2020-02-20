@@ -36,32 +36,23 @@
 #include "stg/logger.h"
 #include "stg/store.h"
 #include "stg/admin.h"
+#include "stg/admin_conf.h"
 #include "tariffs_impl.h"
 
+using STG::TariffsImpl;
+
 //-----------------------------------------------------------------------------
-TARIFFS_IMPL::TARIFFS_IMPL(STORE * st)
-    : TARIFFS(),
-      tariffs(),
-      store(st),
-      WriteServLog(GetStgLogger()),
-      mutex(),
-      strError(),
-      noTariff(NO_TARIFF_NAME),
-      onAddNotifiers(),
-      onDelNotifiers()
+TariffsImpl::TariffsImpl(Store * st)
+    : store(st),
+      WriteServLog(Logger::get()),
+      noTariff(NO_TARIFF_NAME)
 {
-pthread_mutex_init(&mutex, NULL);
 ReadTariffs();
 }
 //-----------------------------------------------------------------------------
-TARIFFS_IMPL::~TARIFFS_IMPL()
+int TariffsImpl::ReadTariffs()
 {
-pthread_mutex_destroy(&mutex);
-}
-//-----------------------------------------------------------------------------
-int TARIFFS_IMPL::ReadTariffs()
-{
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 
 std::vector<std::string> tariffsList;
 if (store->GetTariffsList(&tariffsList))
@@ -70,36 +61,36 @@ if (store->GetTariffsList(&tariffsList))
     WriteServLog("%s", store->GetStrError().c_str());
     }
 
-Tariffs::size_type tariffsNum = tariffsList.size();
+Data::size_type tariffsNum = tariffsList.size();
 
-for (Tariffs::size_type i = 0; i < tariffsNum; i++)
+for (Data::size_type i = 0; i < tariffsNum; i++)
     {
-    TARIFF_DATA td;
+    TariffData td;
     if (store->RestoreTariff(&td, tariffsList[i]))
         {
         WriteServLog("Cannot read tariff %s.", tariffsList[i].c_str());
         WriteServLog("%s", store->GetStrError().c_str());
         return -1;
         }
-    tariffs.push_back(TARIFF_IMPL(td));
+    tariffs.push_back(TariffImpl(td));
     }
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-size_t TARIFFS_IMPL::Count() const
+size_t TariffsImpl::Count() const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 return tariffs.size();
 }
 //-----------------------------------------------------------------------------
-const TARIFF * TARIFFS_IMPL::FindByName(const std::string & name) const
+const STG::Tariff* TariffsImpl::FindByName(const std::string & name) const
 {
 if (name == NO_TARIFF_NAME)
     return &noTariff;
 
-STG_LOCKER lock(&mutex);
-const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+std::lock_guard<std::mutex> lock(m_mutex);
+const auto ti = find(tariffs.begin(), tariffs.end(), TariffImpl(name));
 
 if (ti != tariffs.end())
     return &(*ti);
@@ -107,9 +98,9 @@ if (ti != tariffs.end())
 return NULL;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Chg(const TARIFF_DATA & td, const ADMIN * admin)
+int TariffsImpl::Chg(const TariffData & td, const Admin * admin)
 {
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
@@ -120,9 +111,9 @@ if (!priv->tariffChg)
     return -1;
     }
 
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 
-auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(td.tariffConf.name));
+auto ti = find(tariffs.begin(), tariffs.end(), TariffImpl(td.tariffConf.name));
 
 if (ti == tariffs.end())
     {
@@ -146,9 +137,9 @@ WriteServLog("%s Tariff \'%s\' changed.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Del(const std::string & name, const ADMIN * admin)
+int TariffsImpl::Del(const std::string & name, const Admin * admin)
 {
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
@@ -159,12 +150,12 @@ if (!priv->tariffChg)
     return -1;
     }
 
-TARIFF_DATA td;
+TariffData td;
 
     {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+    const auto ti = find(tariffs.begin(), tariffs.end(), TariffImpl(name));
 
     if (ti == tariffs.end())
         {
@@ -198,9 +189,9 @@ WriteServLog("%s Tariff \'%s\' deleted.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TARIFFS_IMPL::Add(const std::string & name, const ADMIN * admin)
+int TariffsImpl::Add(const std::string & name, const Admin * admin)
 {
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 
 if (!priv->tariffChg)
     {
@@ -212,9 +203,9 @@ if (!priv->tariffChg)
     }
 
     {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    const auto ti = find(tariffs.begin(), tariffs.end(), TARIFF_IMPL(name));
+    const auto ti = find(tariffs.begin(), tariffs.end(), TariffImpl(name));
 
     if (ti != tariffs.end())
         {
@@ -223,7 +214,7 @@ if (!priv->tariffChg)
         return -1;
         }
 
-    tariffs.push_back(TARIFF_IMPL(name));
+    tariffs.push_back(TariffImpl(name));
     }
 
 if (store->AddTariff(name) < 0)
@@ -247,10 +238,10 @@ WriteServLog("%s Tariff \'%s\' added.",
 return 0;
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::GetTariffsData(std::vector<TARIFF_DATA> * tdl) const
+void TariffsImpl::GetTariffsData(std::vector<TariffData> * tdl) const
 {
 assert(tdl != NULL && "Tariffs data list is not null");
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 
 auto it = tariffs.begin();
 for (; it != tariffs.end(); ++it)
@@ -259,27 +250,27 @@ for (; it != tariffs.end(); ++it)
     }
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::AddNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * n)
+void TariffsImpl::AddNotifierAdd(NotifierBase<TariffData> * n)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 onAddNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::DelNotifierAdd(NOTIFIER_BASE<TARIFF_DATA> * n)
+void TariffsImpl::DelNotifierAdd(NotifierBase<TariffData> * n)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 onAddNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::AddNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * n)
+void TariffsImpl::AddNotifierDel(NotifierBase<TariffData> * n)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 onDelNotifiers.insert(n);
 }
 //-----------------------------------------------------------------------------
-void TARIFFS_IMPL::DelNotifierDel(NOTIFIER_BASE<TARIFF_DATA> * n)
+void TariffsImpl::DelNotifierDel(NotifierBase<TariffData> * n)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard<std::mutex> lock(m_mutex);
 onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------

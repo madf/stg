@@ -26,7 +26,7 @@ namespace tut
     {
         set_test_name("Check default constructor");
 
-        PRIV zero;
+        STG::Priv zero;
 
         ensure("zero.userStat == 0", zero.userStat == 0);
         ensure("zero.userConf == 0", zero.userConf == 0);
@@ -38,7 +38,7 @@ namespace tut
         ensure("zero.serviceChg == 0", zero.serviceChg == 0);
         ensure("zero.corpChg == 0", zero.corpChg == 0);
 
-        ensure("zero.ToInt() == 0", zero.ToInt() == 0);
+        ensure("zero.toInt() == 0", zero.toInt() == 0);
     }
 
     template<>
@@ -51,7 +51,7 @@ namespace tut
 
             // 'i' is extra trash in high bits
 
-            PRIV priv1(ONES | (i << 0x12)); // All 1
+            STG::Priv priv1(ONES | (i << 0x12)); // All 1
 
             ensure_equals("priv1.userStat == 1", priv1.userStat, 1);
             ensure_equals("priv1.userConf == 1", priv1.userConf, 1);
@@ -63,9 +63,9 @@ namespace tut
             ensure_equals("priv1.serviceChg == 1", priv1.serviceChg, 1);
             ensure_equals("priv1.corpChg == 1", priv1.corpChg, 1);
 
-            ensure_equals("priv1.ToInt() == 0x00015555", priv1.ToInt(), static_cast<uint32_t>(ONES));
+            ensure_equals("priv1.toInt() == 0x00015555", priv1.toInt(), static_cast<uint32_t>(ONES));
 
-            PRIV priv2(TWOS | (i << 0x12)); // All 2
+            STG::Priv priv2(TWOS | (i << 0x12)); // All 2
 
             ensure_equals("priv2.userStat == 2", priv2.userStat, 2);
             ensure_equals("priv2.userConf == 2", priv2.userConf, 2);
@@ -77,9 +77,9 @@ namespace tut
             ensure_equals("priv2.serviceChg == 2", priv2.serviceChg, 2);
             ensure_equals("priv2.corpChg == 2", priv2.corpChg, 2);
 
-            ensure_equals("priv2.ToInt() = 0x0002AAAA", priv2.ToInt(), static_cast<uint32_t>(TWOS));
+            ensure_equals("priv2.toInt() = 0x0002AAAA", priv2.toInt(), static_cast<uint32_t>(TWOS));
 
-            PRIV priv3(THREES | (i << 0x12)); // All 3
+            STG::Priv priv3(THREES | (i << 0x12)); // All 3
 
             ensure_equals("priv3.userStat == 3", priv3.userStat, 3);
             ensure_equals("priv3.userConf == 3", priv3.userConf, 3);
@@ -91,9 +91,9 @@ namespace tut
             ensure_equals("priv3.serviceChg == 3", priv3.serviceChg, 3);
             ensure_equals("priv3.corpChg == 3", priv3.corpChg, 3);
 
-            ensure_equals("priv3.ToInt() = 0x0003FFFF", priv3.ToInt(), static_cast<uint32_t>(THREES));
+            ensure_equals("priv3.toInt() = 0x0003FFFF", priv3.toInt(), static_cast<uint32_t>(THREES));
 
-            PRIV pm1(MIX1 | (i << 0x12)); // 012301230
+            STG::Priv pm1(MIX1 | (i << 0x12)); // 012301230
 
             ensure_equals("pm1.userStat == 0", pm1.userStat, 0);
             ensure_equals("pm1.userConf == 1", pm1.userConf, 1);
@@ -105,9 +105,9 @@ namespace tut
             ensure_equals("pm1.serviceChg == 3", pm1.serviceChg, 3);
             ensure_equals("pm1.corpChg == 0", pm1.corpChg, 0);
 
-            ensure_equals("pm1.ToInt() = 0xE4E4", pm1.ToInt(), static_cast<uint32_t>(MIX1));
+            ensure_equals("pm1.toInt() = 0xE4E4", pm1.toInt(), static_cast<uint32_t>(MIX1));
 
-            PRIV pm2(MIX2 | (i << 0x12)); // 210321032
+            STG::Priv pm2(MIX2 | (i << 0x12)); // 210321032
 
             ensure_equals("pm2.userStat == 2", pm2.userStat, 2);
             ensure_equals("pm2.userConf == 1", pm2.userConf, 1);
@@ -119,9 +119,9 @@ namespace tut
             ensure_equals("pm2.serviceChg == 3", pm2.serviceChg, 3);
             ensure_equals("pm2.corpChg == 2", pm2.corpChg, 2);
 
-            ensure_equals("pm2.ToInt() = 0x0002C6C6", pm2.ToInt(), static_cast<uint32_t>(MIX2));
+            ensure_equals("pm2.toInt() = 0x0002C6C6", pm2.toInt(), static_cast<uint32_t>(MIX2));
 
-            PRIV pm3(MIX3 | (i << 0x12)); // 321032103
+            STG::Priv pm3(MIX3 | (i << 0x12)); // 321032103
 
             ensure_equals("pm3.userStat == 3", pm3.userStat, 3);
             ensure_equals("pm3.userConf == 2", pm3.userConf, 2);
@@ -133,7 +133,7 @@ namespace tut
             ensure_equals("pm3.serviceChg == 0", pm3.serviceChg, 0);
             ensure_equals("pm3.corpChg == 3", pm3.corpChg, 3);
 
-            ensure_equals("pm3.ToInt() = 0x00031B1B", pm3.ToInt(), static_cast<uint32_t>(MIX3));
+            ensure_equals("pm3.toInt() = 0x00031B1B", pm3.toInt(), static_cast<uint32_t>(MIX3));
 
         }
 
@@ -149,8 +149,7 @@ namespace tut
 
             // 'i' is extra trash in high bits
 
-            PRIV priv1;
-            priv1.FromInt(ONES | (i << 0x12)); // All 1
+            STG::Priv priv1(ONES | (i << 0x12)); // All 1
 
 
             ensure_equals("priv1.userStat == 1", priv1.userStat, 1);
@@ -163,10 +162,9 @@ namespace tut
             ensure_equals("priv1.serviceChg == 1", priv1.serviceChg, 1);
             ensure_equals("priv1.corpChg == 1", priv1.corpChg, 1);
 
-            ensure_equals("priv1.ToInt() == 0x00015555", priv1.ToInt(), static_cast<uint32_t>(ONES));
+            ensure_equals("priv1.toInt() == 0x00015555", priv1.toInt(), static_cast<uint32_t>(ONES));
 
-            PRIV priv2;
-            priv2.FromInt(TWOS | (i << 0x12)); // All 2
+            STG::Priv priv2(TWOS | (i << 0x12)); // All 2
 
             ensure_equals("priv2.userStat == 2", priv2.userStat, 2);
             ensure_equals("priv2.userConf == 2", priv2.userConf, 2);
@@ -178,10 +176,9 @@ namespace tut
             ensure_equals("priv2.serviceChg == 2", priv2.serviceChg, 2);
             ensure_equals("priv2.corpChg == 2", priv2.corpChg, 2);
 
-            ensure_equals("priv2.ToInt() = 0x0002AAAA", priv2.ToInt(), static_cast<uint32_t>(TWOS));
+            ensure_equals("priv2.toInt() = 0x0002AAAA", priv2.toInt(), static_cast<uint32_t>(TWOS));
 
-            PRIV priv3;
-            priv3.FromInt(THREES | (i << 0x12)); // All 3
+            STG::Priv priv3(THREES | (i << 0x12)); // All 3
 
             ensure_equals("priv3.userStat == 3", priv3.userStat, 3);
             ensure_equals("priv3.userConf == 3", priv3.userConf, 3);
@@ -193,10 +190,9 @@ namespace tut
             ensure_equals("priv3.serviceChg == 3", priv3.serviceChg, 3);
             ensure_equals("priv3.corpChg == 3", priv3.corpChg, 3);
 
-            ensure_equals("priv3.ToInt() = 0x0003FFFF", priv3.ToInt(), static_cast<uint32_t>(THREES));
+            ensure_equals("priv3.toInt() = 0x0003FFFF", priv3.toInt(), static_cast<uint32_t>(THREES));
 
-            PRIV pm1;
-            pm1.FromInt(MIX1 | (i << 0x12)); // 012301230
+            STG::Priv pm1(MIX1 | (i << 0x12)); // 012301230
 
             ensure_equals("pm1.userStat == 0", pm1.userStat, 0);
             ensure_equals("pm1.userConf == 1", pm1.userConf, 1);
@@ -208,10 +204,9 @@ namespace tut
             ensure_equals("pm1.serviceChg == 3", pm1.serviceChg, 3);
             ensure_equals("pm1.corpChg == 0", pm1.corpChg, 0);
 
-            ensure_equals("pm1.ToInt() = 0xE4E4", pm1.ToInt(), static_cast<uint32_t>(MIX1));
+            ensure_equals("pm1.toInt() = 0xE4E4", pm1.toInt(), static_cast<uint32_t>(MIX1));
 
-            PRIV pm2;
-            pm2.FromInt(MIX2 | (i << 0x12)); // 210321032
+            STG::Priv pm2(MIX2 | (i << 0x12)); // 210321032
 
             ensure_equals("pm2.userStat == 2", pm2.userStat, 2);
             ensure_equals("pm2.userConf == 1", pm2.userConf, 1);
@@ -223,10 +218,9 @@ namespace tut
             ensure_equals("pm2.serviceChg == 3", pm2.serviceChg, 3);
             ensure_equals("pm2.corpChg == 2", pm2.corpChg, 2);
 
-            ensure_equals("pm2.ToInt() = 0x0002C6C6", pm2.ToInt(), static_cast<uint32_t>(MIX2));
+            ensure_equals("pm2.toInt() = 0x0002C6C6", pm2.toInt(), static_cast<uint32_t>(MIX2));
 
-            PRIV pm3;
-            pm3.FromInt(MIX3 | (i << 0x12)); // 321032103
+            STG::Priv pm3(MIX3 | (i << 0x12)); // 321032103
 
             ensure_equals("pm3.userStat == 3", pm3.userStat, 3);
             ensure_equals("pm3.userConf == 2", pm3.userConf, 2);
@@ -238,7 +232,7 @@ namespace tut
             ensure_equals("pm3.serviceChg == 0", pm3.serviceChg, 0);
             ensure_equals("pm3.corpChg == 3", pm3.corpChg, 3);
 
-            ensure_equals("pm3.ToInt() = 0x00031B1B", pm3.ToInt(), static_cast<uint32_t>(MIX3));
+            ensure_equals("pm3.toInt() = 0x00031B1B", pm3.toInt(), static_cast<uint32_t>(MIX3));
 
         }
 

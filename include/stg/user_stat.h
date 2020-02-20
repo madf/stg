@@ -18,14 +18,10 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
- /*
- $Revision: 1.15 $
- $Date: 2010/03/11 14:42:05 $
- $Author: faust $
- */
+#pragma once
 
-#ifndef USER_STAT_H
-#define USER_STAT_H
+#include "stg/optional.h"
+#include "user_traff.h"
 
 #include <ctime>
 #include <cstdint>
@@ -33,94 +29,93 @@
 #include <utility>
 #include <string>
 
-#include "resetable.h"
-#include "user_traff.h"
+namespace STG
+{
 //-----------------------------------------------------------------------------
-struct IP_DIR_PAIR
+struct IPDirPair
 {
     #ifdef TRAFF_STAT_WITH_PORTS
-    IP_DIR_PAIR(uint32_t _ip,
-                int _dir,
-                uint16_t _port)
+    IPDirPair(uint32_t _ip, int _dir, uint16_t _port) noexcept
         : ip(_ip),
           dir(_dir),
           port(_port)
     {}
     #else
-    IP_DIR_PAIR(uint32_t _ip,
-                int _dir)
+    IPDirPair(uint32_t _ip, int _dir) noexcept
         : ip(_ip),
           dir(_dir)
     {}
     #endif
     //------------------------
-    bool operator<(const IP_DIR_PAIR & idp) const
-        {
-        if (ip < idp.ip)
+    bool operator<(const IPDirPair& rhs) const noexcept
+    {
+        if (ip < rhs.ip)
             return true;
 
-        if (ip > idp.ip)
+        if (ip > rhs.ip)
             return false;
 
         #ifdef TRAFF_STAT_WITH_PORTS
-        if (port < idp.port)
+        if (port < rhs.port)
             return true;
 
-        if (port > idp.port)
+        if (port > rhs.port)
             return false;
         #endif
 
-        if (dir < idp.dir)
+        if (dir < rhs.dir)
             return true;
 
         return false;
-        }
+    }
     //------------------------
-    bool operator!=(const IP_DIR_PAIR & rvalue) const
-        {
-        if (ip != rvalue.ip)
-            return true;
-
+    bool operator==(const IPDirPair& rhs) const noexcept
+    {
         #ifdef TRAFF_STAT_WITH_PORTS
-        if (port != rvalue.port)
-            return true;
+        return ip == rhs.ip && port == rhs.port && dir == rhs.dir;
+        #else
+        return ip == rhs.ip && dir == rhs.dir;
         #endif
+    }
+    bool operator!=(const IPDirPair& rhs) const noexcept
+    {
+        return !operator==(rhs);
+    }
 
-        if (dir != rvalue.dir)
-            return true;
-
-        return false;
-        }
+    IPDirPair(const IPDirPair&) = default;
+    IPDirPair& operator=(const IPDirPair&) = default;
+    IPDirPair(IPDirPair&&) = default;
+    IPDirPair& operator=(IPDirPair&&) = default;
     //------------------------
-    uint32_t        ip;
-    int             dir;
+    uint32_t ip;
+    int      dir;
     #ifdef TRAFF_STAT_WITH_PORTS
-    uint16_t        port;
+    uint16_t port;
     #endif
 };
 //-----------------------------------------------------------------------------
-struct STAT_NODE
+struct StatNode
 {
-    STAT_NODE(uint64_t _up,
-              uint64_t _down,
-              double   _cash)
+    StatNode(uint64_t _up, uint64_t _down, double _cash) noexcept
         : up(_up),
           down(_down),
           cash(_cash)
     {}
-    uint64_t        up;
-    uint64_t        down;
-    double          cash;
+
+    StatNode(const StatNode&) = default;
+    StatNode& operator=(const StatNode&) = default;
+    StatNode(StatNode&&) = default;
+    StatNode& operator=(StatNode&&) = default;
+
+    uint64_t up;
+    uint64_t down;
+    double cash;
 };
 //-----------------------------------------------------------------------------
-struct USER_STAT
+struct UserStat
 {
-    USER_STAT()
-        : sessionUp(),
-          sessionDown(),
-          monthUp(),
-          monthDown(),
-          cash(0),
+    UserStat() noexcept
+        : cash(0),
           freeMb(0),
           lastCashAdd(0),
           lastCashAddTime(0),
@@ -128,38 +123,44 @@ struct USER_STAT
           lastActivityTime(0)
     {}
 
-    DIR_TRAFF   sessionUp;
-    DIR_TRAFF   sessionDown;
-    DIR_TRAFF   monthUp;
-    DIR_TRAFF   monthDown;
-    double      cash;
-    double      freeMb;
-    double      lastCashAdd;
-    time_t      lastCashAddTime;
-    time_t      passiveTime;
-    time_t      lastActivityTime;
+    UserStat(const UserStat&) = default;
+    UserStat& operator=(const UserStat&) = default;
+    UserStat(UserStat&&) = default;
+    UserStat& operator=(UserStat&&) = default;
+
+    DirTraff sessionUp;
+    DirTraff sessionDown;
+    DirTraff monthUp;
+    DirTraff monthDown;
+    double   cash;
+    double   freeMb;
+    double   lastCashAdd;
+    time_t   lastCashAddTime;
+    time_t   passiveTime;
+    time_t   lastActivityTime;
 };
 //-----------------------------------------------------------------------------
-typedef std::map<IP_DIR_PAIR, STAT_NODE> TRAFF_STAT;
+using TraffStat = std::map<IPDirPair, StatNode>;
 //-----------------------------------------------------------------------------
-typedef std::pair<double, std::string> CASH_INFO;
+using CashInfo = std::pair<double, std::string>;
 //-----------------------------------------------------------------------------
-struct USER_STAT_RES
+struct UserStatOpt
 {
-    USER_STAT_RES()
-        : cash(),
-          freeMb(),
-          lastCashAdd(),
-          lastCashAddTime(),
-          passiveTime(),
-          lastActivityTime(),
-          sessionUp(),
-          sessionDown(),
-          monthUp(),
-          monthDown()
-    {}
+    UserStatOpt() = default;
 
-    USER_STAT_RES & operator= (const USER_STAT & us)
+    UserStatOpt(const UserStat& data) noexcept
+        : cash(data.cash),
+          freeMb(data.freeMb),
+          lastCashAdd(data.lastCashAdd),
+          lastCashAddTime(data.lastCashAddTime),
+          passiveTime(data.passiveTime),
+          lastActivityTime(data.lastActivityTime),
+          sessionUp(data.sessionUp),
+          sessionDown(data.sessionDown),
+          monthUp(data.monthUp),
+          monthDown(data.monthDown)
+    {}
+    UserStatOpt& operator=(const UserStat& us)
     {
         cash             = us.cash;
         freeMb           = us.freeMb;
@@ -173,34 +174,24 @@ struct USER_STAT_RES
         monthDown        = us.monthDown;
         return *this;
     }
-    USER_STAT GetData() const
-    {
-        USER_STAT us;
-        us.cash             = cash.data();
-        us.freeMb           = freeMb.data();
-        us.lastCashAdd      = lastCashAdd.data();
-        us.lastCashAddTime  = lastCashAddTime.data();
-        us.passiveTime      = passiveTime.data();
-        us.lastActivityTime = lastActivityTime.data();
-        us.sessionUp        = sessionUp.GetData();
-        us.sessionDown      = sessionDown.GetData();
-        us.monthUp          = monthUp.GetData();
-        us.monthDown        = monthDown.GetData();
-        return us;
-    }
 
-    RESETABLE<double>      cash;
-    RESETABLE<CASH_INFO>   cashAdd;
-    RESETABLE<CASH_INFO>   cashSet;
-    RESETABLE<double>      freeMb;
-    RESETABLE<double>      lastCashAdd;
-    RESETABLE<time_t>      lastCashAddTime;
-    RESETABLE<time_t>      passiveTime;
-    RESETABLE<time_t>      lastActivityTime;
-    DIR_TRAFF_RES          sessionUp;
-    DIR_TRAFF_RES          sessionDown;
-    DIR_TRAFF_RES          monthUp;
-    DIR_TRAFF_RES          monthDown;
+    UserStatOpt(const UserStatOpt&) = default;
+    UserStatOpt& operator=(const UserStatOpt&) = default;
+    UserStatOpt(UserStatOpt&&) = default;
+    UserStatOpt& operator=(UserStatOpt&&) = default;
+
+    Optional<double>    cash;
+    Optional<CashInfo>  cashAdd;
+    Optional<CashInfo>  cashSet;
+    Optional<double>    freeMb;
+    Optional<double>    lastCashAdd;
+    Optional<time_t>    lastCashAddTime;
+    Optional<time_t>    passiveTime;
+    Optional<time_t>    lastActivityTime;
+    DirTraffOpt         sessionUp;
+    DirTraffOpt         sessionDown;
+    DirTraffOpt         monthUp;
+    DirTraffOpt         monthDown;
 };
 //-----------------------------------------------------------------------------
-#endif
+}

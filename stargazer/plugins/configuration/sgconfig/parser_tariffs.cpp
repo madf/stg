@@ -23,7 +23,7 @@
 
 #include "stg/tariffs.h"
 #include "stg/users.h"
-#include "stg/resetable.h"
+#include "stg/optional.h"
 
 #include <cstdio> // snprintf
 #include <cstring>
@@ -57,7 +57,7 @@ std::string AOS2String(const A & array, size_t size, const F C::* field, F multi
 }
 
 template <typename T>
-bool str2res(const std::string& source, RESETABLE<T>& dest, T divisor)
+bool str2res(const std::string& source, STG::Optional<T>& dest, T divisor)
 {
     T value = 0;
     if (str2x(source, value))
@@ -67,7 +67,7 @@ bool str2res(const std::string& source, RESETABLE<T>& dest, T divisor)
 }
 
 template <typename A, typename C, typename F>
-bool String2AOS(const std::string & source, A & array, size_t size, RESETABLE<F> C::* field, F divisor)
+bool String2AOS(const std::string & source, A & array, size_t size, STG::Optional<F> C::* field, F divisor)
 {
     size_t index = 0;
     std::string::size_type from = 0;
@@ -90,7 +90,7 @@ void GET_TARIFFS::CreateAnswer()
 {
     m_answer = "<Tariffs>";
 
-    std::vector<TARIFF_DATA> dataList;
+    std::vector<TariffData> dataList;
     m_tariffs.GetTariffsData(&dataList);
     auto it = dataList.begin();
     for (; it != dataList.end(); ++it)
@@ -102,19 +102,19 @@ void GET_TARIFFS::CreateAnswer()
                 std::to_string(it->dirPrice[i].hDay)   + ":" + std::to_string(it->dirPrice[i].mDay)   + "-" +
                 std::to_string(it->dirPrice[i].hNight) + ":" + std::to_string(it->dirPrice[i].mNight) + "\"/>";
 
-        m_answer += "<PriceDayA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayA, pt_mega) + "\"/>" +
-                  "<PriceDayB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceDayB, pt_mega) + "\"/>" +
-                  "<PriceNightA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceNightA, pt_mega) + "\"/>" +
-                  "<PriceNightB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::priceNightB, pt_mega) + "\"/>" +
-                  "<Threshold value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::threshold, 1) + "\"/>" +
-                  "<SinglePrice value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::singlePrice, 1) + "\"/>" +
-                  "<NoDiscount value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DIRPRICE_DATA::noDiscount, 1) + "\"/>" +
+        m_answer += "<PriceDayA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::priceDayA, pt_mega) + "\"/>" +
+                  "<PriceDayB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::priceDayB, pt_mega) + "\"/>" +
+                  "<PriceNightA value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::priceNightA, pt_mega) + "\"/>" +
+                  "<PriceNightB value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::priceNightB, pt_mega) + "\"/>" +
+                  "<Threshold value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::threshold, 1) + "\"/>" +
+                  "<SinglePrice value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::singlePrice, 1) + "\"/>" +
+                  "<NoDiscount value=\"" + AOS2String(it->dirPrice, DIR_NUM, &DirPriceData::noDiscount, 1) + "\"/>" +
                   "<Fee value=\"" + std::to_string(it->tariffConf.fee) + "\"/>" +
                   "<PassiveCost value=\"" + std::to_string(it->tariffConf.passiveCost) + "\"/>" +
                   "<Free value=\"" + std::to_string(it->tariffConf.free) + "\"/>" +
-                  "<TraffType value=\"" + TARIFF::TraffTypeToString(it->tariffConf.traffType) + "\"/>" +
-                  "<Period value=\"" + TARIFF::PeriodToString(it->tariffConf.period) + "\"/>" +
-                  "<ChangePolicy value=\"" + TARIFF::ChangePolicyToString(it->tariffConf.changePolicy) + "\"/>" +
+                  "<TraffType value=\"" + Tariff::toString(it->tariffConf.traffType) + "\"/>" +
+                  "<Period value=\"" + Tariff::toString(it->tariffConf.period) + "\"/>" +
+                  "<ChangePolicy value=\"" + Tariff::toString(it->tariffConf.changePolicy) + "\"/>" +
                   "<ChangePolicyTimeout value=\"" + std::to_string(it->tariffConf.changePolicyTimeout) + "\"/>" +
                   "</tariff>";
         }
@@ -172,7 +172,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
     {
         if (strcasecmp(el, m_tag.c_str()) == 0)
         {
-            const TARIFF * tariff = m_tariffs.FindByName(attr[1]);
+            const auto tariff = m_tariffs.FindByName(attr[1]);
             if (tariff != NULL)
                 td = tariff->GetTariffData();
             else
@@ -184,7 +184,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
     {
         if (strcasecmp(el, "PriceDayA") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::priceDayA, pt_mega))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::priceDayA, pt_mega))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -192,7 +192,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "PriceDayB") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::priceDayB, pt_mega))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::priceDayB, pt_mega))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -200,7 +200,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "PriceNightA") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::priceNightA, pt_mega))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::priceNightA, pt_mega))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -208,7 +208,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "PriceNightB") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::priceNightB, pt_mega))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::priceNightB, pt_mega))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -216,7 +216,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "Threshold") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::threshold, 1))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::threshold, 1))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -224,7 +224,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "SinglePrice") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::singlePrice, 1))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::singlePrice, 1))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -232,7 +232,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "NoDiscount") == 0)
         {
-            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DIRPRICE_DATA_RES::noDiscount, 1))
+            if (!String2AOS(attr[1], td.dirPrice, DIR_NUM, &DirPriceDataOpt::noDiscount, 1))
                 return -1; // TODO: log it
             else
                 return 0;
@@ -285,19 +285,19 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "TraffType") == 0)
         {
-            td.tariffConf.traffType = TARIFF::StringToTraffType(attr[1]);
+            td.tariffConf.traffType = Tariff::parseTraffType(attr[1]);
             return 0;
         }
 
         if (strcasecmp(el, "Period") == 0)
         {
-            td.tariffConf.period = TARIFF::StringToPeriod(attr[1]);
+            td.tariffConf.period = Tariff::parsePeriod(attr[1]);
             return 0;
         }
 
         if (strcasecmp(el, "ChangePolicy") == 0)
         {
-            td.tariffConf.changePolicy = TARIFF::StringToChangePolicy(attr[1]);
+            td.tariffConf.changePolicy = Tariff::parseChangePolicy(attr[1]);
             return 0;
         }
 
@@ -316,7 +316,7 @@ void CHG_TARIFF::CreateAnswer()
 {
     if (!td.tariffConf.name.data().empty())
     {
-        TARIFF_DATA tariffData = td.GetData();
+        auto tariffData = td.get({});
         if (m_tariffs.Chg(tariffData, &m_currAdmin) == 0)
             m_answer = "<" + m_tag + " Result=\"ok\"/>";
         else

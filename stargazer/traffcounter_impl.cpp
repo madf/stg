@@ -49,6 +49,8 @@
 #define FLUSH_TIME  (10)
 #define REMOVE_TIME  (31)
 
+using STG::TraffCounterImpl;
+
 const char protoName[PROTOMAX][8] =
 {"TCP", "UDP", "ICMP", "TCP_UDP", "ALL"};
 
@@ -58,8 +60,8 @@ tcp = 0, udp, icmp, tcp_udp, all
 };
 
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER_IMPL::TRAFFCOUNTER_IMPL(USERS_IMPL * u, const std::string & fn)
-    : WriteServLog(GetStgLogger()),
+TraffCounterImpl::TraffCounterImpl(UsersImpl * u, const std::string & fn)
+    : WriteServLog(Logger::get()),
       rulesFileName(fn),
       monitoring(false),
       touchTimeP(stgTime - MONITOR_TIME_DELAY_SEC),
@@ -80,12 +82,12 @@ users->AddNotifierUserDel(&delUserNotifier);
 pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
-TRAFFCOUNTER_IMPL::~TRAFFCOUNTER_IMPL()
+TraffCounterImpl::~TraffCounterImpl()
 {
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER_IMPL::Start()
+int TraffCounterImpl::Start()
 {
 STG_LOCKER lock(&mutex);
 
@@ -94,15 +96,15 @@ if (!stopped)
 
 if (ReadRules())
     {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot read rules\n");
-    WriteServLog("TRAFFCOUNTER: Cannot read rules.");
+    printfd(__FILE__, "TraffCounterImpl::Start() - Cannot read rules\n");
+    WriteServLog("TraffCounter: Cannot read rules.");
     return -1;
     }
 
-printfd(__FILE__, "TRAFFCOUNTER::Start()\n");
+printfd(__FILE__, "TraffCounter::Start()\n");
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
-USER_IMPL * u;
+UserImpl * u;
 
 while (users->SearchNext(h, &u) == 0)
     SetUserNotifiers(u);
@@ -111,14 +113,14 @@ users->CloseSearch(h);
 running = true;
 if (pthread_create(&thread, NULL, Run, this))
     {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Start() - Cannot start thread\n");
-    WriteServLog("TRAFFCOUNTER: Error: Cannot start thread.");
+    printfd(__FILE__, "TraffCounterImpl::Start() - Cannot start thread\n");
+    WriteServLog("TraffCounter: Error: Cannot start thread.");
     return -1;
     }
 return 0;
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER_IMPL::Stop()
+int TraffCounterImpl::Stop()
 {
 if (stopped)
     return 0;
@@ -128,7 +130,7 @@ running = false;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
-USER_IMPL * u;
+UserImpl * u;
 while (users->SearchNext(h, &u) == 0)
     UnSetUserNotifiers(u);
 users->CloseSearch(h);
@@ -143,18 +145,18 @@ for (int i = 0; i < 25 && !stopped; i++)
 if (!stopped)
     return -1;
 
-printfd(__FILE__, "TRAFFCOUNTER::Stop()\n");
+printfd(__FILE__, "TraffCounter::Stop()\n");
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * TRAFFCOUNTER_IMPL::Run(void * data)
+void * TraffCounterImpl::Run(void * data)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-TRAFFCOUNTER_IMPL * tc = static_cast<TRAFFCOUNTER_IMPL *>(data);
+TraffCounterImpl * tc = static_cast<TraffCounterImpl *>(data);
 tc->stopped = false;
 int c = 0;
 
@@ -172,7 +174,7 @@ while (tc->running)
     if (tc->monitoring && (touchTime + MONITOR_TIME_DELAY_SEC <= stgTime))
         {
         std::string monFile(tc->monitorDir + "/traffcounter_r");
-        printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", tc->monitoring, monFile.c_str());
+        printfd(__FILE__, "Monitor=%d file TraffCounter %s\n", tc->monitoring, monFile.c_str());
         touchTime = stgTime;
         TouchFile(monFile);
         }
@@ -185,7 +187,7 @@ tc->stopped = true;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::Process(const RAW_PACKET & rawPacket)
+void TraffCounterImpl::process(const RawPacket & rawPacket)
 {
 if (!running)
     return;
@@ -193,14 +195,14 @@ if (!running)
 if (monitoring && (touchTimeP + MONITOR_TIME_DELAY_SEC <= stgTime))
     {
     std::string monFile = monitorDir + "/traffcounter_p";
-    printfd(__FILE__, "Monitor=%d file TRAFFCOUNTER %s\n", monitoring, monFile.c_str());
+    printfd(__FILE__, "Monitor=%d file TraffCounter %s\n", monitoring, monFile.c_str());
     touchTimeP = stgTime;
     TouchFile(monFile);
     }
 
 STG_LOCKER lock(&mutex);
 
-//printfd(__FILE__, "TRAFFCOUNTER::Process()\n");
+//printfd(__FILE__, "TraffCounter::Process()\n");
 //TODO replace find with lower_bound.
 
 // Searching a new packet in a tree.
@@ -229,7 +231,7 @@ if (pi != packets.end())
     return;
     }
 
-PACKET_EXTRA_DATA ed;
+PacketExtraData ed;
 
 // Packet not found - add new packet
 
@@ -274,7 +276,7 @@ if (ed.userUPresent ||
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::FlushAndRemove()
+void TraffCounterImpl::FlushAndRemove()
 {
 STG_LOCKER lock(&mutex);
 
@@ -357,7 +359,7 @@ printfd(__FILE__, "FlushAndRemove() packets: %d(rem %d) ip2packets: %d(rem %d)\n
 
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::AddUser(USER_IMPL * user)
+void TraffCounterImpl::AddUser(UserImpl * user)
 {
 printfd(__FILE__, "AddUser: %s\n", user->GetLogin().c_str());
 uint32_t uip = user->GetCurrIP();
@@ -395,7 +397,7 @@ while (pi.first != pi.second)
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::DelUser(uint32_t uip)
+void TraffCounterImpl::DelUser(uint32_t uip)
 {
 printfd(__FILE__, "DelUser: %s \n", inet_ntostring(uip).c_str());
 std::pair<ip2p_iter, ip2p_iter> pi;
@@ -448,7 +450,7 @@ while (pi.first != pi.second)
 ip2packets.erase(pi.first, pi.second);
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::SetUserNotifiers(USER_IMPL * user)
+void TraffCounterImpl::SetUserNotifiers(UserImpl * user)
 {
 // Adding user. Adding notifiers to user.
 TRF_IP_BEFORE ipBNotifier(*this, user);
@@ -460,7 +462,7 @@ ipAfterNotifiers.push_front(ipANotifier);
 user->AddCurrIPAfterNotifier(&(*ipAfterNotifiers.begin()));
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::UnSetUserNotifiers(USER_IMPL * user)
+void TraffCounterImpl::UnSetUserNotifiers(UserImpl * user)
 {
 // Removing user. Removing notifiers from user.
 std::list<TRF_IP_BEFORE>::iterator bi;
@@ -491,7 +493,7 @@ while (ai != ipAfterNotifiers.end())
     }
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::DeterminateDir(const RAW_PACKET & packet,
+void TraffCounterImpl::DeterminateDir(const RawPacket & packet,
                                        int * dirU, // Direction for incoming packet
                                        int * dirD) const // Direction for outgoing packet
 {
@@ -505,7 +507,7 @@ bool foundD = false; // Was rule for D found ?
 
 enum { ICMP_RPOTO = 1, TCP_PROTO = 6, UDP_PROTO = 17 };
 
-std::list<RULE>::const_iterator ln;
+std::list<Rule>::const_iterator ln;
 ln = rules.begin();
 
 while (ln != rules.end())
@@ -609,11 +611,11 @@ if (!foundD)
     *dirD = DIR_NUM;
 }
 //-----------------------------------------------------------------------------
-bool TRAFFCOUNTER_IMPL::ReadRules(bool test)
+bool TraffCounterImpl::ReadRules(bool test)
 {
-//printfd(__FILE__, "TRAFFCOUNTER::ReadRules()\n");
+//printfd(__FILE__, "TraffCounter::ReadRules()\n");
 
-RULE rul;
+Rule rul;
 FILE * f;
 char str[1024];
 char tp[100];   // protocol
@@ -625,7 +627,7 @@ f = fopen(rulesFileName.c_str(), "rt");
 
 if (!f)
     {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - File '%s' cannot be opened.\n", rulesFileName.c_str());
+    printfd(__FILE__, "TraffCounterImpl::ReadRules() - File '%s' cannot be opened.\n", rulesFileName.c_str());
     WriteServLog("File '%s' cannot be oppened.", rulesFileName.c_str());
     return true;
     }
@@ -641,7 +643,7 @@ while (fgets(str, 1023, f))
     r = sscanf(str,"%99s %99s %99s", tp, ta, td);
     if (r != 3)
         {
-        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. There must be 3 parameters.\n", rulesFileName.c_str(), lineNumber);
+        printfd(__FILE__, "TraffCounterImpl::ReadRules() - Error in file '%s' at line %d. There must be 3 parameters.\n", rulesFileName.c_str(), lineNumber);
         WriteServLog("Error in file '%s' at line %d. There must be 3 parameters.", rulesFileName.c_str(), lineNumber);
         fclose(f);
         return true;
@@ -664,7 +666,7 @@ while (fgets(str, 1023, f))
 
     if (rul.dir == 0xff || rul.proto == 0xff)
         {
-        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d.\n", rulesFileName.c_str(), lineNumber);
+        printfd(__FILE__, "TraffCounterImpl::ReadRules() - Error in file '%s' at line %d.\n", rulesFileName.c_str(), lineNumber);
         WriteServLog("Error in file %s. Line %d.",
                      rulesFileName.c_str(), lineNumber);
         fclose(f);
@@ -673,7 +675,7 @@ while (fgets(str, 1023, f))
 
     if (ParseAddress(ta, &rul) != 0)
         {
-        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ReadRules() - Error in file '%s' at line %d. Error in adress.\n", rulesFileName.c_str(), lineNumber);
+        printfd(__FILE__, "TraffCounterImpl::ReadRules() - Error in file '%s' at line %d. Error in adress.\n", rulesFileName.c_str(), lineNumber);
         WriteServLog("Error in file %s. Error in adress. Line %d.",
                      rulesFileName.c_str(), lineNumber);
         fclose(f);
@@ -699,25 +701,25 @@ if (!test)
 return false;
 }
 //-----------------------------------------------------------------------------
-int TRAFFCOUNTER_IMPL::Reload()
+int TraffCounterImpl::Reload()
 {
 STG_LOCKER lock(&mutex);
 
 if (ReadRules(true))
     {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() - Failed to reload rules.\n");
-    WriteServLog("TRAFFCOUNTER: Cannot reload rules. Errors found.");
+    printfd(__FILE__, "TraffCounterImpl::Reload() - Failed to reload rules.\n");
+    WriteServLog("TraffCounter: Cannot reload rules. Errors found.");
     return -1;
     }
 
 FreeRules();
 ReadRules();
-printfd(__FILE__, "TRAFFCOUNTER_IMPL::Reload() -  Reloaded rules successfully.\n");
-WriteServLog("TRAFFCOUNTER: Reloaded rules successfully.");
+printfd(__FILE__, "TraffCounterImpl::Reload() -  Reloaded rules successfully.\n");
+WriteServLog("TraffCounter: Reloaded rules successfully.");
 return 0;
 }
 //-----------------------------------------------------------------------------
-bool TRAFFCOUNTER_IMPL::ParseAddress(const char * ta, RULE * rule) const
+bool TraffCounterImpl::ParseAddress(const char * ta, Rule * rule) const
 {
 char addr[50], mask[20], port1[20], port2[20], ports[40];
 
@@ -767,7 +769,7 @@ if (n == ':')
     // port
     if (!(rule->proto == tcp || rule->proto == udp || rule->proto == tcp_udp))
         {
-        printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - No ports specified for this protocol.\n");
+        printfd(__FILE__, "TraffCounterImpl::ParseAddress() - No ports specified for this protocol.\n");
         WriteServLog("No ports specified for this protocol.");
         return true;
         }
@@ -824,7 +826,7 @@ rule->mask = CalcMask(msk);
 
 if ((ipaddr.s_addr & rule->mask) != ipaddr.s_addr)
     {
-    printfd(__FILE__, "TRAFFCOUNTER_IMPL::ParseAddress() - Address does'n match mask.\n");
+    printfd(__FILE__, "TraffCounterImpl::ParseAddress() - Address does'n match mask.\n");
     WriteServLog("Address does'n match mask.");
     return true;
     }
@@ -835,19 +837,19 @@ rule->port2 = prt2;
 return false;
 }
 //-----------------------------------------------------------------------------
-uint32_t TRAFFCOUNTER_IMPL::CalcMask(uint32_t msk) const
+uint32_t TraffCounterImpl::CalcMask(uint32_t msk) const
 {
 if (msk >= 32) return 0xFFffFFff;
 if (msk == 0) return 0;
 return htonl(0xFFffFFff << (32 - msk));
 }
 //---------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::FreeRules()
+void TraffCounterImpl::FreeRules()
 {
 rules.clear();
 }
 //-----------------------------------------------------------------------------
-void TRAFFCOUNTER_IMPL::SetMonitorDir(const std::string & dir)
+void TraffCounterImpl::SetMonitorDir(const std::string & dir)
 {
 monitorDir = dir;
 monitoring = !monitorDir.empty();

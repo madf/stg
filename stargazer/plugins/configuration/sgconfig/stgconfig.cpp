@@ -20,7 +20,6 @@
 
 #include "stgconfig.h"
 
-#include "stg/plugin_creator.h"
 #include "stg/common.h"
 
 #include <algorithm>
@@ -31,14 +30,10 @@
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-static PLUGIN_CREATOR<STG_CONFIG> stgc;
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-bool STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+bool STG_CONFIG_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
-    PARAM_VALUE pv;
-    std::vector<PARAM_VALUE>::const_iterator pvi;
+    STG::ParamValue pv;
+    std::vector<STG::ParamValue>::const_iterator pvi;
     ///////////////////////////
     pv.param = "Port";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -67,9 +62,10 @@ bool STG_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-extern "C" PLUGIN * GetPlugin()
+extern "C" STG::Plugin * GetPlugin()
 {
-return stgc.GetPlugin();
+    static STG_CONFIG plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -77,7 +73,7 @@ return stgc.GetPlugin();
 STG_CONFIG::STG_CONFIG()
     : nonstop(false),
       isRunning(false),
-      logger(GetPluginLogger(GetStgLogger(), "conf_sg")),
+      logger(STG::PluginLogger::get("conf_sg")),
       config(logger)
 {
 }

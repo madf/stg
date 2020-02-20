@@ -45,8 +45,8 @@ const char Conn::OK_LOGINS[] = "OKLS";
 const char Conn::ERR_LOGINS[] = "ERLS";
 
 Conn::Conn(const BASE_PARSER::REGISTRY & registry,
-           ADMINS & admins, int sock, const sockaddr_in& addr,
-           PLUGIN_LOGGER & logger)
+           Admins & admins, int sock, const sockaddr_in& addr,
+           PluginLogger & logger)
     : m_registry(registry),
       m_admins(admins),
       m_admin(NULL),

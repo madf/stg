@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_SERVICE_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_CHG_SERVICE_H__
+#pragma once
 
 #include "base.h"
 
@@ -27,16 +26,15 @@
 
 #include <string>
 
-struct SERVICE_CONF_RES;
-
 namespace STG
 {
-namespace CHG_SERVICE
+
+struct ServiceConfOpt;
+
+namespace ChgService
 {
 
-std::string Serialize(const SERVICE_CONF_RES & conf, const std::string & encoding);
+std::string serialize(const ServiceConfOpt& conf, const std::string& encoding);
 
-} // namespace CHG_SERVICE
+} // namespace ChgService
 } // namespace STG
-
-#endif

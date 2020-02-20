@@ -18,15 +18,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-/*
-$Revision: 1.31 $
-$Date: 2010/10/07 20:04:48 $
-$Author: faust $
-*/
-
-
-#ifndef USERS_IMPL_H
-#define USERS_IMPL_H
+#pragma once
 
 #include <pthread.h>
 
@@ -49,12 +41,15 @@ $Author: faust $
 #include "settings_impl.h"
 #include "user_impl.h"
 
+namespace STG
+{
+
 const int userDeleteDelayTime = 120;
 
-typedef std::list<USER_IMPL>::iterator user_iter;
-typedef std::list<USER_IMPL>::const_iterator const_user_iter;
+typedef std::list<UserImpl>::iterator user_iter;
+typedef std::list<UserImpl>::const_iterator const_user_iter;
 
-class USERS_IMPL;
+class UsersImpl;
 //-----------------------------------------------------------------------------
 struct USER_TO_DEL {
 USER_TO_DEL()
@@ -62,67 +57,68 @@ USER_TO_DEL()
       delTime(0)
 {}
 
-std::list<USER_IMPL>::iterator iter;
+std::list<UserImpl>::iterator iter;
 time_t  delTime;
 };
 //-----------------------------------------------------------------------------
-class USERS_IMPL : private NONCOPYABLE, public USERS {
+class UsersImpl : public Users {
     friend class PROPERTY_NOTIFER_IP_BEFORE;
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
 public:
-    USERS_IMPL(SETTINGS_IMPL * s, STORE * store,
-               TARIFFS * tariffs, SERVICES & svcs,
-               const ADMIN * sysAdmin);
-    virtual ~USERS_IMPL();
+    using UserImplPtr = UserImpl*;
 
-    int             FindByName(const std::string & login, USER_PTR * user);
-    int             FindByName(const std::string & login, CONST_USER_PTR * user) const;
+    UsersImpl(SettingsImpl * s, Store * store,
+              Tariffs * tariffs, Services & svcs,
+              const Admin * sysAdmin);
+    virtual ~UsersImpl();
 
-    bool            Exists(const std::string & login) const;
+    int             FindByName(const std::string & login, UserPtr * user) override;
+    int             FindByName(const std::string & login, ConstUserPtr * user) const override;
+    bool            Exists(const std::string & login) const override;
 
-    bool            TariffInUse(const std::string & tariffName) const;
+    bool            TariffInUse(const std::string & tariffName) const override;
 
-    void            AddNotifierUserAdd(NOTIFIER_BASE<USER_PTR> *);
-    void            DelNotifierUserAdd(NOTIFIER_BASE<USER_PTR> *);
+    void            AddNotifierUserAdd(NotifierBase<UserPtr> *) override;
+    void            DelNotifierUserAdd(NotifierBase<UserPtr> *) override;
 
-    void            AddNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
-    void            DelNotifierUserDel(NOTIFIER_BASE<USER_PTR> *);
+    void            AddNotifierUserDel(NotifierBase<UserPtr> *) override;
+    void            DelNotifierUserDel(NotifierBase<UserPtr> *) override;
 
-    void            AddNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> *);
-    void            DelNotifierUserAdd(NOTIFIER_BASE<USER_IMPL_PTR> *);
+    void            AddNotifierUserAdd(NotifierBase<UserImplPtr> *);
+    void            DelNotifierUserAdd(NotifierBase<UserImplPtr> *);
 
-    void            AddNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> *);
-    void            DelNotifierUserDel(NOTIFIER_BASE<USER_IMPL_PTR> *);
+    void            AddNotifierUserDel(NotifierBase<UserImplPtr> *);
+    void            DelNotifierUserDel(NotifierBase<UserImplPtr> *);
 
-    int             Add(const std::string & login, const ADMIN * admin);
-    void            Del(const std::string & login, const ADMIN * admin);
+    int             Add(const std::string & login, const Admin * admin) override;
+    void            Del(const std::string & login, const Admin * admin) override;
 
     bool            Authorize(const std::string & login, uint32_t ip,
-                              uint32_t enabledDirs, const AUTH * auth);
+                              uint32_t enabledDirs, const Auth * auth) override;
     bool            Unauthorize(const std::string & login,
-                                const AUTH * auth,
-                                const std::string & reason = std::string());
+                                const Auth * auth,
+                                const std::string & reason) override;
 
-    int             ReadUsers();
-    size_t          Count() const { return users.size(); }
+    int             ReadUsers() override;
+    size_t          Count() const override { return users.size(); }
 
-    int             FindByIPIdx(uint32_t ip, USER_PTR * user) const;
-    int             FindByIPIdx(uint32_t ip, USER_IMPL ** user) const;
-    bool            IsIPInIndex(uint32_t ip) const;
-    bool            IsIPInUse(uint32_t ip, const std::string & login, CONST_USER_PTR * user) const;
+    int             FindByIPIdx(uint32_t ip, UserPtr * user) const override;
+    int             FindByIPIdx(uint32_t ip, UserImpl ** user) const;
+    bool            IsIPInIndex(uint32_t ip) const override;
+    bool            IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const override;
 
-    int             OpenSearch();
-    int             SearchNext(int handler, USER_PTR * user);
-    int             SearchNext(int handler, USER_IMPL ** user);
-    int             CloseSearch(int handler);
+    int             OpenSearch() override;
+    int             SearchNext(int handler, UserPtr * user) override;
+    int             SearchNext(int handler, UserImpl ** user);
+    int             CloseSearch(int handler) override;
 
-    int             Start();
-    int             Stop();
+    int             Start() override;
+    int             Stop() override;
 
 private:
-    USERS_IMPL(const USERS_IMPL & rvalue);
-    USERS_IMPL & operator=(const USERS_IMPL & rvalue);
+    UsersImpl(const UsersImpl & rvalue);
+    UsersImpl & operator=(const UsersImpl & rvalue);
 
     void            AddToIPIdx(user_iter user);
     void            DelFromIPIdx(uint32_t ip);
@@ -144,18 +140,18 @@ private:
 
     bool            TimeToWriteDetailStat(const struct tm & t);
 
-    std::list<USER_IMPL>                  users;
+    std::list<UserImpl>                  users;
     std::list<USER_TO_DEL>                usersToDelete;
 
     std::map<uint32_t, user_iter>         ipIndex;
     std::map<std::string, user_iter>      loginIndex;
 
-    SETTINGS_IMPL *     settings;
-    TARIFFS *           tariffs;
-    SERVICES &          m_services;
-    STORE *             store;
-    const ADMIN *       sysAdmin;
-    STG_LOGGER &        WriteServLog;
+    SettingsImpl *     settings;
+    Tariffs *           tariffs;
+    Services &          m_services;
+    Store *             store;
+    const Admin *       sysAdmin;
+    Logger &        WriteServLog;
 
     bool                nonstop;
     bool                isRunning;
@@ -166,10 +162,10 @@ private:
 
     mutable std::map<int, user_iter>  searchDescriptors;
 
-    std::set<NOTIFIER_BASE<USER_PTR>*> onAddNotifiers;
-    std::set<NOTIFIER_BASE<USER_PTR>*> onDelNotifiers;
-    std::set<NOTIFIER_BASE<USER_IMPL_PTR>*> onAddNotifiersImpl;
-    std::set<NOTIFIER_BASE<USER_IMPL_PTR>*> onDelNotifiersImpl;
+    std::set<NotifierBase<UserPtr>*> onAddNotifiers;
+    std::set<NotifierBase<UserPtr>*> onDelNotifiers;
+    std::set<NotifierBase<UserImplPtr>*> onAddNotifiersImpl;
+    std::set<NotifierBase<UserImplPtr>*> onDelNotifiersImpl;
 };
 //-----------------------------------------------------------------------------
 /*inline
@@ -179,7 +175,7 @@ void PROPERTY_NOTIFER_IP_BEFORE::Notify(const uint32_t & oldValue,
 if (!oldValue)
     return;
 
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &USERS::DelFromIPIdx, oldValue);
+//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &Users::DelFromIPIdx, oldValue);
 // Using explicit call to assure that index is valid, because fast reconnect with delayed call can result in authorization error
 users.DelFromIPIdx(oldValue);
 }
@@ -191,9 +187,9 @@ void PROPERTY_NOTIFER_IP_AFTER::Notify(const uint32_t &,
 if (!newValue)
     return;
 
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &USERS::AddToIPIdx, user);
+//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &Users::AddToIPIdx, user);
 // Using explicit call to assure that index is valid, because fast reconnect with delayed call can result in authorization error
 users.AddToIPIdx(user);
 }*/
 //-----------------------------------------------------------------------------
-#endif
+}

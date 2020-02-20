@@ -1,5 +1,4 @@
-#ifndef __STG_SGCONF_TARIFFS_H__
-#define __STG_SGCONF_TARIFFS_H__
+#pragma once
 
 namespace SGCONF
 {
@@ -10,5 +9,3 @@ class COMMANDS;
 void AppendTariffsOptionBlock(COMMANDS & commands, OPTION_BLOCKS & blocks);
 
 } // namespace SGCONF
-
-#endif

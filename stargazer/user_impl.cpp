@@ -41,6 +41,8 @@
 #include "stg/scriptexecuter.h"
 #include "stg/tariff.h"
 #include "stg/tariffs.h"
+#include "stg/services.h"
+#include "stg/service_conf.h"
 #include "stg/admin.h"
 
 #include <algorithm>
@@ -52,6 +54,8 @@
 
 #include <pthread.h>
 #include <unistd.h> // access
+
+using STG::UserImpl;
 
 namespace
 {
@@ -72,16 +76,15 @@ for (size_t i = 0; i < DIR_NUM; i++)
 
 }
 
-#ifdef USE_ABSTRACT_SETTINGS
-USER_IMPL::USER_IMPL(const SETTINGS * s,
-           const STORE * st,
-           const TARIFFS * t,
-           const ADMIN * a,
-           const USERS * u,
-           const SERVICES & svcs)
+UserImpl::UserImpl(const Settings * s,
+           const Store * st,
+           const Tariffs * t,
+           const Admin * a,
+           const Users * u,
+           const Services & svcs)
     : users(u),
-      property(*s),
-      WriteServLog(GetStgLogger()),
+      properties(*s),
+      WriteServLog(Logger::get()),
       lastScanMessages(0),
       id(0),
       __connected(0),
@@ -100,40 +103,40 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
       deleted(false),
       lastWriteStat(0),
       lastWriteDetailedStat(0),
-      cash(property.cash),
-      up(property.up),
-      down(property.down),
-      lastCashAdd(property.lastCashAdd),
-      passiveTime(property.passiveTime),
-      lastCashAddTime(property.lastCashAddTime),
-      freeMb(property.freeMb),
-      lastActivityTime(property.lastActivityTime),
-      password(property.password),
-      passive(property.passive),
-      disabled(property.disabled),
-      disabledDetailStat(property.disabledDetailStat),
-      alwaysOnline(property.alwaysOnline),
-      tariffName(property.tariffName),
-      nextTariff(property.nextTariff),
-      address(property.address),
-      note(property.note),
-      group(property.group),
-      email(property.email),
-      phone(property.phone),
-      realName(property.realName),
-      credit(property.credit),
-      creditExpire(property.creditExpire),
-      ips(property.ips),
-      userdata0(property.userdata0),
-      userdata1(property.userdata1),
-      userdata2(property.userdata2),
-      userdata3(property.userdata3),
-      userdata4(property.userdata4),
-      userdata5(property.userdata5),
-      userdata6(property.userdata6),
-      userdata7(property.userdata7),
-      userdata8(property.userdata8),
-      userdata9(property.userdata9),
+      cash(properties.cash),
+      up(properties.up),
+      down(properties.down),
+      lastCashAdd(properties.lastCashAdd),
+      passiveTime(properties.passiveTime),
+      lastCashAddTime(properties.lastCashAddTime),
+      freeMb(properties.freeMb),
+      lastActivityTime(properties.lastActivityTime),
+      password(properties.password),
+      passive(properties.passive),
+      disabled(properties.disabled),
+      disabledDetailStat(properties.disabledDetailStat),
+      alwaysOnline(properties.alwaysOnline),
+      tariffName(properties.tariffName),
+      nextTariff(properties.nextTariff),
+      address(properties.address),
+      note(properties.note),
+      group(properties.group),
+      email(properties.email),
+      phone(properties.phone),
+      realName(properties.realName),
+      credit(properties.credit),
+      creditExpire(properties.creditExpire),
+      ips(properties.ips),
+      userdata0(properties.userdata0),
+      userdata1(properties.userdata1),
+      userdata2(properties.userdata2),
+      userdata3(properties.userdata3),
+      userdata4(properties.userdata4),
+      userdata5(properties.userdata5),
+      userdata6(properties.userdata6),
+      userdata7(properties.userdata7),
+      userdata8(properties.userdata8),
+      userdata9(properties.userdata9),
       sessionUploadModTime(stgTime),
       sessionDownloadModTime(stgTime),
       passiveNotifier(this),
@@ -144,93 +147,20 @@ USER_IMPL::USER_IMPL(const SETTINGS * s,
 {
 Init();
 }
-#else
-USER_IMPL::USER_IMPL(const SETTINGS_IMPL * s,
-                     const STORE * st,
-                     const TARIFFS * t,
-                     const ADMIN * a,
-                     const USERS * u,
-                     const SERVICES & svcs)
-    : users(u),
-      property(*s),
-      WriteServLog(GetStgLogger()),
-      lastScanMessages(0),
-      id(0),
-      __connected(0),
-      connected(__connected),
-      __currIP(0),
-      currIP(__currIP),
-      lastIPForDisconnect(0),
-      pingTime(0),
-      sysAdmin(a),
-      store(st),
-      tariffs(t),
-      tariff(NULL),
-      m_services(svcs),
-      settings(s),
-      authorizedModificationTime(0),
-      deleted(false),
-      lastWriteStat(0),
-      lastWriteDetailedStat(0),
-      cash(property.cash),
-      up(property.up),
-      down(property.down),
-      lastCashAdd(property.lastCashAdd),
-      passiveTime(property.passiveTime),
-      lastCashAddTime(property.lastCashAddTime),
-      freeMb(property.freeMb),
-      lastActivityTime(property.lastActivityTime),
-      password(property.password),
-      passive(property.passive),
-      disabled(property.disabled),
-      disabledDetailStat(property.disabledDetailStat),
-      alwaysOnline(property.alwaysOnline),
-      tariffName(property.tariffName),
-      nextTariff(property.nextTariff),
-      address(property.address),
-      note(property.note),
-      group(property.group),
-      email(property.email),
-      phone(property.phone),
-      realName(property.realName),
-      credit(property.credit),
-      creditExpire(property.creditExpire),
-      ips(property.ips),
-      userdata0(property.userdata0),
-      userdata1(property.userdata1),
-      userdata2(property.userdata2),
-      userdata3(property.userdata3),
-      userdata4(property.userdata4),
-      userdata5(property.userdata5),
-      userdata6(property.userdata6),
-      userdata7(property.userdata7),
-      userdata8(property.userdata8),
-      userdata9(property.userdata9),
-      sessionUploadModTime(stgTime),
-      sessionDownloadModTime(stgTime),
-      passiveNotifier(this),
-      disabledNotifier(this),
-      tariffNotifier(this),
-      cashNotifier(this),
-      ipNotifier(this)
-{
-Init();
-}
-#endif
 //-----------------------------------------------------------------------------
-void USER_IMPL::Init()
+void UserImpl::Init()
 {
 password = "*_EMPTY_PASSWORD_*";
 tariffName = NO_TARIFF_NAME;
 tariff = tariffs->FindByName(tariffName);
-ips = StrToIPS("*");
+ips = UserIPs::parse("*");
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDetailedStat = stgTime;
 
-property.tariffName.AddBeforeNotifier(&tariffNotifier);
-property.passive.AddBeforeNotifier(&passiveNotifier);
-property.disabled.AddAfterNotifier(&disabledNotifier);
-property.cash.AddBeforeNotifier(&cashNotifier);
+properties.tariffName.AddBeforeNotifier(&tariffNotifier);
+properties.passive.AddBeforeNotifier(&passiveNotifier);
+properties.disabled.AddAfterNotifier(&disabledNotifier);
+properties.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
 pthread_mutexattr_t attr;
@@ -239,17 +169,15 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USER_IMPL::USER_IMPL(const USER_IMPL & u)
-    : USER(),
-      users(u.users),
-      property(*u.settings),
-      WriteServLog(GetStgLogger()),
+UserImpl::UserImpl(const UserImpl & u)
+    : users(u.users),
+      properties(*u.settings),
+      WriteServLog(Logger::get()),
       lastScanMessages(0),
       login(u.login),
       id(u.id),
       __connected(0),
       connected(__connected),
-      userIDGenerator(u.userIDGenerator),
       __currIP(u.__currIP),
       currIP(__currIP),
       lastIPForDisconnect(0),
@@ -267,40 +195,40 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
       deleted(u.deleted),
       lastWriteStat(u.lastWriteStat),
       lastWriteDetailedStat(u.lastWriteDetailedStat),
-      cash(property.cash),
-      up(property.up),
-      down(property.down),
-      lastCashAdd(property.lastCashAdd),
-      passiveTime(property.passiveTime),
-      lastCashAddTime(property.lastCashAddTime),
-      freeMb(property.freeMb),
-      lastActivityTime(property.lastActivityTime),
-      password(property.password),
-      passive(property.passive),
-      disabled(property.disabled),
-      disabledDetailStat(property.disabledDetailStat),
-      alwaysOnline(property.alwaysOnline),
-      tariffName(property.tariffName),
-      nextTariff(property.nextTariff),
-      address(property.address),
-      note(property.note),
-      group(property.group),
-      email(property.email),
-      phone(property.phone),
-      realName(property.realName),
-      credit(property.credit),
-      creditExpire(property.creditExpire),
-      ips(property.ips),
-      userdata0(property.userdata0),
-      userdata1(property.userdata1),
-      userdata2(property.userdata2),
-      userdata3(property.userdata3),
-      userdata4(property.userdata4),
-      userdata5(property.userdata5),
-      userdata6(property.userdata6),
-      userdata7(property.userdata7),
-      userdata8(property.userdata8),
-      userdata9(property.userdata9),
+      cash(properties.cash),
+      up(properties.up),
+      down(properties.down),
+      lastCashAdd(properties.lastCashAdd),
+      passiveTime(properties.passiveTime),
+      lastCashAddTime(properties.lastCashAddTime),
+      freeMb(properties.freeMb),
+      lastActivityTime(properties.lastActivityTime),
+      password(properties.password),
+      passive(properties.passive),
+      disabled(properties.disabled),
+      disabledDetailStat(properties.disabledDetailStat),
+      alwaysOnline(properties.alwaysOnline),
+      tariffName(properties.tariffName),
+      nextTariff(properties.nextTariff),
+      address(properties.address),
+      note(properties.note),
+      group(properties.group),
+      email(properties.email),
+      phone(properties.phone),
+      realName(properties.realName),
+      credit(properties.credit),
+      creditExpire(properties.creditExpire),
+      ips(properties.ips),
+      userdata0(properties.userdata0),
+      userdata1(properties.userdata1),
+      userdata2(properties.userdata2),
+      userdata3(properties.userdata3),
+      userdata4(properties.userdata4),
+      userdata5(properties.userdata5),
+      userdata6(properties.userdata6),
+      userdata7(properties.userdata7),
+      userdata8(properties.userdata8),
+      userdata9(properties.userdata9),
       sessionUpload(),
       sessionDownload(),
       sessionUploadModTime(stgTime),
@@ -314,13 +242,13 @@ USER_IMPL::USER_IMPL(const USER_IMPL & u)
 if (&u == this)
     return;
 
-property.tariffName.AddBeforeNotifier(&tariffNotifier);
-property.passive.AddBeforeNotifier(&passiveNotifier);
-property.disabled.AddAfterNotifier(&disabledNotifier);
-property.cash.AddBeforeNotifier(&cashNotifier);
+properties.tariffName.AddBeforeNotifier(&tariffNotifier);
+properties.passive.AddBeforeNotifier(&passiveNotifier);
+properties.disabled.AddAfterNotifier(&disabledNotifier);
+properties.cash.AddBeforeNotifier(&cashNotifier);
 ips.AddAfterNotifier(&ipNotifier);
 
-property.SetProperties(u.property);
+properties.SetProperties(u.properties);
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -328,27 +256,28 @@ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
-USER_IMPL::~USER_IMPL()
+UserImpl::~UserImpl()
 {
-property.tariffName.DelBeforeNotifier(&tariffNotifier);
-property.passive.DelBeforeNotifier(&passiveNotifier);
-property.disabled.DelAfterNotifier(&disabledNotifier);
-property.cash.DelBeforeNotifier(&cashNotifier);
+properties.tariffName.DelBeforeNotifier(&tariffNotifier);
+properties.passive.DelBeforeNotifier(&passiveNotifier);
+properties.disabled.DelAfterNotifier(&disabledNotifier);
+properties.cash.DelBeforeNotifier(&cashNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::SetLogin(const std::string & l)
+void UserImpl::SetLogin(const std::string & l)
 {
 STG_LOCKER lock(&mutex);
+static int idGen = 0;
 assert(login.empty() && "Login is already set");
 login = l;
-id = userIDGenerator.GetNextID();
+id = idGen++;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::ReadConf()
+int UserImpl::ReadConf()
 {
 STG_LOCKER lock(&mutex);
-USER_CONF conf;
+UserConf conf;
 
 if (store->RestoreUserConf(&conf, login))
     {
@@ -359,17 +288,17 @@ if (store->RestoreUserConf(&conf, login))
     return -1;
     }
 
-property.SetConf(conf);
+properties.SetConf(conf);
 
 tariff = tariffs->FindByName(tariffName);
 if (tariff == NULL)
     {
     WriteServLog("Cannot read user %s. Tariff %s not exist.",
-                 login.c_str(), property.tariffName.Get().c_str());
+                 login.c_str(), properties.tariffName.Get().c_str());
     return -1;
     }
 
-std::vector<STG_MSG_HDR> hdrsList;
+std::vector<Message::Header> hdrsList;
 
 if (store->GetMessageHdrs(&hdrsList, login))
     {
@@ -380,10 +309,10 @@ if (store->GetMessageHdrs(&hdrsList, login))
     return -1;
     }
 
-std::vector<STG_MSG_HDR>::const_iterator it;
+std::vector<Message::Header>::const_iterator it;
 for (it = hdrsList.begin(); it != hdrsList.end(); ++it)
     {
-    STG_MSG msg;
+    Message msg;
     if (store->GetMessage(it->id, &msg, login) == 0)
         {
         messages.push_back(msg);
@@ -393,10 +322,10 @@ for (it = hdrsList.begin(); it != hdrsList.end(); ++it)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::ReadStat()
+int UserImpl::ReadStat()
 {
 STG_LOCKER lock(&mutex);
-USER_STAT stat;
+UserStat stat;
 
 if (store->RestoreUserStat(&stat, login))
     {
@@ -407,17 +336,17 @@ if (store->RestoreUserStat(&stat, login))
     return -1;
     }
 
-property.SetStat(stat);
+properties.SetStat(stat);
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::WriteConf()
+int UserImpl::WriteConf()
 {
 STG_LOCKER lock(&mutex);
-USER_CONF conf(property.GetConf());
+UserConf conf(properties.GetConf());
 
-printfd(__FILE__, "USER::WriteConf()\n");
+printfd(__FILE__, "UserImpl::WriteConf()\n");
 
 if (store->SaveUserConf(conf, login))
     {
@@ -431,10 +360,10 @@ if (store->SaveUserConf(conf, login))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::WriteStat()
+int UserImpl::WriteStat()
 {
 STG_LOCKER lock(&mutex);
-USER_STAT stat(property.GetStat());
+UserStat stat(properties.GetStat());
 
 if (store->SaveUserStat(stat, login))
     {
@@ -450,14 +379,14 @@ lastWriteStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::WriteMonthStat()
+int UserImpl::WriteMonthStat()
 {
 STG_LOCKER lock(&mutex);
 time_t tt = stgTime - 3600;
 struct tm t1;
 localtime_r(&tt, &t1);
 
-USER_STAT stat(property.GetStat());
+UserStat stat(properties.GetStat());
 if (store->SaveMonthStat(stat, t1.tm_mon, t1.tm_year, login))
     {
     WriteServLog("Cannot write month stat for user %s.", login.c_str());
@@ -470,7 +399,7 @@ if (store->SaveMonthStat(stat, t1.tm_mon, t1.tm_year, login))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::Authorize(uint32_t ip, uint32_t dirs, const AUTH * auth)
+int UserImpl::Authorize(uint32_t ip, uint32_t dirs, const Auth * auth)
 {
 STG_LOCKER lock(&mutex);
 /*
@@ -505,7 +434,7 @@ if (!authorizedBy.empty())
         return -1;
         }
 
-    USER * u = NULL;
+    User * u = NULL;
     if (!users->FindByIPIdx(ip, &u))
         {
         // Address presents in IP-index.
@@ -526,14 +455,14 @@ else
         return -1;
         }
 
-    if (ips.ConstData().IsIPInIPS(ip))
+    if (ips.ConstData().find(ip))
         {
         currIP = ip;
         lastIPForDisconnect = currIP;
         }
     else
         {
-        printfd(__FILE__, " user %s: ips = %s\n", login.c_str(), ips.ConstData().GetIpStr().c_str());
+        printfd(__FILE__, " user %s: ips = %s\n", login.c_str(), ips.ConstData().toString().c_str());
         errorStr = "IP address " + inet_ntostring(ip) + " does not belong to user " + login;
         return -1;
         }
@@ -548,7 +477,7 @@ ScanMessage();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Unauthorize(const AUTH * auth, const std::string & reason)
+void UserImpl::Unauthorize(const Auth * auth, const std::string & reason)
 {
 STG_LOCKER lock(&mutex);
 /*
@@ -570,14 +499,14 @@ if (authorizedBy.empty())
     }
 }
 //-----------------------------------------------------------------------------
-bool USER_IMPL::IsAuthorizedBy(const AUTH * auth) const
+bool UserImpl::IsAuthorizedBy(const Auth * auth) const
 {
 STG_LOCKER lock(&mutex);
 // Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
 }
 //-----------------------------------------------------------------------------
-std::vector<std::string> USER_IMPL::GetAuthorizers() const
+std::vector<std::string> UserImpl::GetAuthorizers() const
 {
     STG_LOCKER lock(&mutex);
     std::vector<std::string> list;
@@ -585,7 +514,7 @@ std::vector<std::string> USER_IMPL::GetAuthorizers() const
     return list;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Connect(bool fakeConnect)
+void UserImpl::Connect(bool fakeConnect)
 {
 /*
  * Connect user to Internet. This function is differ from Authorize() !!!
@@ -638,7 +567,7 @@ if (!fakeConnect)
     lastIPForDisconnect = currIP;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Disconnect(bool fakeDisconnect, const std::string & reason)
+void UserImpl::Disconnect(bool fakeDisconnect, const std::string & reason)
 {
 /*
  *  Disconnect user from Internet. This function is differ from UnAuthorize() !!!
@@ -702,19 +631,19 @@ if (!settings->GetDisableSessionLog() && store->WriteUserDisconnect(login, up, d
 if (!fakeDisconnect)
     lastIPForDisconnect = 0;
 
-sessionUpload.Reset();
-sessionDownload.Reset();
+sessionUpload.reset();
+sessionDownload.reset();
 sessionUploadModTime = stgTime;
 sessionDownloadModTime = stgTime;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::Run()
+void UserImpl::Run()
 {
 STG_LOCKER lock(&mutex);
 
 if (stgTime > static_cast<time_t>(lastWriteStat + settings->GetStatWritePeriod()))
     {
-    printfd(__FILE__, "USER::WriteStat user=%s\n", GetLogin().c_str());
+    printfd(__FILE__, "UserImpl::WriteStat user=%s\n", GetLogin().c_str());
     WriteStat();
     }
 if (creditExpire.ConstData() && creditExpire.ConstData() < stgTime)
@@ -736,7 +665,7 @@ if (passive.ConstData()
 if (!authorizedBy.empty())
     {
     if (connected)
-        property.Stat().lastActivityTime = stgTime;
+        properties.Stat().lastActivityTime = stgTime;
 
     if (!connected && IsInetable())
         Connect();
@@ -765,7 +694,7 @@ else
 
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::UpdatePingTime(time_t t)
+void UserImpl::UpdatePingTime(time_t t)
 {
 STG_LOCKER lock(&mutex);
 if (t)
@@ -774,7 +703,7 @@ else
     pingTime = stgTime;
 }
 //-----------------------------------------------------------------------------
-bool USER_IMPL::IsInetable()
+bool UserImpl::IsInetable()
 {
 if (disabled || passive)
     return false;
@@ -791,15 +720,15 @@ if (settings->GetShowFeeInCash() || tariff == NULL)
 return (cash - tariff->GetFee() >= -credit);
 }
 //-----------------------------------------------------------------------------
-std::string USER_IMPL::GetEnabledDirs() const
+std::string UserImpl::GetEnabledDirs() const
 {
 return dirsToString(enabledDirs);
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
-void USER_IMPL::AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len)
+void UserImpl::AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len)
 #else
-void USER_IMPL::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
+void UserImpl::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
 #endif
 {
 STG_LOCKER lock(&mutex);
@@ -808,7 +737,7 @@ if (!connected || tariff == NULL)
     return;
 
 double cost = 0;
-DIR_TRAFF dt(up);
+DirTraff dt(up);
 
 int64_t traff = tariff->GetTraffByType(up.ConstData()[dir], down.ConstData()[dir]);
 int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
@@ -816,10 +745,10 @@ int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
 dt[dir] += len;
 
 int tt = tariff->GetTraffType();
-if (tt == TARIFF::TRAFF_UP ||
-    tt == TARIFF::TRAFF_UP_DOWN ||
+if (tt == Tariff::TRAFF_UP ||
+    tt == Tariff::TRAFF_UP_DOWN ||
     // Check NEW traff data
-    (tt == TARIFF::TRAFF_MAX && dt[dir] > down.ConstData()[dir]))
+    (tt == Tariff::TRAFF_MAX && dt[dir] > down.ConstData()[dir]))
     {
     double dc = 0;
     if (traff < threshold &&
@@ -852,8 +781,8 @@ if (tt == TARIFF::TRAFF_UP ||
         cost = dc - freeMb.ConstData();
 
     // Direct access to internal data structures via friend-specifier
-    property.Stat().freeMb -= dc;
-    property.Stat().cash -= cost;
+    properties.Stat().freeMb -= dc;
+    properties.Stat().cash -= cost;
     cash.ModifyTime();
     freeMb.ModifyTime();
     }
@@ -869,18 +798,18 @@ if (!settings->GetWriteFreeMbTraffCost() &&
     cost = 0;
 
 #ifdef TRAFF_STAT_WITH_PORTS
-IP_DIR_PAIR idp(ip, dir, port);
+IPDirPair idp(ip, dir, port);
 #else
-IP_DIR_PAIR idp(ip, dir);
+IPDirPair idp(ip, dir);
 #endif
 
-std::map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
+std::map<IPDirPair, StatNode>::iterator lb;
 lb = traffStat.lower_bound(idp);
 if (lb == traffStat.end() || lb->first != idp)
     {
     traffStat.insert(lb,
                      std::make_pair(idp,
-                                    STAT_NODE(len, 0, cost)));
+                                    StatNode(len, 0, cost)));
     }
 else
     {
@@ -890,9 +819,9 @@ else
 }
 //-----------------------------------------------------------------------------
 #ifdef TRAFF_STAT_WITH_PORTS
-void USER_IMPL::AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len)
+void UserImpl::AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len)
 #else
-void USER_IMPL::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
+void UserImpl::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
 #endif
 {
 STG_LOCKER lock(&mutex);
@@ -901,7 +830,7 @@ if (!connected || tariff == NULL)
     return;
 
 double cost = 0;
-DIR_TRAFF dt(down);
+DirTraff dt(down);
 
 int64_t traff = tariff->GetTraffByType(up.ConstData()[dir], down.ConstData()[dir]);
 int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
@@ -909,10 +838,10 @@ int64_t threshold = tariff->GetThreshold(dir) * 1024 * 1024;
 dt[dir] += len;
 
 int tt = tariff->GetTraffType();
-if (tt == TARIFF::TRAFF_DOWN ||
-    tt == TARIFF::TRAFF_UP_DOWN ||
+if (tt == Tariff::TRAFF_DOWN ||
+    tt == Tariff::TRAFF_UP_DOWN ||
     // Check NEW traff data
-    (tt == TARIFF::TRAFF_MAX && up.ConstData()[dir] <= dt[dir]))
+    (tt == Tariff::TRAFF_MAX && up.ConstData()[dir] <= dt[dir]))
     {
     double dc = 0;
     if (traff < threshold &&
@@ -944,8 +873,8 @@ if (tt == TARIFF::TRAFF_DOWN ||
     else if (freeMb.ConstData() < dc) // FreeMb is partially exhausted
         cost = dc - freeMb.ConstData();
 
-    property.Stat().freeMb -= dc;
-    property.Stat().cash -= cost;
+    properties.Stat().freeMb -= dc;
+    properties.Stat().cash -= cost;
     cash.ModifyTime();
     freeMb.ModifyTime();
     }
@@ -961,18 +890,18 @@ if (!settings->GetWriteFreeMbTraffCost() &&
     cost = 0;
 
 #ifdef TRAFF_STAT_WITH_PORTS
-IP_DIR_PAIR idp(ip, dir, port);
+IPDirPair idp(ip, dir, port);
 #else
-IP_DIR_PAIR idp(ip, dir);
+IPDirPair idp(ip, dir);
 #endif
 
-std::map<IP_DIR_PAIR, STAT_NODE>::iterator lb;
+std::map<IPDirPair, StatNode>::iterator lb;
 lb = traffStat.lower_bound(idp);
 if (lb == traffStat.end() || lb->first != idp)
     {
     traffStat.insert(lb,
                      std::make_pair(idp,
-                                    STAT_NODE(0, len, cost)));
+                                    StatNode(0, len, cost)));
     }
 else
     {
@@ -981,55 +910,55 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier)
+void UserImpl::AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 currIP.AddBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier)
+void UserImpl::DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 currIP.DelBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier)
+void UserImpl::AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 currIP.AddAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier)
+void UserImpl::DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 currIP.DelAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier)
+void UserImpl::AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 connected.AddBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier)
+void UserImpl::DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 connected.DelBeforeNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier)
+void UserImpl::AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 connected.AddAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier)
+void UserImpl::DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier)
 {
 STG_LOCKER lock(&mutex);
 connected.DelAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::OnAdd()
+void UserImpl::OnAdd()
 {
 STG_LOCKER lock(&mutex);
 
@@ -1047,7 +976,7 @@ else
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::OnDelete()
+void UserImpl::OnDelete()
 {
 STG_LOCKER lock(&mutex);
 
@@ -1067,15 +996,15 @@ else
 Run();
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::WriteDetailStat(bool hard)
+int UserImpl::WriteDetailStat(bool hard)
 {
-printfd(__FILE__, "USER::WriteDetailedStat() - saved size = %d\n", traffStatSaved.second.size());
+printfd(__FILE__, "UserImpl::WriteDetailedStat() - saved size = %d\n", traffStatSaved.second.size());
 
 if (!traffStatSaved.second.empty())
     {
     if (store->WriteDetailedStat(traffStatSaved.second, traffStatSaved.first, login))
         {
-        printfd(__FILE__, "USER::WriteDetailStat() - failed to write detail stat from queue\n");
+        printfd(__FILE__, "UserImpl::WriteDetailStat() - failed to write detail stat from queue\n");
         WriteServLog("Cannot write detail stat from queue (of size %d recs) for user %s.", traffStatSaved.second.size(), login.c_str());
         WriteServLog("%s", store->GetStrError().c_str());
         return -1;
@@ -1083,25 +1012,25 @@ if (!traffStatSaved.second.empty())
     traffStatSaved.second.erase(traffStatSaved.second.begin(), traffStatSaved.second.end());
     }
 
-TRAFF_STAT ts;
+TraffStat ts;
 
     {
     STG_LOCKER lock(&mutex);
     ts.swap(traffStat);
     }
 
-printfd(__FILE__, "USER::WriteDetailedStat() - size = %d\n", ts.size());
+printfd(__FILE__, "UserImpl::WriteDetailedStat() - size = %d\n", ts.size());
 
 if (ts.size() && !disabledDetailStat)
     {
     if (store->WriteDetailedStat(ts, lastWriteDetailedStat, login))
         {
-        printfd(__FILE__, "USER::WriteDetailStat() - failed to write current detail stat\n");
+        printfd(__FILE__, "UserImpl::WriteDetailStat() - failed to write current detail stat\n");
         WriteServLog("Cannot write detail stat for user %s.", login.c_str());
         WriteServLog("%s", store->GetStrError().c_str());
         if (!hard)
             {
-            printfd(__FILE__, "USER::WriteDetailStat() - pushing detail stat to queue\n");
+            printfd(__FILE__, "UserImpl::WriteDetailStat() - pushing detail stat to queue\n");
             STG_LOCKER lock(&mutex);
             traffStatSaved.second.swap(ts);
             traffStatSaved.first = lastWriteDetailedStat;
@@ -1113,7 +1042,7 @@ lastWriteDetailedStat = stgTime;
 return 0;
 }
 //-----------------------------------------------------------------------------
-double USER_IMPL::GetPassiveTimePart() const
+double UserImpl::GetPassiveTimePart() const
 {
 STG_LOCKER lock(&mutex);
 
@@ -1140,7 +1069,7 @@ if (dt < 0)
 return static_cast<double>(dt) / secMonth;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::SetPassiveTimeAsNewUser()
+void UserImpl::SetPassiveTimeAsNewUser()
 {
 STG_LOCKER lock(&mutex);
 
@@ -1154,7 +1083,7 @@ pt /= daysCurrMon;
 passiveTime = static_cast<time_t>(pt * 24 * 3600 * daysCurrMon);
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::MidnightResetSessionStat()
+void UserImpl::MidnightResetSessionStat()
 {
 STG_LOCKER lock(&mutex);
 
@@ -1165,7 +1094,7 @@ if (connected)
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ProcessNewMonth()
+void UserImpl::ProcessNewMonth()
 {
 STG_LOCKER lock(&mutex);
 //  Reset traff
@@ -1174,8 +1103,8 @@ if (connected)
 
 WriteMonthStat();
 
-property.Stat().monthUp.Reset();
-property.Stat().monthDown.Reset();
+properties.Stat().monthUp.reset();
+properties.Stat().monthDown.reset();
 
 if (connected)
     Connect(true);
@@ -1183,18 +1112,18 @@ if (connected)
 //  Set new tariff
 if (nextTariff.ConstData() != "")
     {
-    const TARIFF * nt = tariffs->FindByName(nextTariff);
+    const Tariff * nt = tariffs->FindByName(nextTariff);
     if (nt == NULL)
         {
         WriteServLog("Cannot change tariff for user %s. Tariff %s not exist.",
-                     login.c_str(), property.tariffName.Get().c_str());
+                     login.c_str(), properties.tariffName.Get().c_str());
         }
     else
         {
         std::string message = tariff->TariffChangeIsAllowed(*nt, stgTime);
         if (message.empty())
             {
-            property.tariffName.Set(nextTariff, sysAdmin, login, store);
+            properties.tariffName.Set(nextTariff, *sysAdmin, login, *store);
             }
         else
             {
@@ -1208,14 +1137,14 @@ if (nextTariff.ConstData() != "")
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ProcessDayFeeSpread()
+void UserImpl::ProcessDayFeeSpread()
 {
 STG_LOCKER lock(&mutex);
 
 if (passive.ConstData() || tariff == NULL)
     return;
 
-if (tariff->GetPeriod() != TARIFF::MONTH)
+if (tariff->GetPeriod() != Tariff::MONTH)
     return;
 
 double fee = tariff->GetFee() / DaysInCurrentMonth();
@@ -1227,32 +1156,32 @@ double c = cash;
 switch (settings->GetFeeChargeType())
     {
     case 0:
-        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     case 1:
         if (c + credit >= 0)
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     case 2:
         if (c + credit >= fee)
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     case 3:
         if (c >= 0)
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     }
 ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ProcessDayFee()
+void UserImpl::ProcessDayFee()
 {
 STG_LOCKER lock(&mutex);
 
 if (tariff == NULL)
     return;
 
-if (tariff->GetPeriod() != TARIFF::MONTH)
+if (tariff->GetPeriod() != Tariff::MONTH)
     return;
 
 double passiveTimePart = 1.0;
@@ -1289,41 +1218,41 @@ printfd(__FILE__, "login: %8s Cash=%f Credit=%f  Fee=%f PassiveTimePart=%f fee=%
 switch (settings->GetFeeChargeType())
     {
     case 0:
-        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         SetPrepaidTraff();
         break;
     case 1:
         if (c + credit >= 0)
             {
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
             SetPrepaidTraff();
             }
         break;
     case 2:
         if (c + credit >= fee)
             {
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
             SetPrepaidTraff();
             }
         break;
     case 3:
         if (c >= 0)
             {
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
             SetPrepaidTraff();
             }
         break;
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ProcessDailyFee()
+void UserImpl::ProcessDailyFee()
 {
 STG_LOCKER lock(&mutex);
 
 if (passive.ConstData() || tariff == NULL)
     return;
 
-if (tariff->GetPeriod() != TARIFF::DAY)
+if (tariff->GetPeriod() != Tariff::DAY)
     return;
 
 double fee = tariff->GetFee();
@@ -1335,21 +1264,21 @@ double c = cash;
 switch (settings->GetFeeChargeType())
     {
     case 0:
-        property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+        properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     case 1:
         if (c + credit >= 0)
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     case 2:
         if (c + credit >= fee)
-            property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+            properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
         break;
     }
 ResetPassiveTime();
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ProcessServices()
+void UserImpl::ProcessServices()
 {
 struct tm tms;
 time_t t = stgTime;
@@ -1369,10 +1298,10 @@ else
         }
     }
 
-for (size_t i = 0; i < property.Conf().services.size(); ++i)
+for (size_t i = 0; i < properties.Conf().services.size(); ++i)
     {
-    SERVICE_CONF conf;
-    if (m_services.Find(property.Conf().services[i], &conf))
+    ServiceConf conf;
+    if (m_services.Find(properties.Conf().services[i], &conf))
         continue;
     if (conf.payDay == tms.tm_mday ||
         (conf.payDay == 0 && tms.tm_mday == DaysInCurrentMonth()))
@@ -1389,27 +1318,27 @@ for (size_t i = 0; i < property.Conf().services.size(); ++i)
         switch (settings->GetFeeChargeType())
             {
             case 0:
-                property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
                 SetPrepaidTraff();
                 break;
             case 1:
                 if (c + credit >= 0)
                     {
-                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
                     SetPrepaidTraff();
                     }
                 break;
             case 2:
                 if (c + credit >= fee)
                     {
-                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
                     SetPrepaidTraff();
                     }
                 break;
             case 3:
                 if (c >= 0)
                     {
-                    property.cash.Set(c - fee, sysAdmin, login, store, "Subscriber fee charge");
+                    properties.cash.Set(c - fee, *sysAdmin, login, *store, "Subscriber fee charge");
                     SetPrepaidTraff();
                     }
                 break;
@@ -1418,13 +1347,13 @@ for (size_t i = 0; i < property.Conf().services.size(); ++i)
     }
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::SetPrepaidTraff()
+void UserImpl::SetPrepaidTraff()
 {
 if (tariff != NULL)
-    property.freeMb.Set(tariff->GetFree(), sysAdmin, login, store, "Prepaid traffic");
+    properties.freeMb.Set(tariff->GetFree(), *sysAdmin, login, *store, "Prepaid traffic");
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::AddMessage(STG_MSG * msg)
+int UserImpl::AddMessage(Message * msg)
 {
 STG_LOCKER lock(&mutex);
 
@@ -1463,11 +1392,11 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int USER_IMPL::SendMessage(STG_MSG & msg) const
+int UserImpl::SendMessage(Message & msg) const
 {
 // No lock `cause we are already locked from caller
 int ret = -1;
-std::set<const AUTH*>::iterator it(authorizedBy.begin());
+std::set<const Auth*>::iterator it(authorizedBy.begin());
 while (it != authorizedBy.end())
     {
     if (!(*it++)->SendMessage(msg, currIP))
@@ -1486,12 +1415,12 @@ if (!ret)
 return ret;
 }
 //-----------------------------------------------------------------------------
-void USER_IMPL::ScanMessage()
+void UserImpl::ScanMessage()
 {
 // No lock `cause we are already locked from caller
 // We need not check for the authorizedBy `cause it has already checked by caller
 
-std::list<STG_MSG>::iterator it(messages.begin());
+auto it = messages.begin();
 while (it != messages.end())
     {
     if (settings->GetMessageTimeout() > 0 &&
@@ -1540,7 +1469,7 @@ while (it != messages.end())
     }
 }
 //-----------------------------------------------------------------------------
-std::string USER_IMPL::GetParamValue(const std::string & name) const
+std::string UserImpl::GetParamValue(const std::string & name) const
 {
     std::string lowerName = ToLower(name);
     if (lowerName == "id")
@@ -1552,9 +1481,9 @@ std::string USER_IMPL::GetParamValue(const std::string & name) const
     if (lowerName == "login")       return login;
     if (lowerName == "currip")      return currIP.ToString();
     if (lowerName == "enableddirs") return GetEnabledDirs();
-    if (lowerName == "tariff")      return property.tariffName;
-    if (property.Exists(lowerName))
-        return property.GetPropertyValue(lowerName);
+    if (lowerName == "tariff")      return properties.tariffName;
+    if (properties.Exists(lowerName))
+        return properties.GetPropertyValue(lowerName);
     else
         {
         WriteServLog("User’s parameter '%s' does not exist.", name.c_str());
@@ -1564,17 +1493,17 @@ std::string USER_IMPL::GetParamValue(const std::string & name) const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void CHG_PASSIVE_NOTIFIER::Notify(const int & oldPassive, const int & newPassive)
+void STG::CHG_PASSIVE_NOTIFIER::Notify(const int & oldPassive, const int & newPassive)
 {
 if (newPassive && !oldPassive && user->tariff != NULL)
-    user->property.cash.Set(user->cash - user->tariff->GetPassiveCost(),
-                            user->sysAdmin,
+    user->properties.cash.Set(user->cash - user->tariff->GetPassiveCost(),
+                            *user->sysAdmin,
                             user->login,
-                            user->store,
+                            *user->store,
                             "Freeze");
 }
 //-----------------------------------------------------------------------------
-void CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
+void STG::CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
 {
 if (oldValue && !newValue && user->GetConnected())
     user->Disconnect(false, "disabled");
@@ -1582,7 +1511,7 @@ else if (!oldValue && newValue && user->IsInetable())
     user->Connect(false);
 }
 //-----------------------------------------------------------------------------
-void CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
+void STG::CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
 {
 STG_LOCKER lock(&user->mutex);
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
@@ -1593,20 +1522,20 @@ if (user->settings->GetReconnectOnTariffChange() &&
     user->IsInetable())
     {
     // This notifier gets called *before* changing the tariff, and in Connect we want to see new tariff name.
-    user->property.Conf().tariffName = newTariff;
+    user->properties.Conf().tariffName = newTariff;
     user->Connect(false);
     }
 }
 //-----------------------------------------------------------------------------
-void CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
+void STG::CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
 {
 user->lastCashAddTime = *const_cast<time_t *>(&stgTime);
 user->lastCashAdd = newCash - oldCash;
 }
 //-----------------------------------------------------------------------------
-void CHG_IPS_NOTIFIER::Notify(const USER_IPS & from, const USER_IPS & to)
+void STG::CHG_IPS_NOTIFIER::Notify(const UserIPs & from, const UserIPs & to)
 {
-printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.GetIpStr().c_str(), to.GetIpStr().c_str());
+printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.toString().c_str(), to.toString().c_str());
 if (user->connected)
     user->Disconnect(false, "Change IP");
 if (!user->authorizedBy.empty() && user->IsInetable())

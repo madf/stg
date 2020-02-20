@@ -28,6 +28,18 @@ $Date: 2009/03/24 11:20:15 $
 $Author: faust $
 */
 
+#include "ether_cap.h"
+
+#include "stg/common.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/traffcounter.h"
+
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <csignal>
+
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/socket.h>
@@ -42,36 +54,12 @@ $Author: faust $
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <csignal>
-
-#include "stg/common.h"
-#include "stg/raw_ip_packet.h"
-#include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
-
-#include "ether_cap.h"
-
 //#define CAP_DEBUG 1
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-namespace
+extern "C" Plugin* GetPlugin()
 {
-PLUGIN_CREATOR<BPF_CAP> bcc;
-}
-
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
-{
-return bcc.GetPlugin();
+static BPF_CAP plugin;
+return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -125,7 +113,7 @@ BPF_CAP::BPF_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_bpf"))
+      logger(PluginLogger::get("cap_bpf"))
 {
 }
 //-----------------------------------------------------------------------------

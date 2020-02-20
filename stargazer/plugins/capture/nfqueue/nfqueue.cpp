@@ -21,7 +21,6 @@
 #include "nfqueue.h"
 
 #include "stg/traffcounter.h"
-#include "stg/plugin_creator.h"
 #include "stg/common.h"
 #include "stg/raw_ip_packet.h"
 
@@ -44,8 +43,6 @@ extern "C" {
 //-----------------------------------------------------------------------------
 namespace
 {
-
-PLUGIN_CREATOR<NFQ_CAP> ncc;
 
 int Callback(struct nfq_q_handle * queueHandle, struct nfgenmsg * /*msg*/,
              struct nfq_data * nfqData, void *data)
@@ -76,13 +73,10 @@ return nfq_set_verdict(queueHandle, id, NF_ACCEPT, 0, NULL);
 
 }
 
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+extern "C" Plugin* GetPlugin()
 {
-return ncc.GetPlugin();
+    static NFQ_CAP plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -99,7 +93,7 @@ NFQ_CAP::NFQ_CAP()
       nfqHandle(NULL),
       queueHandle(NULL),
       traffCnt(NULL),
-      logger(GetPluginLogger(GetStgLogger(), "cap_nfqueue"))
+      logger(PluginLogger::get("cap_nfqueue"))
 {
 }
 //-----------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 #include <map>
 
 #include "stg/users.h"
+#include "stg/user.h"
 #include "stg/tariffs.h"
 #include "stg/admins.h"
 #include "stg/services.h"
@@ -18,7 +19,7 @@
 
 class Sensor {
     public:
-        virtual ~Sensor() {}
+        virtual ~Sensor() = default;
         virtual bool GetValue(ObjectSyntax_t * objectSyntax) const = 0;
 #ifdef DEBUG
         virtual std::string ToString() const = 0;
@@ -29,260 +30,241 @@ typedef std::map<OID, Sensor *> Sensors;
 
 class TotalUsersSensor : public Sensor {
     public:
-        explicit TotalUsersSensor(const USERS & u) : users(u) {}
-        virtual ~TotalUsersSensor() {}
+        explicit TotalUsersSensor(const STG::Users & u) : users(u) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(users.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(users.Count(), res); return res; }
 #endif
 
     private:
-        const USERS & users;
+        const STG::Users & users;
 };
 
 class UsersSensor : public Sensor {
     public:
-        explicit UsersSensor(USERS & u) : users(u) {}
-        virtual ~UsersSensor() {}
+        explicit UsersSensor(STG::Users & u) : users(u) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const;
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override;
 #ifdef DEBUG
-        std::string ToString() const;
+        std::string ToString() const override;
 #endif
 
     private:
-        USERS & users;
+        STG::Users & users;
 
-        virtual bool UserPredicate(USER_PTR userPtr) const = 0;
+        virtual bool UserPredicate(STG::User* userPtr) const = 0;
 };
 
 class ConnectedUsersSensor : public UsersSensor {
     public:
-        explicit ConnectedUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~ConnectedUsersSensor() {}
+        explicit ConnectedUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
+        bool UserPredicate(STG::User* userPtr) const override
         { return userPtr->GetConnected(); }
 };
 
 class AuthorizedUsersSensor : public UsersSensor {
     public:
-        explicit AuthorizedUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~AuthorizedUsersSensor() {}
+        explicit AuthorizedUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
+        bool UserPredicate(STG::User* userPtr) const override
         { return userPtr->GetAuthorized(); }
 };
 
 class AlwaysOnlineUsersSensor : public UsersSensor {
     public:
-        explicit AlwaysOnlineUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~AlwaysOnlineUsersSensor() {}
+        explicit AlwaysOnlineUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().alwaysOnline; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().alwaysOnline; }
 };
 
 class NoCashUsersSensor : public UsersSensor {
     public:
-        explicit NoCashUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~NoCashUsersSensor() {}
+        explicit NoCashUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().cash < 0; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().cash < 0; }
 };
 
 class DisabledDetailStatsUsersSensor : public UsersSensor {
     public:
-        explicit DisabledDetailStatsUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~DisabledDetailStatsUsersSensor() {}
+        explicit DisabledDetailStatsUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().disabledDetailStat; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().disabledDetailStat; }
 };
 
 class DisabledUsersSensor : public UsersSensor {
     public:
-        explicit DisabledUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~DisabledUsersSensor() {}
+        explicit DisabledUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().disabled; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().disabled; }
 };
 
 class PassiveUsersSensor : public UsersSensor {
     public:
-        explicit PassiveUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~PassiveUsersSensor() {}
+        explicit PassiveUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().passive; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().passive; }
 };
 
 class CreditUsersSensor : public UsersSensor {
     public:
-        explicit CreditUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~CreditUsersSensor() {}
+        explicit CreditUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().credit > 0; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().credit > 0; }
 };
 
 class FreeMbUsersSensor : public UsersSensor {
     public:
-        explicit FreeMbUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~FreeMbUsersSensor() {}
+        explicit FreeMbUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return userPtr->GetProperty().freeMb > 0; }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return userPtr->GetProperties().freeMb > 0; }
 };
 
 class TariffChangeUsersSensor : public UsersSensor {
     public:
-        explicit TariffChangeUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~TariffChangeUsersSensor() {}
+        explicit TariffChangeUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const
-        { return !userPtr->GetProperty().nextTariff.ConstData().empty(); }
+        bool UserPredicate(STG::User* userPtr) const override
+        { return !userPtr->GetProperties().nextTariff.ConstData().empty(); }
 };
 
 class ActiveUsersSensor : public UsersSensor {
     public:
-        explicit ActiveUsersSensor(USERS & u) : UsersSensor(u) {}
-        virtual ~ActiveUsersSensor() {}
+        explicit ActiveUsersSensor(STG::Users & u) : UsersSensor(u) {}
 
     private:
-        bool UserPredicate(USER_PTR userPtr) const;
+        bool UserPredicate(STG::User* userPtr) const override;
 };
 
 class TotalTariffsSensor : public Sensor {
     public:
-        explicit TotalTariffsSensor(const TARIFFS & t) : tariffs(t) {}
-        virtual ~TotalTariffsSensor() {}
+        explicit TotalTariffsSensor(const STG::Tariffs & t) : tariffs(t) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(tariffs.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(tariffs.Count(), res); return res; }
 #endif
 
     private:
-        const TARIFFS & tariffs;
+        const STG::Tariffs & tariffs;
 };
 
 class TotalAdminsSensor : public Sensor {
     public:
-        explicit TotalAdminsSensor(const ADMINS & a) : admins(a) {}
-        virtual ~TotalAdminsSensor() {}
+        explicit TotalAdminsSensor(const STG::Admins & a) : admins(a) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(admins.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(admins.Count(), res); return res; }
 #endif
 
     private:
-        const ADMINS & admins;
+        const STG::Admins & admins;
 };
 
 class TotalServicesSensor : public Sensor {
     public:
-        explicit TotalServicesSensor(const SERVICES & s) : services(s) {}
-        virtual ~TotalServicesSensor() {}
+        explicit TotalServicesSensor(const STG::Services & s) : services(s) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(services.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(services.Count(), res); return res; }
 #endif
 
     private:
-        const SERVICES & services;
+        const STG::Services & services;
 };
 
 class TotalCorporationsSensor : public Sensor {
     public:
-        explicit TotalCorporationsSensor(const CORPORATIONS & c) : corporations(c) {}
-        virtual ~TotalCorporationsSensor() {}
+        explicit TotalCorporationsSensor(const STG::Corporations & c) : corporations(c) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(corporations.Count(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(corporations.Count(), res); return res; }
 #endif
 
     private:
-        const CORPORATIONS & corporations;
+        const STG::Corporations & corporations;
 };
 
 class TotalRulesSensor : public Sensor {
     public:
-        explicit TotalRulesSensor(const TRAFFCOUNTER & t) : traffcounter(t) {}
-        virtual ~TotalRulesSensor() {}
+        explicit TotalRulesSensor(const STG::TraffCounter & t) : traffcounter(t) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const
+        bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
-        ValueToOS(traffcounter.RulesCount(), objectSyntax);
+        ValueToOS(traffcounter.rulesCount(), objectSyntax);
         return true;
         }
 
 #ifdef DEBUG
-        std::string ToString() const
-        { std::string res; std::to_string(traffcounter.RulesCount(), res); return res; }
+        std::string ToString() const override
+        { std::string res; std::to_string(traffcounter.rulesCount(), res); return res; }
 #endif
 
     private:
-        const TRAFFCOUNTER & traffcounter;
+        const STG::TraffCounter & traffcounter;
 };
 
 template <typename T>
 class ConstSensor : public Sensor {
     public:
         explicit ConstSensor(const T & v) : value(v) {}
-        virtual ~ConstSensor() {}
 
-        bool GetValue(ObjectSyntax * objectSyntax) const
+        bool GetValue(ObjectSyntax * objectSyntax) const override
         { return ValueToOS(value, objectSyntax); }
 
 #ifdef DEBUG
-        std::string ToString() const
+        std::string ToString() const override
         { std::string res; std::to_string(value, res); return res; }
 #endif
 

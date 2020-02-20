@@ -27,7 +27,7 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
-void PrintUser(const STG::GET_USER::INFO & info, size_t level = 0)
+void PrintUser(const STG::GetUser::Info & info, size_t level = 0)
 {
 std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "password: " << info.password << "\n"
@@ -124,34 +124,34 @@ params.push_back(SGCONF::API_ACTION::PARAM("text", "<text>", "\t\tmessage text")
 return params;
 }
 
-void ConvBool(const std::string & value, RESETABLE<int> & res)
+void ConvBool(const std::string & value, STG::Optional<int> & res)
 {
 res = !value.empty() && value[0] == 'y';
 }
 
-void Splice(std::vector<RESETABLE<std::string> > & lhs, const std::vector<RESETABLE<std::string> > & rhs)
+void Splice(std::vector<STG::Optional<std::string> > & lhs, const std::vector<STG::Optional<std::string> > & rhs)
 {
 for (size_t i = 0; i < lhs.size() && i < rhs.size(); ++i)
     lhs[i].splice(rhs[i]);
 }
 
-RESETABLE<std::string> ConvString(const std::string & value)
+STG::Optional<std::string> ConvString(const std::string & value)
 {
-return RESETABLE<std::string>(value);
+return STG::Optional<std::string>(value);
 }
 
-void ConvStringList(std::string value, std::vector<RESETABLE<std::string> > & res)
+void ConvStringList(std::string value, std::vector<STG::Optional<std::string> > & res)
 {
-Splice(res, Split<std::vector<RESETABLE<std::string> > >(value, ',', ConvString));
+Splice(res, Split<std::vector<STG::Optional<std::string> > >(value, ',', ConvString));
 }
 
-void ConvServices(std::string value, RESETABLE<std::vector<std::string> > & res)
+void ConvServices(std::string value, STG::Optional<std::vector<std::string> > & res)
 {
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 res = Split<std::vector<std::string> >(value, ',');
 }
 
-void ConvCreditExpire(const std::string & value, RESETABLE<time_t> & res)
+void ConvCreditExpire(const std::string & value, STG::Optional<time_t> & res)
 {
 struct tm brokenTime;
 if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
@@ -159,9 +159,9 @@ if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
 res = stg_timegm(&brokenTime);
 }
 
-void ConvIPs(const std::string & value, RESETABLE<USER_IPS> & res)
+void ConvIPs(const std::string & value, STG::Optional<STG::UserIPs> & res)
 {
-res = StrToIPS(value);
+res = STG::UserIPs::parse(value);
 }
 
 struct TRAFF
@@ -184,7 +184,7 @@ if (str2x(value.substr(slashPos + 1, value.length() - slashPos), res.down) < 0)
 return res;
 }
 
-void ConvSessionTraff(std::string value, USER_STAT_RES & res)
+void ConvSessionTraff(std::string value, STG::UserStatOpt & res)
 {
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
@@ -197,7 +197,7 @@ for (size_t i = 0; i < DIR_NUM; ++i)
     }
 }
 
-void ConvMonthTraff(std::string value, USER_STAT_RES & res)
+void ConvMonthTraff(std::string value, STG::UserStatOpt & res)
 {
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 std::vector<TRAFF> traff(Split<std::vector<TRAFF> >(value, ',', ConvTraff));
@@ -210,9 +210,9 @@ for (size_t i = 0; i < DIR_NUM; ++i)
     }
 }
 
-void ConvCashInfo(const std::string & value, RESETABLE<CASH_INFO> & res)
+void ConvCashInfo(const std::string & value, STG::Optional<STG::CashInfo> & res)
 {
-CASH_INFO info;
+STG::CashInfo info;
 size_t pos = value.find_first_of(':');
 if (pos == std::string::npos)
     {
@@ -242,7 +242,7 @@ std::cout << "Success.\n";
 
 void GetUsersCallback(bool result,
                       const std::string & reason,
-                      const std::vector<STG::GET_USER::INFO> & info,
+                      const std::vector<STG::GetUser::Info> & info,
                       void * /*data*/)
 {
 if (!result)
@@ -257,7 +257,7 @@ for (size_t i = 0; i < info.size(); ++i)
 
 void GetUserCallback(bool result,
                      const std::string & reason,
-                     const STG::GET_USER::INFO & info,
+                     const STG::GetUser::Info & info,
                      void * /*data*/)
 {
 if (!result)
@@ -287,7 +287,7 @@ bool GetUsersFunction(const SGCONF::CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -300,7 +300,7 @@ bool GetUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -313,7 +313,7 @@ bool DelUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -326,7 +326,7 @@ bool AddUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-USER_CONF_RES conf;
+STG::UserConfOpt conf;
 SGCONF::MaybeSet(options, "password", conf.password);
 SGCONF::MaybeSet(options, "passive", conf.passive, ConvBool);
 SGCONF::MaybeSet(options, "disabled", conf.disabled, ConvBool);
@@ -346,12 +346,12 @@ SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
 SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
 SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
 SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
-USER_STAT_RES stat;
+STG::UserStatOpt stat;
 SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -364,7 +364,7 @@ bool ChgUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-USER_CONF_RES conf;
+STG::UserConfOpt conf;
 SGCONF::MaybeSet(options, "password", conf.password);
 SGCONF::MaybeSet(options, "passive", conf.passive, ConvBool);
 SGCONF::MaybeSet(options, "disabled", conf.disabled, ConvBool);
@@ -384,13 +384,13 @@ SGCONF::MaybeSet(options, "next-tariff", conf.nextTariff);
 SGCONF::MaybeSet(options, "user-data", conf.userdata, ConvStringList);
 SGCONF::MaybeSet(options, "credit-expire", conf.creditExpire, ConvCreditExpire);
 SGCONF::MaybeSet(options, "ips", conf.ips, ConvIPs);
-USER_STAT_RES stat;
+STG::UserStatOpt stat;
 SGCONF::MaybeSet(options, "cash-add", stat.cashAdd, ConvCashInfo);
 SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -406,7 +406,7 @@ bool CheckUserFunction(const SGCONF::CONFIG & config,
 std::map<std::string, std::string>::const_iterator it(options.find("password"));
 if (it == options.end())
     throw SGCONF::ACTION::ERROR("Password is not specified.");
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -430,7 +430,7 @@ it = options.find("text");
 if (it == options.end())
     throw SGCONF::ACTION::ERROR("Message text is not specified.");
 std::string text = it->second;
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -443,7 +443,7 @@ bool AuthByFunction(const SGCONF::CONFIG & config,
                     const std::string & arg,
                     const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

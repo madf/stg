@@ -18,16 +18,19 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-#ifndef SETTINGS_IMPL_H
-#define SETTINGS_IMPL_H
+#pragma once
 
 #include "stg/settings.h"
 #include "stg/common.h"
 #include "stg/module_settings.h"
-#include "stg/ref.h"
 
 #include <string>
 #include <vector>
+
+class DOTCONFDocumentNode;
+
+namespace STG
+{
 
 //-----------------------------------------------------------------------------
 enum DETAIL_STAT_PERIOD {
@@ -37,97 +40,92 @@ enum DETAIL_STAT_PERIOD {
     dsPeriod_1_6
 };
 //-----------------------------------------------------------------------------
-class STG_LOGGER;
-class DOTCONFDocumentNode;
-//-----------------------------------------------------------------------------
-class SETTINGS_IMPL : public SETTINGS {
-public:
-    explicit SETTINGS_IMPL(const std::string &);
-    SETTINGS_IMPL(const SETTINGS_IMPL & rhs);
-    virtual ~SETTINGS_IMPL() {}
-    SETTINGS_IMPL & operator=(const SETTINGS_IMPL &);
+class SettingsImpl : public Settings {
+    public:
+        explicit SettingsImpl(const std::string &);
 
-    int Reload() { return ReadSettings(); }
-    int ReadSettings();
+        SettingsImpl(const SettingsImpl&) = default;
+        SettingsImpl& operator=(const SettingsImpl&) = default;
+        SettingsImpl(SettingsImpl&&) = default;
+        SettingsImpl& operator=(SettingsImpl&&) = default;
 
-    std::string GetStrError() const { return strError; }
+        int Reload() { return ReadSettings(); }
+        int ReadSettings();
 
-    int                 GetExecMsgKey() const { return stgExecMsgKey; }
-    unsigned            GetExecutersNum() const { return executersNum; }
-    const std::string & GetDirName(size_t num) const { return dirName[num]; }
-    const std::string & GetConfDir() const { return confDir; }
-    const std::string & GetScriptsDir() const { return scriptsDir; }
-    const std::string & GetRulesFileName() const { return rules; }
-    const std::string & GetLogFileName() const { return logFile; }
-    const std::string & GetPIDFileName() const { return pidFile; }
-    unsigned            GetDetailStatWritePeriod() const
-        { return detailStatWritePeriod; }
-    unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
-    unsigned            GetDayFee() const { return dayFee; }
-    bool                GetFullFee() const { return fullFee; }
-    unsigned            GetDayResetTraff() const { return dayResetTraff; }
-    bool                GetSpreadFee() const { return spreadFee; }
-    bool                GetFreeMbAllowInet() const { return freeMbAllowInet; }
-    bool                GetDayFeeIsLastDay() const { return dayFeeIsLastDay; }
-    bool                GetStopOnError() const { return stopOnError; }
-    bool                GetWriteFreeMbTraffCost() const
-        { return writeFreeMbTraffCost; }
-    bool                GetShowFeeInCash() const { return showFeeInCash; }
-    const std::string & GetMonitorDir() const { return monitorDir; }
-    bool                GetMonitoring() const { return monitoring; }
-    unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
-    unsigned            GetFeeChargeType() const { return feeChargeType; }
-    bool                GetReconnectOnTariffChange() const { return reconnectOnTariffChange; }
-    bool                GetDisableSessionLog() const { return disableSessionLog; }
-    const std::vector<std::string> & GetFilterParamsLog() const { return filterParamsLog; }
+        std::string GetStrError() const { return strError; }
 
-    const std::string & GetModulesPath() const { return modulesPath; }
-    const MODULE_SETTINGS & GetStoreModuleSettings() const
+        int                 GetExecMsgKey() const { return stgExecMsgKey; }
+        unsigned            GetExecutersNum() const { return executersNum; }
+        const std::string & GetDirName(size_t num) const { return dirName[num]; }
+        const std::string & GetConfDir() const { return confDir; }
+        const std::string & GetScriptsDir() const { return scriptsDir; }
+        const std::string & GetRulesFileName() const { return rules; }
+        const std::string & GetLogFileName() const { return logFile; }
+        const std::string & GetPIDFileName() const { return pidFile; }
+        unsigned            GetDetailStatWritePeriod() const
+            { return detailStatWritePeriod; }
+        unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
+        unsigned            GetDayFee() const { return dayFee; }
+        bool                GetFullFee() const { return fullFee; }
+        unsigned            GetDayResetTraff() const { return dayResetTraff; }
+        bool                GetSpreadFee() const { return spreadFee; }
+        bool                GetFreeMbAllowInet() const { return freeMbAllowInet; }
+        bool                GetDayFeeIsLastDay() const { return dayFeeIsLastDay; }
+        bool                GetStopOnError() const { return stopOnError; }
+        bool                GetWriteFreeMbTraffCost() const
+            { return writeFreeMbTraffCost; }
+        bool                GetShowFeeInCash() const { return showFeeInCash; }
+        const std::string & GetMonitorDir() const { return monitorDir; }
+        bool                GetMonitoring() const { return monitoring; }
+        unsigned            GetMessageTimeout() const { return messageTimeout * 3600 * 24; }
+        unsigned            GetFeeChargeType() const { return feeChargeType; }
+        bool                GetReconnectOnTariffChange() const { return reconnectOnTariffChange; }
+        bool                GetDisableSessionLog() const { return disableSessionLog; }
+        const std::vector<std::string> & GetFilterParamsLog() const { return filterParamsLog; }
+
+        const std::string & GetModulesPath() const { return modulesPath; }
+        const ModuleSettings & GetStoreModuleSettings() const
         { return storeModuleSettings; }
-    const std::vector<MODULE_SETTINGS> & GetModulesSettings() const
+        const std::vector<ModuleSettings> & GetModulesSettings() const
         { return modulesSettings; }
-    const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
+        const std::vector<std::string> & GetScriptParams() const { return scriptParams; }
 
-private:
+    private:
+        std::string strError;
 
-    static void ErrorCallback(void * data, const char * buf);
+        //////////settings
+        std::string modulesPath;
+        std::vector<std::string> dirName;
+        std::string confDir;
+        std::string scriptsDir;
+        std::string rules;
+        std::string logFile;
+        std::string pidFile;
+        std::string monitorDir;
+        std::vector<std::string> scriptParams;
+        bool        monitoring;
+        unsigned    detailStatWritePeriod;
+        unsigned    statWritePeriod;
+        int         stgExecMsgKey;
+        unsigned    executersNum;
+        bool        fullFee;
+        unsigned    dayFee;
+        unsigned    dayResetTraff;
+        bool        spreadFee;
+        bool        freeMbAllowInet;
+        bool        dayFeeIsLastDay;
+        bool        stopOnError;
+        bool        writeFreeMbTraffCost;
+        bool        showFeeInCash;
+        unsigned    messageTimeout;
+        unsigned    feeChargeType;
+        bool        reconnectOnTariffChange;
+        bool        disableSessionLog;
+        std::vector<std::string> filterParamsLog;
 
-    std::string strError;
-
-    //////////settings
-    std::string modulesPath;
-    std::vector<std::string> dirName;
-    std::string confDir;
-    std::string scriptsDir;
-    std::string rules;
-    std::string logFile;
-    std::string pidFile;
-    std::string monitorDir;
-    std::vector<std::string> scriptParams;
-    bool        monitoring;
-    unsigned    detailStatWritePeriod;
-    unsigned    statWritePeriod;
-    int         stgExecMsgKey;
-    unsigned    executersNum;
-    bool        fullFee;
-    unsigned    dayFee;
-    unsigned    dayResetTraff;
-    bool        spreadFee;
-    bool        freeMbAllowInet;
-    bool        dayFeeIsLastDay;
-    bool        stopOnError;
-    bool        writeFreeMbTraffCost;
-    bool        showFeeInCash;
-    unsigned    messageTimeout;
-    unsigned    feeChargeType;
-    bool        reconnectOnTariffChange;
-    bool        disableSessionLog;
-    std::vector<std::string> filterParamsLog;
-
-    std::vector<MODULE_SETTINGS> modulesSettings;
-    MODULE_SETTINGS storeModuleSettings;
-    STG::RefWrapper<STG_LOGGER> logger;
+        std::vector<ModuleSettings> modulesSettings;
+        ModuleSettings storeModuleSettings;
 };
 //-----------------------------------------------------------------------------
 
-#endif
+}

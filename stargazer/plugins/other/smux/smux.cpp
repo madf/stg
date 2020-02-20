@@ -15,14 +15,12 @@
 #include <utility>
 
 #include "stg/common.h"
-#include "stg/plugin_creator.h"
 
 #include "smux.h"
 #include "utils.h"
 
 namespace
 {
-PLUGIN_CREATOR<SMUX> smc;
 
 bool SPrefixLess(const Sensors::value_type & a,
                  const Sensors::value_type & b)
@@ -32,11 +30,10 @@ return a.first.PrefixLess(b.first);
 
 }
 
-extern "C" PLUGIN * GetPlugin();
-
-PLUGIN * GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-return smc.GetPlugin();
+    static SMUX plugin;
+    return &plugin;
 }
 
 SMUX_SETTINGS::SMUX_SETTINGS()
@@ -46,10 +43,10 @@ SMUX_SETTINGS::SMUX_SETTINGS()
       password()
 {}
 
-int SMUX_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int SMUX_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
-PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+STG::ParamValue pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
 int p;
 
 pv.param = "Port";
@@ -95,33 +92,22 @@ return 0;
 }
 
 SMUX::SMUX()
-    : PLUGIN(),
-      users(NULL),
+    : users(NULL),
       tariffs(NULL),
       admins(NULL),
       services(NULL),
       corporations(NULL),
       traffcounter(NULL),
-      errorStr(),
-      smuxSettings(),
-      settings(),
-      thread(),
-      mutex(),
       running(false),
       stopped(true),
       needReconnect(false),
       lastReconnectTry(0),
       reconnectTimeout(1),
       sock(-1),
-      smuxHandlers(),
-      pdusHandlers(),
-      sensors(),
-      tables(),
-      notifiers(),
       addUserNotifier(*this),
       delUserNotifier(*this),
       addDelTariffNotifier(*this),
-      logger(GetPluginLogger(GetStgLogger(), "smux"))
+      logger(STG::PluginLogger::get("smux"))
 {
 pthread_mutex_init(&mutex, NULL);
 
@@ -269,7 +255,7 @@ printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;
 }
 
-int SMUX::Reload(const MODULE_SETTINGS & /*ms*/)
+int SMUX::Reload(const STG::ModuleSettings & /*ms*/)
 {
 if (Stop())
     return -1;
@@ -469,20 +455,20 @@ sensors.insert(newSensors.begin(), newSensors.end());
 return true;
 }
 
-void SMUX::SetNotifier(USER_PTR userPtr)
+void SMUX::SetNotifier(UserPtr userPtr)
 {
 notifiers.push_back(CHG_AFTER_NOTIFIER(*this, userPtr));
-userPtr->GetProperty().tariffName.AddAfterNotifier(&notifiers.back());
+userPtr->GetProperties().tariffName.AddAfterNotifier(&notifiers.back());
 }
 
-void SMUX::UnsetNotifier(USER_PTR userPtr)
+void SMUX::UnsetNotifier(UserPtr userPtr)
 {
 std::list<CHG_AFTER_NOTIFIER>::iterator it = notifiers.begin();
 while (it != notifiers.end())
     {
     if (it->GetUserPtr() == userPtr)
         {
-        userPtr->GetProperty().tariffName.DelAfterNotifier(&(*it));
+        userPtr->GetProperties().tariffName.DelAfterNotifier(&(*it));
         notifiers.erase(it);
         break;
         }
@@ -495,7 +481,7 @@ void SMUX::SetNotifiers()
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
-USER_PTR u;
+UserPtr u;
 while (!users->SearchNext(h, &u))
     SetNotifier(u);
 
@@ -519,7 +505,7 @@ users->DelNotifierUserAdd(&addUserNotifier);
 std::list<CHG_AFTER_NOTIFIER>::iterator it(notifiers.begin());
 while (it != notifiers.end())
     {
-    it->GetUserPtr()->GetProperty().tariffName.DelAfterNotifier(&(*it));
+    it->GetUserPtr()->GetProperties().tariffName.DelAfterNotifier(&(*it));
     ++it;
     }
 notifiers.clear();

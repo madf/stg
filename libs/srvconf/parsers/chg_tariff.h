@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_STGLIBS_SRVCONF_PARSER_CHG_TARIFF_H__
-#define __STG_STGLIBS_SRVCONF_PARSER_CHG_TARIFF_H__
+#pragma once
 
 #include "base.h"
 
@@ -27,16 +26,15 @@
 
 #include <string>
 
-struct TARIFF_DATA_RES;
-
 namespace STG
 {
-namespace CHG_TARIFF
+
+struct TariffDataOpt;
+
+namespace ChgTariff
 {
 
-std::string Serialize(const TARIFF_DATA_RES & data, const std::string & encoding);
+std::string serialize(const TariffDataOpt& data, const std::string& encoding);
 
-} // namespace CHG_TARIFF
+} // namespace ChgTariff
 } // namespace STG
-
-#endif

@@ -45,7 +45,6 @@ struct ParserError : public std::runtime_error
           position(pos),
           error(message)
     {}
-    virtual ~ParserError() throw() {}
 
     size_t position;
     std::string error;
@@ -213,7 +212,7 @@ Config::ReturnCode toReturnCode(const std::vector<std::string>& values)
     return it->second;
 }
 
-Config::Pairs parseVector(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+Config::Pairs parseVector(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -221,7 +220,7 @@ Config::Pairs parseVector(const std::string& paramName, const std::vector<PARAM_
     return Config::Pairs();
 }
 
-Config::Authorize parseAuthorize(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+Config::Authorize parseAuthorize(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -229,7 +228,7 @@ Config::Authorize parseAuthorize(const std::string& paramName, const std::vector
     return Config::Authorize();
 }
 
-Config::ReturnCode parseReturnCode(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+Config::ReturnCode parseReturnCode(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -237,7 +236,7 @@ Config::ReturnCode parseReturnCode(const std::string& paramName, const std::vect
     return Config::REJECT;
 }
 
-bool parseBool(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+bool parseBool(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -245,7 +244,7 @@ bool parseBool(const std::string& paramName, const std::vector<PARAM_VALUE>& par
     return false;
 }
 
-std::string parseString(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+std::string parseString(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -294,7 +293,7 @@ Config::Type parseConnectionType(const std::string& address)
     throw ParserError("Invalid connection type. Should be either 'unix' or 'tcp', got '" + type + "'");
 }
 
-Config::Section parseSection(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+Config::Section parseSection(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -306,7 +305,7 @@ Config::Section parseSection(const std::string& paramName, const std::vector<PAR
     return Config::Section();
 }
 
-uid_t parseUID(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+uid_t parseUID(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -314,7 +313,7 @@ uid_t parseUID(const std::string& paramName, const std::vector<PARAM_VALUE>& par
     return -1;
 }
 
-gid_t parseGID(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+gid_t parseGID(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -322,7 +321,7 @@ gid_t parseGID(const std::string& paramName, const std::vector<PARAM_VALUE>& par
     return -1;
 }
 
-mode_t parseMode(const std::string& paramName, const std::vector<PARAM_VALUE>& params)
+mode_t parseMode(const std::string& paramName, const std::vector<STG::ParamValue>& params)
 {
     for (size_t i = 0; i < params.size(); ++i)
         if (params[i].param == paramName)
@@ -332,7 +331,7 @@ mode_t parseMode(const std::string& paramName, const std::vector<PARAM_VALUE>& p
 
 } // namespace anonymous
 
-bool Config::Authorize::check(const USER& user, const Config::Pairs& radiusData) const
+bool Config::Authorize::check(const User& user, const Config::Pairs& radiusData) const
 {
     if (!m_auth)
         return false; // No flag - no authorization.
@@ -353,7 +352,7 @@ bool Config::Authorize::check(const USER& user, const Config::Pairs& radiusData)
     return true;
 }
 
-Config::Config(const MODULE_SETTINGS& settings)
+Config::Config(const ModuleSettings& settings)
     : autz(parseSection("autz", settings.moduleParams)),
       auth(parseSection("auth", settings.moduleParams)),
       postauth(parseSection("postauth", settings.moduleParams)),

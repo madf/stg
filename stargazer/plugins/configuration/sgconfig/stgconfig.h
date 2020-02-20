@@ -18,8 +18,7 @@
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
  */
 
-#ifndef STGCONFIG_H
-#define STGCONFIG_H
+#pragma once
 
 #include "configproto.h"
 
@@ -34,9 +33,8 @@ class STG_CONFIG_SETTINGS
 {
     public:
         STG_CONFIG_SETTINGS() : m_port(0), m_bindAddress("0.0.0.0") {}
-        virtual ~STG_CONFIG_SETTINGS() {}
         const std::string & GetStrError() const { return errorStr; }
-        bool ParseSettings(const MODULE_SETTINGS & s);
+        bool ParseSettings(const STG::ModuleSettings & s);
         uint16_t GetPort() const { return m_port; }
         const std::string & GetBindAddress() const { return m_bindAddress; }
     private:
@@ -45,30 +43,30 @@ class STG_CONFIG_SETTINGS
         std::string m_bindAddress;
 };
 
-class STG_CONFIG : public PLUGIN
+class STG_CONFIG : public STG::Plugin
 {
     public:
         STG_CONFIG();
 
-        void                SetUsers(USERS * users) { config.SetUsers(users); }
-        void                SetTariffs(TARIFFS * tariffs) { config.SetTariffs(tariffs); }
-        void                SetAdmins(ADMINS * admins) { config.SetAdmins(admins); }
-        void                SetServices(SERVICES * services) { config.SetServices(services); }
-        void                SetCorporations(CORPORATIONS * corporations) { config.SetCorporations( corporations); }
-        void                SetStore(STORE * store) { config.SetStore(store); }
-        void                SetStgSettings(const SETTINGS * s) { config.SetSettings(s); }
-        void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-        int                 ParseSettings();
+        void                SetUsers(STG::Users * users) override { config.SetUsers(users); }
+        void                SetTariffs(STG::Tariffs * tariffs) override { config.SetTariffs(tariffs); }
+        void                SetAdmins(STG::Admins * admins) override { config.SetAdmins(admins); }
+        void                SetServices(STG::Services * services) override { config.SetServices(services); }
+        void                SetCorporations(STG::Corporations * corporations) override { config.SetCorporations( corporations); }
+        void                SetStore(STG::Store * store) override { config.SetStore(store); }
+        void                SetStgSettings(const STG::Settings * s) override { config.SetSettings(s); }
+        void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+        int                 ParseSettings() override;
 
-        int                 Start();
-        int                 Stop();
-        int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-        bool                IsRunning() { return isRunning; }
+        int                 Start() override;
+        int                 Stop() override;
+        int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+        bool                IsRunning() override { return isRunning; }
 
-        const std::string & GetStrError() const { return errorStr; }
-        std::string         GetVersion() const { return "Stg Configurator v. 2.0"; }
-        uint16_t            GetStartPosition() const { return 20; }
-        uint16_t            GetStopPosition() const { return 20; }
+        const std::string & GetStrError() const override { return errorStr; }
+        std::string         GetVersion() const override { return "Stg Configurator v. 2.0"; }
+        uint16_t            GetStartPosition() const override { return 20; }
+        uint16_t            GetStopPosition() const override { return 20; }
 
     private:
         STG_CONFIG(const STG_CONFIG & rvalue);
@@ -81,10 +79,7 @@ class STG_CONFIG : public PLUGIN
         pthread_t           thread;
         bool                nonstop;
         bool                isRunning;
-        PLUGIN_LOGGER       logger;
+        STG::PluginLogger   logger;
         CONFIGPROTO         config;
-        MODULE_SETTINGS     settings;
+        STG::ModuleSettings settings;
 };
-//-----------------------------------------------------------------------------
-
-#endif

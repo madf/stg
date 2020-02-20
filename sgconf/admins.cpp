@@ -7,6 +7,7 @@
 
 #include "stg/servconf.h"
 #include "stg/servconf_types.h"
+#include "stg/admin_conf.h"
 
 #include <iostream>
 #include <string>
@@ -24,7 +25,7 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
-std::string PrivToString(const PRIV& priv)
+std::string PrivToString(const STG::Priv& priv)
 {
 return std::string("") +
        (priv.corpChg ? "1" : "0") +
@@ -38,7 +39,7 @@ return std::string("") +
        (priv.userStat ? "1" : "0");
 }
 
-void PrintAdmin(const STG::GET_ADMIN::INFO & info, size_t level = 0)
+void PrintAdmin(const STG::GetAdmin::Info & info, size_t level = 0)
 {
 std::cout << Indent(level, true) << "login: " << info.login << "\n"
           << Indent(level)       << "priviledges: " << PrivToString(info.priv) << "\n";
@@ -52,11 +53,11 @@ params.push_back(SGCONF::API_ACTION::PARAM("priv", "<priv>", "priviledges"));
 return params;
 }
 
-void ConvPriv(const std::string & value, RESETABLE<PRIV> & res)
+void ConvPriv(const std::string & value, STG::Optional<STG::Priv> & res)
 {
 if (value.length() != 9)
     throw SGCONF::ACTION::ERROR("Priviledges value should be a 9-digits length binary number.");
-PRIV priv;
+STG::Priv priv;
 priv.corpChg = (value[0] == '0' ? 0 : 1);
 priv.serviceChg = (value[1] == '0' ? 0 : 1);
 priv.tariffChg = (value[2] == '0' ? 0 : 1);
@@ -83,7 +84,7 @@ std::cout << "Success.\n";
 
 void GetAdminsCallback(bool result,
                        const std::string & reason,
-                       const std::vector<STG::GET_ADMIN::INFO> & info,
+                       const std::vector<STG::GetAdmin::Info> & info,
                        void * /*data*/)
 {
 if (!result)
@@ -98,7 +99,7 @@ for (size_t i = 0; i < info.size(); ++i)
 
 void GetAdminCallback(bool result,
                       const std::string & reason,
-                      const std::vector<STG::GET_ADMIN::INFO> & info,
+                      const std::vector<STG::GetAdmin::Info> & info,
                       void * data)
 {
 assert(data != NULL && "Expecting pointer to std::string with the admin's login.");
@@ -118,7 +119,7 @@ bool GetAdminsFunction(const SGCONF::CONFIG & config,
                        const std::string & /*arg*/,
                        const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -131,7 +132,7 @@ bool GetAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -147,7 +148,7 @@ bool DelAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -160,11 +161,11 @@ bool AddAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & options)
 {
-ADMIN_CONF_RES conf;
+STG::AdminConfOpt conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -177,11 +178,11 @@ bool ChgAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & options)
 {
-ADMIN_CONF_RES conf;
+STG::AdminConfOpt conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

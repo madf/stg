@@ -24,7 +24,7 @@ if (level == 0)
 return dash ? std::string(level * 4 - 2, ' ') + "- " : std::string(level * 4, ' ');
 }
 
-void PrintCorp(const STG::GET_CORP::INFO & info, size_t level = 0)
+void PrintCorp(const STG::GetCorp::Info & info, size_t level = 0)
 {
 std::cout << Indent(level, true) << "name: " << info.name << "\n"
           << Indent(level)       << "cash: " << info.cash << "\n";
@@ -51,7 +51,7 @@ std::cout << "Success.\n";
 
 void GetCorpsCallback(bool result,
                       const std::string & reason,
-                      const std::vector<STG::GET_CORP::INFO> & info,
+                      const std::vector<STG::GetCorp::Info> & info,
                       void * /*data*/)
 {
 if (!result)
@@ -66,7 +66,7 @@ for (size_t i = 0; i < info.size(); ++i)
 
 void GetCorpCallback(bool result,
                      const std::string & reason,
-                     const STG::GET_CORP::INFO & info,
+                     const STG::GetCorp::Info & info,
                      void * /*data*/)
 {
 if (!result)
@@ -81,7 +81,7 @@ bool GetCorpsFunction(const SGCONF::CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -94,7 +94,7 @@ bool GetCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -107,7 +107,7 @@ bool DelCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -120,10 +120,10 @@ bool AddCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-CORP_CONF_RES conf;
+STG::CorpConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),
@@ -136,10 +136,10 @@ bool ChgCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & options)
 {
-CORP_CONF_RES conf;
+STG::CorpConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
-STG::SERVCONF proto(config.server.data(),
+STG::ServConf proto(config.server.data(),
                     config.port.data(),
                     config.localAddress.data(),
                     config.localPort.data(),

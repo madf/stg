@@ -22,10 +22,12 @@
 #include "parser_users.h"
 
 #include "stg/users.h"
-#include "stg/tariffs.h"
-#include "stg/user_property.h"
+#include "stg/user.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
+#include "stg/tariffs.h"
+#include "stg/tariff.h"
+#include "stg/user_property.h"
 
 #include <cstdio>
 #include <cassert>
@@ -44,10 +46,13 @@ const char * CHG_USER::tag   = "SetUser";
 const char * DEL_USER::tag   = "DelUser";
 const char * CHECK_USER::tag = "CheckUser";
 
+using UserPtr = STG::User*;
+using ConstUserPtr = const STG::User*;
+
 namespace
 {
 
-std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_t lastTime = 0)
+std::string UserToXML(const STG::User & user, bool loginInStart, bool showPass, time_t lastTime = 0)
 {
     std::string answer;
 
@@ -58,80 +63,80 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
 
     answer += "<Login value=\"" + user.GetLogin() + "\"/>";
 
-    if (user.GetProperty().password.ModificationTime() > lastTime)
+    if (user.GetProperties().password.ModificationTime() > lastTime)
     {
         if (showPass)
-            answer += "<Password value=\"" + user.GetProperty().password.Get() + "\" />";
+            answer += "<Password value=\"" + user.GetProperties().password.Get() + "\" />";
         else
             answer += "<Password value=\"++++++\"/>";
     }
 
-    if (user.GetProperty().cash.ModificationTime() > lastTime)
-        answer += "<Cash value=\"" + std::to_string(user.GetProperty().cash.Get()) + "\"/>";
-    if (user.GetProperty().freeMb.ModificationTime() > lastTime)
-        answer += "<FreeMb value=\"" + std::to_string(user.GetProperty().freeMb.Get()) + "\"/>";
-    if (user.GetProperty().credit.ModificationTime() > lastTime)
-        answer += "<Credit value=\"" + std::to_string(user.GetProperty().credit.Get()) + "\"/>";
+    if (user.GetProperties().cash.ModificationTime() > lastTime)
+        answer += "<Cash value=\"" + std::to_string(user.GetProperties().cash.Get()) + "\"/>";
+    if (user.GetProperties().freeMb.ModificationTime() > lastTime)
+        answer += "<FreeMb value=\"" + std::to_string(user.GetProperties().freeMb.Get()) + "\"/>";
+    if (user.GetProperties().credit.ModificationTime() > lastTime)
+        answer += "<Credit value=\"" + std::to_string(user.GetProperties().credit.Get()) + "\"/>";
 
-    if (user.GetProperty().nextTariff.Get() != "")
+    if (user.GetProperties().nextTariff.Get() != "")
     {
-        if (user.GetProperty().tariffName.ModificationTime() > lastTime ||
-            user.GetProperty().nextTariff.ModificationTime() > lastTime)
-            answer += "<Tariff value=\"" + user.GetProperty().tariffName.Get() + "/" + user.GetProperty().nextTariff.Get() + "\"/>";
+        if (user.GetProperties().tariffName.ModificationTime() > lastTime ||
+            user.GetProperties().nextTariff.ModificationTime() > lastTime)
+            answer += "<Tariff value=\"" + user.GetProperties().tariffName.Get() + "/" + user.GetProperties().nextTariff.Get() + "\"/>";
     }
     else
     {
-        if (user.GetProperty().tariffName.ModificationTime() > lastTime)
-            answer += "<Tariff value=\"" + user.GetProperty().tariffName.Get() + "\"/>";
+        if (user.GetProperties().tariffName.ModificationTime() > lastTime)
+            answer += "<Tariff value=\"" + user.GetProperties().tariffName.Get() + "\"/>";
     }
 
-    if (user.GetProperty().note.ModificationTime() > lastTime)
-        answer += "<Note value=\"" + Encode12str(user.GetProperty().note) + "\"/>";
-    if (user.GetProperty().phone.ModificationTime() > lastTime)
-        answer += "<Phone value=\"" + Encode12str(user.GetProperty().phone) + "\"/>";
-    if (user.GetProperty().address.ModificationTime() > lastTime)
-        answer += "<Address value=\"" + Encode12str(user.GetProperty().address) + "\"/>";
-    if (user.GetProperty().email.ModificationTime() > lastTime)
-        answer += "<Email value=\"" + Encode12str(user.GetProperty().email) + "\"/>";
+    if (user.GetProperties().note.ModificationTime() > lastTime)
+        answer += "<Note value=\"" + Encode12str(user.GetProperties().note) + "\"/>";
+    if (user.GetProperties().phone.ModificationTime() > lastTime)
+        answer += "<Phone value=\"" + Encode12str(user.GetProperties().phone) + "\"/>";
+    if (user.GetProperties().address.ModificationTime() > lastTime)
+        answer += "<Address value=\"" + Encode12str(user.GetProperties().address) + "\"/>";
+    if (user.GetProperties().email.ModificationTime() > lastTime)
+        answer += "<Email value=\"" + Encode12str(user.GetProperties().email) + "\"/>";
 
-    std::vector<const USER_PROPERTY_LOGGED<std::string> *> userdata;
-    userdata.push_back(user.GetProperty().userdata0.GetPointer());
-    userdata.push_back(user.GetProperty().userdata1.GetPointer());
-    userdata.push_back(user.GetProperty().userdata2.GetPointer());
-    userdata.push_back(user.GetProperty().userdata3.GetPointer());
-    userdata.push_back(user.GetProperty().userdata4.GetPointer());
-    userdata.push_back(user.GetProperty().userdata5.GetPointer());
-    userdata.push_back(user.GetProperty().userdata6.GetPointer());
-    userdata.push_back(user.GetProperty().userdata7.GetPointer());
-    userdata.push_back(user.GetProperty().userdata8.GetPointer());
-    userdata.push_back(user.GetProperty().userdata9.GetPointer());
+    std::vector<const STG::UserPropertyLogged<std::string> *> userdata;
+    userdata.push_back(user.GetProperties().userdata0.GetPointer());
+    userdata.push_back(user.GetProperties().userdata1.GetPointer());
+    userdata.push_back(user.GetProperties().userdata2.GetPointer());
+    userdata.push_back(user.GetProperties().userdata3.GetPointer());
+    userdata.push_back(user.GetProperties().userdata4.GetPointer());
+    userdata.push_back(user.GetProperties().userdata5.GetPointer());
+    userdata.push_back(user.GetProperties().userdata6.GetPointer());
+    userdata.push_back(user.GetProperties().userdata7.GetPointer());
+    userdata.push_back(user.GetProperties().userdata8.GetPointer());
+    userdata.push_back(user.GetProperties().userdata9.GetPointer());
 
     for (size_t i = 0; i < userdata.size(); i++)
         if (userdata[i]->ModificationTime() > lastTime)
             answer += "<UserData" + std::to_string(i) + " value=\"" + Encode12str(userdata[i]->Get()) + "\" />";
 
-    if (user.GetProperty().realName.ModificationTime() > lastTime)
-        answer += "<Name value=\"" + Encode12str(user.GetProperty().realName) + "\"/>";
-    if (user.GetProperty().group.ModificationTime() > lastTime)
-        answer += "<Group value=\"" + Encode12str(user.GetProperty().group) + "\"/>";
+    if (user.GetProperties().realName.ModificationTime() > lastTime)
+        answer += "<Name value=\"" + Encode12str(user.GetProperties().realName) + "\"/>";
+    if (user.GetProperties().group.ModificationTime() > lastTime)
+        answer += "<Group value=\"" + Encode12str(user.GetProperties().group) + "\"/>";
     if (user.GetConnectedModificationTime() > lastTime)
         answer += std::string("<Status value=\"") + (user.GetConnected() ? "1" : "0") + "\"/>";
-    if (user.GetProperty().alwaysOnline.ModificationTime() > lastTime)
-        answer += std::string("<AOnline value=\"") + (user.GetProperty().alwaysOnline.Get() ? "1" : "0") + "\"/>";
+    if (user.GetProperties().alwaysOnline.ModificationTime() > lastTime)
+        answer += std::string("<AOnline value=\"") + (user.GetProperties().alwaysOnline.Get() ? "1" : "0") + "\"/>";
     if (user.GetCurrIPModificationTime() > lastTime)
         answer += "<CurrIP value=\"" + inet_ntostring(user.GetCurrIP()) + "\"/>";
     if (user.GetPingTime() > lastTime)
         answer += "<PingTime value=\"" + std::to_string(user.GetPingTime()) + "\"/>";
-    if (user.GetProperty().ips.ModificationTime() > lastTime)
-        answer += "<IP value=\"" + user.GetProperty().ips.Get().GetIpStr() + "\"/>";
+    if (user.GetProperties().ips.ModificationTime() > lastTime)
+        answer += "<IP value=\"" + user.GetProperties().ips.Get().toString() + "\"/>";
 
     answer += "<Traff";
-    const DIR_TRAFF & upload(user.GetProperty().up.Get());
-    const DIR_TRAFF & download(user.GetProperty().down.Get());
-    if (user.GetProperty().up.ModificationTime() > lastTime)
+    const auto & upload(user.GetProperties().up.Get());
+    const auto & download(user.GetProperties().down.Get());
+    if (user.GetProperties().up.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
             answer += " MU" + std::to_string(j) + "=\"" + std::to_string(upload[j]) + "\"";
-    if (user.GetProperty().down.ModificationTime() > lastTime)
+    if (user.GetProperties().down.ModificationTime() > lastTime)
         for (size_t j = 0; j < DIR_NUM; j++)
             answer += " MD" + std::to_string(j) + "=\"" + std::to_string(download[j]) + "\"";
     if (user.GetSessionUploadModificationTime() > lastTime)
@@ -142,20 +147,20 @@ std::string UserToXML(const USER & user, bool loginInStart, bool showPass, time_
             answer += " SD" + std::to_string(j) + "=\"" + std::to_string(user.GetSessionDownload()[j]) + "\"";
     answer += "/>";
 
-    if (user.GetProperty().disabled.ModificationTime() > lastTime)
-        answer += std::string("<Down value=\"") + (user.GetProperty().disabled.Get() ? "1" : "0") + "\"/>";
-    if (user.GetProperty().disabledDetailStat.ModificationTime() > lastTime)
-        answer += std::string("<DisableDetailStat value=\"") + (user.GetProperty().disabledDetailStat.Get() ? "1" : "0") + "\"/>";
-    if (user.GetProperty().passive.ModificationTime() > lastTime)
-        answer += std::string("<Passive value=\"") + (user.GetProperty().passive.Get() ? "1" : "0") + "\"/>";
-    if (user.GetProperty().lastCashAdd.ModificationTime() > lastTime)
-        answer += "<LastCash value=\"" + std::to_string(user.GetProperty().lastCashAdd.Get()) + "\"/>";
-    if (user.GetProperty().lastCashAddTime.ModificationTime() > lastTime)
-        answer += "<LastTimeCash value=\"" + std::to_string(user.GetProperty().lastCashAddTime.Get()) + "\"/>";
-    if (user.GetProperty().lastActivityTime.ModificationTime() > lastTime)
-        answer += "<LastActivityTime value=\"" + std::to_string(user.GetProperty().lastActivityTime.Get()) + "\"/>";
-    if (user.GetProperty().creditExpire.ModificationTime() > lastTime)
-        answer += "<CreditExpire value=\"" + std::to_string(user.GetProperty().creditExpire.Get()) + "\"/>";
+    if (user.GetProperties().disabled.ModificationTime() > lastTime)
+        answer += std::string("<Down value=\"") + (user.GetProperties().disabled.Get() ? "1" : "0") + "\"/>";
+    if (user.GetProperties().disabledDetailStat.ModificationTime() > lastTime)
+        answer += std::string("<DisableDetailStat value=\"") + (user.GetProperties().disabledDetailStat.Get() ? "1" : "0") + "\"/>";
+    if (user.GetProperties().passive.ModificationTime() > lastTime)
+        answer += std::string("<Passive value=\"") + (user.GetProperties().passive.Get() ? "1" : "0") + "\"/>";
+    if (user.GetProperties().lastCashAdd.ModificationTime() > lastTime)
+        answer += "<LastCash value=\"" + std::to_string(user.GetProperties().lastCashAdd.Get()) + "\"/>";
+    if (user.GetProperties().lastCashAddTime.ModificationTime() > lastTime)
+        answer += "<LastTimeCash value=\"" + std::to_string(user.GetProperties().lastCashAddTime.Get()) + "\"/>";
+    if (user.GetProperties().lastActivityTime.ModificationTime() > lastTime)
+        answer += "<LastActivityTime value=\"" + std::to_string(user.GetProperties().lastActivityTime.Get()) + "\"/>";
+    if (user.GetProperties().creditExpire.ModificationTime() > lastTime)
+        answer += "<CreditExpire value=\"" + std::to_string(user.GetProperties().creditExpire.Get()) + "\"/>";
 
     if (lastTime == 0)
     {
@@ -201,7 +206,7 @@ void GET_USERS::CreateAnswer()
     else
         m_answer = "<Users>";
 
-    USER_PTR u;
+    UserPtr u;
 
     while (m_users.SearchNext(h, &u) == 0)
         m_answer += UserToXML(*u, true, m_currAdmin.GetPriv()->userConf || m_currAdmin.GetPriv()->userPasswd, m_lastUserUpdateTime);
@@ -225,7 +230,7 @@ int GET_USER::Start(void *, const char * el, const char ** attr)
 
 void GET_USER::CreateAnswer()
 {
-    CONST_USER_PTR u;
+    ConstUserPtr u;
 
     if (m_users.FindByName(m_login, &u))
         m_answer = "<User result=\"error\" reason=\"User not found.\"/>";
@@ -282,7 +287,7 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
 
         if (strcasecmp(el, "ip") == 0)
         {
-            m_ucr.ips = StrToIPS(attr[1]);
+            m_ucr.ips = UserIPs::parse(attr[1]);
             return 0;
         }
 
@@ -457,157 +462,157 @@ void CHG_USER::CreateAnswer()
 int CHG_USER::ApplyChanges()
 {
     printfd(__FILE__, "PARSER_CHG_USER::ApplyChanges()\n");
-    USER_PTR u;
+    UserPtr u;
 
     if (m_users.FindByName(m_login, &u))
         return -1;
 
     bool check = false;
-    bool alwaysOnline = u->GetProperty().alwaysOnline;
+    bool alwaysOnline = u->GetProperties().alwaysOnline;
     if (!m_ucr.alwaysOnline.empty())
     {
         check = true;
         alwaysOnline = m_ucr.alwaysOnline.const_data();
     }
-    bool onlyOneIP = u->GetProperty().ips.ConstData().OnlyOneIP();
+    bool onlyOneIP = u->GetProperties().ips.ConstData().onlyOneIP();
     if (!m_ucr.ips.empty())
     {
         check = true;
-        onlyOneIP = m_ucr.ips.const_data().OnlyOneIP();
+        onlyOneIP = m_ucr.ips.const_data().onlyOneIP();
     }
 
     if (check && alwaysOnline && !onlyOneIP)
     {
         printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
-        GetStgLogger()("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", m_currAdmin.GetLogStr().c_str());
+        PluginLogger::get("conf_sg")("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", m_currAdmin.GetLogStr().c_str());
         return -1;
     }
 
-    for (size_t i = 0; i < m_ucr.ips.const_data().Count(); ++i)
+    for (size_t i = 0; i < m_ucr.ips.const_data().count(); ++i)
     {
-        CONST_USER_PTR user;
+        ConstUserPtr user;
         uint32_t ip = m_ucr.ips.const_data().operator[](i).ip;
         if (m_users.IsIPInUse(ip, m_login, &user))
         {
             printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
-            GetStgLogger()("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", m_currAdmin.GetLogStr().c_str(), inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
+            PluginLogger::get("conf_sg")("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", m_currAdmin.GetLogStr().c_str(), inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
             return -1;
         }
     }
 
     if (!m_ucr.ips.empty())
-        if (!u->GetProperty().ips.Set(m_ucr.ips.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().ips.Set(m_ucr.ips.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.alwaysOnline.empty())
-        if (!u->GetProperty().alwaysOnline.Set(m_ucr.alwaysOnline.const_data(),
-                                               &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().alwaysOnline.Set(m_ucr.alwaysOnline.const_data(),
+                                                 m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.address.empty())
-        if (!u->GetProperty().address.Set(m_ucr.address.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().address.Set(m_ucr.address.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.creditExpire.empty())
-        if (!u->GetProperty().creditExpire.Set(m_ucr.creditExpire.const_data(),
-                                               &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().creditExpire.Set(m_ucr.creditExpire.const_data(),
+                                                 m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.credit.empty())
-        if (!u->GetProperty().credit.Set(m_ucr.credit.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().credit.Set(m_ucr.credit.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_usr.freeMb.empty())
-        if (!u->GetProperty().freeMb.Set(m_usr.freeMb.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().freeMb.Set(m_usr.freeMb.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.disabled.empty())
-        if (!u->GetProperty().disabled.Set(m_ucr.disabled.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().disabled.Set(m_ucr.disabled.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.disabledDetailStat.empty())
-        if (!u->GetProperty().disabledDetailStat.Set(m_ucr.disabledDetailStat.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().disabledDetailStat.Set(m_ucr.disabledDetailStat.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.email.empty())
-        if (!u->GetProperty().email.Set(m_ucr.email.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().email.Set(m_ucr.email.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.group.empty())
-        if (!u->GetProperty().group.Set(m_ucr.group.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().group.Set(m_ucr.group.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.note.empty())
-        if (!u->GetProperty().note.Set(m_ucr.note.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().note.Set(m_ucr.note.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
-    std::vector<USER_PROPERTY_LOGGED<std::string> *> userdata;
-    userdata.push_back(u->GetProperty().userdata0.GetPointer());
-    userdata.push_back(u->GetProperty().userdata1.GetPointer());
-    userdata.push_back(u->GetProperty().userdata2.GetPointer());
-    userdata.push_back(u->GetProperty().userdata3.GetPointer());
-    userdata.push_back(u->GetProperty().userdata4.GetPointer());
-    userdata.push_back(u->GetProperty().userdata5.GetPointer());
-    userdata.push_back(u->GetProperty().userdata6.GetPointer());
-    userdata.push_back(u->GetProperty().userdata7.GetPointer());
-    userdata.push_back(u->GetProperty().userdata8.GetPointer());
-    userdata.push_back(u->GetProperty().userdata9.GetPointer());
+    std::vector<STG::UserPropertyLogged<std::string> *> userdata;
+    userdata.push_back(u->GetProperties().userdata0.GetPointer());
+    userdata.push_back(u->GetProperties().userdata1.GetPointer());
+    userdata.push_back(u->GetProperties().userdata2.GetPointer());
+    userdata.push_back(u->GetProperties().userdata3.GetPointer());
+    userdata.push_back(u->GetProperties().userdata4.GetPointer());
+    userdata.push_back(u->GetProperties().userdata5.GetPointer());
+    userdata.push_back(u->GetProperties().userdata6.GetPointer());
+    userdata.push_back(u->GetProperties().userdata7.GetPointer());
+    userdata.push_back(u->GetProperties().userdata8.GetPointer());
+    userdata.push_back(u->GetProperties().userdata9.GetPointer());
 
     for (int i = 0; i < (int)userdata.size(); i++)
         if (!m_ucr.userdata[i].empty())
-            if(!userdata[i]->Set(m_ucr.userdata[i].const_data(), &m_currAdmin, m_login, &m_store))
+            if(!userdata[i]->Set(m_ucr.userdata[i].const_data(), m_currAdmin, m_login, m_store))
                 return -1;
 
     if (!m_ucr.passive.empty())
-        if (!u->GetProperty().passive.Set(m_ucr.passive.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().passive.Set(m_ucr.passive.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.password.empty())
-        if (!u->GetProperty().password.Set(m_ucr.password.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().password.Set(m_ucr.password.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.phone.empty())
-        if (!u->GetProperty().phone.Set(m_ucr.phone.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().phone.Set(m_ucr.phone.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_ucr.realName.empty())
-        if (!u->GetProperty().realName.Set(m_ucr.realName.const_data(), &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().realName.Set(m_ucr.realName.const_data(), m_currAdmin, m_login, m_store))
             return -1;
 
     if (!m_usr.cash.empty())
     {
         if (m_cashMustBeAdded)
         {
-            if (!u->GetProperty().cash.Set(m_usr.cash.const_data() + u->GetProperty().cash,
-                                           &m_currAdmin,
-                                           m_login,
-                                           &m_store,
-                                           m_cashMsg))
+            if (!u->GetProperties().cash.Set(m_usr.cash.const_data() + u->GetProperties().cash,
+                                             m_currAdmin,
+                                             m_login,
+                                             m_store,
+                                             m_cashMsg))
                 return -1;
         }
         else
         {
-            if (!u->GetProperty().cash.Set(m_usr.cash.const_data(), &m_currAdmin, m_login, &m_store, m_cashMsg))
+            if (!u->GetProperties().cash.Set(m_usr.cash.const_data(), m_currAdmin, m_login, m_store, m_cashMsg))
                 return -1;
         }
     }
 
     if (!m_ucr.tariffName.empty())
     {
-        const TARIFF * newTariff = m_tariffs.FindByName(m_ucr.tariffName.const_data());
+        const auto newTariff = m_tariffs.FindByName(m_ucr.tariffName.const_data());
         if (newTariff)
         {
-            const TARIFF * tariff = u->GetTariff();
+            const auto tariff = u->GetTariff();
             std::string message = tariff->TariffChangeIsAllowed(*newTariff, stgTime);
             if (message.empty())
             {
-                if (!u->GetProperty().tariffName.Set(m_ucr.tariffName.const_data(), &m_currAdmin, m_login, &m_store))
+                if (!u->GetProperties().tariffName.Set(m_ucr.tariffName.const_data(), m_currAdmin, m_login, m_store))
                     return -1;
                 u->ResetNextTariff();
             }
             else
             {
-                GetStgLogger()("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
+                PluginLogger::get("conf_sg")("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
             }
         }
         else
@@ -621,7 +626,7 @@ int CHG_USER::ApplyChanges()
     {
         if (m_tariffs.FindByName(m_ucr.nextTariff.const_data()))
         {
-            if (!u->GetProperty().nextTariff.Set(m_ucr.nextTariff.const_data(), &m_currAdmin, m_login, &m_store))
+            if (!u->GetProperties().nextTariff.Set(m_ucr.nextTariff.const_data(), m_currAdmin, m_login, m_store))
                 return -1;
         }
         else
@@ -631,8 +636,8 @@ int CHG_USER::ApplyChanges()
         }
     }
 
-    DIR_TRAFF up = u->GetProperty().up;
-    DIR_TRAFF down = u->GetProperty().down;
+    auto up = u->GetProperties().up.get();
+    auto down = u->GetProperties().down.get();
     int upCount = 0;
     int downCount = 0;
     for (int i = 0; i < DIR_NUM; i++)
@@ -650,11 +655,11 @@ int CHG_USER::ApplyChanges()
     }
 
     if (upCount)
-        if (!u->GetProperty().up.Set(up, &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().up.Set(up, m_currAdmin, m_login, m_store))
             return -1;
 
     if (downCount)
-        if (!u->GetProperty().down.Set(down, &m_currAdmin, m_login, &m_store))
+        if (!u->GetProperties().down.Set(down, m_currAdmin, m_login, m_store))
             return -1;
 
     u->WriteConf();
@@ -719,7 +724,7 @@ int CHECK_USER::Start(void *, const char *el, const char **attr)
             return 0;
         }
 
-        CONST_USER_PTR user;
+        ConstUserPtr user;
         if (m_users.FindByName(attr[1], &user))
         {
             CreateAnswer("User not found.");
@@ -727,7 +732,7 @@ int CHECK_USER::Start(void *, const char *el, const char **attr)
             return 0;
         }
 
-        if (strcmp(user->GetProperty().password.Get().c_str(), attr[3]))
+        if (strcmp(user->GetProperties().password.Get().c_str(), attr[3]))
         {
             CreateAnswer("Wrong password.");
             printfd(__FILE__, "PARSER_CHECK_USER - passwd err\n");

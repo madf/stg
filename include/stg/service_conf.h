@@ -18,89 +18,93 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef SERVICE_CONF_H
-#define SERVICE_CONF_H
+#pragma once
 
-#include "resetable.h"
+#include "stg/optional.h"
 
 #include <string>
 #include <cstdint>
 
-struct SERVICE_CONF
+namespace STG
 {
-SERVICE_CONF()
-    : name(), comment(), cost(0), payDay(0)
-{}
-explicit SERVICE_CONF(const std::string & n)
-    : name(n), comment(), cost(0), payDay(0)
-{}
-SERVICE_CONF(const std::string & n, double c)
-    : name(n), comment(), cost(c), payDay(0)
-{}
-SERVICE_CONF(const std::string & n, double c, unsigned p)
-    : name(n), comment(), cost(c), payDay(static_cast<uint8_t>(p))
-{}
-SERVICE_CONF(const std::string & n, double c,
-             unsigned p, const std::string & com)
-    : name(n), comment(com), cost(c), payDay(static_cast<uint8_t>(p))
-{}
 
-std::string name;
-std::string comment;
-double      cost;
-uint8_t     payDay;
+struct ServiceConf
+{
+    ServiceConf()
+        : cost(0), payDay(0)
+    {}
+    explicit ServiceConf(const std::string & n)
+        : name(n), cost(0), payDay(0)
+    {}
+    ServiceConf(const std::string & n, double c)
+        : name(n), cost(c), payDay(0)
+    {}
+    ServiceConf(const std::string & n, double c, unsigned p)
+        : name(n), cost(c), payDay(static_cast<uint8_t>(p))
+    {}
+    ServiceConf(const std::string & n, double c,
+                 unsigned p, const std::string & com)
+        : name(n), comment(com), cost(c), payDay(static_cast<uint8_t>(p))
+    {}
+
+    ServiceConf(const ServiceConf&) = default;
+    ServiceConf& operator=(const ServiceConf&) = default;
+    ServiceConf(ServiceConf&&) = default;
+    ServiceConf& operator=(ServiceConf&&) = default;
+
+    bool operator==(const ServiceConf& rhs) const noexcept { return name == rhs.name; }
+
+    std::string name;
+    std::string comment;
+    double      cost;
+    uint8_t     payDay;
 };
 
-struct SERVICE_CONF_RES
+struct ServiceConfOpt
 {
-SERVICE_CONF_RES()
-    : name(), comment(),
-      cost(), payDay()
-{}
+    ServiceConfOpt() = default;
 
-explicit SERVICE_CONF_RES(const SERVICE_CONF & rhs)
-    : name(rhs.name), comment(rhs.comment),
-      cost(rhs.cost), payDay(rhs.payDay)
-{}
+    explicit ServiceConfOpt(const ServiceConf& rhs)
+        : name(rhs.name), comment(rhs.comment),
+          cost(rhs.cost), payDay(rhs.payDay)
+    {}
 
-SERVICE_CONF_RES & operator=(const SERVICE_CONF & conf)
-{
-name = conf.name;
-comment = conf.comment;
-cost = conf.cost;
-payDay = conf.payDay;
-return *this;
-}
+    ServiceConfOpt(const ServiceConfOpt&) = default;
+    ServiceConfOpt& operator=(const ServiceConfOpt&) = default;
+    ServiceConfOpt(ServiceConfOpt&&) = default;
+    ServiceConfOpt& operator=(ServiceConfOpt&&) = default;
 
-SERVICE_CONF GetData() const
-{
-SERVICE_CONF sc;
-sc.name = name.data();
-sc.comment = comment.data();
-sc.cost = cost.data();
-sc.payDay = payDay.data();
-return sc;
-}
+    ServiceConfOpt& operator=(const ServiceConf& conf)
+    {
+        name = conf.name;
+        comment = conf.comment;
+        cost = conf.cost;
+        payDay = conf.payDay;
+        return *this;
+    }
 
-void Splice(const SERVICE_CONF_RES & rhs)
-{
-name.splice(rhs.name);
-comment.splice(rhs.comment);
-cost.splice(rhs.cost);
-payDay.splice(rhs.payDay);
-}
+    void splice(const ServiceConfOpt& rhs)
+    {
+        name.splice(rhs.name);
+        comment.splice(rhs.comment);
+        cost.splice(rhs.cost);
+        payDay.splice(rhs.payDay);
+    }
 
-RESETABLE<std::string> name;
-RESETABLE<std::string> comment;
-RESETABLE<double>      cost;
-RESETABLE<uint8_t>     payDay;
+    ServiceConf get(const ServiceConf& defaultValue) const noexcept
+    {
+        ServiceConf res;
+        res.name = name.get(defaultValue.name);
+        res.comment = comment.get(defaultValue.comment);
+        res.cost = cost.get(defaultValue.cost);
+        res.payDay = payDay.get(defaultValue.payDay);
+        return res;
+    }
+
+    Optional<std::string> name;
+    Optional<std::string> comment;
+    Optional<double>      cost;
+    Optional<uint8_t>     payDay;
 };
 
-inline
-bool operator==(const SERVICE_CONF & a, const SERVICE_CONF & b)
-{
-return a.name == b.name;
 }
-
-#endif //SERVICE_CONF_H
-

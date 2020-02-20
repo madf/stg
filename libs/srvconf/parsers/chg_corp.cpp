@@ -20,7 +20,7 @@
 
 #include "chg_corp.h"
 
-#include "resetable_utils.h"
+#include "optional_utils.h"
 
 #include "stg/corp_conf.h"
 #include "stg/common.h"
@@ -29,12 +29,10 @@
 
 using namespace STG;
 
-std::string CHG_CORP::Serialize(const CORP_CONF_RES & conf, const std::string & /*encoding*/)
+std::string ChgCorp::serialize(const CorpConfOpt& conf, const std::string& /*encoding*/)
 {
-std::ostringstream stream;
-
-appendResetableTag(stream, "name", conf.name);
-appendResetableTag(stream, "cash", conf.cash);
-
-return stream.str();
+    std::ostringstream stream;
+    appendResetableTag(stream, "name", conf.name);
+    appendResetableTag(stream, "cash", conf.cash);
+    return stream.str();
 }

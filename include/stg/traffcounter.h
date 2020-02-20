@@ -18,16 +18,20 @@
  *    Author : maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef TRAFFCOUNTER_H
-#define TRAFFCOUNTER_H
+#pragma once
 
-#include "raw_ip_packet.h"
+#include <cstddef> // size_t
 
-class TRAFFCOUNTER {
-public:
-    virtual ~TRAFFCOUNTER() {}
-    virtual void Process(const RAW_PACKET & rawPacket) = 0;
-    virtual size_t RulesCount() const = 0;
+namespace STG
+{
+
+struct RawPacket;
+
+struct TraffCounter {
+    virtual ~TraffCounter() = default;
+
+    virtual void process(const RawPacket& rawPacket) = 0;
+    virtual size_t rulesCount() const = 0;
 };
 
-#endif
+}

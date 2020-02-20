@@ -28,7 +28,6 @@
 #include "stg/locker.h"
 #include "stg/users.h"
 #include "stg/user_property.h"
-#include "stg/plugin_creator.h"
 #include "stg/logger.h"
 
 #include <algorithm>
@@ -42,6 +41,9 @@
 #include <sys/time.h>
 #include <netinet/ip.h>
 
+#define RS_DEBUG (1)
+#define MAX_SHORT_PCKT  (3)
+
 extern volatile time_t stgTime;
 
 using RS::REMOTE_SCRIPT;
@@ -51,26 +53,18 @@ namespace {
 template<typename T>
 struct USER_IS
 {
-    explicit USER_IS(USER_PTR u) : user(u) {}
+    explicit USER_IS(RS::UserPtr u) : user(u) {}
     bool operator()(const T & notifier) { return notifier.GetUser() == user; }
 
-    USER_PTR user;
+    RS::UserPtr user;
 };
-
-PLUGIN_CREATOR<REMOTE_SCRIPT> rsc;
 
 } // namespace anonymous
 
-extern "C" PLUGIN * GetPlugin();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-PLUGIN * GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-return rsc.GetPlugin();
+    static REMOTE_SCRIPT plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -81,11 +75,11 @@ RS::SETTINGS::SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int RS::SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int RS::SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 int p;
-PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+STG::ParamValue pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
 netRouters.clear();
 ///////////////////////////
 pv.param = "Port";
@@ -158,7 +152,7 @@ if (!nrMapParser.ReadFile(subnetFile))
     }
 else
     {
-    GetStgLogger()("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
+        STG::PluginLogger::get("rscript")("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
     }
 
 return 0;
@@ -167,25 +161,15 @@ return 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 REMOTE_SCRIPT::REMOTE_SCRIPT()
-    : ctx(),
-      ipNotifierList(),
-      connNotifierList(),
-      authorizedUsers(),
-      errorStr(),
-      rsSettings(),
-      settings(),
-      sendPeriod(15),
+    : sendPeriod(15),
       halfPeriod(8),
       nonstop(false),
       isRunning(false),
       users(NULL),
-      netRouters(),
-      thread(),
-      mutex(),
       sock(0),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
-      logger(GetPluginLogger(GetStgLogger(), "rscript"))
+      logger(STG::PluginLogger::get("rscript"))
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -253,7 +237,7 @@ if (!isRunning)
     if (pthread_create(&thread, NULL, Run, this))
         {
         errorStr = "Cannot create thread.";
-	logger("Cannot create thread.");
+        logger("Cannot create thread.");
         printfd(__FILE__, "Cannot create thread\n");
         return -1;
         }
@@ -300,7 +284,7 @@ if (isRunning)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int REMOTE_SCRIPT::Reload(const MODULE_SETTINGS & /*ms*/)
+int REMOTE_SCRIPT::Reload(const STG::ModuleSettings & /*ms*/)
 {
 NRMapParser nrMapParser;
 
@@ -493,7 +477,7 @@ return (res != sizeof(buffer));
 //-----------------------------------------------------------------------------
 bool REMOTE_SCRIPT::GetUsers()
 {
-USER_PTR u;
+UserPtr u;
 
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
@@ -520,13 +504,13 @@ for (size_t i = 0; i < netRouters.size(); ++i)
 return std::vector<uint32_t>();
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::SetUserNotifiers(USER_PTR u)
+void REMOTE_SCRIPT::SetUserNotifiers(UserPtr u)
 {
 ipNotifierList.push_front(RS::IP_NOTIFIER(*this, u));
 connNotifierList.push_front(RS::CONNECTED_NOTIFIER(*this, u));
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::UnSetUserNotifiers(USER_PTR u)
+void REMOTE_SCRIPT::UnSetUserNotifiers(UserPtr u)
 {
 ipNotifierList.erase(std::remove_if(ipNotifierList.begin(),
                                     ipNotifierList.end(),
@@ -539,7 +523,7 @@ connNotifierList.erase(std::remove_if(connNotifierList.begin(),
 
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::AddRSU(USER_PTR user)
+void REMOTE_SCRIPT::AddRSU(UserPtr user)
 {
 RS::USER rsu(IP2Routers(user->GetCurrIP()), user);
 Send(rsu);
@@ -548,7 +532,7 @@ STG_LOCKER lock(&mutex);
 authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::DelRSU(USER_PTR user)
+void REMOTE_SCRIPT::DelRSU(UserPtr user)
 {
 STG_LOCKER lock(&mutex);
 std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
