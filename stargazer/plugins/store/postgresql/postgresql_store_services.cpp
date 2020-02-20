@@ -27,14 +27,17 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/service_conf.h"
+#include "stg/common.h"
+#include "stg/locker.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 
 #include <libpq-fe.h>
-
-#include "postgresql_store.h"
-#include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetServicesList(std::vector<std::string> * servicesList) const
@@ -68,9 +71,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::GetServicesList(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::GetServicesList(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::GetServicesList(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -93,7 +96,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveService(const SERVICE_CONF & sc) const
+int POSTGRESQL_STORE::SaveService(const STG::ServiceConf & sc) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -123,9 +126,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -133,9 +136,9 @@ if (EscapeString(ecomment))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to escape comment'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -172,8 +175,8 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreService(SERVICE_CONF * sc,
-                                   const std::string & name) const
+int POSTGRESQL_STORE::RestoreService(STG::ServiceConf * sc,
+                                     const std::string & name) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -202,9 +205,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -233,9 +236,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -289,9 +292,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddService(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -356,9 +359,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::DelService(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelService(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelService(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 

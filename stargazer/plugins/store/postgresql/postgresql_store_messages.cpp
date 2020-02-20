@@ -27,19 +27,20 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/common.h"
+#include "stg/locker.h"
+#include "stg/message.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 
 #include <libpq-fe.h>
 
-#include "stg/common.h"
-#include "postgresql_store.h"
-#include "stg/locker.h"
-#include "stg/message.h"
-
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
+int POSTGRESQL_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -69,9 +70,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -79,9 +80,9 @@ if (EscapeString(etext))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to escape message text'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -119,9 +120,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -141,7 +142,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::EditMessage(const STG_MSG & msg,
+int POSTGRESQL_STORE::EditMessage(const STG::Message & msg,
                                   const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -172,9 +173,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -182,9 +183,9 @@ if (EscapeString(etext))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to escape message text'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::EditMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -227,8 +228,8 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetMessage(uint64_t id,
-                               STG_MSG * msg,
-                               const std::string &) const
+                                 STG::Message * msg,
+                                 const std::string &) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -280,9 +281,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::GetMessage(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::GetMessage(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::GetMessage(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -357,7 +358,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList,
+int POSTGRESQL_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList,
                                    const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -387,9 +388,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::GetMessageHdrs(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::GetMessageHdrs(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::GetMessageHdrs(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -421,7 +422,7 @@ int tuples = PQntuples(result);
 for (int i = 0; i < tuples; ++i)
     {
     std::stringstream tuple;
-    STG_MSG_HDR header;
+    STG::Message::Header header;
     tuple << PQgetvalue(result, i, 0) << " ";
     tuple << PQgetvalue(result, i, 1) << " ";
     tuple << PQgetvalue(result, i, 2) << " ";

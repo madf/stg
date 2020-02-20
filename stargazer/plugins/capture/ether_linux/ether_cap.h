@@ -23,8 +23,7 @@
 * Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
 */
 
-#ifndef ETHER_CAP_H
-#define ETHER_CAP_H
+#pragma once
 
 #include <pthread.h>
 
@@ -34,25 +33,27 @@
 #include "stg/module_settings.h"
 #include "stg/logger.h"
 
-class USERS;
-class TARIFFS;
-class ADMINS;
-class TRAFFCOUNTER;
-class SETTINGS;
+namespace STG
+{
 
-class TRAFFCOUNTER;
+struct Users;
+struct Tariffs;
+struct Admins;
+struct TraffCounter;
+struct Settings;
+
+}
 
 //-----------------------------------------------------------------------------
-class ETHER_CAP : public PLUGIN {
+class ETHER_CAP : public STG::Plugin {
 public:
     ETHER_CAP();
-    virtual ~ETHER_CAP() {}
 
-    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
+    void                SetTraffcounter(STG::TraffCounter * tc) { traffCnt = tc; }
 
     int                 Start();
     int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
+    int                 Reload(const STG::ModuleSettings & /*ms*/) { return 0; }
     bool                IsRunning() { return isRunning; }
 
     int                 ParseSettings() { return 0; }
@@ -77,10 +78,7 @@ private:
     bool                isRunning;
     int                 capSock;
 
-    TRAFFCOUNTER *      traffCnt;
+    STG::TraffCounter *      traffCnt;
 
-    PLUGIN_LOGGER       logger;
+    STG::PluginLogger       logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif

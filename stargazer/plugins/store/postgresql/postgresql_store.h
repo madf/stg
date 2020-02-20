@@ -18,106 +18,105 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  PostgreSQL storage class definition
- *
- *  $Revision: 1.8 $
- *  $Date: 2010/01/19 11:06:53 $
- *
- */
+#pragma once
 
-#ifndef POSTGRESQL_STORE_H
-#define POSTGRESQL_STORE_H
-
-#include <libpq-fe.h>
+#include "stg/store.h"
+#include "stg/module_settings.h"
+#include "stg/logger.h"
 
 #include <string>
 #include <vector>
 
-#include "stg/store.h"
-#include "stg/logger.h"
+#include <libpq-fe.h>
 
 // Minimal DB version is 5
 // Recommended DB version is 6 (support FreeMb logging on disconnects)
 #define DB_MIN_VERSION 5
 
-class POSTGRESQL_STORE : public STORE {
+namespace STG
+{
+
+class UserIPs;
+
+}
+
+class POSTGRESQL_STORE : public STG::Store {
 public:
     POSTGRESQL_STORE();
-    virtual ~POSTGRESQL_STORE();
+    ~POSTGRESQL_STORE() override;
 
     // Users
-    int GetUsersList(std::vector<std::string> * usersList) const;
-    int AddUser(const std::string & login) const;
-    int DelUser(const std::string & login) const;
-    int SaveUserStat(const USER_STAT & stat, const std::string & login) const;
-    int SaveUserConf(const USER_CONF & conf, const std::string & login) const;
-    int RestoreUserStat(USER_STAT * stat, const std::string & login) const;
-    int RestoreUserConf(USER_CONF * conf, const std::string & login) const;
+    int GetUsersList(std::vector<std::string> * usersList) const override;
+    int AddUser(const std::string & login) const override;
+    int DelUser(const std::string & login) const override;
+    int SaveUserStat(const STG::UserStat & stat, const std::string & login) const override;
+    int SaveUserConf(const STG::UserConf & conf, const std::string & login) const override;
+    int RestoreUserStat(STG::UserStat * stat, const std::string & login) const override;
+    int RestoreUserConf(STG::UserConf * conf, const std::string & login) const override;
     int WriteUserChgLog(const std::string & login,
                         const std::string & admLogin,
                         uint32_t admIP,
                         const std::string & paramName,
                         const std::string & oldValue,
                         const std::string & newValue,
-                        const std::string & message) const;
-    int WriteUserConnect(const std::string & login, uint32_t ip) const;
+                        const std::string & message) const override;
+    int WriteUserConnect(const std::string & login, uint32_t ip) const override;
     int WriteUserDisconnect(const std::string & login,
-                            const DIR_TRAFF & up,
-                            const DIR_TRAFF & down,
-                            const DIR_TRAFF & sessionUp,
-                            const DIR_TRAFF & sessionDown,
+                            const STG::DirTraff & up,
+                            const STG::DirTraff & down,
+                            const STG::DirTraff & sessionUp,
+                            const STG::DirTraff & sessionDown,
                             double cash,
                             double freeMb,
-                            const std::string & reason) const;
-    int WriteDetailedStat(const TRAFF_STAT & statTree,
+                            const std::string & reason) const override;
+    int WriteDetailedStat(const STG::TraffStat & statTree,
                           time_t lastStat,
-                          const std::string & login) const;
+                          const std::string & login) const override;
 
     // Messages
-    int AddMessage(STG_MSG * msg, const std::string & login) const;
-    int EditMessage(const STG_MSG & msg, const std::string & login) const;
-    int GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const;
-    int DelMessage(uint64_t id, const std::string & login) const;
-    int GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const;
+    int AddMessage(STG::Message * msg, const std::string & login) const override;
+    int EditMessage(const STG::Message & msg, const std::string & login) const override;
+    int GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const override;
+    int DelMessage(uint64_t id, const std::string & login) const override;
+    int GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const override;
 
     // Stats
-    int SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string  & login) const;
+    int SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string  & login) const override;
 
     // Admins
-    int GetAdminsList(std::vector<std::string> * adminsList) const;
-    int SaveAdmin(const ADMIN_CONF & ac) const;
-    int RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const;
-    int AddAdmin(const std::string & login) const;
-    int DelAdmin(const std::string & login) const;
+    int GetAdminsList(std::vector<std::string> * adminsList) const override;
+    int SaveAdmin(const STG::AdminConf & ac) const override;
+    int RestoreAdmin(STG::AdminConf * ac, const std::string & login) const override;
+    int AddAdmin(const std::string & login) const override;
+    int DelAdmin(const std::string & login) const override;
 
     // Tariffs
-    int GetTariffsList(std::vector<std::string> * tariffsList) const;
-    int AddTariff(const std::string & name) const;
-    int DelTariff(const std::string & name) const;
-    int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
-    int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
+    int GetTariffsList(std::vector<std::string> * tariffsList) const override;
+    int AddTariff(const std::string & name) const override;
+    int DelTariff(const std::string & name) const override;
+    int SaveTariff(const STG::TariffData & td, const std::string & tariffName) const override;
+    int RestoreTariff(STG::TariffData * td, const std::string & tariffName) const override;
 
     // Corporations
-    int GetCorpsList(std::vector<std::string> * corpsList) const;
-    int SaveCorp(const CORP_CONF & cc) const;
-    int RestoreCorp(CORP_CONF * cc, const std::string & name) const;
-    int AddCorp(const std::string & name) const;
-    int DelCorp(const std::string & name) const;
+    int GetCorpsList(std::vector<std::string> * corpsList) const override;
+    int SaveCorp(const STG::CorpConf & cc) const override;
+    int RestoreCorp(STG::CorpConf * cc, const std::string & name) const override;
+    int AddCorp(const std::string & name) const override;
+    int DelCorp(const std::string & name) const override;
 
     // Services
-    int GetServicesList(std::vector<std::string> * servicesList) const;
-    int SaveService(const SERVICE_CONF & sc) const;
-    int RestoreService(SERVICE_CONF * sc, const std::string & name) const;
-    int AddService(const std::string & name) const;
-    int DelService(const std::string & name) const;
+    int GetServicesList(std::vector<std::string> * servicesList) const override;
+    int SaveService(const STG::ServiceConf & sc) const override;
+    int RestoreService(STG::ServiceConf * sc, const std::string & name) const override;
+    int AddService(const std::string & name) const override;
+    int DelService(const std::string & name) const override;
 
     // Settings
-    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int ParseSettings();
+    void SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int ParseSettings() override;
 
-    inline const std::string & GetStrError() const { return strError; }
-    inline const std::string & GetVersion() const { return versionString; }
+    const std::string & GetStrError() const override { return strError; }
+    const std::string & GetVersion() const override { return versionString; }
 private:
     POSTGRESQL_STORE(const POSTGRESQL_STORE & rvalue);
     POSTGRESQL_STORE & operator=(const POSTGRESQL_STORE & rvalue);
@@ -128,11 +127,11 @@ private:
 
     int EscapeString(std::string & value) const;
 
-    int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
+    int SaveStat(const STG::UserStat & stat, const std::string & login, int year = 0, int month = 0) const;
 
     int SaveUserServices(uint32_t uid, const std::vector<std::string> & services) const;
     int SaveUserData(uint32_t uid, const std::vector<std::string> & data) const;
-    int SaveUserIPs(uint32_t uid, const USER_IPS & ips) const;
+    int SaveUserIPs(uint32_t uid, const STG::UserIPs & ips) const;
 
     void MakeDate(std::string & date, int year = 0, int month = 0) const;
 
@@ -147,14 +146,12 @@ private:
     std::string user;
     std::string password;
     std::string clientEncoding;
-    MODULE_SETTINGS settings;
+    STG::ModuleSettings settings;
     mutable pthread_mutex_t mutex;
     mutable int version;
     int retries;
 
     PGconn * connection;
 
-    PLUGIN_LOGGER logger;
+    STG::PluginLogger logger;
 };
-
-#endif //POSTGRESQL_STORE_H

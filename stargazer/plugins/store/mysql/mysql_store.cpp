@@ -1,19 +1,21 @@
-#include <sys/time.h>
-#include <cerrno>
-#include <cstdio>
-#include <cstdlib>
-#include <algorithm>
-
-#include <mysql/errmsg.h>
+#include "mysql_store.h"
 
 #include "stg/common.h"
 #include "stg/user_ips.h"
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
+#include "stg/admin_conf.h"
+#include "stg/tariff_conf.h"
 #include "stg/blowfish.h"
-#include "stg/plugin_creator.h"
 #include "stg/logger.h"
-#include "mysql_store.h"
+
+#include <algorithm>
+#include <sys/time.h>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+
+#include <mysql/errmsg.h>
 
 #define adm_enc_passwd "cjeifY8m3"
 
@@ -98,16 +100,12 @@ int GetULongLongInt(const std::string & str, uint64_t * val, uint64_t defaultVal
     return 0;
 } 
 
-PLUGIN_CREATOR<MYSQL_STORE> msc;
 }
 
-extern "C" STORE * GetStore();
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-STORE * GetStore()
+extern "C" STG::Store* GetStore()
 {
-return msc.GetPlugin();
+    static MYSQL_STORE plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
@@ -115,12 +113,12 @@ MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE_SETTINGS::ParseParam(const std::vector<PARAM_VALUE> & moduleParams,
+int MYSQL_STORE_SETTINGS::ParseParam(const std::vector<STG::ParamValue> & moduleParams,
                                      const std::string & name, std::string & result)
 {
-PARAM_VALUE pv;
+STG::ParamValue pv;
 pv.param = name;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<STG::ParamValue>::const_iterator pvi;
 pvi = find(moduleParams.begin(), moduleParams.end(), pv);
 if (pvi == moduleParams.end() || pvi->value.empty())
     {
@@ -133,7 +131,7 @@ result = pvi->value[0];
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int MYSQL_STORE_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 if (ParseParam(s.moduleParams, "user", dbUser) < 0 &&
     ParseParam(s.moduleParams, "dbuser", dbUser) < 0)
@@ -156,7 +154,7 @@ return 0;
 MYSQL_STORE::MYSQL_STORE()
     : version("mysql_store v.0.67"),
       schemaVersion(0),
-      logger(PluginLogger::get("store_mysql"))
+      logger(STG::PluginLogger::get("store_mysql"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -727,7 +725,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreUserConf(USER_CONF * conf, const std::string & login) const
+int MYSQL_STORE::RestoreUserConf(STG::UserConf * conf, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -851,10 +849,10 @@ for (int i = 0; i < USERDATA_NUM; i++)
 GetTime(row[15+USERDATA_NUM], &conf->creditExpire, 0);
     
 std::string ipStr = row[16+USERDATA_NUM];
-USER_IPS i;
+STG::UserIPs i;
 try
     {
-    i = StrToIPS(ipStr);
+    i = STG::UserIPs::parse(ipStr);
     }
 catch (const std::string & s)
     {
@@ -871,7 +869,7 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreUserStat(USER_STAT * stat, const std::string & login) const
+int MYSQL_STORE::RestoreUserStat(STG::UserStat * stat, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -994,7 +992,7 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveUserConf(const USER_CONF & conf, const std::string & login) const
+int MYSQL_STORE::SaveUserConf(const STG::UserConf & conf, const std::string & login) const
 {
 std::string param;
 std::string res;
@@ -1047,7 +1045,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveUserStat(const USER_STAT & stat, const std::string & login) const
+int MYSQL_STORE::SaveUserStat(const STG::UserStat & stat, const std::string & login) const
 {
 std::string param;
 std::string res;
@@ -1171,10 +1169,10 @@ return WriteLogString(logStr, login);
 }
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::WriteUserDisconnect(const std::string & login,
-                                     const DIR_TRAFF & up,
-                                     const DIR_TRAFF & down,
-                                     const DIR_TRAFF & sessionUp,
-                                     const DIR_TRAFF & sessionDown,
+                                     const STG::DirTraff & up,
+                                     const STG::DirTraff & down,
+                                     const STG::DirTraff & sessionUp,
+                                     const STG::DirTraff & sessionDown,
                                      double cash,
                                      double /*freeMb*/,
                                      const std::string & /*reason*/) const
@@ -1209,7 +1207,7 @@ logStr += "\'";
 return WriteLogString(logStr, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, 
+int MYSQL_STORE::SaveMonthStat(const STG::UserStat & stat, int month, int year, 
                                 const std::string & login) const
 {
 std::string param, res;
@@ -1267,7 +1265,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------*/
-int MYSQL_STORE::SaveAdmin(const ADMIN_CONF & ac) const
+int MYSQL_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
 char passwordE[2 * ADM_PASSWD_LEN + 2];
 char pass[ADM_PASSWD_LEN + 1];
@@ -1314,7 +1312,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
+int MYSQL_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
 char pass[ADM_PASSWD_LEN + 1];
 char password[ADM_PASSWD_LEN + 1];
@@ -1492,7 +1490,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const
+int MYSQL_STORE::RestoreTariff(STG::TariffData * td, const std::string & tariffName) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -1642,7 +1640,7 @@ if (GetDouble(row[1+8*DIR_NUM], &td->tariffConf.passiveCost, 0.0) < 0)
         return -1;
         }
 
-td->tariffConf.traffType = TARIFF::StringToTraffType(str);
+td->tariffConf.traffType = STG::Tariff::parseTraffType(str);
 
 if (schemaVersion > 0)
 {
@@ -1657,11 +1655,11 @@ if (schemaVersion > 0)
         return -1;
         }
 
-    td->tariffConf.period = TARIFF::StringToPeriod(str);
+    td->tariffConf.period = STG::Tariff::parsePeriod(str);
     }
 else
     {
-    td->tariffConf.period = TARIFF::MONTH;
+    td->tariffConf.period = STG::Tariff::MONTH;
     }
 
 if (schemaVersion > 1)
@@ -1677,7 +1675,7 @@ if (schemaVersion > 1)
         return -1;
         }
 
-    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(str);
+    td->tariffConf.changePolicy = STG::Tariff::parseChangePolicy(str);
 
     str = row[7+8*DIR_NUM];
     param = "ChangePolicyTimeout";
@@ -1694,7 +1692,7 @@ if (schemaVersion > 1)
     }
 else
     {
-    td->tariffConf.changePolicy = TARIFF::ALLOW;
+    td->tariffConf.changePolicy = STG::Tariff::ALLOW;
     td->tariffConf.changePolicyTimeout = 0;
     }
 
@@ -1703,7 +1701,7 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const
+int MYSQL_STORE::SaveTariff(const STG::TariffData & td, const std::string & tariffName) const
 {
 std::string param;
 
@@ -1760,13 +1758,13 @@ res += param;
 strprintf(&param, " Free=%f,", td.tariffConf.free);
 res += param;
 
-res += " TraffType='" + TARIFF::TraffTypeToString(td.tariffConf.traffType) + "'";
+res += " TraffType='" + STG::Tariff::toString(td.tariffConf.traffType) + "'";
 
 if (schemaVersion > 0)
-    res += ", Period='" + TARIFF::PeriodToString(td.tariffConf.period) + "'";
+    res += ", Period='" + STG::Tariff::toString(td.tariffConf.period) + "'";
 
 if (schemaVersion > 1)
-    res += ", change_policy='" + TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) + "'"\
+    res += ", change_policy='" + STG::Tariff::toString(td.tariffConf.changePolicy) + "'"\
            ", change_policy_timeout='" + formatTime(td.tariffConf.changePolicy) + "'";
 
 strprintf(&param, " WHERE name='%s' LIMIT 1", tariffName.c_str());
@@ -1782,7 +1780,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree, 
+int MYSQL_STORE::WriteDetailedStat(const STG::TraffStat & statTree, 
                                    time_t lastStat, 
                                    const std::string & login) const
 {
@@ -1867,7 +1865,7 @@ strprintf(&res,"INSERT INTO detailstat_%02d_%4d SET login='%s',"\
     endTime.c_str()
     );
 
-std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator stIter;
+STG::TraffStat::const_iterator stIter;
 stIter = statTree.begin();
 
 while (stIter != statTree.end())
@@ -1898,7 +1896,7 @@ mysql_close(sock);
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
+int MYSQL_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
 struct timeval tv;
 
@@ -1921,7 +1919,7 @@ if(MysqlSetQuery(qbuf))
 return EditMessage(*msg, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::EditMessage(const STG_MSG & msg, const std::string & login) const
+int MYSQL_STORE::EditMessage(const STG::Message & msg, const std::string & login) const
 {
 std::string res;
 
@@ -1949,7 +1947,7 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const
+int MYSQL_STORE::GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -2047,7 +2045,7 @@ if(MysqlSetQuery(qbuf))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const
+int MYSQL_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
@@ -2080,7 +2078,7 @@ for (i = 0; i < num_rows; i++)
     if (str2x(row[1], id))
         continue;
     
-    STG_MSG_HDR hdr;
+    STG::Message::Header hdr;
     if (row[2]) 
         if(str2x(row[2], hdr.type))
             continue;

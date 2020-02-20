@@ -26,16 +26,18 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/locker.h"
+#include "stg/common.h"
+#include "stg/admin_conf.h"
+#include "stg/blowfish.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 
 #include <libpq-fe.h>
-
-#include "stg/locker.h"
-#include "stg/admin_conf.h"
-#include "stg/blowfish.h"
-#include "postgresql_store.h"
 
 #define adm_enc_passwd "cjeifY8m3"
 
@@ -71,9 +73,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::GetAdminsList(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::GetAdminsList(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::GetAdminsList(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -96,7 +98,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveAdmin(const ADMIN_CONF & ac) const
+int POSTGRESQL_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -141,9 +143,9 @@ if (EscapeString(pass))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to escape password'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -151,9 +153,9 @@ if (EscapeString(login))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -177,9 +179,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -195,7 +197,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
+int POSTGRESQL_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -228,9 +230,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -250,9 +252,9 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): '%s'\n", strError.c_str());
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -264,9 +266,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -345,9 +347,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -369,9 +371,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -415,9 +417,9 @@ if (EscapeString(elogin))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): 'Failed to escape login'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -432,9 +434,9 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
     PQclear(result);
     printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): '%s'\n", strError.c_str());
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelAdmin(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 

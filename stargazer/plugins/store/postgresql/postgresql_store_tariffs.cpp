@@ -26,16 +26,18 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/tariff_conf.h"
+#include "stg/common.h"
+#include "stg/locker.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 #include <cmath>
 
 #include <libpq-fe.h>
-
-#include "stg/common.h"
-#include "postgresql_store.h"
-#include "stg/locker.h"
 
 namespace
 {
@@ -227,7 +229,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveTariff(const TARIFF_DATA & td,
+int POSTGRESQL_STORE::SaveTariff(const STG::TariffData & td,
                                  const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
@@ -316,10 +318,10 @@ int32_t id;
                   traff_type = " << td.tariffConf.traffType;
 
     if (version > 6)
-        query << ", period = '" << TARIFF::PeriodToString(td.tariffConf.period) << "'";
+        query << ", period = '" << STG::Tariff::toString(td.tariffConf.period) << "'";
 
     if (version > 7)
-        query << ", change_policy = '" << TARIFF::ChangePolicyToString(td.tariffConf.changePolicy) << "', \
+        query << ", change_policy = '" << STG::Tariff::toString(td.tariffConf.changePolicy) << "', \
                   change_policy_timeout = CAST('" << formatTime(td.tariffConf.changePolicyTimeout) << "' AS TIMESTAMP)";
 
     query << " WHERE pk_tariff = " << id;
@@ -412,8 +414,8 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreTariff(TARIFF_DATA * td,
-                                  const std::string & tariffName) const
+int POSTGRESQL_STORE::RestoreTariff(STG::TariffData * td,
+                                    const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -508,15 +510,17 @@ int id;
     tuple >> td->tariffConf.fee;
     tuple >> td->tariffConf.free;
     tuple >> td->tariffConf.passiveCost;
-    tuple >> td->tariffConf.traffType;
+    unsigned traffType;
+    tuple >> traffType;
+    td->tariffConf.traffType = static_cast<STG::Tariff::TraffType>(traffType);
     }
 
 if (version > 6)
-    td->tariffConf.period = TARIFF::StringToPeriod(PQgetvalue(result, 0, 5));
+    td->tariffConf.period = STG::Tariff::parsePeriod(PQgetvalue(result, 0, 5));
 
 if (version > 7)
     {
-    td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(PQgetvalue(result, 0, 6));
+    td->tariffConf.changePolicy = STG::Tariff::parseChangePolicy(PQgetvalue(result, 0, 6));
     td->tariffConf.changePolicyTimeout = readTime(PQgetvalue(result, 0, 7));
     }
 

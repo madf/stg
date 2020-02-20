@@ -43,25 +43,17 @@
 #include "postgresql_store_utils.h"
 #include "postgresql_store.h"
 
-#include "stg/module_settings.h"
-#include "stg/plugin_creator.h"
+#include "stg/common.h" // str2x, printfd
 
 #include <string>
 #include <vector>
 
 #include <libpq-fe.h>
 
-namespace
+extern "C" STG::Store* GetStore()
 {
-PLUGIN_CREATOR<POSTGRESQL_STORE> pgsc;
-}
-
-extern "C" STORE * GetStore();
-
-//-----------------------------------------------------------------------------
-STORE * GetStore()
-{
-return pgsc.GetPlugin();
+    static POSTGRESQL_STORE plugin;
+    return &plugin;
 }
 
 //-----------------------------------------------------------------------------
@@ -75,7 +67,7 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       version(0),
       retries(3),
       connection(NULL),
-      logger(PluginLogger::get("store_postgresql"))
+      logger(STG::PluginLogger::get("store_postgresql"))
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -91,7 +83,7 @@ pthread_mutex_destroy(&mutex);
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::ParseSettings()
 {
-std::vector<PARAM_VALUE>::iterator i;
+std::vector<STG::ParamValue>::iterator i;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)
     {

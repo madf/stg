@@ -26,14 +26,17 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/corp_conf.h"
+#include "stg/locker.h"
+#include "stg/common.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 
 #include <libpq-fe.h>
-
-#include "postgresql_store.h"
-#include "stg/locker.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
@@ -92,7 +95,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveCorp(const CORP_CONF & cc) const
+int POSTGRESQL_STORE::SaveCorp(const STG::CorpConf & cc) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -121,9 +124,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::SaveCorp(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::SaveCorp(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::SaveCorp(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -158,7 +161,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreCorp(CORP_CONF * cc, const std::string & name) const
+int POSTGRESQL_STORE::RestoreCorp(STG::CorpConf * cc, const std::string & name) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -187,9 +190,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -218,9 +221,9 @@ if (tuples != 1)
     printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Invalid number of tuples. Wanted 1, actulally %d'\n", tuples);
     PQclear(result);
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::RestoreCorp(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -270,9 +273,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::AddCorp(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::AddCorp(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::AddCorp(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 
@@ -337,9 +340,9 @@ if (EscapeString(ename))
     {
     printfd(__FILE__, "POSTGRESQL_STORE::DelCorp(): 'Failed to escape name'\n");
     if (RollbackTransaction())
-	{
-	printfd(__FILE__, "POSTGRESQL_STORE::DelCorp(): 'Failed to rollback transaction'\n");
-	}
+        {
+        printfd(__FILE__, "POSTGRESQL_STORE::DelCorp(): 'Failed to rollback transaction'\n");
+        }
     return -1;
     }
 

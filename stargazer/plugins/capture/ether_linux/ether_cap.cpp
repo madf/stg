@@ -51,10 +51,10 @@ $Date: 2009/12/13 13:45:13 $
 
 //#define CAP_DEBUG 1
 
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-static ETHER_CAP plugin;
-return &plugin;
+    static ETHER_CAP plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ ETHER_CAP::ETHER_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      logger(PluginLogger::get("cap_ether"))
+      logger(STG::PluginLogger::get("cap_ether"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ dc->isRunning = true;
 struct ETH_IP
 {
 uint16_t    ethHdr[8];
-RAW_PACKET  rp;
+STG::RawPacket  rp;
 char        padding[4];
 char        padding1[8];
 };
@@ -178,7 +178,7 @@ while (dc->nonstop)
     if (ethIP->ethHdr[7] != 0x8)
         continue;
 
-    dc->traffCnt->Process(ethIP->rp);
+    dc->traffCnt->process(ethIP->rp);
     }
 
 dc->isRunning = false;

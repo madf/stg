@@ -26,18 +26,23 @@
  *
  */
 
+#include "postgresql_store.h"
+
+#include "stg/user_conf.h"
+#include "stg/user_stat.h"
+#include "stg/user_ips.h"
+#include "stg/user_traff.h"
+#include "stg/common.h"
+#include "stg/const.h"
+#include "stg/locker.h"
+#include "../../../stg_timer.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 #include <ctime>
 
 #include <libpq-fe.h>
-
-#include "stg/common.h"
-#include "stg/const.h"
-#include "stg/locker.h"
-#include "../../../stg_timer.h"
-#include "postgresql_store.h"
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetUsersList(std::vector<std::string> * usersList) const
@@ -223,7 +228,7 @@ if (CommitTransaction())
 return 0;
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveUserStat(const USER_STAT & stat,
+int POSTGRESQL_STORE::SaveUserStat(const STG::UserStat & stat,
                                    const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -231,7 +236,7 @@ STG_LOCKER lock(&mutex);
 return SaveStat(stat, login);
 }
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveStat(const USER_STAT & stat,
+int POSTGRESQL_STORE::SaveStat(const STG::UserStat & stat,
                                const std::string & login,
                                int year,
                                int month) const
@@ -334,7 +339,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveUserConf(const USER_CONF & conf,
+int POSTGRESQL_STORE::SaveUserConf(const STG::UserConf & conf,
                                  const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -605,7 +610,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreUserStat(USER_STAT * stat,
+int POSTGRESQL_STORE::RestoreUserStat(STG::UserStat * stat,
                                     const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -745,7 +750,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::RestoreUserConf(USER_CONF * conf,
+int POSTGRESQL_STORE::RestoreUserConf(STG::UserConf * conf,
                                     const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -954,10 +959,10 @@ if (PQresultStatus(result) != PGRES_TUPLES_OK)
 
 tuples = PQntuples(result);
 
-USER_IPS ips;
+STG::UserIPs ips;
 for (int i = 0; i < tuples; ++i)
     {
-    IP_MASK im;
+    STG::IPMask im;
 
     im.ip = inet_strington(PQgetvalue(result, i, 0));
 
@@ -967,7 +972,7 @@ for (int i = 0; i < tuples; ++i)
         continue;
         }
 
-    ips.Add(im);
+    ips.add(im);
     }
 conf->ips = ips;
 
@@ -1186,10 +1191,10 @@ return 0;
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::WriteUserDisconnect(const std::string & login,
-                    const DIR_TRAFF & monthUp,
-                    const DIR_TRAFF & monthDown,
-                    const DIR_TRAFF & sessionUp,
-                    const DIR_TRAFF & sessionDown,
+                    const STG::DirTraff & monthUp,
+                    const STG::DirTraff & monthDown,
+                    const STG::DirTraff & sessionUp,
+                    const STG::DirTraff & sessionDown,
                     double cash,
                     double freeMb,
                     const std::string & reason) const
@@ -1349,7 +1354,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
+int POSTGRESQL_STORE::WriteDetailedStat(const STG::TraffStat & statTree,
                                       time_t lastStat,
                                       const std::string & login) const
 {
@@ -1384,7 +1389,7 @@ if (EscapeString(elogin))
     return -1;
     }
 
-std::map<IP_DIR_PAIR, STAT_NODE>::const_iterator it;
+STG::TraffStat::const_iterator it;
 time_t currTime = time(NULL);
 
 for (it = statTree.begin(); it != statTree.end(); ++it)
@@ -1430,7 +1435,7 @@ return 0;
 }
 
 //-----------------------------------------------------------------------------
-int POSTGRESQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const
+int POSTGRESQL_STORE::SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -1499,7 +1504,7 @@ return 0;
 
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveUserIPs(uint32_t uid,
-                                  const USER_IPS & ips) const
+                                  const STG::UserIPs & ips) const
 {
 PGresult * result;
 
@@ -1520,7 +1525,7 @@ if (PQresultStatus(result) != PGRES_COMMAND_OK)
 
 PQclear(result);
 
-for (size_t i = 0; i < ips.Count(); ++i)
+for (size_t i = 0; i < ips.count(); ++i)
     {
     std::ostringstream query;
     query << "INSERT INTO tb_allowed_ip "

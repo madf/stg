@@ -1,22 +1,15 @@
- /*
- $Revision: 1.5 $
- $Date: 2010/10/07 19:45:52 $
- */
+#pragma once
 
-
-#ifndef MYSQL_STORE_H
-#define MYSQL_STORE_H
-
-#include <mysql/mysql.h>
+#include "stg/store.h"
+#include "stg/module_settings.h"
+#include "stg/user_traff.h"
+#include "stg/logger.h"
 
 #include <string>
 #include <vector>
 #include <map>
 
-#include "stg/module_settings.h"
-#include "stg/store.h"
-#include "stg/user_traff.h"
-#include "stg/logger.h"
+#include <mysql/mysql.h>
 
 //-----------------------------------------------------------------------------
 class MYSQL_STORE_SETTINGS
@@ -24,7 +17,7 @@ class MYSQL_STORE_SETTINGS
 public:
     MYSQL_STORE_SETTINGS();
     virtual ~MYSQL_STORE_SETTINGS() {}
-    virtual int ParseSettings(const MODULE_SETTINGS & s);
+    virtual int ParseSettings(const STG::ModuleSettings & s);
     virtual const std::string & GetStrError() const { return errorStr; }
 
     const std::string & GetDBUser() const { return dbUser; }
@@ -36,9 +29,9 @@ private:
     MYSQL_STORE_SETTINGS(const MYSQL_STORE_SETTINGS & rvalue);
     MYSQL_STORE_SETTINGS & operator=(const MYSQL_STORE_SETTINGS & rvalue);
 
-    const MODULE_SETTINGS * settings;
+    const STG::ModuleSettings * settings;
 
-    int     ParseParam(const std::vector<PARAM_VALUE> & moduleParams, 
+    int     ParseParam(const std::vector<STG::ParamValue> & moduleParams, 
                        const std::string & name, std::string & result);
 
     std::string  errorStr;
@@ -49,81 +42,80 @@ private:
     std::string  dbHost;
 };
 //-----------------------------------------------------------------------------
-class MYSQL_STORE: public STORE
+class MYSQL_STORE: public STG::Store
 {
 public:
     MYSQL_STORE();
-    virtual ~MYSQL_STORE() {}
-    virtual const std::string & GetStrError() const { return errorStr; }
+    const std::string & GetStrError() const override { return errorStr; }
 
     //User
-    virtual int GetUsersList(std::vector<std::string> * usersList) const;
-    virtual int AddUser(const std::string & login) const;
-    virtual int DelUser(const std::string & login) const;
-    virtual int SaveUserStat(const USER_STAT & stat, const std::string & login) const;
-    virtual int SaveUserConf(const USER_CONF & conf, const std::string & login) const;
-    virtual int RestoreUserStat(USER_STAT * stat, const std::string & login) const;
-    virtual int RestoreUserConf(USER_CONF * conf, const std::string & login) const;
-    virtual int WriteUserChgLog(const std::string & login,
-                                const std::string & admLogin,
-                                uint32_t       admIP,
-                                const std::string & paramName,
-                                const std::string & oldValue,
-                                const std::string & newValue,
-                                const std::string & message = "") const;
-    virtual int WriteUserConnect(const std::string & login, uint32_t ip) const;
-    virtual int WriteUserDisconnect(const std::string & login,
-                                    const DIR_TRAFF & up,
-                                    const DIR_TRAFF & down,
-                                    const DIR_TRAFF & sessionUp,
-                                    const DIR_TRAFF & sessionDown,
-                                    double cash,
-                                    double freeMb,
-                                    const std::string & reason) const;
+    int GetUsersList(std::vector<std::string> * usersList) const override;
+    int AddUser(const std::string & login) const override;
+    int DelUser(const std::string & login) const override;
+    int SaveUserStat(const STG::UserStat & stat, const std::string & login) const override;
+    int SaveUserConf(const STG::UserConf & conf, const std::string & login) const override;
+    int RestoreUserStat(STG::UserStat * stat, const std::string & login) const override;
+    int RestoreUserConf(STG::UserConf * conf, const std::string & login) const override;
+    int WriteUserChgLog(const std::string & login,
+                        const std::string & admLogin,
+                        uint32_t       admIP,
+                        const std::string & paramName,
+                        const std::string & oldValue,
+                        const std::string & newValue,
+                        const std::string & message = "") const override;
+    int WriteUserConnect(const std::string & login, uint32_t ip) const override;
+    int WriteUserDisconnect(const std::string & login,
+                            const STG::DirTraff & up,
+                            const STG::DirTraff & down,
+                            const STG::DirTraff & sessionUp,
+                            const STG::DirTraff & sessionDown,
+                            double cash,
+                            double freeMb,
+                            const std::string & reason) const override;
 
-    virtual int WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
-                                  time_t lastStat,
-                                  const std::string & login) const;
+    int WriteDetailedStat(const STG::TraffStat & statTree,
+                          time_t lastStat,
+                          const std::string & login) const override;
 
-    virtual int AddMessage(STG_MSG * msg, const std::string & login) const;
-    virtual int EditMessage(const STG_MSG & msg, const std::string & login) const;
-    virtual int GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const;
-    virtual int DelMessage(uint64_t id, const std::string & login) const;
-    virtual int GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const;
+    int AddMessage(STG::Message * msg, const std::string & login) const override;
+    int EditMessage(const STG::Message & msg, const std::string & login) const override;
+    int GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const override;
+    int DelMessage(uint64_t id, const std::string & login) const override;
+    int GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const override;
 
-    virtual int SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string & login) const;
+    int SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string & login) const override;
 
     //Admin
-    virtual int GetAdminsList(std::vector<std::string> * adminsList) const;
-    virtual int AddAdmin(const std::string & login) const;
-    virtual int DelAdmin(const std::string & login) const;
-    virtual int RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const;
-    virtual int SaveAdmin(const ADMIN_CONF & ac) const;
+    int GetAdminsList(std::vector<std::string> * adminsList) const override;
+    int AddAdmin(const std::string & login) const override;
+    int DelAdmin(const std::string & login) const override;
+    int RestoreAdmin(STG::AdminConf * ac, const std::string & login) const override;
+    int SaveAdmin(const STG::AdminConf & ac) const override;
 
     //Tariff
-    virtual int GetTariffsList(std::vector<std::string> * tariffsList) const;
-    virtual int AddTariff(const std::string & name) const;
-    virtual int DelTariff(const std::string & name) const;
-    virtual int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
-    virtual int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
+    int GetTariffsList(std::vector<std::string> * tariffsList) const override;
+    int AddTariff(const std::string & name) const override;
+    int DelTariff(const std::string & name) const override;
+    int SaveTariff(const STG::TariffData & td, const std::string & tariffName) const override;
+    int RestoreTariff(STG::TariffData * td, const std::string & tariffName) const override;
 
     //Corparation
-    virtual int GetCorpsList(std::vector<std::string> *) const {return 0;}
-    virtual int SaveCorp(const CORP_CONF &) const {return 0;}
-    virtual int RestoreCorp(CORP_CONF *, const std::string &) const {return 0;}
-    virtual int AddCorp(const std::string &) const {return 0;}
-    virtual int DelCorp(const std::string &) const {return 0;}
+    int GetCorpsList(std::vector<std::string> *) const override {return 0;}
+    int SaveCorp(const STG::CorpConf &) const override {return 0;}
+    int RestoreCorp(STG::CorpConf *, const std::string &) const override {return 0;}
+    int AddCorp(const std::string &) const override {return 0;}
+    int DelCorp(const std::string &) const override {return 0;}
 
     // Services
-    virtual int GetServicesList(std::vector<std::string> *) const {return 0;}
-    virtual int SaveService(const SERVICE_CONF &) const {return 0;}
-    virtual int RestoreService(SERVICE_CONF *, const std::string &) const {return 0;}
-    virtual int AddService(const std::string &) const {return 0;}
-    virtual int DelService(const std::string &) const {return 0;}
+    int GetServicesList(std::vector<std::string> *) const override {return 0;}
+    int SaveService(const STG::ServiceConf &) const override {return 0;}
+    int RestoreService(STG::ServiceConf *, const std::string &) const override {return 0;}
+    int AddService(const std::string &) const override {return 0;}
+    int DelService(const std::string &) const override {return 0;}
 
-    virtual void            SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    virtual int             ParseSettings();
-    virtual const std::string &  GetVersion() const { return version; }
+    void            SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int             ParseSettings() override;
+    const std::string &  GetVersion() const override { return version; }
 
 private:
     MYSQL_STORE(const MYSQL_STORE & rvalue);
@@ -141,11 +133,8 @@ private:
     MYSQL  *                MysqlConnect() const ;
     std::string                  version;
     MYSQL_STORE_SETTINGS    storeSettings;
-    MODULE_SETTINGS         settings;
+    STG::ModuleSettings         settings;
     int                     schemaVersion;
 
-    PLUGIN_LOGGER           logger;
+    STG::PluginLogger           logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif
