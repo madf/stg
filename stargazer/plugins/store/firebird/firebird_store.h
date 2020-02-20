@@ -18,100 +18,92 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-/*
- *  Firebird storage class definition
- *
- *  $Revision: 1.13 $
- *  $Date: 2010/01/19 11:07:25 $
- *
- */
-
-#ifndef FIREBIRD_STORE_H
-#define FIREBIRD_STORE_H
-
-#include <ctime>
-#include <string>
-#include <vector>
+#pragma once
 
 #include "stg/store.h"
 #include "stg/locker.h"
 #include "stg/ibpp.h"
 #include "stg/logger.h"
+#include "stg/module_settings.h"
+
+#include <ctime>
+#include <string>
+#include <vector>
 
 struct ToLower {
     char operator() (char c) const  { return static_cast<char>(std::tolower(c)); }
 };
 
-class FIREBIRD_STORE : public STORE {
+class FIREBIRD_STORE : public STG::Store {
 public:
     FIREBIRD_STORE();
-    virtual ~FIREBIRD_STORE();
+    ~FIREBIRD_STORE() override;
 
-    int GetUsersList(std::vector<std::string> * usersList) const;
-    int AddUser(const std::string & login) const;
-    int DelUser(const std::string & login) const;
-    int SaveUserStat(const USER_STAT & stat, const std::string & login) const;
-    int SaveUserConf(const USER_CONF & conf, const std::string & login) const;
-    int RestoreUserStat(USER_STAT * stat, const std::string & login) const;
-    int RestoreUserConf(USER_CONF * conf, const std::string & login) const;
+    int GetUsersList(std::vector<std::string> * usersList) const override;
+    int AddUser(const std::string & login) const override;
+    int DelUser(const std::string & login) const override;
+    int SaveUserStat(const STG::UserStat & stat, const std::string & login) const override;
+    int SaveUserConf(const STG::UserConf & conf, const std::string & login) const override;
+    int RestoreUserStat(STG::UserStat * stat, const std::string & login) const override;
+    int RestoreUserConf(STG::UserConf * conf, const std::string & login) const override;
     int WriteUserChgLog(const std::string & login,
                         const std::string & admLogin,
                         uint32_t admIP,
                         const std::string & paramName,
                         const std::string & oldValue,
                         const std::string & newValue,
-                        const std::string & message) const;
-    int WriteUserConnect(const std::string & login, uint32_t ip) const;
+                        const std::string & message) const override;
+    int WriteUserConnect(const std::string & login, uint32_t ip) const override;
     int WriteUserDisconnect(const std::string & login,
-                            const DIR_TRAFF & up,
-                            const DIR_TRAFF & down,
-                            const DIR_TRAFF & sessionUp,
-                            const DIR_TRAFF & sessionDown,
+                            const STG::DirTraff & up,
+                            const STG::DirTraff & down,
+                            const STG::DirTraff & sessionUp,
+                            const STG::DirTraff & sessionDown,
                             double cash,
                             double freeMb,
-                            const std::string & reason) const;
-    int WriteDetailedStat(const TRAFF_STAT & statTree,
+                            const std::string & reason) const override;
+    int WriteDetailedStat(const STG::TraffStat & statTree,
                           time_t lastStat,
-                          const std::string & login) const;
+                          const std::string & login) const override;
 
-    int AddMessage(STG_MSG * msg, const std::string & login) const;
-    int EditMessage(const STG_MSG & msg, const std::string & login) const;
-    int GetMessage(uint64_t id, STG_MSG * msg, const std::string & login) const;
-    int DelMessage(uint64_t id, const std::string & login) const;
-    int GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList, const std::string & login) const;
+    int AddMessage(STG::Message * msg, const std::string & login) const override;
+    int EditMessage(const STG::Message & msg, const std::string & login) const override;
+    int GetMessage(uint64_t id, STG::Message * msg, const std::string & login) const override;
+    int DelMessage(uint64_t id, const std::string & login) const override;
+    int GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList, const std::string & login) const override;
 
-    int SaveMonthStat(const USER_STAT & stat, int month, int year, const std::string  & login) const;
+    int SaveMonthStat(const STG::UserStat & stat, int month, int year, const std::string  & login) const override;
 
-    int GetAdminsList(std::vector<std::string> * adminsList) const;
-    int SaveAdmin(const ADMIN_CONF & ac) const;
-    int RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const;
-    int AddAdmin(const std::string & login) const;
-    int DelAdmin(const std::string & login) const;
+    int GetAdminsList(std::vector<std::string> * adminsList) const override;
+    int SaveAdmin(const STG::AdminConf & ac) const override;
+    int RestoreAdmin(STG::AdminConf * ac, const std::string & login) const override;
+    int AddAdmin(const std::string & login) const override;
+    int DelAdmin(const std::string & login) const override;
 
-    int GetTariffsList(std::vector<std::string> * tariffsList) const;
-    int AddTariff(const std::string & name) const;
-    int DelTariff(const std::string & name) const;
-    int SaveTariff(const TARIFF_DATA & td, const std::string & tariffName) const;
-    int RestoreTariff(TARIFF_DATA * td, const std::string & tariffName) const;
+    int GetTariffsList(std::vector<std::string> * tariffsList) const override;
+    int AddTariff(const std::string & name) const override;
+    int DelTariff(const std::string & name) const override;
+    int SaveTariff(const STG::TariffData & td, const std::string & tariffName) const override;
+    int RestoreTariff(STG::TariffData * td, const std::string & tariffName) const override;
 
-    int GetCorpsList(std::vector<std::string> * corpsList) const;
-    int SaveCorp(const CORP_CONF & cc) const;
-    int RestoreCorp(CORP_CONF * cc, const std::string & name) const;
-    int AddCorp(const std::string & name) const;
-    int DelCorp(const std::string & name) const;
+    int GetCorpsList(std::vector<std::string> * corpsList) const override;
+    int SaveCorp(const STG::CorpConf & cc) const override;
+    int RestoreCorp(STG::CorpConf * cc, const std::string & name) const override;
+    int AddCorp(const std::string & name) const override;
+    int DelCorp(const std::string & name) const override;
 
-    inline void SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int ParseSettings();
+    inline void SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int ParseSettings() override;
 
-    inline const std::string & GetStrError() const { return strError; }
+    inline const std::string & GetStrError() const override { return strError; }
 
-    inline const std::string & GetVersion() const { return version; }
+    inline const std::string & GetVersion() const override { return version; }
 
-    int GetServicesList(std::vector<std::string> * servicesList) const;
-    int SaveService(const SERVICE_CONF & sc) const;
-    int RestoreService(SERVICE_CONF * sc, const std::string & name) const;
-    int AddService(const std::string & name) const;
-    int DelService(const std::string & name) const;
+    int GetServicesList(std::vector<std::string> * servicesList) const override;
+    int SaveService(const STG::ServiceConf & sc) const override;
+    int RestoreService(STG::ServiceConf * sc, const std::string & name) const override;
+    int AddService(const std::string & name) const override;
+    int DelService(const std::string & name) const override;
 
 private:
     FIREBIRD_STORE(const FIREBIRD_STORE & rvalue);
@@ -120,15 +112,15 @@ private:
     std::string version;
     mutable std::string strError;
     std::string db_server, db_database, db_user, db_password;
-    MODULE_SETTINGS settings;
+    STG::ModuleSettings settings;
     mutable IBPP::Database db;
     mutable pthread_mutex_t mutex;
     IBPP::TIL til;
     IBPP::TLR tlr;
     int schemaVersion;
-    PLUGIN_LOGGER logger;
+    STG::PluginLogger logger;
 
-    int SaveStat(const USER_STAT & stat, const std::string & login, int year = 0, int month = 0) const;
+    int SaveStat(const STG::UserStat & stat, const std::string & login, int year = 0, int month = 0) const;
     int CheckVersion();
 };
 
@@ -144,5 +136,3 @@ T Get(IBPP::Statement st, size_t pos)
     st->Get(pos, value);
     return value;
 }
-
-#endif //FIREBIRD_STORE_H

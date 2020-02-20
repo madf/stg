@@ -24,6 +24,8 @@
 #include "stg/users.h"
 #include "stg/user.h"
 
+#include <cstring>
+
 extern volatile time_t stgTime; // So sad...
 
 using STG::PARSER::SEND_MESSAGE;

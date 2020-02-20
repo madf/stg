@@ -26,12 +26,15 @@
  *
  */
 
+#include "firebird_store.h"
+
+#include "stg/ibpp.h"
+#include "stg/admin_conf.h"
+#include "stg/blowfish.h"
+#include "stg/common.h"
+
 #include <string>
 #include <vector>
-
-#include "firebird_store.h"
-#include "stg/ibpp.h"
-#include "stg/blowfish.h"
 
 #define adm_enc_passwd "cjeifY8m3"
 
@@ -68,7 +71,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::SaveAdmin(const ADMIN_CONF & ac) const
+int FIREBIRD_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -126,7 +129,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreAdmin(ADMIN_CONF * ac, const std::string & login) const
+int FIREBIRD_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 

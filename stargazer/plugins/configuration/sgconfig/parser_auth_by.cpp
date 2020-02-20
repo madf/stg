@@ -23,6 +23,8 @@
 #include "stg/users.h"
 #include "stg/user.h"
 
+#include <cstring>
+
 using STG::PARSER::AUTH_BY;
 
 const char * AUTH_BY::tag = "GetUserAuthBy";

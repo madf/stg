@@ -26,10 +26,12 @@
  *
  */
 
-#include <cstdio>
-
 #include "firebird_store.h"
+
 #include "stg/ibpp.h"
+#include "stg/common.h"
+
+#include <cstdio>
 
 //-----------------------------------------------------------------------------
 time_t ts2time_t(const IBPP::Timestamp & ts)

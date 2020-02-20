@@ -60,7 +60,7 @@ unsigned char * payload = NULL;
 if (nfq_get_payload(nfqData, &payload) < 0 || payload == NULL)
     return id;
 
-RAW_PACKET packet;
+STG::RawPacket packet;
 
 memcpy(&packet.rawPacket, payload, sizeof(packet.rawPacket));
 
@@ -73,7 +73,7 @@ return nfq_set_verdict(queueHandle, id, NF_ACCEPT, 0, NULL);
 
 }
 
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
     static NFQ_CAP plugin;
     return &plugin;
@@ -93,7 +93,7 @@ NFQ_CAP::NFQ_CAP()
       nfqHandle(NULL),
       queueHandle(NULL),
       traffCnt(NULL),
-      logger(PluginLogger::get("cap_nfqueue"))
+      logger(STG::PluginLogger::get("cap_nfqueue"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -240,7 +240,7 @@ dc->isRunning = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------
-void NFQ_CAP::Process(const RAW_PACKET & packet)
+void NFQ_CAP::Process(const STG::RawPacket & packet)
 {
-traffCnt->Process(packet);
+traffCnt->process(packet);
 }

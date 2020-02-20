@@ -18,8 +18,7 @@
 * Author : Maxim Mamontov <faust@stargazer.dp.ua>
 */
 
-#ifndef PCAP_CAP_H
-#define PCAP_CAP_H
+#pragma once
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
@@ -32,13 +31,16 @@
 #include <pthread.h>
 #include <sys/select.h>
 
-class USERS;
-class TARIFFS;
-class ADMINS;
-class TRAFFCOUNTER;
-class SETTINGS;
+namespace STG
+{
 
-class TRAFFCOUNTER;
+struct Users;
+struct Tariffs;
+struct Admins;
+struct TraffCounter;
+struct Settings;
+
+}
 
 struct DEV
 {
@@ -56,25 +58,24 @@ struct DEV
 
 typedef std::vector<DEV> DEV_MAP;
 
-class PCAP_CAP : public PLUGIN {
+class PCAP_CAP : public STG::Plugin {
 public:
     PCAP_CAP();
-    virtual ~PCAP_CAP() {}
 
-    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
+    void                SetTraffcounter(STG::TraffCounter * tc) override { traffCnt = tc; }
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool                IsRunning() { return isRunning; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+    bool                IsRunning() override { return isRunning; }
 
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const;
-    uint16_t            GetStartPosition() const { return 40; }
-    uint16_t            GetStopPosition() const { return 40; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override;
+    uint16_t            GetStartPosition() const override { return 40; }
+    uint16_t            GetStopPosition() const override { return 40; }
 
 private:
     PCAP_CAP(const PCAP_CAP & rvalue);
@@ -90,13 +91,10 @@ private:
     pthread_t           thread;
     bool                nonstop;
     bool                isRunning;
-    MODULE_SETTINGS     settings;
+    STG::ModuleSettings     settings;
     DEV_MAP             devices;
 
-    TRAFFCOUNTER *      traffCnt;
+    STG::TraffCounter *      traffCnt;
 
-    PLUGIN_LOGGER       logger;
+    STG::PluginLogger       logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif

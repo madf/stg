@@ -26,10 +26,14 @@
  *
  */
 
-#include <cmath>
-
 #include "firebird_store.h"
+
 #include "stg/ibpp.h"
+#include "stg/tariff.h"
+#include "stg/tariff_conf.h"
+#include "stg/common.h"
+
+#include <cmath>
 
 namespace
 {
@@ -126,7 +130,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::SaveTariff(const TARIFF_DATA & td,
+int FIREBIRD_STORE::SaveTariff(const STG::TariffData & td,
                                const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
@@ -174,13 +178,13 @@ try
 
     if (schemaVersion > 0)
         {
-        st->Set(5, TARIFF::PeriodToString(td.tariffConf.period));
+        st->Set(5, STG::Tariff::toString(td.tariffConf.period));
         ++num;
         }
 
     if (schemaVersion > 1)
         {
-        st->Set(6, TARIFF::ChangePolicyToString(td.tariffConf.changePolicy));
+        st->Set(6, STG::Tariff::toString(td.tariffConf.changePolicy));
         IBPP::Timestamp policyTimeout;
         time_t2ts(td.tariffConf.changePolicyTimeout, &policyTimeout);
         st->Set(7, policyTimeout);
@@ -261,7 +265,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreTariff(TARIFF_DATA * td,
+int FIREBIRD_STORE::RestoreTariff(STG::TariffData * td,
                                   const std::string & tariffName) const
 {
 STG_LOCKER lock(&mutex);
@@ -290,12 +294,12 @@ try
     st->Get(3, td->tariffConf.fee);
     st->Get(4, td->tariffConf.free);
     st->Get(5, td->tariffConf.passiveCost);
-    td->tariffConf.traffType = TARIFF::IntToTraffType(Get<int>(st, 6));
+    td->tariffConf.traffType = STG::Tariff::fromInt(Get<int>(st, 6));
     if (schemaVersion > 0)
-        td->tariffConf.period = TARIFF::StringToPeriod(Get<std::string>(st, 7));
+        td->tariffConf.period = STG::Tariff::parsePeriod(Get<std::string>(st, 7));
     if (schemaVersion > 1)
         {
-        td->tariffConf.changePolicy = TARIFF::StringToChangePolicy(Get<std::string>(st, 8));
+        td->tariffConf.changePolicy = STG::Tariff::parseChangePolicy(Get<std::string>(st, 8));
         td->tariffConf.changePolicyTimeout = ts2time_t(Get<IBPP::Timestamp>(st, 9));
         }
     st->Close();

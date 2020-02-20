@@ -47,10 +47,10 @@ u_short    ether_type;                     /* IP? ARP? RARP? etc */
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-static PCAP_CAP plugin;
-return &plugin;
+    static PCAP_CAP plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -64,7 +64,7 @@ PCAP_CAP::PCAP_CAP()
     : nonstop(false),
       isRunning(false),
       traffCnt(NULL),
-      logger(PluginLogger::get("pcap_cap"))
+      logger(STG::PluginLogger::get("pcap_cap"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ const ETH * eth = reinterpret_cast<const ETH *>(packet);
 if (eth->ether_type != 0x8)
     return;
 
-RAW_PACKET ip;
+STG::RawPacket ip;
 memcpy(&ip.rawPacket, packet + 14, sizeof(ip.rawPacket));
-traffCnt->Process(ip);
+traffCnt->process(ip);
 }

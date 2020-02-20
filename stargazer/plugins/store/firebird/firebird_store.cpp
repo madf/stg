@@ -28,22 +28,15 @@
 
 #include "firebird_store.h"
 
-#include "stg/ibpp.h"
-#include "stg/plugin_creator.h"
+#include "stg/common.h"
 
 #include <string>
 #include <vector>
 
-namespace
+extern "C" STG::Store* GetStore()
 {
-PLUGIN_CREATOR<FIREBIRD_STORE> frsc;
-}
-
-extern "C" STORE * GetStore();
-//-----------------------------------------------------------------------------
-STORE * GetStore()
-{
-return frsc.GetPlugin();
+    static FIREBIRD_STORE plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -57,7 +50,7 @@ FIREBIRD_STORE::FIREBIRD_STORE()
       til(IBPP::ilConcurrency),
       tlr(IBPP::lrWait),
       schemaVersion(0),
-      logger(PluginLogger::get("store_firebird"))
+      logger(STG::PluginLogger::get("store_firebird"))
 {
 pthread_mutex_init(&mutex, NULL);
 }
@@ -69,7 +62,7 @@ db->Disconnect();
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::ParseSettings()
 {
-std::vector<PARAM_VALUE>::iterator i;
+std::vector<STG::ParamValue>::iterator i;
 std::string s;
 
 for(i = settings.moduleParams.begin(); i != settings.moduleParams.end(); ++i)

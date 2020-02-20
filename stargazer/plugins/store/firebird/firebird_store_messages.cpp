@@ -28,10 +28,13 @@
  */
 
 #include "firebird_store.h"
+
 #include "stg/ibpp.h"
+#include "stg/message.h"
+#include "stg/common.h"
 
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::AddMessage(STG_MSG * msg, const std::string & login) const
+int FIREBIRD_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -67,7 +70,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::EditMessage(const STG_MSG & msg,
+int FIREBIRD_STORE::EditMessage(const STG::Message & msg,
                                 const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -105,7 +108,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetMessage(uint64_t id,
-                               STG_MSG * msg,
+                               STG::Message * msg,
                                const std::string &) const
 {
 STG_LOCKER lock(&mutex);
@@ -179,7 +182,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::GetMessageHdrs(std::vector<STG_MSG_HDR> * hdrsList,
+int FIREBIRD_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList,
                                    const std::string & login) const
 {
 STG_LOCKER lock(&mutex);
@@ -187,7 +190,7 @@ STG_LOCKER lock(&mutex);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-STG_MSG_HDR header;
+STG::Message::Header header;
 
 try
     {

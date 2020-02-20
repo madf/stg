@@ -28,7 +28,10 @@
  */
 
 #include "firebird_store.h"
+
 #include "stg/ibpp.h"
+#include "stg/service_conf.h"
+#include "stg/common.h"
 
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetServicesList(std::vector<std::string> * servicesList) const
@@ -63,7 +66,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::SaveService(const SERVICE_CONF & sc) const
+int FIREBIRD_STORE::SaveService(const STG::ServiceConf & sc) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -97,7 +100,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreService(SERVICE_CONF * sc,
+int FIREBIRD_STORE::RestoreService(STG::ServiceConf * sc,
                                    const std::string & name) const
 {
 STG_LOCKER lock(&mutex);

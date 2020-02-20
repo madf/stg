@@ -27,7 +27,10 @@
  */
 
 #include "firebird_store.h"
+
 #include "stg/ibpp.h"
+#include "stg/corp_conf.h"
+#include "stg/common.h"
 
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
@@ -62,7 +65,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::SaveCorp(const CORP_CONF & cc) const
+int FIREBIRD_STORE::SaveCorp(const STG::CorpConf & cc) const
 {
 STG_LOCKER lock(&mutex);
 
@@ -90,7 +93,7 @@ catch (IBPP::Exception & ex)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int FIREBIRD_STORE::RestoreCorp(CORP_CONF * cc, const std::string & name) const
+int FIREBIRD_STORE::RestoreCorp(STG::CorpConf * cc, const std::string & name) const
 {
 STG_LOCKER lock(&mutex);
 
