@@ -3,7 +3,10 @@
 #include "tariffs_methods.h"
 #include "rpcconfig.h"
 #include "tariff_helper.h"
+
 #include "stg/tariffs.h"
+#include "stg/tariff.h"
+#include "stg/tariff_conf.h"
 #include "stg/users.h"
 #include "stg/admins.h"
 #include "stg/admin.h"
@@ -25,7 +28,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-const TARIFF * tariff = tariffs->FindByName(name);
+const auto tariff = tariffs->FindByName(name);
 
 if (!tariff)
     {
@@ -34,7 +37,7 @@ if (!tariff)
     return;
     }
 
-TARIFF_DATA td(tariff->GetTariffData());
+auto td = tariff->GetTariffData();
 
 TARIFF_HELPER helper(td);
 
@@ -57,7 +60,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -65,7 +68,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-const TARIFF * tariff = tariffs->FindByName(name);
+const auto tariff = tariffs->FindByName(name);
 
 if (!tariff)
     {
@@ -73,7 +76,7 @@ if (!tariff)
     return;
     }
 
-TARIFF_DATA td(tariff->GetTariffData());
+auto td = tariff->GetTariffData();
 
 TARIFF_HELPER helper(td);
 
@@ -107,13 +110,13 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 std::vector<xmlrpc_c::value> tariffsInfo;
 
 
-std::vector<TARIFF_DATA> dataList;
+std::vector<STG::TariffData> dataList;
 tariffs->GetTariffsData(&dataList);
 auto it = dataList.begin();
 for (; it != dataList.end(); ++it)
     {
     xmlrpc_c::value info;
-    TARIFF_DATA td(*it); // 'cause TARIFF_HELPER work in both ways and take not const referense
+    auto td = *it; // 'cause TARIFF_HELPER work in both ways and take not const referense
     TARIFF_HELPER helper(td);
     helper.GetTariffInfo(&info);
     tariffsInfo.push_back(info);
@@ -137,7 +140,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -169,7 +172,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {

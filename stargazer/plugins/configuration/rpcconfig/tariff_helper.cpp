@@ -1,7 +1,10 @@
-#include <ostream> // xmlrpc-c devs have missed something :)
-
 #include "tariff_helper.h"
+
+#include "stg/tariff_conf.h"
 #include "stg/common.h"
+#include "stg/const.h"
+
+#include <ostream> // xmlrpc-c devs have missed something :)
 
 void TARIFF_HELPER::GetTariffInfo(xmlrpc_c::value * info) const
 {
@@ -13,8 +16,8 @@ structVal["fee"] = xmlrpc_c::value_double(data.tariffConf.fee);
 structVal["freemb"] = xmlrpc_c::value_double(data.tariffConf.free);
 structVal["passivecost"] = xmlrpc_c::value_double(data.tariffConf.passiveCost);
 structVal["traffType"] = xmlrpc_c::value_int(data.tariffConf.traffType);
-structVal["period"] = xmlrpc_c::value_string(TARIFF::PeriodToString(data.tariffConf.period));
-structVal["changePolicy"] = xmlrpc_c::value_string(TARIFF::ChangePolicyToString(data.tariffConf.changePolicy));
+structVal["period"] = xmlrpc_c::value_string(STG::Tariff::toString(data.tariffConf.period));
+structVal["changePolicy"] = xmlrpc_c::value_string(STG::Tariff::toString(data.tariffConf.changePolicy));
 structVal["changePolicyTimeout"] = xmlrpc_c::value_string(formatTime(data.tariffConf.changePolicyTimeout));
 
 std::vector<xmlrpc_c::value> prices(DIR_NUM);
@@ -66,17 +69,17 @@ if ((it = structVal.find("passivecost")) != structVal.end())
 
 if ((it = structVal.find("traffType")) != structVal.end())
     {
-    data.tariffConf.traffType = static_cast<TARIFF::TRAFF_TYPE>(xmlrpc_c::value_int(it->second).cvalue());
+    data.tariffConf.traffType = static_cast<STG::Tariff::TraffType>(xmlrpc_c::value_int(it->second).cvalue());
     }
 
 if ((it = structVal.find("period")) != structVal.end())
     {
-    data.tariffConf.period = TARIFF::StringToPeriod(xmlrpc_c::value_string(it->second));
+    data.tariffConf.period = STG::Tariff::parsePeriod(xmlrpc_c::value_string(it->second));
     }
 
 if ((it = structVal.find("changePolicy")) != structVal.end())
     {
-    data.tariffConf.changePolicy = TARIFF::StringToChangePolicy(xmlrpc_c::value_string(it->second));
+    data.tariffConf.changePolicy = STG::Tariff::parseChangePolicy(xmlrpc_c::value_string(it->second));
     }
 
 if ((it = structVal.find("changePolicyTimeout")) != structVal.end())

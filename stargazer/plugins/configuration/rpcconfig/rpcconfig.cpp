@@ -1,15 +1,17 @@
-
 #include "rpcconfig.h"
+
 #include "info_methods.h"
 #include "users_methods.h"
 #include "tariffs_methods.h"
 #include "admins_methods.h"
 #include "messages_methods.h"
 
-#include "stg/common.h"
+#include "stg/admins.h"
 #include "stg/admin.h"
 #include "stg/module_settings.h"
 #include "stg/settings.h"
+#include "stg/common.h"
+#include "stg/const.h"
 
 #include <algorithm>
 #include <vector>
@@ -31,11 +33,11 @@ RPC_CONFIG_SETTINGS::RPC_CONFIG_SETTINGS()
 {
 }
 
-int RPC_CONFIG_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int RPC_CONFIG_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
-PARAM_VALUE pv;
+STG::ParamValue pv;
 pv.param = "Port";
-std::vector<PARAM_VALUE>::const_iterator pvi;
+std::vector<STG::ParamValue>::const_iterator pvi;
 pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
@@ -71,7 +73,7 @@ else
 return 0;
 }
 
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
     static RPC_CONFIG plugin;
     return &plugin;
@@ -87,7 +89,7 @@ RPC_CONFIG::RPC_CONFIG()
       running(false),
       stopped(true),
       dayFee(0),
-      logger(PluginLogger::get("conf_rpc"))
+      logger(STG::PluginLogger::get("conf_rpc"))
 {
 }
 
@@ -107,7 +109,7 @@ if (ret)
 return ret;
 }
 
-void RPC_CONFIG::SetStgSettings(const SETTINGS * s)
+void RPC_CONFIG::SetStgSettings(const STG::Settings * s)
 {
     dayFee = s->GetDayFee();
     dirNames.erase(dirNames.begin(), dirNames.end());
@@ -255,7 +257,7 @@ bool RPC_CONFIG::CheckAdmin(const std::string & login,
                             const std::string & password,
                             std::string * cookie)
 {
-ADMIN * admin = NULL;
+STG::Admin * admin = NULL;
 
 if (!admins->Correct(login, password, &admin))
     {

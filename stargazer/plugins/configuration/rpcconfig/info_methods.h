@@ -1,24 +1,28 @@
-#ifndef __INFO_METHODS_H__
-#define __INFO_METHODS_H__
-
-#include <string>
-#include <vector>
+#pragma once
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "stg/users.h"
-#include "stg/tariffs.h"
+#include <string>
+#include <vector>
+
+namespace STG
+{
+
+struct Settings;
+struct Users;
+struct Tariffs;
+
+}
 
 // Forward declaration
 class RPC_CONFIG;
-class SETTINGS;
 
 class METHOD_INFO : public xmlrpc_c::method
 {
 public:
-    METHOD_INFO(TARIFFS * t,
-                USERS * u,
+    METHOD_INFO(STG::Tariffs * t,
+                STG::Users * u,
                 size_t df,
                 const std::vector<std::string> & dn)
         : tariffs(t),
@@ -35,8 +39,8 @@ private:
     METHOD_INFO(const METHOD_INFO & rvalue);
     METHOD_INFO & operator=(const METHOD_INFO & rvalue);
 
-    TARIFFS * tariffs;
-    USERS * users;
+    STG::Tariffs * tariffs;
+    STG::Users * users;
     size_t dayFee;
     const std::vector<std::string> & dirNames;
 };
@@ -76,5 +80,3 @@ private:
 
     RPC_CONFIG * config;
 };
-
-#endif

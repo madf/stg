@@ -1,9 +1,12 @@
-#include <ostream> // xmlrpc-c devs have missed something :)
-
-#include "stg/message.h"
-#include "stg/common.h"
 #include "messages_methods.h"
 #include "rpcconfig.h"
+
+#include "stg/users.h"
+#include "stg/user.h"
+#include "stg/message.h"
+#include "stg/common.h"
+
+#include <ostream> // xmlrpc-c devs have missed something :)
 
 extern volatile time_t stgTime;
 
@@ -25,7 +28,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-STG_MSG message;
+STG::Message message;
 
 std::map<std::string, xmlrpc_c::value>::iterator it;
 
@@ -81,7 +84,8 @@ message.header.lastSendTime = 0;
 std::vector<xmlrpc_c::value>::iterator lit;
 for (lit = logins.begin(); lit != logins.end(); ++lit)
     {
-    USER_PTR ui;
+    using UserPtr = STG::User*;
+    UserPtr ui;
     if (users->FindByName(xmlrpc_c::value_string(*lit), &ui))
         {
         printfd(__FILE__, "METHOD_MESSAGE_SEND::execute(): 'User '%s' not found'\n", std::string(xmlrpc_c::value_string(*lit)).c_str());

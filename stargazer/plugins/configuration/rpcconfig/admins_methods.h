@@ -1,18 +1,21 @@
-#ifndef __ADMINS_METHODS_H__
-#define __ADMINS_METHODS_H__
+#pragma once
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "stg/admins.h"
-#include "stg/admin.h"
+namespace STG
+{
+
+struct Admins;
+
+}
 
 class RPC_CONFIG;
 
 class METHOD_ADMIN_GET : public xmlrpc_c::method {
 public:
     METHOD_ADMIN_GET(RPC_CONFIG * c,
-                     ADMINS * a)
+                     STG::Admins * a)
         : config(c),
           admins(a)
     {
@@ -26,13 +29,13 @@ private:
     METHOD_ADMIN_GET & operator=(const METHOD_ADMIN_GET & rvalue);
 
     RPC_CONFIG * config;
-    ADMINS * admins;
+    STG::Admins * admins;
 };
 
 class METHOD_ADMIN_ADD : public xmlrpc_c::method {
 public:
     METHOD_ADMIN_ADD(RPC_CONFIG * c,
-                     ADMINS * a)
+                     STG::Admins * a)
         : config(c),
           admins(a)
     {
@@ -46,13 +49,13 @@ private:
     METHOD_ADMIN_ADD & operator=(const METHOD_ADMIN_ADD & rvalue);
 
     RPC_CONFIG * config;
-    ADMINS * admins;
+    STG::Admins * admins;
 };
 
 class METHOD_ADMIN_DEL : public xmlrpc_c::method {
 public:
     METHOD_ADMIN_DEL(RPC_CONFIG * c,
-                     ADMINS * a)
+                     STG::Admins * a)
         : config(c),
           admins(a)
     {
@@ -66,13 +69,13 @@ private:
     METHOD_ADMIN_DEL & operator=(const METHOD_ADMIN_DEL & rvalue);
 
     RPC_CONFIG * config;
-    ADMINS * admins;
+    STG::Admins * admins;
 };
 
 class METHOD_ADMIN_CHG : public xmlrpc_c::method {
 public:
     METHOD_ADMIN_CHG(RPC_CONFIG * c,
-                     ADMINS * a)
+                     STG::Admins * a)
         : config(c),
           admins(a)
     {
@@ -86,13 +89,13 @@ private:
     METHOD_ADMIN_CHG & operator=(const METHOD_ADMIN_CHG & rvalue);
 
     RPC_CONFIG * config;
-    ADMINS * admins;
+    STG::Admins * admins;
 };
 
 class METHOD_ADMINS_GET : public xmlrpc_c::method {
 public:
     METHOD_ADMINS_GET(RPC_CONFIG * c,
-                      ADMINS * a)
+                      STG::Admins * a)
         : config(c),
           admins(a)
     {
@@ -106,7 +109,5 @@ private:
     METHOD_ADMINS_GET & operator=(const METHOD_ADMINS_GET & rvalue);
 
     RPC_CONFIG * config;
-    ADMINS * admins;
+    STG::Admins * admins;
 };
-
-#endif

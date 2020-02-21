@@ -1,22 +1,23 @@
-#ifndef __TARIFF_HELPER_H__
-#define __TARIFF_HELPER_H__
+#pragma once
 
 #include <xmlrpc-c/base.hpp>
-#include "stg/tariff_conf.h"
+
+namespace STG
+{
+
+struct TariffData;
+
+}
 
 class TARIFF_HELPER
 {
 public:
-    explicit TARIFF_HELPER(TARIFF_DATA & td)
+    explicit TARIFF_HELPER(STG::TariffData & td)
         : data(td)
     {}
 
     void GetTariffInfo(xmlrpc_c::value * info) const;
     bool SetTariffInfo(const xmlrpc_c::value & info);
 private:
-    TARIFF_DATA & data;
+    STG::TariffData & data;
 };
-
-#endif
-
-

@@ -1,17 +1,21 @@
-#ifndef __MESSAGES_METHODS_H__
-#define __MESSAGES_METHODS_H__
+#pragma once
 
 #include <xmlrpc-c/base.hpp>
 #include <xmlrpc-c/registry.hpp>
 
-#include "stg/users.h"
+namespace STG
+{
+
+struct Users;
+
+}
 
 class RPC_CONFIG;
 
 class METHOD_MESSAGE_SEND : public xmlrpc_c::method {
 public:
     METHOD_MESSAGE_SEND(RPC_CONFIG * c,
-                     USERS * u)
+                     STG::Users * u)
         : config(c),
           users(u)
     {
@@ -25,7 +29,5 @@ private:
     METHOD_MESSAGE_SEND & operator=(const METHOD_MESSAGE_SEND & rvalue);
 
     RPC_CONFIG * config;
-    USERS * users;
+    STG::Users * users;
 };
-
-#endif

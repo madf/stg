@@ -1,8 +1,13 @@
-#include <ostream> // xmlrpc-c devs have missed something :)
-
-#include "stg/common.h"
 #include "admins_methods.h"
 #include "rpcconfig.h"
+
+#include "stg/common.h"
+
+#include "stg/admins.h"
+#include "stg/admin.h"
+#include "stg/admin_conf.h"
+
+#include <ostream> // xmlrpc-c devs have missed something :)
 
 //------------------------------------------------------------------------------
 
@@ -23,7 +28,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(login, &admin))
     {
@@ -36,7 +41,7 @@ structVal["result"] = xmlrpc_c::value_boolean(true);
 structVal["login"] = xmlrpc_c::value_string(admin->GetLogin());
 structVal["password"] = xmlrpc_c::value_string(admin->GetPassword());
 
-const PRIV * priv = admin->GetPriv();
+const auto priv = admin->GetPriv();
 
 structVal["user_stat"] = xmlrpc_c::value_boolean(priv->userStat);
 structVal["user_conf"] = xmlrpc_c::value_boolean(priv->userConf);
@@ -67,7 +72,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -103,7 +108,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -138,7 +143,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * loggedAdmin;
+STG::Admin * loggedAdmin;
 
 if (admins->Find(adminInfo.admin, &loggedAdmin))
     {
@@ -146,7 +151,7 @@ if (admins->Find(adminInfo.admin, &loggedAdmin))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(login, &admin))
     {
@@ -154,7 +159,7 @@ if (admins->Find(login, &admin))
     return;
     }
 
-ADMIN_CONF conf;
+STG::AdminConf conf;
 
 conf.priv = *admin->GetPriv();
 conf.password = admin->GetPassword();
@@ -233,7 +238,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN_CONF ac;
+STG::AdminConf ac;
 int h = admins->OpenSearch();
 
 while (admins->SearchNext(h, &ac) == 0)

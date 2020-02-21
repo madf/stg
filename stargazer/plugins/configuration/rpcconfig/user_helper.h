@@ -1,20 +1,25 @@
-#ifndef __USER_HELPER_H__
-#define __USER_HELPER_H__
+#pragma once
 
 #include <string>
 
 #include <xmlrpc-c/base.hpp>
 
-#include "stg/users.h"
+namespace STG
+{
 
-class ADMIN;
-class STORE;
-class TARIFFS;
+struct Admin;
+struct Store;
+struct Tariffs;
+struct User;
+struct Users;
+
+}
 
 class USER_HELPER
 {
 public:
-    USER_HELPER(USER_PTR & p, USERS & us)
+    using UserPtr = STG::User*;
+    USER_HELPER(UserPtr & p, STG::Users & us)
         : ptr(p),
           users(us)
     {
@@ -23,13 +28,11 @@ public:
     void GetUserInfo(xmlrpc_c::value * info,
                      bool hidePassword = false);
     bool SetUserInfo(const xmlrpc_c::value & info,
-                     const ADMIN * admin,
+                     const STG::Admin& admin,
                      const std::string & login,
-                     const STORE & store,
-                     TARIFFS * tariffs);
+                     const STG::Store & store,
+                     STG::Tariffs * tariffs);
 private:
-    USER_PTR & ptr;
-    USERS & users;
+    UserPtr & ptr;
+    STG::Users & users;
 };
-
-#endif

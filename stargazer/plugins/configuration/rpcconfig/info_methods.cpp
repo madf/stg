@@ -1,11 +1,15 @@
-#include <sys/utsname.h>
+#include "info_methods.h"
+#include "rpcconfig.h"
+
+#include "stg/users.h"
+#include "stg/tariffs.h"
+#include "stg/version.h"
+#include "stg/common.h"
+#include "stg/const.h"
 
 #include <ostream> // xmlrpc-c devs have missed something :)
 
-#include "stg/version.h"
-#include "stg/common.h"
-#include "info_methods.h"
-#include "rpcconfig.h"
+#include <sys/utsname.h>
 
 void METHOD_INFO::execute(xmlrpc_c::paramList const & paramList,
                           xmlrpc_c::value *   const   retvalPtr)

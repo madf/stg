@@ -1,7 +1,13 @@
-#ifndef __RPC_CONFIG_H__
-#define __RPC_CONFIG_H__
+#pragma once
 
-#include <pthread.h>
+#include "stg/plugin.h"
+#include "stg/admin_conf.h"
+#include "stg/module_settings.h"
+#include "stg/logger.h"
+
+#include <xmlrpc-c/base.hpp>
+#include <xmlrpc-c/registry.hpp>
+#include <xmlrpc-c/server_abyss.hpp>
 
 #include <ctime>
 #include <cstdint>
@@ -9,21 +15,19 @@
 #include <map>
 #include <vector>
 
-#include <xmlrpc-c/base.hpp>
-#include <xmlrpc-c/registry.hpp>
-#include <xmlrpc-c/server_abyss.hpp>
-
-#include "stg/plugin.h"
-#include "stg/admin_conf.h"
-#include "stg/module_settings.h"
-#include "stg/logger.h"
+#include <pthread.h>
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
-class ADMINS;
-class TARIFFS;
-class USERS;
-class STORE;
+namespace STG
+{
+
+struct Admins;
+struct Tariffs;
+struct Users;
+struct Store;
+
+}
 
 class RPC_CONFIG_SETTINGS
 {
@@ -31,7 +35,7 @@ public:
                          RPC_CONFIG_SETTINGS();
     virtual              ~RPC_CONFIG_SETTINGS() {}
     const std::string &  GetStrError() const { return errorStr; }
-    int                  ParseSettings(const MODULE_SETTINGS & s);
+    int                  ParseSettings(const STG::ModuleSettings & s);
     uint16_t             GetPort() const { return port; }
     double               GetCookieTimeout() const { return cookieTimeout; }
 
@@ -51,32 +55,32 @@ struct ADMIN_INFO
 
     std::string admin;
     time_t      accessTime;
-    PRIV        priviledges;
+    STG::Priv        priviledges;
 };
 
-class RPC_CONFIG : public PLUGIN
+class RPC_CONFIG : public STG::Plugin
 {
 public:
     RPC_CONFIG();
-    virtual ~RPC_CONFIG();
+    ~RPC_CONFIG() override;
 
-    void                SetUsers(USERS * u) { users = u; }
-    void                SetTariffs(TARIFFS * t) { tariffs = t; }
-    void                SetAdmins(ADMINS * a) { admins = a; }
-    void                SetStore(STORE * s) { store = s; }
-    void                SetStgSettings(const SETTINGS * s);
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    void                SetUsers(STG::Users * u) override { users = u; }
+    void                SetTariffs(STG::Tariffs * t) override { tariffs = t; }
+    void                SetAdmins(STG::Admins * a) override { admins = a; }
+    void                SetStore(STG::Store * s) override { store = s; }
+    void                SetStgSettings(const STG::Settings * s) override;
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool                IsRunning() { return running && !stopped; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+    bool                IsRunning() override { return running && !stopped; }
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const { return RPC_CONFIG_VERSION; }
-    uint16_t            GetStartPosition() const { return 20; }
-    uint16_t            GetStopPosition() const { return 20; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override { return RPC_CONFIG_VERSION; }
+    uint16_t            GetStartPosition() const override { return 20; }
+    uint16_t            GetStopPosition() const override { return 20; }
 
     bool                GetAdminInfo(const std::string & cookie,
                                      ADMIN_INFO * info);
@@ -95,11 +99,11 @@ private:
 
     mutable std::string     errorStr;
     RPC_CONFIG_SETTINGS     rpcConfigSettings;
-    USERS *                 users;
-    ADMINS *                admins;
-    TARIFFS *               tariffs;
-    STORE *                 store;
-    MODULE_SETTINGS         settings;
+    STG::Users *                 users;
+    STG::Admins *                admins;
+    STG::Tariffs *               tariffs;
+    STG::Store *                 store;
+    STG::ModuleSettings         settings;
     int                     fd;
     xmlrpc_c::registry      rpcRegistry;
     xmlrpc_c::serverAbyss * rpcServer;
@@ -110,7 +114,5 @@ private:
              ADMIN_INFO>    cookies;
     size_t                  dayFee;
     std::vector<std::string> dirNames;
-    PLUGIN_LOGGER           logger;
+    STG::PluginLogger           logger;
 };
-
-#endif

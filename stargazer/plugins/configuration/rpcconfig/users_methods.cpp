@@ -1,15 +1,18 @@
-#include <cerrno>
+#include "users_methods.h"
+#include "rpcconfig.h"
+#include "user_helper.h"
 
 #include "stg/users.h"
 #include "stg/admins.h"
 #include "stg/tariffs.h"
-#include "stg/user_ips.h"
-#include "stg/common.h"
+#include "stg/tariff.h"
+#include "stg/user.h"
 #include "stg/user_property.h"
+#include "stg/common.h"
 
-#include "users_methods.h"
-#include "rpcconfig.h"
-#include "user_helper.h"
+#include <cerrno>
+
+using UserPtr = STG::User*;
 
 //------------------------------------------------------------------------------
 
@@ -30,7 +33,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -67,7 +70,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin = NULL;
+STG::Admin * admin = NULL;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -75,7 +78,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -88,7 +91,7 @@ if (users->FindByName(login, &u))
     *retvalPtr = xmlrpc_c::value_boolean(true);
     return;
     }
-    
+
 *retvalPtr = xmlrpc_c::value_boolean(false);
 return;
 }
@@ -110,7 +113,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -118,7 +121,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (!users->FindByName(login, &u))
     {
@@ -153,7 +156,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 bool hidePassword = !adminInfo.priviledges.userConf ||
                     !adminInfo.priviledges.userPasswd;
 
-USER_PTR u;
+UserPtr u;
 
 int h = users->OpenSearch();
 if (!h)
@@ -200,7 +203,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -208,7 +211,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -220,11 +223,11 @@ USER_HELPER uhelper(u, *users);
 
 if (!adminInfo.priviledges.userConf || !adminInfo.priviledges.userPasswd)
     {
-    uhelper.SetUserInfo(info, admin, login, *store, tariffs);
+    uhelper.SetUserInfo(info, *admin, login, *store, tariffs);
     }
 else
     {
-    uhelper.SetUserInfo(info, admin, login, *store, tariffs);
+    uhelper.SetUserInfo(info, *admin, login, *store, tariffs);
     }
 
 u->WriteConf();
@@ -252,7 +255,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -260,7 +263,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -268,10 +271,10 @@ if (users->FindByName(login, &u))
     return;
     }
 
-double cash = u->GetProperty().cash.Get();
+double cash = u->GetProperties().cash.Get();
 cash += amount;
 
-if (!u->GetProperty().cash.Set(cash, admin, login, store, comment))
+if (!u->GetProperties().cash.Set(cash, *admin, login, *store, comment))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -301,7 +304,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -309,7 +312,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -317,7 +320,7 @@ if (users->FindByName(login, &u))
     return;
     }
 
-if (!u->GetProperty().cash.Set(cash, admin, login, store, comment))
+if (!u->GetProperties().cash.Set(cash, *admin, login, *store, comment))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -348,7 +351,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-ADMIN * admin;
+STG::Admin * admin;
 
 if (admins->Find(adminInfo.admin, &admin))
     {
@@ -356,7 +359,7 @@ if (admins->Find(adminInfo.admin, &admin))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
@@ -368,11 +371,7 @@ if (tariffs->FindByName(tariff))
     {
     if (delayed)
         {
-        if (u->GetProperty().nextTariff.Set(tariff,
-                                            admin,
-                                            login,
-                                            store,
-                                            comment))
+        if (u->GetProperties().nextTariff.Set(tariff, *admin, login, *store, comment))
             {
             u->WriteConf();
             *retvalPtr = xmlrpc_c::value_boolean(true);
@@ -381,18 +380,14 @@ if (tariffs->FindByName(tariff))
         }
     else
         {
-        const TARIFF * newTariff = tariffs->FindByName(tariff);
+        const auto newTariff = tariffs->FindByName(tariff);
         if (newTariff)
             {
-            const TARIFF * currentTariff = u->GetTariff();
+            const auto currentTariff = u->GetTariff();
             std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, stgTime);
             if (message.empty())
                 {
-                if (u->GetProperty().tariffName.Set(tariff,
-                                            admin,
-                                            login,
-                                            store,
-                                            comment))
+                if (u->GetProperties().tariffName.Set(tariff, *admin, login, *store, comment))
                     {
                     u->ResetNextTariff();
                     u->WriteConf();
@@ -402,7 +397,7 @@ if (tariffs->FindByName(tariff))
                 }
             else
                 {
-                    PluginLogger::get("conf_rpc")("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
+                    STG::PluginLogger::get("conf_rpc")("Tariff change is prohibited for user %s. %s", u->GetLogin().c_str(), message.c_str());
                 }
             }
         }
@@ -421,11 +416,11 @@ typedef std::vector<xmlrpc_c::value> ValueVector;
 ValueVector subnetsStr = paramList.getArray(1);
 paramList.verifyEnd(2);
 
-std::vector<IP_MASK> subnets;
+std::vector<STG::IPMask> subnets;
 
 for (ValueVector::const_iterator it(subnetsStr.begin()); it != subnetsStr.end(); ++it)
     {
-    IP_MASK ipm;
+    STG::IPMask ipm;
     if (ParseNet(xmlrpc_c::value_string(*it), ipm))
         {
         printfd(__FILE__, "METHOD_GET_ONLINE_IPS::execute(): Failed to parse subnet ('%s')\n", std::string(xmlrpc_c::value_string(*it)).c_str());
@@ -448,7 +443,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 ValueVector ips;
 
-USER_PTR u;
+UserPtr u;
 
 int handle = users->OpenSearch();
 if (!handle)
@@ -469,7 +464,7 @@ while (1)
         {
         uint32_t ip = u->GetCurrIP();
 
-        for (std::vector<IP_MASK>::const_iterator it(subnets.begin()); it != subnets.end(); ++it)
+        for (std::vector<STG::IPMask>::const_iterator it(subnets.begin()); it != subnets.end(); ++it)
             {
             if ((it->ip & it->mask) == (ip & it->mask))
                 {
@@ -485,7 +480,7 @@ structVal["ips"] = xmlrpc_c::value_array(ips);
 *retvalPtr = xmlrpc_c::value_struct(structVal);
 }
 
-bool METHOD_GET_ONLINE_IPS::ParseNet(const std::string & net, IP_MASK & ipm) const
+bool METHOD_GET_ONLINE_IPS::ParseNet(const std::string & net, STG::IPMask & ipm) const
 {
 size_t pos = net.find_first_of('/');
 
@@ -540,7 +535,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-USER_PTR u;
+UserPtr u;
 
 if (users->FindByName(login, &u))
     {
