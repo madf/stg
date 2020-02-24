@@ -76,6 +76,7 @@ endif ( BUILD_MOD_SGCONFIG )
 
 if ( BUILD_MOD_RPCCONFIG )
     find_package ( XMLRPC REQUIRED c++ abyss-server )
+    include_directories ( ${XMLRPC_INCLUDE_DIRS} )
     add_library ( mod_conf_rpc MODULE configuration/rpcconfig/rpcconfig.cpp
                                       configuration/rpcconfig/user_helper.cpp
                                       configuration/rpcconfig/tariff_helper.cpp
@@ -84,7 +85,7 @@ if ( BUILD_MOD_RPCCONFIG )
                                       configuration/rpcconfig/tariffs_methods.cpp
                                       configuration/rpcconfig/admins_methods.cpp
                                       configuration/rpcconfig/messages_methods.cpp )
-    target_link_libraries ( mod_conf_rpc scriptexecuter logger common xmlrpc_server_abyss++ )
+                              target_link_libraries ( mod_conf_rpc scriptexecuter logger common ${XMLRPC_LIBRARIES} )
     set_target_properties ( mod_conf_rpc PROPERTIES PREFIX "" )
 endif ( BUILD_MOD_RPCCONFIG )
 
