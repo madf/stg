@@ -25,8 +25,9 @@ $Date: 2010/09/10 06:43:03 $
 
 #include "divert_cap.h"
 
-#include "stg/common.h"
 #include "stg/traffcounter.h"
+#include "stg/raw_ip_packet.h"
+#include "stg/common.h"
 
 #include <algorithm>
 #include <vector>
