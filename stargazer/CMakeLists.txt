@@ -22,7 +22,7 @@ find_package ( Threads REQUIRED )
 
 add_executable ( stargazer ${CPP_FILES} )
 
-target_link_libraries ( stargazer scriptexecuter dotconfpp logger common Threads::Threads dl )
+target_link_libraries ( stargazer scriptexecuter dotconfpp logger common Threads::Threads ${CMAKE_DL_LIBS} )
 
 add_subdirectory ( plugins )
 

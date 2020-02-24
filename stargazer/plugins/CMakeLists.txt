@@ -152,6 +152,7 @@ endif ( BUILD_MOD_STORE_MYSQL )
 
 if ( BUILD_MOD_STORE_POSTGRESQL )
     find_package ( PostgreSQL REQUIRED )
+    include_directories ( ${PostgreSQL_INCLUDE_DIRS} )
     add_library ( mod_store_postgresql MODULE store/postgresql/postgresql_store.cpp
                                               store/postgresql/postgresql_store_admins.cpp
                                               store/postgresql/postgresql_store_corporations.cpp
@@ -160,6 +161,6 @@ if ( BUILD_MOD_STORE_POSTGRESQL )
                                               store/postgresql/postgresql_store_tariffs.cpp
                                               store/postgresql/postgresql_store_users.cpp
                                               store/postgresql/postgresql_store_utils.cpp )
-    target_link_libraries ( mod_store_postgresql crypto logger common PostgreSQL::PostgreSQL )
+                                      target_link_libraries ( mod_store_postgresql crypto logger common ${PostgreSQL_LIBRARIES} )
     set_target_properties ( mod_store_postgresql PROPERTIES PREFIX "" )
 endif ( BUILD_MOD_STORE_POSTGRESQL )

@@ -64,7 +64,7 @@ DIVERT_DATA cddiv;  //capture data
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
     static DIVERT_CAP plugin;
     return &plugin;
@@ -83,7 +83,7 @@ DIVERT_CAP::DIVERT_CAP()
       nonstop(false),
       isRunning(false),
       traffCnt(NULL),
-      logger(PluginLogger::get("cap_divert"))
+      logger(STG::PluginLogger::get("cap_divert"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -159,7 +159,7 @@ dc->isRunning = true;
 char buffer[pcktSize + 14];
 while (dc->nonstop)
     {
-    RAW_PACKET rp;
+    STG::RawPacket rp;
     dc->DivertCapRead(buffer, sizeof(buffer), NULL);
 
     if (buffer[12] != 0x8)
@@ -167,7 +167,7 @@ while (dc->nonstop)
 
     memcpy(rp.rawPacket.pckt, &buffer[14], pcktSize);
 
-    dc->traffCnt->Process(rp);
+    dc->traffCnt->process(rp);
     }
 
 dc->isRunning = false;
@@ -276,8 +276,8 @@ return 0;
 int DIVERT_CAP::ParseSettings()
 {
 int p;
-PARAM_VALUE pv;
-std::vector<PARAM_VALUE>::const_iterator pvi;
+STG::ParamValue pv;
+std::vector<STG::ParamValue>::const_iterator pvi;
 
 pv.param = "Port";
 pvi = std::find(settings.moduleParams.begin(), settings.moduleParams.end(), pv);

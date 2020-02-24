@@ -19,47 +19,43 @@
  Author : Boris Mikhailenko <stg34@stg.dp.ua>
 */
 
-/*
-$Revision: 1.6 $
-$Date: 2009/06/23 11:32:27 $
-*/
-
-#ifndef DIVERT_CAP_H
-#define DIVERT_CAP_H
-
-#include <pthread.h>
-
-#include <string>
+#pragma once
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/logger.h"
 
-class USERS;
-class TARIFFS;
-class ADMINS;
-class TRAFFCOUNTER;
-class SETTINGS;
+#include <string>
+
+#include <pthread.h>
+
+namespace STG
+{
+struct Users;
+struct Tariffs;
+struct Admins;
+struct TraffCounter;
+struct Settings;
+}
 
 //-----------------------------------------------------------------------------
-class DIVERT_CAP : public PLUGIN {
+class DIVERT_CAP : public STG::Plugin {
 public:
     DIVERT_CAP();
-    virtual ~DIVERT_CAP() {}
 
-    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
+    void                SetTraffcounter(STG::TraffCounter * tc) override { traffCnt = tc; }
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool                IsRunning() { return isRunning; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+    bool                IsRunning() override { return isRunning; }
 
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const;
-    uint16_t            GetStartPosition() const { return 40; }
-    uint16_t            GetStopPosition() const { return 40; }
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override;
+    uint16_t            GetStartPosition() const override { return 40; }
+    uint16_t            GetStopPosition() const override { return 40; }
 
 private:
     DIVERT_CAP(const DIVERT_CAP & rvalue);
@@ -73,7 +69,7 @@ private:
     int                 DivertCapRead(char * buffer, int blen, char ** iface, int n);
     int                 DivertCapClose();
 
-    MODULE_SETTINGS     settings;
+    STG::ModuleSettings     settings;
 
     int                 port;
     bool                disableForwarding;
@@ -85,10 +81,7 @@ private:
     bool                nonstop;
     bool                isRunning;
 
-    TRAFFCOUNTER *      traffCnt;
+    STG::TraffCounter *      traffCnt;
 
-    PLUGIN_LOGGER       logger;
+    STG::PluginLogger       logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif
