@@ -56,15 +56,15 @@ $Author: faust $
 
 //#define CAP_DEBUG 1
 
-extern "C" Plugin* GetPlugin()
+extern "C" STG::Plugin* GetPlugin()
 {
-static BPF_CAP plugin;
-return &plugin;
+    static BPF_CAP plugin;
+    return &plugin;
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-int BPF_CAP_SETTINGS::ParseSettings(const MODULE_SETTINGS & s)
+int BPF_CAP_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 iface.erase(iface.begin(), iface.end());
 
@@ -113,7 +113,7 @@ BPF_CAP::BPF_CAP()
       isRunning(false),
       capSock(-1),
       traffCnt(NULL),
-      logger(PluginLogger::get("cap_bpf"))
+      logger(STG::PluginLogger::get("cap_bpf"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ dc->isRunning = true;
 
 uint8_t hdr[96]; //68 + 14 + 4(size) + 9(SYS_IFACE) + 1(align to 4) = 96
 
-RAW_PACKET *  rpp = (RAW_PACKET *)&hdr[14];
+STG::RawPacket *  rpp = (STG::RawPacket *)&hdr[14];
 memset(hdr, 0, sizeof(hdr));
 
 rpp->dataLen = -1;
@@ -213,7 +213,7 @@ while (dc->nonstop)
     if (!(hdr[12] == 0x8 && hdr[13] == 0x0))
         continue;
 
-    dc->traffCnt->Process(*rpp);
+    dc->traffCnt->process(*rpp);
     }
 
 dc->isRunning = false;

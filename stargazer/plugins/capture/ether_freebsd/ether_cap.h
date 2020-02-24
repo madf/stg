@@ -24,22 +24,24 @@
 * Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
 */
 
-#ifndef ETHER_CAP_H
-#define ETHER_CAP_H
-
-#include <pthread.h>
-
-#include <string>
-#include <vector>
-#include <cstdint>
+#pragma once
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/logger.h"
 
+#include <string>
+#include <vector>
+#include <cstdint>
+
+#include <pthread.h>
+
 #define BUFF_LEN (128)
 
-class TRAFFCOUNTER;
+namespace STG
+{
+struct TraffCounter;
+}
 
 //-----------------------------------------------------------------------------
 struct BPF_DATA {
@@ -79,9 +81,8 @@ std::string      iface;
 //-----------------------------------------------------------------------------
 class BPF_CAP_SETTINGS {
 public:
-    virtual         ~BPF_CAP_SETTINGS() {}
     const std::string & GetStrError() const { return errorStr; }
-    int             ParseSettings(const MODULE_SETTINGS & s);
+    int             ParseSettings(const STG::ModuleSettings & s);
     std::string     GetIface(unsigned int num);
 
 private:
@@ -89,25 +90,24 @@ private:
     mutable std::string errorStr;
 };
 //-----------------------------------------------------------------------------
-class BPF_CAP : public PLUGIN {
+class BPF_CAP : public STG::Plugin {
 public:
                         BPF_CAP();
-    virtual             ~BPF_CAP() {}
 
-    void                SetTraffcounter(TRAFFCOUNTER * tc) { traffCnt = tc; }
+    void                SetTraffcounter(STG::TraffCounter * tc) override { traffCnt = tc; }
 
-    int                 Start();
-    int                 Stop();
-    int                 Reload(const MODULE_SETTINGS & /*ms*/) { return 0; }
-    bool                IsRunning() { return isRunning; }
+    int                 Start() override;
+    int                 Stop() override;
+    int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
+    bool                IsRunning() override { return isRunning; }
 
-    void                SetSettings(const MODULE_SETTINGS & s) { settings = s; }
-    int                 ParseSettings();
+    void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }
+    int                 ParseSettings() override;
 
-    const std::string & GetStrError() const { return errorStr; }
-    std::string         GetVersion() const;
-    uint16_t            GetStartPosition() const { return 40; }
-    uint16_t            GetStopPosition() const { return 40; }
+    const std::string & GetStrError() const override { return errorStr; }
+    std::string         GetVersion() const override;
+    uint16_t            GetStartPosition() const override { return 40; }
+    uint16_t            GetStopPosition() const override { return 40; }
 
 private:
     BPF_CAP(const BPF_CAP & rvalue);
@@ -131,12 +131,9 @@ private:
     bool                  nonstop;
     bool                  isRunning;
     int                   capSock;
-    MODULE_SETTINGS       settings;
+    STG::ModuleSettings       settings;
 
-    TRAFFCOUNTER *        traffCnt;
+    STG::TraffCounter *        traffCnt;
 
-    PLUGIN_LOGGER         logger;
+    STG::PluginLogger         logger;
 };
-//-----------------------------------------------------------------------------
-
-#endif
