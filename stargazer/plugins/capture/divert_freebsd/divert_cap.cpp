@@ -157,7 +157,7 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
 dc->isRunning = true;
 
-char buffer[pcktSize + 14];
+char buffer[packetSize + 14];
 while (dc->nonstop)
     {
     STG::RawPacket rp;
