@@ -45,7 +45,6 @@ $Author: faust $
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
 
 #include <net/bpf.h>
 #include <net/if.h>

@@ -35,6 +35,7 @@
 #include <cstdint>
 
 #include <pthread.h>
+#include <sys/poll.h>
 
 #define BUFF_LEN (128)
 
