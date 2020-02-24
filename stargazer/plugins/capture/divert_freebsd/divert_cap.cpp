@@ -157,7 +157,7 @@ pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
 dc->isRunning = true;
 
-char buffer[packetSize + 14];
+char buffer[STG::packetSize + 14];
 while (dc->nonstop)
     {
     STG::RawPacket rp;
@@ -166,7 +166,7 @@ while (dc->nonstop)
     if (buffer[12] != 0x8)
         continue;
 
-    memcpy(&rp.rawPacket, &buffer[14], packetSize);
+    memcpy(&rp.rawPacket, &buffer[14], STG::packetSize);
 
     dc->traffCnt->process(rp);
     }
