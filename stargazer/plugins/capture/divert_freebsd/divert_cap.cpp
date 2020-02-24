@@ -166,7 +166,7 @@ while (dc->nonstop)
     if (buffer[12] != 0x8)
         continue;
 
-    memcpy(rp.rawPacket.pckt, &buffer[14], pcktSize);
+    memcpy(rp.rawPacket, &buffer[14], packetSize);
 
     dc->traffCnt->process(rp);
     }
