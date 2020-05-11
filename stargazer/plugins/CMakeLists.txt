@@ -95,15 +95,6 @@ if ( BUILD_MOD_PING )
     set_target_properties ( mod_ping PROPERTIES PREFIX "" )
 endif ( BUILD_MOD_PING )
 
-if ( BUILD_MOD_RADIUS )
-    find_package ( YAJL REQUIRED )
-    add_library ( mod_radius MODULE other/radius/radius.cpp
-                                    other/radius/config.cpp
-                                    other/radius/conn.cpp )
-    target_link_libraries ( mod_radius logger json common YAJL::YAJL )
-    set_target_properties ( mod_radius PROPERTIES PREFIX "" )
-endif ( BUILD_MOD_RADIUS )
-
 if ( BUILD_MOD_RSCRYPT )
     add_library ( mod_remote_script MODULE other/rscript/rscript.cpp other/rscript/nrmap_parser.cpp )
     target_link_libraries ( mod_remote_script crypto scriptexecuter logger common )

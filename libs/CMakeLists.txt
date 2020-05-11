@@ -34,13 +34,6 @@ if ( BUILD_LIB_IBPP )
     target_compile_options ( ibpp PRIVATE -Wno-old-style-cast $<$<CXX_COMPILER_ID:GNU>:-Wno-useless-cast> )
 endif ( BUILD_LIB_IBPP )
 
-if ( BUILD_LIB_JSON )
-    find_package ( YAJL REQUIRED )
-    add_library ( json STATIC json/generator.cpp json/parser.cpp )
-    target_include_directories ( json PUBLIC json/include )
-    target_link_libraries ( json common YAJL::YAJL )
-endif ( BUILD_LIB_JSON )
-
 if ( BUILD_LIB_LOGGER )
     add_library ( logger STATIC logger/logger.cpp )
     target_include_directories ( logger PUBLIC logger/include )
