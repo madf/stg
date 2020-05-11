@@ -165,9 +165,7 @@ conf.priv = *admin->GetPriv();
 conf.password = admin->GetPassword();
 conf.login = login;
 
-std::map<std::string, xmlrpc_c::value> structVal(
-    static_cast<std::map<std::string, xmlrpc_c::value> >(xmlrpc_c::value_struct(info))
-    );
+std::map<std::string, xmlrpc_c::value> structVal = info;
 
 std::map<std::string, xmlrpc_c::value>::iterator it;
 
