@@ -39,29 +39,25 @@ const char * CHG_ADMIN::tag  = "ChgAdmin";
 
 void GET_ADMINS::CreateAnswer()
 {
-    const auto priv = m_currAdmin.GetPriv();
-    if (!priv->adminChg)
+    const auto& priv = m_currAdmin.priv();
+    if (!priv.adminChg)
     {
         m_answer = "<Error Result=\"Error. Access denied.\"/>";
         return;
     }
 
     m_answer = "<Admins>";
-    AdminConf ac;
-    int h = m_admins.OpenSearch();
-
-    while (m_admins.SearchNext(h, &ac) == 0)
-    {
-        unsigned int p = (ac.priv.userStat << 0) +
-                         (ac.priv.userConf << 2) +
-                         (ac.priv.userCash << 4) +
-                         (ac.priv.userPasswd << 6) +
-                         (ac.priv.userAddDel << 8) +
-                         (ac.priv.adminChg << 10) +
-                         (ac.priv.tariffChg << 12);
-        m_answer += "<admin login=\"" + ac.login + "\" priv=\"" + std::to_string(p) + "\"/>";
-    }
-    m_admins.CloseSearch(h);
+    m_admins.fmap([this](const Admin& admin)
+                  {
+                      const unsigned int p = (admin.priv().userStat << 0) +
+                                             (admin.priv().userConf << 2) +
+                                             (admin.priv().userCash << 4) +
+                                             (admin.priv().userPasswd << 6) +
+                                             (admin.priv().userAddDel << 8) +
+                                             (admin.priv().adminChg << 10) +
+                                             (admin.priv().tariffChg << 12);
+                      m_answer += "<admin login=\"" + admin.login() + "\" priv=\"" + std::to_string(p) + "\"/>";
+                  });
     m_answer += "</Admins>";
 }
 
@@ -77,10 +73,10 @@ int DEL_ADMIN::Start(void *, const char * el, const char ** attr)
 
 void DEL_ADMIN::CreateAnswer()
 {
-    if (m_admins.Del(m_admin, &m_currAdmin) == 0)
+    if (m_admins.del(m_admin, m_currAdmin) == 0)
         m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
-        m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.strError() + "\"/>";
 }
 
 int ADD_ADMIN::Start(void *, const char *el, const char **attr)
@@ -95,10 +91,10 @@ int ADD_ADMIN::Start(void *, const char *el, const char **attr)
 
 void ADD_ADMIN::CreateAnswer()
 {
-    if (m_admins.Add(m_admin, &m_currAdmin) == 0)
+    if (m_admins.add(m_admin, m_currAdmin) == 0)
         m_answer = "<" + m_tag + " Result=\"Ok\"/>";
     else
-        m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.GetStrError() + "\"/>";
+        m_answer = "<" + m_tag + " Result=\"Error. " + m_admins.strError() + "\"/>";
 }
 
 int CHG_ADMIN::Start(void *, const char * el, const char ** attr)
@@ -141,13 +137,13 @@ void CHG_ADMIN::CreateAnswer()
     {
         Admin * origAdmin = NULL;
 
-        if (m_admins.Find(login, &origAdmin))
+        if (m_admins.find(login, &origAdmin))
         {
             m_answer = "<" + m_tag + " Result = \"Admin '" + login + "' is not found.\"/>";
             return;
         }
 
-        AdminConf conf(origAdmin->GetConf());
+        AdminConf conf(origAdmin->conf());
 
         if (!password.empty())
             conf.password = password.data();
@@ -164,8 +160,8 @@ void CHG_ADMIN::CreateAnswer()
             conf.priv = Priv(p);
         }
 
-        if (m_admins.Change(conf, &m_currAdmin) != 0)
-            m_answer = "<" + m_tag + " Result = \"" + m_admins.GetStrError() + "\"/>";
+        if (m_admins.change(conf, m_currAdmin) != 0)
+            m_answer = "<" + m_tag + " Result = \"" + m_admins.strError() + "\"/>";
         else
             m_answer = "<" + m_tag + " Result = \"Ok\"/>";
     }

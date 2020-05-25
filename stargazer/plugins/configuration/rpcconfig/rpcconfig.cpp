@@ -259,7 +259,7 @@ bool RPC_CONFIG::CheckAdmin(const std::string & login,
 {
 STG::Admin * admin = NULL;
 
-if (!admins->Correct(login, password, &admin))
+if (!admins->correct(login, password, &admin))
     {
     logger("Attempt to connect with invalid credentials. Login: %s", login.c_str());
     return true;
@@ -268,7 +268,7 @@ if (!admins->Correct(login, password, &admin))
 ADMIN_INFO info;
 time(&info.accessTime);
 info.admin = login;
-info.priviledges = *admin->GetPriv();
+info.priviledges = admin->priv();
 *cookie = GetCookie();
 cookies[*cookie] = info;
 

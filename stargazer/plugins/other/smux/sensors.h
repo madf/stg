@@ -185,7 +185,7 @@ class TotalAdminsSensor : public Sensor {
 
         bool GetValue(ObjectSyntax_t * objectSyntax) const override
         {
-        ValueToOS(admins.Count(), objectSyntax);
+        ValueToOS(admins.count(), objectSyntax);
         return true;
         }
 

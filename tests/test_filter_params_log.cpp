@@ -1,11 +1,11 @@
 #include "tut/tut.hpp"
 
+#include "stg/admin.h"
 #include "stg/user_property.h"
 #include "user_impl.h"
 
 #include "testsettings.h"
 #include "testtariffs.h"
-#include "testadmin.h"
 #include "teststore.h"
 #include "testauth.h"
 #include "testusers.h"
@@ -65,7 +65,7 @@ namespace tut
         TEST_SETTINGS_LOCAL settings;
         settings.addFilter("*"); // Allow everything by default.
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE_LOCAL store;
         TEST_AUTH auth;
         TEST_USERS users;
@@ -105,7 +105,7 @@ namespace tut
         TEST_SETTINGS_LOCAL settings;
         settings.addFilter("address"); // Allow everything by default.
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE_LOCAL store;
         TEST_AUTH auth;
         TEST_USERS users;
@@ -145,7 +145,7 @@ namespace tut
         settings.addFilter("address"); // Allow everything by default.
         settings.addFilter("group"); // Allow everything by default.
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE_LOCAL store;
         TEST_AUTH auth;
         TEST_USERS users;
@@ -183,7 +183,7 @@ namespace tut
 
         TEST_SETTINGS_LOCAL settings;
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE_LOCAL store;
         TEST_AUTH auth;
         TEST_USERS users;

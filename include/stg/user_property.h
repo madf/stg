@@ -288,12 +288,12 @@ bool UserPropertyLogged<T>::Set(const T& val,
                                 const Store& store,
                                 const std::string& msg)
 {
-    const auto priv = admin.GetPriv();
+    const auto& priv = admin.priv();
 
-    if ((priv->userConf && !isStat) ||
-        (priv->userStat && isStat) ||
-        (priv->userPasswd && isPassword) ||
-        (priv->userCash && name == "cash"))
+    if ((priv.userConf && !isStat) ||
+        (priv.userStat && isStat) ||
+        (priv.userPasswd && isPassword) ||
+        (priv.userCash && name == "cash"))
     {
         std::stringstream oldVal;
         std::stringstream newVal;
@@ -326,7 +326,7 @@ void UserPropertyLogged<T>::WriteAccessDenied(const std::string& login,
                                               const std::string& parameter)
 {
     stgLogger("%s Change user \'%s.\' Parameter \'%s\'. Access denied.",
-              admin.GetLogStr().c_str(), login.c_str(), parameter.c_str());
+              admin.logStr().c_str(), login.c_str(), parameter.c_str());
 }
 //-------------------------------------------------------------------------
 template <typename T>
@@ -340,7 +340,7 @@ void UserPropertyLogged<T>::WriteSuccessChange(const std::string& login,
                                                const Store& store)
 {
     stgLogger("%s User \'%s\': \'%s\' parameter changed from \'%s\' to \'%s\'. %s",
-              admin.GetLogStr().c_str(),
+              admin.logStr().c_str(),
               login.c_str(),
               parameter.c_str(),
               oldValue.c_str(),
@@ -350,7 +350,7 @@ void UserPropertyLogged<T>::WriteSuccessChange(const std::string& login,
     for (size_t i = 0; i < settings.GetFilterParamsLog().size(); ++i)
         if (settings.GetFilterParamsLog()[i] == "*" || strcasecmp(settings.GetFilterParamsLog()[i].c_str(), parameter.c_str()) == 0)
         {
-            store.WriteUserChgLog(login, admin.GetLogin(), admin.GetIP(), parameter, oldValue, newValue, msg);
+            store.WriteUserChgLog(login, admin.login(), admin.IP(), parameter, oldValue, newValue, msg);
             return;
         }
 }
@@ -366,7 +366,7 @@ void UserPropertyLogged<T>::OnChange(const std::string& login,
 
     if (access(filePath.c_str(), X_OK) == 0)
     {
-        const auto execString = "\"" + filePath + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin.GetLogin() + "\" \"" + admin.GetIPStr() + "\"";
+        const auto execString = "\"" + filePath + "\" \"" + login + "\" \"" + paramName + "\" \"" + oldValue + "\" \"" + newValue + "\" \"" + admin.login() + "\" \"" + admin.IPStr() + "\"";
         ScriptExec(execString.c_str());
     }
     else

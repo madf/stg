@@ -209,7 +209,7 @@ void GET_USERS::CreateAnswer()
     UserPtr u;
 
     while (m_users.SearchNext(h, &u) == 0)
-        m_answer += UserToXML(*u, true, m_currAdmin.GetPriv()->userConf || m_currAdmin.GetPriv()->userPasswd, m_lastUserUpdateTime);
+        m_answer += UserToXML(*u, true, m_currAdmin.priv().userConf || m_currAdmin.priv().userPasswd, m_lastUserUpdateTime);
 
     m_users.CloseSearch(h);
 
@@ -235,7 +235,7 @@ void GET_USER::CreateAnswer()
     if (m_users.FindByName(m_login, &u))
         m_answer = "<User result=\"error\" reason=\"User not found.\"/>";
     else
-        m_answer = UserToXML(*u, false, m_currAdmin.GetPriv()->userConf || m_currAdmin.GetPriv()->userPasswd);
+        m_answer = UserToXML(*u, false, m_currAdmin.priv().userConf || m_currAdmin.priv().userPasswd);
 }
 
 int ADD_USER::Start(void *, const char * el, const char ** attr)
@@ -484,7 +484,7 @@ int CHG_USER::ApplyChanges()
     if (check && alwaysOnline && !onlyOneIP)
     {
         printfd(__FILE__, "Requested change leads to a forbidden state: AlwaysOnline with multiple IP's\n");
-        PluginLogger::get("conf_sg")("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", m_currAdmin.GetLogStr().c_str());
+        PluginLogger::get("conf_sg")("%s Requested change leads to a forbidden state: AlwaysOnline with multiple IP's", m_currAdmin.logStr().c_str());
         return -1;
     }
 
@@ -495,7 +495,7 @@ int CHG_USER::ApplyChanges()
         if (m_users.IsIPInUse(ip, m_login, &user))
         {
             printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
-            PluginLogger::get("conf_sg")("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", m_currAdmin.GetLogStr().c_str(), inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
+            PluginLogger::get("conf_sg")("%s trying to assign an IP %s to '%s' that is currently in use by '%s'", m_currAdmin.logStr().c_str(), inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
             return -1;
         }
     }

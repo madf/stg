@@ -1,11 +1,11 @@
 #include "tut/tut.hpp"
 
+#include "stg/admin.h"
 #include "stg/user_property.h"
 #include "user_impl.h"
 
 #include "testsettings.h"
 #include "testtariffs.h"
-#include "testadmin.h"
 #include "teststore.h"
 #include "testservices.h"
 
@@ -39,7 +39,7 @@ namespace tut
 
         TEST_SETTINGS_LOCAL settings(0);
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE store;
         TEST_SERVICES services;
         STG::UserImpl user(&settings, &store, &tariffs, &admin, NULL, services);
@@ -72,7 +72,7 @@ namespace tut
 
         TEST_SETTINGS_LOCAL settings(1);
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE store;
         TEST_SERVICES services;
         STG::UserImpl user(&settings, &store, &tariffs, &admin, NULL, services);
@@ -119,7 +119,7 @@ namespace tut
 
         TEST_SETTINGS_LOCAL settings(2);
         TEST_TARIFFS tariffs;
-        TEST_ADMIN admin;
+        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE store;
         TEST_SERVICES services;
         STG::UserImpl user(&settings, &store, &tariffs, &admin, NULL, services);

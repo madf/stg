@@ -72,7 +72,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin = NULL;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -115,7 +115,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -205,7 +205,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -257,7 +257,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -306,7 +306,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -353,7 +353,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;

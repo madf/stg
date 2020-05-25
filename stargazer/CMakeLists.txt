@@ -4,7 +4,6 @@ set ( CPP_FILES main.cpp
                 tariffs_impl.cpp
                 corps_impl.cpp
                 services_impl.cpp
-                admin_impl.cpp
                 user_impl.cpp
                 tariff_impl.cpp
                 eventloop.cpp

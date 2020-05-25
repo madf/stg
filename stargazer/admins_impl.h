@@ -24,65 +24,60 @@
 
 #pragma once
 
-#include "admin_impl.h"
-
 #include "stg/admins.h"
 #include "stg/admin.h"
-#include "stg/locker.h"
 #include "stg/store.h"
-#include "stg/noncopyable.h"
 #include "stg/logger.h"
 
 #include <vector>
-#include <map>
 #include <string>
-
-#include <pthread.h>
+#include <algorithm>
+#include <mutex>
 
 namespace STG
 {
 
-class AdminsImpl : public Admins {
+class AdminsImpl : public Admins
+{
     public:
-        explicit AdminsImpl(Store * st);
-        virtual ~AdminsImpl() {}
+        explicit AdminsImpl(Store& st);
 
-        int           Add(const std::string & login, const Admin * admin);
-        int           Del(const std::string & login, const Admin * admin);
-        int           Change(const AdminConf & ac, const Admin * admin);
-        const Admin * GetSysAdmin() const { return &stg; }
-        const Admin * GetNoAdmin() const { return &noAdmin; }
-        bool          Find(const std::string & l, Admin ** admin);
-        bool          Exists(const std::string & login) const;
-        bool          Correct(const std::string & login,
-                              const std::string & password,
-                              Admin ** admin);
-        const std::string & GetStrError() const { return strError; }
+        AdminsImpl(const AdminsImpl&) = delete;
+        AdminsImpl& operator=(const AdminsImpl&) = delete;
 
-        size_t        Count() const { return data.size(); }
+        int          add(const std::string& login, const Admin& admin) override;
+        int          del(const std::string& login, const Admin& admin) override;
+        int          change(const AdminConf& ac, const Admin& admin) override;
+        const Admin& sysAdmin() const override { return m_stg; }
+        const Admin& noAdmin() const override { return m_noAdmin; }
+        bool         find(const std::string& login, Admin** admin) override;
+        bool         exists(const std::string& login) const override;
+        bool         correct(const std::string& login,
+                             const std::string& password,
+                             Admin** admin) override;
 
-        int OpenSearch() const;
-        int SearchNext(int, AdminConf * ac) const;
-        int CloseSearch(int) const;
+        const std::string& strError() const override { return m_strError; }
+
+        size_t       count() const override { return m_data.size(); }
+
+        void fmap(std::function<void (const Admin&)> callback) const
+        {
+            for (const auto& admin : m_data)
+                callback(admin);
+        }
 
     private:
-        AdminsImpl(const AdminsImpl & rvalue);
-        AdminsImpl & operator=(const AdminsImpl & rvalue);
+        void         read();
+        auto         find(const std::string& login) { return std::find(m_data.begin(), m_data.end(), Admin(Priv(0), login, "")); }
+        auto         find(const std::string& login) const { return std::find(m_data.begin(), m_data.end(), Admin(Priv(0), login, "")); }
 
-        typedef std::vector<AdminImpl>::iterator admin_iter;
-        typedef std::vector<AdminImpl>::const_iterator const_admin_iter;
-
-        int             Read();
-
-        AdminImpl              stg;
-        AdminImpl              noAdmin;
-        std::vector<AdminImpl> data;
-        Store *                 store;
-        Logger &            WriteServLog;
-        mutable std::map<int, const_admin_iter> searchDescriptors;
-        mutable unsigned int    handle;
-        mutable pthread_mutex_t mutex;
-        std::string             strError;
+        Admin              m_stg;
+        Admin              m_noAdmin;
+        std::vector<Admin> m_data;
+        Store&             m_store;
+        Logger&            WriteServLog;
+        mutable std::mutex m_mutex;
+        std::string        m_strError;
 };
 
 }

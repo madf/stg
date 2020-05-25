@@ -100,11 +100,11 @@ return NULL;
 //-----------------------------------------------------------------------------
 int TariffsImpl::Chg(const TariffData & td, const Admin * admin)
 {
-const auto priv = admin->GetPriv();
+const auto& priv = admin->priv();
 
-if (!priv->tariffChg)
+if (!priv.tariffChg)
     {
-    std::string s = admin->GetLogStr() + " Change tariff \'"
+    std::string s = admin->logStr() + " Change tariff \'"
                + td.tariffConf.name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -118,7 +118,7 @@ auto ti = find(tariffs.begin(), tariffs.end(), TariffImpl(td.tariffConf.name));
 if (ti == tariffs.end())
     {
     strError = "Tariff \'" + td.tariffConf.name + "\' cannot be changed. Tariff does not exist.";
-    WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
+    WriteServLog("%s %s", admin->logStr().c_str(), strError.c_str());
     return -1;
     }
 
@@ -132,18 +132,18 @@ if (store->SaveTariff(td, td.tariffConf.name))
     }
 
 WriteServLog("%s Tariff \'%s\' changed.",
-             admin->GetLogStr().c_str(), td.tariffConf.name.c_str());
+             admin->logStr().c_str(), td.tariffConf.name.c_str());
 
 return 0;
 }
 //-----------------------------------------------------------------------------
 int TariffsImpl::Del(const std::string & name, const Admin * admin)
 {
-const auto priv = admin->GetPriv();
+const auto& priv = admin->priv();
 
-if (!priv->tariffChg)
+if (!priv.tariffChg)
     {
-    std::string s = admin->GetLogStr() + " Delete tariff \'"
+    std::string s = admin->logStr() + " Delete tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -160,7 +160,7 @@ TariffData td;
     if (ti == tariffs.end())
         {
         strError = "Tariff \'" + name + "\' cannot be deleted. Tariff does not exist.";
-        WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
+        WriteServLog("%s %s", admin->logStr().c_str(), strError.c_str());
         return -1;
         }
 
@@ -184,18 +184,18 @@ while (ni != onDelNotifiers.end())
     }
 
 WriteServLog("%s Tariff \'%s\' deleted.",
-             admin->GetLogStr().c_str(),
+             admin->logStr().c_str(),
              name.c_str());
 return 0;
 }
 //-----------------------------------------------------------------------------
 int TariffsImpl::Add(const std::string & name, const Admin * admin)
 {
-const auto priv = admin->GetPriv();
+const auto& priv = admin->priv();
 
-if (!priv->tariffChg)
+if (!priv.tariffChg)
     {
-    std::string s = admin->GetLogStr() + " Add tariff \'"
+    std::string s = admin->logStr() + " Add tariff \'"
                + name + "\'. Access denied.";
     strError = "Access denied.";
     WriteServLog(s.c_str());
@@ -210,7 +210,7 @@ if (!priv->tariffChg)
     if (ti != tariffs.end())
         {
         strError = "Tariff \'" + name + "\' cannot be added. Tariff already exist.";
-        WriteServLog("%s %s", admin->GetLogStr().c_str(), strError.c_str());
+        WriteServLog("%s %s", admin->logStr().c_str(), strError.c_str());
         return -1;
         }
 
@@ -233,7 +233,7 @@ while (ni != onAddNotifiers.end())
     }
 
 WriteServLog("%s Tariff \'%s\' added.",
-                 admin->GetLogStr().c_str(), name.c_str());
+                 admin->logStr().c_str(), name.c_str());
 
 return 0;
 }

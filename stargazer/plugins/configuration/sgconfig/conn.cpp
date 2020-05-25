@@ -165,7 +165,7 @@ bool Conn::HandleHeader()
 
 bool Conn::HandleLogin()
 {
-    if (m_admins.Find(m_login, &m_admin)) // ADMINS::Find returns true on error.
+    if (m_admins.find(m_login, &m_admin)) // ADMINS::Find returns true on error.
     {
         std::string login(m_login, strnlen(m_login, sizeof(m_login)));
         Log(__FILE__, "Received invalid login '" + ToPrintable(login) + "' from " + endpoint() + ".");
@@ -173,7 +173,7 @@ bool Conn::HandleLogin()
         m_state = ERROR;
         return false;
     }
-    m_admin->SetIP(IP());
+    m_admin->setIP(IP());
     m_state = CRYPTO_LOGIN;
     m_buffer = m_cryptoLogin;
     m_bufferSize = sizeof(m_cryptoLogin);
@@ -184,12 +184,12 @@ bool Conn::HandleCryptoLogin()
 {
     char login[ADM_LOGIN_LEN + 1];
     BLOWFISH_CTX ctx;
-    InitContext(m_admin->GetPassword().c_str(), ADM_PASSWD_LEN, &ctx);
+    InitContext(m_admin->password().c_str(), ADM_PASSWD_LEN, &ctx);
     DecryptString(login, m_cryptoLogin, ADM_LOGIN_LEN, &ctx);
 
     if (strncmp(m_login, login, sizeof(login)) != 0)
     {
-        Log(__FILE__, "Attempt to connect with wrong password from " + m_admin->GetLogin() + "@" + endpoint() + ".");
+        Log(__FILE__, "Attempt to connect with wrong password from " + m_admin->login() + "@" + endpoint() + ".");
         WriteAnswer(ERR_LOGINS, sizeof(ERR_LOGINS) - 1); // Without \0
         m_state = ERROR;
         return false;
@@ -198,7 +198,7 @@ bool Conn::HandleCryptoLogin()
     m_state = DATA;
     m_buffer = m_data;
     m_bufferSize = sizeof(m_data);
-    m_stream = new STG::DECRYPT_STREAM(m_admin->GetPassword(), DataCallback, &m_dataState);
+    m_stream = new STG::DECRYPT_STREAM(m_admin->password(), DataCallback, &m_dataState);
     return WriteAnswer(OK_LOGINS, sizeof(OK_LOGINS) - 1); // Without \0
 }
 
@@ -221,7 +221,7 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
 
     if (XML_Parse(state.conn.m_xmlParser, xml, length, state.final) == XML_STATUS_ERROR)
     {
-        state.conn.Log(__FILE__, "Received invalid XML from " + state.conn.m_admin->GetLogin() + "@" + state.conn.endpoint() + ".");
+        state.conn.Log(__FILE__, "Received invalid XML from " + state.conn.m_admin->login() + "@" + state.conn.endpoint() + ".");
         printfd(__FILE__, "XML parse error at line %d, %d: %s. Is final: %d\n",
                   static_cast<int>(XML_GetCurrentLineNumber(state.conn.m_xmlParser)),
                   static_cast<int>(XML_GetCurrentColumnNumber(state.conn.m_xmlParser)),
@@ -235,7 +235,7 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
     {
         if (!state.conn.WriteResponse())
         {
-            state.conn.Log(__FILE__, "Failed to write response to " + state.conn.m_admin->GetLogin() + "@" + state.conn.endpoint() + ".");
+            state.conn.Log(__FILE__, "Failed to write response to " + state.conn.m_admin->login() + "@" + state.conn.endpoint() + ".");
             state.conn.m_state = ERROR;
             return false;
         }
@@ -255,7 +255,7 @@ void Conn::ParseXMLStart(void * data, const char * el, const char ** attr)
 
     if (conn.m_parser == NULL)
     {
-        conn.Log(__FILE__, "Received unknown command '" + std::string(el) + "' from " + conn.m_admin->GetLogin() + "@" + conn.endpoint() + ".");
+        conn.Log(__FILE__, "Received unknown command '" + std::string(el) + "' from " + conn.m_admin->login() + "@" + conn.endpoint() + ".");
         conn.m_state = ERROR;
         return;
     }
@@ -280,7 +280,7 @@ void Conn::ParseXMLEnd(void * data, const char * el)
 
 bool Conn::WriteResponse()
 {
-    STG::ENCRYPT_STREAM stream(m_admin->GetPassword(), WriteCallback, this);
+    STG::ENCRYPT_STREAM stream(m_admin->password(), WriteCallback, this);
     std::string answer;
     if (m_parser != NULL)
         answer = m_parser->GetAnswer();

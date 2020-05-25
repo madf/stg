@@ -44,7 +44,7 @@ using STG::UsersImpl;
 //-----------------------------------------------------------------------------
 UsersImpl::UsersImpl(SettingsImpl * s, Store * st,
                     Tariffs * t, Services & svcs,
-                    const Admin * sa)
+                    const Admin& sa)
     : settings(s),
       tariffs(t),
       m_services(svcs),
@@ -130,42 +130,19 @@ return false;
 int UsersImpl::Add(const std::string & login, const Admin * admin)
 {
 STG_LOCKER lock(&mutex);
-const auto priv = admin->GetPriv();
+const auto& priv = admin->priv();
 
-if (!priv->userAddDel)
+if (!priv.userAddDel)
     {
     WriteServLog("%s tried to add user \'%s\'. Access denied.",
-         admin->GetLogStr().c_str(), login.c_str());
-    /*errorStr = "Admin \'" + admin->GetLogin() +
-               "\': tried to add user \'" + ud->login + "\'. Access denied.";*/
+                 admin->logStr().c_str(), login.c_str());
     return -1;
     }
 
-//////
 if (store->AddUser(login))
-    {
-    //TODO
-    //WriteServLog("Admin \'%s\': tried to add user \'%s\'. Access denied.",
-    //     admin->GetLogin().c_str(), ud->login.c_str());
     return -1;
-    }
-//////
 
-UserImpl u(settings, store, tariffs, sysAdmin, this, m_services);
-
-/*struct tm * tms;
-time_t t = stgTime;
-
-tms = localtime(&t);
-
-tms->tm_hour = 0;
-tms->tm_min = 0;
-tms->tm_sec = 0;
-
-if (settings->GetDayResetTraff() > tms->tm_mday)
-    tms->tm_mon -= 1;
-
-tms->tm_mday = settings->GetDayResetTraff();*/
+UserImpl u(settings, store, tariffs, &sysAdmin, this, m_services);
 
 u.SetLogin(login);
 
@@ -175,7 +152,7 @@ u.WriteConf();
 u.WriteStat();
 
 WriteServLog("%s User \'%s\' added.",
-         admin->GetLogStr().c_str(), login.c_str());
+             admin->logStr().c_str(), login.c_str());
 
 u.OnAdd();
 
@@ -208,13 +185,13 @@ return 0;
 //-----------------------------------------------------------------------------
 void UsersImpl::Del(const std::string & login, const Admin * admin)
 {
-const auto priv = admin->GetPriv();
+const auto& priv = admin->priv();
 user_iter u;
 
-if (!priv->userAddDel)
+if (!priv.userAddDel)
     {
     WriteServLog("%s tried to remove user \'%s\'. Access denied.",
-         admin->GetLogStr().c_str(), login.c_str());
+                 admin->logStr().c_str(), login.c_str());
     return;
     }
 
@@ -225,7 +202,7 @@ if (!priv->userAddDel)
     if (FindByNameNonLock(login, &u))
         {
         WriteServLog("%s tried to delete user \'%s\': not found.",
-                     admin->GetLogStr().c_str(),
+                     admin->logStr().c_str(),
                      login.c_str());
         return;
         }
@@ -264,7 +241,7 @@ if (!priv->userAddDel)
     DelUserFromIndexes(u);
 
     WriteServLog("%s User \'%s\' deleted.",
-             admin->GetLogStr().c_str(), login.c_str());
+                 admin->logStr().c_str(), login.c_str());
 
     }
 }
@@ -339,7 +316,7 @@ user_iter ui;
 unsigned errors = 0;
 for (unsigned int i = 0; i < usersList.size(); i++)
     {
-    UserImpl u(settings, store, tariffs, sysAdmin, this, m_services);
+    UserImpl u(settings, store, tariffs, &sysAdmin, this, m_services);
 
     u.SetLogin(usersList[i]);
     users.push_front(u);

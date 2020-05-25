@@ -30,7 +30,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(login, &admin))
+if (admins->find(login, &admin))
     {
     structVal["result"] = xmlrpc_c::value_boolean(false);
     *retvalPtr = xmlrpc_c::value_struct(structVal);
@@ -38,18 +38,18 @@ if (admins->Find(login, &admin))
     }
 
 structVal["result"] = xmlrpc_c::value_boolean(true);
-structVal["login"] = xmlrpc_c::value_string(admin->GetLogin());
-structVal["password"] = xmlrpc_c::value_string(admin->GetPassword());
+structVal["login"] = xmlrpc_c::value_string(admin->login());
+structVal["password"] = xmlrpc_c::value_string(admin->password());
 
-const auto priv = admin->GetPriv();
+const auto priv = admin->priv();
 
-structVal["user_stat"] = xmlrpc_c::value_boolean(priv->userStat);
-structVal["user_conf"] = xmlrpc_c::value_boolean(priv->userConf);
-structVal["user_cash"] = xmlrpc_c::value_boolean(priv->userCash);
-structVal["user_passwd"] = xmlrpc_c::value_boolean(priv->userPasswd);
-structVal["user_add_del"] = xmlrpc_c::value_boolean(priv->userAddDel);
-structVal["admin_chg"] = xmlrpc_c::value_boolean(priv->adminChg);
-structVal["tariff_chg"] = xmlrpc_c::value_boolean(priv->tariffChg);
+structVal["user_stat"] = xmlrpc_c::value_boolean(priv.userStat);
+structVal["user_conf"] = xmlrpc_c::value_boolean(priv.userConf);
+structVal["user_cash"] = xmlrpc_c::value_boolean(priv.userCash);
+structVal["user_passwd"] = xmlrpc_c::value_boolean(priv.userPasswd);
+structVal["user_add_del"] = xmlrpc_c::value_boolean(priv.userAddDel);
+structVal["admin_chg"] = xmlrpc_c::value_boolean(priv.adminChg);
+structVal["tariff_chg"] = xmlrpc_c::value_boolean(priv.tariffChg);
 
 *retvalPtr = xmlrpc_c::value_struct(structVal);
 }
@@ -74,14 +74,14 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     printfd(__FILE__, "METHOD_ADMIN_ADD::execute(): 'Invalid admin (logged)'\n");
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
     }
 
-if (admins->Add(login, admin))
+if (admins->add(login, *admin))
     {
     printfd(__FILE__, "METHOD_ADMIN_ADD::execute(): 'Failed to add admin'\n");
     *retvalPtr = xmlrpc_c::value_boolean(false);
@@ -110,13 +110,13 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * admin;
 
-if (admins->Find(adminInfo.admin, &admin))
+if (admins->find(adminInfo.admin, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
     }
 
-if (admins->Del(login, admin))
+if (admins->del(login, *admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -145,7 +145,7 @@ if (config->GetAdminInfo(cookie, &adminInfo))
 
 STG::Admin * loggedAdmin;
 
-if (admins->Find(adminInfo.admin, &loggedAdmin))
+if (admins->find(adminInfo.admin, &loggedAdmin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -153,7 +153,7 @@ if (admins->Find(adminInfo.admin, &loggedAdmin))
 
 STG::Admin * admin;
 
-if (admins->Find(login, &admin))
+if (admins->find(login, &admin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     return;
@@ -161,8 +161,8 @@ if (admins->Find(login, &admin))
 
 STG::AdminConf conf;
 
-conf.priv = *admin->GetPriv();
-conf.password = admin->GetPassword();
+conf.priv = admin->priv();
+conf.password = admin->password();
 conf.login = login;
 
 std::map<std::string, xmlrpc_c::value> structVal = info;
@@ -209,7 +209,7 @@ if ((it = structVal.find("tariff_chg")) != structVal.end())
     conf.priv.tariffChg = xmlrpc_c::value_boolean(it->second);
     }
 
-if (admins->Change(conf, loggedAdmin))
+if (admins->change(conf, *loggedAdmin))
     {
     *retvalPtr = xmlrpc_c::value_boolean(false);
     }
@@ -236,25 +236,22 @@ if (config->GetAdminInfo(cookie, &adminInfo))
     return;
     }
 
-STG::AdminConf ac;
-int h = admins->OpenSearch();
-
-while (admins->SearchNext(h, &ac) == 0)
+admins->fmap([&retval](const auto& admin)
     {
-    std::map<std::string, xmlrpc_c::value> structVal;
-    structVal["result"] = xmlrpc_c::value_boolean(true);
-    structVal["login"] = xmlrpc_c::value_string(ac.login);
-    structVal["password"] = xmlrpc_c::value_string(ac.password);
-    structVal["user_stat"] = xmlrpc_c::value_boolean(ac.priv.userStat);
-    structVal["user_conf"] = xmlrpc_c::value_boolean(ac.priv.userConf);
-    structVal["user_cash"] = xmlrpc_c::value_boolean(ac.priv.userCash);
-    structVal["user_passwd"] = xmlrpc_c::value_boolean(ac.priv.userPasswd);
-    structVal["user_add_del"] = xmlrpc_c::value_boolean(ac.priv.userAddDel);
-    structVal["admin_chg"] = xmlrpc_c::value_boolean(ac.priv.adminChg);
-    structVal["tariff_chg"] = xmlrpc_c::value_boolean(ac.priv.tariffChg);
-
-    retval.push_back(xmlrpc_c::value_struct(structVal));
-    }
+        const std::map<std::string, xmlrpc_c::value> structVal{
+            {"result", xmlrpc_c::value_boolean(true)},
+            {"login", xmlrpc_c::value_string(admin.login())},
+            {"password", xmlrpc_c::value_string(admin.password())},
+            {"user_stat", xmlrpc_c::value_boolean(admin.priv().userStat)},
+            {"user_conf", xmlrpc_c::value_boolean(admin.priv().userConf)},
+            {"user_cash", xmlrpc_c::value_boolean(admin.priv().userCash)},
+            {"user_passwd", xmlrpc_c::value_boolean(admin.priv().userPasswd)},
+            {"user_add_del", xmlrpc_c::value_boolean(admin.priv().userAddDel)},
+            {"admin_chg", xmlrpc_c::value_boolean(admin.priv().adminChg)},
+            {"tariff_chg", xmlrpc_c::value_boolean(admin.priv().tariffChg)}
+        };
+        retval.push_back(xmlrpc_c::value_struct(structVal));
+    });
 
 *retvalPtr = xmlrpc_c::value_array(retval);
 }

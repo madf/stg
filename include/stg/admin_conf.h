@@ -14,17 +14,7 @@ namespace STG
 
 struct Priv
 {
-    Priv() noexcept
-        : userStat(0),
-          userConf(0),
-          userCash(0),
-          userPasswd(0),
-          userAddDel(0),
-          adminChg(0),
-          tariffChg(0),
-          serviceChg(0),
-          corpChg(0)
-    {}
+    Priv() noexcept : Priv(0) {}
     explicit Priv(uint32_t p) noexcept
         : userStat((p & 0x00000003) >> 0x00),
           userConf((p & 0x0000000C) >> 0x02),
@@ -69,10 +59,8 @@ struct Priv
 //-----------------------------------------------------------------------------
 struct AdminConf
 {
-    AdminConf()
-        : password("* NO PASSWORD *")
-    {}
-    AdminConf(const Priv & pr, const std::string & l, const std::string & p)
+    AdminConf() : AdminConf({}, {}, "* NO PASSWORD *") {}
+    AdminConf(const Priv& pr, const std::string& l, const std::string& p)
         : priv(pr),
           login(l),
           password(p)

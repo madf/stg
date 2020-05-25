@@ -21,32 +21,31 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 namespace STG
 {
 
 struct AdminConf;
-struct Admin;
+class Admin;
 
-struct Admins {
+struct Admins
+{
     virtual ~Admins() = default;
 
-    virtual int Add(const std::string& login, const Admin* admin) = 0;
-    virtual int Del(const std::string& login, const Admin* admin) = 0;
-    virtual int Change(const AdminConf& ac, const Admin* admin) = 0;
-    virtual const Admin* GetSysAdmin() const = 0;
-    virtual const Admin* GetNoAdmin() const = 0;
-    virtual bool Find(const std::string& l, Admin** admin) = 0;
-    virtual bool Exists(const std::string& login) const = 0;
-    virtual bool Correct(const std::string& login,
+    virtual int add(const std::string& login, const Admin& admin) = 0;
+    virtual int del(const std::string& login, const Admin& admin) = 0;
+    virtual int change(const AdminConf& ac, const Admin& admin) = 0;
+    virtual const Admin& sysAdmin() const = 0;
+    virtual const Admin& noAdmin() const = 0;
+    virtual bool find(const std::string& login, Admin** admin) = 0;
+    virtual bool exists(const std::string& login) const = 0;
+    virtual bool correct(const std::string& login,
                          const std::string& password,
                          Admin** admin) = 0;
-    virtual const std::string& GetStrError() const = 0;
-    virtual size_t Count() const = 0;
-
-    virtual int OpenSearch() const = 0;
-    virtual int SearchNext(int, AdminConf* ac) const = 0;
-    virtual int CloseSearch(int) const = 0;
+    virtual const std::string& strError() const = 0;
+    virtual size_t count() const = 0;
+    virtual void fmap(std::function<void (const Admin&)> callback) const = 0;
 };
 
 }

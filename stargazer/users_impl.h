@@ -70,7 +70,7 @@ public:
 
     UsersImpl(SettingsImpl * s, Store * store,
               Tariffs * tariffs, Services & svcs,
-              const Admin * sysAdmin);
+              const Admin& sysAdmin);
     virtual ~UsersImpl();
 
     int             FindByName(const std::string & login, UserPtr * user) override;
@@ -150,7 +150,7 @@ private:
     Tariffs *           tariffs;
     Services &          m_services;
     Store *             store;
-    const Admin *       sysAdmin;
+    const Admin&       sysAdmin;
     Logger &        WriteServLog;
 
     bool                nonstop;
@@ -167,29 +167,5 @@ private:
     std::set<NotifierBase<UserImplPtr>*> onAddNotifiersImpl;
     std::set<NotifierBase<UserImplPtr>*> onDelNotifiersImpl;
 };
-//-----------------------------------------------------------------------------
-/*inline
-void PROPERTY_NOTIFER_IP_BEFORE::Notify(const uint32_t & oldValue,
-                                        const uint32_t &)
-{
-if (!oldValue)
-    return;
 
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &Users::DelFromIPIdx, oldValue);
-// Using explicit call to assure that index is valid, because fast reconnect with delayed call can result in authorization error
-users.DelFromIPIdx(oldValue);
-}
-//-----------------------------------------------------------------------------
-inline
-void PROPERTY_NOTIFER_IP_AFTER::Notify(const uint32_t &,
-                                       const uint32_t & newValue)
-{
-if (!newValue)
-    return;
-
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(users, &Users::AddToIPIdx, user);
-// Using explicit call to assure that index is valid, because fast reconnect with delayed call can result in authorization error
-users.AddToIPIdx(user);
-}*/
-//-----------------------------------------------------------------------------
 }

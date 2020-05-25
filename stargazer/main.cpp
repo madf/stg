@@ -302,11 +302,11 @@ int main(int argc, char* argv[])
     auto& store = storeLoader.get();
     WriteServLog("Storage plugin: %s. Loading successfull.", store.GetVersion().c_str());
 
-    AdminsImpl admins(&store);
+    AdminsImpl admins(store);
     TariffsImpl tariffs(&store);
     ServicesImpl services(&store);
     CorporationsImpl corps(&store);
-    UsersImpl users(&settings, &store, &tariffs, services, admins.GetSysAdmin());
+    UsersImpl users(&settings, &store, &tariffs, services, admins.sysAdmin());
     TraffCounterImpl traffCnt(&users, settings.GetRulesFileName());
     traffCnt.SetMonitorDir(settings.GetMonitorDir());
 
