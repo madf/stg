@@ -21,4 +21,4 @@ PROJECTS="projects/libs
           projects/sgconv
           projects/stargazer"
 
-cppcheck ${INCLUDES} --enable=all -q ${PROJECTS}
+cppcheck --std=c++03 ${INCLUDES} --enable=all -q ${PROJECTS}
