@@ -111,6 +111,16 @@ then
     CXX=g++
 fi
 
+if [ -z "$AR" ]
+then
+    AR=ar
+fi
+
+if [ -z "$RANLIB" ]
+then
+    RANLIB=ranlib
+fi
+
 printf "Checking CC... "
 $CC --version > /dev/null 2> /dev/null
 if [ $? != 0 ]
@@ -126,6 +136,24 @@ if [ $? != 0 ]
 then
     printf "FAIL!\n"
     printf "$CXX not found\n"
+    exit;
+fi
+printf "found\n"
+printf "Checking AR... "
+$AR --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    printf "FAIL!\n"
+    printf "$AR not found\n"
+    exit;
+fi
+printf "found\n"
+printf "Checking RANLIB... "
+$RANLIB --version > /dev/null 2> /dev/null
+if [ $? != 0 ]
+then
+    printf "FAIL!\n"
+    printf "$RANLIB not found\n"
     exit;
 fi
 printf "found\n"
@@ -207,6 +235,8 @@ printf "\n" >> $CONFFILE
 printf "LIB_THREAD=$LIB_THREAD\n" >> $CONFFILE
 printf "CC=$CC\n" >> $CONFFILE
 printf "CXX=$CXX\n" >> $CONFFILE
+printf "AR=$AR\n" >> $CONFFILE
+printf "RANLIB=$RANLIB\n" >> $CONFFILE
 printf "CXXFLAGS=$CXXFLAGS\n" >> $CONFFILE
 printf "CFLAGS=$CFLAGS\n" >> $CONFFILE
 printf "LDFLAGS=$LDFLAGS\n" >> $CONFFILE
