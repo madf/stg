@@ -16,7 +16,7 @@
 
 /*
  *    Author : Boris Mikhailenko <stg34@stargazer.dp.ua>
- *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
+ *    Author : Maksym Mamontov <stg@madf.info>
  */
 
 #include "plugin_runner.h"

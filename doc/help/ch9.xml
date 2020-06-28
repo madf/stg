@@ -1,8 +1,8 @@
 <chapter xml:id="ch9">
   <title>Лицензия, авторы, копирайты, благодарности.</title>
   <para>Система распространяется по лицензии GPL v2.</para>
-  <para>Авторами системы являются Борис&nbsp;Михайленко aka <ulink url="mailto:stg32@stargazer.dp.ua">stg-34</ulink>, Максим&nbsp;Мороз, Максим&nbsp;Мамонтов aka <ulink url="mailto:faust@stargazer.dp.ua">madf</ulink>, Игорь&nbsp;Лысейко и другие.</para>
-  <para>Авторами файлов справки являются Георгий&nbsp;Филонов aka <ulink url="mailto:egor2fsys@gmail.com">egor2fsys</ulink>, Максим&nbsp;Мамонтов aka <ulink url="mailto:faust@stargazer.dp.ua">madf</ulink> и Елена&nbsp;Шевелева.</para>
+  <para>Авторами системы являются Борис&nbsp;Михайленко aka <ulink url="mailto:stg32@stargazer.dp.ua">stg-34</ulink>, Максим&nbsp;Мороз, Максим&nbsp;Мамонтов aka <ulink url="mailto:stg@madf.info">madf</ulink>, Игорь&nbsp;Лысейко и другие.</para>
+  <para>Авторами файлов справки являются Георгий&nbsp;Филонов aka <ulink url="mailto:egor2fsys@gmail.com">egor2fsys</ulink>, Максим&nbsp;Мамонтов aka <ulink url="mailto:stg@madf.info">madf</ulink> и Елена&nbsp;Шевелева.</para>
   <para>В системе использована библиотека <ulink url="http://expat.sourceforge.net/">LibExpat</ulink>.</para>
   <para>Модуль БД на основе СУБД&nbsp;Firebird использует библиотеки <ulink url="http://www.firebirdsql.org">libfbclient</ulink> и <ulink url="http://www.ibpp.org">IBPP</ulink>. Модуль БД на основе СУБД&nbsp;MySQL использует библиотеку <ulink url="http://dev.mysql.com">libmysqlclient_r</ulink>. Модуль БД на основе СУБД&nbsp;PostgreSQL использует библиотеку <ulink url="http://www.postgresql.org">libpq</ulink>.</para>
   <para>Авторы выражают благодарность всем администраторам и пользователям Stargazer за сообщения об ошибках и предложения новых возможностей системы. Также выражаем благодарность форумам «Локальные сети Украины» и «Домашние сети России». </para>

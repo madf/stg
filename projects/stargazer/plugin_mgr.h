@@ -18,7 +18,7 @@
  */
 
 /*
- *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
+ *    Author : Maksym Mamontov <stg@madf.info>
  */
 
 #include "stg/module_settings.h"

@@ -3,10 +3,10 @@
       xmlns:xi="http://www.w3.org/2001/XInclude">
     <bookinfo>
         <title>Описание XML-RPC API биллинговой системы Stargazer</title>
-        <author>i
-            <firstname>Maxim</firstname>
+        <author>
+            <firstname>Maksym</firstname>
             <surname>Mamontov</surname>
-            <email>faust@stg.dp.ua</email>
+            <email>stg@madf.info</email>
         </author>
         <date>22.05.2009</date>
     </bookinfo>

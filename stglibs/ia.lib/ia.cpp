@@ -23,7 +23,7 @@
 /*
 * Author :
 * Boris Mikhailenko <stg34@stargazer.dp.ua>
-* Maxim Mamontov <faust@stargazer.dp.ua>
+* Maksym Mamontov <stg@madf.info>
 * Andrey Rakhmanov <andrey_rakhmanov@yahoo.com> - bugfixes.
 */
 

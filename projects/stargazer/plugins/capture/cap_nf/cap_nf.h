@@ -19,7 +19,7 @@ Date: 16.05.2008
 */
 
 /*
-* Author : Maxim Mamontov <faust@stg.dp.ua>
+* Author : Maksym Mamontov <stg@madf.info>
 */
 
 /*

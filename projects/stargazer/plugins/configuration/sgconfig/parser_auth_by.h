@@ -15,7 +15,7 @@
  */
 
 /*
- *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
+ *    Author : Maksym Mamontov <stg@madf.info>
  */
 
 #ifndef __STG_PARSER_AUTH_BY_H__

@@ -15,7 +15,7 @@
  */
 
 /*
- *    Author : maxim Mamontov <faust@stargazer.dp.ua>
+ *    Author : Maksym Mamontov <stg@madf.info>
  */
 
 #ifndef TRAFFCOUNTER_H
