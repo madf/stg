@@ -31,10 +31,10 @@ template <typename T>
 int GetInt(const std::string & str, T * val, T defaultVal = T())
 {
     char *res;
-    
+
     *val = static_cast<T>(strtoll(str.c_str(), &res, 10));
-    
-    if (*res != 0) 
+
+    if (*res != 0)
     {
         *val = defaultVal; //Error!
         return EINVAL;
@@ -46,10 +46,10 @@ int GetInt(const std::string & str, T * val, T defaultVal = T())
 int GetDouble(const std::string & str, double * val, double defaultVal)
 {
     char *res;
-    
+
     *val = strtod(str.c_str(), &res);
-    
-    if (*res != 0) 
+
+    if (*res != 0)
     {
         *val = defaultVal; //Error!
         return EINVAL;
@@ -61,10 +61,10 @@ int GetDouble(const std::string & str, double * val, double defaultVal)
 int GetTime(const std::string & str, time_t * val, time_t defaultVal)
 {
     char *res;
-    
+
     *val = strtol(str.c_str(), &res, 10);
-    
-    if (*res != 0) 
+
+    if (*res != 0)
     {
         *val = defaultVal; //Error!
         return EINVAL;
@@ -87,17 +87,17 @@ std::string ReplaceStr(std::string source, const std::string & symlist, const ch
 int GetULongLongInt(const std::string & str, uint64_t * val, uint64_t defaultVal)
 {
     char *res;
-    
+
     *val = strtoull(str.c_str(), &res, 10);
-    
-    if (*res != 0) 
+
+    if (*res != 0)
     {
         *val = defaultVal; //Error!
         return EINVAL;
     }
 
     return 0;
-} 
+}
 
 PLUGIN_CREATOR<MYSQL_STORE> msc;
 }
@@ -175,7 +175,7 @@ int    MYSQL_STORE::MysqlQuery(const char* sQuery,MYSQL * sock) const
                 return 0;
         }
     }
-    
+
     return ret;
 }
 //-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ else
          if(mysql_select_db(sock, storeSettings.GetDBName().c_str()))
          {
              std::string res = "CREATE DATABASE " + storeSettings.GetDBName();
-            
+
             if(MysqlQuery(res.c_str(),sock))
             {
                 errorStr = "Couldn't create database! With error:\n";
@@ -313,7 +313,7 @@ if(!IsTablePresent("admins",sock))
         "ChgPassword TINYINT DEFAULT 0,ChgStat TINYINT DEFAULT 0,"\
         "ChgCash TINYINT DEFAULT 0,UsrAddDel TINYINT DEFAULT 0,"\
         "ChgTariff TINYINT DEFAULT 0,ChgAdmin TINYINT DEFAULT 0)");
-    
+
     if(MysqlQuery(qbuf,sock))
     {
         errorStr = "Couldn't create admin table list With error:\n";
@@ -325,7 +325,7 @@ if(!IsTablePresent("admins",sock))
     sprintf(qbuf,"INSERT INTO admins SET login='admin',"\
         "password='geahonjehjfofnhammefahbbbfbmpkmkmmefahbbbfbmpkmkmmefahbbbfbmpkmkaa',"\
         "ChgConf=1,ChgPassword=1,ChgStat=1,ChgCash=1,UsrAddDel=1,ChgTariff=1,ChgAdmin=1");
-    
+
     if(MysqlQuery(qbuf,sock))
     {
         errorStr = "Couldn't create default admin. With error:\n";
@@ -340,40 +340,40 @@ std::string param, res;
 if(!IsTablePresent("tariffs",sock))
 {
     res = "CREATE TABLE tariffs (name VARCHAR(40) DEFAULT '' PRIMARY KEY,";
-        
+
     for (int i = 0; i < DIR_NUM; i++)
         {
-        strprintf(&param, " PriceDayA%d DOUBLE DEFAULT 0.0,", i); 
+        strprintf(&param, " PriceDayA%d DOUBLE DEFAULT 0.0,", i);
         res += param;
-    
+
         strprintf(&param, " PriceDayB%d DOUBLE DEFAULT 0.0,", i);
         res += param;
-            
+
         strprintf(&param, " PriceNightA%d DOUBLE DEFAULT 0.0,", i);
         res += param;
-    
+
         strprintf(&param, " PriceNightB%d DOUBLE DEFAULT 0.0,", i);
         res += param;
-            
+
         strprintf(&param, " Threshold%d INT DEFAULT 0,", i);
         res += param;
-    
+
         strprintf(&param, " Time%d VARCHAR(15) DEFAULT '0:0-0:0',", i);
         res += param;
-    
+
         strprintf(&param, " NoDiscount%d INT DEFAULT 0,", i);
         res += param;
-    
+
         strprintf(&param, " SinglePrice%d INT DEFAULT 0,", i);
         res += param;
         }
-    
+
     res += "PassiveCost DOUBLE DEFAULT 0.0, Fee DOUBLE DEFAULT 0.0,"
         "Free DOUBLE DEFAULT 0.0, TraffType VARCHAR(10) DEFAULT '',"
         "period VARCHAR(32) NOT NULL DEFAULT 'month',"
         "change_policy VARCHAR(32) NOT NULL DEFAULT 'allow',"
         "change_policy_timeout TIMESTAMP NOT NULL DEFAULT 0)";
-    
+
     if(MysqlQuery(res.c_str(),sock))
     {
         errorStr = "Couldn't create tariffs table list With error:\n";
@@ -383,52 +383,52 @@ if(!IsTablePresent("tariffs",sock))
     }
 
     res = "INSERT INTO tariffs SET name='tariff',";
-        
+
     for (int i = 0; i < DIR_NUM; i++)
         {
         strprintf(&param, " NoDiscount%d=1,", i);
         res += param;
-    
+
         strprintf(&param, " Threshold%d=0,", i);
         res += param;
-    
+
         strprintf(&param, " Time%d='0:0-0:0',", i);
         res += param;
-    
+
         if(i != 0 && i != 1)
         {
             strprintf(&param, " SinglePrice%d=0,", i);
-            res += param;        
+            res += param;
         }
-    
+
         if(i != 1)
         {
-            strprintf(&param, " PriceDayA%d=0.0,", i); 
-            res += param;        
+            strprintf(&param, " PriceDayA%d=0.0,", i);
+            res += param;
         }
         if(i != 1)
         {
-            strprintf(&param, " PriceDayB%d=0.0,", i);        
-            res += param;    
+            strprintf(&param, " PriceDayB%d=0.0,", i);
+            res += param;
         }
-    
+
         if(i != 0)
         {
-            strprintf(&param, " PriceNightA%d=0.0,", i); 
-            res += param;        
+            strprintf(&param, " PriceNightA%d=0.0,", i);
+            res += param;
         }
         if(i != 0)
         {
-            strprintf(&param, " PriceNightB%d=0.0,", i);        
-            res += param;    
+            strprintf(&param, " PriceNightB%d=0.0,", i);
+            res += param;
         }
         }
-    
+
     res += "PassiveCost=0.0, Fee=10.0, Free=0,"\
         "SinglePrice0=1, SinglePrice1=1,PriceDayA1=0.75,PriceDayB1=0.75,"\
         "PriceNightA0=1.0,PriceNightB0=1.0,TraffType='up+down',period='month',"\
         "change_policy='allow', change_policy_timeout=0";
-    
+
     if(MysqlQuery(res.c_str(),sock))
     {
         errorStr = "Couldn't create default tariff. With error:\n";
@@ -457,34 +457,34 @@ if(!IsTablePresent("users",sock))
         "Address VARCHAR(254) NOT NULL DEFAULT '',Phone VARCHAR(128) NOT NULL DEFAULT '',Email VARCHAR(50) NOT NULL DEFAULT '',"\
         "Note TEXT NOT NULL,RealName VARCHAR(254) NOT NULL DEFAULT '',StgGroup VARCHAR(40) NOT NULL DEFAULT '',"\
         "Credit DOUBLE DEFAULT 0, TariffChange VARCHAR(40) NOT NULL DEFAULT '',";
-    
+
     for (int i = 0; i < USERDATA_NUM; i++)
         {
         strprintf(&param, " Userdata%d VARCHAR(254) NOT NULL,", i);
         res += param;
         }
-    
+
     param = " CreditExpire INT(11) DEFAULT 0,";
     res += param;
-    
+
     strprintf(&param, " IP VARCHAR(254) DEFAULT '*',");
     res += param;
-    
+
     for (int i = 0; i < DIR_NUM; i++)
         {
         strprintf(&param, " D%d BIGINT(30) DEFAULT 0,", i);
         res += param;
-    
+
         strprintf(&param, " U%d BIGINT(30) DEFAULT 0,", i);
         res += param;
         }
-    
+
     strprintf(&param, "Cash DOUBLE DEFAULT 0,FreeMb DOUBLE DEFAULT 0,LastCashAdd DOUBLE DEFAULT 0,"\
         "LastCashAddTime INT(11) DEFAULT 0,PassiveTime INT(11) DEFAULT 0,LastActivityTime INT(11) DEFAULT 0,"\
         "NAS VARCHAR(17) NOT NULL, INDEX (AlwaysOnline), INDEX (IP), INDEX (Address),"\
         " INDEX (Tariff),INDEX (Phone),INDEX (Email),INDEX (RealName))");
     res += param;
-        
+
     if(MysqlQuery(res.c_str(),sock))
     {
         errorStr = "Couldn't create users table list With error:\n";
@@ -498,25 +498,25 @@ if(!IsTablePresent("users",sock))
         "Credit=0.0,CreditExpire=0,Down=0,Email='',DisabledDetailStat=0,"\
         "StgGroup='',IP='192.168.1.1',Note='',Passive=0,Password='123456',"\
         "Phone='', RealName='',Tariff='tariff',TariffChange='',NAS='',";
-    
+
     for (int i = 0; i < USERDATA_NUM; i++)
         {
         strprintf(&param, " Userdata%d='',", i);
         res += param;
         }
-    
+
     for (int i = 0; i < DIR_NUM; i++)
         {
         strprintf(&param, " D%d=0,", i);
         res += param;
-    
+
         strprintf(&param, " U%d=0,", i);
         res += param;
         }
-    
+
     res += "Cash=10.0,FreeMb=0.0,LastActivityTime=0,LastCashAdd=0,"\
         "LastCashAddTime=0, PassiveTime=0";
-        
+
     if(MysqlQuery(res.c_str(),sock))
     {
         errorStr = "Couldn't create default user. With error:\n";
@@ -530,7 +530,7 @@ if(!IsTablePresent("users",sock))
 if(!IsTablePresent("logs"))
 {
     sprintf(qbuf,"CREATE TABLE logs (unid INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, login VARCHAR(40),text TEXT)");
-    
+
     if(MysqlQuery(qbuf))
     {
         errorStr = "Couldn't create admin table list With error:\n";
@@ -545,7 +545,7 @@ if(!IsTablePresent("messages",sock))
     sprintf(qbuf,"CREATE TABLE messages (login VARCHAR(40) DEFAULT '', id BIGINT, "\
             "type INT, lastSendTime INT, creationTime INT, showTime INT,"\
             "stgRepeat INT, repeatPeriod INT, text TEXT)");
-    
+
     if(MysqlQuery(qbuf,sock))
     {
         errorStr = "Couldn't create messages table. With error:\n";
@@ -559,18 +559,18 @@ if(!IsTablePresent("messages",sock))
 if(!IsTablePresent("stat",sock))
 {
     res = "CREATE TABLE stat (login VARCHAR(50), month TINYINT, year SMALLINT,";
-    
+
     for (int i = 0; i < DIR_NUM; i++)
         {
-        strprintf(&param, " U%d BIGINT,", i); 
+        strprintf(&param, " U%d BIGINT,", i);
         res += param;
-            
-        strprintf(&param, " D%d BIGINT,", i); 
+
+        strprintf(&param, " D%d BIGINT,", i);
         res += param;
         }
-        
+
     res += " cash DOUBLE, INDEX (login))";
-    
+
     if(MysqlQuery(res.c_str(),sock))
     {
         errorStr = "Couldn't create stat table. With error:\n";
@@ -629,18 +629,18 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 
-int MYSQL_STORE::GetAllParams(std::vector<std::string> * ParamList, 
+int MYSQL_STORE::GetAllParams(std::vector<std::string> * ParamList,
                             const std::string & table, const std::string & name) const
 {
 MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock=NULL;
 my_ulonglong num, i;
-    
+
 ParamList->clear();
-    
+
 sprintf(qbuf,"SELECT %s FROM %s", name.c_str(), table.c_str());
-    
+
 if(MysqlGetQuery(qbuf,sock))
 {
     errorStr = "Couldn't GetAllParams Query for: ";
@@ -662,7 +662,7 @@ num = mysql_num_rows(res);
 
 for(i = 0; i < num; i++)
 {
-    row = mysql_fetch_row(res);    
+    row = mysql_fetch_row(res);
     ParamList->push_back(row[0]);
 }
 
@@ -717,7 +717,7 @@ return 0;
 int MYSQL_STORE::DelUser(const std::string & login) const
 {
 sprintf(qbuf,"DELETE FROM users WHERE login='%s' LIMIT 1", login.c_str());
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't delete user:\n";
@@ -749,7 +749,7 @@ query += "CreditExpire, IP FROM users WHERE login='";
 query += login + "' LIMIT 1";
 
 //sprintf(qbuf,"SELECT * FROM users WHERE login='%s' LIMIT 1", login.c_str());
-    
+
 if(MysqlGetQuery(query.c_str(),sock))
 {
     errorStr = "Couldn't restore Tariff(on query):\n";
@@ -819,7 +819,7 @@ if (GetInt(row[5], &conf->alwaysOnline) != 0)
 
 conf->tariffName = row[6];
 
-if (conf->tariffName.empty()) 
+if (conf->tariffName.empty())
     {
     mysql_free_result(res);
     errorStr = "User \'" + login + "\' tariff is blank.";
@@ -850,7 +850,7 @@ for (int i = 0; i < USERDATA_NUM; i++)
     }
 
 GetTime(row[15+USERDATA_NUM], &conf->creditExpire, 0);
-    
+
 std::string ipStr = row[16+USERDATA_NUM];
 USER_IPS i;
 try
@@ -893,7 +893,7 @@ query += "Cash, FreeMb, LastCashAdd, LastCashAddTime, PassiveTime, LastActivityT
 query += login + "'";
 
 //sprintf(qbuf,"SELECT * FROM users WHERE login='%s' LIMIT 1", login.c_str());
-    
+
 if(MysqlGetQuery(query.c_str() ,sock))
 {
     errorStr = "Couldn't restore UserStat(on query):\n";
@@ -1002,7 +1002,7 @@ std::string res;
 
 strprintf(&res,"UPDATE users SET Password='%s', Passive=%d, Down=%d, DisabledDetailStat = %d, "\
     "AlwaysOnline=%d, Tariff='%s', Address='%s', Phone='%s', Email='%s', "\
-    "Note='%s', RealName='%s', StgGroup='%s', Credit=%f, TariffChange='%s', ", 
+    "Note='%s', RealName='%s', StgGroup='%s', Credit=%f, TariffChange='%s', ",
     conf.password.c_str(),
     conf.passive,
     conf.disabled,
@@ -1021,11 +1021,11 @@ strprintf(&res,"UPDATE users SET Password='%s', Passive=%d, Down=%d, DisabledDet
 
 for (int i = 0; i < USERDATA_NUM; i++)
     {
-    strprintf(&param, " Userdata%d='%s',", i, 
+    strprintf(&param, " Userdata%d='%s',", i,
         (ReplaceStr(conf.userdata[i],badSyms,repSym)).c_str());
     res += param;
     }
-    
+
 strprintf(&param, " CreditExpire=%d,", conf.creditExpire);
 res += param;
 
@@ -1065,7 +1065,7 @@ for (int i = 0; i < DIR_NUM; i++)
     }
 
 strprintf(&param, " Cash=%f, FreeMb=%f, LastCashAdd=%f, LastCashAddTime=%d,"\
-    " PassiveTime=%d, LastActivityTime=%d", 
+    " PassiveTime=%d, LastActivityTime=%d",
     stat.cash,
     stat.freeMb,
     stat.lastCashAdd,
@@ -1120,7 +1120,7 @@ if (num_rows < 1)
 {
     sprintf(qbuf,"CREATE TABLE logs_%02d_%4d (unid INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, login VARCHAR(40),text TEXT)",
     lt->tm_mon+1, lt->tm_year+1900);
-    
+
     if(MysqlQuery(qbuf,sock))
     {
         errorStr = "Couldn't create WriteDetailedStat table:\n";
@@ -1210,24 +1210,24 @@ logStr += "\'";
 return WriteLogString(logStr, login);
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year, 
+int MYSQL_STORE::SaveMonthStat(const USER_STAT & stat, int month, int year,
                                 const std::string & login) const
 {
 std::string param, res;
 
-strprintf(&res, "INSERT INTO stat SET login='%s', month=%d, year=%d,", 
+strprintf(&res, "INSERT INTO stat SET login='%s', month=%d, year=%d,",
     login.c_str(), month+1, year+1900);
-    
+
 for (int i = 0; i < DIR_NUM; i++)
     {
-    strprintf(&param, " U%d=%lld,", i, stat.monthUp[i]); 
+    strprintf(&param, " U%d=%lld,", i, stat.monthUp[i]);
     res += param;
 
-    strprintf(&param, " D%d=%lld,", i, stat.monthDown[i]);        
+    strprintf(&param, " D%d=%lld,", i, stat.monthDown[i]);
     res += param;
     }
-    
-strprintf(&param, " cash=%f", stat.cash);        
+
+strprintf(&param, " cash=%f", stat.cash);
 res += param;
 
 if(MysqlSetQuery(res.c_str()))
@@ -1243,7 +1243,7 @@ return 0;
 int MYSQL_STORE::AddAdmin(const std::string & login) const
 {
 sprintf(qbuf,"INSERT INTO admins SET login='%s'", login.c_str());
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't add admin:\n";
@@ -1257,7 +1257,7 @@ return 0;
 int MYSQL_STORE::DelAdmin(const std::string & login) const
 {
 sprintf(qbuf,"DELETE FROM admins where login='%s' LIMIT 1", login.c_str());
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't delete admin:\n";
@@ -1293,7 +1293,7 @@ Encode12(passwordE, pass, ADM_PASSWD_LEN);
 
 sprintf(qbuf,"UPDATE admins SET password='%s', ChgConf=%d, ChgPassword=%d, "\
     "ChgStat=%d, ChgCash=%d, UsrAddDel=%d, ChgTariff=%d, ChgAdmin=%d "\
-    "WHERE login='%s' LIMIT 1", 
+    "WHERE login='%s' LIMIT 1",
     passwordE,
     ac.priv.userConf,
     ac.priv.userPasswd,
@@ -1329,7 +1329,7 @@ MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
 sprintf(qbuf,"SELECT * FROM admins WHERE login='%s' LIMIT 1", login.c_str());
-    
+
 if(MysqlGetQuery(qbuf,sock))
 {
     errorStr = "Couldn't restore admin:\n";
@@ -1353,7 +1353,7 @@ if ( mysql_num_rows(res) == 0)
     mysql_close(sock);
     return -1;
 }
-  
+
 row = mysql_fetch_row(res);
 
 p = row[1];
@@ -1390,7 +1390,7 @@ ac->password = password;
 
 uint16_t a;
 
-if (GetInt(row[2], &a) == 0) 
+if (GetInt(row[2], &a) == 0)
     ac->priv.userConf = a;
 else
     {
@@ -1400,7 +1400,7 @@ else
     return -1;
     }
 
-if (GetInt(row[3], &a) == 0) 
+if (GetInt(row[3], &a) == 0)
     ac->priv.userPasswd = a;
 else
     {
@@ -1410,7 +1410,7 @@ else
     return -1;
     }
 
-if (GetInt(row[4], &a) == 0) 
+if (GetInt(row[4], &a) == 0)
     ac->priv.userStat = a;
 else
     {
@@ -1420,7 +1420,7 @@ else
     return -1;
     }
 
-if (GetInt(row[5], &a) == 0) 
+if (GetInt(row[5], &a) == 0)
     ac->priv.userCash = a;
 else
     {
@@ -1430,7 +1430,7 @@ else
     return -1;
     }
 
-if (GetInt(row[6], &a) == 0) 
+if (GetInt(row[6], &a) == 0)
     ac->priv.userAddDel = a;
 else
     {
@@ -1440,7 +1440,7 @@ else
     return -1;
     }
 
-if (GetInt(row[7], &a) == 0) 
+if (GetInt(row[7], &a) == 0)
     ac->priv.tariffChg = a;
 else
     {
@@ -1450,7 +1450,7 @@ else
     return -1;
     }
 
-if (GetInt(row[8], &a) == 0) 
+if (GetInt(row[8], &a) == 0)
     ac->priv.adminChg = a;
 else
     {
@@ -1468,7 +1468,7 @@ return 0;
 int MYSQL_STORE::AddTariff(const std::string & name) const
 {
 sprintf(qbuf,"INSERT INTO tariffs SET name='%s'", name.c_str());
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't add tariff:\n";
@@ -1482,7 +1482,7 @@ return 0;
 int MYSQL_STORE::DelTariff(const std::string & name) const
 {
 sprintf(qbuf,"DELETE FROM tariffs WHERE name='%s' LIMIT 1", name.c_str());
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't delete tariff: ";
@@ -1499,7 +1499,7 @@ MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
 sprintf(qbuf,"SELECT * FROM tariffs WHERE name='%s' LIMIT 1", tariffName.c_str());
-    
+
 if(MysqlGetQuery(qbuf,sock))
 {
     errorStr = "Couldn't restore Tariff:\n";
@@ -1534,10 +1534,10 @@ for (int i = 0; i<DIR_NUM; i++)
         return -1;
         }
 
-    ParseTariffTimeStr(str.c_str(), 
-                       td->dirPrice[i].hDay, 
-                       td->dirPrice[i].mDay, 
-                       td->dirPrice[i].hNight, 
+    ParseTariffTimeStr(str.c_str(),
+                       td->dirPrice[i].hDay,
+                       td->dirPrice[i].mDay,
+                       td->dirPrice[i].hNight,
                        td->dirPrice[i].mNight);
 
     strprintf(&param, "PriceDayA%d", i);
@@ -1634,7 +1634,7 @@ if (GetDouble(row[1+8*DIR_NUM], &td->tariffConf.passiveCost, 0.0) < 0)
 
     str = row[4+8*DIR_NUM];
     param = "TraffType";
-    
+
     if (str.length() == 0)
         {
         mysql_free_result(res);
@@ -1712,30 +1712,30 @@ std::string res="UPDATE tariffs SET";
 
 for (int i = 0; i < DIR_NUM; i++)
     {
-    strprintf(&param, " PriceDayA%d=%f,", i, 
+    strprintf(&param, " PriceDayA%d=%f,", i,
         td.dirPrice[i].priceDayA * pt_mega);
     res += param;
 
-    strprintf(&param, " PriceDayB%d=%f,", i, 
-        td.dirPrice[i].priceDayB * pt_mega);        
+    strprintf(&param, " PriceDayB%d=%f,", i,
+        td.dirPrice[i].priceDayB * pt_mega);
     res += param;
-        
+
     strprintf(&param, " PriceNightA%d=%f,", i,
         td.dirPrice[i].priceNightA * pt_mega);
     res += param;
 
-    strprintf(&param, " PriceNightB%d=%f,", i, 
+    strprintf(&param, " PriceNightB%d=%f,", i,
         td.dirPrice[i].priceNightB * pt_mega);
     res += param;
-        
-    strprintf(&param, " Threshold%d=%d,", i, 
+
+    strprintf(&param, " Threshold%d=%d,", i,
         td.dirPrice[i].threshold);
     res += param;
 
     std::string s;
     strprintf(&param, " Time%d", i);
 
-    strprintf(&s, "%0d:%0d-%0d:%0d", 
+    strprintf(&s, "%0d:%0d-%0d:%0d",
             td.dirPrice[i].hDay,
             td.dirPrice[i].mDay,
             td.dirPrice[i].hNight,
@@ -1743,11 +1743,11 @@ for (int i = 0; i < DIR_NUM; i++)
 
     res += (param + "='" + s + "',");
 
-    strprintf(&param, " NoDiscount%d=%d,", i, 
+    strprintf(&param, " NoDiscount%d=%d,", i,
         td.dirPrice[i].noDiscount);
     res += param;
 
-    strprintf(&param, " SinglePrice%d=%d,", i, 
+    strprintf(&param, " SinglePrice%d=%d,", i,
         td.dirPrice[i].singlePrice);
     res += param;
     }
@@ -1783,8 +1783,8 @@ if(MysqlSetQuery(res.c_str()))
 return 0;
 }
 //-----------------------------------------------------------------------------
-int MYSQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree, 
-                                   time_t lastStat, 
+int MYSQL_STORE::WriteDetailedStat(const std::map<IP_DIR_PAIR, STAT_NODE> & statTree,
+                                   time_t lastStat,
                                    const std::string & login) const
 {
 std::string res, stTime, endTime, tempStr;
@@ -1828,7 +1828,7 @@ if (num_rows < 1)
         "IP VARCHAR(17) DEFAULT '',dir INT DEFAULT 0,"\
         "down BIGINT DEFAULT 0,up BIGINT DEFAULT 0, cash DOUBLE DEFAULT 0.0, INDEX (login), INDEX(dir), INDEX(day), INDEX(IP))",
     lt->tm_mon+1, lt->tm_year+1900);
-    
+
     if(MysqlQuery(qbuf,sock))
     {
         errorStr = "Couldn't create WriteDetailedStat table:\n";
@@ -1855,12 +1855,12 @@ lt2 = localtime(&t);
 h2 = lt2->tm_hour;
 m2 = lt2->tm_min;
 s2 = lt2->tm_sec;
-    
+
 strprintf(&stTime, "%02d:%02d:%02d", h1, m1, s1);
 strprintf(&endTime, "%02d:%02d:%02d", h2, m2, s2);
 
 strprintf(&res,"INSERT INTO detailstat_%02d_%4d SET login='%s',"\
-    "day=%d,startTime='%s',endTime='%s',", 
+    "day=%d,startTime='%s',endTime='%s',",
     lt->tm_mon+1, lt->tm_year+1900,
     login.c_str(),
     lt->tm_mday,
@@ -1873,14 +1873,14 @@ stIter = statTree.begin();
 
 while (stIter != statTree.end())
     {
-        strprintf(&tempStr,"IP='%s', dir=%d, down=%lld, up=%lld, cash=%f", 
+        strprintf(&tempStr,"IP='%s', dir=%d, down=%lld, up=%lld, cash=%f",
                 inet_ntostring(stIter->first.ip).c_str(),
-                stIter->first.dir, 
-                stIter->second.down, 
-                stIter->second.up, 
+                stIter->first.dir,
+                stIter->second.down,
+                stIter->second.up,
                 stIter->second.cash
             );
-    
+
         if( MysqlQuery((res+tempStr).c_str(),sock) )
         {
             errorStr = "Couldn't insert data in WriteDetailedStat:\n";
@@ -1907,11 +1907,11 @@ gettimeofday(&tv, NULL);
 
 msg->header.id = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
 
-sprintf(qbuf,"INSERT INTO messages SET login='%s', id=%lld", 
+sprintf(qbuf,"INSERT INTO messages SET login='%s', id=%lld",
     login.c_str(),
     static_cast<long long>(msg->header.id)
     );
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't add message:\n";
@@ -1928,7 +1928,7 @@ std::string res;
 
 strprintf(&res,"UPDATE messages SET type=%d, lastSendTime=%u, creationTime=%u, "\
     "showTime=%u, stgRepeat=%d, repeatPeriod=%u, text='%s' "\
-    "WHERE login='%s' AND id=%lld LIMIT 1", 
+    "WHERE login='%s' AND id=%lld LIMIT 1",
     msg.header.type,
     msg.header.lastSendTime,
     msg.header.creationTime,
@@ -1958,7 +1958,7 @@ MYSQL * sock;
 
 sprintf(qbuf,"SELECT * FROM messages WHERE login='%s' AND id=%llu LIMIT 1",
         login.c_str(), static_cast<unsigned long long>(id));
-    
+
 if(MysqlGetQuery(qbuf,sock))
 {
     errorStr = "Couldn't GetMessage:\n";
@@ -2035,9 +2035,9 @@ return 0;
 //-----------------------------------------------------------------------------
 int MYSQL_STORE::DelMessage(uint64_t id, const std::string & login) const
 {
-sprintf(qbuf,"DELETE FROM messages WHERE login='%s' AND id=%lld LIMIT 1", 
+sprintf(qbuf,"DELETE FROM messages WHERE login='%s' AND id=%lld LIMIT 1",
         login.c_str(), static_cast<long long>(id));
-    
+
 if(MysqlSetQuery(qbuf))
 {
     errorStr = "Couldn't delete Message:\n";
@@ -2054,7 +2054,7 @@ MYSQL_RES *res;
 MYSQL_ROW row;
 MYSQL * sock;
 sprintf(qbuf,"SELECT * FROM messages WHERE login='%s'", login.c_str());
-    
+
 if(MysqlGetQuery(qbuf,sock))
 {
     errorStr = "Couldn't GetMessageHdrs:\n";
@@ -2080,9 +2080,9 @@ for (i = 0; i < num_rows; i++)
     row = mysql_fetch_row(res);
     if (str2x(row[1], id))
         continue;
-    
+
     STG_MSG_HDR hdr;
-    if (row[2]) 
+    if (row[2])
         if(str2x(row[2], hdr.type))
             continue;
 

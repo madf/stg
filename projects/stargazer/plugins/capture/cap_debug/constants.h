@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 /*
 * Network Layer
-*/ 
+*/
 #define PKT_NET_IP	0x01
 #define PKT_NET_ICMP	0x02
 #define PKT_NET_IGMP	0x04

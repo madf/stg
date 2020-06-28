@@ -50,7 +50,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 * packet payload pointer pkt. You do NOT want to do that. Use the provided
 * library functions.
 * To be clear: don't do _anything_ with this struct. Just pass it as a
-* parameter, be happy and your programs will (hopefully) work. 
+* parameter, be happy and your programs will (hopefully) work.
 */
 struct packet {
 	unsigned long 	pkt_type;
@@ -70,7 +70,7 @@ struct pkt_socket {
 	int rawfd;
 	struct sockaddr_in *sckad;
 	/*struct sockaddr_ll *sckll;*/
-	socklen_t sckad_len;	
+	socklen_t sckad_len;
 };
 
 /* memory management */
@@ -88,7 +88,7 @@ int pkt_tcp_header(struct packet *pkt, unsigned short int sport, unsigned short 
 int pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr, unsigned int tcp_pkt_size);
 int pkt_tcp_option(struct packet *pkt, unsigned char kind, unsigned char len, void *optval, size_t optlen);
 
-/* functions that might be useful and might be added some day ... 
+/* functions that might be useful and might be added some day ...
 int pkt_shift_data(struct packet *pkt, unsigned int from, unsigned int to, unsigned int len);
 int pkt_tcp_change_seqno(int rel_seq, int rel_ackseq);
 int pkt_tcp_set_seqno(unsigned int seq, unsigned int ackseq);

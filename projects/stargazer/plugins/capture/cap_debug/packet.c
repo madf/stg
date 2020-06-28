@@ -1,4 +1,4 @@
-/* $Id: packet.c,v 1.1 2005/12/12 18:14:22 nobunaga Exp $ 
+/* $Id: packet.c,v 1.1 2005/12/12 18:14:22 nobunaga Exp $
 
 Copyright (C) 2002 Marc Kirchner <kirchner@stud.fh-heilbronn.de>
 
@@ -67,13 +67,13 @@ pkt_free(struct packet *pkt)
 
 /*
 <++doc++>
-@name int pkt_move_actptr(struct packet *pkt, int relmov) 
+@name int pkt_move_actptr(struct packet *pkt, int relmov)
 @desc This function moves the active pointer inside the packet.
 @param pkt the packet whose active ptr is to be moved
 @param relmov number of bytes the active ptr shall be moved. To move it backward, negative values may be used.
 <--doc-->
 */
-int 
+int
 pkt_move_actptr(struct packet *pkt, int relmov)
 {
 	if (!pkt)

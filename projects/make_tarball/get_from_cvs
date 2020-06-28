@@ -15,7 +15,7 @@ send_user "checkout module $module";
 
 spawn ssh $user@$host
 expect {
-    "(yes/no)? " { 
+    "(yes/no)? " {
         send  "yes\r"
         send_user "Key accepted";
         }
@@ -24,13 +24,13 @@ expect {
         send_user "Key accepting dont needed";
         }
     }
-    
-spawn cvs -d :ext:$user@$host:$cvsroot co -N -d $dir $module 
+
+spawn cvs -d :ext:$user@$host:$cvsroot co -N -d $dir $module
 expect {
     "assword:" {
         send "$pass\r"
         expect {
-            "assword:" { 
+            "assword:" {
                 send_user "<h3><font color=red>cvs checkout $module failed. Incorrect password</font></h3>";
                 exit 1
                 }
@@ -46,13 +46,13 @@ expect {
                 }
             }
         }
-        
+
      "aborted" {
          send_user "<h3><font color=red>cvs checkout $module failed.</font></h3>";
          exit 1
          }
     }
-  
+
 
 
 

@@ -38,7 +38,7 @@ private:
 
     const MODULE_SETTINGS * settings;
 
-    int     ParseParam(const std::vector<PARAM_VALUE> & moduleParams, 
+    int     ParseParam(const std::vector<PARAM_VALUE> & moduleParams,
                        const std::string & name, std::string & result);
 
     std::string  errorStr;

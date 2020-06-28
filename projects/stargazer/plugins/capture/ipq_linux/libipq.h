@@ -18,7 +18,7 @@
  * GNU General Public License for more details.
  *
  */
- 
+
 #ifndef _LIBIPQ_H
 #define _LIBIPQ_H
 

@@ -592,7 +592,7 @@ BEGIN
         RAISE EXCEPTION 'User % not found', _login;
         RETURN -1;
     END IF;
-    
+
     INSERT INTO tb_sessions_log
         (fk_user,
          event_time,

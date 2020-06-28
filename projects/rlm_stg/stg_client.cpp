@@ -84,7 +84,7 @@ return 0;
 int STG_CLIENT::Send(const RAD_PACKET & packet)
 {
 /*char buf[RAD_MAX_PACKET_LEN];
-    
+
 Encrypt(&ctx, buf, (char *)&packet, sizeof(RAD_PACKET) / 8);
 
 int res = sendto(sock, buf, sizeof(RAD_PACKET), 0, (struct sockaddr *)&outerAddr, sizeof(outerAddr));

@@ -60,7 +60,7 @@ all: libs plugins $(PROG)
 libs:
 	$(MAKE) -C $(DIR_LIBSRC)
 
-plugins: libs 
+plugins: libs
 	$(MAKE) -C $(DIR_PLUGINS)
 
 $(PROG): $(OBJS)
@@ -114,7 +114,7 @@ endif
 
 	install -m $(DATA_MODE) -o $(OWNER) $(ETC_DIR)/rules $(PREFIX)/etc/stargazer/rules
 	install -m $(BIN_MODE) -o $(OWNER) $(ETC_DIR)/On* $(PREFIX)/etc/stargazer/
-	
+
 	# Install file db
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/var/stargazer/admins
 	mkdir -m $(DIR_MODE) -p $(PREFIX)/var/stargazer/tariffs

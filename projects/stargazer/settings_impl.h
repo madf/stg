@@ -75,8 +75,8 @@ public:
     const std::string & GetRulesFileName() const { return rules; }
     const std::string & GetLogFileName() const { return logFile; }
     const std::string & GetPIDFileName() const { return pidFile; }
-    unsigned            GetDetailStatWritePeriod() const 
-        { return detailStatWritePeriod; }
+    unsigned            GetDetailStatWritePeriod() const
+    { return detailStatWritePeriod; }
     unsigned            GetStatWritePeriod() const { return statWritePeriod * 60; }
     unsigned            GetDayFee() const { return dayFee; }
     bool                GetFullFee() const { return fullFee; }

@@ -1606,7 +1606,7 @@ if (e)
     printfd(__FILE__, "FILES_STORE::WriteDetailStat - chmod/chown failed for user '%s'. Error: '%s'\n", login.c_str(), strerror(errno));
     }
 
-snprintf(dn, FN_STR_LEN, "%s/%s/detail_stat/%d/%s%d", 
+snprintf(dn, FN_STR_LEN, "%s/%s/detail_stat/%d/%s%d",
          storeSettings.GetUsersDir().c_str(),
          login.c_str(),
          lt->tm_year+1900,

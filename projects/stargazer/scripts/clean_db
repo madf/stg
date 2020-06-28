@@ -26,12 +26,12 @@ do
     for ys in $usr/detail_stat/*
     do
 	year=`basename $ys`
-	
+
 	for ms in $ys/*
 	do
 	    month=`basename $ms`
-            stat_time=`date --date="$year/$month/01" +%s`	    
-	    
+            stat_time=`date --date="$year/$month/01" +%s`
+
 	    if (( $NOW - $stat_time > $DT ))
 	    then
 	        rm -fr $ms

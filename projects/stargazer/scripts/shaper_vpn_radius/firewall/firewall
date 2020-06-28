@@ -19,7 +19,7 @@ iptables -P FORWARD ACCEPT
 iptables -t nat -F
 iptables -t filter -F
 
-# 
+#
 #iptables -A INPUT  -d $ip1 -j ACCEPT
 #iptables -A OUTPUT -s $ip1 -j ACCEPT
 

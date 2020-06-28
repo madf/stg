@@ -1,4 +1,4 @@
-/* $Id: ip.c,v 1.1 2005/12/12 18:14:22 nobunaga Exp $ 
+/* $Id: ip.c,v 1.1 2005/12/12 18:14:22 nobunaga Exp $
 
 Copyright (C) 2002 Marc Kirchner <kirchner@stud.fh-heilbronn.de>
 
@@ -37,7 +37,7 @@ pkt_ip_header(struct packet *pkt,
 
 	if (!pkt)
 		return EPKTINVALPTR;
-	
+
         ip = (struct ip *) pkt->pkt_ptr;
 
         ip->ip_hl = iphdr_len;

@@ -87,7 +87,7 @@ struct ipq_errmap_t
 
 static int ipq_errno = IPQ_ERR_NONE;
 
-static ssize_t ipq_netlink_sendto(const struct ipq_handle *h, 
+static ssize_t ipq_netlink_sendto(const struct ipq_handle *h,
                                   const void *msg, size_t len);
 
 static ssize_t ipq_netlink_recvfrom(const struct ipq_handle *h,
@@ -296,7 +296,7 @@ int ipq_set_mode(const struct ipq_handle *h,
         ipq_peer_msg_t pm;
         char s[FAKE_ARRAY_SIZE];
         } req;
-    
+
     memset(&req, 0, sizeof(req));
     req.nlh.nlmsg_len = NLMSG_LENGTH(sizeof(req)-FAKE_ARRAY_SIZE);
     req.nlh.nlmsg_flags = NLM_F_REQUEST;

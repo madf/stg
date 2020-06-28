@@ -23,7 +23,7 @@
 #include "mempool.h"
 
 DOTCONFDocumentNode::DOTCONFDocumentNode():previousNode(NULL), nextNode(NULL), parentNode(NULL), childNode(NULL),
-    values(NULL), valuesCount(0), 
+    values(NULL), valuesCount(0),
     name(NULL), lineNum(0), fileName(NULL), closed(true)
 {
 }
@@ -117,15 +117,15 @@ int DOTCONFDocument::cleanupLine(char * line)
             *line = ' ';continue;
         }
         if(*line == '\\' && (*(line+1) == '"' || *(line+1) == '\'')){
-            *bg++ = *(line+1); 
+            *bg++ = *(line+1);
             line+=2; continue;
         }
         if(*line == '\\' && *(line+1) == 'n'){
-            *bg++ = '\n'; 
+            *bg++ = '\n';
             line+=2; continue;
         }
         if(*line == '\\' && *(line+1) == 'r'){
-            *bg++ = '\r'; 
+            *bg++ = '\r';
             line+=2; continue;
         }
         if(*line == '\\' && (*(line+1) == '\n' || *(line+1) == '\r')){ //multiline
@@ -170,7 +170,7 @@ int DOTCONFDocument::cleanupLine(char * line)
             continue;
         }
         *bg++ = *line++;
-    }    
+    }
 
     if(quoted && !multiline){
         error(curLine, fileName, "unterminated quote");
@@ -259,7 +259,7 @@ int DOTCONFDocument::parseLine()
             tagNode->pushValue(nodeValue);
         }
     }
-    
+
     return 0;
 }
 int DOTCONFDocument::parseFile(DOTCONFDocumentNode * _parent)
@@ -292,7 +292,7 @@ int DOTCONFDocument::parseFile(DOTCONFDocumentNode * _parent)
                 if(ret == -1){
                     break;
                 }
-            }            
+            }
         }
     }
 
@@ -331,7 +331,7 @@ int DOTCONFDocument::checkConfig(const std::list<DOTCONFDocumentNode*>::iterator
 }
 
 int DOTCONFDocument::setContent(const char * _fileName)
-{    
+{
     int ret = 0;
     char realpathBuf[PATH_MAX];
 
@@ -363,11 +363,11 @@ int DOTCONFDocument::setContent(const char * _fileName)
     }
 
     ret = parseFile();
-    
+
     (void) fclose(file);
 
     if(!ret){
-    
+
         if( (ret = checkConfig(nodeTree.begin())) == -1){
             return -1;
         }
@@ -443,7 +443,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                             //free(fileName);
                             fileName = strdup(realpathBuf);
                             from = nodeTree.end(); --from;
-                            
+
                             if(tagNode->parentNode){
                                 DOTCONFDocumentNode * nd = tagNode->parentNode->childNode;
                                 while(nd){
@@ -455,7 +455,7 @@ int DOTCONFDocument::setContent(const char * _fileName)
                                 curPrev = nd;
                             }
                             ret = parseFile(tagNode->parentNode);
-                            
+
                             //ret = parseFile(tagNode->parentNode);
                             (void) fclose(file);
                             if(ret == -1)
@@ -487,7 +487,7 @@ int DOTCONFDocument::checkRequiredOptions()
 {
     for(std::list<char*>::const_iterator ci = requiredOptions.begin(); ci != requiredOptions.end(); ++ci){
         bool matched = false;
-        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); ++i){            
+        for(std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin(); i!=nodeTree.end(); ++i){
             if(!cmp_func((*i)->name, *ci)){
                 matched = true;
                 break;
@@ -562,7 +562,7 @@ char * DOTCONFDocument::getSubstitution(char * macro, int lineNum)
         buf = mempool->strdup(subs);
     } else {
         std::list<DOTCONFDocumentNode*>::iterator i = nodeTree.begin();
-        for(; i!=nodeTree.end(); ++i){            
+        for(; i!=nodeTree.end(); ++i){
             DOTCONFDocumentNode * tagNode = *i;
             if(!cmp_func(tagNode->name, variable)){
                 if(tagNode->valuesCount != 0){
@@ -629,7 +629,7 @@ const DOTCONFDocumentNode * DOTCONFDocument::getFirstNode() const
 const DOTCONFDocumentNode * DOTCONFDocument::findNode(const char * nodeName, const DOTCONFDocumentNode * parentNode, const DOTCONFDocumentNode * startNode) const
 {
     //printf("nodeName=%s, cont=%s, start=%s\n", nodeName, containingNode!=NULL?containingNode->name:"NULL", startNode!=NULL?startNode->name:"NULL");
-    
+
     std::list<DOTCONFDocumentNode*>::const_iterator i = nodeTree.begin();
 
     if(startNode == NULL)

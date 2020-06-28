@@ -88,7 +88,7 @@ if (users->FindByName(login, &u))
     *retvalPtr = xmlrpc_c::value_boolean(true);
     return;
     }
-    
+
 *retvalPtr = xmlrpc_c::value_boolean(false);
 return;
 }

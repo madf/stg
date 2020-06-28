@@ -9,9 +9,9 @@ IMPORTS
 stgMIB MODULE-IDENTITY
     LAST-UPDATED "201101060000Z"
     ORGANIZATION "STG"
-    CONTACT-INFO    
+    CONTACT-INFO
         "Primary Contact: Maxim Mamontov
-         email:     faust@stg.dp.ua"
+         email:     stg@madf.info"
     DESCRIPTION
         "This MIB module defines objects for Stargazer data."
     REVISION     "201101060000Z"

@@ -1,4 +1,4 @@
-/* $Id: tcp.c,v 1.2 2009/06/19 12:50:47 faust Exp $ 
+/* $Id: tcp.c,v 1.2 2009/06/19 12:50:47 faust Exp $
 
 Copyright (C) 2002 Marc Kirchner <kirchner@stud.fh-heilbronn.de>
 
@@ -37,7 +37,7 @@ pkt_tcp_header(struct packet *pkt,
 
 	if (!pkt)
 		return EPKTINVALPTR;
-	
+
 	tcp = (struct tcphdr *) pkt->pkt_ptr;
 	tcp->source = htons(sport);
         tcp->dest = htons(dport);
@@ -63,10 +63,10 @@ pkt_tcp_header(struct packet *pkt,
 #   error "Adjust your <bits/endian.h> defines"
 #  endif
         } else {
-                tcp->fin = 0; 
+                tcp->fin = 0;
                 tcp->syn = 0;
                 tcp->rst = 0;
-                tcp->psh = 0; 
+                tcp->psh = 0;
                 tcp->ack = 0;
                 tcp->urg = 0;
                 tcp->res2 = 0;
@@ -76,7 +76,7 @@ pkt_tcp_header(struct packet *pkt,
 }
 
 int
-pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr, 
+pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr,
 		unsigned int tcp_pkt_size)
 {
 	char *tosum;
@@ -86,17 +86,17 @@ pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr,
 
 	if (!pkt || !saddr || !daddr)
 		return EPKTINVALPTR;
-	
+
 	if ((tcp_pkt_size + pkt->pkt_pos) > pkt->pkt_size -1)
 		return EPKTRANGE;
-	
+
 	if ((tosum = (char *) malloc(tcp_pkt_size+sizeof(struct pseudohdr))) != NULL) {
 		memset(tosum, 0, tcp_pkt_size+sizeof(struct pseudohdr));
 		psh = (struct pseudohdr *) tosum;
 		tcp = (struct tcphdr *) pkt->pkt_ptr;
 
 		tcp->check = 0;
-		
+
 		if (inet_pton(AF_INET, saddr, &addr) < 0)
 			return EERRNO;
 		psh->saddr = addr.s_addr;
@@ -106,7 +106,7 @@ pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr,
 		psh->zero = 0x00;
 		psh->protocol = IPPROTO_TCP;
 		psh->length = htons(tcp_pkt_size);
-		
+
 		memcpy(tosum + sizeof(struct pseudohdr), tcp, tcp_pkt_size);
 		tcp->check = in_cksum((unsigned short *)tosum, tcp_pkt_size + sizeof(struct pseudohdr));
 		free(tosum);
@@ -114,9 +114,9 @@ pkt_tcp_cksum(struct packet *pkt, char *saddr, char *daddr,
 	} else
 		return EERRNO;
 }
-		
+
 int
-pkt_tcp_option(struct packet *pkt, unsigned char kind, 
+pkt_tcp_option(struct packet *pkt, unsigned char kind,
 		unsigned char len, void *optval, size_t optlen)
 {
 	void *vp;
@@ -124,10 +124,10 @@ pkt_tcp_option(struct packet *pkt, unsigned char kind,
 
 	if (!pkt)
 		return EPKTINVALPTR;
-	
+
 	if ((pkt->pkt_size) < (pkt->pkt_pos+2+optlen))
 		return EPKTRANGE;
-	
+
 	vp = (void *)pkt->pkt_ptr;
 
 	memcpy(vp, &kind, 1);

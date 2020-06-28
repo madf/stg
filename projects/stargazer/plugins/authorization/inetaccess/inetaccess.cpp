@@ -23,7 +23,7 @@
  $Date: 2010/03/25 15:18:48 $
  $Author: faust $
  */
- 
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif

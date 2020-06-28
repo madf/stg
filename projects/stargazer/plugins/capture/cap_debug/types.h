@@ -1,4 +1,4 @@
-/* $Id: types.h,v 1.1 2005/12/12 18:14:22 nobunaga Exp $ 
+/* $Id: types.h,v 1.1 2005/12/12 18:14:22 nobunaga Exp $
 
 Copyright (C) 2002 Marc Kirchner <kirchner@stud.fh-heilbronn.de>
 

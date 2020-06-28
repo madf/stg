@@ -28,13 +28,13 @@ default_speed=32kbit
 #    maximum)  speedkb=512kbit;;	 # 512 kbit
 #    *)        speedkb=$default_speed;;  # default speed
 #esac
-# ========= shaping by tariff end ========= 
+# ========= shaping by tariff end =========
 
 # ========= shaping by userdata0 ==========
 speedR=$(grep -i "^Userdata0=" /var/stargazer/users/$LOGIN/conf | cut -f 2 -d"=")
 speed=$(echo $speedR | grep "^[0-9]*[0-9]$")
 
-if [ -z "$speed" ] 
+if [ -z "$speed" ]
 then
     speedkb=$default_speed
 else

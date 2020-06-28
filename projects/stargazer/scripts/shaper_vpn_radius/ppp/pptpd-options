@@ -13,7 +13,7 @@
 
 # Authentication
 
-# Name of the local system for authentication purposes 
+# Name of the local system for authentication purposes
 # (must match the second field in /etc/ppp/chap-secrets entries)
 name pptpd
 
@@ -93,5 +93,5 @@ defaultroute
 lock
 
 # Disable BSD-Compress compression
-nobsdcomp 
+nobsdcomp
 plugin radius.so

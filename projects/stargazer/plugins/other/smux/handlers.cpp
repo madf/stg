@@ -102,7 +102,7 @@ asn_long2INTEGER(&msg->request_id, id);
 asn_long2INTEGER(&msg->error_status, 0);
 asn_long2INTEGER(&msg->error_index, 0);
 
-const VarBindList_t * vbl = &getRequest->variable_bindings; 
+const VarBindList_t * vbl = &getRequest->variable_bindings;
 for (int i = 0; i < vbl->list.count; ++i)
     {
     VarBind_t * vb = getRequest->variable_bindings.list.array[i];
@@ -148,7 +148,7 @@ asn_long2INTEGER(&msg->request_id, id);
 asn_long2INTEGER(&msg->error_status, 0);
 asn_long2INTEGER(&msg->error_index, 0);
 
-const VarBindList_t * vbl = &getRequest->variable_bindings; 
+const VarBindList_t * vbl = &getRequest->variable_bindings;
 for (int i = 0; i < vbl->list.count; ++i)
     {
     VarBind_t * vb = getRequest->variable_bindings.list.array[i];

@@ -54,7 +54,7 @@
  * CREATE DATABASE 'localhost:/var/stg/stargazer.fdb' USER 'stg' PASSWORD '123456' DEFAULT CHARACTER SET UTF8;
  */
 
- 
+
 
 /*
  *****************************************************************************
@@ -526,7 +526,7 @@ set term ; !!
 set term !! ;
 create procedure sp_add_message(pk_message integer, login varchar(32), ver integer, msg_type integer, last_send_time integer, creation_time integer, show_time integer, repeat integer, repeat_period integer, msg_text varchar(256))
 returns(res integer)
-as  
+as
 begin
     if (:pk_message is null) then
     begin
@@ -536,7 +536,7 @@ begin
 					:ver,
 					:msg_type,
 					:last_send_time,
-					:creation_time, 
+					:creation_time,
 					:show_time,
 					:repeat,
 					:repeat_period,
@@ -582,8 +582,8 @@ begin
     insert into tb_tariffs (pk_tariff, name, fee, free, passive_cost, traff_type) values (:pk_tariff, :name, 0, 0, 0, 0);
     while (dirs > 0) do
     begin
-        insert into tb_tariffs_params (fk_tariff, dir_num, price_day_a, 
-					price_day_b, price_night_a, price_night_b, 
+        insert into tb_tariffs_params (fk_tariff, dir_num, price_day_a,
+					price_day_b, price_night_a, price_night_b,
 					threshold, time_day_begins, time_day_ends)
 		    values (:pk_tariff, :dirs - 1, 0, 0, 0, 0, 0, '0:0', '0:0');
 	dirs = dirs - 1;
