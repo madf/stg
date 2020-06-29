@@ -20,6 +20,7 @@ fi
 
 rm -rf $SRC_DIR/.git
 rm -f $SRC_DIR/.gitignore
+rm -f $SRC_DIR/.travis.yml
 rm -r $SRC_DIR/projects/make_tarball
 rm -r $SRC_DIR/projects/sgauthstress
 rm -r $SRC_DIR/projects/rlm_stg
