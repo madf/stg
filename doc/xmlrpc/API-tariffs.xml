@@ -118,10 +118,29 @@
                             <listitem>
                                 <para>Периодичность снятия абонплаты:
                                     <simplelist type="vert">
-                                        <member>month &#151; ежемесячное снятие</member>
-                                        <member>day &#151; ежедневное снятие</member>
+                                        <member>month &#151; ежедневная абонплата (параметр Fee трактуется как значение списываемое ежедневно)</member>
+                                        <member>day &#151; ежемесячная абонплата (классическая, параметр Fee трактуется как значение списываемое за месяц, в том числе в режиме SpreadFee)</member>
                                     </simplelist>
                                 </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <parameter>changePolicy</parameter></term>
+                            <listitem>
+                                <para>Политика смены тарифа:
+                                    <simplelist type="vert">
+                                        <member>allow &#151; на период действия политики смена тарифного плана разрешена</member>
+                                        <member>to_cheap &#151; на период действия политики разрешена смена тарифного плана на более дешевый</member>
+                                        <member>to_expensive &#151; на период действия политики разрешена смена тарифного плана на более дорогой</member>
+                                        <member>deny &#151; на период действия политики смена тарифного плана запрещена</member>
+                                    </simplelist>
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <parameter>changePolicyTimeout</parameter></term>
+                            <listitem>
+                                <para>Момент завершения действия политики тарификации (0 - политика тарификации не завершается никогда)</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -293,10 +312,29 @@
                             <listitem>
                                 <para>Периодичность снятия абонплаты:
                                     <simplelist type="vert">
-                                        <member>month &#151; ежемесячное снятие</member>
-                                        <member>day &#151; ежедневное снятие</member>
+                                        <member>month &#151; ежедневная абонплата (параметр Fee трактуется как значение списываемое ежедневно)</member>
+                                        <member>day &#151; ежемесячная абонплата (классическая, параметр Fee трактуется как значение списываемое за месяц, в том числе в режиме SpreadFee)</member>
                                     </simplelist>
                                 </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>string <parameter>changePolicy</parameter></term>
+                            <listitem>
+                                <para>Политика смены тарифа:
+                                    <simplelist type="vert">
+                                        <member>allow &#151; на период действия политики смена тарифного плана разрешена</member>
+                                        <member>to_cheap &#151; на период действия политики разрешена смена тарифного плана на более дешевый</member>
+                                        <member>to_expensive &#151; на период действия политики разрешена смена тарифного плана на более дорогой</member>
+                                        <member>deny &#151; на период действия политики смена тарифного плана запрещена</member>
+                                    </simplelist>
+                                </para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>int <parameter>changePolicyTimeout</parameter></term>
+                            <listitem>
+                                <para>Момент завершения действия политики тарификации (0 - политика тарификации не завершается никогда)</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
@@ -568,10 +606,29 @@
                                     <listitem>
                                         <para>Периодичность снятия абонплаты:
                                             <simplelist type="vert">
-                                                <member>month &#151; ежемесячное снятие</member>
-                                                <member>day &#151; ежедневное снятие</member>
+                                                <member>month &#151; ежедневная абонплата (параметр Fee трактуется как значение списываемое ежедневно)</member>
+                                                <member>day &#151; ежемесячная абонплата (классическая, параметр Fee трактуется как значение списываемое за месяц, в том числе в режиме SpreadFee)</member>
                                             </simplelist>
                                         </para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>string <parameter>changePolicy</parameter></term>
+                                    <listitem>
+                                        <para>Политика смены тарифа:
+                                            <simplelist type="vert">
+                                                <member>allow &#151; на период действия политики смена тарифного плана разрешена</member>
+                                                <member>to_cheap &#151; на период действия политики разрешена смена тарифного плана на более дешевый</member>
+                                                <member>to_expensive &#151; на период действия политики разрешена смена тарифного плана на более дорогой</member>
+                                                <member>deny &#151; на период действия политики смена тарифного плана запрещена</member>
+                                            </simplelist>
+                                        </para>
+                                    </listitem>
+                                </varlistentry>
+                                <varlistentry>
+                                    <term>int <parameter>changePolicyTimeout</parameter></term>
+                                    <listitem>
+                                        <para>Момент завершения действия политики тарификации (0 - политика тарификации не завершается никогда)</para>
                                     </listitem>
                                 </varlistentry>
                                 <varlistentry>

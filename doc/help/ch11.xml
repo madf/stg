@@ -81,6 +81,21 @@
 				<listitem><para>max — тарифицируется большее количество трафика;</para></listitem>
 			</itemizedlist>
 		</listitem>
+		<listitem><para>Period — тип абонплаты:</para>
+			<itemizedlist mark="square">
+				<listitem><para>day — ежедневная абонплата (параметр Fee трактуется как значение списываемое ежедневно);</para></listitem>
+				<listitem><para>month — ежемесячная абонплата (классическая, параметр Fee трактуется как значение списываемое за месяц, в том числе в режиме SpreadFee);</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>ChangePolicy — политика смены тарифа:</para>
+			<itemizedlist mark="square">
+				<listitem><para>allow — на период действия политики смена тарифного плана разрешена;</para></listitem>
+				<listitem><para>to_cheap — на период действия политики разрешена смена тарифного плана на более дешевый;</para></listitem>
+				<listitem><para>to_expensive — на период действия политики разрешена смена тарифного плана на более дорогой;</para></listitem>
+				<listitem><para>deny — на период действия политики смена тарифного плана запрещена;</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>ChangePolicyTimeout — момент завершения действия политики тарификации (0 - политика тарификации не завершается никогда);</para></listitem>
 		<listitem><para>PriceDayA0 … PriceDayA9 — цена трафика по соответствующему направлению в дневной период до превышения порога;</para></listitem>
 		<listitem><para>PriceDayB0 … PriceDayB9 — цена трафика по соответствующему направлению в дневной период после превышения порога;</para></listitem>
 		<listitem><para>PriceNightA0 … PriceNightA9 — цена трафика по соответствующему направлению в ночной период до превышения порога;</para></listitem>

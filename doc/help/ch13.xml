@@ -62,7 +62,29 @@ Query OK, 0 rows affected (0.06 sec)
 		<listitem><para>PassiveCost – стоимость «заморозки» учетной записи пользователя;</para></listitem>
 		<listitem><para>Fee – абонплата;</para></listitem>
 		<listitem><para>Free – количество бесплатных Мб трафика, входящих в абонплату;</para></listitem>
-		<listitem><para>TraffType – тип подсчета трафика (up, down, up+down, max).</para></listitem>
+		<listitem><para>TraffType — тип тарификации трафика:</para>
+			<itemizedlist mark="square">
+				<listitem><para>up+down — входящий и исходящий трафик тарифицируется суммарно;</para></listitem>
+				<listitem><para>up — тарифицируется только исходящий трафик;</para></listitem>
+				<listitem><para>down — тарифицируется только входящий трафик;</para></listitem>
+				<listitem><para>max — тарифицируется большее количество трафика;</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>Period — тип абонплаты:</para>
+			<itemizedlist mark="square">
+				<listitem><para>day — ежедневная абонплата (параметр Fee трактуется как значение списываемое ежедневно);</para></listitem>
+				<listitem><para>month — ежемесячная абонплата (классическая, параметр Fee трактуется как значение списываемое за месяц, в том числе в режиме SpreadFee);</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>ChangePolicy — политика смены тарифа:</para>
+			<itemizedlist mark="square">
+				<listitem><para>allow — на период действия политики смена тарифного плана разрешена;</para></listitem>
+				<listitem><para>to_cheap — на период действия политики разрешена смена тарифного плана на более дешевый;</para></listitem>
+				<listitem><para>to_expensive — на период действия политики разрешена смена тарифного плана на более дорогой;</para></listitem>
+				<listitem><para>deny — на период действия политики смена тарифного плана запрещена;</para></listitem>
+			</itemizedlist>
+		</listitem>
+		<listitem><para>ChangePolicyTimeout — момент завершения действия политики тарификации (0 - политика тарификации не завершается никогда);</para></listitem>
 	</itemizedlist>
 	<para>Таблица users (учетные записи пользователей системы и их статистика):</para>
 	<itemizedlist mark="opencircle">
