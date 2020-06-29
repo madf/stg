@@ -27,13 +27,13 @@ rm -r $SRC_DIR/projects/stargazer/plugins/authorization/stress
 rm -r $SRC_DIR/doc/help
 rm $SRC_DIR/doc/help.odt
 
-if [ -f /usr/share/sgml/docbook/xsl-stylesheets/html/chunk.xsl ]
-then
-    echo "Building doc..."
-    make -C $SRC_DIR/doc/xmlrpc
-    make -C $SRC_DIR/doc/help
-else
-    echo "No XSL stylesheets, skipping doc build"
-fi
+#if [ -f /usr/share/sgml/docbook/xsl-stylesheets/html/chunk.xsl ]
+#then
+#    echo "Building doc..."
+#    make -C $SRC_DIR/doc/xmlrpc
+#    make -C $SRC_DIR/doc/help
+#else
+#    echo "No XSL stylesheets, skipping doc build"
+#fi
 
 tar -zcf $ARC_NAME $SRC_DIR
