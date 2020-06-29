@@ -1,4 +1,7 @@
 General:
+    * Новый сайт (https://stg.net.ua), багтреккер (https://stg.codes),
+    репозиторий (https://git.stg.codes) и зеркало проекта на GitHub
+    (https://github.com/madf/stg).
     * Документация приведена в порядок и выложена на сайт в виде HTML.
     * Поддержка FreeBSD10, FreeBSD11 и FreeBDS12. А так же, потенциально,
     следующих версий.
