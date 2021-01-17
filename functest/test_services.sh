@@ -4,7 +4,7 @@ source `dirname $0`/functions
 
 BASEPATH=$1
 
-SGCONFPATH="$BASEPATH/stg/build/sgconf"
+SGCONFPATH="$BASEPATH/stg/build/projects/sgconf"
 
 printf "Check initial service list... "
 

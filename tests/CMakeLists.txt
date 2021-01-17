@@ -9,9 +9,9 @@ set ( CPP_FILES main.cpp
                 test_filter_params_log.cpp
                 test_crypto.cpp
                 test_bfstream.cpp
-                ../stargazer/tariff_impl.cpp
-                ../stargazer/user_impl.cpp
-                ../stargazer/user_property.cpp )
+                ../projects/stargazer/tariff_impl.cpp
+                ../projects/stargazer/user_impl.cpp
+                ../projects/stargazer/user_property.cpp )
 
 set ( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package ( Threads REQUIRED )
@@ -22,4 +22,4 @@ add_executable ( tests ${CPP_FILES} )
 
 target_link_libraries ( tests conffiles crypto logger scriptexecuter common Threads::Threads )
 
-target_include_directories ( tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../stargazer )
+target_include_directories ( tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../projects/stargazer )
