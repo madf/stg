@@ -78,13 +78,14 @@ ssize_t
 ber_skip_length(asn_codec_ctx_t *opt_codec_ctx,
 		int _is_constructed, const void *ptr, size_t size) {
 	ber_tlv_len_t vlen;	/* Length of V in TLV */
+	ssize_t tl;		/* Length of L in TLV */
 	ssize_t ll;		/* Length of L in TLV */
 	size_t skip;
 
 	/*
 	 * Make sure we didn't exceed the maximum stack size.
 	 */
-	if(_ASN_STACK_OVERFLOW_CHECK(opt_codec_ctx))
+	if(ASN__STACK_OVERFLOW_CHECK(opt_codec_ctx))
 		return -1;
 
 	/*
@@ -111,7 +112,7 @@ ber_skip_length(asn_codec_ctx_t *opt_codec_ctx,
 		ber_tlv_tag_t tag;
 
 		/* Fetch the tag */
-		ssize_t tl = ber_fetch_tag(ptr, size, &tag);
+		tl = ber_fetch_tag(ptr, size, &tag);
 		if(tl <= 0) return tl;
 
 		ll = ber_skip_length(opt_codec_ctx,

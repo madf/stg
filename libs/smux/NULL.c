@@ -10,7 +10,7 @@
 /*
  * NULL basic type description.
  */
-static ber_tlv_tag_t asn_DEF_NULL_tags[] = {
+static const ber_tlv_tag_t asn_DEF_NULL_tags[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (5 << 2))
 };
 asn_TYPE_descriptor_t asn_DEF_NULL = {
@@ -47,7 +47,7 @@ NULL_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 		erval.structure_ptr = ptr;
 	}
 
-	_ASN_ENCODED_OK(erval);
+	ASN__ENCODED_OK(erval);
 }
 
 asn_enc_rval_t
@@ -65,7 +65,7 @@ NULL_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 
 	/* XMLNullValue is empty */
 	er.encoded = 0;
-	_ASN_ENCODED_OK(er);
+	ASN__ENCODED_OK(er);
 }
 
 
@@ -73,11 +73,15 @@ static enum xer_pbd_rval
 NULL__xer_body_decode(asn_TYPE_descriptor_t *td, void *sptr, const void *chunk_buf, size_t chunk_size) {
 	(void)td;
 	(void)sptr;
+	(void)chunk_buf;    /* Going to be empty according to the rules below. */
 
-	if(xer_is_whitespace(chunk_buf, chunk_size))
-		return XPBD_BODY_CONSUMED;
-	else
+	/*
+	 * There must be no content in self-terminating <NULL/> tag.
+	 */
+	if(chunk_size)
 		return XPBD_BROKEN_ENCODING;
+	else
+		return XPBD_BODY_CONSUMED;
 }
 
 asn_dec_rval_t
@@ -119,7 +123,7 @@ NULL_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		if(*sptr) {
 			*(NULL_t *)*sptr = 0;
 		} else {
-			_ASN_DECODE_FAILED;
+			ASN__DECODE_FAILED;
 		}
 	}
 
@@ -143,5 +147,5 @@ NULL_encode_uper(asn_TYPE_descriptor_t *td, asn_per_constraints_t *constraints,
 	(void)po;
 
 	er.encoded = 0;
-	_ASN_ENCODED_OK(er);
+	ASN__ENCODED_OK(er);
 }

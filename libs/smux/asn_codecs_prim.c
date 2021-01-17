@@ -15,14 +15,14 @@ ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 	void **sptr, const void *buf_ptr, size_t size, int tag_mode) {
 	ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)*sptr;
 	asn_dec_rval_t rval;
-	ber_tlv_len_t length;
+	ber_tlv_len_t length = 0; /* =0 to avoid [incorrect] warning. */
 
 	/*
 	 * If the structure is not there, allocate it.
 	 */
 	if(st == NULL) {
 		st = (ASN__PRIMITIVE_TYPE_t *)CALLOC(1, sizeof(*st));
-		if(st == NULL) _ASN_DECODE_FAILED;
+		if(st == NULL) ASN__DECODE_FAILED;
 		*sptr = (void *)st;
 	}
 
@@ -55,13 +55,13 @@ ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 	if(sizeof(st->size) != sizeof(length)
 			&& (ber_tlv_len_t)st->size != length) {
 		st->size = 0;
-		_ASN_DECODE_FAILED;
+		ASN__DECODE_FAILED;
 	}
 
 	st->buf = (uint8_t *)MALLOC(length + 1);
 	if(!st->buf) {
 		st->size = 0;
-		_ASN_DECODE_FAILED;
+		ASN__DECODE_FAILED;
 	}
 
 	memcpy(st->buf, buf_ptr, length);
@@ -111,7 +111,7 @@ der_encode_primitive(asn_TYPE_descriptor_t *td, void *sptr,
 	}
 
 	erval.encoded += st->size;
-	_ASN_ENCODED_OK(erval);
+	ASN__ENCODED_OK(erval);
 }
 
 void
@@ -143,20 +143,26 @@ struct xdp_arg_s {
 	int want_more;
 };
 
-
+/*
+ * Since some kinds of primitive values can be encoded using value-specific
+ * tags (<MINUS-INFINITY>, <enum-element>, etc), the primitive decoder must
+ * be supplied with such tags to parse them as needed.
+ */
 static int
 xer_decode__unexpected_tag(void *key, const void *chunk_buf, size_t chunk_size) {
 	struct xdp_arg_s *arg = (struct xdp_arg_s *)key;
 	enum xer_pbd_rval bret;
 
-	if(arg->decoded_something) {
-		if(xer_is_whitespace(chunk_buf, chunk_size))
-			return 0;	/* Skip it. */
-		/*
-		 * Decoding was done once already. Prohibit doing it again.
-		 */
+	/*
+	 * The chunk_buf is guaranteed to start at '<'.
+	 */
+	assert(chunk_size && ((const char *)chunk_buf)[0] == 0x3c);
+
+	/*
+	 * Decoding was performed once already. Prohibit doing it again.
+	 */
+	if(arg->decoded_something)
 		return -1;
-	}
 
 	bret = arg->prim_body_decoder(arg->type_descriptor,
 		arg->struct_key, chunk_buf, chunk_size);
@@ -177,13 +183,20 @@ xer_decode__unexpected_tag(void *key, const void *chunk_buf, size_t chunk_size) 
 }
 
 static ssize_t
-xer_decode__body(void *key, const void *chunk_buf, size_t chunk_size, int have_more) {
+xer_decode__primitive_body(void *key, const void *chunk_buf, size_t chunk_size, int have_more) {
 	struct xdp_arg_s *arg = (struct xdp_arg_s *)key;
 	enum xer_pbd_rval bret;
+	size_t lead_wsp_size;
 
 	if(arg->decoded_something) {
-		if(xer_is_whitespace(chunk_buf, chunk_size))
+		if(xer_whitespace_span(chunk_buf, chunk_size) == chunk_size) {
+			/*
+			 * Example:
+			 * "<INTEGER>123<!--/--> </INTEGER>"
+			 *                      ^- chunk_buf position.
+			 */
 			return chunk_size;
+		}
 		/*
 		 * Decoding was done once already. Prohibit doing it again.
 		 */
@@ -203,6 +216,10 @@ xer_decode__body(void *key, const void *chunk_buf, size_t chunk_size, int have_m
 		return -1;
 	}
 
+	lead_wsp_size = xer_whitespace_span(chunk_buf, chunk_size);
+	chunk_buf = (const char *)chunk_buf + lead_wsp_size;
+	chunk_size -= lead_wsp_size;
+
 	bret = arg->prim_body_decoder(arg->type_descriptor,
 		arg->struct_key, chunk_buf, chunk_size);
 	switch(bret) {
@@ -215,7 +232,7 @@ xer_decode__body(void *key, const void *chunk_buf, size_t chunk_size, int have_m
 		arg->decoded_something = 1;
 		/* Fall through */
 	case XPBD_NOT_BODY_IGNORE:	/* Safe to proceed further */
-		return chunk_size;
+		return lead_wsp_size + chunk_size;
 	}
 
 	return -1;
@@ -241,7 +258,7 @@ xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 	 */
 	if(!*sptr) {
 		*sptr = CALLOC(1, struct_size);
-		if(!*sptr) _ASN_DECODE_FAILED;
+		if(!*sptr) ASN__DECODE_FAILED;
 	}
 
 	memset(&s_ctx, 0, sizeof(s_ctx));
@@ -253,7 +270,7 @@ xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 
 	rc = xer_decode_general(opt_codec_ctx, &s_ctx, &s_arg,
 		xml_tag, buf_ptr, size,
-		xer_decode__unexpected_tag, xer_decode__body);
+		xer_decode__unexpected_tag, xer_decode__primitive_body);
 	switch(rc.code) {
 	case RC_OK:
 		if(!s_arg.decoded_something) {
@@ -271,7 +288,7 @@ xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 				/*
 				 * This decoder does not like empty stuff.
 				 */
-				_ASN_DECODE_FAILED;
+				ASN__DECODE_FAILED;
 			}
 		}
 		break;
@@ -287,7 +304,7 @@ xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 		if(s_arg.want_more)
 			rc.code = RC_WMORE;
 		else
-			_ASN_DECODE_FAILED;
+			ASN__DECODE_FAILED;
 		break;
 	}
 	return rc;

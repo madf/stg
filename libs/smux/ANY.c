@@ -9,7 +9,7 @@
 static asn_OCTET_STRING_specifics_t asn_DEF_ANY_specs = {
 	sizeof(ANY_t),
 	offsetof(ANY_t, _asn_ctx),
-	2	/* Special indicator that this is an ANY type */
+	ASN_OSUBV_ANY
 };
 asn_TYPE_descriptor_t asn_DEF_ANY = {
 	"ANY",
@@ -39,7 +39,7 @@ ANY_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		/*
 		 * Canonical XER-encoding of ANY type is not supported.
 		 */
-		_ASN_ENCODE_FAILED;
+		ASN__ENCODE_FAILED;
 	}
 
 	/* Dump as binary */

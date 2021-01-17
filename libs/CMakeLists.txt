@@ -54,6 +54,7 @@ if ( BUILD_LIB_SMUX )
     file ( GLOB SMUX_C_FILES smux/*.c )
     add_library ( smux STATIC ${SMUX_C_FILES} )
     target_include_directories ( smux PUBLIC smux/include smux/include/stg )
+    target_compile_options ( smux PRIVATE -Wno-cpp )
 endif ( BUILD_LIB_SMUX )
 
 if ( BUILD_LIB_SRVCONF )

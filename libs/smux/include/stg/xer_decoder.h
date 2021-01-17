@@ -60,11 +60,12 @@ asn_dec_rval_t xer_decode_general(asn_codec_ctx_t *opt_codec_ctx,
  * Fetch the next XER (XML) token from the stream.
  * The function returns the number of bytes occupied by the chunk type,
  * returned in the _ch_type. The _ch_type is only set (and valid) when
- * the return value is greater than 0.
+ * the return value is >= 0.
  */
   typedef enum pxer_chunk_type {
-	PXER_TAG,	/* Complete XER tag */
-	PXER_TEXT,	/* Plain text between XER tags */
+	PXER_WMORE,     /* Chunk type is not clear, more data expected. */
+	PXER_TAG,	    /* Complete XER tag */
+	PXER_TEXT,	    /* Plain text between XER tags */
 	PXER_COMMENT	/* A comment, may be part of */
   } pxer_chunk_type_e;
 ssize_t xer_next_token(int *stateContext,
@@ -87,12 +88,11 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
 		const char *need_tag);
 
 /*
- * Check whether this buffer consists of entirely XER whitespace characters.
+ * Get the number of bytes consisting entirely of XER whitespace characters.
  * RETURN VALUES:
- * 1:	Whitespace or empty string
- * 0:	Non-whitespace
+ * >=0:	Number of whitespace characters in the string.
  */
-int xer_is_whitespace(const void *chunk_buf, size_t chunk_size);
+size_t xer_whitespace_span(const void *chunk_buf, size_t chunk_size);
 
 /*
  * Skip the series of anticipated extensions.
