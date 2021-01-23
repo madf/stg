@@ -603,7 +603,7 @@ int CHG_USER::ApplyChanges()
         if (newTariff)
         {
             const auto tariff = u->GetTariff();
-            std::string message = tariff->TariffChangeIsAllowed(*newTariff, stgTime);
+            std::string message = tariff->TariffChangeIsAllowed(*newTariff, time(NULL));
             if (message.empty())
             {
                 if (!u->GetProperties().tariffName.Set(m_ucr.tariffName.const_data(), m_currAdmin, m_login, m_store))
