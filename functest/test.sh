@@ -98,4 +98,6 @@ do
     sleep 1
 done
 
+cp "$STGPATH/stargazer.log" "$CURPATH/stargazer.log"
+
 printf "Stopped.\n"

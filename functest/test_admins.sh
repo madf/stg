@@ -8,7 +8,7 @@ SGCONFPATH="$BASEPATH/stg/build/projects/sgconf"
 
 printf "Check initial admin list... "
 
-RES=`"$SGCONFPATH/sgconf" -s localhost -p 5555 -u admin -w 123456 --get-admins`
+RES=`"$SGCONFPATH/sgconf" -s 127.0.0.1 -p 5555 -u admin -w 123456 --get-admins`
 
 if [ "$?" != "0" ]
 then

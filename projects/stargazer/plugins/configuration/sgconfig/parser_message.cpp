@@ -26,8 +26,6 @@
 
 #include <cstring>
 
-extern volatile time_t stgTime; // So sad...
-
 using STG::PARSER::SEND_MESSAGE;
 
 const char * SEND_MESSAGE::tag = "Message";
@@ -100,7 +98,7 @@ int SEND_MESSAGE::End(void *, const char *el)
             printfd(__FILE__, "User not found. %s\n", m_logins[i].c_str());
             continue;
         }
-        m_msg.header.creationTime = static_cast<unsigned int>(stgTime);
+        m_msg.header.creationTime = static_cast<unsigned int>(time(NULL));
         m_user->AddMessage(&m_msg);
         m_result = res_ok;
     }
