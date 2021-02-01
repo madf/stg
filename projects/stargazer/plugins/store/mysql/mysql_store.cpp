@@ -113,6 +113,7 @@ return msc.GetPlugin();
 //-----------------------------------------------------------------------------
 MYSQL_STORE_SETTINGS::MYSQL_STORE_SETTINGS()
     : settings(NULL)
+    , dbPort(0)
 {
 }
 //-----------------------------------------------------------------------------
@@ -148,6 +149,17 @@ if (ParseParam(s.moduleParams, "database", dbName) < 0 &&
 if (ParseParam(s.moduleParams, "server", dbHost) < 0 &&
     ParseParam(s.moduleParams, "dbhost", dbHost) < 0)
     return -1;
+
+std::string dbPortAsString;
+if (ParseParam(s.moduleParams, "port", dbPortAsString) == 0 ||
+    ParseParam(s.moduleParams, "dbport", dbPortAsString) == 0)
+{
+    if (GetInt<unsigned int>(dbPortAsString, &dbPort, 0) != 0)
+    {
+        errorStr = "Can't parse db port from string: \"" + dbPortAsString + "\"\n";
+        return -1;
+    }
+}
 
 return 0;
 }
@@ -198,7 +210,7 @@ else
     MYSQL * sock;
     if (!(sock = mysql_real_connect(&mysql,storeSettings.GetDBHost().c_str(),
             storeSettings.GetDBUser().c_str(),storeSettings.GetDBPassword().c_str(),
-            0,0,NULL,0)))
+            0,storeSettings.GetDBPort(),NULL,0)))
         {
             errorStr = "Couldn't connect to mysql engine! With error:\n";
             errorStr += mysql_error(&mysql);
@@ -2139,7 +2151,7 @@ MYSQL *  MYSQL_STORE::MysqlConnect() const {
     }
     if (!(sock = mysql_real_connect(sock,storeSettings.GetDBHost().c_str(),
             storeSettings.GetDBUser().c_str(),storeSettings.GetDBPassword().c_str(),
-            0,0,NULL,0)))
+            0,storeSettings.GetDBPort(),NULL,0)))
         {
             errorStr = "Couldn't connect to mysql engine! With error:\n";
             errorStr += mysql_error(sock);

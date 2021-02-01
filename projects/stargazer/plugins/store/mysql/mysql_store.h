@@ -31,6 +31,7 @@ public:
     const std::string & GetDBPassword() const { return dbPass; }
     const std::string & GetDBHost() const { return dbHost; }
     const std::string & GetDBName() const { return dbName; }
+    unsigned int GetDBPort() const { return dbPort; }
 
 private:
     MYSQL_STORE_SETTINGS(const MYSQL_STORE_SETTINGS & rvalue);
@@ -47,6 +48,7 @@ private:
     std::string  dbPass;
     std::string  dbName;
     std::string  dbHost;
+    unsigned int dbPort;
 };
 //-----------------------------------------------------------------------------
 class MYSQL_STORE: public STORE
