@@ -19,6 +19,7 @@
 #endif
 
 #if defined (FREE_BSD) || defined (FREE_BSD5) || defined(DARWIN)
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
