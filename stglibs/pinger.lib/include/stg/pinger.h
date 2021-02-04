@@ -18,7 +18,7 @@
 #include <netinet/ip_icmp.h>
 #endif
 
-#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
+#if defined (FREE_BSD5)
 #include <sys/types.h>
 #endif
 
