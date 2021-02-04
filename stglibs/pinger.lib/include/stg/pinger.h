@@ -18,8 +18,11 @@
 #include <netinet/ip_icmp.h>
 #endif
 
-#if defined (FREE_BSD) || defined (FREE_BSD5) || defined(DARWIN)
+#if defined (__FreeBSD__) && (__FreeBSD__ >= 5)
 #include <sys/types.h>
+#endif
+
+#if defined (FREE_BSD) || defined (FREE_BSD5) || defined(DARWIN)
 #include <netinet/in.h>
 #include <netinet/in_systm.h>
 #include <netinet/ip.h>
