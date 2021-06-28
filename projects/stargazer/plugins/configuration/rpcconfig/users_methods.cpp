@@ -384,7 +384,7 @@ if (tariffs->FindByName(tariff))
         if (newTariff)
             {
             const auto currentTariff = u->GetTariff();
-            std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, stgTime);
+            std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, time(NULL));
             if (message.empty())
                 {
                 if (u->GetProperties().tariffName.Set(tariff, *admin, login, *store, comment))

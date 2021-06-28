@@ -375,7 +375,7 @@ if ((it = structVal.find("tariff")) != structVal.end())
     if (newTariff)
         {
         const auto currentTariff = ptr->GetTariff();
-        std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, stgTime);
+        std::string message = currentTariff->TariffChangeIsAllowed(*newTariff, time(NULL));
         if (message.empty())
             {
             if (ptr->GetProperties().tariffName.Get() != tariff)

@@ -22,8 +22,6 @@
 
 #include <unistd.h> // access
 
-extern volatile time_t stgTime;
-
 namespace STG
 {
 //-----------------------------------------------------------------------------
@@ -186,7 +184,7 @@ template <typename T>
 inline
 UserProperty<T>::UserProperty(T& val)
     : value(val),
-      modificationTime(stgTime),
+      modificationTime(time(NULL)),
       beforeNotifiers(),
       afterNotifiers()
 {
@@ -196,7 +194,7 @@ template <typename T>
 inline
 void UserProperty<T>::ModifyTime() noexcept
 {
-    modificationTime = stgTime;
+    modificationTime = time(NULL);
 }
 //-----------------------------------------------------------------------------
 template <typename T>
@@ -212,7 +210,7 @@ void UserProperty<T>::Set(const T& rvalue)
         (*ni++)->Notify(oldVal, rvalue);
 
     value = rvalue;
-    modificationTime = stgTime;
+    modificationTime = time(NULL);
 
     ni = afterNotifiers.begin();
     while (ni != afterNotifiers.end())
