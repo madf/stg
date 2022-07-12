@@ -60,7 +60,7 @@ class Conn
         ~Conn();
 
         int Sock() const { return m_sock; }
-        uint32_t IP() const { return *(uint32_t *)(&m_addr.sin_addr); }
+        uint32_t IP() const { return *reinterpret_cast<const uint32_t *>(&m_addr.sin_addr); }
         uint16_t Port() const { return ntohs(m_addr.sin_port); }
 
         std::string endpoint() const { return inet_ntostring(IP()) + ":" + std::to_string(Port()); }

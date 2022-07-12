@@ -121,19 +121,19 @@ if ( BUILD_MOD_STORE_FILES )
     set_target_properties ( mod_store_files PROPERTIES PREFIX "" )
 endif ( BUILD_MOD_STORE_FILES )
 
-if ( BUILD_MOD_STORE_FIREBIRD )
-    find_package ( FBClient REQUIRED )
-    add_library ( mod_store_firebird MODULE store/firebird/firebird_store.cpp
-                                            store/firebird/firebird_store_admins.cpp
-                                            store/firebird/firebird_store_corporations.cpp
-                                            store/firebird/firebird_store_messages.cpp
-                                            store/firebird/firebird_store_services.cpp
-                                            store/firebird/firebird_store_tariffs.cpp
-                                            store/firebird/firebird_store_users.cpp
-                                            store/firebird/firebird_store_utils.cpp )
-    target_link_libraries ( mod_store_firebird crypto common logger ibpp FBClient::FBClient )
-    set_target_properties ( mod_store_firebird PROPERTIES PREFIX "" )
-endif ( BUILD_MOD_STORE_FIREBIRD )
+#if ( BUILD_MOD_STORE_FIREBIRD )
+#    find_package ( FBClient REQUIRED )
+#    add_library ( mod_store_firebird MODULE store/firebird/firebird_store.cpp
+#                                            store/firebird/firebird_store_admins.cpp
+#                                            store/firebird/firebird_store_corporations.cpp
+#                                            store/firebird/firebird_store_messages.cpp
+#                                            store/firebird/firebird_store_services.cpp
+#                                            store/firebird/firebird_store_tariffs.cpp
+#                                            store/firebird/firebird_store_users.cpp
+#                                            store/firebird/firebird_store_utils.cpp )
+#    target_link_libraries ( mod_store_firebird crypto common logger ibpp FBClient::FBClient )
+#    set_target_properties ( mod_store_firebird PROPERTIES PREFIX "" )
+#endif ( BUILD_MOD_STORE_FIREBIRD )
 
 if ( BUILD_MOD_STORE_MYSQL )
     find_package ( MySQLConnector REQUIRED )

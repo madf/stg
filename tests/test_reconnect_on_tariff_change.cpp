@@ -63,6 +63,7 @@ namespace tut
 
         TEST_SETTINGS_LOCAL settings(false);
         TEST_TARIFFS tariffs;
+        tariffs.ReadTariffs();
         STG::Admin admin(STG::Priv(0xFFFF), {}, {});
         TEST_STORE store;
         TEST_AUTH auth;

@@ -12,7 +12,6 @@ set ( CPP_FILES main.cpp
                 plugin_mgr.cpp
                 settings_impl.cpp
                 stg_timer.cpp
-                timer_impl.cpp
                 store_loader.cpp
                 traffcounter_impl.cpp
                 user_property.cpp )

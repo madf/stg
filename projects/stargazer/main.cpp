@@ -304,6 +304,7 @@ int main(int argc, char* argv[])
 
     AdminsImpl admins(store);
     TariffsImpl tariffs(&store);
+    tariffs.ReadTariffs();
     ServicesImpl services(&store);
     CorporationsImpl corps(&store);
     UsersImpl users(&settings, &store, &tariffs, services, admins.sysAdmin());

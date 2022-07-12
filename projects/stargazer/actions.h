@@ -13,9 +13,9 @@
 //
 // actionsList.InvokeAll();
 
-#include <pthread.h>
 #include <vector>
 #include <functional>
+#include <mutex>
 
 // Generalized actor type - a method of some class with one argument
 template <class ACTIVE_CLASS, typename DATA_TYPE>
@@ -42,7 +42,7 @@ public:
            typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
            DATA_TYPE d)
         : activeClass(ac), actor(a), data(d) {}
-    void Invoke();
+    void Invoke() override;
 private:
     ACTION(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
     ACTION<ACTIVE_CLASS, DATA_TYPE> & operator=(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
@@ -82,7 +82,7 @@ public:
     // Invoke all actions in the list
     void InvokeAll();
 private:
-    mutable pthread_mutex_t mutex;
+    mutable std::mutex m_mutex;
 };
 
 #include "actions.inl.h"

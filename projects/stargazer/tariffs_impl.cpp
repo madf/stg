@@ -47,7 +47,6 @@ TariffsImpl::TariffsImpl(Store * st)
       WriteServLog(Logger::get()),
       noTariff(NO_TARIFF_NAME)
 {
-ReadTariffs();
 }
 //-----------------------------------------------------------------------------
 int TariffsImpl::ReadTariffs()

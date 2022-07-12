@@ -37,7 +37,7 @@ namespace
 
 struct Error : public std::runtime_error
 {
-    Error(const std::string& message) : runtime_error(message) {}
+    explicit Error(const std::string& message) : runtime_error(message) {}
 };
 
 std::vector<std::string> toValues(const DOTCONFDocumentNode& node)

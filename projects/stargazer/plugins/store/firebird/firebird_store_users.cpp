@@ -44,14 +44,13 @@ STG_LOCKER lock(&mutex);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-std::string name;
-
 try
     {
     tr->Start();
     st->Execute("select name from tb_users");
     while (st->Fetch())
         {
+        std::string name;
         st->Get(1, name);
         usersList->push_back(name);
         }
@@ -337,11 +336,11 @@ try
     st->Execute();
 
     st->Prepare("insert into tb_allowed_ip (fk_user, ip, mask) values (?, ?, ?)");
-    for(size_t i = 0; i < conf.ips.count(); i++)
+    for(size_t j = 0; i < conf.ips.count(); j++)
         {
         st->Set(1, uid);
-        st->Set(2, (int32_t)conf.ips[i].ip);
-        st->Set(3, (int32_t)conf.ips[i].mask);
+        st->Set(2, (int32_t)conf.ips[j].ip);
+        st->Set(3, (int32_t)conf.ips[j].mask);
         st->Execute();
         }
     tr->Commit();

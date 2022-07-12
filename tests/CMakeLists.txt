@@ -23,3 +23,5 @@ add_executable ( tests ${CPP_FILES} )
 target_link_libraries ( tests conffiles crypto logger scriptexecuter common Threads::Threads )
 
 target_include_directories ( tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../projects/stargazer )
+
+add_test ( tests tests )

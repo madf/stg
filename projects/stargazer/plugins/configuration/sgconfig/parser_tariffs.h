@@ -45,7 +45,7 @@ class GET_TARIFFS: public BASE_PARSER
         {
             public:
                 explicit FACTORY(const Tariffs & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new GET_TARIFFS(admin, m_tariffs); }
+                BASE_PARSER * create(const Admin & admin) override { return new GET_TARIFFS(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, const Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
@@ -60,7 +60,7 @@ class GET_TARIFFS: public BASE_PARSER
     private:
         const Tariffs & m_tariffs;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class ADD_TARIFF: public BASE_PARSER
@@ -70,7 +70,7 @@ class ADD_TARIFF: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Tariffs & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_TARIFF(admin, m_tariffs); }
+                BASE_PARSER * create(const Admin & admin) override { return new ADD_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
@@ -81,13 +81,13 @@ class ADD_TARIFF: public BASE_PARSER
 
         ADD_TARIFF(const Admin & admin, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string tariff;
         Tariffs & m_tariffs;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class DEL_TARIFF: public BASE_PARSER
@@ -97,7 +97,7 @@ class DEL_TARIFF: public BASE_PARSER
         {
             public:
                 FACTORY(Tariffs & tariffs, const Users & users) : m_tariffs(tariffs), m_users(users) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_TARIFF(admin, m_users, m_tariffs); }
+                BASE_PARSER * create(const Admin & admin) override { return new DEL_TARIFF(admin, m_users, m_tariffs); }
                 static void Register(REGISTRY & registry, Tariffs & tariffs, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(tariffs, users); }
             private:
@@ -109,14 +109,14 @@ class DEL_TARIFF: public BASE_PARSER
 
         DEL_TARIFF(const Admin & admin, const Users & users, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_users(users), m_tariffs(tariffs) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string tariff;
         const Users & m_users;
         Tariffs & m_tariffs;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class CHG_TARIFF: public BASE_PARSER
@@ -126,7 +126,7 @@ class CHG_TARIFF: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Tariffs & tariffs) : m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_TARIFF(admin, m_tariffs); }
+                BASE_PARSER * create(const Admin & admin) override { return new CHG_TARIFF(admin, m_tariffs); }
                 static void Register(REGISTRY & registry, Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(tariffs); }
             private:
@@ -137,14 +137,14 @@ class CHG_TARIFF: public BASE_PARSER
 
         CHG_TARIFF(const Admin & admin, Tariffs & tariffs)
             : BASE_PARSER(admin, tag), m_tariffs(tariffs) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         TariffDataOpt td;
         Tariffs & m_tariffs;
 
         int CheckTariffData();
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 } // namespace PARSER

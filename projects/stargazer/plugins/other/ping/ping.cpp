@@ -62,18 +62,15 @@ return 0;
 //-----------------------------------------------------------------------------
 PING::PING()
     : users(NULL),
-      nonstop(false),
       isRunning(false),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("ping"))
 {
-pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 PING::~PING()
 {
-pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 int PING::ParseSettings()
@@ -91,31 +88,23 @@ GetUsers();
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
-nonstop = true;
-
 pinger.SetDelayTime(pingSettings.GetPingDelay());
 pinger.Start();
 
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot start thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot start thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(token); });
 
 return 0;
 }
 //-----------------------------------------------------------------------------
 int PING::Stop()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
-if (!isRunning)
+if (!m_thread.joinable())
     return 0;
 
 pinger.Stop();
-nonstop = false;
+m_thread.request_stop();
 //5 seconds to thread stops itself
 struct timespec ts = {0, 200000000};
 for (int i = 0; i < 25; i++)
@@ -138,7 +127,7 @@ while (users_iter != usersList.end())
     }
 
 if (isRunning)
-    return -1;
+    m_thread.detach();
 
 return 0;
 }
@@ -148,29 +137,28 @@ bool PING::IsRunning()
 return isRunning;
 }
 //-----------------------------------------------------------------------------
-void * PING::Run(void * d)
+void PING::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-PING * ping = static_cast<PING *>(d);
-ping->isRunning = true;
+isRunning = true;
 
-long delay = (10000000 * ping->pingSettings.GetPingDelay()) / 3 + 50000000;
+long delay = (10000000 * pingSettings.GetPingDelay()) / 3 + 50000000;
 
-while (ping->nonstop)
+while (!token.stop_requested())
     {
-    std::list<UserPtr>::iterator iter = ping->usersList.begin();
+    std::list<UserPtr>::iterator iter = usersList.begin();
         {
-        STG_LOCKER lock(&ping->mutex);
-        while (iter != ping->usersList.end())
+        std::lock_guard lock(m_mutex);
+        while (iter != usersList.end())
             {
             if ((*iter)->GetProperties().ips.ConstData().onlyOneIP())
                 {
                 uint32_t ip = (*iter)->GetProperties().ips.ConstData()[0].ip;
                 time_t t;
-                if (ping->pinger.GetIPTime(ip, &t) == 0)
+                if (pinger.GetIPTime(ip, &t) == 0)
                     {
                     if (t)
                         (*iter)->UpdatePingTime(t);
@@ -182,7 +170,7 @@ while (ping->nonstop)
                 if (ip)
                     {
                     time_t t;
-                    if (ping->pinger.GetIPTime(ip, &t) == 0)
+                    if (pinger.GetIPTime(ip, &t) == 0)
                         {
                         if (t)
                             (*iter)->UpdatePingTime(t);
@@ -195,15 +183,14 @@ while (ping->nonstop)
     struct timespec ts = {delay / 1000000000, delay % 1000000000};
     for (int i = 0; i < 100; i++)
         {
-        if (ping->nonstop)
+        if (!token.stop_requested())
             {
             nanosleep(&ts, NULL);
             }
         }
     }
 
-ping->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 void PING::SetUserNotifiers(UserPtr u)
@@ -253,7 +240,7 @@ if (IPIter != ChgIPNotifierList.end())
 //-----------------------------------------------------------------------------
 void PING::GetUsers()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 UserPtr u;
 int h = users->OpenSearch();
@@ -280,7 +267,7 @@ users->CloseSearch(h);
 //-----------------------------------------------------------------------------
 void PING::AddUser(UserPtr u)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 SetUserNotifiers(u);
 usersList.push_back(u);
@@ -288,7 +275,7 @@ usersList.push_back(u);
 //-----------------------------------------------------------------------------
 void PING::DelUser(UserPtr u)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 UnSetUserNotifiers(u);
 

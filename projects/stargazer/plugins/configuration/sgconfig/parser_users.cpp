@@ -327,7 +327,7 @@ int CHG_USER::Start(void *, const char * el, const char ** attr)
         {
             long int creditExpire = 0;
             if (str2x(attr[1], creditExpire) == 0)
-                m_ucr.creditExpire = (time_t)creditExpire;
+                m_ucr.creditExpire = creditExpire;
 
             return 0;
         }
@@ -558,7 +558,7 @@ int CHG_USER::ApplyChanges()
     userdata.push_back(u->GetProperties().userdata8.GetPointer());
     userdata.push_back(u->GetProperties().userdata9.GetPointer());
 
-    for (int i = 0; i < (int)userdata.size(); i++)
+    for (size_t i = 0; i < userdata.size(); i++)
         if (!m_ucr.userdata[i].empty())
             if(!userdata[i]->Set(m_ucr.userdata[i].const_data(), m_currAdmin, m_login, m_store))
                 return -1;

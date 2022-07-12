@@ -26,8 +26,10 @@
 #include "stg/logger.h"
 
 #include <string>
-
-#include <pthread.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 class STG_CONFIG_SETTINGS
 {
@@ -72,11 +74,11 @@ class STG_CONFIG : public STG::Plugin
         STG_CONFIG(const STG_CONFIG & rvalue);
         STG_CONFIG & operator=(const STG_CONFIG & rvalue);
 
-        static void *       Run(void *);
+        void                Run(std::stop_token token);
 
         mutable std::string errorStr;
         STG_CONFIG_SETTINGS stgConfigSettings;
-        pthread_t           thread;
+        std::jthread        m_thread;
         bool                nonstop;
         bool                isRunning;
         STG::PluginLogger   logger;

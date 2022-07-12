@@ -305,7 +305,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
         {
             int64_t policyTime = 0;
             if (str2x(attr[1], policyTime) == 0)
-                td.tariffConf.changePolicyTimeout = (time_t)policyTime;
+                td.tariffConf.changePolicyTimeout = policyTime;
             return 0;
         }
     }

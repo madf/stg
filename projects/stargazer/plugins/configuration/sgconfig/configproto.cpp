@@ -60,7 +60,6 @@ CONFIGPROTO::CONFIGPROTO(STG::PluginLogger & l)
       m_store(NULL),
       m_port(0),
       m_bindAddress("0.0.0.0"),
-      m_running(false),
       m_stopped(true),
       m_logger(l),
       m_listenSocket(-1)
@@ -120,14 +119,12 @@ int CONFIGPROTO::Prepare()
 
     RegisterParsers();
 
-    m_running = true;
     m_stopped = false;
     return 0;
 }
 
 int CONFIGPROTO::Stop()
 {
-    m_running = false;
     for (int i = 0; i < 5 && !m_stopped; ++i)
     {
         struct timespec ts = {0, 200000000};
@@ -146,9 +143,9 @@ int CONFIGPROTO::Stop()
     return 0;
 }
 
-void CONFIGPROTO::Run()
+void CONFIGPROTO::Run(std::stop_token token)
 {
-    while (m_running)
+    while (!token.stop_requested())
     {
         fd_set fds;
 
@@ -166,7 +163,7 @@ void CONFIGPROTO::Run()
             m_logger(m_errorStr);
             break;
         }
-        if (!m_running)
+        if (token.stop_requested())
             break;
         if (res > 0)
             HandleEvents(fds);

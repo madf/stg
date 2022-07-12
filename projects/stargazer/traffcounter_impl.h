@@ -33,9 +33,12 @@
 #include <list>
 #include <map>
 #include <string>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
-
-#include <pthread.h>
 
 #define PROTOMAX    (5)
 
@@ -185,7 +188,7 @@ class TraffCounterImpl : public TraffCounter {
         void        FreeRules();
         bool        ReadRules(bool test = false);
 
-        static void * Run(void * data);
+        void        Run(std::stop_token token);
 
         void        DeterminateDir(const RawPacket & packet,
                                    int * dirU, // Direction for upload
@@ -223,10 +226,9 @@ class TraffCounterImpl : public TraffCounter {
 
         UsersImpl *             users;
 
-        bool                     running;
         bool                     stopped;
-        pthread_mutex_t          mutex;
-        pthread_t                thread;
+        std::mutex               m_mutex;
+        std::jthread             m_thread;
 
         std::list<TRF_IP_BEFORE> ipBeforeNotifiers;
         std::list<TRF_IP_AFTER>  ipAfterNotifiers;

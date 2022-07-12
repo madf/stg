@@ -265,7 +265,7 @@ if (!(result=mysql_list_tables(sock,str.c_str() )))
     errorStr = "Couldn't get tables list With error:\n";
     errorStr += mysql_error(sock);
     mysql_close(sock);
-    return -1;
+    return false;
 }
 
 my_ulonglong num_rows =  mysql_num_rows(result);

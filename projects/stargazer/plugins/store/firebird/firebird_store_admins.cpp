@@ -46,14 +46,13 @@ STG_LOCKER lock(&mutex);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-std::string login;
-
 try
     {
     tr->Start();
     st->Execute("select login from tb_admins");
     while (st->Fetch())
         {
+        std::string login;
         st->Get(1, login);
         adminsList->push_back(login);
         }

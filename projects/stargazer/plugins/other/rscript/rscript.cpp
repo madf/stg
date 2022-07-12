@@ -22,7 +22,6 @@
 #include "rscript.h"
 
 #include "ur_functor.h"
-#include "send_functor.h"
 
 #include "stg/common.h"
 #include "stg/locker.h"
@@ -163,7 +162,6 @@ return 0;
 REMOTE_SCRIPT::REMOTE_SCRIPT()
     : sendPeriod(15),
       halfPeriod(8),
-      nonstop(false),
       isRunning(false),
       users(NULL),
       sock(0),
@@ -171,32 +169,27 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
       onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("rscript"))
 {
-pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 REMOTE_SCRIPT::~REMOTE_SCRIPT()
 {
-pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
-void * REMOTE_SCRIPT::Run(void * d)
+void REMOTE_SCRIPT::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-REMOTE_SCRIPT * rs = static_cast<REMOTE_SCRIPT *>(d);
+isRunning = true;
 
-rs->isRunning = true;
-
-while (rs->nonstop)
+while (!token.stop_requested())
     {
-    rs->PeriodicSend();
+    PeriodicSend();
     sleep(2);
     }
 
-rs->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 int REMOTE_SCRIPT::ParseSettings()
@@ -215,12 +208,10 @@ int REMOTE_SCRIPT::Start()
 {
 netRouters = rsSettings.GetSubnetsMap();
 
-InitEncrypt(&ctx, rsSettings.GetPassword());
+InitEncrypt(rsSettings.GetPassword());
 
 users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
-
-nonstop = true;
 
 if (GetUsers())
     {
@@ -234,13 +225,7 @@ if (PrepareNet())
 
 if (!isRunning)
     {
-    if (pthread_create(&thread, NULL, Run, this))
-        {
-        errorStr = "Cannot create thread.";
-        logger("Cannot create thread.");
-        printfd(__FILE__, "Cannot create thread\n");
-        return -1;
-        }
+    m_thread = std::jthread([this](auto token){ Run(token); });
     }
 
 errorStr = "";
@@ -252,7 +237,7 @@ int REMOTE_SCRIPT::Stop()
 if (!IsRunning())
     return 0;
 
-nonstop = false;
+m_thread.request_stop();
 
 std::for_each(
         authorizedUsers.begin(),
@@ -278,7 +263,7 @@ users->DelNotifierUserAdd(&onAddUserNotifier);
 if (isRunning)
     {
     logger("Cannot stop thread.");
-    return -1;
+    m_thread.detach();
     }
 
 return 0;
@@ -296,7 +281,7 @@ if (nrMapParser.ReadFile(rsSettings.GetMapFileName()))
     }
 
     {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard lock(m_mutex);
 
     printfd(__FILE__, "REMOTE_SCRIPT::Reload()\n");
 
@@ -336,7 +321,7 @@ return false;
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::PeriodicSend()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
@@ -358,7 +343,7 @@ bool REMOTE_SCRIPT::PreparePacket(char * buf, size_t bufSize, RS::USER & rsu, bo
 RS::PACKET_HEADER packetHead;
 
 memset(packetHead.padding, 0, sizeof(packetHead.padding));
-strcpy((char*)packetHead.magic, RS_ID);
+memcpy(packetHead.magic, RS_ID, sizeof(RS_ID));
 packetHead.protoVer[0] = '0';
 packetHead.protoVer[1] = '2';
 if (forceDisconnect)
@@ -392,7 +377,7 @@ rsu.lastSentTime = stgTime;
 
 packetHead.ip = htonl(rsu.ip);
 packetHead.id = htonl(rsu.user->GetID());
-strncpy((char*)packetHead.login, rsu.user->GetLogin().c_str(), RS_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(packetHead.login), rsu.user->GetLogin().c_str(), RS_LOGIN_LEN);
 packetHead.login[RS_LOGIN_LEN - 1] = 0;
 
 memcpy(buf, &packetHead, sizeof(packetHead));
@@ -405,7 +390,7 @@ if (packetHead.packetType == RS_ALIVE_PACKET)
 RS::PACKET_TAIL packetTail;
 
 memset(packetTail.padding, 0, sizeof(packetTail.padding));
-strcpy((char*)packetTail.magic, RS_ID);
+memcpy(packetTail.magic, RS_ID, sizeof(RS_ID));
 std::vector<std::string>::const_iterator it;
 std::string params;
 for(it = rsSettings.GetUserParams().begin();
@@ -420,12 +405,12 @@ for(it = rsSettings.GetUserParams().begin();
     }
     params += parameter + " ";
     }
-strncpy((char *)packetTail.params, params.c_str(), RS_PARAMS_LEN);
+strncpy(reinterpret_cast<char*>(packetTail.params), params.c_str(), RS_PARAMS_LEN);
 packetTail.params[RS_PARAMS_LEN - 1] = 0;
 
 assert(sizeof(packetHead) + sizeof(packetTail) <= bufSize && "Insufficient buffer space");
 
-Encrypt(&ctx, buf + sizeof(packetHead), (char *)&packetTail, sizeof(packetTail) / 8);
+Encrypt(buf + sizeof(packetHead), reinterpret_cast<char *>(&packetTail), sizeof(packetTail) / 8);
 
 return false;
 }
@@ -442,11 +427,16 @@ if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
     return true;
     }
 
-std::for_each(
-        rsu.routers.begin(),
-        rsu.routers.end(),
-        PacketSender(sock, buffer, sizeof(buffer), static_cast<uint16_t>(htons(rsSettings.GetPort())))
-        );
+for (const auto& ip : rsu.routers)
+{
+    struct sockaddr_in sendAddr;
+
+    sendAddr.sin_family = AF_INET;
+    sendAddr.sin_port = htons(rsSettings.GetPort());
+    sendAddr.sin_addr.s_addr = ip;
+
+    return sendto(sock, buffer, sizeof(buffer), 0, reinterpret_cast<struct sockaddr*>(&sendAddr), sizeof(sendAddr));
+}
 
 return false;
 }
@@ -464,10 +454,10 @@ if (PreparePacket(buffer, sizeof(buffer), rsu, forceDisconnect))
 struct sockaddr_in sendAddr;
 
 sendAddr.sin_family = AF_INET;
-sendAddr.sin_port = static_cast<uint16_t>(htons(rsSettings.GetPort()));
+sendAddr.sin_port = htons(rsSettings.GetPort());
 sendAddr.sin_addr.s_addr = routerIP;
 
-ssize_t res = sendto(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&sendAddr, sizeof(sendAddr));
+ssize_t res = sendto(sock, buffer, sizeof(buffer), 0, reinterpret_cast<struct sockaddr *>(&sendAddr), sizeof(sendAddr));
 
 if (res < 0)
     logger("sendto error: %s", strerror(errno));
@@ -493,7 +483,7 @@ return false;
 //-----------------------------------------------------------------------------
 std::vector<uint32_t> REMOTE_SCRIPT::IP2Routers(uint32_t ip)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 for (size_t i = 0; i < netRouters.size(); ++i)
     {
     if ((ip & netRouters[i].subnetMask) == (netRouters[i].subnetIP & netRouters[i].subnetMask))
@@ -528,13 +518,13 @@ void REMOTE_SCRIPT::AddRSU(UserPtr user)
 RS::USER rsu(IP2Routers(user->GetCurrIP()), user);
 Send(rsu);
 
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::DelRSU(UserPtr user)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
 while (it != authorizedUsers.end())
     {
@@ -572,19 +562,19 @@ else
     rs.DelRSU(user);
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password) const
+void REMOTE_SCRIPT::InitEncrypt(const std::string & password) const
 {
 unsigned char keyL[PASSWD_LEN];  // Пароль для шифровки
 memset(keyL, 0, PASSWD_LEN);
-strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
-Blowfish_Init(ctx, keyL, PASSWD_LEN);
+strncpy(reinterpret_cast<char*>(keyL), password.c_str(), PASSWD_LEN);
+Blowfish_Init(&ctx, keyL, PASSWD_LEN);
 }
 //-----------------------------------------------------------------------------
-void REMOTE_SCRIPT::Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8) const
+void REMOTE_SCRIPT::Encrypt(void * dst, const void * src, size_t len8) const
 {
 if (dst != src)
     memcpy(dst, src, len8 * 8);
 for (size_t i = 0; i < len8; ++i)
-    Blowfish_Encrypt(ctx, static_cast<uint32_t *>(dst) + i * 2, static_cast<uint32_t *>(dst) + i * 2 + 1);
+    Blowfish_Encrypt(&ctx, static_cast<uint32_t *>(dst) + i * 2, static_cast<uint32_t *>(dst) + i * 2 + 1);
 }
 //-----------------------------------------------------------------------------

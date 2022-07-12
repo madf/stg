@@ -1,0 +1,3 @@
+[submodule "3rdparty/jthread"]
+	path = 3rdparty/jthread
+	url = https://github.com/josuttis/jthread.git

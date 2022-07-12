@@ -27,6 +27,10 @@
 
 #include <string>
 #include <deque>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
 
 #include <sys/select.h>
@@ -67,7 +71,7 @@ public:
     int Prepare();
     int Stop();
     const std::string & GetStrError() const { return m_errorStr; }
-    void Run();
+    void Run(std::stop_token token);
 
 private:
     CONFIGPROTO(const CONFIGPROTO & rvalue);
@@ -83,7 +87,6 @@ private:
 
     uint16_t         m_port;
     std::string      m_bindAddress;
-    bool             m_running;
     bool             m_stopped;
     STG::PluginLogger &   m_logger;
     int              m_listenSocket;

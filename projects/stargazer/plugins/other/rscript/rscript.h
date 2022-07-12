@@ -36,9 +36,12 @@
 #include <map>
 #include <functional>
 #include <utility>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
-
-#include <pthread.h>
 
 namespace STG
 {
@@ -200,7 +203,7 @@ private:
     REMOTE_SCRIPT(const REMOTE_SCRIPT & rhs);
     REMOTE_SCRIPT & operator=(const REMOTE_SCRIPT & rhs);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token);
     bool                PrepareNet();
     bool                FinalizeNet();
 
@@ -215,8 +218,8 @@ private:
     void                SetUserNotifiers(UserPtr u);
     void                UnSetUserNotifiers(UserPtr u);
 
-    void                InitEncrypt(BLOWFISH_CTX * ctx, const std::string & password) const;
-    void                Encrypt(BLOWFISH_CTX * ctx, void * dst, const void * src, size_t len8) const;
+    void                InitEncrypt(const std::string & password) const;
+    void                Encrypt(void * dst, const void * src, size_t len8) const;
 
     mutable BLOWFISH_CTX ctx;
 
@@ -230,15 +233,14 @@ private:
     int                 sendPeriod;
     int                 halfPeriod;
 
-    bool                nonstop;
     bool                isRunning;
 
     STG::Users *             users;
 
     std::vector<NET_ROUTER> netRouters;
 
-    pthread_t           thread;
-    pthread_mutex_t     mutex;
+    std::jthread        m_thread;
+    std::mutex          m_mutex;
 
     int                 sock;
 

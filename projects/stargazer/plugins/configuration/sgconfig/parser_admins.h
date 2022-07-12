@@ -44,7 +44,7 @@ class GET_ADMINS: public BASE_PARSER
         {
             public:
                 explicit FACTORY(const Admins & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new GET_ADMINS(admin, m_admins); }
+                BASE_PARSER * create(const Admin & admin) override { return new GET_ADMINS(admin, m_admins); }
                 static void Register(REGISTRY & registry, const Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
@@ -59,7 +59,7 @@ class GET_ADMINS: public BASE_PARSER
     private:
         const Admins & m_admins;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class ADD_ADMIN: public BASE_PARSER
@@ -69,7 +69,7 @@ class ADD_ADMIN: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Admins & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_ADMIN(admin, m_admins); }
+                BASE_PARSER * create(const Admin & admin) override { return new ADD_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
@@ -80,13 +80,13 @@ class ADD_ADMIN: public BASE_PARSER
 
         ADD_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string m_admin;
         Admins & m_admins;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class DEL_ADMIN: public BASE_PARSER
@@ -96,7 +96,7 @@ class DEL_ADMIN: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Admins & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_ADMIN(admin, m_admins); }
+                BASE_PARSER * create(const Admin & admin) override { return new DEL_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
@@ -107,13 +107,13 @@ class DEL_ADMIN: public BASE_PARSER
 
         DEL_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string m_admin;
         Admins & m_admins;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class CHG_ADMIN: public BASE_PARSER
@@ -123,7 +123,7 @@ class CHG_ADMIN: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Admins & admins) : m_admins(admins) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_ADMIN(admin, m_admins); }
+                BASE_PARSER * create(const Admin & admin) override { return new CHG_ADMIN(admin, m_admins); }
                 static void Register(REGISTRY & registry, Admins & admins)
                 { registry[ToLower(tag)] = new FACTORY(admins); }
             private:
@@ -134,7 +134,7 @@ class CHG_ADMIN: public BASE_PARSER
 
         CHG_ADMIN(const Admin & admin, Admins & admins)
             : BASE_PARSER(admin, tag), m_admins(admins) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string login;
@@ -142,7 +142,7 @@ class CHG_ADMIN: public BASE_PARSER
         Optional<std::string> privAsString;
         Admins & m_admins;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 } // namespace PARSER

@@ -33,9 +33,8 @@ class TariffUsersTable : public TableSensor {
               tariffs(t),
               users(u)
         {}
-        virtual ~TariffUsersTable() {}
 
-        void UpdateSensors(Sensors & sensors) const;
+        void UpdateSensors(Sensors & sensors) const override;
 
     private:
         STG::Tariffs & tariffs;

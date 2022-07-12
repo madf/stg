@@ -42,8 +42,8 @@ class GET_SERVICES: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const Services & services) : m_services(services) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new GET_SERVICES(admin, m_services); }
+                explicit FACTORY(const Services & services) : m_services(services) {}
+                BASE_PARSER * create(const Admin & admin) override { return new GET_SERVICES(admin, m_services); }
                 static void Register(REGISTRY & registry, const Services & services)
                 { registry[ToLower(tag)] = new FACTORY(services); }
             private:
@@ -58,7 +58,7 @@ class GET_SERVICES: public BASE_PARSER
     private:
         const Services & m_services;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class GET_SERVICE: public BASE_PARSER
@@ -67,8 +67,8 @@ class GET_SERVICE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const Services & services) : m_services(services) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new GET_SERVICE(admin, m_services); }
+                explicit FACTORY(const Services & services) : m_services(services) {}
+                BASE_PARSER * create(const Admin & admin) override { return new GET_SERVICE(admin, m_services); }
                 static void Register(REGISTRY & registry, Services & services)
                 { registry[ToLower(tag)] = new FACTORY(services); }
             private:
@@ -79,13 +79,13 @@ class GET_SERVICE: public BASE_PARSER
 
         GET_SERVICE(const Admin & admin, const Services & services)
             : BASE_PARSER(admin, tag), m_services(services) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string m_name;
         const Services & m_services;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class ADD_SERVICE: public BASE_PARSER
@@ -94,8 +94,8 @@ class ADD_SERVICE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(Services & services) : m_services(services) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new ADD_SERVICE(admin, m_services); }
+                explicit FACTORY(Services & services) : m_services(services) {}
+                BASE_PARSER * create(const Admin & admin) override { return new ADD_SERVICE(admin, m_services); }
                 static void Register(REGISTRY & registry, Services & services)
                 { registry[ToLower(tag)] = new FACTORY(services); }
             private:
@@ -106,13 +106,13 @@ class ADD_SERVICE: public BASE_PARSER
 
         ADD_SERVICE(const Admin & admin, Services & services)
             : BASE_PARSER(admin, tag), m_services(services) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string m_name;
         Services & m_services;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class DEL_SERVICE: public BASE_PARSER
@@ -121,8 +121,8 @@ class DEL_SERVICE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(Services & services) : m_services(services) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new DEL_SERVICE(admin, m_services); }
+                explicit FACTORY(Services & services) : m_services(services) {}
+                BASE_PARSER * create(const Admin & admin) override { return new DEL_SERVICE(admin, m_services); }
                 static void Register(REGISTRY & registry, Services & services)
                 { registry[ToLower(tag)] = new FACTORY(services); }
             private:
@@ -133,13 +133,13 @@ class DEL_SERVICE: public BASE_PARSER
 
         DEL_SERVICE(const Admin & admin, Services & services)
             : BASE_PARSER(admin, tag), m_services(services) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         std::string m_name;
         Services & m_services;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 class CHG_SERVICE: public BASE_PARSER
@@ -148,8 +148,8 @@ class CHG_SERVICE: public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(Services & services) : m_services(services) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new CHG_SERVICE(admin, m_services); }
+                explicit FACTORY(Services & services) : m_services(services) {}
+                BASE_PARSER * create(const Admin & admin) override { return new CHG_SERVICE(admin, m_services); }
                 static void Register(REGISTRY & registry, Services & services)
                 { registry[ToLower(tag)] = new FACTORY(services); }
             private:
@@ -160,13 +160,13 @@ class CHG_SERVICE: public BASE_PARSER
 
         CHG_SERVICE(const Admin & admin, Services & services)
             : BASE_PARSER(admin, tag), m_services(services) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         ServiceConfOpt m_service;
         Services & m_services;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 } // namespace PARSER

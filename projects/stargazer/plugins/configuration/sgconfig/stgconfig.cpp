@@ -102,13 +102,7 @@ int STG_CONFIG::Start()
         return -1;
     }
 
-    if (pthread_create(&thread, NULL, Run, this))
-    {
-        errorStr = std::string("Cannot create thread: '") + strerror(errno) + "'.";
-        printfd(__FILE__, "%s\n", errorStr.c_str());
-        logger(errorStr);
-        return -1;
-    }
+    m_thread = std::jthread([this](auto token){ Run(token); });
 
     return 0;
 }
@@ -119,6 +113,7 @@ int STG_CONFIG::Stop()
         return 0;
 
     config.Stop();
+    m_thread.request_stop();
 
     //5 seconds to thread stops itself
     for (size_t i = 0; i < 25; ++i)
@@ -131,23 +126,20 @@ int STG_CONFIG::Stop()
     }
 
     if (isRunning)
-        return -1;
+        m_thread.detach();
 
     return 0;
 }
 //-----------------------------------------------------------------------------
-void * STG_CONFIG::Run(void * d)
+void STG_CONFIG::Run(std::stop_token token)
 {
     sigset_t signalSet;
     sigfillset(&signalSet);
     pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-    STG_CONFIG & stgConf = *static_cast<STG_CONFIG *>(d);
-    stgConf.isRunning = true;
+    isRunning = true;
 
-    stgConf.config.Run();
+    config.Run(token);
 
-    stgConf.isRunning = false;
-
-    return NULL;
+    isRunning = false;
 }

@@ -43,7 +43,7 @@ class GET_SERVER_INFO: public BASE_PARSER {
             public:
                 FACTORY(const Settings & settings, const Users & users, const Tariffs & tariffs)
                     : m_settings(settings), m_users(users), m_tariffs(tariffs) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
+                BASE_PARSER * create(const Admin & admin) override { return new GET_SERVER_INFO(admin, m_settings, m_users, m_tariffs); }
                 static void Register(REGISTRY & registry, const Settings & settings, const Users & users, const Tariffs & tariffs)
                 { registry[ToLower(tag)] = new FACTORY(settings, users, tariffs); }
             private:
@@ -69,7 +69,7 @@ class GET_SERVER_INFO: public BASE_PARSER {
         const Users & m_users;
         const Tariffs & m_tariffs;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 }

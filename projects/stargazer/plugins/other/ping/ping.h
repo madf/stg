@@ -10,9 +10,12 @@
 
 #include <string>
 #include <list>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
-
-#include <pthread.h>
 
 class PING;
 
@@ -118,7 +121,7 @@ private:
     void GetUsers();
     void SetUserNotifiers(UserPtr u);
     void UnSetUserNotifiers(UserPtr u);
-    static void * Run(void * d);
+    void Run(std::stop_token token);
 
     mutable std::string errorStr;
     PING_SETTINGS pingSettings;
@@ -126,9 +129,8 @@ private:
     STG::Users * users;
     std::list<UserPtr> usersList;
 
-    pthread_t thread;
-    pthread_mutex_t mutex;
-    bool nonstop;
+    std::jthread m_thread;
+    std::mutex m_mutex;
     bool isRunning;
     mutable STG_PINGER pinger;
 

@@ -1,11 +1,14 @@
 #ifndef __SMUX_H__
 #define __SMUX_H__
 
-#include <pthread.h>
-
 #include <string>
 #include <map>
 #include <list>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
 
 #include "stg/SMUX-PDUs.h"
@@ -123,7 +126,7 @@ public:
     int Start();
     int Stop();
     int Reload(const STG::ModuleSettings & ms);
-    bool IsRunning() { return running && !stopped; }
+    bool IsRunning() { return m_thread.joinable() && !stopped; }
 
     const std::string & GetStrError() const { return errorStr; }
     std::string GetVersion() const { return "Stg SMUX Plugin 1.1"; }
@@ -139,8 +142,7 @@ private:
     SMUX(const SMUX & rvalue);
     SMUX & operator=(const SMUX & rvalue);
 
-    static void * Runner(void * d);
-    void Run();
+    void Run(std::stop_token token);
     bool PrepareNet();
     bool Reconnect();
 
@@ -169,9 +171,8 @@ private:
     SMUX_SETTINGS smuxSettings;
     STG::ModuleSettings settings;
 
-    pthread_t thread;
-    pthread_mutex_t mutex;
-    bool running;
+    std::jthread m_thread;
+    std::mutex m_mutex;
     bool stopped;
     bool needReconnect;
 

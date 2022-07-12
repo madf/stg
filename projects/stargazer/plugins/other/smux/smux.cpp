@@ -98,7 +98,6 @@ SMUX::SMUX()
       services(NULL),
       corporations(NULL),
       traffcounter(NULL),
-      running(false),
       stopped(true),
       needReconnect(false),
       lastReconnectTry(0),
@@ -109,8 +108,6 @@ SMUX::SMUX()
       addDelTariffNotifier(*this),
       logger(STG::PluginLogger::get("smux"))
 {
-pthread_mutex_init(&mutex, NULL);
-
 smuxHandlers[SMUX_PDUs_PR_close] = &SMUX::CloseHandler;
 smuxHandlers[SMUX_PDUs_PR_registerResponse] = &SMUX::RegisterResponseHandler;
 smuxHandlers[SMUX_PDUs_PR_pdus] = &SMUX::PDUsRequestHandler;
@@ -134,7 +131,6 @@ SMUX::~SMUX()
         delete it->second;
     }
 printfd(__FILE__, "SMUX::~SMUX()\n");
-pthread_mutex_destroy(&mutex);
 }
 
 int SMUX::ParseSettings()
@@ -195,16 +191,8 @@ while (it != sensors.end())
     }
 #endif
 
-if (!running)
-    {
-    if (pthread_create(&thread, NULL, Runner, this))
-        {
-        errorStr = "Cannot create thread.";
-	logger("Cannot create thread.");
-        printfd(__FILE__, "Cannot create thread\n");
-        return -1;
-        }
-    }
+if (!m_thread.joinable())
+    m_thread = std::jthread([this](auto token){ Run(token); });
 
 return 0;
 }
@@ -212,7 +200,7 @@ return 0;
 int SMUX::Stop()
 {
 printfd(__FILE__, "SMUX::Stop() - Before\n");
-running = false;
+m_thread.request_stop();
 
 if (!stopped)
     {
@@ -224,8 +212,8 @@ if (!stopped)
         }
     }
 
-if (stopped)
-    pthread_join(thread, NULL);
+if (!stopped)
+    m_thread.detach();
 
 ResetNotifiers();
 
@@ -247,7 +235,6 @@ close(sock);
 
 if (!stopped)
     {
-    running = true;
     return -1;
     }
 
@@ -269,30 +256,16 @@ if (!needReconnect)
 return 0;
 }
 
-void * SMUX::Runner(void * d)
-{
-sigset_t signalSet;
-sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
-
-SMUX * smux = static_cast<SMUX *>(d);
-
-smux->Run();
-
-return NULL;
-}
-
-void SMUX::Run()
+void SMUX::Run(std::stop_token token)
 {
 stopped = true;
 if (!SendOpenPDU(sock))
     needReconnect = true;
 if (!SendRReqPDU(sock))
     needReconnect = true;
-running = true;
 stopped = false;
 
-while(running)
+while (!token.stop_requested())
     {
     if (WaitPackets(sock) && !needReconnect)
         {
@@ -302,12 +275,12 @@ while(running)
             DispatchPDUs(pdus);
             ASN_STRUCT_FREE(asn_DEF_SMUX_PDUs, pdus);
             }
-        else if (running)
+        else if (!token.stop_requested())
             Reconnect();
         }
-    else if (running && needReconnect)
+    else if (!token.stop_requested() && needReconnect)
         Reconnect();
-    if (!running)
+    if (token.stop_requested())
         break;
     }
 SendClosePDU(sock);
@@ -423,11 +396,11 @@ while (it != tables.end())
     }
 if (!done)
     {
-    Sensors::iterator it(newSensors.begin());
-    while (it != newSensors.end())
+    Sensors::iterator sit(newSensors.begin());
+    while (sit != newSensors.end())
         {
-        delete it->second;
-        ++it;
+        delete sit->second;
+        ++sit;
         }
     return false;
     }

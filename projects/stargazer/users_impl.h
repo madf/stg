@@ -26,6 +26,11 @@
 #include <map>
 #include <list>
 #include <set>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <ctime>
 #include <cstdint>
 
@@ -133,7 +138,7 @@ private:
     void            AddUserIntoIndexes(user_iter user);
     void            DelUserFromIndexes(user_iter user);
 
-    static void *   Run(void *);
+    void            Run(std::stop_token token);
     void            NewMinute(const struct tm & t);
     void            NewDay(const struct tm & t);
     void            DayResetTraff(const struct tm & t);
@@ -153,11 +158,10 @@ private:
     const Admin&       sysAdmin;
     Logger &        WriteServLog;
 
-    bool                nonstop;
     bool                isRunning;
 
-    mutable pthread_mutex_t mutex;
-    pthread_t               thread;
+    mutable std::mutex      m_mutex;
+    std::jthread            m_thread;
     mutable unsigned int    handle;
 
     mutable std::map<int, user_iter>  searchDescriptors;

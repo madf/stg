@@ -41,14 +41,13 @@ STG_LOCKER lock(&mutex);
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
 
-std::string name;
-
 try
     {
     tr->Start();
     st->Execute("select name from tb_services");
     while (st->Fetch())
         {
+        std::string name;
         st->Get(1, name);
         servicesList->push_back(name);
         }

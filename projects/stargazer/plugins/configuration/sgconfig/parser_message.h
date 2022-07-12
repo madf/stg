@@ -45,7 +45,7 @@ class SEND_MESSAGE: public BASE_PARSER
         {
             public:
                 explicit FACTORY(Users & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new SEND_MESSAGE(admin, m_users); }
+                BASE_PARSER * create(const Admin & admin) override { return new SEND_MESSAGE(admin, m_users); }
                 static void Register(REGISTRY & registry, Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
@@ -56,8 +56,8 @@ class SEND_MESSAGE: public BASE_PARSER
 
         SEND_MESSAGE(const Admin & admin, Users & users)
             : BASE_PARSER(admin, tag), m_users(users), m_result(res_ok), m_user(NULL) {}
-        int Start(void *data, const char *el, const char **attr);
-        int End(void *data, const char *el);
+        int Start(void *data, const char *el, const char **attr) override;
+        int End(void *data, const char *el) override;
 
     private:
         Users & m_users;
@@ -67,7 +67,7 @@ class SEND_MESSAGE: public BASE_PARSER
         User * m_user;
 
         int ParseLogins(const char * logins);
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 } // namespace PARSER

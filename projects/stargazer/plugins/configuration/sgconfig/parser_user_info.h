@@ -40,8 +40,8 @@ class USER_INFO : public BASE_PARSER
         class FACTORY : public BASE_PARSER::FACTORY
         {
             public:
-                FACTORY(const Users & users) : m_users(users) {}
-                virtual BASE_PARSER * create(const Admin & admin) { return new USER_INFO(admin, m_users); }
+                explicit FACTORY(const Users & users) : m_users(users) {}
+                BASE_PARSER * create(const Admin & admin) override { return new USER_INFO(admin, m_users); }
                 static void Register(REGISTRY & registry, const Users & users)
                 { registry[ToLower(tag)] = new FACTORY(users); }
             private:
@@ -52,13 +52,13 @@ class USER_INFO : public BASE_PARSER
 
         USER_INFO(const Admin & admin, const Users & users)
             : BASE_PARSER(admin, tag), m_users(users) {}
-        int Start(void * data, const char * el, const char ** attr);
+        int Start(void * data, const char * el, const char ** attr) override;
 
     private:
         const Users & m_users;
         std::string m_login;
 
-        void CreateAnswer();
+        void CreateAnswer() override;
 };
 
 } // namespace PARSER

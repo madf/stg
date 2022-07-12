@@ -47,6 +47,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <array>
 
 #include <cassert>
 #include <cstdlib>
@@ -641,7 +642,7 @@ void UserImpl::Run()
 {
 STG_LOCKER lock(&mutex);
 
-if (stgTime > static_cast<time_t>(lastWriteStat + settings->GetStatWritePeriod()))
+if (stgTime > lastWriteStat + settings->GetStatWritePeriod())
     {
     printfd(__FILE__, "UserImpl::WriteStat user=%s\n", GetLogin().c_str());
     WriteStat();
@@ -1046,8 +1047,7 @@ double UserImpl::GetPassiveTimePart() const
 {
 STG_LOCKER lock(&mutex);
 
-static int daysInMonth[12] =
-{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static const std::array<unsigned, 12> daysInMonth{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 struct tm tms;
 time_t t = stgTime;

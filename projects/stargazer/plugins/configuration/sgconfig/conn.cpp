@@ -225,7 +225,7 @@ bool Conn::DataCallback(const void * block, size_t size, void * data)
         printfd(__FILE__, "XML parse error at line %d, %d: %s. Is final: %d\n",
                   static_cast<int>(XML_GetCurrentLineNumber(state.conn.m_xmlParser)),
                   static_cast<int>(XML_GetCurrentColumnNumber(state.conn.m_xmlParser)),
-                  XML_ErrorString(XML_GetErrorCode(state.conn.m_xmlParser)), (int)state.final);
+                  XML_ErrorString(XML_GetErrorCode(state.conn.m_xmlParser)), static_cast<int>(state.final));
         printfd(__FILE__, "Data block: '%s' of size %d\n", xml, length);
         state.conn.m_state = ERROR;
         return false;

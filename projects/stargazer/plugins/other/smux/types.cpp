@@ -22,14 +22,14 @@ if (*left == '.')
 size_t arcPos = 0;
 while ((left - str) < length)
     {
-    char * pos = NULL;
-    unsigned arc = static_cast<unsigned int>(strtoul(left, &pos, 10));
-    if (pos == left)
+    char * p = NULL;
+    unsigned arc = static_cast<unsigned int>(strtoul(left, &p, 10));
+    if (p == left)
         return false;
     a[arcPos++] = arc;
     if (arcPos >= 1024)
         return false;
-    left = pos + 1;
+    left = p + 1;
     }
 *pos = arcPos;
 return true;
