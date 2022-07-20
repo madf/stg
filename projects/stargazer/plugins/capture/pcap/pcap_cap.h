@@ -26,9 +26,12 @@
 
 #include <string>
 #include <vector>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 #include <pcap.h>
-#include <pthread.h>
 #include <sys/select.h>
 
 namespace STG
@@ -45,7 +48,7 @@ struct Settings;
 struct DEV
 {
     DEV() : device("any"), filterExpression("ip"), handle(NULL), fd(-1) {}
-    DEV(const std::string & d) : device(d), filterExpression("ip"), handle(NULL), fd(-1) {}
+    explicit DEV(const std::string & d) : device(d), filterExpression("ip"), handle(NULL), fd(-1) {}
     DEV(const std::string & d, const std::string & f)
         : device(d), filterExpression(f), handle(NULL), fd(-1) {}
 
@@ -84,12 +87,11 @@ private:
     void TryRead(const fd_set & set);
     void TryReadDev(const DEV & dev);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token);
 
     mutable std::string errorStr;
 
-    pthread_t           thread;
-    bool                nonstop;
+    std::jthread        m_thread;
     bool                isRunning;
     STG::ModuleSettings     settings;
     DEV_MAP             devices;

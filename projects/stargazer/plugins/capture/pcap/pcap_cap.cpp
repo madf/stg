@@ -61,8 +61,7 @@ return "pcap_cap v.1.0";
 }
 //-----------------------------------------------------------------------------
 PCAP_CAP::PCAP_CAP()
-    : nonstop(false),
-      isRunning(false),
+    : isRunning(false),
       traffCnt(NULL),
       logger(STG::PluginLogger::get("pcap_cap"))
 {
@@ -178,15 +177,7 @@ while (it != devices.end())
     ++it;
     }
 
-nonstop = true;
-
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot create thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot create thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -196,7 +187,7 @@ int PCAP_CAP::Stop()
 if (!isRunning)
     return 0;
 
-nonstop = false;
+m_thread.request_stop();
 
 //5 seconds to thread stops itself
 for (int i = 0; i < 25 && isRunning; i++)
@@ -206,28 +197,9 @@ for (int i = 0; i < 25 && isRunning; i++)
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    if (pthread_kill(thread, SIGUSR1))
-        {
-        errorStr = "Cannot kill thread.";
-        logger("Cannot send signal to thread.");
-        return -1;
-        }
-    for (int i = 0; i < 25 && isRunning; ++i)
-        {
-        struct timespec ts = {0, 200000000};
-        nanosleep(&ts, NULL);
-        }
-    if (isRunning)
-        {
-        errorStr = "PCAP_CAP not stopped.";
-        logger("Cannot stop thread.");
-        printfd(__FILE__, "Cannot stop thread\n");
-        return -1;
-        }
-    }
-
-pthread_join(thread, NULL);
+    m_thread.detach();
+else
+    m_thread.join();
 
 for (DEV_MAP::iterator it(devices.begin()); it != devices.end(); ++it)
     {
@@ -238,35 +210,33 @@ for (DEV_MAP::iterator it(devices.begin()); it != devices.end(); ++it)
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * PCAP_CAP::Run(void * d)
+void PCAP_CAP::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-PCAP_CAP * dc = static_cast<PCAP_CAP *>(d);
-dc->isRunning = true;
+isRunning = true;
 
 fd_set fds;
 FD_ZERO(&fds);
 int maxFd = 0;
-for (DEV_MAP::const_iterator it(dc->devices.begin()); it != dc->devices.end(); ++it)
+for (DEV_MAP::const_iterator it(devices.begin()); it != devices.end(); ++it)
     {
     FD_SET(it->fd, &fds);
     maxFd = std::max(maxFd, it->fd);
     }
 
-while (dc->nonstop)
+while (!token.stop_requested())
     {
     fd_set rfds = fds;
     struct timeval tv = {0, 500000};
 
     if (select(maxFd + 1, &rfds, NULL, NULL, &tv) > 0)
-        dc->TryRead(rfds);
+        TryRead(rfds);
     }
 
-dc->isRunning = false;
-return NULL;
+isRunning = false;
 }
 
 void PCAP_CAP::TryRead(const fd_set & set)

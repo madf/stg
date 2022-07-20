@@ -128,6 +128,8 @@ while (users_iter != usersList.end())
 
 if (isRunning)
     m_thread.detach();
+else
+    m_thread.join();
 
 return 0;
 }

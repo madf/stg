@@ -108,8 +108,7 @@ return "cap_bpf v.1.0";
 }
 //-----------------------------------------------------------------------------
 BPF_CAP::BPF_CAP()
-    : nonstop(false),
-      isRunning(false),
+    : isRunning(false),
       capSock(-1),
       traffCnt(NULL),
       logger(STG::PluginLogger::get("cap_bpf"))
@@ -138,15 +137,7 @@ if (BPFCapOpen() < 0)
     return -1;
     }
 
-nonstop = true;
-
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot create thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot create thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -158,7 +149,7 @@ if (!isRunning)
 
 BPFCapClose();
 
-nonstop = false;
+m_thread.request_stop();
 
 //5 seconds to thread stops itself
 int i;
@@ -173,28 +164,20 @@ for (i = 0; i < 25; i++)
 
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    //TODO pthread_cancel()
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill thread.";
-        logger("Cannot send signal to thread.");
-        printfd(__FILE__, "Cannot kill thread\n");
-        return -1;
-        }
-    }
+    m_thread.detach();
+else
+    m_thread.join();
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * BPF_CAP::Run(void * d)
+void BPF_CAP::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-BPF_CAP * dc = static_cast<BPF_CAP *>(d);
-dc->isRunning = true;
+isRunning = true;
 
 uint8_t hdr[96]; //68 + 14 + 4(size) + 9(SYS_IFACE) + 1(align to 4) = 96
 
@@ -204,19 +187,18 @@ memset(hdr, 0, sizeof(hdr));
 rpp->dataLen = -1;
 char * iface;
 
-while (dc->nonstop)
+while (!token.stop_requested())
     {
-    if (dc->BPFCapRead((char*)&hdr, 68 + 14, &iface))
+    if (BPFCapRead((char*)&hdr, 68 + 14, &iface))
         continue;
 
     if (!(hdr[12] == 0x8 && hdr[13] == 0x0))
         continue;
 
-    dc->traffCnt->process(*rpp);
+    traffCnt->process(*rpp);
     }
 
-dc->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 int BPF_CAP::BPFCapOpen()

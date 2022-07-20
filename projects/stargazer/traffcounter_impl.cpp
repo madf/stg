@@ -128,15 +128,15 @@ users->CloseSearch(h);
 //5 seconds to thread stops itself
 struct timespec ts = {0, 200000000};
 for (int i = 0; i < 25 && !stopped; i++)
-    {
     nanosleep(&ts, NULL);
-    }
 
 if (!stopped)
 {
     m_thread.detach();
     return -1;
 }
+
+m_thread.join();
 
 printfd(__FILE__, "TraffCounter::Stop()\n");
 

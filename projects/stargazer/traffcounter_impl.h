@@ -244,7 +244,7 @@ void TRF_IP_BEFORE::Notify(const uint32_t & oldValue, const uint32_t &)
 if (!oldValue)
     return;
 
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, oldValue);
+EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, oldValue);
 }
 //-----------------------------------------------------------------------------
 inline
@@ -254,20 +254,20 @@ void TRF_IP_AFTER::Notify(const uint32_t &, const uint32_t & newValue)
 if (!newValue)
     return;
 
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TraffCounterImpl::AddUser, user);
+EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::AddUser, user);
 }
 //-----------------------------------------------------------------------------
 inline
 void ADD_USER_NONIFIER::Notify(const UserImplPtr & user)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TraffCounterImpl::SetUserNotifiers, user);
+EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::SetUserNotifiers, user);
 }
 //-----------------------------------------------------------------------------
 inline
 void DEL_USER_NONIFIER::Notify(const UserImplPtr & user)
 {
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TraffCounterImpl::UnSetUserNotifiers, user);
-EVENT_LOOP_SINGLETON::GetInstance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, user->GetCurrIP());
+EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::UnSetUserNotifiers, user);
+EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, user->GetCurrIP());
 }
 //-----------------------------------------------------------------------------
 }

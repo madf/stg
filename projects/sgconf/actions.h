@@ -40,17 +40,15 @@ template <typename F>
 class FUNC0_ACTION : public ACTION
 {
     public:
-        FUNC0_ACTION(const F & func) : m_func(func) {}
+        explicit FUNC0_ACTION(const F & func) : m_func(func) {}
 
-        virtual ACTION * Clone() const { return new FUNC0_ACTION<F>(*this); }
-
-        virtual std::string ParamDescription() const { return ""; }
-        virtual std::string DefaultDescription() const { return ""; }
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/)
+        std::string ParamDescription() const override { return ""; }
+        std::string DefaultDescription() const override { return ""; }
+        OPTION_BLOCK & Suboptions() override { return m_suboptions; }
+        PARSER_STATE Parse(int argc, char ** argv, void * /*data*/) override
         {
-        m_func();
-        return PARSER_STATE(true, argc, argv);
+            m_func();
+            return PARSER_STATE(true, argc, argv);
         }
 
     private:
@@ -60,9 +58,9 @@ class FUNC0_ACTION : public ACTION
 
 template <typename F>
 inline
-FUNC0_ACTION<F> * MakeFunc0Action(F func)
+std::unique_ptr<ACTION> MakeFunc0Action(F func)
 {
-return new FUNC0_ACTION<F>(func);
+return std::make_unique<FUNC0_ACTION<F>>(func);
 }
 
 template <typename T>
@@ -77,7 +75,7 @@ class PARAM_ACTION : public ACTION
               m_description(paramDescription),
               m_hasDefault(true)
         {}
-        PARAM_ACTION(STG::Optional<T> & param)
+        explicit PARAM_ACTION(STG::Optional<T> & param)
             : m_param(param),
               m_hasDefault(false)
         {}
@@ -88,13 +86,11 @@ class PARAM_ACTION : public ACTION
               m_hasDefault(false)
         {}
 
-        virtual ACTION * Clone() const { return new PARAM_ACTION<T>(*this); }
-
-        virtual std::string ParamDescription() const { return m_description; }
-        virtual std::string DefaultDescription() const;
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
-        virtual void ParseValue(const std::string & value);
+        std::string ParamDescription() const override { return m_description; }
+        std::string DefaultDescription() const override;
+        OPTION_BLOCK & Suboptions() override { return m_suboptions; }
+        PARSER_STATE Parse(int argc, char ** argv, void * /*data*/) override;
+        void ParseValue(const std::string & value) override;
 
     private:
         STG::Optional<T> & m_param;
@@ -176,26 +172,26 @@ return PARSER_STATE(false, --argc, ++argv);
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param,
-                                  const T & defaultValue,
-                                  const std::string & paramDescription)
+std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param,
+                                        const T & defaultValue,
+                                        const std::string & paramDescription)
 {
-return new PARAM_ACTION<T>(param, defaultValue, paramDescription);
+return std::make_unique<PARAM_ACTION<T>>(param, defaultValue, paramDescription);
 }
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param)
+std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param)
 {
-return new PARAM_ACTION<T>(param);
+return std::make_unique<PARAM_ACTION<T>>(param);
 }
 
 template <typename T>
 inline
-PARAM_ACTION<T> * MakeParamAction(STG::Optional<T> & param,
-                                  const std::string & paramDescription)
+std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param,
+                                        const std::string & paramDescription)
 {
-return new PARAM_ACTION<T>(param, paramDescription);
+return std::make_unique<PARAM_ACTION<T>>(param, paramDescription);
 }
 
 class KV_ACTION : public ACTION
@@ -207,12 +203,10 @@ class KV_ACTION : public ACTION
               m_description(paramDescription)
         {}
 
-        virtual ACTION * Clone() const { return new KV_ACTION(*this); }
-
-        virtual std::string ParamDescription() const { return m_description; }
-        virtual std::string DefaultDescription() const { return ""; }
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv, void * data);
+        std::string ParamDescription() const override { return m_description; }
+        std::string DefaultDescription() const override { return ""; }
+        OPTION_BLOCK & Suboptions() override { return m_suboptions; }
+        PARSER_STATE Parse(int argc, char ** argv, void * data) override;
 
     private:
         std::string m_name;
@@ -234,10 +228,10 @@ return PARSER_STATE(false, --argc, ++argv);
 }
 
 inline
-KV_ACTION * MakeKVAction(const std::string & name,
-                         const std::string & paramDescription)
+std::unique_ptr<ACTION> MakeKVAction(const std::string & name,
+                                     const std::string & paramDescription)
 {
-return new KV_ACTION(name, paramDescription);
+return std::make_unique<KV_ACTION>(name, paramDescription);
 }
 
 } // namespace SGCONF

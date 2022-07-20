@@ -25,13 +25,15 @@
 
 #pragma once
 
-#include <pthread.h>
-
-#include <string>
-
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/logger.h"
+
+#include <string>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 namespace STG
 {
@@ -66,15 +68,14 @@ private:
     ETHER_CAP(const ETHER_CAP & rvalue);
     ETHER_CAP & operator=(const ETHER_CAP & rvalue);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token);
     int                 EthCapOpen();
     int                 EthCapClose();
     int                 EthCapRead(void * buffer, int blen, char ** iface);
 
     mutable std::string errorStr;
 
-    pthread_t           thread;
-    bool                nonstop;
+    std::jthread        m_thread;
     bool                isRunning;
     int                 capSock;
 

@@ -73,7 +73,7 @@ template <typename A, typename R>
 class FUNC1_ADAPTER : public std::unary_function<A, R>
 {
     public:
-        FUNC1_ADAPTER(R (*func)(A)) : m_func(func) {}
+        explicit FUNC1_ADAPTER(R (*func)(A)) : m_func(func) {}
         const R operator()(A arg) const { return (m_func)(arg); }
     private:
         R (*m_func)(A);
@@ -160,12 +160,10 @@ class CONFIG_ACTION : public ACTION
               m_description(paramDescription)
         {}
 
-        virtual ACTION * Clone() const { return new CONFIG_ACTION(*this); }
-
-        virtual std::string ParamDescription() const { return m_description; }
-        virtual std::string DefaultDescription() const { return ""; }
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
+        std::string ParamDescription() const override { return m_description; }
+        std::string DefaultDescription() const override { return ""; }
+        OPTION_BLOCK & Suboptions() override { return m_suboptions; }
+        PARSER_STATE Parse(int argc, char ** argv, void * /*data*/) override;
 
     private:
         SGCONF::CONFIG & m_config;
@@ -227,11 +225,10 @@ else
     }
 }
 
-inline
-CONFIG_ACTION * MakeParamAction(SGCONF::CONFIG & config,
-                                const std::string & paramDescription)
+std::unique_ptr<SGCONF::ACTION> MakeParamAction(SGCONF::CONFIG & config,
+                                                const std::string & paramDescription)
 {
-return new CONFIG_ACTION(config, paramDescription);
+return std::make_unique<CONFIG_ACTION>(config, paramDescription);
 }
 
 } // namespace SGCONF

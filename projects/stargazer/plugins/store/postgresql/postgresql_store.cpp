@@ -40,9 +40,6 @@
 
 #include "postgresql_store.h"
 
-#include "postgresql_store_utils.h"
-#include "postgresql_store.h"
-
 #include "stg/common.h" // str2x, printfd
 
 #include <string>

@@ -90,12 +90,10 @@ class API_ACTION : public ACTION
               m_funPtr(funPtr)
         {}
 
-        virtual ACTION * Clone() const { return new API_ACTION(*this); }
-
-        virtual std::string ParamDescription() const { return m_description; }
-        virtual std::string DefaultDescription() const { return ""; }
-        virtual OPTION_BLOCK & Suboptions() { return m_suboptions; }
-        virtual PARSER_STATE Parse(int argc, char ** argv, void * /*data*/);
+        std::string ParamDescription() const override { return m_description; }
+        std::string DefaultDescription() const override { return ""; }
+        OPTION_BLOCK & Suboptions() override { return m_suboptions; }
+        PARSER_STATE Parse(int argc, char ** argv, void * /*data*/) override;
 
     private:
         COMMANDS & m_commands;
@@ -107,35 +105,35 @@ class API_ACTION : public ACTION
 };
 
 inline
-ACTION * MakeAPIAction(COMMANDS & commands,
+std::unique_ptr<ACTION> MakeAPIAction(COMMANDS & commands,
                        const std::string & paramDescription,
                        const std::vector<API_ACTION::PARAM> & params,
                        API_FUNCTION funPtr)
 {
-return new API_ACTION(commands, paramDescription, true, params, funPtr);
+return std::make_unique<API_ACTION>(commands, paramDescription, true, params, funPtr);
 }
 
 inline
-ACTION * MakeAPIAction(COMMANDS & commands,
+std::unique_ptr<ACTION> MakeAPIAction(COMMANDS & commands,
                        const std::vector<API_ACTION::PARAM> & params,
                        API_FUNCTION funPtr)
 {
-return new API_ACTION(commands, "", false, params, funPtr);
+return std::make_unique<API_ACTION>(commands, "", false, params, funPtr);
 }
 
 inline
-ACTION * MakeAPIAction(COMMANDS & commands,
+std::unique_ptr<ACTION> MakeAPIAction(COMMANDS & commands,
                        const std::string & paramDescription,
                        API_FUNCTION funPtr)
 {
-return new API_ACTION(commands, paramDescription, true, funPtr);
+return std::make_unique<API_ACTION>(commands, paramDescription, true, funPtr);
 }
 
 inline
-ACTION * MakeAPIAction(COMMANDS & commands,
+std::unique_ptr<ACTION> MakeAPIAction(COMMANDS & commands,
                        API_FUNCTION funPtr)
 {
-return new API_ACTION(commands, "", false, funPtr);
+return std::make_unique<API_ACTION>(commands, "", false, funPtr);
 }
 
 }

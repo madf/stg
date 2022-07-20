@@ -26,8 +26,10 @@
 
 #include <string>
 #include <vector>
-
-#include <pthread.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 namespace STG
 {
@@ -69,12 +71,11 @@ private:
     NFQ_CAP(const NFQ_CAP & rvalue);
     NFQ_CAP & operator=(const NFQ_CAP & rvalue);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token);
 
     mutable std::string errorStr;
 
-    pthread_t           thread;
-    bool                nonstop;
+    std::jthread        m_thread;
     bool                isRunning;
     STG::ModuleSettings     settings;
 

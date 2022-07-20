@@ -1,119 +1,59 @@
+#include "stg/common.h"
+#include "eventloop.h"
+
 #include <csignal>
 #include <cerrno>
 #include <cstring>
 
-#include "stg/locker.h"
-#include "stg/common.h"
-#include "eventloop.h"
-
-EVENT_LOOP::EVENT_LOOP()
-    : ACTIONS_LIST(),
-      _running(false),
-      _stopped(true),
-      _tid(),
-      _mutex(),
-      _condition()
+EVENT_LOOP& EVENT_LOOP::instance()
 {
-pthread_mutex_init(&_mutex, NULL);
-pthread_cond_init(&_condition, NULL);
-}
-
-EVENT_LOOP::~EVENT_LOOP()
-{
-pthread_cond_destroy(&_condition);
-pthread_mutex_destroy(&_mutex);
+    static EVENT_LOOP el;
+    return el;
 }
 
 bool EVENT_LOOP::Start()
 {
-_running = true;
-if (pthread_create(&_tid, NULL, Run, this))
-    {
-    printfd(__FILE__, "EVENT_LOOP::Start - Failed to create thread: '%s'\n", strerror(errno));
-    return true;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 return false;
 }
 
 bool EVENT_LOOP::Stop()
 {
-_running = false;
+m_thread.request_stop();
 // Wake up thread
-pthread_cond_signal(&_condition);
-// Wait until thread exit
-pthread_join(_tid, NULL);
+m_cond.notify_all();
+m_thread.join();
 return false;
 }
 
-void * EVENT_LOOP::Run(void * self)
-{
-EVENT_LOOP * ev = static_cast<EVENT_LOOP *>(self);
-ev->Runner();
-return NULL;
-}
-
-void EVENT_LOOP::Runner()
+void EVENT_LOOP::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-_stopped = false;
 printfd(__FILE__, "EVENT_LOOP::Runner - Before start\n");
-while (_running)
+while (!token.stop_requested())
     {
-        {
-        STG_LOCKER lock(&_mutex);
-        // Check for any actions...
-        if (empty())
-            {
-            // ... and sleep until new actions added
-            printfd(__FILE__, "EVENT_LOOP::Runner - Sleeping until new actions arrived\n");
-            pthread_cond_wait(&_condition, &_mutex);
-            }
-        // Check for running after wake up
-        if (!_running)
-            {
-            // Don't process any actions if stopping
-            break;
-            }
-        }
     // Create new empty actions list
     ACTIONS_LIST local;
+        {
+        std::unique_lock lock(m_mutex);
+        // Check for any actions...
+        // ... and sleep until new actions added
+        printfd(__FILE__, "EVENT_LOOP::Runner - Sleeping until new actions arrived\n");
+        m_cond.wait(lock);
+        // Check for running after wake up
+        if (token.stop_requested())
+            break; // Don't process any actions if stopping
+        if (!m_list.empty())
+            local.swap(m_list);
+        }
     // Fast swap with current
-    swap(local);
+    m_list.swap(local);
     // Invoke all current actions
     printfd(__FILE__, "EVENT_LOOP::Runner - Invoke %d actions\n", local.size());
     local.InvokeAll();
     }
 printfd(__FILE__, "EVENT_LOOP::Runner - Before stop\n");
-_stopped = true;
 }
-
-namespace {
-
-pthread_mutex_t singletonMutex;
-
-}
-
-EVENT_LOOP & EVENT_LOOP_SINGLETON::GetInstance()
-{
-// Double-checking technique
-if (!_instance)
-    {
-    STG_LOCKER lock(&singletonMutex);
-    if (!_instance)
-        {
-        CreateInstance();
-        }
-    }
-return *_instance;
-}
-
-void EVENT_LOOP_SINGLETON::CreateInstance()
-{
-static EVENT_LOOP loop;
-_instance = &loop;
-}
-
-EVENT_LOOP * EVENT_LOOP_SINGLETON::_instance = NULL;

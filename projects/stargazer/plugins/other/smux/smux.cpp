@@ -214,6 +214,8 @@ if (!stopped)
 
 if (!stopped)
     m_thread.detach();
+else
+    m_thread.join();
 
 ResetNotifiers();
 

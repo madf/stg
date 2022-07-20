@@ -32,9 +32,12 @@
 
 #include <string>
 #include <vector>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
 
-#include <pthread.h>
 #include <sys/poll.h>
 
 #define BUFF_LEN (128)
@@ -114,7 +117,7 @@ private:
     BPF_CAP(const BPF_CAP & rvalue);
     BPF_CAP & operator=(const BPF_CAP & rvalue);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token);
     int                 BPFCapOpen();
     int                 BPFCapOpen(BPF_DATA * bd);
     int                 BPFCapClose();
@@ -128,8 +131,7 @@ private:
     std::vector<BPF_DATA> bpfData;
     std::vector<pollfd>   polld;
 
-    pthread_t             thread;
-    bool                  nonstop;
+    std::jthread          m_thread;
     bool                  isRunning;
     int                   capSock;
     STG::ModuleSettings       settings;

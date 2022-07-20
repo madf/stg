@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto& loop = EVENT_LOOP_SINGLETON::GetInstance();
+    auto& loop = EVENT_LOOP::instance();
 
     StoreLoader storeLoader(settings);
     if (storeLoader.load())

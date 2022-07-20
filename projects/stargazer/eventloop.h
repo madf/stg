@@ -1,63 +1,45 @@
 #ifndef __EVENT_LOOP_H__
 #define __EVENT_LOOP_H__
 
-#include <pthread.h>
-
-#include "stg/noncopyable.h"
 #include "actions.h"
 
-class EVENT_LOOP : private NONCOPYABLE,
-                   private ACTIONS_LIST
+#include <mutex>
+#include <condition_variable>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
+
+class EVENT_LOOP
 {
     public:
+        static EVENT_LOOP& instance();
+
         bool Start();
         bool Stop();
-        bool IsRunning() const { return _running; }
 
         template <class ACTIVE_CLASS, typename DATA_TYPE>
         void Enqueue(ACTIVE_CLASS & ac,
                      typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
-                     DATA_TYPE d);
+                     DATA_TYPE d)
+        {
+            std::lock_guard lock(m_mutex);
+            // Add new action
+            m_list.Enqueue(ac, a, d);
+            // Signal about new action
+            m_cond.notify_all();
+        }
 
     private:
-        bool _running;
-        bool _stopped;
-        pthread_t _tid;
-        pthread_mutex_t _mutex;
-        pthread_cond_t _condition;
+        std::jthread m_thread;
+        std::mutex m_mutex;
+        std::condition_variable m_cond;
 
-        EVENT_LOOP();
-        virtual ~EVENT_LOOP();
+        ACTIONS_LIST m_list;
 
-        static void * Run(void *);
-        void Runner();
+        EVENT_LOOP() = default;
 
-        friend class EVENT_LOOP_SINGLETON;
+        void Run(std::stop_token token);
 };
-
-class EVENT_LOOP_SINGLETON : private NONCOPYABLE
-{
-    public:
-        static EVENT_LOOP & GetInstance();
-
-    private:
-        static EVENT_LOOP * _instance;
-        static void CreateInstance();
-
-        EVENT_LOOP_SINGLETON() {}
-        ~EVENT_LOOP_SINGLETON() {}
-};
-
-template <class ACTIVE_CLASS, typename DATA_TYPE>
-void EVENT_LOOP::Enqueue(ACTIVE_CLASS & ac,
-                         typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
-                         DATA_TYPE d)
-{
-STG_LOCKER lock(&_mutex);
-// Add new action
-ACTIONS_LIST::Enqueue(ac, a, d);
-// Signal about new action
-pthread_cond_signal(&_condition);
-}
 
 #endif

@@ -87,8 +87,7 @@ return "cap_nfqueue v.1.0";
 }
 //-----------------------------------------------------------------------------
 NFQ_CAP::NFQ_CAP()
-    : nonstop(false),
-      isRunning(false),
+    : isRunning(false),
       queueNumber(0),
       nfqHandle(NULL),
       queueHandle(NULL),
@@ -152,15 +151,7 @@ if (nfq_set_mode(queueHandle, NFQNL_COPY_PACKET, 0xffFF) < 0)
     return -1;
     }
 
-nonstop = true;
-
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot create thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot create thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -170,7 +161,7 @@ int NFQ_CAP::Stop()
 if (!isRunning)
     return 0;
 
-nonstop = false;
+m_thread.request_stop();
 
 //5 seconds to thread stops itself
 for (int i = 0; i < 25 && isRunning; i++)
@@ -180,28 +171,9 @@ for (int i = 0; i < 25 && isRunning; i++)
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    if (pthread_kill(thread, SIGUSR1))
-        {
-        errorStr = "Cannot kill thread.";
-        logger("Cannot send signal to thread.");
-        return -1;
-        }
-    for (int i = 0; i < 25 && isRunning; ++i)
-        {
-        struct timespec ts = {0, 200000000};
-        nanosleep(&ts, NULL);
-        }
-    if (isRunning)
-        {
-        errorStr = "NFQ_CAP not stopped.";
-        logger("Cannot stop thread.");
-        printfd(__FILE__, "Cannot stop thread\n");
-        return -1;
-        }
-    }
-
-pthread_join(thread, NULL);
+    m_thread.detach();
+else
+    m_thread.join();
 
 nfq_destroy_queue(queueHandle);
 nfq_close(nfqHandle);
@@ -209,19 +181,18 @@ nfq_close(nfqHandle);
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * NFQ_CAP::Run(void * d)
+void NFQ_CAP::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-NFQ_CAP * dc = static_cast<NFQ_CAP *>(d);
-dc->isRunning = true;
+isRunning = true;
 
-int fd = nfq_fd(dc->nfqHandle);
+int fd = nfq_fd(nfqHandle);
 char buf[4096];
 
-while (dc->nonstop)
+while (!token.stop_requested())
     {
         if (!WaitPackets(fd))
             continue;
@@ -229,15 +200,14 @@ while (dc->nonstop)
         int rv = read(fd, buf, sizeof(buf));
         if (rv < 0)
             {
-            dc->errorStr = std::string("Read error: ") + strerror(errno);
-            dc->logger(dc->errorStr);
+            errorStr = std::string("Read error: ") + strerror(errno);
+            logger(errorStr);
             break;
             }
-        nfq_handle_packet(dc->nfqHandle, buf, rv);
+        nfq_handle_packet(nfqHandle, buf, rv);
     }
 
-dc->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 void NFQ_CAP::Process(const STG::RawPacket & packet)

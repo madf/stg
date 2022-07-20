@@ -534,6 +534,8 @@ if (isRunning)
     //TODO pthread_cancel()
     m_thread.detach();
     }
+else
+    m_thread.join();
 
 printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), [](auto& user){ user.Run(); });

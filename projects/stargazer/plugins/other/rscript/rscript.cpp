@@ -265,6 +265,8 @@ if (isRunning)
     logger("Cannot stop thread.");
     m_thread.detach();
     }
+else
+    m_thread.join();
 
 return 0;
 }

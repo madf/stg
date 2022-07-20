@@ -30,10 +30,6 @@
 #include <string>
 #include <vector>
 
-struct ToLower {
-    char operator() (char c) const  { return static_cast<char>(std::tolower(c)); }
-};
-
 class FIREBIRD_STORE : public STG::Store {
 public:
     FIREBIRD_STORE();

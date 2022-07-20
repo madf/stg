@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_ACTION_H__
-#define __STG_SGCONF_ACTION_H__
+#pragma once
 
 #include <string>
 #include <map>
@@ -37,21 +36,17 @@ class ACTION
     public:
         virtual ~ACTION() {}
 
-        virtual ACTION * Clone() const = 0;
         virtual std::string ParamDescription() const = 0;
         virtual std::string DefaultDescription() const = 0;
         virtual OPTION_BLOCK & Suboptions() = 0;
         virtual PARSER_STATE Parse(int argc, char ** argv, void * data = NULL) = 0;
         virtual void ParseValue(const std::string &) {}
 
-        class ERROR : public std::runtime_error
+        struct ERROR : std::runtime_error
         {
-            public:
-                ERROR(const std::string & message)
-                    : std::runtime_error(message.c_str()) {}
+            explicit ERROR(const std::string & message)
+                : std::runtime_error(message.c_str()) {}
         };
 };
 
 } // namespace SGCONF
-
-#endif

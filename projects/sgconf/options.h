@@ -18,14 +18,13 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __STG_SGCONF_OPTIONS_H__
-#define __STG_SGCONF_OPTIONS_H__
+#pragma once
 
 #include <string>
 #include <vector>
-#include <list>
 #include <utility>
 #include <stdexcept>
+#include <memory>
 #include <cstddef> // size_t
 
 namespace SGCONF
@@ -39,15 +38,14 @@ class OPTION
     public:
         OPTION(const std::string & shortName,
                const std::string & longName,
-               ACTION * action,
+               std::unique_ptr<ACTION> action,
                const std::string & description);
         OPTION(const std::string & longName,
-               ACTION * action,
+               std::unique_ptr<ACTION> action,
                const std::string & description);
-        OPTION(const OPTION & rhs);
-        ~OPTION();
 
-        OPTION & operator=(const OPTION & rhs);
+        OPTION(OPTION&& rhs) = default;
+        OPTION& operator=(OPTION& rhs) = default;
 
         void Help(size_t level = 0) const;
         PARSER_STATE Parse(int argc, char ** argv, void * data);
@@ -55,17 +53,16 @@ class OPTION
         bool Check(const char * arg) const;
         const std::string & Name() const { return m_longName; }
 
-        class ERROR : public std::runtime_error
+        struct ERROR : std::runtime_error
         {
-            public:
-                ERROR(const std::string & message)
-                    : std::runtime_error(message.c_str()) {}
+            explicit ERROR(const std::string & message)
+                : std::runtime_error(message.c_str()) {}
         };
 
     private:
         std::string m_shortName;
         std::string m_longName;
-        ACTION * m_action;
+        std::unique_ptr<ACTION> m_action;
         std::string m_description;
 };
 
@@ -73,14 +70,18 @@ class OPTION_BLOCK
 {
     public:
         OPTION_BLOCK() {}
-        OPTION_BLOCK(const std::string & description)
+        explicit OPTION_BLOCK(const std::string & description)
             : m_description(description) {}
+
+        OPTION_BLOCK(OPTION_BLOCK&&) = default;
+        OPTION_BLOCK& operator=(OPTION_BLOCK&&) = default;
+
         OPTION_BLOCK & Add(const std::string & shortName,
                            const std::string & longName,
-                           ACTION * action,
+                           std::unique_ptr<ACTION> action,
                            const std::string & description);
         OPTION_BLOCK & Add(const std::string & longName,
-                           ACTION * action,
+                           std::unique_ptr<ACTION> action,
                            const std::string & description);
 
         void Help(size_t level) const;
@@ -88,11 +89,10 @@ class OPTION_BLOCK
         PARSER_STATE Parse(int argc, char ** argv, void * data = NULL);
         void ParseFile(const std::string & filePath);
 
-        class ERROR : public std::runtime_error
+        struct ERROR : std::runtime_error
         {
-            public:
-                ERROR(const std::string & message)
-                    : std::runtime_error(message.c_str()) {}
+            explicit ERROR(const std::string & message)
+                : std::runtime_error(message.c_str()) {}
         };
 
     private:
@@ -107,14 +107,12 @@ class OPTION_BLOCKS
     public:
         OPTION_BLOCK & Add(const std::string & description)
         { m_blocks.push_back(OPTION_BLOCK(description)); return m_blocks.back(); }
-        void Add(const OPTION_BLOCK & block) { m_blocks.push_back(block); }
+        void Add(OPTION_BLOCK&& block) { m_blocks.push_back(std::move(block)); }
         void Help(size_t level) const;
         PARSER_STATE Parse(int argc, char ** argv);
 
     private:
-        std::list<OPTION_BLOCK> m_blocks;
+        std::vector<OPTION_BLOCK> m_blocks;
 };
 
 } // namespace SGCONF
-
-#endif

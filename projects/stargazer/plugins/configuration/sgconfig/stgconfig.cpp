@@ -127,6 +127,8 @@ int STG_CONFIG::Stop()
 
     if (isRunning)
         m_thread.detach();
+    else
+        m_thread.join();
 
     return 0;
 }

@@ -65,8 +65,7 @@ return "cap_ether v.1.2";
 }
 //-----------------------------------------------------------------------------
 ETHER_CAP::ETHER_CAP()
-    : nonstop(false),
-      isRunning(false),
+    : isRunning(false),
       capSock(-1),
       traffCnt(NULL),
       logger(STG::PluginLogger::get("cap_ether"))
@@ -85,15 +84,7 @@ if (EthCapOpen() < 0)
     return -1;
     }
 
-nonstop = true;
-
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot create thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot create thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -103,7 +94,7 @@ int ETHER_CAP::Stop()
 if (!isRunning)
     return 0;
 
-nonstop = false;
+m_thread.request_stop();
 
 //5 seconds to thread stops itself
 for (int i = 0; i < 25 && isRunning; i++)
@@ -113,43 +104,21 @@ for (int i = 0; i < 25 && isRunning; i++)
     }
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    if (pthread_kill(thread, SIGUSR1))
-        {
-        errorStr = "Cannot kill thread.";
-        logger("Cannot send signal to thread.");
-        return -1;
-        }
-    for (int i = 0; i < 25 && isRunning; ++i)
-        {
-        struct timespec ts = {0, 200000000};
-        nanosleep(&ts, NULL);
-        }
-    if (isRunning)
-        {
-        errorStr = "ETHER_CAP not stopped.";
-        logger("Cannot stop thread.");
-        printfd(__FILE__, "Cannot stop thread\n");
-        return -1;
-        }
-    else
-        {
-        pthread_join(thread, NULL);
-        }
-    }
+    m_thread.detach();
+else
+    m_thread.join();
 
 EthCapClose();
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * ETHER_CAP::Run(void * d)
+void ETHER_CAP::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-ETHER_CAP * dc = static_cast<ETHER_CAP *>(d);
-dc->isRunning = true;
+isRunning = true;
 
 struct ETH_IP
 {
@@ -168,9 +137,9 @@ ethIP->rp.dataLen = -1;
 
 char * iface = NULL;
 
-while (dc->nonstop)
+while (!token.stop_requested())
     {
-    if (dc->EthCapRead(&ethip, 68 + 14, &iface))
+    if (EthCapRead(&ethip, 68 + 14, &iface))
         {
         continue;
         }
@@ -178,11 +147,10 @@ while (dc->nonstop)
     if (ethIP->ethHdr[7] != 0x8)
         continue;
 
-    dc->traffCnt->process(ethIP->rp);
+    traffCnt->process(ethIP->rp);
     }
 
-dc->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 int ETHER_CAP::EthCapOpen()
@@ -202,7 +170,7 @@ return 0;
 int ETHER_CAP::EthCapRead(void * buffer, int blen, char **)
 {
 struct sockaddr_ll  addr;
-int addrLen;
+socklen_t addrLen;
 
 if (!WaitPackets(capSock))
     {
@@ -211,7 +179,7 @@ if (!WaitPackets(capSock))
 
 addrLen = sizeof(addr);
 
-if (recvfrom(capSock, ((char*)buffer) + 2, blen, 0, (struct sockaddr *)&addr, (socklen_t*)&addrLen) < 0)
+if (recvfrom(capSock, static_cast<char*>(buffer) + 2, blen, 0, reinterpret_cast<sockaddr *>(&addr), &addrLen) < 0)
     {
     logger("recvfrom error: %s", strerror(errno));
     return ENODATA;

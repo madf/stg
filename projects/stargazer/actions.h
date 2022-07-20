@@ -1,5 +1,4 @@
-#ifndef __ACTIONS_H__
-#define __ACTIONS_H__
+#pragma once
 
 // Usage:
 //
@@ -21,7 +20,7 @@
 template <class ACTIVE_CLASS, typename DATA_TYPE>
 struct ACTOR
 {
-typedef void (ACTIVE_CLASS::*TYPE)(DATA_TYPE);
+    using TYPE = void (ACTIVE_CLASS::*)(DATA_TYPE);
 };
 
 // Abstract base action class for polymorphic action invocation
@@ -34,15 +33,17 @@ public:
 
 // Concrete generalized action type - an actor with it's data and owner
 template <class ACTIVE_CLASS, typename DATA_TYPE>
-class ACTION : public BASE_ACTION,
-               public std::unary_function<ACTIVE_CLASS &, void>
+class ACTION : public BASE_ACTION
 {
 public:
     ACTION(ACTIVE_CLASS & ac,
            typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
            DATA_TYPE d)
         : activeClass(ac), actor(a), data(d) {}
-    void Invoke() override;
+    void Invoke() override
+    {
+        (activeClass.*actor)(data);
+    }
 private:
     ACTION(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
     ACTION<ACTIVE_CLASS, DATA_TYPE> & operator=(const ACTION<ACTIVE_CLASS, DATA_TYPE> & rvalue);
@@ -54,37 +55,42 @@ private:
 
 // A list of an actions
 // All methods are thread-safe
-class ACTIONS_LIST : private std::vector<BASE_ACTION *>
+class ACTIONS_LIST
 {
 public:
-    // Just a typedef for parent class
-    typedef std::vector<BASE_ACTION *> parent;
+    ~ACTIONS_LIST()
+    {
+        std::lock_guard lock(m_mutex);
+        for (auto action : m_list)
+            delete action;
+    }
 
-    // Initialize mutex
-    ACTIONS_LIST();
-    // Delete actions and destroy mutex
-    virtual ~ACTIONS_LIST();
+    auto begin() { std::lock_guard lock(m_mutex); return m_list.begin(); }
+    auto end() { std::lock_guard lock(m_mutex); return m_list.end(); }
+    auto begin() const { std::lock_guard lock(m_mutex); return m_list.begin(); }
+    auto end() const { std::lock_guard lock(m_mutex); return m_list.end(); }
 
-    parent::iterator begin();
-    parent::iterator end();
-    parent::const_iterator begin() const;
-    parent::const_iterator end() const;
-
-    bool empty() const;
-    size_t size() const;
-    void swap(ACTIONS_LIST & list);
+    bool empty() const { std::lock_guard lock(m_mutex); return m_list.empty(); }
+    size_t size() const { std::lock_guard lock(m_mutex); return m_list.size(); }
+    void swap(ACTIONS_LIST & rhs) { std::lock_guard lock(m_mutex); m_list.swap(rhs.m_list); }
 
     // Add an action to list
     template <class ACTIVE_CLASS, typename DATA_TYPE>
     void Enqueue(ACTIVE_CLASS & ac,
                  typename ACTOR<ACTIVE_CLASS, DATA_TYPE>::TYPE a,
-                 DATA_TYPE d);
+                 DATA_TYPE d)
+    {
+        std::lock_guard lock(m_mutex);
+        m_list.push_back(new ACTION<ACTIVE_CLASS, DATA_TYPE>(ac, a, d));
+    }
     // Invoke all actions in the list
-    void InvokeAll();
+    void InvokeAll()
+    {
+        std::lock_guard lock(m_mutex);
+        for (auto action : m_list)
+            action->Invoke();
+    }
 private:
     mutable std::mutex m_mutex;
+    std::vector<BASE_ACTION*> m_list;
 };
-
-#include "actions.inl.h"
-
-#endif
