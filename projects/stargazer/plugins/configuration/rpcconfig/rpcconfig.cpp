@@ -86,7 +86,6 @@ RPC_CONFIG::RPC_CONFIG()
       store(NULL),
       fd(-1),
       rpcServer(NULL),
-      running(false),
       stopped(true),
       dayFee(0),
       logger(STG::PluginLogger::get("conf_rpc"))
@@ -121,7 +120,6 @@ void RPC_CONFIG::SetStgSettings(const STG::Settings * s)
 int RPC_CONFIG::Start()
 {
 InitiateRegistry();
-running = true;
 
 fd = socket(AF_INET, SOCK_STREAM, 0);
 if (fd < 0)
@@ -147,7 +145,7 @@ addr.sin_family = AF_INET;
 addr.sin_port = htons(rpcConfigSettings.GetPort());
 addr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
-if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)))
+if (bind(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)))
     {
     logger("Cannot bind the socket: %s", strerror(errno));
     errorStr = "Failed to bind socket";
@@ -170,20 +168,14 @@ rpcServer = new xmlrpc_c::serverAbyss(
         .socketFd(fd)
         );
 
-if (pthread_create(&tid, NULL, Run, this))
-    {
-    errorStr = "Failed to create RPC thread";
-    logger("Cannot create RPC thread.");
-    printfd(__FILE__, "Failed to crate RPC thread\n");
-    return -1;
-    }
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
 
 int RPC_CONFIG::Stop()
 {
-running = false;
+m_thread.request_stop();
 for (int i = 0; i < 5 && !stopped; ++i)
     {
     struct timespec ts = {0, 200000000};
@@ -192,39 +184,33 @@ for (int i = 0; i < 5 && !stopped; ++i)
 
 if (!stopped)
     {
-    running = true;
+    m_thread.detach();
     logger("Cannot stop RPC thread.");
     printfd(__FILE__, "Failed to stop RPC thread\n");
     errorStr = "Failed to stop RPC thread";
     return -1;
     }
 else
-    {
-    pthread_join(tid, NULL);
-    }
+    m_thread.join();
 
 close(fd);
 
 return 0;
 }
 
-void * RPC_CONFIG::Run(void * rc)
+void RPC_CONFIG::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-RPC_CONFIG * config = static_cast<RPC_CONFIG *>(rc);
-
-config->stopped = false;
-while (config->running)
+stopped = false;
+while (!token.stop_requested())
     {
-    if (WaitPackets(config->fd))
-        config->rpcServer->runOnce();
+    if (WaitPackets(fd))
+        rpcServer->runOnce();
     }
-config->stopped = true;
-
-return NULL;
+stopped = true;
 }
 
 bool RPC_CONFIG::GetAdminInfo(const std::string & cookie,

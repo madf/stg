@@ -15,7 +15,10 @@
 #include <map>
 #include <vector>
 
-#include <pthread.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 #define RPC_CONFIG_VERSION "Stargazer RPC v. 0.2"
 
@@ -75,7 +78,7 @@ public:
     int                 Start() override;
     int                 Stop() override;
     int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
-    bool                IsRunning() override { return running && !stopped; }
+    bool                IsRunning() override { return m_thread.joinable() && !stopped; }
 
     const std::string & GetStrError() const override { return errorStr; }
     std::string         GetVersion() const override { return RPC_CONFIG_VERSION; }
@@ -93,7 +96,7 @@ private:
     RPC_CONFIG(const RPC_CONFIG & rvalue);
     RPC_CONFIG & operator=(const RPC_CONFIG & rvalue);
 
-    static void *           Run(void *);
+    void                    Run(std::stop_token token);
     std::string             GetCookie() const;
     void                    InitiateRegistry();
 
@@ -107,9 +110,8 @@ private:
     int                     fd;
     xmlrpc_c::registry      rpcRegistry;
     xmlrpc_c::serverAbyss * rpcServer;
-    bool                    running;
     bool                    stopped;
-    pthread_t               tid;
+    std::jthread            m_thread;
     std::map<std::string,
              ADMIN_INFO>    cookies;
     size_t                  dayFee;

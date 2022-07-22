@@ -2,16 +2,26 @@
 
 #include "stg/common.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
+
 #include <ctime>
 #include <cstring>
 #include <csignal>
 
 #include <pthread.h>
 
+namespace
+{
+
+std::jthread thread;
+
+}
+
 void * StgTimer(void *);
 
-static int nonstop;
-static pthread_t thrStgTimer;
 static bool isTimerRunning = false;
 volatile time_t stgTime;
 
@@ -33,7 +43,7 @@ const int START_TIME = 2;
 #endif
 
 //-----------------------------------------------------------------------------
-void * StgTimer(void *)
+void timer(std::stop_token token)
 {
 #ifdef STG_TIMER_DEBUG
 struct tm lt;
@@ -70,9 +80,8 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-nonstop = 1;
 isTimerRunning = true;
-while (nonstop)
+while (!token.stop_requested())
     {
     #ifdef STG_TIMER_DEBUG
     struct timespec ts;
@@ -95,30 +104,22 @@ while (nonstop)
     #endif
     }
 isTimerRunning = false;
-
-return NULL;
 }
 //-----------------------------------------------------------------------------
 int RunStgTimer()
 {
-static int a = 0;
 isTimerRunning = false;
 
-if (a == 0)
-    if (pthread_create(&thrStgTimer, NULL, &StgTimer, NULL))
-        {
-        isTimerRunning = false;
-        return -1;
-        }
+if (!thread.joinable())
+    thread = std::jthread(timer);
 
-a = 1;
 return 0;
 }
 //-----------------------------------------------------------------------------
 void StopStgTimer()
 {
-nonstop = 0;
-pthread_join(thrStgTimer, NULL); // Cleanup thread resources
+thread.request_stop();
+thread.join();
 printfd(__FILE__, "STG_TIMER stopped\n");
 }
 //-----------------------------------------------------------------------------
