@@ -41,9 +41,13 @@
 #include <list>
 #include <functional>
 #include <utility>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 #include <sys/time.h>
-#include <pthread.h>
 
 //#define IA_DEBUG (1)
 //#define IA_PHASE_DEBUG (1)
@@ -116,9 +120,9 @@ struct IA_USER {
           protoVer(0),
           password("NO PASSWORD")
     {
-    unsigned char keyL[PASSWD_LEN];
+    char keyL[PASSWD_LEN];
     memset(keyL, 0, PASSWD_LEN);
-    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    strncpy(keyL, password.c_str(), PASSWD_LEN);
     Blowfish_Init(&ctx, keyL, PASSWD_LEN);
 
     #ifdef IA_DEBUG
@@ -157,9 +161,9 @@ struct IA_USER {
           protoVer(ver),
           password(user->GetProperties().password.Get())
     {
-    unsigned char keyL[PASSWD_LEN];
+    char keyL[PASSWD_LEN];
     memset(keyL, 0, PASSWD_LEN);
-    strncpy((char *)keyL, password.c_str(), PASSWD_LEN);
+    strncpy(keyL, password.c_str(), PASSWD_LEN);
     Blowfish_Init(&ctx, keyL, PASSWD_LEN);
 
     #ifdef IA_DEBUG
@@ -249,8 +253,8 @@ private:
     AUTH_IA(const AUTH_IA & rvalue);
     AUTH_IA & operator=(const AUTH_IA & rvalue);
 
-    static void *       Run(void *);
-    static void *       RunTimeouter(void * d);
+    void                Run(std::stop_token token);
+    void                RunTimeouter(std::stop_token token);
     int                 PrepareNet();
     int                 FinalizeNet();
     void                DelUser(UserPtr u);
@@ -306,7 +310,7 @@ private:
     int                 Timeouter();
 
     int                 SendError(uint32_t ip, uint16_t port, int protoVer, const std::string & text);
-    int                 Send(uint32_t ip, uint16_t port, const char * buffer, size_t len);
+    int                 Send(uint32_t ip, uint16_t port, const void* buffer, size_t len);
     int                 RealSendMessage6(const STG::Message & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage7(const STG::Message & msg, uint32_t ip, IA_USER & user);
     int                 RealSendMessage8(const STG::Message & msg, uint32_t ip, IA_USER & user);
@@ -317,8 +321,6 @@ private:
     AUTH_IA_SETTINGS    iaSettings;
     STG::ModuleSettings settings;
 
-    bool                nonstop;
-
     bool                isRunningRun;
     bool                isRunningRunTimeouter;
 
@@ -327,9 +329,9 @@ private:
 
     mutable std::map<uint32_t, IA_USER> ip2user;
 
-    pthread_t           recvThread;
-    pthread_t           timeouterThread;
-    mutable pthread_mutex_t mutex;
+    std::jthread        m_thread;
+    std::jthread        m_timeouterThread;
+    mutable std::mutex  m_mutex;
 
     int                 listenSocket;
 

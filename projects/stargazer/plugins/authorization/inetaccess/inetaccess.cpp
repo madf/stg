@@ -154,7 +154,7 @@ else if (!str2x(freeMbType.c_str(), n))
         printfd(__FILE__, "%s\n", errorStr.c_str());
         return -1;
         }
-    freeMbShowType = (FREEMB)(freeMb0 + n);
+    freeMbShowType = static_cast<FREEMB>(n);
     }
 else
     {
@@ -284,8 +284,7 @@ return phaseTime;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 AUTH_IA::AUTH_IA()
-    : nonstop(false),
-      isRunningRun(false),
+    : isRunningRun(false),
       isRunningRunTimeouter(false),
       users(NULL),
       stgSettings(NULL),
@@ -295,11 +294,6 @@ AUTH_IA::AUTH_IA()
       logger(STG::PluginLogger::get("auth_ia"))
 {
 InitContext("pr7Hhen", 7, &ctxS);
-
-pthread_mutexattr_t attr;
-pthread_mutexattr_init(&attr);
-pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-pthread_mutex_init(&mutex, &attr);
 
 memset(&connSynAck6, 0, sizeof(CONN_SYN_ACK_6));
 memset(&connSynAck8, 0, sizeof(CONN_SYN_ACK_8));
@@ -343,40 +337,23 @@ packetTypes["ERR"] = ERROR_N;
 //-----------------------------------------------------------------------------
 AUTH_IA::~AUTH_IA()
 {
-pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Start()
 {
 users->AddNotifierUserDel(&onDelUserNotifier);
-nonstop = true;
 
 if (PrepareNet())
     {
     return -1;
     }
 
-if (!isRunningRun)
-    {
-    if (pthread_create(&recvThread, NULL, Run, this))
-        {
-        errorStr = "Cannot create thread.";
-        printfd(__FILE__, "Cannot create recv thread\n");
-        logger("Cannot create recv thread.");
-        return -1;
-        }
-    }
+if (!m_thread.joinable())
+    m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
-if (!isRunningRunTimeouter)
-    {
-    if (pthread_create(&timeouterThread, NULL, RunTimeouter, this))
-        {
-        errorStr = "Cannot create thread.";
-        printfd(__FILE__, "Cannot create timeouter thread\n");
-        logger("Cannot create timeouter thread.");
-        return -1;
-        }
-    }
+if (!m_timeouterThread.joinable())
+    m_timeouterThread = std::jthread([this](auto token){ RunTimeouter(std::move(token)); });
+
 errorStr = "";
 return 0;
 }
@@ -386,7 +363,8 @@ int AUTH_IA::Stop()
 if (!IsRunning())
     return 0;
 
-nonstop = false;
+m_thread.request_stop();
+m_timeouterThread.request_stop();
 
 std::for_each(
         ip2user.begin(),
@@ -418,6 +396,16 @@ if (isRunningRunTimeouter)
 
 users->DelNotifierUserDel(&onDelUserNotifier);
 
+if (isRunningRun)
+    m_thread.detach();
+else
+    m_thread.join();
+
+if (isRunningRunTimeouter)
+    m_timeouterThread.detach();
+else
+    m_timeouterThread.join();
+
 if (isRunningRun || isRunningRunTimeouter)
     return -1;
 
@@ -425,61 +413,55 @@ printfd(__FILE__, "AUTH_IA::Stoped successfully.\n");
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * AUTH_IA::Run(void * d)
+void AUTH_IA::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-AUTH_IA * ia = static_cast<AUTH_IA *>(d);
-
-ia->isRunningRun = true;
+isRunningRun = true;
 
 char buffer[512];
 
 time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
 
-while (ia->nonstop)
+while (!token.stop_requested())
     {
-    ia->RecvData(buffer, sizeof(buffer));
-    if ((touchTime + MONITOR_TIME_DELAY_SEC <= stgTime) && ia->stgSettings->GetMonitoring())
+    RecvData(buffer, sizeof(buffer));
+    if ((touchTime + MONITOR_TIME_DELAY_SEC <= stgTime) && stgSettings->GetMonitoring())
         {
         touchTime = stgTime;
-        std::string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_r";
+        std::string monFile = stgSettings->GetMonitorDir() + "/inetaccess_r";
         TouchFile(monFile);
         }
     }
 
-ia->isRunningRun = false;
-return NULL;
+isRunningRun = false;
 }
 //-----------------------------------------------------------------------------
-void * AUTH_IA::RunTimeouter(void * d)
+void AUTH_IA::RunTimeouter(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-AUTH_IA * ia = static_cast<AUTH_IA *>(d);
-
-ia->isRunningRunTimeouter = true;
+isRunningRunTimeouter = true;
 
 int a = -1;
-std::string monFile = ia->stgSettings->GetMonitorDir() + "/inetaccess_t";
-while (ia->nonstop)
+std::string monFile = stgSettings->GetMonitorDir() + "/inetaccess_t";
+while (!token.stop_requested())
     {
     struct timespec ts = {0, 20000000};
     nanosleep(&ts, NULL);
-    ia->Timeouter();
+    Timeouter();
     // TODO change counter to timer and MONITOR_TIME_DELAY_SEC
-    if (++a % (50 * 60) == 0 && ia->stgSettings->GetMonitoring())
+    if (++a % (50 * 60) == 0 && stgSettings->GetMonitoring())
         {
         TouchFile(monFile);
         }
     }
 
-ia->isRunningRunTimeouter = false;
-return NULL;
+isRunningRunTimeouter = false;
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::ParseSettings()
@@ -520,10 +502,10 @@ if (listenSocket < 0)
     }
 
 listenAddr.sin_family = AF_INET;
-listenAddr.sin_port = htons(static_cast<uint16_t>(iaSettings.GetUserPort()));
+listenAddr.sin_port = htons(iaSettings.GetUserPort());
 listenAddr.sin_addr.s_addr = inet_addr("0.0.0.0");
 
-if (bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr)) < 0)
+if (bind(listenSocket, reinterpret_cast<sockaddr*>(&listenAddr), sizeof(listenAddr)) < 0)
     {
     errorStr = "AUTH_IA: Bind failed.";
     logger("Cannot bind the socket: %s", strerror(errno));
@@ -548,7 +530,7 @@ if (!WaitPackets(listenSocket)) // Timeout
 
 struct sockaddr_in outerAddr;
 socklen_t outerAddrLen(sizeof(outerAddr));
-ssize_t dataLen = recvfrom(listenSocket, buffer, bufferSize, 0, (struct sockaddr *)&outerAddr, &outerAddrLen);
+ssize_t dataLen = recvfrom(listenSocket, buffer, bufferSize, 0, reinterpret_cast<sockaddr *>(&outerAddr), &outerAddrLen);
 
 if (!dataLen) // EOF
     {
@@ -656,7 +638,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int AUTH_IA::Timeouter()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 std::map<uint32_t, IA_USER>::iterator it;
 it = ip2user.begin();
@@ -743,7 +725,7 @@ int AUTH_IA::PacketProcessor(void * buff, size_t dataLen, uint32_t sip, uint16_t
 std::string login(user->GetLogin());
 const size_t offset = LOGIN_LEN + 2 + 6; // LOGIN_LEN + sizeOfMagic + sizeOfVer;
 
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 std::map<uint32_t, IA_USER>::iterator it(ip2user.find(sip));
 
 if (it == ip2user.end())
@@ -931,7 +913,7 @@ if (!ip)
 
 std::map<uint32_t, IA_USER>::iterator it;
 
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {
@@ -964,14 +946,14 @@ switch (protoVer)
         sendAddr.sin_addr.s_addr = ip;
 
         err.len = 1;
-        strncpy((char*)err.type, "ERR", 16);
-        strncpy((char*)err.text, text.c_str(), MAX_MSG_LEN);
+        memcpy(err.type, "ERR", 3);
+        memcpy(err.text, text.c_str(), std::min<size_t>(text.length(), MAX_MSG_LEN));
 
         #ifdef ARCH_BE
         SwapBytes(err.len);
         #endif
 
-        res = sendto(listenSocket, &err, sizeof(err), 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
+        res = sendto(listenSocket, &err, sizeof(err), 0, reinterpret_cast<sockaddr*>(&sendAddr), sizeof(sendAddr));
         printfd(__FILE__, "SendError %d bytes sent\n", res);
         break;
 
@@ -984,14 +966,14 @@ switch (protoVer)
         sendAddr.sin_addr.s_addr = ip;
 
         err8.len = 256;
-        strncpy((char*)err8.type, "ERR", 16);
-        strncpy((char*)err8.text, text.c_str(), MAX_MSG_LEN);
+        memcpy(err8.type, "ERR", 3);
+        memcpy(err8.text, text.c_str(), std::min<size_t>(text.length(), MAX_MSG_LEN));
 
         #ifdef ARCH_BE
         SwapBytes(err8.len);
         #endif
 
-        res = sendto(listenSocket, &err8, sizeof(err8), 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr));
+        res = sendto(listenSocket, &err8, sizeof(err8), 0, reinterpret_cast<sockaddr*>(&sendAddr), sizeof(sendAddr));
         printfd(__FILE__, "SendError_8 %d bytes sent\n", res);
         break;
     }
@@ -999,7 +981,7 @@ switch (protoVer)
 return 0;
 }
 //-----------------------------------------------------------------------------
-int AUTH_IA::Send(uint32_t ip, uint16_t port, const char * buffer, size_t len)
+int AUTH_IA::Send(uint32_t ip, uint16_t port, const void* buffer, size_t len)
 {
 struct sockaddr_in sendAddr;
 
@@ -1007,7 +989,7 @@ sendAddr.sin_family = AF_INET;
 sendAddr.sin_port = htons(port);
 sendAddr.sin_addr.s_addr = ip;
 
-if (sendto(listenSocket, buffer, len, 0, (struct sockaddr*)&sendAddr, sizeof(sendAddr)) == static_cast<ssize_t>(len))
+if (sendto(listenSocket, buffer, len, 0, reinterpret_cast<sockaddr*>(&sendAddr), sizeof(sendAddr)) == static_cast<ssize_t>(len))
     return 0;
 
 return -1;
@@ -1019,7 +1001,7 @@ printfd(__FILE__, "SendMessage userIP=%s\n", inet_ntostring(ip).c_str());
 
 std::map<uint32_t, IA_USER>::iterator it;
 
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 it = ip2user.find(ip);
 if (it == ip2user.end())
     {
@@ -1038,9 +1020,9 @@ INFO_6 info;
 memset(&info, 0, sizeof(INFO_6));
 
 info.len = 256;
-strncpy((char*)info.type, "INFO", 16);
+memcpy(info.type, "INFO", 4);
 info.infoType = 'I';
-strncpy((char*)info.text, msg.text.c_str(), 235);
+memcpy(info.text, msg.text.c_str(), std::min<size_t>(msg.text.length(), 235));
 info.text[234] = 0;
 
 size_t len = info.len;
@@ -1062,7 +1044,7 @@ INFO_7 info;
 memset(&info, 0, sizeof(INFO_7));
 
 info.len = 264;
-strncpy((char*)info.type, "INFO_7", 16);
+memcpy(info.type, "INFO_7", 6);
 info.infoType = static_cast<int8_t>(msg.header.type);
 info.showTime = static_cast<int8_t>(msg.header.showTime);
 info.sendTime = msg.header.creationTime;
@@ -1073,7 +1055,7 @@ SwapBytes(info.len);
 SwapBytes(info.sendTime);
 #endif
 
-strncpy((char*)info.text, msg.text.c_str(), MAX_MSG_LEN - 1);
+memcpy(info.text, msg.text.c_str(), std::min<size_t>(msg.text.length(), MAX_MSG_LEN - 1));
 info.text[MAX_MSG_LEN - 1] = 0;
 
 char buffer[300];
@@ -1091,12 +1073,12 @@ INFO_8 info;
 memset(&info, 0, sizeof(INFO_8));
 
 info.len = 1056;
-strncpy((char*)info.type, "INFO_8", 16);
+memcpy(info.type, "INFO_8", 6);
 info.infoType = static_cast<int8_t>(msg.header.type);
 info.showTime = static_cast<int8_t>(msg.header.showTime);
 info.sendTime = msg.header.creationTime;
 
-strncpy((char*)info.text, msg.text.c_str(), IA_MAX_MSG_LEN_8 - 1);
+memcpy(info.text, msg.text.c_str(), std::min<size_t>(msg.text.length(), IA_MAX_MSG_LEN_8 - 1));
 info.text[IA_MAX_MSG_LEN_8 - 1] = 0;
 
 size_t len = info.len;
@@ -1363,12 +1345,12 @@ int AUTH_IA::Send_CONN_SYN_ACK_6(IA_USER * iaUser, uint32_t sip)
 //+++ Fill static data in connSynAck +++
 // TODO Move this code. It must be executed only once
 connSynAck6.len = Min8(sizeof(CONN_SYN_ACK_6));
-strcpy((char*)connSynAck6.type, "CONN_SYN_ACK");
+memcpy(connSynAck6.type, "CONN_SYN_ACK", 12);
 for (int j = 0; j < DIR_NUM; j++)
     {
-    strncpy((char*)connSynAck6.dirName[j],
-            stgSettings->GetDirName(j).c_str(),
-            sizeof(string16));
+    memcpy(connSynAck6.dirName[j],
+           stgSettings->GetDirName(j).c_str(),
+           std::min(stgSettings->GetDirName(j).length(), sizeof(string16)));
 
     connSynAck6.dirName[j][sizeof(string16) - 1] = 0;
     }
@@ -1389,8 +1371,8 @@ SwapBytes(connSynAck6.userTimeOut);
 SwapBytes(connSynAck6.aliveDelay);
 #endif
 
-EncryptString((char*)&connSynAck6, (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)), &iaUser->ctx);
-return Send(sip, iaSettings.GetUserPort(), (char*)&connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)));;
+EncryptString(&connSynAck6, &connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)), &iaUser->ctx);
+return Send(sip, iaSettings.GetUserPort(), &connSynAck6, Min8(sizeof(CONN_SYN_ACK_6)));;
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_CONN_SYN_ACK_7(IA_USER * iaUser, uint32_t sip)
@@ -1400,19 +1382,19 @@ return Send_CONN_SYN_ACK_6(iaUser, sip);
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_CONN_SYN_ACK_8(IA_USER * iaUser, uint32_t sip)
 {
-strcpy((char*)connSynAck8.hdr.magic, IA_ID);
+memcpy(connSynAck8.hdr.magic, IA_ID, strlen(IA_ID));
 connSynAck8.hdr.protoVer[0] = 0;
 connSynAck8.hdr.protoVer[1] = 8;
 
 //+++ Fill static data in connSynAck +++
 // TODO Move this code. It must be executed only once
 connSynAck8.len = Min8(sizeof(CONN_SYN_ACK_8));
-strcpy((char*)connSynAck8.type, "CONN_SYN_ACK");
+memcpy(connSynAck8.type, "CONN_SYN_ACK", 12);
 for (int j = 0; j < DIR_NUM; j++)
     {
-    strncpy((char*)connSynAck8.dirName[j],
-            stgSettings->GetDirName(j).c_str(),
-            sizeof(string16));
+    memcpy(connSynAck8.dirName[j],
+           stgSettings->GetDirName(j).c_str(),
+           std::min(stgSettings->GetDirName(j).length(), sizeof(string16)));
 
     connSynAck8.dirName[j][sizeof(string16) - 1] = 0;
     }
@@ -1433,8 +1415,8 @@ SwapBytes(connSynAck8.userTimeOut);
 SwapBytes(connSynAck8.aliveDelay);
 #endif
 
-EncryptString((char*)&connSynAck8, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)), &iaUser->ctx);
-return Send(sip, iaUser->port, (char*)&connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)));
+EncryptString(&connSynAck8, &connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)), &iaUser->ctx);
+return Send(sip, iaUser->port, &connSynAck8, Min8(sizeof(CONN_SYN_ACK_8)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_ALIVE_SYN_6(IA_USER * iaUser, uint32_t sip)
@@ -1442,7 +1424,7 @@ int AUTH_IA::Send_ALIVE_SYN_6(IA_USER * iaUser, uint32_t sip)
 aliveSyn6.len = Min8(sizeof(ALIVE_SYN_6));
 aliveSyn6.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
-strcpy((char*)aliveSyn6.type, "ALIVE_SYN");
+memcpy(aliveSyn6.type, "ALIVE_SYN", 9);
 
 for (int i = 0; i < DIR_NUM; i++)
     {
@@ -1466,13 +1448,13 @@ if (dn < DIR_NUM)
     p *= 1024 * 1024;
     if (std::fabs(p) < 1.0e-3)
         {
-        snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "---");
+        memcpy(aliveSyn6.freeMb, "---", 3);
         }
     else
         {
         double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
-        snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
+        snprintf(reinterpret_cast<char*>(aliveSyn6.freeMb), IA_FREEMB_LEN, "%.3f", fmb / p);
         }
     }
 else
@@ -1485,7 +1467,7 @@ else
         {
         double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
-        snprintf((char*)aliveSyn6.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
+        snprintf(reinterpret_cast<char*>(aliveSyn6.freeMb), IA_FREEMB_LEN, "C%.3f", fmb);
         }
     }
 
@@ -1497,9 +1479,9 @@ if (iaUser->aliveSent)
 iaUser->aliveSent = true;
 #endif
 
-aliveSyn6.cash =(int64_t) (iaUser->user->GetProperties().cash.Get() * 1000.0);
+aliveSyn6.cash = static_cast<int64_t>(iaUser->user->GetProperties().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
-    aliveSyn6.cash -= (int64_t)(tf->GetFee() * 1000.0);
+    aliveSyn6.cash -= static_cast<int64_t>((tf->GetFee() * 1000.0));
 
 #ifdef ARCH_BE
 SwapBytes(aliveSyn6.len);
@@ -1514,8 +1496,8 @@ for (int i = 0; i < DIR_NUM; ++i)
     }
 #endif
 
-EncryptString((char*)&aliveSyn6, (char*)&aliveSyn6, Min8(sizeof(aliveSyn6)), &iaUser->ctx);
-return Send(sip, iaSettings.GetUserPort(), (char*)&aliveSyn6, Min8(sizeof(aliveSyn6)));
+EncryptString(&aliveSyn6, &aliveSyn6, Min8(sizeof(aliveSyn6)), &iaUser->ctx);
+return Send(sip, iaSettings.GetUserPort(), &aliveSyn6, Min8(sizeof(aliveSyn6)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_ALIVE_SYN_7(IA_USER * iaUser, uint32_t sip)
@@ -1525,14 +1507,14 @@ return Send_ALIVE_SYN_6(iaUser, sip);
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_ALIVE_SYN_8(IA_USER * iaUser, uint32_t sip)
 {
-strcpy((char*)aliveSyn8.hdr.magic, IA_ID);
+memcpy(aliveSyn8.hdr.magic, IA_ID, strlen(IA_ID));
 aliveSyn8.hdr.protoVer[0] = 0;
 aliveSyn8.hdr.protoVer[1] = 8;
 
 aliveSyn8.len = Min8(sizeof(ALIVE_SYN_8));
 aliveSyn8.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
-strcpy((char*)aliveSyn8.type, "ALIVE_SYN");
+memcpy(aliveSyn8.type, "ALIVE_SYN", 9);
 
 for (int i = 0; i < DIR_NUM; i++)
     {
@@ -1556,13 +1538,13 @@ if (dn < DIR_NUM)
     p *= 1024 * 1024;
     if (std::fabs(p) < 1.0e-3)
         {
-        snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "---");
+        memcpy(aliveSyn8.freeMb, "---", 3);
         }
     else
         {
         double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
-        snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "%.3f", fmb / p);
+        snprintf(reinterpret_cast<char*>(aliveSyn8.freeMb), IA_FREEMB_LEN, "%.3f", fmb / p);
         }
     }
 else
@@ -1575,7 +1557,7 @@ else
         {
         double fmb = iaUser->user->GetProperties().freeMb;
         fmb = fmb < 0 ? 0 : fmb;
-        snprintf((char*)aliveSyn8.freeMb, IA_FREEMB_LEN, "C%.3f", fmb);
+        snprintf(reinterpret_cast<char*>(aliveSyn8.freeMb), IA_FREEMB_LEN, "C%.3f", fmb);
         }
     }
 
@@ -1589,9 +1571,9 @@ iaUser->aliveSent = true;
 
 const auto tf = iaUser->user->GetTariff();
 
-aliveSyn8.cash =(int64_t) (iaUser->user->GetProperties().cash.Get() * 1000.0);
+aliveSyn8.cash = static_cast<int64_t>(iaUser->user->GetProperties().cash.Get() * 1000.0);
 if (!stgSettings->GetShowFeeInCash())
-    aliveSyn8.cash -= (int64_t)(tf->GetFee() * 1000.0);
+    aliveSyn8.cash -= static_cast<int64_t>(tf->GetFee() * 1000.0);
 
 #ifdef ARCH_BE
 SwapBytes(aliveSyn8.len);
@@ -1607,14 +1589,14 @@ for (int i = 0; i < DIR_NUM; ++i)
     }
 #endif
 
-EncryptString((char*)&aliveSyn8, (char*)&aliveSyn8, Min8(sizeof(aliveSyn8)), &iaUser->ctx);
-return Send(sip, iaUser->port, (char*)&aliveSyn8, Min8(sizeof(aliveSyn8)));
+EncryptString(&aliveSyn8, &aliveSyn8, Min8(sizeof(aliveSyn8)), &iaUser->ctx);
+return Send(sip, iaUser->port, &aliveSyn8, Min8(sizeof(aliveSyn8)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_DISCONN_SYN_ACK_6(IA_USER * iaUser, uint32_t sip)
 {
 disconnSynAck6.len = Min8(sizeof(DISCONN_SYN_ACK_6));
-strcpy((char*)disconnSynAck6.type, "DISCONN_SYN_ACK");
+memcpy(disconnSynAck6.type, "DISCONN_SYN_ACK", 15);
 disconnSynAck6.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 #ifdef ARCH_BE
@@ -1622,8 +1604,8 @@ SwapBytes(disconnSynAck6.len);
 SwapBytes(disconnSynAck6.rnd);
 #endif
 
-EncryptString((char*)&disconnSynAck6, (char*)&disconnSynAck6, Min8(sizeof(disconnSynAck6)), &iaUser->ctx);
-return Send(sip, iaSettings.GetUserPort(), (char*)&disconnSynAck6, Min8(sizeof(disconnSynAck6)));
+EncryptString(&disconnSynAck6, &disconnSynAck6, Min8(sizeof(disconnSynAck6)), &iaUser->ctx);
+return Send(sip, iaSettings.GetUserPort(), &disconnSynAck6, Min8(sizeof(disconnSynAck6)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_DISCONN_SYN_ACK_7(IA_USER * iaUser, uint32_t sip)
@@ -1633,12 +1615,12 @@ return Send_DISCONN_SYN_ACK_6(iaUser, sip);
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_DISCONN_SYN_ACK_8(IA_USER * iaUser, uint32_t sip)
 {
-strcpy((char*)disconnSynAck8.hdr.magic, IA_ID);
+memcpy(disconnSynAck8.hdr.magic, IA_ID, strlen(IA_ID));
 disconnSynAck8.hdr.protoVer[0] = 0;
 disconnSynAck8.hdr.protoVer[1] = 8;
 
 disconnSynAck8.len = Min8(sizeof(DISCONN_SYN_ACK_8));
-strcpy((char*)disconnSynAck8.type, "DISCONN_SYN_ACK");
+memcpy(disconnSynAck8.type, "DISCONN_SYN_ACK", 15);
 disconnSynAck8.rnd = iaUser->rnd = static_cast<uint32_t>(random());
 
 #ifdef ARCH_BE
@@ -1646,25 +1628,25 @@ SwapBytes(disconnSynAck8.len);
 SwapBytes(disconnSynAck8.rnd);
 #endif
 
-EncryptString((char*)&disconnSynAck8, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8)), &iaUser->ctx);
-return Send(sip, iaUser->port, (char*)&disconnSynAck8, Min8(sizeof(disconnSynAck8)));
+EncryptString(&disconnSynAck8, &disconnSynAck8, Min8(sizeof(disconnSynAck8)), &iaUser->ctx);
+return Send(sip, iaUser->port, &disconnSynAck8, Min8(sizeof(disconnSynAck8)));
 }
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_FIN_6(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
 fin6.len = Min8(sizeof(FIN_6));
-strcpy((char*)fin6.type, "FIN");
-strcpy((char*)fin6.ok, "OK");
+memcpy(fin6.type, "FIN", 3);
+memcpy(fin6.ok, "OK", 2);
 
 #ifdef ARCH_BE
 SwapBytes(fin6.len);
 #endif
 
-EncryptString((char*)&fin6, (char*)&fin6, Min8(sizeof(fin6)), &iaUser->ctx);
+EncryptString(&fin6, &fin6, Min8(sizeof(fin6)), &iaUser->ctx);
 
 users->Unauthorize(iaUser->login, this);
 
-int res = Send(sip, iaSettings.GetUserPort(), (char*)&fin6, Min8(sizeof(fin6)));
+int res = Send(sip, iaSettings.GetUserPort(), &fin6, Min8(sizeof(fin6)));
 
 ip2user.erase(it);
 
@@ -1678,23 +1660,23 @@ return Send_FIN_6(iaUser, sip, it);
 //-----------------------------------------------------------------------------
 int AUTH_IA::Send_FIN_8(IA_USER * iaUser, uint32_t sip, std::map<uint32_t, IA_USER>::iterator it)
 {
-strcpy((char*)fin8.hdr.magic, IA_ID);
+memcpy(fin8.hdr.magic, IA_ID, strlen(IA_ID));
 fin8.hdr.protoVer[0] = 0;
 fin8.hdr.protoVer[1] = 8;
 
 fin8.len = Min8(sizeof(FIN_8));
-strcpy((char*)fin8.type, "FIN");
-strcpy((char*)fin8.ok, "OK");
+memcpy(fin8.type, "FIN", 3);
+memcpy(fin8.ok, "OK", 2);
 
 #ifdef ARCH_BE
 SwapBytes(fin8.len);
 #endif
 
-EncryptString((char*)&fin8, (char*)&fin8, Min8(sizeof(fin8)), &iaUser->ctx);
+EncryptString(&fin8, &fin8, Min8(sizeof(fin8)), &iaUser->ctx);
 
 users->Unauthorize(iaUser->login, this);
 
-int res = Send(sip, iaUser->port, (char*)&fin8, Min8(sizeof(fin8)));
+int res = Send(sip, iaUser->port, &fin8, Min8(sizeof(fin8)));
 
 ip2user.erase(it);
 
