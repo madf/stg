@@ -384,10 +384,11 @@ Xl = Xl ^ ctx->P[0];
 *xr = Xr;
 }
 //-----------------------------------------------------------------------------
-void Blowfish_Init(BLOWFISH_CTX *ctx, unsigned char *key, int keyLen)
+void Blowfish_Init(BLOWFISH_CTX *ctx, void* key, int keyLen)
 {
 int i, j, k;
 uint32_t data, datal, datar;
+unsigned char* keyPtr = key;
 
 memset(ctx->S, 0, sizeof(ctx->S));
 
@@ -406,7 +407,7 @@ for (i = 0; i < N + 2; ++i)
 
     for (k = 0; k < 4; ++k)
         {
-        data = (data << 8) | key[j];
+        data = (data << 8) | keyPtr[j];
         j = j + 1;
         if (j >= keyLen)
             j = 0;
