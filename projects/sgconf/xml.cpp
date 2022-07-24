@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -87,13 +88,7 @@ bool RawXMLFunction(const SGCONF::CONFIG & config,
                     const std::string & arg,
                     const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
+return makeProto(config).RawXML(arg, RawXMLCallback, NULL) == STG::st_ok;
 }
 
 }

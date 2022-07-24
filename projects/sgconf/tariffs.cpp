@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 #include "utils.h"
 
@@ -15,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <optional>
 #include <cstdint>
 #include <cassert>
 
@@ -68,7 +70,7 @@ switch (traffType)
 return "unknown";
 }
 
-void ConvPeriod(const std::string & value, STG::Optional<STG::Tariff::Period> & res)
+void ConvPeriod(const std::string & value, std::optional<STG::Tariff::Period> & res)
 {
 std::string lowered = ToLower(value);
 if (lowered == "daily")
@@ -79,7 +81,7 @@ else
     throw SGCONF::ACTION::ERROR("Period should be 'daily' or 'monthly'. Got: '" + value + "'");
 }
 
-void ConvChangePolicy(const std::string & value, STG::Optional<STG::Tariff::ChangePolicy> & res)
+void ConvChangePolicy(const std::string & value, std::optional<STG::Tariff::ChangePolicy> & res)
 {
 std::string lowered = ToLower(value);
 if (lowered == "allow")
@@ -94,7 +96,7 @@ else
     throw SGCONF::ACTION::ERROR("Change policy should be 'allow', 'to_cheap', 'to_expensive' or 'deny'. Got: '" + value + "'");
 }
 
-void ConvChangePolicyTimeout(const std::string & value, STG::Optional<time_t> & res)
+void ConvChangePolicyTimeout(const std::string & value, std::optional<time_t> & res)
 {
 struct tm brokenTime;
 if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
@@ -102,7 +104,7 @@ if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
 res = stg_timegm(&brokenTime);
 }
 
-void ConvTraffType(const std::string & value, STG::Optional<STG::Tariff::TraffType> & res)
+void ConvTraffType(const std::string & value, std::optional<STG::Tariff::TraffType> & res)
 {
 std::string lowered = ToLower(value);
 lowered.erase(std::remove(lowered.begin(), lowered.end(), ' '), lowered.end());
@@ -131,16 +133,16 @@ if (toColon == std::string::npos)
     throw SGCONF::ACTION::ERROR("Time span should be in format 'hh:mm-hh:mm'. Got: '" + value + "'");
 STG::DirPriceDataOpt res;
 res.hDay = FromString<int>(value.substr(0, fromColon));
-if (res.hDay.data() < 0 || res.hDay.data() > 23)
+if (res.hDay.value() < 0 || res.hDay.value() > 23)
     throw SGCONF::ACTION::ERROR("Invalid 'from' hours. Got: '" + value.substr(0, fromColon) + "'");
 res.mDay = FromString<int>(value.substr(fromColon + 1, dashPos - fromColon - 1));
-if (res.mDay.data() < 0 || res.mDay.data() > 59)
+if (res.mDay.value() < 0 || res.mDay.value() > 59)
     throw SGCONF::ACTION::ERROR("Invalid 'from' minutes. Got: '" + value.substr(fromColon + 1, dashPos - fromColon - 1) + "'");
 res.hNight = FromString<int>(value.substr(dashPos + 1, toColon - dashPos - 1));
-if (res.hNight.data() < 0 || res.hNight.data() > 23)
+if (res.hNight.value() < 0 || res.hNight.value() > 23)
     throw SGCONF::ACTION::ERROR("Invalid 'to' hours. Got: '" + value.substr(dashPos + 1, toColon - dashPos - 1) + "'");
 res.mNight = FromString<int>(value.substr(toColon + 1, value.length() - toColon));
-if (res.mNight.data() < 0 || res.mNight.data() > 59)
+if (res.mNight.value() < 0 || res.mNight.value() > 59)
     throw SGCONF::ACTION::ERROR("Invalid 'to' minutes. Got: '" + value.substr(toColon + 1, value.length() - toColon) + "'");
 return res;
 }
@@ -157,9 +159,9 @@ value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 splice(res, Split<std::vector<STG::DirPriceDataOpt> >(value, ',', ConvTimeSpan));
 }
 
-struct ConvPrice : public std::unary_function<std::string, STG::DirPriceDataOpt>
+struct ConvPrice
 {
-    typedef STG::Optional<double> (STG::DirPriceDataOpt::* MemPtr);
+    using MemPtr = std::optional<double> (STG::DirPriceDataOpt::*);
     ConvPrice(MemPtr before, MemPtr after)
         : m_before(before), m_after(after)
     {}
@@ -167,27 +169,27 @@ struct ConvPrice : public std::unary_function<std::string, STG::DirPriceDataOpt>
     STG::DirPriceDataOpt operator()(const std::string & value)
     {
         STG::DirPriceDataOpt res;
-    size_t slashPos = value.find_first_of('/');
-    if (slashPos == std::string::npos)
+        size_t slashPos = value.find_first_of('/');
+        if (slashPos == std::string::npos)
         {
-        double price = 0;
-        if (str2x(value, price) < 0)
-            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value + "'");
-        (res.*m_before) = (res.*m_after) = price;
-        res.noDiscount = true;
+            double price = 0;
+            if (str2x(value, price) < 0)
+                throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value + "'");
+            (res.*m_before) = (res.*m_after) = price;
+            res.noDiscount = true;
         }
-    else
+        else
         {
-        double price = 0;
-        if (str2x(value.substr(0, slashPos), price) < 0)
-            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(0, slashPos) + "'");
-        (res.*m_before) = price;
-        if (str2x(value.substr(slashPos + 1, value.length() - slashPos), price) < 0)
-            throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(slashPos + 1, value.length() - slashPos) + "'");
-        (res.*m_after) = price;
-        res.noDiscount = false;
+            double price = 0;
+            if (str2x(value.substr(0, slashPos), price) < 0)
+                throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(0, slashPos) + "'");
+            (res.*m_before) = price;
+            if (str2x(value.substr(slashPos + 1, value.length() - slashPos), price) < 0)
+                throw SGCONF::ACTION::ERROR("Price should be a floating point number. Got: '" + value.substr(slashPos + 1, value.length() - slashPos) + "'");
+            (res.*m_after) = price;
+            res.noDiscount = false;
         }
-    return res;
+        return res;
     }
 
     MemPtr m_before;
@@ -327,42 +329,24 @@ bool GetTariffsFunction(const SGCONF::CONFIG & config,
                         const std::string & /*arg*/,
                         const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetTariffs(GetTariffsCallback, NULL) == STG::st_ok;
+return makeProto(config).GetTariffs(GetTariffsCallback, NULL) == STG::st_ok;
 }
 
 bool GetTariffFunction(const SGCONF::CONFIG & config,
                        const std::string & arg,
                        const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
 // STG currently doesn't support <GetTariff name="..."/>.
 // So get a list of tariffs and filter it. 'data' param holds a pointer to 'name'.
 std::string name(arg);
-return proto.GetTariffs(GetTariffCallback, &name) == STG::st_ok;
+return makeProto(config).GetTariffs(GetTariffCallback, &name) == STG::st_ok;
 }
 
 bool DelTariffFunction(const SGCONF::CONFIG & config,
                        const std::string & arg,
                        const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.DelTariff(arg, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).DelTariff(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool AddTariffFunction(const SGCONF::CONFIG & config,
@@ -384,20 +368,14 @@ SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
 SGCONF::MaybeSet(options, "thresholds", conf.dirPrice, ConvThresholds);
 for (size_t i = 0; i < conf.dirPrice.size(); ++i)
     {
-    if (!conf.dirPrice[i].priceDayA.empty() &&
-        !conf.dirPrice[i].priceNightA.empty() &&
-        !conf.dirPrice[i].priceDayB.empty() &&
-        !conf.dirPrice[i].priceNightB.empty())
-        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.data() == conf.dirPrice[i].priceNightA.data() &&
-                                       conf.dirPrice[i].priceDayB.data() == conf.dirPrice[i].priceNightB.data();
+    if (conf.dirPrice[i].priceDayA ||
+        conf.dirPrice[i].priceNightA ||
+        conf.dirPrice[i].priceDayB ||
+        conf.dirPrice[i].priceNightB)
+        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.value() == conf.dirPrice[i].priceNightA.value() &&
+                                       conf.dirPrice[i].priceDayB.value() == conf.dirPrice[i].priceNightB.value();
     }
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.AddTariff(arg, conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).AddTariff(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgTariffFunction(const SGCONF::CONFIG & config,
@@ -419,20 +397,14 @@ SGCONF::MaybeSet(options, "night-prices", conf.dirPrice, ConvNightPrices);
 SGCONF::MaybeSet(options, "thresholds", conf.dirPrice, ConvThresholds);
 for (size_t i = 0; i < conf.dirPrice.size(); ++i)
     {
-    if (!conf.dirPrice[i].priceDayA.empty() &&
-        !conf.dirPrice[i].priceNightA.empty() &&
-        !conf.dirPrice[i].priceDayB.empty() &&
-        !conf.dirPrice[i].priceNightB.empty())
-        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.data() == conf.dirPrice[i].priceNightA.data() &&
-                                       conf.dirPrice[i].priceDayB.data() == conf.dirPrice[i].priceNightB.data();
+    if (conf.dirPrice[i].priceDayA ||
+        conf.dirPrice[i].priceNightA ||
+        conf.dirPrice[i].priceDayB ||
+        conf.dirPrice[i].priceNightB)
+        conf.dirPrice[i].singlePrice = conf.dirPrice[i].priceDayA.value() == conf.dirPrice[i].priceNightA.value() &&
+                                       conf.dirPrice[i].priceDayB.value() == conf.dirPrice[i].priceNightB.value();
     }
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.ChgTariff(conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).ChgTariff(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

@@ -108,7 +108,7 @@ bool ServConf::Impl::ParserRecv(const std::string& chunk, bool last, void* data)
         strprintf(&sc->errorMsg, "XML parse error at line %d, %d: %s. Is last: %d",
                   static_cast<int>(XML_GetCurrentLineNumber(sc->parser)),
                   static_cast<int>(XML_GetCurrentColumnNumber(sc->parser)),
-                  XML_ErrorString(XML_GetErrorCode(sc->parser)), (int)last);
+                  XML_ErrorString(XML_GetErrorCode(sc->parser)), static_cast<int>(last));
         return false;
     }
 
@@ -195,7 +195,7 @@ int ServConf::GetTariff(const std::string& name, GetTariff::Callback f, void* da
 
 int ServConf::ChgTariff(const TariffDataOpt& tariffData, Simple::Callback f, void* data)
 {
-    return pImpl->Exec<Simple::Parser>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.data() + "\">" + ChgTariff::serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
+    return pImpl->Exec<Simple::Parser>("SetTariff", "<SetTariff name=\"" + tariffData.tariffConf.name.value() + "\">" + ChgTariff::serialize(tariffData, pImpl->Encoding()) + "</SetTariff>", f, data);
 }
 
 int ServConf::AddTariff(const std::string& name,
@@ -310,7 +310,7 @@ int ServConf::GetCorp(const std::string& name, GetCorp::Callback f, void* data)
 
 int ServConf::ChgCorp(const CorpConfOpt & conf, Simple::Callback f, void* data)
 {
-    return pImpl->Exec<Simple::Parser>("SetCorp", "<SetCorp name=\"" + conf.name.data() + "\">" + ChgCorp::serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
+    return pImpl->Exec<Simple::Parser>("SetCorp", "<SetCorp name=\"" + conf.name.value() + "\">" + ChgCorp::serialize(conf, pImpl->Encoding()) + "</SetCorp>", f, data);
 }
 
 int ServConf::AddCorp(const std::string& name,

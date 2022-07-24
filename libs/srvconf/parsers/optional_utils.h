@@ -20,11 +20,11 @@
 
 #pragma once
 
-#include "stg/optional.h"
 #include "stg/common.h"
 
 #include <string>
 #include <ostream>
+#include <optional>
 
 namespace STG
 {
@@ -87,51 +87,51 @@ void appendAttr<int8_t>(std::ostream& stream, const std::string& name, const int
 
 template <typename T>
 inline
-void appendResetableTag(std::ostream& stream, const std::string& name, const T& value)
+void appendResetableTag(std::ostream& stream, const std::string& name, const std::optional<T>& value)
 {
-    if (!value.empty())
-        appendTag(stream, name, value.const_data());
+    if (value)
+        appendTag(stream, name, value.value());
 }
 
 template <typename T>
 inline
-void appendResetableTag(std::ostream& stream, const std::string& name, size_t suffix, const T& value)
+void appendResetableTag(std::ostream& stream, const std::string& name, size_t suffix, const std::optional<T>& value)
 {
-    if (!value.empty())
-        appendTag(stream, name, suffix, value.const_data());
+    if (value)
+        appendTag(stream, name, suffix, value.value());
 }
 
 template <typename T>
 inline
-void appendResetableAttr(std::ostream& stream, const std::string& name, const T& value)
+void appendResetableAttr(std::ostream& stream, const std::string& name, const std::optional<T>& value)
 {
-    if (!value.empty())
-        appendAttr(stream, name, value.const_data());
+    if (value)
+        appendAttr(stream, name, value.value());
 }
 
 template <typename T>
 inline
-void appendResetableAttr(std::ostream& stream, const std::string& name, size_t suffix, const T& value)
+void appendResetableAttr(std::ostream& stream, const std::string& name, size_t suffix, const std::optional<T>& value)
 {
-    if (!value.empty())
-        appendAttr(stream, name, suffix, value.const_data());
+    if (value)
+        appendAttr(stream, name, suffix, value.value());
 }
 
 inline
-Optional<std::string> maybeEncode(const Optional<std::string>& value)
+std::optional<std::string> maybeEncode(const std::optional<std::string>& value)
 {
-    Optional<std::string> res;
-    if (!value.empty())
-        res = Encode12str(value.data());
+    std::optional<std::string> res;
+    if (value)
+        res = Encode12str(value.value());
     return res;
 }
 
 inline
-Optional<std::string> maybeIconv(const Optional<std::string>& value, const std::string& fromEncoding, const std::string& toEncoding)
+std::optional<std::string> maybeIconv(const std::optional<std::string>& value, const std::string& fromEncoding, const std::string& toEncoding)
 {
-    Optional<std::string> res;
-    if (!value.empty())
-        res = IconvString(value.data(), fromEncoding, toEncoding);
+    std::optional<std::string> res;
+    if (value)
+        res = IconvString(value.value(), fromEncoding, toEncoding);
     return res;
 }
 

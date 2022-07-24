@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 
 #include "stg/servconf.h"
@@ -42,13 +43,7 @@ bool InfoFunction(const SGCONF::CONFIG & config,
                   const std::string& /*arg*/,
                   const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.ServerInfo(InfoCallback, NULL) == STG::st_ok;
+return makeProto(config).ServerInfo(InfoCallback, NULL) == STG::st_ok;
 }
 
 }

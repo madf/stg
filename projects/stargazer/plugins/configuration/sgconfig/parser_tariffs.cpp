@@ -23,8 +23,8 @@
 
 #include "stg/tariffs.h"
 #include "stg/users.h"
-#include "stg/optional.h"
 
+#include <optional>
 #include <cstdio> // snprintf
 #include <cstring>
 
@@ -57,7 +57,7 @@ std::string AOS2String(const A & array, size_t size, const F C::* field, F multi
 }
 
 template <typename T>
-bool str2res(const std::string& source, STG::Optional<T>& dest, T divisor)
+bool str2res(const std::string& source, std::optional<T>& dest, T divisor)
 {
     T value = 0;
     if (str2x(source, value))
@@ -67,7 +67,7 @@ bool str2res(const std::string& source, STG::Optional<T>& dest, T divisor)
 }
 
 template <typename A, typename C, typename F>
-bool String2AOS(const std::string & source, A & array, size_t size, STG::Optional<F> C::* field, F divisor)
+bool String2AOS(const std::string & source, A & array, size_t size, std::optional<F> C::* field, F divisor)
 {
     size_t index = 0;
     std::string::size_type from = 0;
@@ -314,7 +314,7 @@ int CHG_TARIFF::Start(void *, const char * el, const char ** attr)
 
 void CHG_TARIFF::CreateAnswer()
 {
-    if (!td.tariffConf.name.data().empty())
+    if (!td.tariffConf.name.value().empty())
     {
         auto tariffData = td.get({});
         if (m_tariffs.Chg(tariffData, &m_currAdmin) == 0)

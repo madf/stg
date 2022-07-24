@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 #include "utils.h"
 
@@ -11,11 +12,13 @@
 #include "stg/user_stat.h"
 #include "stg/user_ips.h"
 #include "stg/common.h"
+#include "stg/splice.h"
 
 #include <iostream>
 #include <algorithm>
 #include <string>
 #include <map>
+#include <optional>
 
 namespace
 {
@@ -124,34 +127,34 @@ params.push_back(SGCONF::API_ACTION::PARAM("text", "<text>", "\t\tmessage text")
 return params;
 }
 
-void ConvBool(const std::string & value, STG::Optional<int> & res)
+void ConvBool(const std::string & value, std::optional<int> & res)
 {
 res = !value.empty() && value[0] == 'y';
 }
 
-void Splice(std::vector<STG::Optional<std::string> > & lhs, const std::vector<STG::Optional<std::string> > & rhs)
+void Splice(std::vector<std::optional<std::string> > & lhs, const std::vector<std::optional<std::string> > & rhs)
 {
 for (size_t i = 0; i < lhs.size() && i < rhs.size(); ++i)
-    lhs[i].splice(rhs[i]);
+    STG::splice(lhs[i], rhs[i]);
 }
 
-STG::Optional<std::string> ConvString(const std::string & value)
+std::optional<std::string> ConvString(const std::string & value)
 {
-return STG::Optional<std::string>(value);
+return std::optional<std::string>(value);
 }
 
-void ConvStringList(std::string value, std::vector<STG::Optional<std::string> > & res)
+void ConvStringList(std::string value, std::vector<std::optional<std::string> > & res)
 {
-Splice(res, Split<std::vector<STG::Optional<std::string> > >(value, ',', ConvString));
+Splice(res, Split<std::vector<std::optional<std::string> > >(value, ',', ConvString));
 }
 
-void ConvServices(std::string value, STG::Optional<std::vector<std::string> > & res)
+void ConvServices(std::string value, std::optional<std::vector<std::string> > & res)
 {
 value.erase(std::remove(value.begin(), value.end(), ' '), value.end());
 res = Split<std::vector<std::string> >(value, ',');
 }
 
-void ConvCreditExpire(const std::string & value, STG::Optional<time_t> & res)
+void ConvCreditExpire(const std::string & value, std::optional<time_t> & res)
 {
 struct tm brokenTime;
 if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
@@ -159,7 +162,7 @@ if (stg_strptime(value.c_str(), "%Y-%m-%d %H:%M:%S", &brokenTime) == NULL)
 res = stg_timegm(&brokenTime);
 }
 
-void ConvIPs(const std::string & value, STG::Optional<STG::UserIPs> & res)
+void ConvIPs(const std::string & value, std::optional<STG::UserIPs> & res)
 {
 res = STG::UserIPs::parse(value);
 }
@@ -210,7 +213,7 @@ for (size_t i = 0; i < DIR_NUM; ++i)
     }
 }
 
-void ConvCashInfo(const std::string & value, STG::Optional<STG::CashInfo> & res)
+void ConvCashInfo(const std::string & value, std::optional<STG::CashInfo> & res)
 {
 STG::CashInfo info;
 size_t pos = value.find_first_of(':');
@@ -287,39 +290,21 @@ bool GetUsersFunction(const SGCONF::CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetUsers(GetUsersCallback, NULL) == STG::st_ok;
+return makeProto(config).GetUsers(GetUsersCallback, NULL) == STG::st_ok;
 }
 
 bool GetUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetUser(arg, GetUserCallback, NULL) == STG::st_ok;
+return makeProto(config).GetUser(arg, GetUserCallback, NULL) == STG::st_ok;
 }
 
 bool DelUserFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).DelUser(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool AddUserFunction(const SGCONF::CONFIG & config,
@@ -351,13 +336,7 @@ SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.AddUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).AddUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgUserFunction(const SGCONF::CONFIG & config,
@@ -390,13 +369,7 @@ SGCONF::MaybeSet(options, "cash-set", stat.cashSet, ConvCashInfo);
 SGCONF::MaybeSet(options, "free", stat.freeMb);
 SGCONF::MaybeSet(options, "session-traffic", stat, ConvSessionTraff);
 SGCONF::MaybeSet(options, "month-traffic", stat, ConvMonthTraff);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.ChgUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).ChgUser(arg, conf, stat, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool CheckUserFunction(const SGCONF::CONFIG & config,
@@ -406,13 +379,7 @@ bool CheckUserFunction(const SGCONF::CONFIG & config,
 std::map<std::string, std::string>::const_iterator it(options.find("password"));
 if (it == options.end())
     throw SGCONF::ACTION::ERROR("Password is not specified.");
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.CheckUser(arg, it->second, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).CheckUser(arg, it->second, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool SendMessageFunction(const SGCONF::CONFIG & config,
@@ -430,26 +397,14 @@ it = options.find("text");
 if (it == options.end())
     throw SGCONF::ACTION::ERROR("Message text is not specified.");
 std::string text = it->second;
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.SendMessage(logins, text, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).SendMessage(logins, text, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool AuthByFunction(const SGCONF::CONFIG & config,
                     const std::string & arg,
                     const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.AuthBy(arg, AuthByCallback, NULL) == STG::st_ok;
+return makeProto(config).AuthBy(arg, AuthByCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "user_ips.h"
-#include "stg/optional.h"
 
 #include <string>
 #include <vector>
+#include <optional>
 #include <cstdint>
 #include "const.h"
 
@@ -110,25 +110,25 @@ struct UserConfOpt
     UserConfOpt(UserConfOpt&&) = default;
     UserConfOpt& operator=(UserConfOpt&&) = default;
 
-    Optional<std::string>               password;
-    Optional<int>                       passive;
-    Optional<int>                       disabled;
-    Optional<int>                       disabledDetailStat;
-    Optional<int>                       alwaysOnline;
-    Optional<std::string>               tariffName;
-    Optional<std::string>               address;
-    Optional<std::string>               phone;
-    Optional<std::string>               email;
-    Optional<std::string>               note;
-    Optional<std::string>               realName;
-    Optional<std::string>               corp;
-    Optional<std::string>               group;
-    Optional<double>                    credit;
-    Optional<std::string>               nextTariff;
-    std::vector<Optional<std::string> > userdata;
-    Optional<std::vector<std::string> > services;
-    Optional<time_t>                    creditExpire;
-    Optional<UserIPs>                   ips;
+    std::optional<std::string>               password;
+    std::optional<int>                       passive;
+    std::optional<int>                       disabled;
+    std::optional<int>                       disabledDetailStat;
+    std::optional<int>                       alwaysOnline;
+    std::optional<std::string>               tariffName;
+    std::optional<std::string>               address;
+    std::optional<std::string>               phone;
+    std::optional<std::string>               email;
+    std::optional<std::string>               note;
+    std::optional<std::string>               realName;
+    std::optional<std::string>               corp;
+    std::optional<std::string>               group;
+    std::optional<double>                    credit;
+    std::optional<std::string>               nextTariff;
+    std::vector<std::optional<std::string> > userdata;
+    std::optional<std::vector<std::string> > services;
+    std::optional<time_t>                    creditExpire;
+    std::optional<UserIPs>                   ips;
 };
 //-----------------------------------------------------------------------------
 }

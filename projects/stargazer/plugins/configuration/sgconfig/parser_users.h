@@ -26,9 +26,9 @@
 #include "stg/user_conf.h"
 #include "stg/user_stat.h"
 #include "stg/common.h"
-#include "stg/optional.h"
 
 #include <string>
+#include <optional>
 
 namespace STG
 {
@@ -160,8 +160,8 @@ class CHG_USER: public BASE_PARSER
         const Tariffs & m_tariffs;
         UserStatOpt m_usr;
         UserConfOpt m_ucr;
-        Optional<uint64_t> m_upr[DIR_NUM];
-        Optional<uint64_t> m_downr[DIR_NUM];
+        std::optional<uint64_t> m_upr[DIR_NUM];
+        std::optional<uint64_t> m_downr[DIR_NUM];
         std::string m_cashMsg;
         std::string m_login;
         bool m_cashMustBeAdded;

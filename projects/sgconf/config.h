@@ -20,10 +20,11 @@
 
 #pragma once
 
+#include "stg/splice.h"
 #include "stg/common.h"
-#include "stg/optional.h"
 
 #include <string>
+#include <optional>
 #include <cstdint>
 
 namespace SGCONF
@@ -31,53 +32,51 @@ namespace SGCONF
 
 struct CONFIG
 {
-    STG::Optional<std::string> configFile;
-    STG::Optional<std::string> server;
-    STG::Optional<uint16_t> port;
-    STG::Optional<std::string> localAddress;
-    STG::Optional<uint16_t> localPort;
-    STG::Optional<std::string> userName;
-    STG::Optional<std::string> userPass;
-    STG::Optional<bool> showConfig;
+    std::optional<std::string> configFile;
+    std::optional<std::string> server;
+    std::optional<uint16_t> port;
+    std::optional<std::string> localAddress;
+    std::optional<uint16_t> localPort;
+    std::optional<std::string> userName;
+    std::optional<std::string> userPass;
+    std::optional<bool> showConfig;
 
-    CONFIG & operator=(const CONFIG & rhs)
+    CONFIG() = default;
+    CONFIG(const CONFIG&) = default;
+    CONFIG(CONFIG&&) = default;
+
+    CONFIG& operator=(const CONFIG&) = delete;
+    CONFIG& operator=(CONFIG&&) = delete;
+
+    void splice(const CONFIG & rhs) noexcept
     {
-    if (!rhs.configFile.empty())
-        configFile = rhs.configFile;
-    if (!rhs.server.empty())
-        server = rhs.server;
-    if (!rhs.port.empty())
-        port = rhs.port;
-    if (!rhs.localAddress.empty())
-        localAddress = rhs.localAddress;
-    if (!rhs.localPort.empty())
-        localPort = rhs.localPort;
-    if (!rhs.userName.empty())
-        userName = rhs.userName;
-    if (!rhs.userPass.empty())
-        userPass = rhs.userPass;
-    if (!rhs.showConfig.empty())
-        showConfig = rhs.showConfig;
-    return *this;
+        STG::splice(configFile, rhs.configFile);
+        STG::splice(server, rhs.server);
+        STG::splice(port, rhs.port);
+        STG::splice(localAddress, rhs.localAddress);
+        STG::splice(localPort, rhs.localPort);
+        STG::splice(userName, rhs.userName);
+        STG::splice(userPass, rhs.userPass);
+        STG::splice(showConfig, rhs.showConfig);
     }
 
     std::string Serialize() const
     {
     std::string res;
-    if (!configFile.empty())
-        res += "configFile: '" + configFile.data() + "'\n";
-    if (!server.empty())
-        res += "server: '" + server.data() + "'\n";
-    if (!port.empty())
-        res += "port: " + std::to_string(port.data()) + "\n";
-    if (!localAddress.empty())
-        res += "local address: '" + localAddress.data() + "'\n";
-    if (!localPort.empty())
-        res += "local port: " + std::to_string(localPort.data()) + "\n";
-    if (!userName.empty())
-        res += "userName: '" + userName.data() + "'\n";
-    if (!userPass.empty())
-        res += "userPass: '" + userPass.data() + "\n";
+    if (configFile)
+        res += "configFile: '" + configFile.value() + "'\n";
+    if (server)
+        res += "server: '" + server.value() + "'\n";
+    if (port)
+        res += "port: " + std::to_string(port.value()) + "\n";
+    if (localAddress)
+        res += "local address: '" + localAddress.value() + "'\n";
+    if (localPort)
+        res += "local port: " + std::to_string(localPort.value()) + "\n";
+    if (userName)
+        res += "userName: '" + userName.value() + "'\n";
+    if (userPass)
+        res += "userPass: '" + userPass.value() + "\n";
     return res;
     }
 };

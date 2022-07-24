@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 #include "utils.h"
 
@@ -53,7 +54,7 @@ params.push_back(SGCONF::API_ACTION::PARAM("priv", "<priv>", "priviledges"));
 return params;
 }
 
-void ConvPriv(const std::string & value, STG::Optional<STG::Priv> & res)
+void ConvPriv(const std::string & value, std::optional<STG::Priv> & res)
 {
 if (value.length() != 9)
     throw SGCONF::ACTION::ERROR("Priviledges value should be a 9-digits length binary number.");
@@ -119,42 +120,24 @@ bool GetAdminsFunction(const SGCONF::CONFIG & config,
                        const std::string & /*arg*/,
                        const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetAdmins(GetAdminsCallback, NULL) == STG::st_ok;
+return makeProto(config).GetAdmins(GetAdminsCallback, NULL) == STG::st_ok;
 }
 
 bool GetAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
 // STG currently doesn't support <GetAdmin login="..."/>.
 // So get a list of admins and filter it. 'data' param holds a pointer to 'login'.
 std::string login(arg);
-return proto.GetAdmins(GetAdminCallback, &login) == STG::st_ok;
+return makeProto(config).GetAdmins(GetAdminCallback, &login) == STG::st_ok;
 }
 
 bool DelAdminFunction(const SGCONF::CONFIG & config,
                       const std::string & arg,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.DelAdmin(arg, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).DelAdmin(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool AddAdminFunction(const SGCONF::CONFIG & config,
@@ -165,13 +148,7 @@ STG::AdminConfOpt conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.AddAdmin(arg, conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).AddAdmin(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgAdminFunction(const SGCONF::CONFIG & config,
@@ -182,13 +159,7 @@ STG::AdminConfOpt conf;
 conf.login = arg;
 SGCONF::MaybeSet(options, "priv", conf.priv, ConvPriv);
 SGCONF::MaybeSet(options, "password", conf.password);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.ChgAdmin(conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).ChgAdmin(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

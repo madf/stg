@@ -2,6 +2,7 @@
 
 #include "api_action.h"
 #include "options.h"
+#include "makeproto.h"
 #include "config.h"
 #include "utils.h"
 
@@ -81,39 +82,21 @@ bool GetCorpsFunction(const SGCONF::CONFIG & config,
                       const std::string & /*arg*/,
                       const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetCorporations(GetCorpsCallback, NULL) == STG::st_ok;
+return makeProto(config).GetCorporations(GetCorpsCallback, NULL) == STG::st_ok;
 }
 
 bool GetCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.GetCorp(arg, GetCorpCallback, NULL) == STG::st_ok;
+return makeProto(config).GetCorp(arg, GetCorpCallback, NULL) == STG::st_ok;
 }
 
 bool DelCorpFunction(const SGCONF::CONFIG & config,
                      const std::string & arg,
                      const std::map<std::string, std::string> & /*options*/)
 {
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.DelCorp(arg, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).DelCorp(arg, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool AddCorpFunction(const SGCONF::CONFIG & config,
@@ -123,13 +106,7 @@ bool AddCorpFunction(const SGCONF::CONFIG & config,
 STG::CorpConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.AddCorp(arg, conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).AddCorp(arg, conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 bool ChgCorpFunction(const SGCONF::CONFIG & config,
@@ -139,13 +116,7 @@ bool ChgCorpFunction(const SGCONF::CONFIG & config,
 STG::CorpConfOpt conf;
 conf.name = arg;
 SGCONF::MaybeSet(options, "cash", conf.cash);
-STG::ServConf proto(config.server.data(),
-                    config.port.data(),
-                    config.localAddress.data(),
-                    config.localPort.data(),
-                    config.userName.data(),
-                    config.userPass.data());
-return proto.ChgCorp(conf, SimpleCallback, NULL) == STG::st_ok;
+return makeProto(config).ChgCorp(conf, SimpleCallback, NULL) == STG::st_ok;
 }
 
 } // namespace anonymous

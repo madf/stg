@@ -25,9 +25,9 @@
 #include "parser_state.h"
 
 #include "stg/common.h"
-#include "stg/optional.h"
 
 #include <string>
+#include <optional>
 
 #include <cassert>
 
@@ -67,7 +67,7 @@ template <typename T>
 class PARAM_ACTION : public ACTION
 {
     public:
-        PARAM_ACTION(STG::Optional<T> & param,
+        PARAM_ACTION(std::optional<T> & param,
                      const T & defaultValue,
                      const std::string & paramDescription)
             : m_param(param),
@@ -75,11 +75,11 @@ class PARAM_ACTION : public ACTION
               m_description(paramDescription),
               m_hasDefault(true)
         {}
-        explicit PARAM_ACTION(STG::Optional<T> & param)
+        explicit PARAM_ACTION(std::optional<T> & param)
             : m_param(param),
               m_hasDefault(false)
         {}
-        PARAM_ACTION(STG::Optional<T> & param,
+        PARAM_ACTION(std::optional<T> & param,
                      const std::string & paramDescription)
             : m_param(param),
               m_description(paramDescription),
@@ -93,7 +93,7 @@ class PARAM_ACTION : public ACTION
         void ParseValue(const std::string & value) override;
 
     private:
-        STG::Optional<T> & m_param;
+        std::optional<T> & m_param;
         T m_defaltValue;
         std::string m_description;
         bool m_hasDefault;
@@ -172,7 +172,7 @@ return PARSER_STATE(false, --argc, ++argv);
 
 template <typename T>
 inline
-std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param,
+std::unique_ptr<ACTION> MakeParamAction(std::optional<T> & param,
                                         const T & defaultValue,
                                         const std::string & paramDescription)
 {
@@ -181,14 +181,14 @@ return std::make_unique<PARAM_ACTION<T>>(param, defaultValue, paramDescription);
 
 template <typename T>
 inline
-std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param)
+std::unique_ptr<ACTION> MakeParamAction(std::optional<T> & param)
 {
 return std::make_unique<PARAM_ACTION<T>>(param);
 }
 
 template <typename T>
 inline
-std::unique_ptr<ACTION> MakeParamAction(STG::Optional<T> & param,
+std::unique_ptr<ACTION> MakeParamAction(std::optional<T> & param,
                                         const std::string & paramDescription)
 {
 return std::make_unique<PARAM_ACTION<T>>(param, paramDescription);

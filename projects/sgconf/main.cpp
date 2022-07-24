@@ -236,227 +236,88 @@ return std::make_unique<CONFIG_ACTION>(config, paramDescription);
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-std::string self(basename(argv[0]));
-SGCONF::CONFIG config;
-SGCONF::COMMANDS commands;
+    std::string self(basename(argv[0]));
+    SGCONF::CONFIG config;
+    SGCONF::COMMANDS commands;
 
-SGCONF::OPTION_BLOCKS blocks;
-blocks.Add("General options")
-      .Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file")
-      .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
-      //.Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
-      .Add("v", "version", SGCONF::MakeFunc0Action(bind0(Func1Adapt(Version), self)), "\t\tshow version information and exit");
-SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
-      .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
-      .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
-      .Add("local-address", SGCONF::MakeParamAction(config.localAddress, std::string(""), "<address>"), "\tlocal address to bind")
-      .Add("local-port", SGCONF::MakeParamAction(config.localPort, uint16_t(0), "<port>"), "\t\tlocal port to bind")
-      .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
-      .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
-      .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
-blocks.Add("Debug options")
-      .Add("show-config", SGCONF::MakeParamAction(config.showConfig), "\tshow config and exit");
-SGCONF::AppendXMLOptionBlock(commands, blocks);
-SGCONF::AppendServerInfoBlock(commands, blocks);
-SGCONF::AppendAdminsOptionBlock(commands, blocks);
-SGCONF::AppendTariffsOptionBlock(commands, blocks);
-SGCONF::AppendUsersOptionBlock(commands, blocks);
-SGCONF::AppendServicesOptionBlock(commands, blocks);
-SGCONF::AppendCorpsOptionBlock(commands, blocks);
+    SGCONF::OPTION_BLOCKS blocks;
+    blocks.Add("General options")
+          .Add("c", "config", SGCONF::MakeParamAction(config.configFile, std::string("~/.config/stg/sgconf.conf"), "<config file>"), "override default config file")
+          .Add("h", "help", SGCONF::MakeFunc0Action(bind0(Method1Adapt(&SGCONF::OPTION_BLOCKS::Help, blocks), 0)), "\t\tshow this help and exit")
+          //.Add("help-all", SGCONF::MakeFunc0Action(UsageAll), "\t\tshow full help and exit")
+          .Add("v", "version", SGCONF::MakeFunc0Action(bind0(Func1Adapt(Version), self)), "\t\tshow version information and exit");
+    SGCONF::OPTION_BLOCK & block = blocks.Add("Connection options")
+          .Add("s", "server", SGCONF::MakeParamAction(config.server, std::string("localhost"), "<address>"), "\t\thost to connect")
+          .Add("p", "port", SGCONF::MakeParamAction(config.port, uint16_t(5555), "<port>"), "\t\tport to connect")
+          .Add("local-address", SGCONF::MakeParamAction(config.localAddress, std::string(""), "<address>"), "\tlocal address to bind")
+          .Add("local-port", SGCONF::MakeParamAction(config.localPort, uint16_t(0), "<port>"), "\t\tlocal port to bind")
+          .Add("u", "username", SGCONF::MakeParamAction(config.userName, std::string("admin"), "<username>"), "\tadministrative login")
+          .Add("w", "userpass", SGCONF::MakeParamAction(config.userPass, "<password>"), "\tpassword for the administrative login")
+          .Add("a", "address", SGCONF::MakeParamAction(config, "<connection string>"), "connection params as a single string in format: <login>:<password>@<host>:<port>");
+    blocks.Add("Debug options")
+          .Add("show-config", SGCONF::MakeParamAction(config.showConfig), "\tshow config and exit");
+    SGCONF::AppendXMLOptionBlock(commands, blocks);
+    SGCONF::AppendServerInfoBlock(commands, blocks);
+    SGCONF::AppendAdminsOptionBlock(commands, blocks);
+    SGCONF::AppendTariffsOptionBlock(commands, blocks);
+    SGCONF::AppendUsersOptionBlock(commands, blocks);
+    SGCONF::AppendServicesOptionBlock(commands, blocks);
+    SGCONF::AppendCorpsOptionBlock(commands, blocks);
 
-SGCONF::PARSER_STATE state(false, argc, argv);
+    SGCONF::PARSER_STATE state(false, argc, argv);
 
-try
-{
-state = blocks.Parse(--argc, ++argv); // Skipping self name
-}
-catch (const SGCONF::OPTION::ERROR& ex)
-{
-std::cerr << ex.what() << "\n";
-return -1;
-}
-
-if (state.stop)
-    return 0;
-
-if (state.argc > 0)
+    try
     {
-    std::cerr << "Unknown option: '" << *state.argv << "'\n";
-    return -1;
+        state = blocks.Parse(--argc, ++argv); // Skipping self name
+    }
+    catch (const SGCONF::OPTION::ERROR& ex)
+    {
+        std::cerr << ex.what() << "\n";
+        return -1;
     }
 
-try
-{
-SGCONF::CONFIG configOverride(config);
+    if (state.stop)
+        return 0;
 
-if (config.configFile.empty())
+    if (state.argc > 0)
     {
-    const char * mainConfigFile = "/etc/sgconf/sgconf.conf";
-    if (access(mainConfigFile, R_OK) == 0)
-        block.ParseFile(mainConfigFile);
-    ReadUserConfigFile(block);
-    }
-else
-    {
-    block.ParseFile(config.configFile.data());
+        std::cerr << "Unknown option: '" << *state.argv << "'\n";
+        return -1;
     }
 
-config = configOverride;
-
-if (!config.showConfig.empty() && config.showConfig.data())
+    try
     {
-    std::cout << config.Serialize() << std::endl;
-    return 0;
+        // Preserve config values parsed from the command line
+        SGCONF::CONFIG configOverride(config);
+
+        if (!config.configFile)
+        {
+            // Read main config file.
+            const char * mainConfigFile = "/etc/sgconf/sgconf.conf";
+            if (access(mainConfigFile, R_OK) == 0)
+                block.ParseFile(mainConfigFile);
+            // Read XDG-stuff.
+            ReadUserConfigFile(block);
+        }
+        else
+        {
+            // Read user-supplied file.
+            block.ParseFile(config.configFile.value());
+        }
+
+        // Apply overrides from the command line
+        config.splice(configOverride);
+
+        if (config.showConfig && config.showConfig.value())
+        {
+            std::cout << config.Serialize() << std::endl;
+            return 0;
+        }
+        return commands.Execute(config) ? 0 : -1;
     }
-return commands.Execute(config) ? 0 : -1;
+    catch (const std::exception& ex)
+    {
+        std::cerr << ex.what() << "\n";
+        return -1;
+    }
 }
-catch (const std::exception& ex)
-{
-std::cerr << ex.what() << "\n";
-return -1;
-}
-}
-//-----------------------------------------------------------------------------
-
-namespace
-{
-
-/*void UsageTariffs(bool full)
-{
-std::cout << "Tariffs management options:\n"
-          << "\t--get-tariffs\t\t\t\tget a list of tariffs (subsequent options will define what to show)\n";
-if (full)
-    std::cout << "\t\t--name\t\t\t\tshow tariff's name\n"
-              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
-              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
-              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
-              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
-              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
-std::cout << "\t--get-tariff\t\t\t\tget the information about tariff\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the tariff to show\n"
-              << "\t\t--fee\t\t\t\tshow tariff's fee\n"
-              << "\t\t--free\t\t\t\tshow tariff's prepaid traffic in terms of cost\n"
-              << "\t\t--passive-cost\t\t\tshow tariff's cost of \"freeze\"\n"
-              << "\t\t--traff-type\t\t\tshow what type of traffix will be accounted by the tariff\n"
-              << "\t\t--dirs\t\t\t\tshow tarification rules for directions\n\n";
-std::cout << "\t--add-tariff\t\t\t\tadd a new tariff\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the tariff to add\n"
-              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
-              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
-              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
-              << "\t\t--traff-type <type>\t\twhat type of traffi will be accounted by the tariff\n"
-              << "\t\t--times <times>\t\t\tslash-separated list of \"day\" time-spans (in form \"hh:mm-hh:mm\") for each direction\n"
-              << "\t\t--prices-day-a <prices>\t\tslash-separated list of prices for \"day\" traffic before threshold for each direction\n"
-              << "\t\t--prices-night-a <prices>\tslash-separated list of prices for \"night\" traffic before threshold for each direction\n"
-              << "\t\t--prices-day-b <prices>\t\tslash-separated list of prices for \"day\" traffic after threshold for each direction\n"
-              << "\t\t--prices-night-b <prices>\tslash-separated list of prices for \"night\" traffic after threshold for each direction\n"
-              << "\t\t--single-prices <yes|no>\tslash-separated list of \"single price\" flags for each direction\n"
-              << "\t\t--no-discounts <yes|no>\t\tslash-separated list of \"no discount\" flags for each direction\n"
-              << "\t\t--thresholds <thresholds>\tslash-separated list of thresholds (in Mb) for each direction\n\n";
-std::cout << "\t--del-tariff\t\t\t\tdelete an existing tariff\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the tariff to delete\n\n";
-std::cout << "\t--chg-tariff\t\t\t\tchange an existing tariff\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the tariff to change\n"
-              << "\t\t--fee <fee>\t\t\tstariff's fee\n"
-              << "\t\t--free <free>\t\t\ttariff's prepaid traffic in terms of cost\n"
-              << "\t\t--passive-cost <cost>\t\ttariff's cost of \"freeze\"\n"
-              << "\t\t--traff-type <type>\t\twhat type of traffix will be accounted by the tariff\n"
-              << "\t\t--dir <N>\t\t\tnumber of direction data to change\n"
-              << "\t\t\t--time <time>\t\t\"day\" time-span (in form \"hh:mm-hh:mm\")\n"
-              << "\t\t\t--price-day-a <price>\tprice for \"day\" traffic before threshold\n"
-              << "\t\t\t--price-night-a <price>\tprice for \"night\" traffic before threshold\n"
-              << "\t\t\t--price-day-b <price>\tprice for \"day\" traffic after threshold\n"
-              << "\t\t\t--price-night-b <price>\tprice for \"night\" traffic after threshold\n"
-              << "\t\t\t--single-price <yes|no>\t\"single price\" flag\n"
-              << "\t\t\t--no-discount <yes|no>\t\"no discount\" flag\n"
-              << "\t\t\t--threshold <threshold>\tthreshold (in Mb)\n\n";
-}
-//-----------------------------------------------------------------------------
-void UsageUsers(bool full)
-{
-std::cout << "Users management options:\n"
-          << "\t--get-users\t\t\t\tget a list of users (subsequent options will define what to show)\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--get-user\t\t\t\tget the information about user\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--add-user\t\t\t\tadd a new user\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--del-user\t\t\t\tdelete an existing user\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--chg-user\t\t\t\tchange an existing user\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--check-user\t\t\t\tcheck credentials is valid\n";
-if (full)
-    std::cout << "\n\n";
-std::cout << "\t--send-message\t\t\t\tsend a message to a user\n";
-if (full)
-    std::cout << "\n\n";
-}
-//-----------------------------------------------------------------------------
-void UsageServices(bool full)
-{
-std::cout << "Services management options:\n"
-          << "\t--get-services\t\t\t\tget a list of services (subsequent options will define what to show)\n";
-if (full)
-    std::cout << "\t\t--name\t\t\t\tshow service's name\n"
-              << "\t\t--comment\t\t\tshow a comment to the service\n"
-              << "\t\t--cost\t\t\t\tshow service's cost\n"
-              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
-std::cout << "\t--get-service\t\t\t\tget the information about service\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the service to show\n"
-              << "\t\t--comment\t\t\tshow a comment to the service\n"
-              << "\t\t--cost\t\t\t\tshow service's cost\n"
-              << "\t\t--pay-day\t\t\tshow service's pay day\n\n";
-std::cout << "\t--add-service\t\t\t\tadd a new service\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the service to add\n"
-              << "\t\t--comment <comment>\t\ta comment to the service\n"
-              << "\t\t--cost <cost>\t\t\tservice's cost\n"
-              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
-std::cout << "\t--del-service\t\t\t\tdelete an existing service\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the service to delete\n\n";
-std::cout << "\t--chg-service\t\t\t\tchange an existing service\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the service to change\n"
-              << "\t\t--comment <comment>\t\ta comment to the service\n"
-              << "\t\t--cost <cost>\t\t\tservice's cost\n"
-              << "\t\t--pay-day <day>\t\t\tservice's pay day\n\n";
-}
-//-----------------------------------------------------------------------------
-void UsageCorporations(bool full)
-{
-std::cout << "Corporations management options:\n"
-          << "\t--get-corporations\t\t\tget a list of corporations (subsequent options will define what to show)\n";
-if (full)
-    std::cout << "\t\t--name\t\t\t\tshow corporation's name\n"
-              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
-std::cout << "\t--get-corp\t\t\t\tget the information about corporation\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the corporation to show\n"
-              << "\t\t--cash\t\t\t\tshow corporation's cash\n\n";
-std::cout << "\t--add-corp\t\t\t\tadd a new corporation\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the corporation to add\n"
-              << "\t\t--cash <cash>\t\t\tinitial corporation's cash (default: \"0\")\n\n";
-std::cout << "\t--del-corp\t\t\t\tdelete an existing corporation\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the corporation to delete\n\n";
-std::cout << "\t--chg-corp\t\t\t\tchange an existing corporation\n";
-if (full)
-    std::cout << "\t\t--name <name>\t\t\tname of the corporation to change\n"
-              << "\t\t--add-cash <amount>[:<message>]\tadd cash to the corporation's account and optional comment message\n"
-              << "\t\t--set-cash <cash>[:<message>]\tnew corporation's cash and optional comment message\n\n";
-}*/
-
-} // namespace anonymous

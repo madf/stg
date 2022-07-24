@@ -24,9 +24,9 @@
 #include "parser.h"
 
 #include "stg/common.h"
-#include "stg/optional.h"
 
 #include <string>
+#include <optional>
 
 namespace STG
 {
@@ -138,8 +138,8 @@ class CHG_ADMIN: public BASE_PARSER
 
     private:
         std::string login;
-        Optional<std::string> password;
-        Optional<std::string> privAsString;
+        std::optional<std::string> password;
+        std::optional<std::string> privAsString;
         Admins & m_admins;
 
         void CreateAnswer() override;

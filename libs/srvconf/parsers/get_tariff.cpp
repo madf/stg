@@ -39,7 +39,7 @@ class AoSParser : public BasePropertyParser
     public:
         using Func = bool (*)(const char**, A &, T A::value_type::*);
         AoSParser(A& a, T A::value_type::* fld, Func f) : array(a), field(fld), func(f) {}
-        virtual bool Parse(const char** attr, const std::string& /*attrName*/, const std::string& /*fromEncoding*/) { return func(attr, array, field); }
+        bool Parse(const char** attr, const std::string& /*attrName*/, const std::string& /*fromEncoding*/) override { return func(attr, array, field); }
     private:
         A& array;
         T A::value_type::* field;

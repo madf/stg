@@ -86,10 +86,10 @@ std::string ChgUser::serialize(const UserConfOpt& conf, const UserStatOpt& stat,
     appendResetableTag(stream, "aonline", conf.alwaysOnline); // TODO: aonline -> alwaysOnline
     appendResetableTag(stream, "ip", conf.ips); // TODO: ip -> ips
 
-    if (!conf.nextTariff.empty())
-        stream << "<tariff delayed=\"" << conf.nextTariff.data() << "\"/>";
-    else if (!conf.tariffName.empty())
-        stream << "<tariff now=\"" << conf.tariffName.data() << "\"/>";
+    if (conf.nextTariff)
+        stream << "<tariff delayed=\"" << conf.nextTariff.value() << "\"/>";
+    else if (conf.tariffName)
+        stream << "<tariff now=\"" << conf.tariffName.value() << "\"/>";
 
     appendResetableTag(stream, "note", maybeEncode(maybeIconv(conf.note, encoding, "koi8-ru")));
     appendResetableTag(stream, "name", maybeEncode(maybeIconv(conf.realName, encoding, "koi8-ru"))); // TODO: name -> realName
@@ -102,36 +102,36 @@ std::string ChgUser::serialize(const UserConfOpt& conf, const UserStatOpt& stat,
     for (size_t i = 0; i < conf.userdata.size(); ++i)
         appendResetableTag(stream, "userdata", i, maybeEncode(maybeIconv(conf.userdata[i], encoding, "koi8-ru")));
 
-    if (!conf.services.empty())
+    if (conf.services)
     {
         stream << "<services>";
-        for (size_t i = 0; i < conf.services.data().size(); ++i)
-            stream << "<service name=\"" << conf.services.data()[i] << "\"/>";
+        for (const auto& service : conf.services.value())
+            stream << "<service name=\"" << service << "\"/>";
         stream << "</services>";
     }
 
     // Stat
 
-    if (!stat.cashAdd.empty())
-        stream << "<cash add=\"" << stat.cashAdd.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashAdd.data().second), encoding, "koi8-ru") << "\"/>";
-    else if (!stat.cashSet.empty())
-        stream << "<cash set=\"" << stat.cashSet.data().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.data().second), encoding, "koi8-ru") << "\"/>";
+    if (stat.cashAdd)
+        stream << "<cash add=\"" << stat.cashAdd.value().first << "\" msg=\"" << IconvString(Encode12str(stat.cashAdd.value().second), encoding, "koi8-ru") << "\"/>";
+    else if (stat.cashSet)
+        stream << "<cash set=\"" << stat.cashSet.value().first << "\" msg=\"" << IconvString(Encode12str(stat.cashSet.value().second), encoding, "koi8-ru") << "\"/>";
 
     appendResetableTag(stream, "freeMb", stat.freeMb);
 
     std::ostringstream traff;
     for (size_t i = 0; i < stat.sessionUp.size(); ++i)
-        if (!stat.sessionUp[i].empty())
-            traff << " SU" << i << "=\"" << stat.sessionUp[i].data() << "\"";
+        if (stat.sessionUp[i])
+            traff << " SU" << i << "=\"" << stat.sessionUp[i].value() << "\"";
     for (size_t i = 0; i < stat.sessionDown.size(); ++i)
-        if (!stat.sessionDown[i].empty())
-            traff << " SD" << i << "=\"" << stat.sessionDown[i].data() << "\"";
+        if (stat.sessionDown[i])
+            traff << " SD" << i << "=\"" << stat.sessionDown[i].value() << "\"";
     for (size_t i = 0; i < stat.monthUp.size(); ++i)
-        if (!stat.monthUp[i].empty())
-            traff << " MU" << i << "=\"" << stat.monthUp[i].data() << "\"";
+        if (stat.monthUp[i])
+            traff << " MU" << i << "=\"" << stat.monthUp[i].value() << "\"";
     for (size_t i = 0; i < stat.monthDown.size(); ++i)
-        if (!stat.monthDown[i].empty())
-            traff << " MD" << i << "=\"" << stat.monthDown[i].data() << "\"";
+        if (stat.monthDown[i])
+            traff << " MD" << i << "=\"" << stat.monthDown[i].value() << "\"";
 
     std::string traffData = traff.str();
     if (!traffData.empty())

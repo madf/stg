@@ -145,13 +145,13 @@ void CHG_ADMIN::CreateAnswer()
 
         AdminConf conf(origAdmin->conf());
 
-        if (!password.empty())
-            conf.password = password.data();
+        if (password)
+            conf.password = password.value();
 
-        if (!privAsString.empty())
+        if (privAsString)
         {
             int p = 0;
-            if (str2x(privAsString.data().c_str(), p) < 0)
+            if (str2x(privAsString.value().c_str(), p) < 0)
             {
                 m_answer = "<" + m_tag + " Result = \"Incorrect parameter Priv.\"/>";
                 return;

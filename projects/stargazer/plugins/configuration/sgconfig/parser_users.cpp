@@ -469,16 +469,16 @@ int CHG_USER::ApplyChanges()
 
     bool check = false;
     bool alwaysOnline = u->GetProperties().alwaysOnline;
-    if (!m_ucr.alwaysOnline.empty())
+    if (m_ucr.alwaysOnline)
     {
         check = true;
-        alwaysOnline = m_ucr.alwaysOnline.const_data();
+        alwaysOnline = m_ucr.alwaysOnline.value();
     }
     bool onlyOneIP = u->GetProperties().ips.ConstData().onlyOneIP();
-    if (!m_ucr.ips.empty())
+    if (m_ucr.ips)
     {
         check = true;
-        onlyOneIP = m_ucr.ips.const_data().onlyOneIP();
+        onlyOneIP = m_ucr.ips.value().onlyOneIP();
     }
 
     if (check && alwaysOnline && !onlyOneIP)
@@ -488,10 +488,10 @@ int CHG_USER::ApplyChanges()
         return -1;
     }
 
-    for (size_t i = 0; i < m_ucr.ips.const_data().count(); ++i)
+    for (size_t i = 0; i < m_ucr.ips.value().count(); ++i)
     {
         ConstUserPtr user;
-        uint32_t ip = m_ucr.ips.const_data().operator[](i).ip;
+        uint32_t ip = m_ucr.ips.value().operator[](i).ip;
         if (m_users.IsIPInUse(ip, m_login, &user))
         {
             printfd(__FILE__, "Trying to assign an IP %s to '%s' that is already in use by '%s'\n", inet_ntostring(ip).c_str(), m_login.c_str(), user->GetLogin().c_str());
@@ -500,50 +500,50 @@ int CHG_USER::ApplyChanges()
         }
     }
 
-    if (!m_ucr.ips.empty())
-        if (!u->GetProperties().ips.Set(m_ucr.ips.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.ips)
+        if (!u->GetProperties().ips.Set(m_ucr.ips.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.alwaysOnline.empty())
-        if (!u->GetProperties().alwaysOnline.Set(m_ucr.alwaysOnline.const_data(),
+    if (m_ucr.alwaysOnline)
+        if (!u->GetProperties().alwaysOnline.Set(m_ucr.alwaysOnline.value(),
                                                  m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.address.empty())
-        if (!u->GetProperties().address.Set(m_ucr.address.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.address)
+        if (!u->GetProperties().address.Set(m_ucr.address.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.creditExpire.empty())
-        if (!u->GetProperties().creditExpire.Set(m_ucr.creditExpire.const_data(),
+    if (m_ucr.creditExpire)
+        if (!u->GetProperties().creditExpire.Set(m_ucr.creditExpire.value(),
                                                  m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.credit.empty())
-        if (!u->GetProperties().credit.Set(m_ucr.credit.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.credit)
+        if (!u->GetProperties().credit.Set(m_ucr.credit.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_usr.freeMb.empty())
-        if (!u->GetProperties().freeMb.Set(m_usr.freeMb.const_data(), m_currAdmin, m_login, m_store))
+    if (m_usr.freeMb)
+        if (!u->GetProperties().freeMb.Set(m_usr.freeMb.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.disabled.empty())
-        if (!u->GetProperties().disabled.Set(m_ucr.disabled.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.disabled)
+        if (!u->GetProperties().disabled.Set(m_ucr.disabled.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.disabledDetailStat.empty())
-        if (!u->GetProperties().disabledDetailStat.Set(m_ucr.disabledDetailStat.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.disabledDetailStat)
+        if (!u->GetProperties().disabledDetailStat.Set(m_ucr.disabledDetailStat.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.email.empty())
-        if (!u->GetProperties().email.Set(m_ucr.email.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.email)
+        if (!u->GetProperties().email.Set(m_ucr.email.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.group.empty())
-        if (!u->GetProperties().group.Set(m_ucr.group.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.group)
+        if (!u->GetProperties().group.Set(m_ucr.group.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.note.empty())
-        if (!u->GetProperties().note.Set(m_ucr.note.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.note)
+        if (!u->GetProperties().note.Set(m_ucr.note.value(), m_currAdmin, m_login, m_store))
             return -1;
 
     std::vector<STG::UserPropertyLogged<std::string> *> userdata;
@@ -559,31 +559,31 @@ int CHG_USER::ApplyChanges()
     userdata.push_back(u->GetProperties().userdata9.GetPointer());
 
     for (size_t i = 0; i < userdata.size(); i++)
-        if (!m_ucr.userdata[i].empty())
-            if(!userdata[i]->Set(m_ucr.userdata[i].const_data(), m_currAdmin, m_login, m_store))
+        if (m_ucr.userdata[i])
+            if(!userdata[i]->Set(m_ucr.userdata[i].value(), m_currAdmin, m_login, m_store))
                 return -1;
 
-    if (!m_ucr.passive.empty())
-        if (!u->GetProperties().passive.Set(m_ucr.passive.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.passive)
+        if (!u->GetProperties().passive.Set(m_ucr.passive.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.password.empty())
-        if (!u->GetProperties().password.Set(m_ucr.password.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.password)
+        if (!u->GetProperties().password.Set(m_ucr.password.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.phone.empty())
-        if (!u->GetProperties().phone.Set(m_ucr.phone.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.phone)
+        if (!u->GetProperties().phone.Set(m_ucr.phone.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_ucr.realName.empty())
-        if (!u->GetProperties().realName.Set(m_ucr.realName.const_data(), m_currAdmin, m_login, m_store))
+    if (m_ucr.realName)
+        if (!u->GetProperties().realName.Set(m_ucr.realName.value(), m_currAdmin, m_login, m_store))
             return -1;
 
-    if (!m_usr.cash.empty())
+    if (m_usr.cash)
     {
         if (m_cashMustBeAdded)
         {
-            if (!u->GetProperties().cash.Set(m_usr.cash.const_data() + u->GetProperties().cash,
+            if (!u->GetProperties().cash.Set(m_usr.cash.value() + u->GetProperties().cash,
                                              m_currAdmin,
                                              m_login,
                                              m_store,
@@ -592,21 +592,21 @@ int CHG_USER::ApplyChanges()
         }
         else
         {
-            if (!u->GetProperties().cash.Set(m_usr.cash.const_data(), m_currAdmin, m_login, m_store, m_cashMsg))
+            if (!u->GetProperties().cash.Set(m_usr.cash.value(), m_currAdmin, m_login, m_store, m_cashMsg))
                 return -1;
         }
     }
 
-    if (!m_ucr.tariffName.empty())
+    if (m_ucr.tariffName)
     {
-        const auto newTariff = m_tariffs.FindByName(m_ucr.tariffName.const_data());
+        const auto newTariff = m_tariffs.FindByName(m_ucr.tariffName.value());
         if (newTariff)
         {
             const auto tariff = u->GetTariff();
             std::string message = tariff->TariffChangeIsAllowed(*newTariff, time(NULL));
             if (message.empty())
             {
-                if (!u->GetProperties().tariffName.Set(m_ucr.tariffName.const_data(), m_currAdmin, m_login, m_store))
+                if (!u->GetProperties().tariffName.Set(m_ucr.tariffName.value(), m_currAdmin, m_login, m_store))
                     return -1;
                 u->ResetNextTariff();
             }
@@ -622,11 +622,11 @@ int CHG_USER::ApplyChanges()
         }
     }
 
-    if (!m_ucr.nextTariff.empty())
+    if (m_ucr.nextTariff)
     {
-        if (m_tariffs.FindByName(m_ucr.nextTariff.const_data()))
+        if (m_tariffs.FindByName(m_ucr.nextTariff.value()))
         {
-            if (!u->GetProperties().nextTariff.Set(m_ucr.nextTariff.const_data(), m_currAdmin, m_login, m_store))
+            if (!u->GetProperties().nextTariff.Set(m_ucr.nextTariff.value(), m_currAdmin, m_login, m_store))
                 return -1;
         }
         else
@@ -642,14 +642,14 @@ int CHG_USER::ApplyChanges()
     int downCount = 0;
     for (int i = 0; i < DIR_NUM; i++)
     {
-        if (!m_upr[i].empty())
+        if (m_upr[i])
         {
-            up[i] = m_upr[i].data();
+            up[i] = m_upr[i].value();
             upCount++;
         }
-        if (!m_downr[i].empty())
+        if (m_downr[i])
         {
-            down[i] = m_downr[i].data();
+            down[i] = m_downr[i].value();
             downCount++;
         }
     }

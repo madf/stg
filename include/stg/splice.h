@@ -20,33 +20,17 @@
 
 #pragma once
 
-#include <string>
 #include <optional>
 
 namespace STG
 {
 
-struct CorpConf
+template<typename T>
+inline
+void splice(std::optional<T>& lhs, const std::optional<T>& rhs) noexcept
 {
-    CorpConf() noexcept : cash(0) {}
-    explicit CorpConf(const std::string & n) noexcept : name(n), cash(0) {}
-    CorpConf(const std::string & n, double c) noexcept : name(n), cash(c) {}
-
-    CorpConf(const CorpConf&) = default;
-    CorpConf& operator=(const CorpConf&) = default;
-    CorpConf(CorpConf&&) = default;
-    CorpConf& operator=(CorpConf&&) = default;
-
-    bool operator==(const CorpConf& rhs) const noexcept { return name == rhs.name; }
-
-    std::string name;
-    double      cash;
-};
-
-struct CorpConfOpt
-{
-    std::optional<std::string> name;
-    std::optional<double>      cash;
-};
+    if (rhs)
+        lhs = rhs.value();
+}
 
 }

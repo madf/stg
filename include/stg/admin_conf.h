@@ -1,8 +1,7 @@
 #pragma once
 
-#include "stg/optional.h"
-
 #include <string>
+#include <optional>
 
 #include <cstdint>
 
@@ -78,9 +77,9 @@ struct AdminConf
 //-----------------------------------------------------------------------------
 struct AdminConfOpt
 {
-    Optional<Priv> priv;
-    Optional<std::string> login;
-    Optional<std::string> password;
+    std::optional<Priv> priv;
+    std::optional<std::string> login;
+    std::optional<std::string> password;
 };
 
 }

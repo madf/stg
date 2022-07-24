@@ -178,20 +178,20 @@ int CHG_SERVICE::Start(void *, const char * el, const char ** attr)
 
 void CHG_SERVICE::CreateAnswer()
 {
-    if (m_service.name.empty())
+    if (!m_service.name)
     {
         m_answer = "<" + m_tag + " result=\"Empty service name.\"/>";
         return;
     }
 
-    if (!m_services.Exists(m_service.name.const_data()))
+    if (!m_services.Exists(m_service.name.value()))
     {
-        m_answer = "<" + m_tag + " result = \"Service '" + m_service.name.const_data() + "' does not exist.\"/>";
+        m_answer = "<" + m_tag + " result = \"Service '" + m_service.name.value() + "' does not exist.\"/>";
         return;
     }
 
     ServiceConf orig;
-    m_services.Find(m_service.name.const_data(), &orig);
+    m_services.Find(m_service.name.value(), &orig);
 
     ServiceConfOpt conf(orig);
     conf.splice(m_service);

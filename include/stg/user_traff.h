@@ -20,11 +20,11 @@
 
 #pragma once
 
-#include "stg/optional.h"
 #include "const.h"
 
 #include <ostream>
 #include <vector>
+#include <optional>
 #include <cstdint>
 
 namespace STG
@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& stream, const DirTraff& traff)
 class DirTraffOpt
 {
     public:
-        using ValueType = Optional<uint64_t>;
+        using ValueType = std::optional<uint64_t>;
         using ContainerType = std::vector<ValueType>;
         using IndexType = ContainerType::size_type;
 

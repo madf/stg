@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "stg/optional.h"
 #include "user_traff.h"
 
 #include <ctime>
@@ -28,6 +27,7 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <optional>
 
 namespace STG
 {
@@ -180,14 +180,14 @@ struct UserStatOpt
     UserStatOpt(UserStatOpt&&) = default;
     UserStatOpt& operator=(UserStatOpt&&) = default;
 
-    Optional<double>    cash;
-    Optional<CashInfo>  cashAdd;
-    Optional<CashInfo>  cashSet;
-    Optional<double>    freeMb;
-    Optional<double>    lastCashAdd;
-    Optional<time_t>    lastCashAddTime;
-    Optional<time_t>    passiveTime;
-    Optional<time_t>    lastActivityTime;
+    std::optional<double>    cash;
+    std::optional<CashInfo>  cashAdd;
+    std::optional<CashInfo>  cashSet;
+    std::optional<double>    freeMb;
+    std::optional<double>    lastCashAdd;
+    std::optional<time_t>    lastCashAddTime;
+    std::optional<time_t>    passiveTime;
+    std::optional<time_t>    lastActivityTime;
     DirTraffOpt         sessionUp;
     DirTraffOpt         sessionDown;
     DirTraffOpt         monthUp;

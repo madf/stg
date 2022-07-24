@@ -20,9 +20,10 @@
 
 #pragma once
 
-#include "stg/optional.h"
+#include "splice.h"
 
 #include <string>
+#include <optional>
 #include <cstdint>
 
 namespace STG
@@ -85,26 +86,26 @@ struct ServiceConfOpt
 
     void splice(const ServiceConfOpt& rhs)
     {
-        name.splice(rhs.name);
-        comment.splice(rhs.comment);
-        cost.splice(rhs.cost);
-        payDay.splice(rhs.payDay);
+        STG::splice(name, rhs.name);
+        STG::splice(comment, rhs.comment);
+        STG::splice(cost, rhs.cost);
+        STG::splice(payDay, rhs.payDay);
     }
 
     ServiceConf get(const ServiceConf& defaultValue) const noexcept
     {
         ServiceConf res;
-        res.name = name.get(defaultValue.name);
-        res.comment = comment.get(defaultValue.comment);
-        res.cost = cost.get(defaultValue.cost);
-        res.payDay = payDay.get(defaultValue.payDay);
+        res.name = name.value_or(defaultValue.name);
+        res.comment = comment.value_or(defaultValue.comment);
+        res.cost = cost.value_or(defaultValue.cost);
+        res.payDay = payDay.value_or(defaultValue.payDay);
         return res;
     }
 
-    Optional<std::string> name;
-    Optional<std::string> comment;
-    Optional<double>      cost;
-    Optional<uint8_t>     payDay;
+    std::optional<std::string> name;
+    std::optional<std::string> comment;
+    std::optional<double>      cost;
+    std::optional<uint8_t>     payDay;
 };
 
 }

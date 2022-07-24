@@ -21,11 +21,12 @@
 #pragma once
 
 #include "tariff.h"
-#include "stg/optional.h"
 #include "const.h"
+#include "splice.h"
 
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace STG
 {
@@ -105,47 +106,47 @@ struct DirPriceDataOpt
 
     void splice(const DirPriceDataOpt & rhs) noexcept
     {
-        hDay.splice(rhs.hDay);
-        mDay.splice(rhs.mDay);
-        hNight.splice(rhs.hNight);
-        mNight.splice(rhs.mNight);
-        priceDayA.splice(rhs.priceDayA);
-        priceNightA.splice(rhs.priceNightA);
-        priceDayB.splice(rhs.priceDayB);
-        priceNightB.splice(rhs.priceNightB);
-        threshold.splice(rhs.threshold);
-        singlePrice.splice(rhs.singlePrice);
-        noDiscount.splice(rhs.noDiscount);
+        STG::splice(hDay, rhs.hDay);
+        STG::splice(mDay, rhs.mDay);
+        STG::splice(hNight, rhs.hNight);
+        STG::splice(mNight, rhs.mNight);
+        STG::splice(priceDayA, rhs.priceDayA);
+        STG::splice(priceNightA, rhs.priceNightA);
+        STG::splice(priceDayB, rhs.priceDayB);
+        STG::splice(priceNightB, rhs.priceNightB);
+        STG::splice(threshold, rhs.threshold);
+        STG::splice(singlePrice, rhs.singlePrice);
+        STG::splice(noDiscount, rhs.noDiscount);
     }
 
     DirPriceData get(const DirPriceData& defaultValue) const noexcept
     {
         DirPriceData res;
-        res.hDay = hDay.get(defaultValue.hDay);
-        res.mDay = mDay.get(defaultValue.mDay);
-        res.hNight = hNight.get(defaultValue.hNight);
-        res.mNight = mNight.get(defaultValue.mNight);
-        res.priceDayA = priceDayA.get(defaultValue.priceDayA);
-        res.priceNightA = priceNightA.get(defaultValue.priceNightA);
-        res.priceDayB = priceDayB.get(defaultValue.priceDayB);
-        res.priceNightB = priceNightB.get(defaultValue.priceNightB);
-        res.threshold = threshold.get(defaultValue.threshold);
-        res.singlePrice = singlePrice.get(defaultValue.singlePrice);
-        res.noDiscount = noDiscount.get(defaultValue.noDiscount);
+        res.hDay = hDay.value_or(defaultValue.hDay);
+        res.mDay = mDay.value_or(defaultValue.mDay);
+        res.hNight = hNight.value_or(defaultValue.hNight);
+        res.mNight = mNight.value_or(defaultValue.mNight);
+        res.priceDayA = priceDayA.value_or(defaultValue.priceDayA);
+        res.priceNightA = priceNightA.value_or(defaultValue.priceNightA);
+        res.priceDayB = priceDayB.value_or(defaultValue.priceDayB);
+        res.priceNightB = priceNightB.value_or(defaultValue.priceNightB);
+        res.threshold = threshold.value_or(defaultValue.threshold);
+        res.singlePrice = singlePrice.value_or(defaultValue.singlePrice);
+        res.noDiscount = noDiscount.value_or(defaultValue.noDiscount);
         return res;
     }
 
-    Optional<int>    hDay;
-    Optional<int>    mDay;
-    Optional<int>    hNight;
-    Optional<int>    mNight;
-    Optional<double> priceDayA;
-    Optional<double> priceNightA;
-    Optional<double> priceDayB;
-    Optional<double> priceNightB;
-    Optional<int>    threshold;
-    Optional<int>    singlePrice;
-    Optional<int>    noDiscount;
+    std::optional<int>    hDay;
+    std::optional<int>    mDay;
+    std::optional<int>    hNight;
+    std::optional<int>    mNight;
+    std::optional<double> priceDayA;
+    std::optional<double> priceNightA;
+    std::optional<double> priceDayB;
+    std::optional<double> priceNightB;
+    std::optional<int>    threshold;
+    std::optional<int>    singlePrice;
+    std::optional<int>    noDiscount;
 };
 //-----------------------------------------------------------------------------
 struct TariffConf
@@ -220,25 +221,25 @@ struct TariffConfOpt
     TariffConf get(const TariffConf& defaultValue) const noexcept
     {
         TariffConf res;
-        res.fee = fee.get(defaultValue.fee);
-        res.free = free.get(defaultValue.free);
-        res.traffType = traffType.get(defaultValue.traffType);
-        res.passiveCost = passiveCost.get(defaultValue.passiveCost);
-        res.name = name.get(defaultValue.name);
-        res.period = period.get(defaultValue.period);
-        res.changePolicy = changePolicy.get(defaultValue.changePolicy);
-        res.changePolicyTimeout = changePolicyTimeout.get(defaultValue.changePolicyTimeout);
+        res.fee = fee.value_or(defaultValue.fee);
+        res.free = free.value_or(defaultValue.free);
+        res.traffType = traffType.value_or(defaultValue.traffType);
+        res.passiveCost = passiveCost.value_or(defaultValue.passiveCost);
+        res.name = name.value_or(defaultValue.name);
+        res.period = period.value_or(defaultValue.period);
+        res.changePolicy = changePolicy.value_or(defaultValue.changePolicy);
+        res.changePolicyTimeout = changePolicyTimeout.value_or(defaultValue.changePolicyTimeout);
         return res;
     }
 
-    Optional<double>             fee;
-    Optional<double>             free;
-    Optional<Tariff::TraffType>  traffType;
-    Optional<double>             passiveCost;
-    Optional<std::string>        name;
-    Optional<Tariff::Period>     period;
-    Optional<Tariff::ChangePolicy> changePolicy;
-    Optional<time_t>             changePolicyTimeout;
+    std::optional<double>             fee;
+    std::optional<double>             free;
+    std::optional<Tariff::TraffType>  traffType;
+    std::optional<double>             passiveCost;
+    std::optional<std::string>        name;
+    std::optional<Tariff::Period>     period;
+    std::optional<Tariff::ChangePolicy> changePolicy;
+    std::optional<time_t>             changePolicyTimeout;
 };
 //-----------------------------------------------------------------------------
 struct TariffData

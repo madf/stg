@@ -40,11 +40,11 @@ void appendSlashedResetable(std::ostream& stream, const std::string& name, const
     std::string res;
     for (typename A::size_type i = 0; i < array.size(); ++i)
     {
-        if ((array[i].*field).empty()) // All values must be set
+        if (!(array[i].*field)) // All values must be set
             return;
         if (!res.empty())
             res += "/";
-        res += std::to_string((array[i].*field).data());
+        res += std::to_string((array[i].*field).value());
     }
     stream << "<" << name << " value=\"" << res << "\"/>";
 }
@@ -59,18 +59,18 @@ std::string ChgTariff::serialize(const TariffDataOpt& data, const std::string& /
     appendResetableTag(stream, "passiveCost", data.tariffConf.passiveCost);
     appendResetableTag(stream, "free", data.tariffConf.free);
 
-    if (!data.tariffConf.traffType.empty())
-        stream << "<traffType value=\"" + Tariff::toString(data.tariffConf.traffType.data()) + "\"/>";
+    if (data.tariffConf.traffType)
+        stream << "<traffType value=\"" + Tariff::toString(data.tariffConf.traffType.value()) + "\"/>";
 
-    if (!data.tariffConf.period.empty())
-        switch (data.tariffConf.period.data())
+    if (data.tariffConf.period)
+        switch (data.tariffConf.period.value())
         {
             case Tariff::DAY: stream << "<period value=\"day\"/>"; break;
             case Tariff::MONTH: stream << "<period value=\"month\"/>"; break;
         }
 
-    if (!data.tariffConf.changePolicy.empty())
-        switch (data.tariffConf.changePolicy.data())
+    if (data.tariffConf.changePolicy)
+        switch (data.tariffConf.changePolicy.value())
         {
             case Tariff::ALLOW: stream << "<changePolicy value=\"allow\"/>"; break;
             case Tariff::TO_CHEAP: stream << "<changePolicy value=\"to_cheap\"/>"; break;
@@ -80,14 +80,14 @@ std::string ChgTariff::serialize(const TariffDataOpt& data, const std::string& /
 
     appendResetableTag(stream, "changePolicyTimeout", data.tariffConf.changePolicyTimeout);
     for (size_t i = 0; i < DIR_NUM; ++i)
-        if (!data.dirPrice[i].hDay.empty() &&
-            !data.dirPrice[i].mDay.empty() &&
-            !data.dirPrice[i].hNight.empty() &&
-            !data.dirPrice[i].mNight.empty())
-            stream << "<time" << i << " value=\"" << data.dirPrice[i].hDay.data() << ":"
-                                                  << data.dirPrice[i].mDay.data() << "-"
-                                                  << data.dirPrice[i].hNight.data() << ":"
-                                                  << data.dirPrice[i].mNight.data() << "\"/>";
+        if (data.dirPrice[i].hDay ||
+            data.dirPrice[i].mDay ||
+            data.dirPrice[i].hNight ||
+            data.dirPrice[i].mNight)
+            stream << "<time" << i << " value=\"" << data.dirPrice[i].hDay.value() << ":"
+                                                  << data.dirPrice[i].mDay.value() << "-"
+                                                  << data.dirPrice[i].hNight.value() << ":"
+                                                  << data.dirPrice[i].mNight.value() << "\"/>";
 
     appendSlashedResetable(stream, "priceDayA", data.dirPrice, &DirPriceDataOpt::priceDayA);
     appendSlashedResetable(stream, "priceDayB", data.dirPrice, &DirPriceDataOpt::priceDayB);
