@@ -19,17 +19,20 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#include <pthread.h>
+#include "stg/blowfish.h"
+#include "stg/rs_packets.h"
+#include "stg/logger.h"
 
 #include <string>
 #include <vector>
 #include <list>
 #include <functional>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <cstdint>
-
-#include "stg/blowfish.h"
-#include "stg/rs_packets.h"
-#include "stg/logger.h"
 
 struct UserData
 {
@@ -39,31 +42,21 @@ struct UserData
     uint32_t    id;
 };
 
-struct PendingData : public UserData
+struct PendingData
 {
+    UserData data;
     enum {CONNECT, ALIVE, DISCONNECT} type;
 };
 
-struct AliveData : public UserData
+struct AliveData
 {
-    explicit AliveData(const UserData & data)
-        : UserData(data),
+    explicit AliveData(const UserData& ud)
+        : data(ud),
           lastAlive(time(NULL))
     {};
-    bool operator<(const std::string & rvalue) const { return login < rvalue; };
-    time_t      lastAlive;
-};
-
-class IsNotTimedOut : public std::unary_function<const AliveData &, bool> {
-    public:
-        explicit IsNotTimedOut(double to) : timeout(to), now(time(NULL)) {}
-        bool operator()(const AliveData & data) const
-        {
-            return difftime(now, data.lastAlive) < timeout;
-        }
-    private:
-        double timeout;
-        time_t now;
+    bool operator<(const std::string& rhs) const { return data.login < rhs; };
+    UserData data;
+    time_t lastAlive;
 };
 
 class LISTENER
@@ -87,22 +80,20 @@ public:
 
 private:
     // Threading stuff
-    static void *       Run(void * self);
-    static void *       RunProcessor(void * self);
-    void                Runner();
-    void                ProcessorRunner();
+    void                Run(std::stop_token token);
+    void                RunProcessor(std::stop_token token);
     // Networking stuff
     bool                PrepareNet();
     bool                FinalizeNet();
-    bool                RecvPacket();
+    bool                RecvPacket(const std::stop_token& token);
     // Parsing stuff
     bool                CheckHeader(const RS::PACKET_HEADER & header) const;
     bool                GetParams(char * buffer, UserData & data);
     // Processing stuff
     void                ProcessPending();
     void                ProcessTimeouts();
-    bool                Disconnect(const UserData & data) const;
-    bool                Connect(const UserData & data) const;
+    bool                Disconnect(const AliveData& data) const;
+    bool                Connect(const PendingData& data) const;
 
     BLOWFISH_CTX        ctxS;
     STG::Logger&        WriteServLog;
@@ -113,32 +104,17 @@ private:
     std::string         password;
     uint16_t            port;
 
-    bool                running;
     bool                receiverStopped;
     bool                processorStopped;
     std::vector<AliveData> users;
-    std::list<PendingData> pending;
+    std::vector<PendingData> pending;
     int                 userTimeout;
 
-    pthread_t           receiverThread;
-    pthread_t           processorThread;
-    pthread_mutex_t     mutex;
+    std::jthread        m_receiverThread;
+    std::jthread        m_processorThread;
+    std::mutex          m_mutex;
 
     int                 listenSocket;
 
     std::string         version;
-
-    friend class DisconnectUser;
 };
-
-class DisconnectUser : public std::unary_function<const UserData &, void> {
-    public:
-        explicit DisconnectUser(LISTENER & l) : listener(l) {};
-        void operator()(const UserData & data)
-        {
-            listener.Disconnect(data);
-        };
-    private:
-        LISTENER & listener;
-};
-//-----------------------------------------------------------------------------

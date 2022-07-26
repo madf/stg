@@ -176,11 +176,7 @@ else
 KillExecuters();
 }
 //-----------------------------------------------------------------------------
-#ifdef NO_DAEMON
-int ForkAndWait(const std::string &)
-#else
-int ForkAndWait(const std::string & confDir)
-#endif
+int ForkAndWait()
 {
 #ifndef NO_DAEMON
 pid_t childPid = fork();
@@ -252,7 +248,7 @@ cfg->ReadInt("UserTimeout", &userTimeout, 60);
 cfg->ReadString("ScriptOnConnect", &onConnect, "/etc/rscriptd/OnConnect");
 cfg->ReadString("ScriptOnDisconnect", &onDisconnect, "/etc/rscriptd/OnDisconnect");
 
-if (ForkAndWait(confDir) < 0)
+if (ForkAndWait() < 0)
     {
     auto & WriteServLog = STG::Logger::get();
     WriteServLog("Fork error!");
