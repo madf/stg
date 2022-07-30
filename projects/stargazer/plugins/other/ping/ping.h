@@ -95,7 +95,6 @@ friend class CHG_CURRIP_NOTIFIER_PING;
 friend class CHG_IPS_NOTIFIER_PING;
 public:
     PING();
-    ~PING() override;
 
     void SetUsers(STG::Users * u) override { users = u; }
     void SetSettings(const STG::ModuleSettings & s) override { settings = s; }

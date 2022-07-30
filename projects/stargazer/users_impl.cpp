@@ -42,49 +42,45 @@ extern volatile time_t stgTime;
 using STG::UsersImpl;
 
 //-----------------------------------------------------------------------------
-UsersImpl::UsersImpl(SettingsImpl * s, Store * st,
-                    Tariffs * t, Services & svcs,
-                    const Admin& sa)
+UsersImpl::UsersImpl(SettingsImpl * s, Store * store,
+                    Tariffs * tariffs, Services & svcs,
+                    const Admin& sysAdmin)
     : settings(s),
-      tariffs(t),
+      m_tariffs(tariffs),
       m_services(svcs),
-      store(st),
-      sysAdmin(sa),
+      m_store(store),
+      m_sysAdmin(sysAdmin),
       WriteServLog(Logger::get()),
       isRunning(false),
       handle(0)
 {
 }
 //-----------------------------------------------------------------------------
-UsersImpl::~UsersImpl()
+bool UsersImpl::FindByNameNonLock(const std::string & login, user_iter * user)
 {
+const auto iter = loginIndex.find(login);
+if (iter == loginIndex.end())
+    return false;
+if (user != nullptr)
+    *user = iter->second;
+return true;
 }
 //-----------------------------------------------------------------------------
-int UsersImpl::FindByNameNonLock(const std::string & login, user_iter * user)
+bool UsersImpl::FindByNameNonLock(const std::string & login, const_user_iter * user) const
 {
-const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+const auto iter = loginIndex.find(login);
 if (iter == loginIndex.end())
-    return -1;
-if (user)
+    return false;
+if (user != nullptr)
     *user = iter->second;
-return 0;
-}
-//-----------------------------------------------------------------------------
-int UsersImpl::FindByNameNonLock(const std::string & login, const_user_iter * user) const
-{
-const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
-if (iter == loginIndex.end())
-    return -1;
-if (user)
-    *user = iter->second;
-return 0;
+return true;
 }
 //-----------------------------------------------------------------------------
 int UsersImpl::FindByName(const std::string & login, UserPtr * user)
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 user_iter u;
-if (FindByNameNonLock(login, &u))
+if (!FindByNameNonLock(login, &u))
     return -1;
 *user = &(*u);
 return 0;
@@ -94,7 +90,7 @@ int UsersImpl::FindByName(const std::string & login, ConstUserPtr * user) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 const_user_iter u;
-if (FindByNameNonLock(login, &u))
+if (!FindByNameNonLock(login, &u))
     return -1;
 *user = &(*u);
 return 0;
@@ -103,15 +99,14 @@ return 0;
 bool UsersImpl::Exists(const std::string & login) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
-const std::map<std::string, user_iter>::const_iterator iter(loginIndex.find(login));
+const auto iter = loginIndex.find(login);
 return iter != loginIndex.end();
 }
 //-----------------------------------------------------------------------------
 bool UsersImpl::TariffInUse(const std::string & tariffName) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
-std::list<UserImpl>::const_iterator iter;
-iter = users.begin();
+auto iter = users.begin();
 while (iter != users.end())
     {
     if (iter->GetProperties().tariffName.Get() == tariffName)
@@ -126,17 +121,17 @@ int UsersImpl::Add(const std::string & login, const Admin * admin)
 std::lock_guard<std::mutex> lock(m_mutex);
 const auto& priv = admin->priv();
 
-if (!priv.userAddDel)
+if (priv.userAddDel == 0)
     {
     WriteServLog("%s tried to add user \'%s\'. Access denied.",
                  admin->logStr().c_str(), login.c_str());
     return -1;
     }
 
-if (store->AddUser(login))
+if (m_store->AddUser(login) != 0)
     return -1;
 
-UserImpl u(settings, store, tariffs, &sysAdmin, this, m_services);
+UserImpl u(settings, m_store, m_tariffs, &m_sysAdmin, this, m_services);
 
 u.SetLogin(login);
 
@@ -156,7 +151,7 @@ AddUserIntoIndexes(users.begin());
 
     {
     // Fire all "on add" notifiers
-    std::set<NotifierBase<UserPtr> *>::iterator ni = onAddNotifiers.begin();
+    auto ni = onAddNotifiers.begin();
     while (ni != onAddNotifiers.end())
         {
         (*ni)->Notify(&users.front());
@@ -166,7 +161,7 @@ AddUserIntoIndexes(users.begin());
 
     {
     // Fire all "on add" implementation notifiers
-    std::set<NotifierBase<UserImplPtr> *>::iterator ni = onAddNotifiersImpl.begin();
+    auto ni = onAddNotifiersImpl.begin();
     while (ni != onAddNotifiersImpl.end())
         {
         (*ni)->Notify(&users.front());
@@ -182,7 +177,7 @@ void UsersImpl::Del(const std::string & login, const Admin * admin)
 const auto& priv = admin->priv();
 user_iter u;
 
-if (!priv.userAddDel)
+if (priv.userAddDel == 0)
     {
     WriteServLog("%s tried to remove user \'%s\'. Access denied.",
                  admin->logStr().c_str(), login.c_str());
@@ -193,7 +188,7 @@ if (!priv.userAddDel)
     {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if (FindByNameNonLock(login, &u))
+    if (!FindByNameNonLock(login, &u))
         {
         WriteServLog("%s tried to delete user \'%s\': not found.",
                      admin->logStr().c_str(),
@@ -205,7 +200,7 @@ if (!priv.userAddDel)
     }
 
     {
-    std::set<NotifierBase<UserPtr> *>::iterator ni = onDelNotifiers.begin();
+    auto ni = onDelNotifiers.begin();
     while (ni != onDelNotifiers.end())
         {
         (*ni)->Notify(&(*u));
@@ -214,7 +209,7 @@ if (!priv.userAddDel)
     }
 
     {
-    std::set<NotifierBase<UserImplPtr> *>::iterator ni = onDelNotifiersImpl.begin();
+    auto ni = onDelNotifiersImpl.begin();
     while (ni != onDelNotifiersImpl.end())
         {
         (*ni)->Notify(&(*u));
@@ -245,7 +240,7 @@ bool UsersImpl::Authorize(const std::string & login, uint32_t ip,
 {
 user_iter iter;
 std::lock_guard<std::mutex> lock(m_mutex);
-if (FindByNameNonLock(login, &iter))
+if (!FindByNameNonLock(login, &iter))
     {
     WriteServLog("Attempt to authorize non-existant user '%s'", login.c_str());
     return false;
@@ -260,12 +255,10 @@ if (FindByIPIdx(ip, iter))
                      iter->GetLogin().c_str());
         return false;
         }
-    if (iter->Authorize(ip, enabledDirs, auth))
-        return false;
-    return true;
+    return iter->Authorize(ip, enabledDirs, auth) == 0;
     }
 
-if (iter->Authorize(ip, enabledDirs, auth))
+if (iter->Authorize(ip, enabledDirs, auth) != 0)
     return false;
 
 AddToIPIdx(iter);
@@ -278,7 +271,7 @@ bool UsersImpl::Unauthorize(const std::string & login,
 {
 user_iter iter;
 std::lock_guard<std::mutex> lock(m_mutex);
-if (FindByNameNonLock(login, &iter))
+if (!FindByNameNonLock(login, &iter))
     {
     WriteServLog("Attempt to unauthorize non-existant user '%s'", login.c_str());
     printfd(__FILE__, "Attempt to unauthorize non-existant user '%s'", login.c_str());
@@ -289,7 +282,7 @@ uint32_t ip = iter->GetCurrIP();
 
 iter->Unauthorize(auth, reason);
 
-if (!iter->GetAuthorized())
+if (iter->GetAuthorized() == 0)
     DelFromIPIdx(ip);
 
 return true;
@@ -299,20 +292,20 @@ int UsersImpl::ReadUsers()
 {
 std::vector<std::string> usersList;
 usersList.clear();
-if (store->GetUsersList(&usersList) < 0)
+if (m_store->GetUsersList(&usersList) < 0)
     {
-    WriteServLog(store->GetStrError().c_str());
+    WriteServLog(m_store->GetStrError().c_str());
     return -1;
     }
 
 user_iter ui;
 
 unsigned errors = 0;
-for (unsigned int i = 0; i < usersList.size(); i++)
+for (const auto& user : usersList)
     {
-    UserImpl u(settings, store, tariffs, &sysAdmin, this, m_services);
+    UserImpl u(settings, m_store, m_tariffs, &m_sysAdmin, this, m_services);
 
-    u.SetLogin(usersList[i]);
+    u.SetLogin(user);
     users.push_front(u);
     ui = users.begin();
 
@@ -345,7 +338,7 @@ void UsersImpl::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+pthread_sigmask(SIG_BLOCK, &signalSet, nullptr);
 
 printfd(__FILE__, "=====================| pid: %d |===================== \n", getpid());
 
@@ -400,7 +393,7 @@ while (!token.stop_requested())
     stgUsleep(100000);
     }
 
-std::list<USER_TO_DEL>::iterator iter(usersToDelete.begin());
+auto iter = usersToDelete.begin();
 while (iter != usersToDelete.end())
     {
     iter->delTime -= 2 * userDeleteDelayTime;
@@ -426,8 +419,7 @@ if (TimeToWriteDetailStat(t))
     //printfd(__FILE__, "USER::WriteInetStat\n");
     int usersCnt = 0;
 
-    // Пишем юзеров частями. В перерывах вызываем USER::Run
-    std::list<UserImpl>::iterator usr = users.begin();
+    auto usr = users.begin();
     while (usr != users.end())
         {
         usersCnt++;
@@ -488,7 +480,7 @@ if (settings->GetDayFeeIsLastDay())
 //-----------------------------------------------------------------------------
 void UsersImpl::DayResetTraff(const struct tm & t1)
 {
-int dayResetTraff = settings->GetDayResetTraff();
+auto dayResetTraff = settings->GetDayResetTraff();
 if (dayResetTraff == 0)
     dayResetTraff = DaysInCurrentMonth();
 if (t1.tm_mday == dayResetTraff)
@@ -501,13 +493,13 @@ if (t1.tm_mday == dayResetTraff)
 //-----------------------------------------------------------------------------
 int UsersImpl::Start()
 {
-if (ReadUsers())
+if (ReadUsers() != 0)
     {
     WriteServLog("USERS: Error: Cannot read users!");
     return -1;
     }
 
-m_thread = std::jthread([this](auto token){ Run(token); });
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 return 0;
 }
 //-----------------------------------------------------------------------------
@@ -524,7 +516,7 @@ for (size_t i = 0; i < 25 * (users.size() / 50 + 1); i++)
     if (!isRunning)
         break;
 
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
     }
 
 //after 5 seconds waiting thread still running. now kill it
@@ -540,11 +532,8 @@ else
 printfd(__FILE__, "Before USERS::Run()\n");
 for_each(users.begin(), users.end(), [](auto& user){ user.Run(); });
 
-// 'cause bind2st accepts only constant first param
-for (std::list<UserImpl>::iterator it = users.begin();
-     it != users.end();
-     ++it)
-    it->WriteDetailStat(true);
+for (auto& user : users)
+    user.WriteDetailStat(true);
 
 for_each(users.begin(), users.end(), [](auto& user){ user.WriteStat(); });
 //for_each(users.begin(), users.end(), mem_fun_ref(&UserImpl::WriteConf));
@@ -559,15 +548,14 @@ std::lock_guard<std::mutex> lock(m_mutex);
 
 printfd(__FILE__, "RealDelUser() users to del: %d\n", usersToDelete.size());
 
-std::list<USER_TO_DEL>::iterator iter;
-iter = usersToDelete.begin();
+auto iter = usersToDelete.begin();
 while (iter != usersToDelete.end())
     {
     printfd(__FILE__, "RealDelUser() user=%s\n", iter->iter->GetLogin().c_str());
     if (iter->delTime + userDeleteDelayTime < stgTime)
         {
         printfd(__FILE__, "RealDelUser() user=%s removed from DB\n", iter->iter->GetLogin().c_str());
-        if (store->DelUser(iter->iter->GetLogin()))
+        if (m_store->DelUser(iter->iter->GetLogin()) != 0)
             {
             WriteServLog("Error removing user \'%s\' from database.", iter->iter->GetLogin().c_str());
             }
@@ -579,7 +567,6 @@ while (iter != usersToDelete.end())
         ++iter;
         }
     }
-return;
 }
 //-----------------------------------------------------------------------------
 void UsersImpl::AddToIPIdx(user_iter user)
@@ -587,14 +574,12 @@ void UsersImpl::AddToIPIdx(user_iter user)
 printfd(__FILE__, "USERS: Add IP Idx\n");
 uint32_t ip = user->GetCurrIP();
 //assert(ip && "User has non-null ip");
-if (!ip)
+if (ip == 0)
     return; // User has disconnected
 
 std::lock_guard<std::mutex> lock(m_mutex);
 
-const std::map<uint32_t, user_iter>::iterator it(
-        ipIndex.lower_bound(ip)
-);
+const auto it = ipIndex.lower_bound(ip);
 
 assert((it == ipIndex.end() || it->first != ip) && "User is not in index");
 
@@ -608,9 +593,7 @@ assert(ip && "User has non-null ip");
 
 std::lock_guard<std::mutex> lock(m_mutex);
 
-const std::map<uint32_t, user_iter>::iterator it(
-        ipIndex.find(ip)
-);
+const auto it = ipIndex.find(ip);
 
 if (it == ipIndex.end())
     return;
@@ -620,35 +603,35 @@ ipIndex.erase(it);
 //-----------------------------------------------------------------------------
 bool UsersImpl::FindByIPIdx(uint32_t ip, user_iter & iter) const
 {
-std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
+auto it = ipIndex.find(ip);
 if (it == ipIndex.end())
     return false;
 iter = it->second;
 return true;
 }
 //-----------------------------------------------------------------------------
-int UsersImpl::FindByIPIdx(uint32_t ip, UserPtr * usr) const
+int UsersImpl::FindByIPIdx(uint32_t ip, UserPtr * user) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 
 user_iter iter;
 if (FindByIPIdx(ip, iter))
     {
-    *usr = &(*iter);
+    *user = &(*iter);
     return 0;
     }
 
 return -1;
 }
 //-----------------------------------------------------------------------------
-int UsersImpl::FindByIPIdx(uint32_t ip, UserImpl ** usr) const
+int UsersImpl::FindByIPIdx(uint32_t ip, UserImpl ** user) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 
 user_iter iter;
 if (FindByIPIdx(ip, iter))
     {
-    *usr = &(*iter);
+    *user = &(*iter);
     return 0;
     }
 
@@ -659,23 +642,20 @@ bool UsersImpl::IsIPInIndex(uint32_t ip) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 
-std::map<uint32_t, user_iter>::const_iterator it(ipIndex.find(ip));
-
-return it != ipIndex.end();
+return ipIndex.find(ip) != ipIndex.end();
 }
 //-----------------------------------------------------------------------------
 bool UsersImpl::IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const
 {
 std::lock_guard<std::mutex> lock(m_mutex);
-std::list<UserImpl>::const_iterator iter;
-iter = users.begin();
+auto iter = users.begin();
 while (iter != users.end())
     {
     if (iter->GetLogin() != login &&
         !iter->GetProperties().ips.Get().isAnyIP() &&
         iter->GetProperties().ips.Get().find(ip))
         {
-        if (user != NULL)
+        if (user != nullptr)
             *user = &(*iter);
         return true;
         }
@@ -732,7 +712,7 @@ std::lock_guard<std::mutex> lock(m_mutex);
 onDelNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
-int UsersImpl::OpenSearch()
+unsigned int UsersImpl::OpenSearch()
 {
 std::lock_guard<std::mutex> lock(m_mutex);
 handle++;
@@ -742,8 +722,8 @@ return handle;
 //-----------------------------------------------------------------------------
 int UsersImpl::SearchNext(int h, UserPtr * user)
 {
-    UserImpl * ptr = NULL;
-    if (SearchNext(h, &ptr))
+    UserImpl * ptr = nullptr;
+    if (SearchNext(h, &ptr) != 0)
         return -1;
     *user = ptr;
     return 0;
@@ -805,7 +785,7 @@ loginIndex.erase(user->GetLogin());
 //-----------------------------------------------------------------------------
 bool UsersImpl::TimeToWriteDetailStat(const struct tm & t)
 {
-int statTime = settings->GetDetailStatWritePeriod();
+auto statTime = settings->GetDetailStatWritePeriod();
 
 switch (statTime)
     {

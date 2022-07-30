@@ -65,7 +65,7 @@ struct Users {
     virtual bool IsIPInIndex(uint32_t ip) const = 0;
     virtual bool IsIPInUse(uint32_t ip, const std::string & login, const User** user) const = 0;
 
-    virtual int  OpenSearch() = 0;
+    virtual unsigned int  OpenSearch() = 0;
     virtual int  SearchNext(int handle, User** u) = 0;
     virtual int  CloseSearch(int handle) = 0;
 

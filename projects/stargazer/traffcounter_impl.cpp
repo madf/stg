@@ -106,7 +106,7 @@ while (users->SearchNext(h, &u) == 0)
     SetUserNotifiers(u);
 users->CloseSearch(h);
 
-m_thread = std::jthread([this](auto token){ Run(token); });
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 return 0;
 }
 //-----------------------------------------------------------------------------

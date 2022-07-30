@@ -177,7 +177,6 @@ private:
 class REMOTE_SCRIPT : public STG::Plugin {
 public:
                         REMOTE_SCRIPT();
-                        ~REMOTE_SCRIPT() override;
 
     void                SetUsers(STG::Users * u) override { users = u; }
     void                SetSettings(const STG::ModuleSettings & s) override { settings = s; }

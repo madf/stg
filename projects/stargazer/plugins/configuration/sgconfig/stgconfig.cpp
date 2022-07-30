@@ -102,7 +102,7 @@ int STG_CONFIG::Start()
         return -1;
     }
 
-    m_thread = std::jthread([this](auto token){ Run(token); });
+    m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
     return 0;
 }

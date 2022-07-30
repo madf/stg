@@ -78,18 +78,17 @@ int RS::SETTINGS::ParseSettings(const STG::ModuleSettings & s)
 {
 int p;
 STG::ParamValue pv;
-std::vector<STG::ParamValue>::const_iterator pvi;
 netRouters.clear();
 ///////////////////////////
 pv.param = "Port";
-pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+auto pvi = find(s.moduleParams.begin(), s.moduleParams.end(), pv);
 if (pvi == s.moduleParams.end() || pvi->value.empty())
     {
     errorStr = "Parameter \'Port\' not found.";
     printfd(__FILE__, "Parameter 'Port' not found\n");
     return -1;
     }
-if (ParseIntInRange(pvi->value[0], 2, 65535, &p))
+if (ParseIntInRange(pvi->value[0], 2, 65535, &p) != 0)
     {
     errorStr = "Cannot parse parameter \'Port\': " + errorStr;
     printfd(__FILE__, "Cannot parse parameter 'Port'\n");
@@ -106,7 +105,7 @@ if (pvi == s.moduleParams.end() || pvi->value.empty())
     return -1;
     }
 
-if (ParseIntInRange(pvi->value[0], 5, 600, &sendPeriod))
+if (ParseIntInRange(pvi->value[0], 5, 600, &sendPeriod) != 0)
     {
     errorStr = "Cannot parse parameter \'SendPeriod\': " + errorStr;
     printfd(__FILE__, "Cannot parse parameter 'SendPeriod'\n");
@@ -146,13 +145,9 @@ subnetFile = pvi->value[0];
 NRMapParser nrMapParser;
 
 if (!nrMapParser.ReadFile(subnetFile))
-    {
     netRouters = nrMapParser.GetMap();
-    }
 else
-    {
-        STG::PluginLogger::get("rscript")("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
-    }
+    STG::PluginLogger::get("rscript")("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
 
 return 0;
 }
@@ -163,7 +158,7 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
     : sendPeriod(15),
       halfPeriod(8),
       isRunning(false),
-      users(NULL),
+      users(nullptr),
       sock(0),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
@@ -171,15 +166,11 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
 {
 }
 //-----------------------------------------------------------------------------
-REMOTE_SCRIPT::~REMOTE_SCRIPT()
-{
-}
-//-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+pthread_sigmask(SIG_BLOCK, &signalSet, nullptr);
 
 isRunning = true;
 
@@ -194,8 +185,8 @@ isRunning = false;
 //-----------------------------------------------------------------------------
 int REMOTE_SCRIPT::ParseSettings()
 {
-int ret = rsSettings.ParseSettings(settings);
-if (ret)
+auto ret = rsSettings.ParseSettings(settings);
+if (ret != 0)
     errorStr = rsSettings.GetStrError();
 
 sendPeriod = rsSettings.GetSendPeriod();
@@ -214,19 +205,13 @@ users->AddNotifierUserAdd(&onAddUserNotifier);
 users->AddNotifierUserDel(&onDelUserNotifier);
 
 if (GetUsers())
-    {
     return -1;
-    }
 
 if (PrepareNet())
-    {
     return -1;
-    }
 
 if (!isRunning)
-    {
-    m_thread = std::jthread([this](auto token){ Run(token); });
-    }
+    m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 errorStr = "";
 return 0;
@@ -253,7 +238,7 @@ if (isRunning)
     for (int i = 0; i < 25 && isRunning; i++)
         {
         struct timespec ts = {0, 200000000};
-        nanosleep(&ts, NULL);
+        nanosleep(&ts, nullptr);
         }
     }
 
@@ -325,7 +310,7 @@ void REMOTE_SCRIPT::PeriodicSend()
 {
 std::lock_guard lock(m_mutex);
 
-std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
+auto it = authorizedUsers.begin();
 while (it != authorizedUsers.end())
     {
     if (difftime(stgTime, it->second.lastSentTime) - (rand() % halfPeriod) > sendPeriod)
@@ -393,19 +378,16 @@ RS::PACKET_TAIL packetTail;
 
 memset(packetTail.padding, 0, sizeof(packetTail.padding));
 memcpy(packetTail.magic, RS_ID, sizeof(RS_ID));
-std::vector<std::string>::const_iterator it;
 std::string params;
-for(it = rsSettings.GetUserParams().begin();
-    it != rsSettings.GetUserParams().end();
-    ++it)
+for (const auto& param : rsSettings.GetUserParams())
     {
-    std::string parameter(rsu.user->GetParamValue(it->c_str()));
-    if (params.length() + parameter.length() > RS_PARAMS_LEN - 1)
+    auto value = rsu.user->GetParamValue(param);
+    if (params.length() + value.length() > RS_PARAMS_LEN - 1)
     {
-        logger("Script params string length %d exceeds the limit of %d symbols.", params.length() + parameter.length(), RS_PARAMS_LEN);
+        logger("Script params string length %d exceeds the limit of %d symbols.", params.length() + value.length(), RS_PARAMS_LEN);
         break;
     }
-    params += parameter + " ";
+    params += value + " ";
     }
 strncpy(reinterpret_cast<char*>(packetTail.params), params.c_str(), RS_PARAMS_LEN);
 packetTail.params[RS_PARAMS_LEN - 1] = 0;
@@ -437,7 +419,7 @@ for (const auto& ip : rsu.routers)
     sendAddr.sin_port = htons(rsSettings.GetPort());
     sendAddr.sin_addr.s_addr = ip;
 
-    return sendto(sock, buffer, sizeof(buffer), 0, reinterpret_cast<struct sockaddr*>(&sendAddr), sizeof(sendAddr));
+    return sendto(sock, buffer, sizeof(buffer), 0, reinterpret_cast<struct sockaddr*>(&sendAddr), sizeof(sendAddr)) > 0;
 }
 
 return false;
@@ -474,10 +456,8 @@ UserPtr u;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
-while (!users->SearchNext(h, &u))
-    {
+while (users->SearchNext(h, &u) != 0)
     SetUserNotifiers(u);
-    }
 
 users->CloseSearch(h);
 return false;
@@ -486,14 +466,10 @@ return false;
 std::vector<uint32_t> REMOTE_SCRIPT::IP2Routers(uint32_t ip)
 {
 std::lock_guard lock(m_mutex);
-for (size_t i = 0; i < netRouters.size(); ++i)
-    {
-    if ((ip & netRouters[i].subnetMask) == (netRouters[i].subnetIP & netRouters[i].subnetMask))
-        {
-        return netRouters[i].routers;
-        }
-    }
-return std::vector<uint32_t>();
+for (auto& nr : netRouters)
+    if ((ip & nr.subnetMask) == (nr.subnetIP & nr.subnetMask))
+        return nr.routers;
+return {};
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::SetUserNotifiers(UserPtr u)
@@ -527,7 +503,7 @@ authorizedUsers.insert(std::make_pair(user->GetCurrIP(), rsu));
 void REMOTE_SCRIPT::DelRSU(UserPtr user)
 {
 std::lock_guard lock(m_mutex);
-std::map<uint32_t, RS::USER>::iterator it(authorizedUsers.begin());
+auto it = authorizedUsers.begin();
 while (it != authorizedUsers.end())
     {
     if (it->second.user == user)
@@ -538,9 +514,7 @@ while (it != authorizedUsers.end())
         }
     ++it;
     }
-/*const std::map<uint32_t, RS::USER>::iterator it(
-        authorizedUsers.find(user->GetCurrIP())
-        );
+/*const auto it = authorizedUsers.find(user->GetCurrIP());
 if (it != authorizedUsers.end())
     {
     Send(it->second, true);
@@ -550,7 +524,7 @@ if (it != authorizedUsers.end())
 //-----------------------------------------------------------------------------
 void RS::IP_NOTIFIER::Notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
 {
-if (newValue)
+if (newValue != 0)
     rs.AddRSU(user);
 else
     rs.DelRSU(user);

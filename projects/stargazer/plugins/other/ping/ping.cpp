@@ -50,7 +50,7 @@ if (pvi == s.moduleParams.end() || pvi->value.empty())
     printfd(__FILE__, "Parameter 'PingDelay' not found\n");
     return -1;
     }
-if (ParseIntInRange(pvi->value[0], 5, 3600, &pingDelay))
+if (ParseIntInRange(pvi->value[0], 5, 3600, &pingDelay) != 0)
     {
     errorStr = "Cannot parse parameter \'PingDelay\': " + errorStr;
     printfd(__FILE__, "Canot parse parameter 'PingDelay'\n");
@@ -61,7 +61,7 @@ return 0;
 }
 //-----------------------------------------------------------------------------
 PING::PING()
-    : users(NULL),
+    : users(nullptr),
       isRunning(false),
       onAddUserNotifier(*this),
       onDelUserNotifier(*this),
@@ -69,14 +69,10 @@ PING::PING()
 {
 }
 //-----------------------------------------------------------------------------
-PING::~PING()
-{
-}
-//-----------------------------------------------------------------------------
 int PING::ParseSettings()
 {
-int ret = pingSettings.ParseSettings(settings);
-if (ret)
+auto ret = pingSettings.ParseSettings(settings);
+if (ret != 0)
     errorStr = pingSettings.GetStrError();
 return ret;
 }
@@ -91,7 +87,7 @@ users->AddNotifierUserDel(&onDelUserNotifier);
 pinger.SetDelayTime(pingSettings.GetPingDelay());
 pinger.Start();
 
-m_thread = std::jthread([this](auto token){ Run(token); });
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -112,7 +108,7 @@ for (int i = 0; i < 25; i++)
     if (!isRunning)
         break;
 
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
     }
 
 users->DelNotifierUserAdd(&onAddUserNotifier);
@@ -143,7 +139,7 @@ void PING::Run(std::stop_token token)
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+pthread_sigmask(SIG_BLOCK, &signalSet, nullptr);
 
 isRunning = true;
 
@@ -151,7 +147,7 @@ long delay = (10000000 * pingSettings.GetPingDelay()) / 3 + 50000000;
 
 while (!token.stop_requested())
     {
-    std::list<UserPtr>::iterator iter = usersList.begin();
+    auto iter = usersList.begin();
         {
         std::lock_guard lock(m_mutex);
         while (iter != usersList.end())
@@ -162,19 +158,19 @@ while (!token.stop_requested())
                 time_t t;
                 if (pinger.GetIPTime(ip, &t) == 0)
                     {
-                    if (t)
+                    if (t != 0)
                         (*iter)->UpdatePingTime(t);
                     }
                 }
             else
                 {
                 uint32_t ip = (*iter)->GetCurrIP();
-                if (ip)
+                if (ip != 0)
                     {
                     time_t t;
                     if (pinger.GetIPTime(ip, &t) == 0)
                         {
-                        if (t)
+                        if (t != 0)
                             (*iter)->UpdatePingTime(t);
                         }
                     }
@@ -187,7 +183,7 @@ while (!token.stop_requested())
         {
         if (!token.stop_requested())
             {
-            nanosleep(&ts, NULL);
+            nanosleep(&ts, nullptr);
             }
         }
     }
@@ -259,7 +255,7 @@ while (users->SearchNext(h, &u) == 0)
     else
         {
         uint32_t ip = u->GetCurrIP();
-        if (ip)
+        if (ip != 0)
             pinger.AddIP(ip);
         }
     }
@@ -298,7 +294,7 @@ while (users_iter != usersList.end())
 void CHG_CURRIP_NOTIFIER_PING::Notify(const uint32_t & oldIP, const uint32_t & newIP)
 {
 ping.pinger.DelIP(oldIP);
-if (newIP)
+if (newIP != 0)
     ping.pinger.AddIP(newIP);
 }
 //-----------------------------------------------------------------------------

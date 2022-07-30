@@ -76,7 +76,6 @@ public:
     UsersImpl(SettingsImpl * s, Store * store,
               Tariffs * tariffs, Services & svcs,
               const Admin& sysAdmin);
-    virtual ~UsersImpl();
 
     int             FindByName(const std::string & login, UserPtr * user) override;
     int             FindByName(const std::string & login, ConstUserPtr * user) const override;
@@ -113,7 +112,7 @@ public:
     bool            IsIPInIndex(uint32_t ip) const override;
     bool            IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const override;
 
-    int             OpenSearch() override;
+    unsigned int    OpenSearch() override;
     int             SearchNext(int handler, UserPtr * user) override;
     int             SearchNext(int handler, UserImpl ** user);
     int             CloseSearch(int handler) override;
@@ -129,8 +128,8 @@ private:
     void            DelFromIPIdx(uint32_t ip);
     bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
 
-    int             FindByNameNonLock(const std::string & login, user_iter * user);
-    int             FindByNameNonLock(const std::string & login, const_user_iter * user) const;
+    bool            FindByNameNonLock(const std::string & login, user_iter * user);
+    bool            FindByNameNonLock(const std::string & login, const_user_iter * user) const;
 
     void            RealDelUser();
     void            ProcessActions();
@@ -152,10 +151,10 @@ private:
     std::map<std::string, user_iter>      loginIndex;
 
     SettingsImpl *     settings;
-    Tariffs *           tariffs;
+    Tariffs *           m_tariffs;
     Services &          m_services;
-    Store *             store;
-    const Admin&       sysAdmin;
+    Store *             m_store;
+    const Admin&        m_sysAdmin;
     Logger &        WriteServLog;
 
     bool                isRunning;
@@ -164,7 +163,7 @@ private:
     std::jthread            m_thread;
     mutable unsigned int    handle;
 
-    mutable std::map<int, user_iter>  searchDescriptors;
+    mutable std::map<unsigned int, user_iter>  searchDescriptors;
 
     std::set<NotifierBase<UserPtr>*> onAddNotifiers;
     std::set<NotifierBase<UserPtr>*> onDelNotifiers;

@@ -42,7 +42,7 @@ class TEST_USERS : public STG::Users {
         bool IsIPInUse(uint32_t, const std::string &, ConstUserPtr *) const override { return false; }
         bool Exists(const std::string &) const override { return false; }
 
-        int  OpenSearch() override { return 0; }
+        unsigned int  OpenSearch() override { return 0; }
         int  SearchNext(int /*handle*/, UserPtr * /*u*/) override { return -1; }
         int  CloseSearch(int /*handle*/) override { return 0; }
 
