@@ -23,6 +23,13 @@ add_executable ( stargazer ${CPP_FILES} )
 
 target_link_libraries ( stargazer scriptexecuter dotconfpp logger common Threads::Threads ${CMAKE_DL_LIBS} )
 
+if ( CLANG_TIDY_EXE )
+    set_target_properties ( stargazer PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}" )
+endif ()
+if ( INCLUDE_WHAT_YOU_USE_EXE )
+    set_target_properties ( stargazer PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${DO_INCLUDE_WHAT_YOU_USE}" )
+endif ()
+
 add_subdirectory ( plugins )
 
 # TODO: install

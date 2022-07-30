@@ -15,4 +15,11 @@ add_executable ( sgauth ${CPP_FILES} )
 
 target_link_libraries ( sgauth conffiles ia crypto common ${Intl_LIBRARIES} Threads::Threads )
 
+if ( CLANG_TIDY_EXE )
+    set_target_properties ( sgauth PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}" )
+endif ()
+if ( INCLUDE_WHAT_YOU_USE_EXE )
+    set_target_properties ( sgauth PROPERTIES CXX_INCLUDE_WHAT_YOU_USE "${DO_INCLUDE_WHAT_YOU_USE}" )
+endif ()
+
 # TODO: install

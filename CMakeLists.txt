@@ -101,6 +101,40 @@ if ( BUILD_MOD_SMUX OR BUILD_ALL_LIBS )
     set ( BUILD_LIB_SMUX ON )
 endif ( BUILD_MOD_SMUX OR BUILD_ALL_LIBS )
 
+if ( TIDY )
+    find_program( CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable" )
+    if ( NOT CLANG_TIDY_EXE )
+        message( STATUS "clang-tidy not found." )
+    else ()
+        message( STATUS "clang-tidy found: ${CLANG_TIDY_EXE}" )
+        set( DO_CLANG_TIDY "${CLANG_TIDY_EXE}"
+             "-checks=-*,\
+clang-analyzer-*,\
+misc-*,\
+modernize-*,\
+performance-*,\
+portability-*,\
+readability-*,\
+bugprone-*,\
+-modernize-avoid-bind,\
+-modernize-use-trailing-return-type,\
+-readability-braces-around-statements, \
+-readability-magic-numbers, \
+-readability-identifier-length, \
+-bugprone-easily-swappable-parameters" )
+    endif ()
+endif ()
+
+if ( IWYU )
+    find_program( INCLUDE_WHAT_YOU_USE_EXE NAMES "include-what-you-use" DOC "Path to include-what-you-use executable" )
+    if ( NOT INCLUDE_WHAT_YOU_USE_EXE )
+        message( STATUS "include-what-you-use not found." )
+    else ()
+        message( STATUS "include-what-you-use found: ${INCLUDE_WHAT_YOU_USE_EXE}" )
+        set( DO_INCLUDE_WHAT_YOU_USE "${INCLUDE_WHAT_YOU_USE_EXE}" )
+    endif ()
+endif ()
+
 enable_language (CXX)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -Wshadow -Wno-long-long -Wold-style-cast -Wstrict-aliasing -pedantic")
