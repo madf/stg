@@ -1,20 +1,34 @@
-#include "tut/tut.hpp"
+#define BOOST_TEST_MODULE STGCrypto
 
 #include "stg/blowfish.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#include <boost/test/unit_test.hpp>
+#pragma GCC diagnostic pop
+
+#include <string>
+#include <vector>
+#include <array>
 
 namespace
 {
 
-bool equalCtx(const BLOWFISH_CTX & a, const BLOWFISH_CTX & b)
+bool equalCtx(const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
 {
     for (size_t i = 0; i < sizeof(a.P); ++i)
-        if (a.P[i] != b.P[i]) {
+        if (a.P[i] != b.P[i])
+        {
             //printf("Failed for P at %d: 0%x != 0%x\n", i, a.P[i], b.P[i]);
             return false;
         }
     for (size_t i = 0; i < 4; ++i)
         for (size_t j = 0; j < 256; ++j)
-            if (a.S[i][j] != b.S[i][j]) {
+            if (a.S[i][j] != b.S[i][j])
+            {
                 //printf("Failed for S at %d, %d: 0%x != 0%x\n", i, j, a.S[i][j], b.S[i][j]);
 
                 return false;
@@ -24,13 +38,13 @@ bool equalCtx(const BLOWFISH_CTX & a, const BLOWFISH_CTX & b)
 
 bool equalString(const char* a, const char* b, size_t length)
 {
-    bool res = true;
     for (size_t i = 0; i < length; ++i)
-        if (a[i] != b[i]) {
+        if (a[i] != b[i])
+        {
             //printf("Failed at pos %d: %hhu != %hhu\n", i, a[i], b[i]);
-            res = false;
+            return false;
         }
-    return res;
+    return true;
 }
 
 const BLOWFISH_CTX testCtx =
@@ -318,153 +332,109 @@ const unsigned char testString[] = { 68, 100, 2, 115, 6, 54, 226, 228 };
 
 } // namespace anonymous
 
-namespace tut
+BOOST_AUTO_TEST_SUITE(Crypto)
+
+BOOST_AUTO_TEST_CASE(ContextCreation)
 {
-    struct crypto_data {
-    };
-
-    typedef test_group<crypto_data> tg;
-    tg crypto_test_group("Crypto tests group");
-
-    typedef tg::object testobject;
-
-    template<>
-    template<>
-    void testobject::test<1>()
-    {
-        set_test_name("Check context creation");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        ensure("ctx == testCtx", equalCtx(ctx, testCtx));
-    }
-
-    template<>
-    template<>
-    void testobject::test<2>()
-    {
-        set_test_name("Check encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        uint32_t a = 0x12345678;
-        uint32_t b = 0x87654321;
-        Blowfish_Encrypt(&ctx, &a, &b);
-
-        ensure_equals("a == 0xd3988cd", a, 0xd3988cd);
-        ensure_equals("b == 0x7996c6d6", b, 0x7996c6d6);
-    }
-
-    template<>
-    template<>
-    void testobject::test<3>()
-    {
-        set_test_name("Check decryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        uint32_t a = 0xd3988cd;
-        uint32_t b = 0x7996c6d6;
-        Blowfish_Decrypt(&ctx, &a, &b);
-
-        ensure_equals("a == 0x12345678", a, 0x12345678);
-        ensure_equals("b == 0x87654321", b, 0x87654321);
-    }
-
-    template<>
-    template<>
-    void testobject::test<4>()
-    {
-        set_test_name("Check block encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        uint32_t block[2] = {0x12345678, 0x87654321};
-        EncryptBlock(&block, &block, &ctx);
-
-        ensure_equals("block[0] == 0xd3988cd", block[0], 0xd3988cd);
-        ensure_equals("block[1] == 0x7996c6d6", block[1], 0x7996c6d6);
-    }
-
-    template<>
-    template<>
-    void testobject::test<5>()
-    {
-        set_test_name("Check block decryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        uint32_t block[2] = {0xd3988cd, 0x7996c6d6};
-        DecryptBlock(&block, &block, &ctx);
-
-        ensure_equals("block[0] == 0x12345678", block[0], 0x12345678);
-        ensure_equals("block[1] == 0x87654321", block[1], 0x87654321);
-    }
-
-    template<>
-    template<>
-    void testobject::test<6>()
-    {
-        set_test_name("Check string encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        char res[8];
-        EncryptString(res, "testtest", 8, &ctx);
-
-        ensure("EncryptString(\"testtest\") == testString", equalString(res, (char *)testString, 8));
-    }
-
-    template<>
-    template<>
-    void testobject::test<7>()
-    {
-        set_test_name("Check long string encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("pr7Hhen", 7, &ctx);
-        std::string source("abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        char longTest[source.length() + 8];
-        EncryptString(longTest, source.c_str(), source.length() + 1, &ctx);
-        DecryptString(longTest, longTest, sizeof(longTest), &ctx);
-
-        ensure_equals("DecryptString(EncryptString(longTest)) == longTest", source, std::string(longTest));
-    }
-
-    template<>
-    template<>
-    void testobject::test<8>()
-    {
-        set_test_name("Check old string encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("123456", 7, &ctx);
-        const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
-                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
-                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
-                                        0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb};
-        char res[32];
-        DecryptString(res, source, 32, &ctx);
-
-        ensure_equals("DecryptString(...) == 'admin'", std::string(res), "admin");
-    }
-
-    template<>
-    template<>
-    void testobject::test<9>()
-    {
-        set_test_name("Check new string encryption");
-
-        BLOWFISH_CTX ctx;
-        InitContext("123456", 7, &ctx);
-        const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
-                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        char res[32];
-        DecryptString(res, source, 32, &ctx);
-
-        ensure_equals("DecryptString(...) == 'admin'", std::string(res), "admin");
-    }
-
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    BOOST_CHECK(equalCtx(ctx, testCtx));
 }
+
+BOOST_AUTO_TEST_CASE(Encryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    uint32_t a = 0x12345678;
+    uint32_t b = 0x87654321;
+    Blowfish_Encrypt(&ctx, &a, &b);
+
+    BOOST_CHECK_EQUAL(a, 0xd3988cd);
+    BOOST_CHECK_EQUAL(b, 0x7996c6d6);
+}
+
+BOOST_AUTO_TEST_CASE(Decryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    uint32_t a = 0xd3988cd;
+    uint32_t b = 0x7996c6d6;
+    Blowfish_Decrypt(&ctx, &a, &b);
+
+    BOOST_CHECK_EQUAL(a, 0x12345678);
+    BOOST_CHECK_EQUAL(b, 0x87654321);
+}
+
+BOOST_AUTO_TEST_CASE(BlockEncryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    uint32_t block[2] = {0x12345678, 0x87654321};
+    EncryptBlock(&block, &block, &ctx);
+
+    BOOST_CHECK_EQUAL(block[0], 0xd3988cd);
+    BOOST_CHECK_EQUAL(block[1], 0x7996c6d6);
+}
+
+BOOST_AUTO_TEST_CASE(BlockDecryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    uint32_t block[2] = {0xd3988cd, 0x7996c6d6};
+    DecryptBlock(&block, &block, &ctx);
+
+    BOOST_CHECK_EQUAL(block[0], 0x12345678);
+    BOOST_CHECK_EQUAL(block[1], 0x87654321);
+}
+
+BOOST_AUTO_TEST_CASE(StringEncryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    char res[8];
+    EncryptString(res, "testtest", 8, &ctx);
+
+    BOOST_CHECK(equalString(res, reinterpret_cast<const char*>(testString), 8));
+}
+
+BOOST_AUTO_TEST_CASE(LongStringEncryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("pr7Hhen", 7, &ctx);
+    const std::string source("abcdefghijklmnopqrstuvwxyz 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    std::vector<char> longTest(source.length() + 8);
+    EncryptString(longTest.data(), source.c_str(), source.length() + 1, &ctx);
+    DecryptString(longTest.data(), longTest.data(), longTest.size(), &ctx);
+
+    BOOST_CHECK_EQUAL(source, std::string(longTest.data()));
+}
+
+BOOST_AUTO_TEST_CASE(OldStringEncryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("123456", 7, &ctx);
+    const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
+                                    0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
+                                    0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb,
+                                    0x3d, 0xd5, 0xf4, 0xed, 0xb0, 0x15, 0xe6, 0xcb};
+    std::array<char, 32> res{};
+    DecryptString(res.data(), source, res.size(), &ctx);
+
+    BOOST_CHECK_EQUAL(std::string(res.data()), "admin");
+}
+
+BOOST_AUTO_TEST_CASE(NewStringEncryption)
+{
+    BLOWFISH_CTX ctx;
+    InitContext("123456", 7, &ctx);
+    const unsigned char source[] = {0xe9, 0xfe, 0xcb, 0xc5, 0xad, 0x3e, 0x87, 0x39,
+                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    std::array<char, 32> res{};
+    DecryptString(res.data(), source, 32, &ctx);
+
+    BOOST_CHECK_EQUAL(std::string(res.data()), "admin");
+}
+
+BOOST_AUTO_TEST_SUITE_END()

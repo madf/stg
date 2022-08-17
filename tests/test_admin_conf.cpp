@@ -1,241 +1,138 @@
-#include "tut/tut.hpp"
+#define BOOST_TEST_MODULE STGAdminConf
 
 #include "stg/admin_conf.h"
 
-namespace tut
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#include <boost/test/unit_test.hpp>
+#pragma GCC diagnostic pop
+
+#include <cstdint>
+
+namespace
 {
-    struct priv_data {
-        enum {
-            MIX2 = 0x0002C6C6, // 210321032
-            ONES = 0x00015555,
-            MIX3 = 0x00031B1B, // 321032103
-            TWOS = 0x0002AAAA,
-            MIX1 = 0x0000E4E4, // 012301230
-            THREES = 0x0003FFFF
-        };
-    };
 
-    typedef test_group<priv_data> tg;
-    tg priv_test_group("PRIV tests group");
-
-    typedef tg::object testobject;
-
-    template<>
-    template<>
-    void testobject::test<1>()
-    {
-        set_test_name("Check default constructor");
-
-        STG::Priv zero;
-
-        ensure("zero.userStat == 0", zero.userStat == 0);
-        ensure("zero.userConf == 0", zero.userConf == 0);
-        ensure("zero.userCash == 0", zero.userCash == 0);
-        ensure("zero.userPasswd == 0", zero.userPasswd == 0);
-        ensure("zero.userAddDel == 0", zero.userAddDel == 0);
-        ensure("zero.adminChg == 0", zero.adminChg == 0);
-        ensure("zero.tariffChg == 0", zero.tariffChg == 0);
-        ensure("zero.serviceChg == 0", zero.serviceChg == 0);
-        ensure("zero.corpChg == 0", zero.corpChg == 0);
-
-        ensure("zero.toInt() == 0", zero.toInt() == 0);
-    }
-
-    template<>
-    template<>
-    void testobject::test<2>()
-    {
-        set_test_name("Check uint32_t conversions");
-
-        for (uint8_t i = 0; i < 4; ++i) {
-
-            // 'i' is extra trash in high bits
-
-            STG::Priv priv1(ONES | (i << 0x12)); // All 1
-
-            ensure_equals("priv1.userStat == 1", priv1.userStat, 1);
-            ensure_equals("priv1.userConf == 1", priv1.userConf, 1);
-            ensure_equals("priv1.userCash == 1", priv1.userCash, 1);
-            ensure_equals("priv1.userPasswd == 1", priv1.userPasswd, 1);
-            ensure_equals("priv1.userAddDel == 1", priv1.userAddDel, 1);
-            ensure_equals("priv1.adminChg == 1", priv1.adminChg, 1);
-            ensure_equals("priv1.tariffChg == 1", priv1.tariffChg, 1);
-            ensure_equals("priv1.serviceChg == 1", priv1.serviceChg, 1);
-            ensure_equals("priv1.corpChg == 1", priv1.corpChg, 1);
-
-            ensure_equals("priv1.toInt() == 0x00015555", priv1.toInt(), static_cast<uint32_t>(ONES));
-
-            STG::Priv priv2(TWOS | (i << 0x12)); // All 2
-
-            ensure_equals("priv2.userStat == 2", priv2.userStat, 2);
-            ensure_equals("priv2.userConf == 2", priv2.userConf, 2);
-            ensure_equals("priv2.userCash == 2", priv2.userCash, 2);
-            ensure_equals("priv2.userPasswd == 2", priv2.userPasswd, 2);
-            ensure_equals("priv2.userAddDel == 2", priv2.userAddDel, 2);
-            ensure_equals("priv2.adminChg == 2", priv2.adminChg, 2);
-            ensure_equals("priv2.tariffChg == 2", priv2.tariffChg, 2);
-            ensure_equals("priv2.serviceChg == 2", priv2.serviceChg, 2);
-            ensure_equals("priv2.corpChg == 2", priv2.corpChg, 2);
-
-            ensure_equals("priv2.toInt() = 0x0002AAAA", priv2.toInt(), static_cast<uint32_t>(TWOS));
-
-            STG::Priv priv3(THREES | (i << 0x12)); // All 3
-
-            ensure_equals("priv3.userStat == 3", priv3.userStat, 3);
-            ensure_equals("priv3.userConf == 3", priv3.userConf, 3);
-            ensure_equals("priv3.userCash == 3", priv3.userCash, 3);
-            ensure_equals("priv3.userPasswd == 3", priv3.userPasswd, 3);
-            ensure_equals("priv3.userAddDel == 3", priv3.userAddDel, 3);
-            ensure_equals("priv3.adminChg == 3", priv3.adminChg, 3);
-            ensure_equals("priv3.tariffChg == 3", priv3.tariffChg, 3);
-            ensure_equals("priv3.serviceChg == 3", priv3.serviceChg, 3);
-            ensure_equals("priv3.corpChg == 3", priv3.corpChg, 3);
-
-            ensure_equals("priv3.toInt() = 0x0003FFFF", priv3.toInt(), static_cast<uint32_t>(THREES));
-
-            STG::Priv pm1(MIX1 | (i << 0x12)); // 012301230
-
-            ensure_equals("pm1.userStat == 0", pm1.userStat, 0);
-            ensure_equals("pm1.userConf == 1", pm1.userConf, 1);
-            ensure_equals("pm1.userCash == 2", pm1.userCash, 2);
-            ensure_equals("pm1.userPasswd == 3", pm1.userPasswd, 3);
-            ensure_equals("pm1.userAddDel == 0", pm1.userAddDel, 0);
-            ensure_equals("pm1.adminChg == 1", pm1.adminChg, 1);
-            ensure_equals("pm1.tariffChg == 2", pm1.tariffChg, 2);
-            ensure_equals("pm1.serviceChg == 3", pm1.serviceChg, 3);
-            ensure_equals("pm1.corpChg == 0", pm1.corpChg, 0);
-
-            ensure_equals("pm1.toInt() = 0xE4E4", pm1.toInt(), static_cast<uint32_t>(MIX1));
-
-            STG::Priv pm2(MIX2 | (i << 0x12)); // 210321032
-
-            ensure_equals("pm2.userStat == 2", pm2.userStat, 2);
-            ensure_equals("pm2.userConf == 1", pm2.userConf, 1);
-            ensure_equals("pm2.userCash == 0", pm2.userCash, 0);
-            ensure_equals("pm2.userPasswd == 3", pm2.userPasswd, 3);
-            ensure_equals("pm2.userAddDel == 2", pm2.userAddDel, 2);
-            ensure_equals("pm2.adminChg == 1", pm2.adminChg, 1);
-            ensure_equals("pm2.tariffChg == 0", pm2.tariffChg, 0);
-            ensure_equals("pm2.serviceChg == 3", pm2.serviceChg, 3);
-            ensure_equals("pm2.corpChg == 2", pm2.corpChg, 2);
-
-            ensure_equals("pm2.toInt() = 0x0002C6C6", pm2.toInt(), static_cast<uint32_t>(MIX2));
-
-            STG::Priv pm3(MIX3 | (i << 0x12)); // 321032103
-
-            ensure_equals("pm3.userStat == 3", pm3.userStat, 3);
-            ensure_equals("pm3.userConf == 2", pm3.userConf, 2);
-            ensure_equals("pm3.userCash == 1", pm3.userCash, 1);
-            ensure_equals("pm3.userPasswd == 0", pm3.userPasswd, 0);
-            ensure_equals("pm3.userAddDel == 3", pm3.userAddDel, 3);
-            ensure_equals("pm3.adminChg == 2", pm3.adminChg, 2);
-            ensure_equals("pm3.tariffChg == 1", pm3.tariffChg, 1);
-            ensure_equals("pm3.serviceChg == 0", pm3.serviceChg, 0);
-            ensure_equals("pm3.corpChg == 3", pm3.corpChg, 3);
-
-            ensure_equals("pm3.toInt() = 0x00031B1B", pm3.toInt(), static_cast<uint32_t>(MIX3));
-
-        }
-
-    }
-
-    template<>
-    template<>
-    void testobject::test<3>()
-    {
-        set_test_name("Check explicit uint32_t conversions");
-
-        for (uint8_t i = 0; i < 4; ++i) {
-
-            // 'i' is extra trash in high bits
-
-            STG::Priv priv1(ONES | (i << 0x12)); // All 1
-
-
-            ensure_equals("priv1.userStat == 1", priv1.userStat, 1);
-            ensure_equals("priv1.userConf == 1", priv1.userConf, 1);
-            ensure_equals("priv1.userCash == 1", priv1.userCash, 1);
-            ensure_equals("priv1.userPasswd == 1", priv1.userPasswd, 1);
-            ensure_equals("priv1.userAddDel == 1", priv1.userAddDel, 1);
-            ensure_equals("priv1.adminChg == 1", priv1.adminChg, 1);
-            ensure_equals("priv1.tariffChg == 1", priv1.tariffChg, 1);
-            ensure_equals("priv1.serviceChg == 1", priv1.serviceChg, 1);
-            ensure_equals("priv1.corpChg == 1", priv1.corpChg, 1);
-
-            ensure_equals("priv1.toInt() == 0x00015555", priv1.toInt(), static_cast<uint32_t>(ONES));
-
-            STG::Priv priv2(TWOS | (i << 0x12)); // All 2
-
-            ensure_equals("priv2.userStat == 2", priv2.userStat, 2);
-            ensure_equals("priv2.userConf == 2", priv2.userConf, 2);
-            ensure_equals("priv2.userCash == 2", priv2.userCash, 2);
-            ensure_equals("priv2.userPasswd == 2", priv2.userPasswd, 2);
-            ensure_equals("priv2.userAddDel == 2", priv2.userAddDel, 2);
-            ensure_equals("priv2.adminChg == 2", priv2.adminChg, 2);
-            ensure_equals("priv2.tariffChg == 2", priv2.tariffChg, 2);
-            ensure_equals("priv2.serviceChg == 2", priv2.serviceChg, 2);
-            ensure_equals("priv2.corpChg == 2", priv2.corpChg, 2);
-
-            ensure_equals("priv2.toInt() = 0x0002AAAA", priv2.toInt(), static_cast<uint32_t>(TWOS));
-
-            STG::Priv priv3(THREES | (i << 0x12)); // All 3
-
-            ensure_equals("priv3.userStat == 3", priv3.userStat, 3);
-            ensure_equals("priv3.userConf == 3", priv3.userConf, 3);
-            ensure_equals("priv3.userCash == 3", priv3.userCash, 3);
-            ensure_equals("priv3.userPasswd == 3", priv3.userPasswd, 3);
-            ensure_equals("priv3.userAddDel == 3", priv3.userAddDel, 3);
-            ensure_equals("priv3.adminChg == 3", priv3.adminChg, 3);
-            ensure_equals("priv3.tariffChg == 3", priv3.tariffChg, 3);
-            ensure_equals("priv3.serviceChg == 3", priv3.serviceChg, 3);
-            ensure_equals("priv3.corpChg == 3", priv3.corpChg, 3);
-
-            ensure_equals("priv3.toInt() = 0x0003FFFF", priv3.toInt(), static_cast<uint32_t>(THREES));
-
-            STG::Priv pm1(MIX1 | (i << 0x12)); // 012301230
-
-            ensure_equals("pm1.userStat == 0", pm1.userStat, 0);
-            ensure_equals("pm1.userConf == 1", pm1.userConf, 1);
-            ensure_equals("pm1.userCash == 2", pm1.userCash, 2);
-            ensure_equals("pm1.userPasswd == 3", pm1.userPasswd, 3);
-            ensure_equals("pm1.userAddDel == 0", pm1.userAddDel, 0);
-            ensure_equals("pm1.adminChg == 1", pm1.adminChg, 1);
-            ensure_equals("pm1.tariffChg == 2", pm1.tariffChg, 2);
-            ensure_equals("pm1.serviceChg == 3", pm1.serviceChg, 3);
-            ensure_equals("pm1.corpChg == 0", pm1.corpChg, 0);
-
-            ensure_equals("pm1.toInt() = 0xE4E4", pm1.toInt(), static_cast<uint32_t>(MIX1));
-
-            STG::Priv pm2(MIX2 | (i << 0x12)); // 210321032
-
-            ensure_equals("pm2.userStat == 2", pm2.userStat, 2);
-            ensure_equals("pm2.userConf == 1", pm2.userConf, 1);
-            ensure_equals("pm2.userCash == 0", pm2.userCash, 0);
-            ensure_equals("pm2.userPasswd == 3", pm2.userPasswd, 3);
-            ensure_equals("pm2.userAddDel == 2", pm2.userAddDel, 2);
-            ensure_equals("pm2.adminChg == 1", pm2.adminChg, 1);
-            ensure_equals("pm2.tariffChg == 0", pm2.tariffChg, 0);
-            ensure_equals("pm2.serviceChg == 3", pm2.serviceChg, 3);
-            ensure_equals("pm2.corpChg == 2", pm2.corpChg, 2);
-
-            ensure_equals("pm2.toInt() = 0x0002C6C6", pm2.toInt(), static_cast<uint32_t>(MIX2));
-
-            STG::Priv pm3(MIX3 | (i << 0x12)); // 321032103
-
-            ensure_equals("pm3.userStat == 3", pm3.userStat, 3);
-            ensure_equals("pm3.userConf == 2", pm3.userConf, 2);
-            ensure_equals("pm3.userCash == 1", pm3.userCash, 1);
-            ensure_equals("pm3.userPasswd == 0", pm3.userPasswd, 0);
-            ensure_equals("pm3.userAddDel == 3", pm3.userAddDel, 3);
-            ensure_equals("pm3.adminChg == 2", pm3.adminChg, 2);
-            ensure_equals("pm3.tariffChg == 1", pm3.tariffChg, 1);
-            ensure_equals("pm3.serviceChg == 0", pm3.serviceChg, 0);
-            ensure_equals("pm3.corpChg == 3", pm3.corpChg, 3);
-
-            ensure_equals("pm3.toInt() = 0x00031B1B", pm3.toInt(), static_cast<uint32_t>(MIX3));
-
-        }
-
-    }
+constexpr uint32_t MIX2 = 0x0002C6C6; // 210321032
+constexpr uint32_t ONES = 0x00015555;
+constexpr uint32_t MIX3 = 0x00031B1B; // 321032103
+constexpr uint32_t TWOS = 0x0002AAAA;
+constexpr uint32_t MIX1 = 0x0000E4E4; // 012301230
+constexpr uint32_t THREES = 0x0003FFFF;
 
 }
+
+BOOST_AUTO_TEST_SUITE(AdminConf)
+
+BOOST_AUTO_TEST_CASE(DefaultConstructor)
+{
+    STG::Priv zero;
+
+    BOOST_CHECK_EQUAL(zero.userStat, 0);
+    BOOST_CHECK_EQUAL(zero.userConf, 0);
+    BOOST_CHECK_EQUAL(zero.userCash, 0);
+    BOOST_CHECK_EQUAL(zero.userPasswd, 0);
+    BOOST_CHECK_EQUAL(zero.userAddDel, 0);
+    BOOST_CHECK_EQUAL(zero.adminChg, 0);
+    BOOST_CHECK_EQUAL(zero.tariffChg, 0);
+    BOOST_CHECK_EQUAL(zero.serviceChg, 0);
+    BOOST_CHECK_EQUAL(zero.corpChg, 0);
+
+    BOOST_CHECK_EQUAL(zero.toInt(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(UINT32Conversions)
+{
+    for (uint8_t i = 0; i < 4; ++i)
+    {
+        // 'i' is extra garbage in high bits
+
+        STG::Priv priv1(ONES | (i << 0x12)); // All 1
+
+        BOOST_CHECK_EQUAL(priv1.userStat, 1);
+        BOOST_CHECK_EQUAL(priv1.userConf, 1);
+        BOOST_CHECK_EQUAL(priv1.userCash, 1);
+        BOOST_CHECK_EQUAL(priv1.userPasswd, 1);
+        BOOST_CHECK_EQUAL(priv1.userAddDel, 1);
+        BOOST_CHECK_EQUAL(priv1.adminChg, 1);
+        BOOST_CHECK_EQUAL(priv1.tariffChg, 1);
+        BOOST_CHECK_EQUAL(priv1.serviceChg, 1);
+        BOOST_CHECK_EQUAL(priv1.corpChg, 1);
+
+        BOOST_CHECK_EQUAL(priv1.toInt(), static_cast<uint32_t>(ONES));
+
+        STG::Priv priv2(TWOS | (i << 0x12)); // All 2
+
+        BOOST_CHECK_EQUAL(priv2.userStat, 2);
+        BOOST_CHECK_EQUAL(priv2.userConf, 2);
+        BOOST_CHECK_EQUAL(priv2.userCash, 2);
+        BOOST_CHECK_EQUAL(priv2.userPasswd, 2);
+        BOOST_CHECK_EQUAL(priv2.userAddDel, 2);
+        BOOST_CHECK_EQUAL(priv2.adminChg, 2);
+        BOOST_CHECK_EQUAL(priv2.tariffChg, 2);
+        BOOST_CHECK_EQUAL(priv2.serviceChg, 2);
+        BOOST_CHECK_EQUAL(priv2.corpChg, 2);
+
+        BOOST_CHECK_EQUAL(priv2.toInt(), static_cast<uint32_t>(TWOS));
+
+        STG::Priv priv3(THREES | (i << 0x12)); // All 3
+
+        BOOST_CHECK_EQUAL(priv3.userStat, 3);
+        BOOST_CHECK_EQUAL(priv3.userConf, 3);
+        BOOST_CHECK_EQUAL(priv3.userCash, 3);
+        BOOST_CHECK_EQUAL(priv3.userPasswd, 3);
+        BOOST_CHECK_EQUAL(priv3.userAddDel, 3);
+        BOOST_CHECK_EQUAL(priv3.adminChg, 3);
+        BOOST_CHECK_EQUAL(priv3.tariffChg, 3);
+        BOOST_CHECK_EQUAL(priv3.serviceChg, 3);
+        BOOST_CHECK_EQUAL(priv3.corpChg, 3);
+
+        BOOST_CHECK_EQUAL(priv3.toInt(), static_cast<uint32_t>(THREES));
+
+        STG::Priv pm1(MIX1 | (i << 0x12)); // 012301230
+
+        BOOST_CHECK_EQUAL(pm1.userStat, 0);
+        BOOST_CHECK_EQUAL(pm1.userConf, 1);
+        BOOST_CHECK_EQUAL(pm1.userCash, 2);
+        BOOST_CHECK_EQUAL(pm1.userPasswd, 3);
+        BOOST_CHECK_EQUAL(pm1.userAddDel, 0);
+        BOOST_CHECK_EQUAL(pm1.adminChg, 1);
+        BOOST_CHECK_EQUAL(pm1.tariffChg, 2);
+        BOOST_CHECK_EQUAL(pm1.serviceChg, 3);
+        BOOST_CHECK_EQUAL(pm1.corpChg, 0);
+
+        BOOST_CHECK_EQUAL(pm1.toInt(), static_cast<uint32_t>(MIX1));
+
+        STG::Priv pm2(MIX2 | (i << 0x12)); // 210321032
+
+        BOOST_CHECK_EQUAL(pm2.userStat, 2);
+        BOOST_CHECK_EQUAL(pm2.userConf, 1);
+        BOOST_CHECK_EQUAL(pm2.userCash, 0);
+        BOOST_CHECK_EQUAL(pm2.userPasswd, 3);
+        BOOST_CHECK_EQUAL(pm2.userAddDel, 2);
+        BOOST_CHECK_EQUAL(pm2.adminChg, 1);
+        BOOST_CHECK_EQUAL(pm2.tariffChg, 0);
+        BOOST_CHECK_EQUAL(pm2.serviceChg, 3);
+        BOOST_CHECK_EQUAL(pm2.corpChg, 2);
+
+        BOOST_CHECK_EQUAL(pm2.toInt(), static_cast<uint32_t>(MIX2));
+
+        STG::Priv pm3(MIX3 | (i << 0x12)); // 321032103
+
+        BOOST_CHECK_EQUAL(pm3.userStat, 3);
+        BOOST_CHECK_EQUAL(pm3.userConf, 2);
+        BOOST_CHECK_EQUAL(pm3.userCash, 1);
+        BOOST_CHECK_EQUAL(pm3.userPasswd, 0);
+        BOOST_CHECK_EQUAL(pm3.userAddDel, 3);
+        BOOST_CHECK_EQUAL(pm3.adminChg, 2);
+        BOOST_CHECK_EQUAL(pm3.tariffChg, 1);
+        BOOST_CHECK_EQUAL(pm3.serviceChg, 0);
+        BOOST_CHECK_EQUAL(pm3.corpChg, 3);
+
+        BOOST_CHECK_EQUAL(pm3.toInt(), static_cast<uint32_t>(MIX3));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()
