@@ -1,14 +1,14 @@
-#ifndef __TEST_SETTINGS_H__
-#define __TEST_SETTINGS_H__
+#pragma once
 
 #include "stg/settings.h"
 
-class TEST_SETTINGS : public STG::Settings {
+class TestSettings : public STG::Settings
+{
     public:
-        TEST_SETTINGS() { filterParamsLog.push_back("*"); }
+        TestSettings() { m_filterParamsLog.push_back("*"); }
 
-        const std::string & GetDirName(size_t) const override { return dirName; }
-        const std::string & GetScriptsDir() const override { return scriptsDir; }
+        const std::string&  GetDirName(size_t) const override { return m_dirName; }
+        const std::string&  GetScriptsDir() const override { return m_scriptsDir; }
         unsigned            GetDetailStatWritePeriod() const override { return 10; }
         unsigned            GetStatWritePeriod() const override { return 10; }
         unsigned            GetDayFee() const override { return 0; }
@@ -22,18 +22,16 @@ class TEST_SETTINGS : public STG::Settings {
         unsigned            GetMessageTimeout() const override { return 0; }
         unsigned            GetFeeChargeType() const override { return 0; }
         bool                GetReconnectOnTariffChange() const override { return false; }
-        const std::string & GetMonitorDir() const override { return monitorDir; }
+        const std::string&  GetMonitorDir() const override { return m_monitorDir; }
         bool                GetMonitoring() const override { return false; }
-        const std::vector<std::string> & GetScriptParams() const override { return scriptParams; }
+        const std::vector<std::string>& GetScriptParams() const override { return m_scriptParams; }
         bool                GetDisableSessionLog() const override { return false; }
-        const std::vector<std::string>& GetFilterParamsLog() const override { return filterParamsLog; }
+        const std::vector<std::string>& GetFilterParamsLog() const override { return m_filterParamsLog; }
 
     private:
-        std::string dirName;
-        std::string scriptsDir;
-        std::string monitorDir;
-        std::vector<std::string> scriptParams;
-        std::vector<std::string> filterParamsLog;
+        std::string m_dirName;
+        std::string m_scriptsDir;
+        std::string m_monitorDir;
+        std::vector<std::string> m_scriptParams;
+        std::vector<std::string> m_filterParamsLog;
 };
-
-#endif

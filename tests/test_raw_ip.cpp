@@ -28,7 +28,7 @@ constexpr size_t ITERATIONS = 1000;
 std::array<uint8_t, 68> genVector()
 {
     std::array<uint8_t, 68> res;
-    for (size_t i = 0; i < 68; ++i)
+    for (size_t i = 0; i < res.size(); ++i)
         res[i] = rand() % 256;
     res[0] = (res[0] & 0xF0) | 0x05; // Fix header length
     return res;
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(RandomTests)
     srand(time(NULL));
     for (size_t i = 0; i < ITERATIONS; ++i)
     {
-        RAW_PACKET_OLD p1;
+        RawPacketOld p1;
         STG::RawPacket p2;
         STG::RawPacket p3;
 

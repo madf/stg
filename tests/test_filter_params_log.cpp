@@ -1,4 +1,4 @@
-#include "tut/tut.hpp"
+#define BOOST_TEST_MODULE STGFilterParamsLog
 
 #include "stg/admin.h"
 #include "stg/user_property.h"
@@ -11,206 +11,194 @@
 #include "testusers.h"
 #include "testservices.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#include <boost/test/unit_test.hpp>
+#pragma GCC diagnostic pop
+
+volatile time_t stgTime = 0;
+
 namespace
 {
 
-class TEST_STORE_LOCAL : public TEST_STORE {
-public:
-    TEST_STORE_LOCAL()
-        : entries(0)
-    {}
-
-    int WriteUserChgLog(const std::string & /*login*/,
-                        const std::string & /*admLogin*/,
-                        uint32_t /*admIP*/,
-                        const std::string & /*paramName*/,
-                        const std::string & /*oldValue*/,
-                        const std::string & /*newValue*/,
-                        const std::string & /*message*/) const override { ++entries; return 0; }
-
-    size_t GetEntries() const { return entries; }
-
-private:
-    mutable size_t entries;
-};
-
-class TEST_SETTINGS_LOCAL : public TEST_SETTINGS {
+class Store : public TestStore
+{
     public:
-        void addFilter(const std::string& field) { filter.push_back(field); }
+        Store()
+            : m_entries(0)
+        {}
 
-        const std::vector<std::string>& GetFilterParamsLog() const { return filter; }
+        int WriteUserChgLog(const std::string& /*login*/,
+                            const std::string& /*admLogin*/,
+                            uint32_t /*admIP*/,
+                            const std::string& /*paramName*/,
+                            const std::string& /*oldValue*/,
+                            const std::string& /*newValue*/,
+                            const std::string& /*message*/) const override { ++m_entries; return 0; }
+
+        size_t GetEntries() const { return m_entries; }
 
     private:
-        std::vector<std::string> filter;
+        mutable size_t m_entries;
+};
+
+class Settings : public TestSettings
+{
+    public:
+        void addFilter(const std::string& field) { m_filter.push_back(field); }
+
+        const std::vector<std::string>& GetFilterParamsLog() const { return m_filter; }
+
+    private:
+        std::vector<std::string> m_filter;
 };
 
 }
 
-namespace tut
+BOOST_AUTO_TEST_SUITE(FilterParamsLog)
+
+BOOST_AUTO_TEST_CASE(NormalBehavior)
 {
-    struct filter_params_log_data {
-    };
+    Settings settings;
+    settings.addFilter("*"); // Allow everything by default.
+    TestTariffs tariffs;
+    tariffs.ReadTariffs();
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    Store store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-    typedef test_group<filter_params_log_data> tg;
-    tg filter_params_log_test_group("Filter params log tests group");
+    auto & address = user.GetProperties().address;
+    auto & note = user.GetProperties().note;
+    auto & group = user.GetProperties().group;
 
-    typedef tg::object testobject;
+    address.Set("address", admin, "", store, "");
+    note.Set("note", admin, "", store, "");
+    group.Set("group", admin, "", store, "");
 
-    template<>
-    template<>
-    void testobject::test<1>()
-    {
-        set_test_name("Check normal behaviour");
+    BOOST_CHECK_EQUAL(store.GetEntries(), 3);
 
-        TEST_SETTINGS_LOCAL settings;
-        settings.addFilter("*"); // Allow everything by default.
-        TEST_TARIFFS tariffs;
-        tariffs.ReadTariffs();
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE_LOCAL store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+    note.Set("another note", admin, "", store, "");
 
-        auto & address = user.GetProperties().address;
-        auto & note = user.GetProperties().note;
-        auto & group = user.GetProperties().group;
+    BOOST_CHECK_EQUAL(store.GetEntries(), 4);
 
-        address.Set("address", admin, "", store, "");
-        note.Set("note", admin, "", store, "");
-        group.Set("group", admin, "", store, "");
+    address.Set("new address", admin, "", store, "");
 
-        ensure_equals("entries = 3", store.GetEntries(), 3);
+    BOOST_CHECK_EQUAL(store.GetEntries(), 5);
 
-        note.Set("another note", admin, "", store, "");
+    group.Set("administrative group", admin, "", store, "");
 
-        ensure_equals("entries = 4", store.GetEntries(), 4);
-
-        address.Set("new address", admin, "", store, "");
-
-        ensure_equals("entries = 5", store.GetEntries(), 5);
-
-        group.Set("administrative group", admin, "", store, "");
-
-        ensure_equals("entries = 6", store.GetEntries(), 6);
-    }
-
-
-    template<>
-    template<>
-    void testobject::test<2>()
-    {
-        set_test_name("Check single filter entry.");
-
-        TEST_SETTINGS_LOCAL settings;
-        settings.addFilter("address"); // Allow everything by default.
-        TEST_TARIFFS tariffs;
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE_LOCAL store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
-
-        auto & address = user.GetProperties().address;
-        auto & note = user.GetProperties().note;
-        auto & group = user.GetProperties().group;
-
-        address.Set("address", admin, "", store, "");
-        note.Set("note", admin, "", store, "");
-        group.Set("group", admin, "", store, "");
-
-        ensure_equals("entries = 1", store.GetEntries(), 1);
-
-        note.Set("another note", admin, "", store, "");
-
-        ensure_equals("entries = 1", store.GetEntries(), 1);
-
-        address.Set("new address", admin, "", store, "");
-
-        ensure_equals("entries = 2", store.GetEntries(), 2);
-
-        group.Set("administrative group", admin, "", store, "");
-
-        ensure_equals("entries = 2", store.GetEntries(), 2);
-    }
-
-    template<>
-    template<>
-    void testobject::test<3>()
-    {
-        set_test_name("Check multiple filter entries.");
-
-        TEST_SETTINGS_LOCAL settings;
-        settings.addFilter("address"); // Allow everything by default.
-        settings.addFilter("group"); // Allow everything by default.
-        TEST_TARIFFS tariffs;
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE_LOCAL store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
-
-        auto & address = user.GetProperties().address;
-        auto & note = user.GetProperties().note;
-        auto & group = user.GetProperties().group;
-
-        address.Set("address", admin, "", store, "");
-        note.Set("note", admin, "", store, "");
-        group.Set("group", admin, "", store, "");
-
-        ensure_equals("entries = 2", store.GetEntries(), 2);
-
-        note.Set("another note", admin, "", store, "");
-
-        ensure_equals("entries = 2", store.GetEntries(), 2);
-
-        address.Set("new address", admin, "", store, "");
-
-        ensure_equals("entries = 3", store.GetEntries(), 3);
-
-        group.Set("administrative group", admin, "", store, "");
-
-        ensure_equals("entries = 4", store.GetEntries(), 4);
-    }
-
-    template<>
-    template<>
-    void testobject::test<4>()
-    {
-        set_test_name("Check empty filter.");
-
-        TEST_SETTINGS_LOCAL settings;
-        TEST_TARIFFS tariffs;
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE_LOCAL store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
-
-        auto & address = user.GetProperties().address;
-        auto & note = user.GetProperties().note;
-        auto & group = user.GetProperties().group;
-
-        address.Set("address", admin, "", store, "");
-        note.Set("note", admin, "", store, "");
-        group.Set("group", admin, "", store, "");
-
-        ensure_equals("entries = 0", store.GetEntries(), 0);
-
-        note.Set("another note", admin, "", store, "");
-
-        ensure_equals("entries = 0", store.GetEntries(), 0);
-
-        address.Set("new address", admin, "", store, "");
-
-        ensure_equals("entries = 0", store.GetEntries(), 0);
-
-        group.Set("administrative group", admin, "", store, "");
-
-        ensure_equals("entries = 0", store.GetEntries(), 0);
-    }
+    BOOST_CHECK_EQUAL(store.GetEntries(), 6);
 }
+
+BOOST_AUTO_TEST_CASE(SingleFilterEntry)
+{
+    Settings settings;
+    settings.addFilter("address"); // Allow everything by default.
+    TestTariffs tariffs;
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    Store store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+
+    auto & address = user.GetProperties().address;
+    auto & note = user.GetProperties().note;
+    auto & group = user.GetProperties().group;
+
+    address.Set("address", admin, "", store, "");
+    note.Set("note", admin, "", store, "");
+    group.Set("group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 1);
+
+    note.Set("another note", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 1);
+
+    address.Set("new address", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 2);
+
+    group.Set("administrative group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 2);
+}
+
+BOOST_AUTO_TEST_CASE(MultipleFilterEntries)
+{
+    Settings settings;
+    settings.addFilter("address"); // Allow everything by default.
+    settings.addFilter("group"); // Allow everything by default.
+    TestTariffs tariffs;
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    Store store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+
+    auto & address = user.GetProperties().address;
+    auto & note = user.GetProperties().note;
+    auto & group = user.GetProperties().group;
+
+    address.Set("address", admin, "", store, "");
+    note.Set("note", admin, "", store, "");
+    group.Set("group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 2);
+
+    note.Set("another note", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 2);
+
+    address.Set("new address", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 3);
+
+    group.Set("administrative group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 4);
+}
+
+BOOST_AUTO_TEST_CASE(EmptyFilter)
+{
+    Settings settings;
+    TestTariffs tariffs;
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    Store store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+
+    auto & address = user.GetProperties().address;
+    auto & note = user.GetProperties().note;
+    auto & group = user.GetProperties().group;
+
+    address.Set("address", admin, "", store, "");
+    note.Set("note", admin, "", store, "");
+    group.Set("group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 0);
+
+    note.Set("another note", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 0);
+
+    address.Set("new address", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 0);
+
+    group.Set("administrative group", admin, "", store, "");
+
+    BOOST_CHECK_EQUAL(store.GetEntries(), 0);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

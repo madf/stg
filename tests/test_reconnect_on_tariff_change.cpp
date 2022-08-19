@@ -1,4 +1,4 @@
-#include "tut/tut.hpp"
+#define BOOST_TEST_MODULE STGReconnectOnTariffChange
 
 #include "stg/admin.h"
 #include "stg/user_property.h"
@@ -11,163 +11,157 @@
 #include "testusers.h"
 #include "testservices.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wparentheses"
+#include <boost/test/unit_test.hpp>
+#pragma GCC diagnostic pop
+
+volatile time_t stgTime = 0;
+
 namespace
 {
 
-class AFTER_CONNECTED_NOTIFIER : public STG::PropertyNotifierBase<bool> {
-public:
-    AFTER_CONNECTED_NOTIFIER()
-        : connects(0),
-          disconnects(0)
-    {}
-    void Notify(const bool & oldValue, const bool & newValue);
-
-    size_t GetConnects() const { return connects; }
-    size_t GetDisconnects() const { return disconnects; }
-
-private:
-    size_t connects;
-    size_t disconnects;
-};
-
-class TEST_SETTINGS_LOCAL : public TEST_SETTINGS {
+class AfterConnectedNotifier : public STG::PropertyNotifierBase<bool>
+{
     public:
-        TEST_SETTINGS_LOCAL(bool _reconnectOnTariffChange)
-            : TEST_SETTINGS(),
-              reconnectOnTariffChange(_reconnectOnTariffChange)
+        AfterConnectedNotifier()
+            : m_connects(0),
+              m_disconnects(0)
         {}
 
-        bool GetReconnectOnTariffChange() const { return reconnectOnTariffChange; }
+        void Notify(const bool& oldValue, const bool& newValue) override
+        {
+            if (!oldValue && newValue)
+                ++m_connects;
+            if (oldValue && !newValue)
+                ++m_disconnects;
+        }
+
+        size_t connects() const { return m_connects; }
+        size_t disconnects() const { return m_disconnects; }
 
     private:
-        bool reconnectOnTariffChange;
+        size_t m_connects;
+        size_t m_disconnects;
+};
+
+class Settings : public TestSettings
+{
+    public:
+        Settings(bool reconnectOnTariffChange)
+            : m_reconnectOnTariffChange(reconnectOnTariffChange)
+        {}
+
+        bool GetReconnectOnTariffChange() const { return m_reconnectOnTariffChange; }
+
+    private:
+        bool m_reconnectOnTariffChange;
 };
 
 }
 
-namespace tut
+BOOST_AUTO_TEST_SUITE(ReconnectOnTariffChange)
+
+BOOST_AUTO_TEST_CASE(NormalBehavior)
 {
-    struct reconnect_on_tariff_change_data {
-    };
+    Settings settings(false);
+    TestTariffs tariffs;
+    tariffs.ReadTariffs();
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    TestStore store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-    typedef test_group<reconnect_on_tariff_change_data> tg;
-    tg reconnect_on_tariff_change_test_group("Reconnect on tariff change tests group");
+    AfterConnectedNotifier connectionNotifier;
 
-    typedef tg::object testobject;
+    user.AddConnectedAfterNotifier(&connectionNotifier);
 
-    template<>
-    template<>
-    void testobject::test<1>()
-    {
-        set_test_name("Check normal behaviour");
+    STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
+    STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
 
-        TEST_SETTINGS_LOCAL settings(false);
-        TEST_TARIFFS tariffs;
-        tariffs.ReadTariffs();
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+    ips = STG::UserIPs::parse("*");
 
-        AFTER_CONNECTED_NOTIFIER connectionNotifier;
+    BOOST_CHECK_EQUAL(user.GetConnected(), false);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
 
-        user.AddConnectedAfterNotifier(&connectionNotifier);
+    BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
 
-        STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
-        STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
+    user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
+    user.Run();
 
-        ips = STG::UserIPs::parse("*");
+    BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
-        ensure_equals("user.connected = false", user.GetConnected(), false);
-        ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(user.GetConnected(), true);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
 
-        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
+    tariffName = "test";
+    BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), "test");
 
-        user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
-        user.Run();
+    BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
-        ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
-
-        ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
-
-        tariffName = "test";
-        ensure_equals("user.tariffName == 'test'", user.GetProperties().tariffName.ConstData(), "test");
-
-        ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
-
-        ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
-    }
-
-
-    template<>
-    template<>
-    void testobject::test<2>()
-    {
-        set_test_name("Check reconnect on tariff change");
-
-        TEST_SETTINGS_LOCAL settings(true);
-
-        TEST_SETTINGS * s1 = &settings;
-        STG::Settings * s2 = &settings;
-
-        ensure("settings.GetReconnectOnTariffChange() == true", settings.GetReconnectOnTariffChange());
-        ensure("s1->GetReconnectOnTariffChange() == true", s1->GetReconnectOnTariffChange());
-        ensure("s2->GetReconnectOnTariffChange() == true", s2->GetReconnectOnTariffChange());
-
-        TEST_TARIFFS tariffs;
-        STG::Admin admin(STG::Priv(0xFFFF), {}, {});
-        TEST_STORE store;
-        TEST_AUTH auth;
-        TEST_USERS users;
-        TEST_SERVICES services;
-        STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
-
-        AFTER_CONNECTED_NOTIFIER connectionNotifier;
-
-        user.AddConnectedAfterNotifier(&connectionNotifier);
-
-        STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
-        STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
-
-        ips = STG::UserIPs::parse("*");
-
-        ensure_equals("user.connected = false", user.GetConnected(), false);
-        ensure_equals("connects = 0", connectionNotifier.GetConnects(), static_cast<size_t>(0));
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
-
-        ensure_equals("user.tariffName == NO_TARIFF_NAME", user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
-
-        user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
-        user.Run();
-
-        ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
-
-        ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 1", connectionNotifier.GetConnects(), static_cast<size_t>(1));
-        ensure_equals("disconnects = 0", connectionNotifier.GetDisconnects(), static_cast<size_t>(0));
-
-        tariffName = "test";
-        ensure_equals("user.tariffName == 'test'", user.GetProperties().tariffName.ConstData(), "test");
-
-        ensure_equals("user.authorised_by = true", user.IsAuthorizedBy(&auth), true);
-
-        ensure_equals("user.connected = true", user.GetConnected(), true);
-        ensure_equals("connects = 2", connectionNotifier.GetConnects(), static_cast<size_t>(2));
-        ensure_equals("disconnects = 1", connectionNotifier.GetDisconnects(), static_cast<size_t>(1));
-    }
+    BOOST_CHECK_EQUAL(user.GetConnected(), true);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
 }
 
-void AFTER_CONNECTED_NOTIFIER::Notify(const bool & oldValue, const bool & newValue)
+BOOST_AUTO_TEST_CASE(Reconnect)
 {
-    if (!oldValue && newValue)
-        ++connects;
-    if (oldValue && !newValue)
-        ++disconnects;
+    Settings settings(true);
+
+    TestSettings * s1 = &settings;
+    STG::Settings * s2 = &settings;
+
+    BOOST_CHECK(settings.GetReconnectOnTariffChange());
+    BOOST_CHECK(s1->GetReconnectOnTariffChange());
+    BOOST_CHECK(s2->GetReconnectOnTariffChange());
+
+    TestTariffs tariffs;
+    STG::Admin admin(STG::Priv(0xFFFF), {}, {});
+    TestStore store;
+    TestAuth auth;
+    TestUsers users;
+    TestServices services;
+    STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
+
+    AfterConnectedNotifier connectionNotifier;
+
+    user.AddConnectedAfterNotifier(&connectionNotifier);
+
+    STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
+    STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
+
+    ips = STG::UserIPs::parse("*");
+
+    BOOST_CHECK_EQUAL(user.GetConnected(), false);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+
+    BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
+
+    user.Authorize(inet_strington("127.0.0.1"), 0, &auth);
+    user.Run();
+
+    BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
+
+    BOOST_CHECK_EQUAL(user.GetConnected(), true);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+
+    tariffName = "test";
+    BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), "test");
+
+    BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
+
+    BOOST_CHECK_EQUAL(user.GetConnected(), true);
+    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(2));
+    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(1));
 }
+
+BOOST_AUTO_TEST_SUITE_END()
