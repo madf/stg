@@ -76,7 +76,7 @@ void dumpCheckCtx(const std::string& nameA, const std::string& nameB, const BLOW
 
 bool equalCtx(const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
 {
-    for (size_t i = 0; i < sizeof(a.P); ++i)
+    for (size_t i = 0; i < 18; ++i)
         if (a.P[i] != b.P[i])
         {
             printf("Failed for P at %ld: 0x%x != 0x%x\n", i, a.P[i], b.P[i]);
