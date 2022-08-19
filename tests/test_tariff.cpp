@@ -11,6 +11,26 @@
 #include <boost/test/unit_test.hpp>
 #pragma GCC diagnostic pop
 
+#include <ctime>
+
+namespace
+{
+
+constexpr double TOLERANCE = 0.01;
+
+time_t makeTime(unsigned hour, unsigned minute)
+{
+    tm brokenTime;
+    time_t now = time(nullptr);
+    localtime_r(&now, &brokenTime);
+    brokenTime.tm_hour = hour;
+    brokenTime.tm_min = minute;
+    brokenTime.tm_sec = 0;
+    return mktime(&brokenTime);
+}
+
+}
+
 BOOST_AUTO_TEST_SUITE(Tariffs)
 
 BOOST_AUTO_TEST_CASE(Construction)
@@ -135,36 +155,36 @@ BOOST_AUTO_TEST_CASE(NormalIntervalPrices)
     td.dirPrice[0].noDiscount = 0;
     STG::TariffImpl tariff(td);
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 1); // Near 17:30, 6 > 4 DB
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 2); // Near 22:30, 0 < 4 NA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 3); // Near 22:30, 6 > 4 NB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 1, TOLERANCE); // Near 17:30, 6 > 4 DB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 2, TOLERANCE); // Near 22:30, 0 < 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 3, TOLERANCE); // Near 22:30, 6 > 4 NB
 
     td.dirPrice[0].singlePrice = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 1); // Near 17:30, 6 > 4 DB
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 1); // Near 22:30, 6 > 4 DB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 1, TOLERANCE); // Near 17:30, 6 > 4 DB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 1, TOLERANCE); // Near 22:30, 6 > 4 DB
 
     td.dirPrice[0].singlePrice = 0;
     td.dirPrice[0].noDiscount = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 6 > 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 2); // Near 22:30, 0 < 4 NA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 2); // Near 22:30, 6 > 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 6 > 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 2, TOLERANCE); // Near 22:30, 0 < 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 2, TOLERANCE); // Near 22:30, 6 > 4 NA
 
     td.dirPrice[0].singlePrice = 1;
     td.dirPrice[0].noDiscount = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 6 > 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 6 > 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 6 > 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 6 > 4 DA
 }
 
 BOOST_AUTO_TEST_CASE(ConstructionForDayNightInversion)
@@ -289,36 +309,36 @@ BOOST_AUTO_TEST_CASE(NormalIntervalPricesForDayNightInversion)
     td.dirPrice[0].noDiscount = 0;
     STG::TariffImpl tariff(td);
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 2); // Near 17:30, 0 < 4 NA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 3); // Near 17:30, 6 > 4 NB
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 1); // Near 22:30, 6 > 4 DB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 2, TOLERANCE); // Near 17:30, 0 < 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 3, TOLERANCE); // Near 17:30, 6 > 4 NB
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 1, TOLERANCE); // Near 22:30, 6 > 4 DB
 
     td.dirPrice[0].singlePrice = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 1); // Near 17:30, 6 > 4 DB (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 1); // Near 22:30, 6 > 4 DB (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 1, TOLERANCE); // Near 17:30, 6 > 4 DB (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 1, TOLERANCE); // Near 22:30, 6 > 4 DB (ignore night)
 
     td.dirPrice[0].singlePrice = 0;
     td.dirPrice[0].noDiscount = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 2); // Near 17:30, 0 < 4 NA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 2); // Near 17:30, 6 > 4 NA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 6 > 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 2, TOLERANCE); // Near 17:30, 0 < 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 2, TOLERANCE); // Near 17:30, 6 > 4 NA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 6 > 4 DA
 
     td.dirPrice[0].singlePrice = 1;
     td.dirPrice[0].noDiscount = 1;
     tariff = td;
 
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 0 < 4 DA (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286461245), 0); // Near 17:30, 6 > 4 DA (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 0 < 4 DA (ignore night)
-    BOOST_CHECK_EQUAL(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, 1286479245), 0); // Near 22:30, 6 > 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 0 < 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(17, 20)), 0, TOLERANCE); // Near 17:30, 6 > 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 0 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 0 < 4 DA (ignore night)
+    BOOST_CHECK_CLOSE(tariff.GetPriceWithTraffType(0, 6 * 1024 * 1024, 0, makeTime(22, 20)), 0, TOLERANCE); // Near 22:30, 6 > 4 DA (ignore night)
 }
 
 BOOST_AUTO_TEST_CASE(ChangePolicyAllow)
