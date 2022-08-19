@@ -3,6 +3,7 @@
 #include <cstring>
 
 #if defined(FREE_BSD)
+#include <sys/types.h> // u_char, u_int32_t, etc.
 #include <netinet/in_systm.h> // n_long in netinet/ip.h
 #endif
 
