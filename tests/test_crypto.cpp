@@ -22,14 +22,14 @@ bool equalCtx(const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
     for (size_t i = 0; i < sizeof(a.P); ++i)
         if (a.P[i] != b.P[i])
         {
-            printf("Failed for P at %ld: 0%x != 0%x\n", i, a.P[i], b.P[i]);
+            printf("Failed for P at %ld: 0x%x != 0x%x\n", i, a.P[i], b.P[i]);
             return false;
         }
     for (size_t i = 0; i < 4; ++i)
         for (size_t j = 0; j < 256; ++j)
             if (a.S[i][j] != b.S[i][j])
             {
-                printf("Failed for S at %ld, %ld: 0%x != 0%x\n", i, j, a.S[i][j], b.S[i][j]);
+                printf("Failed for S at %ld, %ld: 0x%x != 0x%x\n", i, j, a.S[i][j], b.S[i][j]);
 
                 return false;
             }
