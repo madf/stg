@@ -148,7 +148,8 @@ if ( BUILD_MOD_RPCCONFIG )
                                       configuration/rpcconfig/tariffs_methods.cpp
                                       configuration/rpcconfig/admins_methods.cpp
                                       configuration/rpcconfig/messages_methods.cpp )
-                              target_link_libraries ( mod_conf_rpc scriptexecuter logger common ${XMLRPC_LIBRARIES} )
+    target_link_libraries ( mod_conf_rpc scriptexecuter logger common ${XMLRPC_LIBRARIES} )
+    target_compile_definitions ( mod_conf_rpc PUBLIC auto_ptr=unique_ptr )
     set_target_properties ( mod_conf_rpc PROPERTIES PREFIX "" )
 
     if ( CLANG_TIDY_EXE )
