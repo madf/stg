@@ -17,12 +17,70 @@
 namespace
 {
 
+void dumpCheckCtx(const std::string& nameA, const std::string& nameB, const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
+{
+    printf("CTX '%s':                                            CTX '%s':\n", nameA.c_str(), nameB.c_str());
+    const auto* ptrA = reinterpret_cast<const uint8_t*>(&a);
+    const auto* ptrB = reinterpret_cast<const uint8_t*>(&b);
+    size_t row = 0;
+    while (row * 16 < sizeof(a))
+    {
+        for (size_t j = 0; j < 8; ++j)
+            if (row * 16 + j < sizeof(a))
+            {
+                if (ptrA[row * 16 + j] == ptrB[row * 16 + j])
+                    printf(" %02x", static_cast<unsigned>(ptrA[row * 16 + j]));
+                else
+                    printf(" \033[31m%02x\033[0m", static_cast<unsigned>(ptrA[row * 16 + j]));
+            }
+            else
+                printf("   ");
+        printf(" ");
+        for (size_t j = 0; j < 8; ++j)
+            if (row * 16 + j + 8 < sizeof(a))
+            {
+                if (ptrA[row * 16 + j + 8] == ptrB[row * 16 + j + 8])
+                    printf(" %02x", static_cast<unsigned>(ptrA[row * 16 + j + 8]));
+                else
+                    printf(" \033[31m%02x\033[0m", static_cast<unsigned>(ptrA[row * 16 + j + 8]));
+            }
+            else
+                printf("   ");
+        printf(" | ");
+        for (size_t j = 0; j < 8; ++j)
+            if (row * 16 + j < sizeof(b))
+            {
+                if (ptrA[row * 16 + j] == ptrB[row * 16 + j])
+                    printf(" %02x", static_cast<unsigned>(ptrB[row * 16 + j]));
+                else
+                    printf(" \033[31m%02x\033[0m", static_cast<unsigned>(ptrB[row * 16 + j]));
+            }
+            else
+                printf("   ");
+        printf(" ");
+        for (size_t j = 0; j < 8; ++j)
+            if (row * 16 + j + 8 < sizeof(b))
+            {
+                if (ptrA[row * 16 + j + 8] == ptrB[row * 16 + j + 8])
+                    printf(" %02x", static_cast<unsigned>(ptrB[row * 16 + j + 8]));
+                else
+                    printf(" \033[31m%02x\033[0m", static_cast<unsigned>(ptrB[row * 16 + j + 8]));
+            }
+            else
+                printf("   ");
+        printf("\n");
+        ++row;
+    }
+    printf("\n\n");
+}
+
 bool equalCtx(const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
 {
     for (size_t i = 0; i < sizeof(a.P); ++i)
         if (a.P[i] != b.P[i])
         {
             printf("Failed for P at %ld: 0x%x != 0x%x\n", i, a.P[i], b.P[i]);
+            dumpCheckCtx("a", "b", a, b);
             return false;
         }
     for (size_t i = 0; i < 4; ++i)
@@ -30,7 +88,7 @@ bool equalCtx(const BLOWFISH_CTX& a, const BLOWFISH_CTX& b)
             if (a.S[i][j] != b.S[i][j])
             {
                 printf("Failed for S at %ld, %ld: 0x%x != 0x%x\n", i, j, a.S[i][j], b.S[i][j]);
-
+                dumpCheckCtx("a", "b", a, b);
                 return false;
             }
     return true;
