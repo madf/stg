@@ -1,7 +1,7 @@
 find_path ( MySQLConnector_INCLUDE_DIR PATHS /usr/local/include NAMES mysql/mysql.h mysql/mysql_version.h DOC "Path to MySQLConnector header files." )
 mark_as_advanced ( MySQLConnector_INCLUDE_DIR )
 
-find_library ( MySQLConnector_LIB PATHS /usr/local/lib NAMES mysqlclient DOC "Location of MySQLConnector library." )
+find_library ( MySQLConnector_LIB PATHS /usr/local/lib /usr/local/lib/mysql-connector-c /usr/local/lib/mysql NAMES mysqlclient DOC "Location of MySQLConnector library." )
 mark_as_advanced ( MySQLConnector_LIB )
 
 if ( MySQLConnector_INCLUDE_DIR )
