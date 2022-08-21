@@ -138,7 +138,7 @@ if ( BUILD_MOD_SGCONFIG )
 endif ( BUILD_MOD_SGCONFIG )
 
 if ( BUILD_MOD_RPCCONFIG )
-    find_package ( XMLRPC REQUIRED c++ abyss-server )
+    find_package ( XMLRPC 1.54 REQUIRED c++ abyss-server )
     include_directories ( ${XMLRPC_INCLUDE_DIRS} )
     add_library ( mod_conf_rpc MODULE configuration/rpcconfig/rpcconfig.cpp
                                       configuration/rpcconfig/user_helper.cpp
@@ -149,7 +149,6 @@ if ( BUILD_MOD_RPCCONFIG )
                                       configuration/rpcconfig/admins_methods.cpp
                                       configuration/rpcconfig/messages_methods.cpp )
     target_link_libraries ( mod_conf_rpc scriptexecuter logger common ${XMLRPC_LIBRARIES} )
-    target_compile_definitions ( mod_conf_rpc PUBLIC auto_ptr=unique_ptr )
     set_target_properties ( mod_conf_rpc PROPERTIES PREFIX "" )
 
     if ( CLANG_TIDY_EXE )
