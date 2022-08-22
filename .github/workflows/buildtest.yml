@@ -2,10 +2,6 @@ name: Build and test
 
 on: [push]
 
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
@@ -16,6 +12,9 @@ jobs:
 
     strategy:
       matrix:
+        build_type:
+          - Debug
+          - Release
         compiler:
           - { CC: gcc, CXX: g++ }
           - { CC: clang, CXX: clang++ }
@@ -45,17 +44,17 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=ON -DBUILD_LIB_CONFFILES=ON -DBUILD_LIB_CRYPTO=ON -DBUILD_LIB_COMMON=ON -DBUILD_LIB_LOGGER=ON -DBUILD_LIB_SCRIPTEXECUTER=ON -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_MOD_AO=ON -DBUILD_MOD_IA=ON -DBUILD_MOD_SGCONFIG=ON -DBUILD_MOD_PING=ON -DBUILD_MOD_RSCRYPT=ON -DBUILD_MOD_SMUX=ON -DBUILD_MOD_STORE_FILES=ON -DBUILD_MOD_CAP_NF=ON
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_TESTS=ON -DBUILD_LIB_CONFFILES=ON -DBUILD_LIB_CRYPTO=ON -DBUILD_LIB_COMMON=ON -DBUILD_LIB_LOGGER=ON -DBUILD_LIB_SCRIPTEXECUTER=ON -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_MOD_AO=ON -DBUILD_MOD_IA=ON -DBUILD_MOD_SGCONFIG=ON -DBUILD_MOD_PING=ON -DBUILD_MOD_RSCRYPT=ON -DBUILD_MOD_SMUX=ON -DBUILD_MOD_STORE_FILES=ON -DBUILD_MOD_CAP_NF=ON
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE
+      run: cmake --build . --config ${{ matrix.build_type }}
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
+      run: ctest -C ${{ matrix.build_type }} --rerun-failed --output-on-failure
