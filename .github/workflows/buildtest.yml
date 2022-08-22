@@ -42,7 +42,7 @@ jobs:
       # Note the current convention is to use the -S and -B options here to specify source
       # and build directories, but this is only available with CMake 3.13 and higher.
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=ON -DBUILD_LIB_CONFFILES=ON -DBUILD_LIB_CRYPTO=ON -DBUILD_LIB_COMMON=ON -DBUILD_LIB_LOGGER=ON -DBUILD_LIB_SCRIPTEXECUTER=ON
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=ON -DBUILD_LIB_CONFFILES=ON -DBUILD_LIB_CRYPTO=ON -DBUILD_LIB_COMMON=ON -DBUILD_LIB_LOGGER=ON -DBUILD_LIB_SCRIPTEXECUTER=ON -DBUILD_STG=ON -DBUILD_SGCONF=ON -DBUILD_RSCRIPTD=ON -DBUILD_SGAUTH=ON -DBUILD_MOD_AO=ON -DBUILD_MOD_IA=ON -DBUILD_MOD_SGCONFIG=ON -DBUILD_MOD_PING=ON -DBUILD_MOD_RSCRYPT=ON -DBUILD_MOD_SMUX=ON -DBUILD_MOD_STORE_FILES=ON -DBUILD_MOD_CAP_NF=ON
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
