@@ -138,7 +138,12 @@ if ( BUILD_MOD_SGCONFIG )
 endif ( BUILD_MOD_SGCONFIG )
 
 if ( BUILD_MOD_RPCCONFIG )
-    find_package ( XMLRPC 1.54 REQUIRED c++ abyss-server )
+    find_package ( XMLRPC 1.58.0 REQUIRED c++2 abyss-server )
+    try_compile ( XMLRPC_C_NO_AUTO_PTR ${CMAKE_CURRENT_BINARY_DIR} "${PROJECT_SOURCE_DIR}/checks/xmlrpc-c-auto_ptr.cpp" CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${XMLRPC_INCLUDE_DIRS} LINK_LIBRARIES ${XMLRPC_LIBRARIES} OUTPUT_VARIABLE TRY_COMPILE_OUTPUT )
+    if ( NOT XMLRPC_C_NO_AUTO_PTR )
+        message ( WARNING ${TRY_COMPILE_OUTPUT} )
+        message ( FATAL_ERROR "Your version of XMLRPC-C library can not be used with C++17. Try upgrading to at least 1.58.0." )
+    endif ()
     include_directories ( ${XMLRPC_INCLUDE_DIRS} )
     add_library ( mod_conf_rpc MODULE configuration/rpcconfig/rpcconfig.cpp
                                       configuration/rpcconfig/user_helper.cpp
