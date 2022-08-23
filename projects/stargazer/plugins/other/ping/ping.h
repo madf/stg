@@ -3,6 +3,7 @@
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
 #include "stg/notifer.h"
+#include "stg/subscriptions.h"
 #include "stg/user_ips.h"
 #include "stg/pinger.h"
 #include "stg/users.h"
@@ -53,30 +54,6 @@ private:
 
     UserPtr user;
     const PING & ping;
-};
-//-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
-public:
-    explicit ADD_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void notify(const UserPtr & user) override;
-
-private:
-    ADD_USER_NONIFIER_PING(const ADD_USER_NONIFIER_PING &);
-    ADD_USER_NONIFIER_PING & operator=(const ADD_USER_NONIFIER_PING &);
-
-    PING & ping;
-};
-//-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
-public:
-    explicit DEL_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void notify(const UserPtr & user) override;
-
-private:
-    DEL_USER_NONIFIER_PING(const DEL_USER_NONIFIER_PING &);
-    DEL_USER_NONIFIER_PING & operator=(const DEL_USER_NONIFIER_PING &);
-
-    PING & ping;
 };
 //-----------------------------------------------------------------------------
 class PING_SETTINGS {
@@ -136,8 +113,8 @@ private:
     std::list<CHG_CURRIP_NOTIFIER_PING> ChgCurrIPNotifierList;
     std::list<CHG_IPS_NOTIFIER_PING> ChgIPNotifierList;
 
-    ADD_USER_NONIFIER_PING onAddUserNotifier;
-    DEL_USER_NONIFIER_PING onDelUserNotifier;
+    STG::ScopedConnection m_onAddUserConn;
+    STG::ScopedConnection m_onDelUserConn;
 
     STG::PluginLogger logger;
 };

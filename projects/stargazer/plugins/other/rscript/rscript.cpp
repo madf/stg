@@ -160,8 +160,6 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
       isRunning(false),
       users(nullptr),
       sock(0),
-      onAddUserNotifier(*this),
-      onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("rscript"))
 {
 }
@@ -201,8 +199,8 @@ netRouters = rsSettings.GetSubnetsMap();
 
 InitEncrypt(rsSettings.GetPassword());
 
-users->AddNotifierUserAdd(&onAddUserNotifier);
-users->AddNotifierUserDel(&onDelUserNotifier);
+m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
 
 if (GetUsers())
     return -1;
@@ -241,9 +239,6 @@ if (isRunning)
         nanosleep(&ts, nullptr);
         }
     }
-
-users->DelNotifierUserDel(&onDelUserNotifier);
-users->DelNotifierUserAdd(&onAddUserNotifier);
 
 if (isRunning)
     {

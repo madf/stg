@@ -48,8 +48,6 @@ return "Always Online authorizator v.1.0";
 AUTH_AO::AUTH_AO()
     : users(NULL),
       isRunning(false),
-      onAddUserNotifier(*this),
-      onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("auth_ao"))
 {
 }
@@ -59,8 +57,8 @@ int AUTH_AO::Start()
 printfd(__FILE__, "AUTH_AO::Start()\n");
 GetUsers();
 
-users->AddNotifierUserAdd(&onAddUserNotifier);
-users->AddNotifierUserDel(&onDelUserNotifier);
+m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
 
 std::for_each(userList.begin(), userList.end(), [this](auto user){ UpdateUserAuthorization(user); });
 
@@ -75,8 +73,8 @@ printfd(__FILE__, "AUTH_AO::Stop()\n");
 if (!isRunning)
     return 0;
 
-users->DelNotifierUserAdd(&onAddUserNotifier);
-users->DelNotifierUserDel(&onDelUserNotifier);
+m_onAddUserConn.disconnect();
+m_onDelUserConn.disconnect();
 
 auto it = userList.begin();
 while (it != userList.end())

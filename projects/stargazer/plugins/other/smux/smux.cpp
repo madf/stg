@@ -100,8 +100,6 @@ SMUX::SMUX()
       lastReconnectTry(0),
       reconnectTimeout(1),
       sock(-1),
-      addUserNotifier(*this),
-      delUserNotifier(*this),
       addDelTariffNotifier(*this),
       logger(STG::PluginLogger::get("smux"))
 {
@@ -444,8 +442,14 @@ while (users->SearchNext(h, &u) == 0)
 
 users->CloseSearch(h);
 
-users->AddNotifierUserAdd(&addUserNotifier);
-users->AddNotifierUserDel(&delUserNotifier);
+m_onAddUserConn = users->onUserAdd([this](auto user){
+    SetNotifier(user);
+    UpdateTables();
+});
+m_onDelUserConn = users->onUserDel([this](auto user){
+    UnsetNotifier(user);
+    UpdateTables();
+});
 
 tariffs->AddNotifierAdd(&addDelTariffNotifier);
 tariffs->AddNotifierDel(&addDelTariffNotifier);
@@ -456,8 +460,8 @@ void SMUX::ResetNotifiers()
 tariffs->DelNotifierDel(&addDelTariffNotifier);
 tariffs->DelNotifierAdd(&addDelTariffNotifier);
 
-users->DelNotifierUserDel(&delUserNotifier);
-users->DelNotifierUserAdd(&addUserNotifier);
+m_onAddUserConn.disconnect();
+m_onDelUserConn.disconnect();
 
 auto it = notifiers.begin();
 while (it != notifiers.end())

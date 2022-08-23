@@ -23,7 +23,7 @@
 #include "stg/traffcounter.h"
 #include "stg/logger.h"
 #include "stg/raw_ip_packet.h"
-#include "stg/noncopyable.h"
+#include "stg/subscriptions.h"
 #include "stg/notifer.h"
 #include "user_impl.h"
 
@@ -130,41 +130,7 @@ private:
 
 using UserImplPtr = UserImpl*;
 //-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public NotifierBase<UserImplPtr> {
-public:
-            explicit ADD_USER_NONIFIER(TraffCounterImpl & t) :
-                NotifierBase<UserImplPtr>(),
-                traffCnt(t)
-            {}
-    virtual ~ADD_USER_NONIFIER() {}
-    void    notify(const UserImplPtr & user) override;
-
-private:
-    ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
-    ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER & rvalue);
-
-    TraffCounterImpl & traffCnt;
-};
-//-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public NotifierBase<UserImplPtr> {
-public:
-            explicit DEL_USER_NONIFIER(TraffCounterImpl & t) :
-                NotifierBase<UserImplPtr>(),
-                traffCnt(t)
-            {}
-    virtual ~DEL_USER_NONIFIER() {}
-    void    notify(const UserImplPtr & user) override;
-
-private:
-    DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
-    DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER & rvalue);
-
-    TraffCounterImpl & traffCnt;
-};
-//-----------------------------------------------------------------------------
 class TraffCounterImpl : public TraffCounter {
-    friend class ADD_USER_NONIFIER;
-    friend class DEL_USER_NONIFIER;
     friend class TRF_IP_BEFORE;
     friend class TRF_IP_AFTER;
     public:
@@ -228,11 +194,11 @@ class TraffCounterImpl : public TraffCounter {
         std::mutex               m_mutex;
         std::jthread             m_thread;
 
+        ScopedConnection m_onAddUserConn;
+        ScopedConnection m_onDelUserConn;
+
         std::list<TRF_IP_BEFORE> ipBeforeNotifiers;
         std::list<TRF_IP_AFTER>  ipAfterNotifiers;
-
-        ADD_USER_NONIFIER        addUserNotifier;
-        DEL_USER_NONIFIER        delUserNotifier;
 };
 
 }

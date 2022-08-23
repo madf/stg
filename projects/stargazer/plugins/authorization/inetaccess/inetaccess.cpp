@@ -290,7 +290,6 @@ AUTH_IA::AUTH_IA()
       stgSettings(NULL),
       listenSocket(-1),
       enabledDirs(0xFFffFFff),
-      onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("auth_ia"))
 {
 InitContext("pr7Hhen", 7, &ctxS);
@@ -341,12 +340,10 @@ AUTH_IA::~AUTH_IA()
 //-----------------------------------------------------------------------------
 int AUTH_IA::Start()
 {
-users->AddNotifierUserDel(&onDelUserNotifier);
+m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
 
 if (PrepareNet())
-    {
     return -1;
-    }
 
 if (!m_thread.joinable())
     m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
@@ -394,7 +391,7 @@ if (isRunningRunTimeouter)
         }
     }
 
-users->DelNotifierUserDel(&onDelUserNotifier);
+m_onDelUserConn.disconnect();
 
 if (isRunningRun)
     m_thread.detach();

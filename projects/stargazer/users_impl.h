@@ -64,109 +64,101 @@ std::list<UserImpl>::iterator iter;
 time_t  delTime;
 };
 //-----------------------------------------------------------------------------
-class UsersImpl : public Users {
+class UsersImpl : public Users
+{
     friend class PROPERTY_NOTIFER_IP_BEFORE;
     friend class PROPERTY_NOTIFER_IP_AFTER;
 
-public:
-    using UserImplPtr = UserImpl*;
+    public:
+        using UserImplPtr = UserImpl*;
 
-    UsersImpl(SettingsImpl * s, Store * store,
-              Tariffs * tariffs, Services & svcs,
-              const Admin& sysAdmin);
+        UsersImpl(SettingsImpl * s, Store * store,
+                  Tariffs * tariffs, Services & svcs,
+                  const Admin& sysAdmin);
 
-    int             FindByName(const std::string & login, UserPtr * user) override;
-    int             FindByName(const std::string & login, ConstUserPtr * user) const override;
-    bool            Exists(const std::string & login) const override;
+        int             FindByName(const std::string & login, UserPtr * user) override;
+        int             FindByName(const std::string & login, ConstUserPtr * user) const override;
+        bool            Exists(const std::string & login) const override;
 
-    bool            TariffInUse(const std::string & tariffName) const override;
+        bool            TariffInUse(const std::string & tariffName) const override;
 
-    void            AddNotifierUserAdd(NotifierBase<UserPtr> *) override;
-    void            DelNotifierUserAdd(NotifierBase<UserPtr> *) override;
+        template <typename F>
+        auto            onUserImplAdd(F&& f) { return m_onAddImplCallbacks.add(std::forward<F>(f)); }
+        template <typename F>
+        auto            onUserImplDel(F&& f) { return m_onDelImplCallbacks.add(std::forward<F>(f)); }
 
-    void            AddNotifierUserDel(NotifierBase<UserPtr> *) override;
-    void            DelNotifierUserDel(NotifierBase<UserPtr> *) override;
+        int             Add(const std::string & login, const Admin * admin) override;
+        void            Del(const std::string & login, const Admin * admin) override;
 
-    void            AddNotifierUserAdd(NotifierBase<UserImplPtr> *);
-    void            DelNotifierUserAdd(NotifierBase<UserImplPtr> *);
+        bool            Authorize(const std::string & login, uint32_t ip,
+                                  uint32_t enabledDirs, const Auth * auth) override;
+        bool            Unauthorize(const std::string & login,
+                                    const Auth * auth,
+                                    const std::string & reason) override;
 
-    void            AddNotifierUserDel(NotifierBase<UserImplPtr> *);
-    void            DelNotifierUserDel(NotifierBase<UserImplPtr> *);
+        int             ReadUsers() override;
+        size_t          Count() const override { return users.size(); }
 
-    int             Add(const std::string & login, const Admin * admin) override;
-    void            Del(const std::string & login, const Admin * admin) override;
+        int             FindByIPIdx(uint32_t ip, UserPtr * user) const override;
+        int             FindByIPIdx(uint32_t ip, UserImpl ** user) const;
+        bool            IsIPInIndex(uint32_t ip) const override;
+        bool            IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const override;
 
-    bool            Authorize(const std::string & login, uint32_t ip,
-                              uint32_t enabledDirs, const Auth * auth) override;
-    bool            Unauthorize(const std::string & login,
-                                const Auth * auth,
-                                const std::string & reason) override;
+        unsigned int    OpenSearch() override;
+        int             SearchNext(int handler, UserPtr * user) override;
+        int             SearchNext(int handler, UserImpl ** user);
+        int             CloseSearch(int handler) override;
 
-    int             ReadUsers() override;
-    size_t          Count() const override { return users.size(); }
+        int             Start() override;
+        int             Stop() override;
 
-    int             FindByIPIdx(uint32_t ip, UserPtr * user) const override;
-    int             FindByIPIdx(uint32_t ip, UserImpl ** user) const;
-    bool            IsIPInIndex(uint32_t ip) const override;
-    bool            IsIPInUse(uint32_t ip, const std::string & login, ConstUserPtr * user) const override;
+    private:
+        UsersImpl(const UsersImpl & rvalue);
+        UsersImpl & operator=(const UsersImpl & rvalue);
 
-    unsigned int    OpenSearch() override;
-    int             SearchNext(int handler, UserPtr * user) override;
-    int             SearchNext(int handler, UserImpl ** user);
-    int             CloseSearch(int handler) override;
+        void            AddToIPIdx(user_iter user);
+        void            DelFromIPIdx(uint32_t ip);
+        bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
 
-    int             Start() override;
-    int             Stop() override;
+        bool            FindByNameNonLock(const std::string & login, user_iter * user);
+        bool            FindByNameNonLock(const std::string & login, const_user_iter * user) const;
 
-private:
-    UsersImpl(const UsersImpl & rvalue);
-    UsersImpl & operator=(const UsersImpl & rvalue);
+        void            RealDelUser();
+        void            ProcessActions();
 
-    void            AddToIPIdx(user_iter user);
-    void            DelFromIPIdx(uint32_t ip);
-    bool            FindByIPIdx(uint32_t ip, user_iter & iter) const;
+        void            AddUserIntoIndexes(user_iter user);
+        void            DelUserFromIndexes(user_iter user);
 
-    bool            FindByNameNonLock(const std::string & login, user_iter * user);
-    bool            FindByNameNonLock(const std::string & login, const_user_iter * user) const;
+        void            Run(std::stop_token token);
+        void            NewMinute(const struct tm & t);
+        void            NewDay(const struct tm & t);
+        void            DayResetTraff(const struct tm & t);
 
-    void            RealDelUser();
-    void            ProcessActions();
+        bool            TimeToWriteDetailStat(const struct tm & t);
 
-    void            AddUserIntoIndexes(user_iter user);
-    void            DelUserFromIndexes(user_iter user);
+        std::list<UserImpl>                  users;
+        std::list<USER_TO_DEL>                usersToDelete;
 
-    void            Run(std::stop_token token);
-    void            NewMinute(const struct tm & t);
-    void            NewDay(const struct tm & t);
-    void            DayResetTraff(const struct tm & t);
+        std::map<uint32_t, user_iter>         ipIndex;
+        std::map<std::string, user_iter>      loginIndex;
 
-    bool            TimeToWriteDetailStat(const struct tm & t);
+        SettingsImpl *     settings;
+        Tariffs *           m_tariffs;
+        Services &          m_services;
+        Store *             m_store;
+        const Admin&        m_sysAdmin;
+        Logger &        WriteServLog;
 
-    std::list<UserImpl>                  users;
-    std::list<USER_TO_DEL>                usersToDelete;
+        bool                isRunning;
 
-    std::map<uint32_t, user_iter>         ipIndex;
-    std::map<std::string, user_iter>      loginIndex;
+        mutable std::mutex      m_mutex;
+        std::jthread            m_thread;
+        mutable unsigned int    handle;
 
-    SettingsImpl *     settings;
-    Tariffs *           m_tariffs;
-    Services &          m_services;
-    Store *             m_store;
-    const Admin&        m_sysAdmin;
-    Logger &        WriteServLog;
+        mutable std::map<unsigned int, user_iter>  searchDescriptors;
 
-    bool                isRunning;
-
-    mutable std::mutex      m_mutex;
-    std::jthread            m_thread;
-    mutable unsigned int    handle;
-
-    mutable std::map<unsigned int, user_iter>  searchDescriptors;
-
-    std::set<NotifierBase<UserPtr>*> onAddNotifiers;
-    std::set<NotifierBase<UserPtr>*> onDelNotifiers;
-    std::set<NotifierBase<UserImplPtr>*> onAddNotifiersImpl;
-    std::set<NotifierBase<UserImplPtr>*> onDelNotifiersImpl;
+        Subscriptions<UserImplPtr> m_onAddImplCallbacks;
+        Subscriptions<UserImplPtr> m_onDelImplCallbacks;
 };
 
 }

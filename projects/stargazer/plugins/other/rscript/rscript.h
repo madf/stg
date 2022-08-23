@@ -23,6 +23,7 @@
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
+#include "stg/subscriptions.h"
 #include "stg/notifer.h"
 #include "stg/user.h"
 #include "stg/blowfish.h"
@@ -58,32 +59,6 @@ class DisconnectUser;
 
 using UserPtr = STG::User*;
 
-//-----------------------------------------------------------------------------
-class ADD_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
-public:
-    explicit ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
-        : rs(r) {}
-    void notify(const UserPtr & user) override;
-
-private:
-    ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rhs);
-    ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER);
-
-    REMOTE_SCRIPT & rs;
-};
-//-----------------------------------------------------------------------------
-class DEL_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
-public:
-    explicit DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
-        : rs(r) {}
-    void notify(const UserPtr & user) override;
-
-private:
-    DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rhs);
-    DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER);
-
-    REMOTE_SCRIPT & rs;
-};
 //-----------------------------------------------------------------------------
 class IP_NOTIFIER: public STG::PropertyNotifierBase<uint32_t> {
 public:
@@ -243,8 +218,8 @@ private:
 
     int                 sock;
 
-    ADD_USER_NONIFIER onAddUserNotifier;
-    DEL_USER_NONIFIER onDelUserNotifier;
+    STG::ScopedConnection m_onAddUserConn;
+    STG::ScopedConnection m_onDelUserConn;
 
     STG::PluginLogger       logger;
 
@@ -263,16 +238,6 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, USER
     private:
         REMOTE_SCRIPT & rscript;
 };
-//-----------------------------------------------------------------------------
-inline void ADD_USER_NONIFIER::notify(const UserPtr & user)
-{
-rs.AddUser(user);
-}
-//-----------------------------------------------------------------------------
-inline void DEL_USER_NONIFIER::notify(const UserPtr & user)
-{
-rs.DelUser(user);
-}
 //-----------------------------------------------------------------------------
 
 } // namespace RS

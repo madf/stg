@@ -1,5 +1,18 @@
-#ifndef __SMUX_H__
-#define __SMUX_H__
+#pragma once
+
+#include "sensors.h"
+#include "tables.h"
+#include "types.h"
+
+#include "stg/SMUX-PDUs.h"
+#include "stg/ObjectSyntax.h"
+
+#include "stg/plugin.h"
+#include "stg/module_settings.h"
+#include "stg/subscriptions.h"
+#include "stg/notifer.h"
+#include "stg/noncopyable.h"
+#include "stg/logger.h"
 
 #include <string>
 #include <map>
@@ -10,19 +23,6 @@
 #include <jthread.hpp>
 #pragma GCC diagnostic pop
 #include <cstdint>
-
-#include "stg/SMUX-PDUs.h"
-#include "stg/ObjectSyntax.h"
-
-#include "stg/plugin.h"
-#include "stg/module_settings.h"
-#include "stg/notifer.h"
-#include "stg/noncopyable.h"
-#include "stg/logger.h"
-
-#include "sensors.h"
-#include "tables.h"
-#include "types.h"
 
 namespace STG
 {
@@ -86,24 +86,6 @@ public:
     explicit ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
              : STG::NotifierBase<STG::TariffData>(), smux(s) {}
     void notify(const STG::TariffData &) override;
-
-private:
-    SMUX & smux;
-};
-//-----------------------------------------------------------------------------
-class ADD_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
-public:
-    explicit ADD_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<STG::User*>(), smux(s) {}
-    void notify(const UserPtr &) override;
-
-private:
-    SMUX & smux;
-};
-//-----------------------------------------------------------------------------
-class DEL_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
-public:
-    explicit DEL_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<UserPtr>(), smux(s) {}
-    void notify(const UserPtr &) override;
 
 private:
     SMUX & smux;
@@ -186,9 +168,10 @@ private:
     Sensors sensors;
     Tables tables;
 
+    STG::ScopedConnection m_onAddUserConn;
+    STG::ScopedConnection m_onDelUserConn;
+
     std::list<CHG_AFTER_NOTIFIER> notifiers;
-    ADD_USER_NOTIFIER addUserNotifier;
-    DEL_USER_NOTIFIER delUserNotifier;
     ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
 
     STG::PluginLogger logger;
@@ -206,19 +189,3 @@ void ADD_DEL_TARIFF_NOTIFIER::notify(const STG::TariffData &)
 {
 smux.UpdateTables();
 }
-
-inline
-void ADD_USER_NOTIFIER::notify(const UserPtr & userPtr)
-{
-smux.SetNotifier(userPtr);
-smux.UpdateTables();
-}
-
-inline
-void DEL_USER_NOTIFIER::notify(const UserPtr & userPtr)
-{
-smux.UnsetNotifier(userPtr);
-smux.UpdateTables();
-}
-
-#endif

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "notifer.h"
+#include "subscriptions.h"
 
 #include <string>
 
@@ -31,46 +31,51 @@ struct Admin;
 struct User;
 struct Auth;
 
-struct Users {
-    virtual ~Users() = default;
+class Users
+{
+    public:
+        virtual ~Users() = default;
 
-    using UserPtr = User*;
-    using ConstUserPtr = const User*;
+        using UserPtr = User*;
+        using ConstUserPtr = const User*;
 
-    virtual int  FindByName(const std::string& login, UserPtr* user) = 0;
-    virtual int  FindByName(const std::string& login, ConstUserPtr* user) const = 0;
-    virtual bool Exists(const std::string& login) const = 0;
+        virtual int  FindByName(const std::string& login, UserPtr* user) = 0;
+        virtual int  FindByName(const std::string& login, ConstUserPtr* user) const = 0;
+        virtual bool Exists(const std::string& login) const = 0;
 
-    virtual bool TariffInUse(const std::string& tariffName) const = 0;
+        virtual bool TariffInUse(const std::string& tariffName) const = 0;
 
-    virtual void AddNotifierUserAdd(NotifierBase<User*>* notifier) = 0;
-    virtual void DelNotifierUserAdd(NotifierBase<User*>* notifier) = 0;
+        template <typename F>
+        auto onUserAdd(F&& f) { return m_onAddCallbacks.add(std::forward<F>(f)); }
+        template <typename F>
+        auto onUserDel(F&& f) { return m_onDelCallbacks.add(std::forward<F>(f)); }
 
-    virtual void AddNotifierUserDel(NotifierBase<User*>* notifier) = 0;
-    virtual void DelNotifierUserDel(NotifierBase<User*>* notifier) = 0;
+        virtual int  Add(const std::string& login, const Admin* admin) = 0;
+        virtual void Del(const std::string& login, const Admin* admin) = 0;
 
-    virtual int  Add(const std::string& login, const Admin* admin) = 0;
-    virtual void Del(const std::string& login, const Admin* admin) = 0;
+        virtual bool Authorize(const std::string& login, uint32_t ip,
+                               uint32_t enabledDirs, const Auth* auth) = 0;
+        virtual bool Unauthorize(const std::string& login,
+                                 const Auth* auth,
+                                 const std::string& reason = {}) = 0;
 
-    virtual bool Authorize(const std::string& login, uint32_t ip,
-                           uint32_t enabledDirs, const Auth* auth) = 0;
-    virtual bool Unauthorize(const std::string& login,
-                             const Auth* auth,
-                             const std::string& reason = {}) = 0;
+        virtual int  ReadUsers() = 0;
+        virtual size_t Count() const = 0;
 
-    virtual int  ReadUsers() = 0;
-    virtual size_t Count() const = 0;
+        virtual int  FindByIPIdx(uint32_t ip, User** user) const = 0;
+        virtual bool IsIPInIndex(uint32_t ip) const = 0;
+        virtual bool IsIPInUse(uint32_t ip, const std::string & login, const User** user) const = 0;
 
-    virtual int  FindByIPIdx(uint32_t ip, User** user) const = 0;
-    virtual bool IsIPInIndex(uint32_t ip) const = 0;
-    virtual bool IsIPInUse(uint32_t ip, const std::string & login, const User** user) const = 0;
+        virtual unsigned int  OpenSearch() = 0;
+        virtual int  SearchNext(int handle, User** u) = 0;
+        virtual int  CloseSearch(int handle) = 0;
 
-    virtual unsigned int  OpenSearch() = 0;
-    virtual int  SearchNext(int handle, User** u) = 0;
-    virtual int  CloseSearch(int handle) = 0;
+        virtual int  Start() = 0;
+        virtual int  Stop() = 0;
 
-    virtual int  Start() = 0;
-    virtual int  Stop() = 0;
+    protected:
+        Subscriptions<UserPtr> m_onAddCallbacks;
+        Subscriptions<UserPtr> m_onDelCallbacks;
 };
 
 }

@@ -213,21 +213,7 @@ private:
 class AUTH_IA;
 using UserPtr = STG::User*;
 //-----------------------------------------------------------------------------
-class DEL_USER_NOTIFIER: public STG::NotifierBase<UserPtr> {
-public:
-    explicit DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
-    virtual ~DEL_USER_NOTIFIER() {}
-
-    void notify(const UserPtr & user) override;
-private:
-    DEL_USER_NOTIFIER(const DEL_USER_NOTIFIER & rvalue);
-    DEL_USER_NOTIFIER & operator=(const DEL_USER_NOTIFIER & rvalue);
-
-    AUTH_IA & auth;
-};
-//-----------------------------------------------------------------------------
 class AUTH_IA : public STG::Auth {
-friend class DEL_USER_NOTIFIER;
 public:
                         AUTH_IA();
                         ~AUTH_IA() override;
@@ -350,7 +336,7 @@ private:
 
     uint32_t            enabledDirs;
 
-    DEL_USER_NOTIFIER   onDelUserNotifier;
+    STG::ScopedConnection m_onDelUserConn;
 
     STG::PluginLogger   logger;
 
@@ -370,9 +356,3 @@ class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &
 
         AUTH_IA * auth;
 };
-//-----------------------------------------------------------------------------
-inline
-void DEL_USER_NOTIFIER::notify(const UserPtr & user)
-{
-    auth.DelUser(user);
-}

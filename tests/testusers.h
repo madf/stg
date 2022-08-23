@@ -17,12 +17,6 @@ struct TestUsers : public STG::Users
     bool TariffInUse(const std::string& /*tariffName*/) const override
     { return -1; }
 
-    void AddNotifierUserAdd(STG::NotifierBase<UserPtr>* /*notifier*/) override {}
-    void DelNotifierUserAdd(STG::NotifierBase<UserPtr>* /*notifier*/) override {}
-
-    void AddNotifierUserDel(STG::NotifierBase<UserPtr>* /*notifier*/) override {}
-    void DelNotifierUserDel(STG::NotifierBase<UserPtr>* /*notifier*/) override {}
-
     int  Add(const std::string& /*login*/, const STG::Admin* /*admin*/) override
     { return 0; }
     void Del(const std::string& /*login*/, const STG::Admin* /*admin*/) override {}

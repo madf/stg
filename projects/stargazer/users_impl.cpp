@@ -148,26 +148,8 @@ u.OnAdd();
 users.push_front(u);
 
 AddUserIntoIndexes(users.begin());
-
-    {
-    // Fire all "on add" notifiers
-    auto ni = onAddNotifiers.begin();
-    while (ni != onAddNotifiers.end())
-        {
-        (*ni)->notify(&users.front());
-        ++ni;
-        }
-    }
-
-    {
-    // Fire all "on add" implementation notifiers
-    auto ni = onAddNotifiersImpl.begin();
-    while (ni != onAddNotifiersImpl.end())
-        {
-        (*ni)->notify(&users.front());
-        ++ni;
-        }
-    }
+m_onAddCallbacks.notify(&users.front());
+m_onAddImplCallbacks.notify(&users.front());
 
 return 0;
 }
@@ -199,23 +181,8 @@ if (priv.userAddDel == 0)
     u->SetDeleted();
     }
 
-    {
-    auto ni = onDelNotifiers.begin();
-    while (ni != onDelNotifiers.end())
-        {
-        (*ni)->notify(&(*u));
-        ++ni;
-        }
-    }
-
-    {
-    auto ni = onDelNotifiersImpl.begin();
-    while (ni != onDelNotifiersImpl.end())
-        {
-        (*ni)->notify(&(*u));
-        ++ni;
-        }
-    }
+    m_onDelCallbacks.notify(&(*u));
+    m_onDelImplCallbacks.notify(&(*u));
 
     {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -662,54 +629,6 @@ while (iter != users.end())
     ++iter;
     }
 return false;
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::AddNotifierUserAdd(NotifierBase<UserPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::DelNotifierUserAdd(NotifierBase<UserPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiers.erase(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::AddNotifierUserDel(NotifierBase<UserPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::DelNotifierUserDel(NotifierBase<UserPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiers.erase(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::AddNotifierUserAdd(NotifierBase<UserImplPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiersImpl.insert(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::DelNotifierUserAdd(NotifierBase<UserImplPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiersImpl.erase(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::AddNotifierUserDel(NotifierBase<UserImplPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiersImpl.insert(n);
-}
-//-----------------------------------------------------------------------------
-void UsersImpl::DelNotifierUserDel(NotifierBase<UserImplPtr> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiersImpl.erase(n);
 }
 //-----------------------------------------------------------------------------
 unsigned int UsersImpl::OpenSearch()

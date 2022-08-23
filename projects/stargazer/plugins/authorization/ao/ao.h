@@ -24,6 +24,7 @@
 #include "stg/module_settings.h"
 #include "stg/store.h"
 #include "stg/notifer.h"
+#include "stg/subscriptions.h"
 #include "stg/user_ips.h"
 #include "stg/user.h"
 #include "stg/logger.h"
@@ -121,31 +122,8 @@ private:
     std::list<CHG_BEFORE_NOTIFIER<STG::UserIPs> > BeforeChgIPNotifierList;
     std::list<CHG_AFTER_NOTIFIER<STG::UserIPs> >  AfterChgIPNotifierList;
 
-    class ADD_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
-    public:
-        explicit ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
-        virtual ~ADD_USER_NONIFIER() {}
-        void notify(const UserPtr & user) override { auth.AddUser(user); }
-
-    private:
-        ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
-        ADD_USER_NONIFIER & operator=(const ADD_USER_NONIFIER & rvalue);
-
-        AUTH_AO & auth;
-    } onAddUserNotifier;
-
-    class DEL_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
-    public:
-        explicit DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
-        virtual ~DEL_USER_NONIFIER() {}
-        void notify(const UserPtr & user) override { auth.DelUser(user); }
-
-    private:
-        DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
-        DEL_USER_NONIFIER & operator=(const DEL_USER_NONIFIER & rvalue);
-
-        AUTH_AO & auth;
-    } onDelUserNotifier;
+    STG::ScopedConnection m_onAddUserConn;
+    STG::ScopedConnection m_onDelUserConn;
 
     STG::PluginLogger logger;
 

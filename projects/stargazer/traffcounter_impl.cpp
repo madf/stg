@@ -53,8 +53,6 @@
 using STG::TraffCounterImpl;
 using STG::TRF_IP_BEFORE;
 using STG::TRF_IP_AFTER;
-using STG::ADD_USER_NONIFIER;
-using STG::DEL_USER_NONIFIER;
 
 namespace AsyncPoolST = STG::AsyncPoolST;
 
@@ -73,17 +71,20 @@ TraffCounterImpl::TraffCounterImpl(UsersImpl * u, const std::string & fn)
       monitoring(false),
       touchTimeP(stgTime - MONITOR_TIME_DELAY_SEC),
       users(u),
-      stopped(true),
-      addUserNotifier(*this),
-      delUserNotifier(*this)
+      stopped(true)
 {
 for (int i = 0; i < DIR_NUM; i++)
     strprintf(&dirName[i], "DIR%d", i);
 
 dirName[DIR_NUM] = "NULL";
 
-users->AddNotifierUserAdd(&addUserNotifier);
-users->AddNotifierUserDel(&delUserNotifier);
+m_onAddUserConn = users->onUserImplAdd([this](auto user){
+    AsyncPoolST::enqueue([this, user](){ SetUserNotifiers(user); });
+});
+m_onDelUserConn = users->onUserImplDel([this](auto user){
+    AsyncPoolST::enqueue([this, user](){ UnSetUserNotifiers(user); });
+    AsyncPoolST::enqueue([this, user](){ DelUser(user->GetCurrIP()); });
+});
 }
 //-----------------------------------------------------------------------------
 TraffCounterImpl::~TraffCounterImpl()
@@ -866,16 +867,5 @@ if (!newValue)
     return;
 
 AsyncPoolST::enqueue([this](){ traffCnt.AddUser(user); });
-}
-//-----------------------------------------------------------------------------
-void ADD_USER_NONIFIER::notify(const UserImplPtr & user)
-{
-AsyncPoolST::enqueue([this, user](){ traffCnt.SetUserNotifiers(user); });
-}
-//-----------------------------------------------------------------------------
-void DEL_USER_NONIFIER::notify(const UserImplPtr & user)
-{
-AsyncPoolST::enqueue([this, user](){ traffCnt.UnSetUserNotifiers(user); });
-AsyncPoolST::enqueue([this, user](){ traffCnt.DelUser(user->GetCurrIP()); });
 }
 //-----------------------------------------------------------------------------

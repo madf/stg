@@ -7,6 +7,48 @@
 namespace STG
 {
 
+class Connection
+{
+    public:
+        Connection() noexcept : m_connected(false) {}
+
+        Connection(const Connection&) = delete;
+        Connection& operator=(const Connection&) = delete;
+        Connection(Connection&&) = default;
+        Connection& operator=(Connection&&) = default;
+
+        Connection(const std::function<void ()>& f) noexcept : m_disconnect(f), m_connected(true) {}
+        void disconnect() noexcept
+        {
+            if (!m_connected)
+                return;
+            m_disconnect();
+            m_connected = false;
+        }
+    private:
+        std::function<void ()> m_disconnect;
+        bool m_connected;
+};
+
+class ScopedConnection
+{
+    public:
+        ScopedConnection() = default;
+
+        ScopedConnection(const ScopedConnection&) = delete;
+        ScopedConnection& operator=(const ScopedConnection&) = delete;
+        ScopedConnection(ScopedConnection&&) = default;
+        ScopedConnection& operator=(ScopedConnection&&) = default;
+
+        ScopedConnection(Connection c) noexcept : m_conn(std::move(c)) {}
+        ~ScopedConnection() { disconnect(); }
+
+        void disconnect() noexcept { m_conn.disconnect(); }
+
+    private:
+        Connection m_conn;
+};
+
 template <typename... Ts>
 class Subscriptions
 {
@@ -14,35 +56,16 @@ class Subscriptions
         using Callback = std::function<void (Ts...)>;
         using Callbacks = std::list<Callback>;
 
-        class Connection
+        Connection makeConn(typename Callbacks::iterator i) noexcept
         {
-            public:
-                Connection(Subscriptions& s, typename Callbacks::iterator i) noexcept
-                    : m_subscriptions(s), m_iterator(i), m_connected(true)
-                {}
-                ~Connection()
-                {
-                    disconnect();
-                }
-
-                void disconnect() noexcept
-                {
-                    if (!m_connected)
-                        return;
-                    m_subscriptions.remove(m_iterator);
-                    m_connected = false;
-                }
-            private:
-                Subscriptions& m_subscriptions;
-                typename Callbacks::iterator m_iterator;
-                bool m_connected;
-        };
+            return Connection([this, i](){ remove(i); });
+        }
 
         template <typename F>
         Connection add(F&& f)
         {
             std::lock_guard lock(m_mutex);
-            return Connection(*this, m_callbacks.insert(m_callbacks.end(), Callback(std::forward<F>(f))));
+            return makeConn(m_callbacks.insert(m_callbacks.end(), Callback(std::forward<F>(f))));
         }
 
         template <typename C, typename... T2s>

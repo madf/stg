@@ -63,8 +63,6 @@ return 0;
 PING::PING()
     : users(nullptr),
       isRunning(false),
-      onAddUserNotifier(*this),
-      onDelUserNotifier(*this),
       logger(STG::PluginLogger::get("ping"))
 {
 }
@@ -81,8 +79,8 @@ int PING::Start()
 {
 GetUsers();
 
-users->AddNotifierUserAdd(&onAddUserNotifier);
-users->AddNotifierUserDel(&onDelUserNotifier);
+m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
 
 pinger.SetDelayTime(pingSettings.GetPingDelay());
 pinger.Start();
@@ -111,8 +109,8 @@ for (int i = 0; i < 25; i++)
     nanosleep(&ts, nullptr);
     }
 
-users->DelNotifierUserAdd(&onAddUserNotifier);
-users->DelNotifierUserDel(&onDelUserNotifier);
+m_onAddUserConn.disconnect();
+m_onDelUserConn.disconnect();
 
 std::list<UserPtr>::iterator users_iter;
 users_iter = usersList.begin();
@@ -306,14 +304,3 @@ if (oldIPS.onlyOneIP())
 if (newIPS.onlyOneIP())
     ping.pinger.AddIP(newIPS[0].ip);
 }
-//-----------------------------------------------------------------------------
-void ADD_USER_NONIFIER_PING::notify(const UserPtr & user)
-{
-ping.AddUser(user);
-}
-//-----------------------------------------------------------------------------
-void DEL_USER_NONIFIER_PING::notify(const UserPtr & user)
-{
-ping.DelUser(user);
-}
-//-----------------------------------------------------------------------------

@@ -10,6 +10,9 @@
 #include <boost/test/unit_test.hpp>
 #pragma GCC diagnostic pop
 
+using STG::Subscriptions;
+using STG::ScopedConnection;
+
 namespace
 {
 
@@ -37,19 +40,19 @@ struct Receiver
 
 }
 
-BOOST_AUTO_TEST_SUITE(Subscriptions)
+BOOST_AUTO_TEST_SUITE(TestSubscriptions)
 
 BOOST_AUTO_TEST_CASE(Construction)
 {
-    STG::Subscriptions<> nullary;
+    Subscriptions<> nullary;
     BOOST_CHECK(nullary.empty());
     BOOST_CHECK_EQUAL(nullary.size(), 0);
 
-    STG::Subscriptions<uint8_t> unary;
+    Subscriptions<uint8_t> unary;
     BOOST_CHECK(unary.empty());
     BOOST_CHECK_EQUAL(unary.size(), 0);
 
-    STG::Subscriptions<uint8_t, std::string> binary;
+    Subscriptions<uint8_t, std::string> binary;
     BOOST_CHECK(binary.empty());
     BOOST_CHECK_EQUAL(binary.size(), 0);
 }
@@ -57,10 +60,10 @@ BOOST_AUTO_TEST_CASE(Construction)
 BOOST_AUTO_TEST_CASE(AddingAndRemoving)
 {
     Receiver r;
-    STG::Subscriptions<> nullary;
+    Subscriptions<> nullary;
     {
-        auto c1 = nullary.add(r, &Receiver::r0);
-        auto c2 = nullary.add([&r](){ r.r0(); });
+        ScopedConnection c1 = nullary.add(r, &Receiver::r0);
+        ScopedConnection c2 = nullary.add([&r](){ r.r0(); });
 
         BOOST_CHECK(!nullary.empty());
         BOOST_CHECK_EQUAL(nullary.size(), 2);
@@ -73,10 +76,10 @@ BOOST_AUTO_TEST_CASE(AddingAndRemoving)
     BOOST_CHECK(nullary.empty());
     BOOST_CHECK_EQUAL(nullary.size(), 0);
 
-    STG::Subscriptions<uint8_t> unary;
+    Subscriptions<uint8_t> unary;
     {
-        auto c1 = unary.add(r, &Receiver::r1);
-        auto c2 = unary.add([&r](const auto& v){ r.r1(v); });
+        ScopedConnection c1 = unary.add(r, &Receiver::r1);
+        ScopedConnection c2 = unary.add([&r](const auto& v){ r.r1(v); });
 
         BOOST_CHECK(!unary.empty());
         BOOST_CHECK_EQUAL(unary.size(), 2);
@@ -89,10 +92,10 @@ BOOST_AUTO_TEST_CASE(AddingAndRemoving)
     BOOST_CHECK(unary.empty());
     BOOST_CHECK_EQUAL(unary.size(), 0);
 
-    STG::Subscriptions<uint8_t, std::string> binary;
+    Subscriptions<uint8_t, std::string> binary;
     {
-        auto c1 = binary.add(r, &Receiver::r2);
-        auto c2 = binary.add([&r](const auto& v1, const auto& v2){ r.r2(v1, v2); });
+        ScopedConnection c1 = binary.add(r, &Receiver::r2);
+        ScopedConnection c2 = binary.add([&r](const auto& v1, const auto& v2){ r.r2(v1, v2); });
 
         BOOST_CHECK(!binary.empty());
         BOOST_CHECK_EQUAL(binary.size(), 2);
@@ -117,10 +120,10 @@ BOOST_AUTO_TEST_CASE(Notification)
     BOOST_CHECK_EQUAL(r.value1R2, 0);
     BOOST_CHECK_EQUAL(r.value2R2, "");
 
-    STG::Subscriptions<> nullary;
+    Subscriptions<> nullary;
     {
-        auto c1 = nullary.add(r, &Receiver::r0);
-        auto c2 = nullary.add([&r](){ r.r0(); });
+        ScopedConnection c1 = nullary.add(r, &Receiver::r0);
+        ScopedConnection c2 = nullary.add([&r](){ r.r0(); });
 
         nullary.notify();
 
@@ -151,10 +154,10 @@ BOOST_AUTO_TEST_CASE(Notification)
     BOOST_CHECK_EQUAL(r.value1R2, 0);
     BOOST_CHECK_EQUAL(r.value2R2, "");
 
-    STG::Subscriptions<uint8_t> unary;
+    Subscriptions<uint8_t> unary;
     {
-        auto c1 = unary.add(r, &Receiver::r1);
-        auto c2 = unary.add([&r](const auto& v){ r.r1(v); });
+        ScopedConnection c1 = unary.add(r, &Receiver::r1);
+        ScopedConnection c2 = unary.add([&r](const auto& v){ r.r1(v); });
 
         unary.notify(42);
 
@@ -185,10 +188,10 @@ BOOST_AUTO_TEST_CASE(Notification)
     BOOST_CHECK_EQUAL(r.value1R2, 0);
     BOOST_CHECK_EQUAL(r.value2R2, "");
 
-    STG::Subscriptions<uint8_t, std::string> binary;
+    Subscriptions<uint8_t, std::string> binary;
     {
-        auto c1 = binary.add(r, &Receiver::r2);
-        auto c2 = binary.add([&r](const auto& v1, const auto& v2){ r.r2(v1, v2); });
+        ScopedConnection c1 = binary.add(r, &Receiver::r2);
+        ScopedConnection c2 = binary.add([&r](const auto& v1, const auto& v2){ r.r2(v1, v2); });
 
         binary.notify(42, "Douglas");
 
