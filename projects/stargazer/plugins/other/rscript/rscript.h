@@ -63,7 +63,7 @@ class ADD_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
 public:
     explicit ADD_USER_NONIFIER(REMOTE_SCRIPT & r)
         : rs(r) {}
-    void Notify(const UserPtr & user);
+    void notify(const UserPtr & user) override;
 
 private:
     ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rhs);
@@ -76,7 +76,7 @@ class DEL_USER_NONIFIER: public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NONIFIER(REMOTE_SCRIPT & r)
         : rs(r) {}
-    void Notify(const UserPtr & user);
+    void notify(const UserPtr & user) override;
 
 private:
     DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rhs);
@@ -101,7 +101,7 @@ public:
         return *this;
     }
 
-    void Notify(const uint32_t & oldValue, const uint32_t & newValue);
+    void notify(const uint32_t & oldValue, const uint32_t & newValue) override;
     UserPtr GetUser() const { return user; }
 
 private:
@@ -126,7 +126,7 @@ public:
         return *this;
     }
 
-    void Notify(const bool & oldValue, const bool & newValue);
+    void notify(const bool & oldValue, const bool & newValue) override;
     UserPtr GetUser() const { return user; }
 
 private:
@@ -264,12 +264,12 @@ class DisconnectUser : public std::unary_function<std::pair<const uint32_t, USER
         REMOTE_SCRIPT & rscript;
 };
 //-----------------------------------------------------------------------------
-inline void ADD_USER_NONIFIER::Notify(const UserPtr & user)
+inline void ADD_USER_NONIFIER::notify(const UserPtr & user)
 {
 rs.AddUser(user);
 }
 //-----------------------------------------------------------------------------
-inline void DEL_USER_NONIFIER::Notify(const UserPtr & user)
+inline void DEL_USER_NONIFIER::notify(const UserPtr & user)
 {
 rs.DelUser(user);
 }

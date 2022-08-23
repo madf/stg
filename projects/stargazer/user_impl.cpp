@@ -1493,7 +1493,7 @@ std::string UserImpl::GetParamValue(const std::string & name) const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void STG::CHG_PASSIVE_NOTIFIER::Notify(const int & oldPassive, const int & newPassive)
+void STG::CHG_PASSIVE_NOTIFIER::notify(const int & oldPassive, const int & newPassive)
 {
 if (newPassive && !oldPassive && user->tariff != NULL)
     user->properties.cash.Set(user->cash - user->tariff->GetPassiveCost(),
@@ -1503,7 +1503,7 @@ if (newPassive && !oldPassive && user->tariff != NULL)
                             "Freeze");
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_DISABLED_NOTIFIER::Notify(const int & oldValue, const int & newValue)
+void STG::CHG_DISABLED_NOTIFIER::notify(const int & oldValue, const int & newValue)
 {
 if (oldValue && !newValue && user->GetConnected())
     user->Disconnect(false, "disabled");
@@ -1511,7 +1511,7 @@ else if (!oldValue && newValue && user->IsInetable())
     user->Connect(false);
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_TARIFF_NOTIFIER::Notify(const std::string &, const std::string & newTariff)
+void STG::CHG_TARIFF_NOTIFIER::notify(const std::string &, const std::string & newTariff)
 {
 STG_LOCKER lock(&user->mutex);
 if (user->settings->GetReconnectOnTariffChange() && user->connected)
@@ -1527,13 +1527,13 @@ if (user->settings->GetReconnectOnTariffChange() &&
     }
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_CASH_NOTIFIER::Notify(const double & oldCash, const double & newCash)
+void STG::CHG_CASH_NOTIFIER::notify(const double & oldCash, const double & newCash)
 {
 user->lastCashAddTime = *const_cast<time_t *>(&stgTime);
 user->lastCashAdd = newCash - oldCash;
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_IPS_NOTIFIER::Notify(const UserIPs & from, const UserIPs & to)
+void STG::CHG_IPS_NOTIFIER::notify(const UserIPs & from, const UserIPs & to)
 {
 printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.toString().c_str(), to.toString().c_str());
 if (user->connected)

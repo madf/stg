@@ -291,14 +291,14 @@ while (users_iter != usersList.end())
     }
 }
 //-----------------------------------------------------------------------------
-void CHG_CURRIP_NOTIFIER_PING::Notify(const uint32_t & oldIP, const uint32_t & newIP)
+void CHG_CURRIP_NOTIFIER_PING::notify(const uint32_t & oldIP, const uint32_t & newIP)
 {
 ping.pinger.DelIP(oldIP);
 if (newIP != 0)
     ping.pinger.AddIP(newIP);
 }
 //-----------------------------------------------------------------------------
-void CHG_IPS_NOTIFIER_PING::Notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS)
+void CHG_IPS_NOTIFIER_PING::notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS)
 {
 if (oldIPS.onlyOneIP())
     ping.pinger.DelIP(oldIPS[0].ip);
@@ -307,12 +307,12 @@ if (newIPS.onlyOneIP())
     ping.pinger.AddIP(newIPS[0].ip);
 }
 //-----------------------------------------------------------------------------
-void ADD_USER_NONIFIER_PING::Notify(const UserPtr & user)
+void ADD_USER_NONIFIER_PING::notify(const UserPtr & user)
 {
 ping.AddUser(user);
 }
 //-----------------------------------------------------------------------------
-void DEL_USER_NONIFIER_PING::Notify(const UserPtr & user)
+void DEL_USER_NONIFIER_PING::notify(const UserPtr & user)
 {
 ping.DelUser(user);
 }

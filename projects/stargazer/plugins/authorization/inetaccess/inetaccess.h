@@ -218,7 +218,7 @@ public:
     explicit DEL_USER_NOTIFIER(AUTH_IA & a) : auth(a) {}
     virtual ~DEL_USER_NOTIFIER() {}
 
-    void Notify(const UserPtr & user);
+    void notify(const UserPtr & user) override;
 private:
     DEL_USER_NOTIFIER(const DEL_USER_NOTIFIER & rvalue);
     DEL_USER_NOTIFIER & operator=(const DEL_USER_NOTIFIER & rvalue);
@@ -372,7 +372,7 @@ class UnauthorizeUser : std::unary_function<const std::pair<uint32_t, IA_USER> &
 };
 //-----------------------------------------------------------------------------
 inline
-void DEL_USER_NOTIFIER::Notify(const UserPtr & user)
+void DEL_USER_NOTIFIER::notify(const UserPtr & user)
 {
     auth.DelUser(user);
 }

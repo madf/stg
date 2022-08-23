@@ -51,7 +51,7 @@ public:
                     : user(u), auth(a) {}
                 CHG_BEFORE_NOTIFIER(const CHG_BEFORE_NOTIFIER<T> & rvalue)
                     : user(rvalue.user), auth(rvalue.auth) {}
-    void        Notify(const T & oldValue, const T & newValue);
+    void        notify(const T & oldValue, const T & newValue) override;
     UserPtr    GetUser() const { return user; }
 
 private:
@@ -68,7 +68,7 @@ public:
                     : user(u), auth(a) {}
                 CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER<T> & rvalue)
                     : user(rvalue.user), auth(rvalue.auth) {}
-    void        Notify(const T & oldValue, const T & newValue);
+    void        notify(const T & oldValue, const T & newValue) override;
     UserPtr    GetUser() const { return user; }
 
 private:
@@ -125,7 +125,7 @@ private:
     public:
         explicit ADD_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~ADD_USER_NONIFIER() {}
-        void Notify(const UserPtr & user) { auth.AddUser(user); }
+        void notify(const UserPtr & user) override { auth.AddUser(user); }
 
     private:
         ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
@@ -138,7 +138,7 @@ private:
     public:
         explicit DEL_USER_NONIFIER(AUTH_AO & a) : auth(a) {}
         virtual ~DEL_USER_NONIFIER() {}
-        void Notify(const UserPtr & user) { auth.DelUser(user); }
+        void notify(const UserPtr & user) override { auth.DelUser(user); }
 
     private:
         DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);

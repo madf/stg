@@ -31,7 +31,7 @@ class CHG_CURRIP_NOTIFIER_PING: public STG::PropertyNotifierBase<uint32_t> {
 public:
     CHG_CURRIP_NOTIFIER_PING(const PING & p, UserPtr u)
         : user(u), ping(p) {}
-    void Notify(const uint32_t & oldIP, const uint32_t & newIP);
+    void notify(const uint32_t & oldIP, const uint32_t & newIP) override;
     UserPtr GetUser() const { return user; }
 
 private:
@@ -45,7 +45,7 @@ class CHG_IPS_NOTIFIER_PING: public STG::PropertyNotifierBase<STG::UserIPs> {
 public:
     CHG_IPS_NOTIFIER_PING(const PING & p, UserPtr u)
         : user(u), ping(p) {}
-    void Notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS);
+    void notify(const STG::UserIPs & oldIPS, const STG::UserIPs & newIPS) override;
     UserPtr GetUser() const { return user; }
 
 private:
@@ -58,7 +58,7 @@ private:
 class ADD_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
 public:
     explicit ADD_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void Notify(const UserPtr & user);
+    void notify(const UserPtr & user) override;
 
 private:
     ADD_USER_NONIFIER_PING(const ADD_USER_NONIFIER_PING &);
@@ -70,7 +70,7 @@ private:
 class DEL_USER_NONIFIER_PING: public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NONIFIER_PING(PING & p) : ping(p) {}
-    void Notify(const UserPtr & user);
+    void notify(const UserPtr & user) override;
 
 private:
     DEL_USER_NONIFIER_PING(const DEL_USER_NONIFIER_PING &);

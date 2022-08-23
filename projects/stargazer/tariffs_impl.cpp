@@ -178,7 +178,7 @@ TariffData td;
 auto ni = onDelNotifiers.begin();
 while (ni != onDelNotifiers.end())
     {
-    (*ni)->Notify(td);
+    (*ni)->notify(td);
     ++ni;
     }
 
@@ -227,7 +227,7 @@ if (store->AddTariff(name) < 0)
 auto ni = onAddNotifiers.begin();
 while (ni != onAddNotifiers.end())
     {
-    (*ni)->Notify(tariffs.back().GetTariffData());
+    (*ni)->notify(tariffs.back().GetTariffData());
     ++ni;
     }
 

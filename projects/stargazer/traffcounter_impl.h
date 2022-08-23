@@ -97,7 +97,7 @@ public:
                       traffCnt(rvalue.traffCnt),
                       user(rvalue.user)
                 {}
-    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
+    void        notify(const uint32_t & oldValue, const uint32_t & newValue) override;
     void        SetUser(UserImpl * u) { user = u; }
     UserImpl * GetUser() const { return user; }
 
@@ -120,7 +120,7 @@ public:
                       traffCnt(rvalue.traffCnt),
                       user(rvalue.user)
                 {}
-    void        Notify(const uint32_t & oldValue, const uint32_t & newValue);
+    void        notify(const uint32_t & oldValue, const uint32_t & newValue) override;
     void        SetUser(UserImpl * u) { user = u; }
     UserImpl * GetUser() const { return user; }
 private:
@@ -139,7 +139,7 @@ public:
                 traffCnt(t)
             {}
     virtual ~ADD_USER_NONIFIER() {}
-    void    Notify(const UserImplPtr & user);
+    void    notify(const UserImplPtr & user) override;
 
 private:
     ADD_USER_NONIFIER(const ADD_USER_NONIFIER & rvalue);
@@ -155,7 +155,7 @@ public:
                 traffCnt(t)
             {}
     virtual ~DEL_USER_NONIFIER() {}
-    void    Notify(const UserImplPtr & user);
+    void    notify(const UserImplPtr & user) override;
 
 private:
     DEL_USER_NONIFIER(const DEL_USER_NONIFIER & rvalue);
@@ -238,7 +238,7 @@ class TraffCounterImpl : public TraffCounter {
 };
 //-----------------------------------------------------------------------------
 inline
-void TRF_IP_BEFORE::Notify(const uint32_t & oldValue, const uint32_t &)
+void TRF_IP_BEFORE::notify(const uint32_t & oldValue, const uint32_t &)
 {
 // User changes his address. Remove old IP
 if (!oldValue)
@@ -248,7 +248,7 @@ EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, oldValue);
 }
 //-----------------------------------------------------------------------------
 inline
-void TRF_IP_AFTER::Notify(const uint32_t &, const uint32_t & newValue)
+void TRF_IP_AFTER::notify(const uint32_t &, const uint32_t & newValue)
 {
 // User changes his address. Add new IP
 if (!newValue)
@@ -258,13 +258,13 @@ EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::AddUser, user);
 }
 //-----------------------------------------------------------------------------
 inline
-void ADD_USER_NONIFIER::Notify(const UserImplPtr & user)
+void ADD_USER_NONIFIER::notify(const UserImplPtr & user)
 {
 EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::SetUserNotifiers, user);
 }
 //-----------------------------------------------------------------------------
 inline
-void DEL_USER_NONIFIER::Notify(const UserImplPtr & user)
+void DEL_USER_NONIFIER::notify(const UserImplPtr & user)
 {
 EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::UnSetUserNotifiers, user);
 EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, user->GetCurrIP());

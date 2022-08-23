@@ -54,7 +54,7 @@ class SettingsImpl;
 class CHG_PASSIVE_NOTIFIER : public PropertyNotifierBase<int> {
     public:
         explicit CHG_PASSIVE_NOTIFIER(UserImpl * u) : user(u) {}
-        void Notify(const int & oldPassive, const int & newPassive);
+        void notify(const int & oldPassive, const int & newPassive) override;
 
     private:
         UserImpl * user;
@@ -63,7 +63,7 @@ class CHG_PASSIVE_NOTIFIER : public PropertyNotifierBase<int> {
 class CHG_DISABLED_NOTIFIER : public PropertyNotifierBase<int> {
 public:
     explicit CHG_DISABLED_NOTIFIER(UserImpl * u) : user(u) {}
-    void Notify(const int & oldValue, const int & newValue);
+    void notify(const int & oldValue, const int & newValue) override;
 
 private:
     UserImpl * user;
@@ -72,7 +72,7 @@ private:
 class CHG_TARIFF_NOTIFIER : public PropertyNotifierBase<std::string> {
 public:
     explicit CHG_TARIFF_NOTIFIER(UserImpl * u) : user(u) {}
-    void Notify(const std::string & oldTariff, const std::string & newTariff);
+    void notify(const std::string & oldTariff, const std::string & newTariff) override;
 
 private:
     UserImpl * user;
@@ -81,7 +81,7 @@ private:
 class CHG_CASH_NOTIFIER : public PropertyNotifierBase<double> {
 public:
     explicit CHG_CASH_NOTIFIER(UserImpl * u) : user(u) {}
-    void Notify(const double & oldCash, const double & newCash);
+    void notify(const double & oldCash, const double & newCash) override;
 
 private:
     UserImpl * user;
@@ -90,7 +90,7 @@ private:
 class CHG_IPS_NOTIFIER : public PropertyNotifierBase<UserIPs> {
 public:
     explicit CHG_IPS_NOTIFIER(UserImpl * u) : user(u) {}
-    void Notify(const UserIPs & oldIPs, const UserIPs & newIPs);
+    void notify(const UserIPs & oldIPs, const UserIPs & newIPs) override;
 
 private:
     UserImpl * user;

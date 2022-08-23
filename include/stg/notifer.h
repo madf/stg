@@ -3,20 +3,15 @@
 namespace STG
 {
 
-template <typename T>
-struct PropertyNotifierBase
-{
-    virtual ~PropertyNotifierBase() = default;
-
-    virtual void Notify(const T& oldValue, const T& newValue) = 0;
-};
-
-template <typename T>
+template <typename... Ts>
 struct NotifierBase
 {
     virtual ~NotifierBase() = default;
 
-    virtual void Notify(const T& value) = 0;
+    virtual void notify(const Ts&... values) = 0;
 };
+
+template <typename T>
+using PropertyNotifierBase = NotifierBase<T, T>;
 
 }

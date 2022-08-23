@@ -32,7 +32,7 @@ class AfterConnectedNotifier : public STG::PropertyNotifierBase<bool>
               m_disconnects(0)
         {}
 
-        void Notify(const bool& oldValue, const bool& newValue) override
+        void notify(const bool& oldValue, const bool& newValue) override
         {
             if (!oldValue && newValue)
                 ++m_connects;

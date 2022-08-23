@@ -522,7 +522,7 @@ if (it != authorizedUsers.end())
     }*/
 }
 //-----------------------------------------------------------------------------
-void RS::IP_NOTIFIER::Notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
+void RS::IP_NOTIFIER::notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
 {
 if (newValue != 0)
     rs.AddRSU(user);
@@ -530,7 +530,7 @@ else
     rs.DelRSU(user);
 }
 //-----------------------------------------------------------------------------
-void RS::CONNECTED_NOTIFIER::Notify(const bool & /*oldValue*/, const bool & newValue)
+void RS::CONNECTED_NOTIFIER::notify(const bool & /*oldValue*/, const bool & newValue)
 {
 if (newValue)
     rs.AddRSU(user);

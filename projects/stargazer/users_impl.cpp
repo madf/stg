@@ -154,7 +154,7 @@ AddUserIntoIndexes(users.begin());
     auto ni = onAddNotifiers.begin();
     while (ni != onAddNotifiers.end())
         {
-        (*ni)->Notify(&users.front());
+        (*ni)->notify(&users.front());
         ++ni;
         }
     }
@@ -164,7 +164,7 @@ AddUserIntoIndexes(users.begin());
     auto ni = onAddNotifiersImpl.begin();
     while (ni != onAddNotifiersImpl.end())
         {
-        (*ni)->Notify(&users.front());
+        (*ni)->notify(&users.front());
         ++ni;
         }
     }
@@ -203,7 +203,7 @@ if (priv.userAddDel == 0)
     auto ni = onDelNotifiers.begin();
     while (ni != onDelNotifiers.end())
         {
-        (*ni)->Notify(&(*u));
+        (*ni)->notify(&(*u));
         ++ni;
         }
     }
@@ -212,7 +212,7 @@ if (priv.userAddDel == 0)
     auto ni = onDelNotifiersImpl.begin();
     while (ni != onDelNotifiersImpl.end())
         {
-        (*ni)->Notify(&(*u));
+        (*ni)->notify(&(*u));
         ++ni;
         }
     }

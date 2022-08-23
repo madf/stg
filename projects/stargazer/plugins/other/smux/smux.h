@@ -71,7 +71,7 @@ public:
              CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER & rvalue)
                  : STG::PropertyNotifierBase<std::string>(),
                    smux(rvalue.smux), userPtr(rvalue.userPtr) {}
-    void     Notify(const std::string &, const std::string &);
+    void     notify(const std::string &, const std::string &) override;
 
     UserPtr GetUserPtr() const { return userPtr; }
 
@@ -85,7 +85,7 @@ class ADD_DEL_TARIFF_NOTIFIER : public STG::NotifierBase<STG::TariffData> {
 public:
     explicit ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
              : STG::NotifierBase<STG::TariffData>(), smux(s) {}
-    void Notify(const STG::TariffData &);
+    void notify(const STG::TariffData &) override;
 
 private:
     SMUX & smux;
@@ -94,7 +94,7 @@ private:
 class ADD_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
 public:
     explicit ADD_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<STG::User*>(), smux(s) {}
-    void Notify(const UserPtr &);
+    void notify(const UserPtr &) override;
 
 private:
     SMUX & smux;
@@ -103,7 +103,7 @@ private:
 class DEL_USER_NOTIFIER : public STG::NotifierBase<UserPtr> {
 public:
     explicit DEL_USER_NOTIFIER(SMUX & s) : STG::NotifierBase<UserPtr>(), smux(s) {}
-    void Notify(const UserPtr &);
+    void notify(const UserPtr &) override;
 
 private:
     SMUX & smux;
@@ -196,26 +196,26 @@ private:
 //-----------------------------------------------------------------------------
 
 inline
-void CHG_AFTER_NOTIFIER::Notify(const std::string &, const std::string &)
+void CHG_AFTER_NOTIFIER::notify(const std::string &, const std::string &)
 {
 smux.UpdateTables();
 }
 
 inline
-void ADD_DEL_TARIFF_NOTIFIER::Notify(const STG::TariffData &)
+void ADD_DEL_TARIFF_NOTIFIER::notify(const STG::TariffData &)
 {
 smux.UpdateTables();
 }
 
 inline
-void ADD_USER_NOTIFIER::Notify(const UserPtr & userPtr)
+void ADD_USER_NOTIFIER::notify(const UserPtr & userPtr)
 {
 smux.SetNotifier(userPtr);
 smux.UpdateTables();
 }
 
 inline
-void DEL_USER_NOTIFIER::Notify(const UserPtr & userPtr)
+void DEL_USER_NOTIFIER::notify(const UserPtr & userPtr)
 {
 smux.UnsetNotifier(userPtr);
 smux.UpdateTables();

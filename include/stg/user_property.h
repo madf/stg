@@ -207,14 +207,14 @@ void UserProperty<T>::Set(const T& rvalue)
 
     auto ni = beforeNotifiers.begin();
     while (ni != beforeNotifiers.end())
-        (*ni++)->Notify(oldVal, rvalue);
+        (*ni++)->notify(oldVal, rvalue);
 
     value = rvalue;
     modificationTime = time(NULL);
 
     ni = afterNotifiers.begin();
     while (ni != afterNotifiers.end())
-        (*ni++)->Notify(oldVal, rvalue);
+        (*ni++)->notify(oldVal, rvalue);
 }
 //-----------------------------------------------------------------------------
 template <typename T>
