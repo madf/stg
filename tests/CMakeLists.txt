@@ -53,3 +53,8 @@ add_test ( filter_params_log test_filter_params_log )
 add_executable ( test_subscriptions test_subscriptions.cpp )
 target_link_libraries ( test_subscriptions Boost::unit_test_framework )
 add_test ( subscriptions test_subscriptions )
+
+add_executable ( test_async_pool test_async_pool.cpp ../projects/stargazer/async_pool.cpp )
+target_include_directories ( test_async_pool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../projects/stargazer )
+target_link_libraries ( test_async_pool Boost::unit_test_framework Threads::Threads )
+add_test ( async_pool test_async_pool )

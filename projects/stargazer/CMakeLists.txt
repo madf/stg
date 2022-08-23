@@ -7,6 +7,7 @@ set ( CPP_FILES main.cpp
                 user_impl.cpp
                 tariff_impl.cpp
                 eventloop.cpp
+                async_pool.cpp
                 pidfile.cpp
                 plugin_runner.cpp
                 plugin_mgr.cpp

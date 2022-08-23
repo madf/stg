@@ -29,6 +29,7 @@
 #include "traffcounter_impl.h"
 #include "settings_impl.h"
 #include "pidfile.h"
+#include "async_pool.h"
 #include "eventloop.h"
 #include "stg_timer.h"
 
@@ -283,6 +284,7 @@ int main(int argc, char* argv[])
     }
 
     auto& loop = EVENT_LOOP::instance();
+    STG::AsyncPoolST::start();
 
     StoreLoader storeLoader(settings);
     if (storeLoader.load())
@@ -377,6 +379,7 @@ int main(int argc, char* argv[])
 
     manager.stop();
 
+    STG::AsyncPoolST::stop();
     if (loop.Stop())
         WriteServLog("Event loop not stopped.");
 
