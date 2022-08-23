@@ -49,3 +49,7 @@ add_executable ( test_filter_params_log test_filter_params_log.cpp ../projects/s
 target_link_libraries ( test_filter_params_log logger scriptexecuter common Boost::unit_test_framework Threads::Threads )
 target_include_directories ( test_filter_params_log PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ../projects/stargazer )
 add_test ( filter_params_log test_filter_params_log )
+
+add_executable ( test_subscriptions test_subscriptions.cpp )
+target_link_libraries ( test_subscriptions Boost::unit_test_framework )
+add_test ( subscriptions test_subscriptions )
