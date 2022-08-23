@@ -25,8 +25,6 @@
 #include "stg/raw_ip_packet.h"
 #include "stg/noncopyable.h"
 #include "stg/notifer.h"
-#include "actions.h"
-#include "eventloop.h"
 #include "user_impl.h"
 
 #include <ctime>
@@ -236,38 +234,6 @@ class TraffCounterImpl : public TraffCounter {
         ADD_USER_NONIFIER        addUserNotifier;
         DEL_USER_NONIFIER        delUserNotifier;
 };
-//-----------------------------------------------------------------------------
-inline
-void TRF_IP_BEFORE::notify(const uint32_t & oldValue, const uint32_t &)
-{
-// User changes his address. Remove old IP
-if (!oldValue)
-    return;
 
-EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, oldValue);
 }
 //-----------------------------------------------------------------------------
-inline
-void TRF_IP_AFTER::notify(const uint32_t &, const uint32_t & newValue)
-{
-// User changes his address. Add new IP
-if (!newValue)
-    return;
-
-EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::AddUser, user);
-}
-//-----------------------------------------------------------------------------
-inline
-void ADD_USER_NONIFIER::notify(const UserImplPtr & user)
-{
-EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::SetUserNotifiers, user);
-}
-//-----------------------------------------------------------------------------
-inline
-void DEL_USER_NONIFIER::notify(const UserImplPtr & user)
-{
-EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::UnSetUserNotifiers, user);
-EVENT_LOOP::instance().Enqueue(traffCnt, &TraffCounterImpl::DelUser, user->GetCurrIP());
-}
-//-----------------------------------------------------------------------------
-}

@@ -30,7 +30,6 @@
 #include "settings_impl.h"
 #include "pidfile.h"
 #include "async_pool.h"
-#include "eventloop.h"
 #include "stg_timer.h"
 
 #include "stg/user.h"
@@ -283,7 +282,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    auto& loop = EVENT_LOOP::instance();
     STG::AsyncPoolST::start();
 
     StoreLoader storeLoader(settings);
@@ -291,13 +289,6 @@ int main(int argc, char* argv[])
     {
         printfd(__FILE__, "Storage plugin: '%s'\n", storeLoader.GetStrError().c_str());
         WriteServLog("Storage plugin: '%s'", storeLoader.GetStrError().c_str());
-        return -1;
-    }
-
-    if (loop.Start())
-    {
-        printfd(__FILE__, "Event loop not started.\n");
-        WriteServLog("Event loop not started.");
         return -1;
     }
 
@@ -380,8 +371,6 @@ int main(int argc, char* argv[])
     manager.stop();
 
     STG::AsyncPoolST::stop();
-    if (loop.Stop())
-        WriteServLog("Event loop not stopped.");
 
     if (!traffCnt.Stop())
         WriteServLog("Traffcounter: Stop successfull.");

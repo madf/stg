@@ -41,8 +41,6 @@
 #include "stg/logger.h"
 #include "stg/notifer.h"
 #include "stg/noncopyable.h"
-#include "actions.h"
-#include "eventloop.h"
 #include "settings_impl.h"
 #include "user_impl.h"
 

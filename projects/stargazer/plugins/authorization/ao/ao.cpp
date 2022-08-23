@@ -213,7 +213,6 @@ return -1;
 template <typename varParamType>
 void CHG_BEFORE_NOTIFIER<varParamType>::notify(const varParamType &, const varParamType &)
 {
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::Unauthorize, user);
 if (user->IsAuthorizedBy(&auth))
     auth.users->Unauthorize(user->GetLogin(), &auth);
 }
@@ -221,7 +220,6 @@ if (user->IsAuthorizedBy(&auth))
 template <typename varParamType>
 void CHG_AFTER_NOTIFIER<varParamType>::notify(const varParamType &, const varParamType &)
 {
-//EVENT_LOOP_SINGLETON::GetInstance().Enqueue(auth, &AUTH_AO::UpdateUserAuthorization, user);
 auth.UpdateUserAuthorization(user);
 }
 //-----------------------------------------------------------------------------

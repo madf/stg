@@ -45,11 +45,18 @@
 #include "traffcounter_impl.h"
 #include "stg_timer.h"
 #include "users_impl.h"
+#include "async_pool.h"
 
 #define FLUSH_TIME  (10)
 #define REMOVE_TIME  (31)
 
 using STG::TraffCounterImpl;
+using STG::TRF_IP_BEFORE;
+using STG::TRF_IP_AFTER;
+using STG::ADD_USER_NONIFIER;
+using STG::DEL_USER_NONIFIER;
+
+namespace AsyncPoolST = STG::AsyncPoolST;
 
 const char protoName[PROTOMAX][8] =
 {"TCP", "UDP", "ICMP", "TCP_UDP", "ALL"};
@@ -841,5 +848,34 @@ void TraffCounterImpl::SetMonitorDir(const std::string & dir)
 {
 monitorDir = dir;
 monitoring = !monitorDir.empty();
+}
+//-----------------------------------------------------------------------------
+void TRF_IP_BEFORE::notify(const uint32_t & oldValue, const uint32_t &)
+{
+// User changes his address. Remove old IP
+if (!oldValue)
+    return;
+
+AsyncPoolST::enqueue([this, oldValue](){ traffCnt.DelUser(oldValue); });
+}
+//-----------------------------------------------------------------------------
+void TRF_IP_AFTER::notify(const uint32_t &, const uint32_t & newValue)
+{
+// User changes his address. Add new IP
+if (!newValue)
+    return;
+
+AsyncPoolST::enqueue([this](){ traffCnt.AddUser(user); });
+}
+//-----------------------------------------------------------------------------
+void ADD_USER_NONIFIER::notify(const UserImplPtr & user)
+{
+AsyncPoolST::enqueue([this, user](){ traffCnt.SetUserNotifiers(user); });
+}
+//-----------------------------------------------------------------------------
+void DEL_USER_NONIFIER::notify(const UserImplPtr & user)
+{
+AsyncPoolST::enqueue([this, user](){ traffCnt.UnSetUserNotifiers(user); });
+AsyncPoolST::enqueue([this, user](){ traffCnt.DelUser(user->GetCurrIP()); });
 }
 //-----------------------------------------------------------------------------
