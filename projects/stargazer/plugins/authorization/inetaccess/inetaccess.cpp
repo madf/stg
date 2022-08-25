@@ -340,7 +340,7 @@ AUTH_IA::~AUTH_IA()
 //-----------------------------------------------------------------------------
 int AUTH_IA::Start()
 {
-m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
+m_onDelUserConn = users->onDel([this](auto user){ DelUser(user); });
 
 if (PrepareNet())
     return -1;

@@ -20,10 +20,10 @@
 
 #pragma once
 
+#include "subscriptions.h"
+
 #include <string>
 #include <vector>
-
-#include "notifer.h"
 
 namespace STG
 {
@@ -32,27 +32,32 @@ struct Admin;
 struct Tariff;
 struct TariffData;
 
-struct Tariffs {
-    virtual ~Tariffs() = default;
+class Tariffs
+{
+    public:
+        virtual ~Tariffs() = default;
 
-    virtual int ReadTariffs() = 0;
-    virtual const Tariff* FindByName(const std::string& name) const = 0;
-    virtual const Tariff* GetNoTariff() const = 0;
-    virtual int Del(const std::string& name, const Admin* admin) = 0;
-    virtual int Add(const std::string& name, const Admin* admin) = 0;
-    virtual int Chg(const TariffData& td, const Admin* admin) = 0;
+        virtual int ReadTariffs() = 0;
+        virtual const Tariff* FindByName(const std::string& name) const = 0;
+        virtual const Tariff* GetNoTariff() const = 0;
+        virtual int Del(const std::string& name, const Admin* admin) = 0;
+        virtual int Add(const std::string& name, const Admin* admin) = 0;
+        virtual int Chg(const TariffData& td, const Admin* admin) = 0;
 
-    virtual void AddNotifierAdd(NotifierBase<TariffData>* notifier) = 0;
-    virtual void DelNotifierAdd(NotifierBase<TariffData>* notifier) = 0;
+        template <typename F>
+        auto onAdd(F&& f) { return m_onAddCallbacks.add(std::forward<F>(f)); }
+        template <typename F>
+        auto onDel(F&& f) { return m_onDelCallbacks.add(std::forward<F>(f)); }
 
-    virtual void AddNotifierDel(NotifierBase<TariffData>* notifier) = 0;
-    virtual void DelNotifierDel(NotifierBase<TariffData>* notifier) = 0;
+        virtual void GetTariffsData(std::vector<TariffData>* tdl) const = 0;
 
-    virtual void GetTariffsData(std::vector<TariffData>* tdl) const = 0;
+        virtual size_t Count() const = 0;
 
-    virtual size_t Count() const = 0;
+        virtual const std::string& GetStrError() const = 0;
 
-    virtual const std::string& GetStrError() const = 0;
+    protected:
+        Subscriptions<TariffData> m_onAddCallbacks;
+        Subscriptions<TariffData> m_onDelCallbacks;
 };
 
 }

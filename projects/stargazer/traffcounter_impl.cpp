@@ -78,10 +78,10 @@ for (int i = 0; i < DIR_NUM; i++)
 
 dirName[DIR_NUM] = "NULL";
 
-m_onAddUserConn = users->onUserImplAdd([this](auto user){
+m_onAddUserConn = users->onImplAdd([this](auto user){
     AsyncPoolST::enqueue([this, user](){ SetUserNotifiers(user); });
 });
-m_onDelUserConn = users->onUserImplDel([this](auto user){
+m_onDelUserConn = users->onImplDel([this](auto user){
     AsyncPoolST::enqueue([this, user](){ UnSetUserNotifiers(user); });
     AsyncPoolST::enqueue([this, user](){ DelUser(user->GetCurrIP()); });
 });

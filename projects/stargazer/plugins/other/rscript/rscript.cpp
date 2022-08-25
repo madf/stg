@@ -199,8 +199,8 @@ netRouters = rsSettings.GetSubnetsMap();
 
 InitEncrypt(rsSettings.GetPassword());
 
-m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
-m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
+m_onAddUserConn = users->onAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onDel([this](auto user){ DelUser(user); });
 
 if (GetUsers())
     return -1;

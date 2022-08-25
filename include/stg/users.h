@@ -24,6 +24,8 @@
 
 #include <string>
 
+#include <cstdint>
+
 namespace STG
 {
 
@@ -46,9 +48,9 @@ class Users
         virtual bool TariffInUse(const std::string& tariffName) const = 0;
 
         template <typename F>
-        auto onUserAdd(F&& f) { return m_onAddCallbacks.add(std::forward<F>(f)); }
+        auto onAdd(F&& f) { return m_onAddCallbacks.add(std::forward<F>(f)); }
         template <typename F>
-        auto onUserDel(F&& f) { return m_onDelCallbacks.add(std::forward<F>(f)); }
+        auto onDel(F&& f) { return m_onDelCallbacks.add(std::forward<F>(f)); }
 
         virtual int  Add(const std::string& login, const Admin* admin) = 0;
         virtual void Del(const std::string& login, const Admin* admin) = 0;

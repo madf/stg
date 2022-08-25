@@ -81,16 +81,6 @@ private:
     UserPtr userPtr;
 };
 //-----------------------------------------------------------------------------
-class ADD_DEL_TARIFF_NOTIFIER : public STG::NotifierBase<STG::TariffData> {
-public:
-    explicit ADD_DEL_TARIFF_NOTIFIER(SMUX & s)
-             : STG::NotifierBase<STG::TariffData>(), smux(s) {}
-    void notify(const STG::TariffData &) override;
-
-private:
-    SMUX & smux;
-};
-//-----------------------------------------------------------------------------
 class SMUX : public STG::Plugin {
 public:
     SMUX();
@@ -170,9 +160,10 @@ private:
 
     STG::ScopedConnection m_onAddUserConn;
     STG::ScopedConnection m_onDelUserConn;
+    STG::ScopedConnection m_onAddTariffConn;
+    STG::ScopedConnection m_onDelTariffConn;
 
     std::list<CHG_AFTER_NOTIFIER> notifiers;
-    ADD_DEL_TARIFF_NOTIFIER addDelTariffNotifier;
 
     STG::PluginLogger logger;
 };
@@ -180,12 +171,6 @@ private:
 
 inline
 void CHG_AFTER_NOTIFIER::notify(const std::string &, const std::string &)
-{
-smux.UpdateTables();
-}
-
-inline
-void ADD_DEL_TARIFF_NOTIFIER::notify(const STG::TariffData &)
 {
 smux.UpdateTables();
 }

@@ -55,12 +55,6 @@ class TariffsImpl : public Tariffs {
         int Add(const std::string & name, const Admin * admin) override;
         int Chg(const TariffData & td, const Admin * admin) override;
 
-        void AddNotifierAdd(NotifierBase<TariffData> * notifier) override;
-        void DelNotifierAdd(NotifierBase<TariffData> * notifier) override;
-
-        void AddNotifierDel(NotifierBase<TariffData> * notifier) override;
-        void DelNotifierDel(NotifierBase<TariffData> * notifier) override;
-
         void GetTariffsData(std::vector<TariffData> * tdl) const override;
 
         const std::string & GetStrError() const override { return strError; }
@@ -72,9 +66,6 @@ class TariffsImpl : public Tariffs {
         mutable std::mutex m_mutex;
         std::string        strError;
         TariffImpl         noTariff;
-
-        std::set<NotifierBase<TariffData>*> onAddNotifiers;
-        std::set<NotifierBase<TariffData>*> onDelNotifiers;
 };
 
 }

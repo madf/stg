@@ -16,12 +16,6 @@ class TestTariffs : public STG::Tariffs
         int            Add(const std::string& /*name*/, const STG::Admin* /*admin*/) override { return 0; }
         int            Chg(const STG::TariffData& /*td*/, const STG::Admin* /*admin*/) override { return 0; }
 
-        void AddNotifierAdd(STG::NotifierBase<STG::TariffData>*) override {}
-        void DelNotifierAdd(STG::NotifierBase<STG::TariffData>*) override {}
-
-        void AddNotifierDel(STG::NotifierBase<STG::TariffData>*) override {}
-        void DelNotifierDel(STG::NotifierBase<STG::TariffData>*) override {}
-
         void           GetTariffsData(std::vector<STG::TariffData>* /*tdl*/) const override {}
 
         size_t         Count() const override { return 0; }

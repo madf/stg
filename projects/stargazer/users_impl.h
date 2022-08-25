@@ -83,9 +83,9 @@ class UsersImpl : public Users
         bool            TariffInUse(const std::string & tariffName) const override;
 
         template <typename F>
-        auto            onUserImplAdd(F&& f) { return m_onAddImplCallbacks.add(std::forward<F>(f)); }
+        auto            onImplAdd(F&& f) { return m_onAddImplCallbacks.add(std::forward<F>(f)); }
         template <typename F>
-        auto            onUserImplDel(F&& f) { return m_onDelImplCallbacks.add(std::forward<F>(f)); }
+        auto            onImplDel(F&& f) { return m_onDelImplCallbacks.add(std::forward<F>(f)); }
 
         int             Add(const std::string & login, const Admin * admin) override;
         void            Del(const std::string & login, const Admin * admin) override;

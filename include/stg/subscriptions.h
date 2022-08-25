@@ -53,7 +53,7 @@ template <typename... Ts>
 class Subscriptions
 {
     public:
-        using Callback = std::function<void (Ts...)>;
+        using Callback = std::function<void (const Ts&...)>;
         using Callbacks = std::list<Callback>;
 
         Connection makeConn(typename Callbacks::iterator i) noexcept
@@ -71,7 +71,7 @@ class Subscriptions
         template <typename C, typename... T2s>
         Connection add(C& c, void (C::*m)(T2s...))
         {
-            return add([&c, m](Ts&&... values){ (c.*m)(std::forward<Ts>(values)...); });
+            return add([&c, m](const Ts&... values){ (c.*m)(values...); });
         }
 
         void remove(typename Callbacks::iterator i)
@@ -80,7 +80,7 @@ class Subscriptions
             m_callbacks.erase(i);
         }
 
-        void notify(Ts&&... values)
+        void notify(const Ts&... values)
         {
             std::lock_guard lock(m_mutex);
             for (auto& cb : m_callbacks)

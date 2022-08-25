@@ -175,12 +175,7 @@ TariffData td;
     tariffs.erase(ti);
     }
 
-auto ni = onDelNotifiers.begin();
-while (ni != onDelNotifiers.end())
-    {
-    (*ni)->notify(td);
-    ++ni;
-    }
+m_onDelCallbacks.notify(td);
 
 WriteServLog("%s Tariff \'%s\' deleted.",
              admin->logStr().c_str(),
@@ -223,13 +218,7 @@ if (store->AddTariff(name) < 0)
     return -1;
     }
 
-// Fire all "on add" notifiers
-auto ni = onAddNotifiers.begin();
-while (ni != onAddNotifiers.end())
-    {
-    (*ni)->notify(tariffs.back().GetTariffData());
-    ++ni;
-    }
+m_onAddCallbacks.notify(tariffs.back().GetTariffData());
 
 WriteServLog("%s Tariff \'%s\' added.",
                  admin->logStr().c_str(), name.c_str());
@@ -247,29 +236,5 @@ for (; it != tariffs.end(); ++it)
     {
     tdl->push_back(it->GetTariffData());
     }
-}
-//-----------------------------------------------------------------------------
-void TariffsImpl::AddNotifierAdd(NotifierBase<TariffData> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-void TariffsImpl::DelNotifierAdd(NotifierBase<TariffData> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onAddNotifiers.erase(n);
-}
-//-----------------------------------------------------------------------------
-void TariffsImpl::AddNotifierDel(NotifierBase<TariffData> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-void TariffsImpl::DelNotifierDel(NotifierBase<TariffData> * n)
-{
-std::lock_guard<std::mutex> lock(m_mutex);
-onDelNotifiers.erase(n);
 }
 //-----------------------------------------------------------------------------

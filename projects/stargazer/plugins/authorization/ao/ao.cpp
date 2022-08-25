@@ -57,8 +57,8 @@ int AUTH_AO::Start()
 printfd(__FILE__, "AUTH_AO::Start()\n");
 GetUsers();
 
-m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
-m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
+m_onAddUserConn = users->onAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onDel([this](auto user){ DelUser(user); });
 
 std::for_each(userList.begin(), userList.end(), [this](auto user){ UpdateUserAuthorization(user); });
 

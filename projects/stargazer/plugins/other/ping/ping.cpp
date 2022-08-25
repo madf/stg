@@ -79,8 +79,8 @@ int PING::Start()
 {
 GetUsers();
 
-m_onAddUserConn = users->onUserAdd([this](auto user){ AddUser(user); });
-m_onDelUserConn = users->onUserDel([this](auto user){ DelUser(user); });
+m_onAddUserConn = users->onAdd([this](auto user){ AddUser(user); });
+m_onDelUserConn = users->onDel([this](auto user){ DelUser(user); });
 
 pinger.SetDelayTime(pingSettings.GetPingDelay());
 pinger.Start();

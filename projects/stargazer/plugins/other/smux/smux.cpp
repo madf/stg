@@ -100,7 +100,6 @@ SMUX::SMUX()
       lastReconnectTry(0),
       reconnectTimeout(1),
       sock(-1),
-      addDelTariffNotifier(*this),
       logger(STG::PluginLogger::get("smux"))
 {
 smuxHandlers[SMUX_PDUs_PR_close] = &SMUX::CloseHandler;
@@ -442,23 +441,24 @@ while (users->SearchNext(h, &u) == 0)
 
 users->CloseSearch(h);
 
-m_onAddUserConn = users->onUserAdd([this](auto user){
+m_onAddUserConn = users->onAdd([this](auto user){
     SetNotifier(user);
     UpdateTables();
 });
-m_onDelUserConn = users->onUserDel([this](auto user){
+m_onDelUserConn = users->onDel([this](auto user){
     UnsetNotifier(user);
     UpdateTables();
 });
 
-tariffs->AddNotifierAdd(&addDelTariffNotifier);
-tariffs->AddNotifierDel(&addDelTariffNotifier);
+auto updateTables = [this](const STG::TariffData&){ UpdateTables(); };
+m_onAddTariffConn = tariffs->onAdd(updateTables);
+m_onDelTariffConn = tariffs->onDel(updateTables);
 }
 
 void SMUX::ResetNotifiers()
 {
-tariffs->DelNotifierDel(&addDelTariffNotifier);
-tariffs->DelNotifierAdd(&addDelTariffNotifier);
+m_onAddTariffConn.disconnect();
+m_onDelTariffConn.disconnect();
 
 m_onAddUserConn.disconnect();
 m_onDelUserConn.disconnect();
