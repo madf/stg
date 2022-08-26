@@ -4,7 +4,7 @@
 #include "stg/user_ips.h"
 #include "stg/store.h"
 #include "stg/admin.h"
-#include "stg/notifer.h"
+#include "stg/subscriptions.h"
 #include "stg/admin_conf.h"
 #include "stg/logger.h"
 #include "stg/locker.h"
@@ -25,7 +25,8 @@
 namespace STG
 {
 //-----------------------------------------------------------------------------
-struct UserPropertyBase {
+struct UserPropertyBase
+{
     virtual ~UserPropertyBase() = default;
     virtual std::string ToString() const = 0;
 };
@@ -33,7 +34,8 @@ struct UserPropertyBase {
 using Registry = std::map<std::string, UserPropertyBase*>;
 //-----------------------------------------------------------------------------
 template<typename T>
-class UserProperty : public UserPropertyBase {
+class UserProperty : public UserPropertyBase
+{
     public:
         explicit UserProperty(T& val);
 
@@ -47,11 +49,10 @@ class UserProperty : public UserPropertyBase {
 
         operator const T&() const noexcept { return value; }
 
-        void AddBeforeNotifier(PropertyNotifierBase<T>* n);
-        void DelBeforeNotifier(const PropertyNotifierBase<T>* n);
-
-        void AddAfterNotifier(PropertyNotifierBase<T>* n);
-        void DelAfterNotifier(const PropertyNotifierBase<T>* n);
+        template <typename F>
+        auto beforeChange(F&& f) { return m_beforeCallbacks.add(std::forward<F>(f)); }
+        template <typename F>
+        auto afterChange(F&& f) { return m_afterCallbacks.add(std::forward<F>(f)); }
 
         time_t ModificationTime() const noexcept { return modificationTime; }
         void   ModifyTime() noexcept;
@@ -60,13 +61,14 @@ class UserProperty : public UserPropertyBase {
     private:
         T& value;
         time_t modificationTime;
-        std::set<PropertyNotifierBase<T>*> beforeNotifiers;
-        std::set<PropertyNotifierBase<T>*> afterNotifiers;
+        Subscriptions<T, T> m_beforeCallbacks;
+        Subscriptions<T, T> m_afterCallbacks;
         std::mutex mutex;
 };
 //-----------------------------------------------------------------------------
 template<typename T>
-class UserPropertyLogged: public UserProperty<T> {
+class UserPropertyLogged: public UserProperty<T>
+{
     public:
         UserPropertyLogged(T& val,
                            const std::string& n,
@@ -110,7 +112,8 @@ class UserPropertyLogged: public UserProperty<T> {
         const Settings& settings;
 };
 //-----------------------------------------------------------------------------
-class UserProperties {
+class UserProperties
+{
     /*
      В этом месте важен порядок следования приватной и открытой частей.
      Это связано с тем, что часть которая находится в публичной секции
@@ -184,9 +187,7 @@ template <typename T>
 inline
 UserProperty<T>::UserProperty(T& val)
     : value(val),
-      modificationTime(time(NULL)),
-      beforeNotifiers(),
-      afterNotifiers()
+      modificationTime(time(NULL))
 {
 }
 //-----------------------------------------------------------------------------
@@ -199,22 +200,18 @@ void UserProperty<T>::ModifyTime() noexcept
 //-----------------------------------------------------------------------------
 template <typename T>
 inline
-void UserProperty<T>::Set(const T& rvalue)
+void UserProperty<T>::Set(const T& rhs)
 {
     std::lock_guard<std::mutex> lock(mutex);
 
     T oldVal = value;
 
-    auto ni = beforeNotifiers.begin();
-    while (ni != beforeNotifiers.end())
-        (*ni++)->notify(oldVal, rvalue);
+    m_beforeCallbacks.notify(oldVal, rhs);
 
-    value = rvalue;
+    value = rhs;
     modificationTime = time(NULL);
 
-    ni = afterNotifiers.begin();
-    while (ni != afterNotifiers.end())
-        (*ni++)->notify(oldVal, rvalue);
+    m_afterCallbacks.notify(oldVal, rhs);
 }
 //-----------------------------------------------------------------------------
 template <typename T>
@@ -223,38 +220,6 @@ UserProperty<T>& UserProperty<T>::operator=(const T& newValue)
 {
     Set(newValue);
     return *this;
-}
-//-----------------------------------------------------------------------------
-template <typename T>
-inline
-void UserProperty<T>::AddBeforeNotifier(PropertyNotifierBase<T>* n)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    beforeNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-template <typename T>
-inline
-void UserProperty<T>::DelBeforeNotifier(const PropertyNotifierBase<T>* n)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    beforeNotifiers.erase(const_cast<PropertyNotifierBase<T>*>(n));
-}
-//-----------------------------------------------------------------------------
-template <typename T>
-inline
-void UserProperty<T>::AddAfterNotifier(PropertyNotifierBase<T>* n)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    afterNotifiers.insert(n);
-}
-//-----------------------------------------------------------------------------
-template <typename T>
-inline
-void UserProperty<T>::DelAfterNotifier(const PropertyNotifierBase<T>* n)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-    afterNotifiers.erase(const_cast<PropertyNotifierBase<T>*>(n));
 }
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

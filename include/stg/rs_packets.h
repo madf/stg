@@ -19,8 +19,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef RS_PACKETSH
-#define RS_PACKETSH
+#pragma once
 
 #define RS_MAGIC_LEN        (6)
 #define RS_PROTO_VER_LEN    (2)
@@ -36,7 +35,7 @@
 
 #include <cstdint>
 
-namespace RS
+namespace STG::RS
 {
 
 struct PACKET_HEADER
@@ -58,5 +57,3 @@ int8_t              padding[7];
 } __attribute__((__packed__)); // 992 bytes, 124 blocks
 
 } // namespace RS
-
-#endif

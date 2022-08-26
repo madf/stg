@@ -24,11 +24,11 @@
 #include "stg/logger.h"
 #include "stg/raw_ip_packet.h"
 #include "stg/subscriptions.h"
-#include "stg/notifer.h"
 #include "user_impl.h"
 
-#include <ctime>
 #include <list>
+#include <vector>
+#include <tuple>
 #include <map>
 #include <string>
 #include <mutex>
@@ -37,6 +37,7 @@
 #include <jthread.hpp>
 #pragma GCC diagnostic pop
 #include <cstdint>
+#include <ctime>
 
 #define PROTOMAX    (5)
 
@@ -81,58 +82,7 @@ struct PacketExtraData {
     uint32_t    lenD;               // Download length
 };
 //-----------------------------------------------------------------------------
-class TraffCounterImpl;
-//-----------------------------------------------------------------------------
-class TRF_IP_BEFORE: public PropertyNotifierBase<uint32_t> {
-public:
-                TRF_IP_BEFORE(TraffCounterImpl & t, UserImpl * u)
-                    : PropertyNotifierBase<uint32_t>(),
-                      traffCnt(t),
-                      user(u)
-                {}
-                TRF_IP_BEFORE(const TRF_IP_BEFORE & rvalue)
-                    : PropertyNotifierBase<uint32_t>(),
-                      traffCnt(rvalue.traffCnt),
-                      user(rvalue.user)
-                {}
-    void        notify(const uint32_t & oldValue, const uint32_t & newValue) override;
-    void        SetUser(UserImpl * u) { user = u; }
-    UserImpl * GetUser() const { return user; }
-
-private:
-    TRF_IP_BEFORE & operator=(const TRF_IP_BEFORE & rvalue);
-
-    TraffCounterImpl & traffCnt;
-    UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class TRF_IP_AFTER: public PropertyNotifierBase<uint32_t> {
-public:
-                TRF_IP_AFTER(TraffCounterImpl & t, UserImpl * u)
-                    : PropertyNotifierBase<uint32_t>(),
-                      traffCnt(t),
-                      user(u)
-                {}
-                TRF_IP_AFTER(const TRF_IP_AFTER & rvalue)
-                    : PropertyNotifierBase<uint32_t>(),
-                      traffCnt(rvalue.traffCnt),
-                      user(rvalue.user)
-                {}
-    void        notify(const uint32_t & oldValue, const uint32_t & newValue) override;
-    void        SetUser(UserImpl * u) { user = u; }
-    UserImpl * GetUser() const { return user; }
-private:
-    TRF_IP_AFTER & operator=(const TRF_IP_AFTER & rvalue);
-
-    TraffCounterImpl & traffCnt;
-    UserImpl * user;
-};
-
-using UserImplPtr = UserImpl*;
-//-----------------------------------------------------------------------------
 class TraffCounterImpl : public TraffCounter {
-    friend class TRF_IP_BEFORE;
-    friend class TRF_IP_AFTER;
     public:
         TraffCounterImpl(UsersImpl * users, const std::string & rulesFileName);
         ~TraffCounterImpl();
@@ -162,8 +112,8 @@ class TraffCounterImpl : public TraffCounter {
 
         void        AddUser(UserImpl * user);
         void        DelUser(uint32_t uip);
-        void        SetUserNotifiers(UserImpl * user);
-        void        UnSetUserNotifiers(UserImpl * user);
+        void        SetUserNotifiers(UserImpl* user);
+        void        UnSetUserNotifiers(UserImpl* user);
 
         typedef std::list<Rule>::iterator rule_iter;
 
@@ -197,8 +147,10 @@ class TraffCounterImpl : public TraffCounter {
         ScopedConnection m_onAddUserConn;
         ScopedConnection m_onDelUserConn;
 
-        std::list<TRF_IP_BEFORE> ipBeforeNotifiers;
-        std::list<TRF_IP_AFTER>  ipAfterNotifiers;
+        using OnIPConns = std::tuple<int, ScopedConnection, ScopedConnection>;
+        std::vector<OnIPConns> m_onIPConns;
+        void beforeIPChange(uint32_t oldVal);
+        void afterIPChange(UserImpl* user, uint32_t newVal);
 };
 
 }

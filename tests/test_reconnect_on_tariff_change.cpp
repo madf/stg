@@ -24,19 +24,19 @@ volatile time_t stgTime = 0;
 namespace
 {
 
-class AfterConnectedNotifier : public STG::PropertyNotifierBase<bool>
+class ConnectCtr
 {
     public:
-        AfterConnectedNotifier()
+        ConnectCtr()
             : m_connects(0),
               m_disconnects(0)
         {}
 
-        void notify(const bool& oldValue, const bool& newValue) override
+        void update(bool isConnect)
         {
-            if (!oldValue && newValue)
+            if (isConnect)
                 ++m_connects;
-            if (oldValue && !newValue)
+            else
                 ++m_disconnects;
         }
 
@@ -77,9 +77,8 @@ BOOST_AUTO_TEST_CASE(NormalBehavior)
     TestServices services;
     STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-    AfterConnectedNotifier connectionNotifier;
-
-    user.AddConnectedAfterNotifier(&connectionNotifier);
+    ConnectCtr ctr;
+    STG::ScopedConnection conn = user.afterConnectedChange([&ctr](auto, auto newVal){ ctr.update(newVal); });
 
     STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
     STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
@@ -87,8 +86,8 @@ BOOST_AUTO_TEST_CASE(NormalBehavior)
     ips = STG::UserIPs::parse("*");
 
     BOOST_CHECK_EQUAL(user.GetConnected(), false);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(0));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(0));
 
     BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
 
@@ -98,8 +97,8 @@ BOOST_AUTO_TEST_CASE(NormalBehavior)
     BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
     BOOST_CHECK_EQUAL(user.GetConnected(), true);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(0));
 
     tariffName = "test";
     BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), "test");
@@ -107,8 +106,8 @@ BOOST_AUTO_TEST_CASE(NormalBehavior)
     BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
     BOOST_CHECK_EQUAL(user.GetConnected(), true);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(0));
 }
 
 BOOST_AUTO_TEST_CASE(Reconnect)
@@ -130,9 +129,8 @@ BOOST_AUTO_TEST_CASE(Reconnect)
     TestServices services;
     STG::UserImpl user(&settings, &store, &tariffs, &admin, &users, services);
 
-    AfterConnectedNotifier connectionNotifier;
-
-    user.AddConnectedAfterNotifier(&connectionNotifier);
+    ConnectCtr ctr;
+    STG::ScopedConnection conn = user.afterConnectedChange([&ctr](auto, auto newVal){ ctr.update(newVal); });
 
     STG::UserProperty<std::string> & tariffName = user.GetProperties().tariffName;
     STG::UserProperty<STG::UserIPs> & ips = user.GetProperties().ips;
@@ -140,8 +138,8 @@ BOOST_AUTO_TEST_CASE(Reconnect)
     ips = STG::UserIPs::parse("*");
 
     BOOST_CHECK_EQUAL(user.GetConnected(), false);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(0));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(0));
 
     BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), NO_TARIFF_NAME);
 
@@ -151,8 +149,8 @@ BOOST_AUTO_TEST_CASE(Reconnect)
     BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
     BOOST_CHECK_EQUAL(user.GetConnected(), true);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(1));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(0));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(0));
 
     tariffName = "test";
     BOOST_CHECK_EQUAL(user.GetProperties().tariffName.ConstData(), "test");
@@ -160,8 +158,8 @@ BOOST_AUTO_TEST_CASE(Reconnect)
     BOOST_CHECK_EQUAL(user.IsAuthorizedBy(&auth), true);
 
     BOOST_CHECK_EQUAL(user.GetConnected(), true);
-    BOOST_CHECK_EQUAL(connectionNotifier.connects(), static_cast<size_t>(2));
-    BOOST_CHECK_EQUAL(connectionNotifier.disconnects(), static_cast<size_t>(1));
+    BOOST_CHECK_EQUAL(ctr.connects(), static_cast<size_t>(2));
+    BOOST_CHECK_EQUAL(ctr.disconnects(), static_cast<size_t>(1));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

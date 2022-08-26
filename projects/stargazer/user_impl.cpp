@@ -88,10 +88,6 @@ UserImpl::UserImpl(const Settings * s,
       WriteServLog(Logger::get()),
       lastScanMessages(0),
       id(0),
-      __connected(0),
-      connected(__connected),
-      __currIP(0),
-      currIP(__currIP),
       lastIPForDisconnect(0),
       pingTime(0),
       sysAdmin(a),
@@ -139,14 +135,9 @@ UserImpl::UserImpl(const Settings * s,
       userdata8(properties.userdata8),
       userdata9(properties.userdata9),
       sessionUploadModTime(stgTime),
-      sessionDownloadModTime(stgTime),
-      passiveNotifier(this),
-      disabledNotifier(this),
-      tariffNotifier(this),
-      cashNotifier(this),
-      ipNotifier(this)
+      sessionDownloadModTime(stgTime)
 {
-Init();
+    Init();
 }
 //-----------------------------------------------------------------------------
 void UserImpl::Init()
@@ -158,11 +149,11 @@ ips = UserIPs::parse("*");
 lastWriteStat = stgTime + random() % settings->GetStatWritePeriod();
 lastWriteDetailedStat = stgTime;
 
-properties.tariffName.AddBeforeNotifier(&tariffNotifier);
-properties.passive.AddBeforeNotifier(&passiveNotifier);
-properties.disabled.AddAfterNotifier(&disabledNotifier);
-properties.cash.AddBeforeNotifier(&cashNotifier);
-ips.AddAfterNotifier(&ipNotifier);
+m_beforePassiveConn = properties.passive.beforeChange([this](auto oldVal, auto newVal){ onPassiveChange(oldVal, newVal); });
+m_afterDisabledConn = properties.disabled.afterChange([this](auto oldVal, auto newVal){ onDisabledChange(oldVal, newVal); });
+m_beforeTariffConn = properties.tariffName.beforeChange([this](const auto& oldVal, const auto& newVal){ onTariffChange(oldVal, newVal); });
+m_beforeCashConn = properties.cash.beforeChange([this](auto oldVal, auto newVal){ onCashChange(oldVal, newVal); });
+m_afterIPConn = ips.afterChange([this](const auto& oldVal, const auto& newVal){ onIPChange(oldVal, newVal); });
 
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&attr);
@@ -177,10 +168,6 @@ UserImpl::UserImpl(const UserImpl & u)
       lastScanMessages(0),
       login(u.login),
       id(u.id),
-      __connected(0),
-      connected(__connected),
-      __currIP(u.__currIP),
-      currIP(__currIP),
       lastIPForDisconnect(0),
       pingTime(u.pingTime),
       sysAdmin(u.sysAdmin),
@@ -233,36 +220,27 @@ UserImpl::UserImpl(const UserImpl & u)
       sessionUpload(),
       sessionDownload(),
       sessionUploadModTime(stgTime),
-      sessionDownloadModTime(stgTime),
-      passiveNotifier(this),
-      disabledNotifier(this),
-      tariffNotifier(this),
-      cashNotifier(this),
-      ipNotifier(this)
+      sessionDownloadModTime(stgTime)
 {
-if (&u == this)
-    return;
+    if (&u == this)
+        return;
 
-properties.tariffName.AddBeforeNotifier(&tariffNotifier);
-properties.passive.AddBeforeNotifier(&passiveNotifier);
-properties.disabled.AddAfterNotifier(&disabledNotifier);
-properties.cash.AddBeforeNotifier(&cashNotifier);
-ips.AddAfterNotifier(&ipNotifier);
+    m_beforePassiveConn = properties.passive.beforeChange([this](auto oldVal, auto newVal){ onPassiveChange(oldVal, newVal); });
+    m_afterDisabledConn = properties.disabled.afterChange([this](auto oldVal, auto newVal){ onDisabledChange(oldVal, newVal); });
+    m_beforeTariffConn = properties.tariffName.beforeChange([this](const auto& oldVal, const auto& newVal){ onTariffChange(oldVal, newVal); });
+    m_beforeCashConn = properties.cash.beforeChange([this](auto oldVal, auto newVal){ onCashChange(oldVal, newVal); });
+    m_afterIPConn = ips.afterChange([this](const auto& oldVal, const auto& newVal){ onIPChange(oldVal, newVal); });
 
-properties.SetProperties(u.properties);
+    properties.SetProperties(u.properties);
 
-pthread_mutexattr_t attr;
-pthread_mutexattr_init(&attr);
-pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-pthread_mutex_init(&mutex, &attr);
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
 UserImpl::~UserImpl()
 {
-properties.tariffName.DelBeforeNotifier(&tariffNotifier);
-properties.passive.DelBeforeNotifier(&passiveNotifier);
-properties.disabled.DelAfterNotifier(&disabledNotifier);
-properties.cash.DelBeforeNotifier(&cashNotifier);
 pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
@@ -428,7 +406,7 @@ dirsFromBits(enabledDirs, dirs);
 
 if (!authorizedBy.empty())
     {
-    if (currIP != ip)
+    if (m_currIP != ip)
         {
         // We are already authorized, but with different IP address
         errorStr = "User " + login + " already authorized with IP address " + inet_ntostring(ip);
@@ -458,8 +436,8 @@ else
 
     if (ips.ConstData().find(ip))
         {
-        currIP = ip;
-        lastIPForDisconnect = currIP;
+        m_currIP = ip;
+        lastIPForDisconnect = m_currIP;
         }
     else
         {
@@ -492,9 +470,9 @@ authorizedModificationTime = stgTime;
 if (authorizedBy.empty())
     {
     lastDisconnectReason = reason;
-    lastIPForDisconnect = currIP;
-    currIP = 0; // DelUser in traffcounter
-    if (connected)
+    lastIPForDisconnect = m_currIP;
+    m_currIP = 0; // DelUser in traffcounter
+    if (m_connected)
         Disconnect(false, "not authorized");
     return;
     }
@@ -536,7 +514,7 @@ if (!fakeConnect)
                   "%s \"%s\" \"%s\" \"%f\" \"%d\" \"%s\"",
                   scriptOnConnect.c_str(),
                   login.c_str(),
-                  inet_ntostring(currIP).c_str(),
+                  inet_ntostring(m_currIP).c_str(),
                   cash.ConstData(),
                   id,
                   dirs.c_str());
@@ -555,17 +533,17 @@ if (!fakeConnect)
         WriteServLog("Script %s cannot be executed. File not found.", scriptOnConnect.c_str());
         }
 
-    connected = true;
+    m_connected = true;
     }
 
-if (!settings->GetDisableSessionLog() && store->WriteUserConnect(login, currIP))
+if (!settings->GetDisableSessionLog() && store->WriteUserConnect(login, m_currIP))
     {
     WriteServLog("Cannot write connect for user %s.", login.c_str());
     WriteServLog("%s", store->GetStrError().c_str());
     }
 
 if (!fakeConnect)
-    lastIPForDisconnect = currIP;
+    lastIPForDisconnect = m_currIP;
 }
 //-----------------------------------------------------------------------------
 void UserImpl::Disconnect(bool fakeDisconnect, const std::string & reason)
@@ -615,7 +593,7 @@ if (!fakeDisconnect)
         WriteServLog("Script OnDisconnect cannot be executed. File not found.");
         }
 
-    connected = false;
+    m_connected = false;
     }
 
 std::string reasonMessage(reason);
@@ -665,13 +643,13 @@ if (passive.ConstData()
 
 if (!authorizedBy.empty())
     {
-    if (connected)
+    if (m_connected)
         properties.Stat().lastActivityTime = stgTime;
 
-    if (!connected && IsInetable())
+    if (!m_connected && IsInetable())
         Connect();
 
-    if (connected && !IsInetable())
+    if (m_connected && !IsInetable())
         {
         if (disabled)
             Disconnect(false, "disabled");
@@ -689,7 +667,7 @@ if (!authorizedBy.empty())
     }
 else
     {
-    if (connected)
+    if (m_connected)
         Disconnect(false, "not authorized");
     }
 
@@ -734,7 +712,7 @@ void UserImpl::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
 {
 STG_LOCKER lock(&mutex);
 
-if (!connected || tariff == NULL)
+if (!m_connected || tariff == NULL)
     return;
 
 double cost = 0;
@@ -827,7 +805,7 @@ void UserImpl::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
 {
 STG_LOCKER lock(&mutex);
 
-if (!connected || tariff == NULL)
+if (!m_connected || tariff == NULL)
     return;
 
 double cost = 0;
@@ -909,54 +887,6 @@ else
     lb->second.cash += cost;
     lb->second.down += len;
     }
-}
-//-----------------------------------------------------------------------------
-void UserImpl::AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-currIP.AddBeforeNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-currIP.DelBeforeNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-currIP.AddAfterNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-currIP.DelAfterNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-connected.AddBeforeNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-connected.DelBeforeNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-connected.AddAfterNotifier(notifier);
-}
-//-----------------------------------------------------------------------------
-void UserImpl::DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier)
-{
-STG_LOCKER lock(&mutex);
-connected.DelAfterNotifier(notifier);
 }
 //-----------------------------------------------------------------------------
 void UserImpl::OnAdd()
@@ -1087,7 +1017,7 @@ void UserImpl::MidnightResetSessionStat()
 {
 STG_LOCKER lock(&mutex);
 
-if (connected)
+if (m_connected)
     {
     Disconnect(true, "fake");
     Connect(true);
@@ -1098,7 +1028,7 @@ void UserImpl::ProcessNewMonth()
 {
 STG_LOCKER lock(&mutex);
 //  Reset traff
-if (connected)
+if (m_connected)
     Disconnect(true, "fake");
 
 WriteMonthStat();
@@ -1106,7 +1036,7 @@ WriteMonthStat();
 properties.Stat().monthUp.reset();
 properties.Stat().monthDown.reset();
 
-if (connected)
+if (m_connected)
     Connect(true);
 
 //  Set new tariff
@@ -1399,7 +1329,7 @@ int ret = -1;
 std::set<const Auth*>::iterator it(authorizedBy.begin());
 while (it != authorizedBy.end())
     {
-    if (!(*it++)->SendMessage(msg, currIP))
+    if (!(*it++)->SendMessage(msg, m_currIP))
         ret = 0;
     }
 if (!ret)
@@ -1479,7 +1409,7 @@ std::string UserImpl::GetParamValue(const std::string & name) const
         return stream.str();
         }
     if (lowerName == "login")       return login;
-    if (lowerName == "currip")      return currIP.ToString();
+    if (lowerName == "currip")      return m_currIP.ToString();
     if (lowerName == "enableddirs") return GetEnabledDirs();
     if (lowerName == "tariff")      return properties.tariffName;
     if (properties.Exists(lowerName))
@@ -1493,51 +1423,52 @@ std::string UserImpl::GetParamValue(const std::string & name) const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-void STG::CHG_PASSIVE_NOTIFIER::notify(const int & oldPassive, const int & newPassive)
+void UserImpl::onPassiveChange(int oldVal, int newVal)
 {
-if (newPassive && !oldPassive && user->tariff != NULL)
-    user->properties.cash.Set(user->cash - user->tariff->GetPassiveCost(),
-                            *user->sysAdmin,
-                            user->login,
-                            *user->store,
+    if (newVal && !oldVal && tariff != NULL)
+        properties.cash.Set(cash - tariff->GetPassiveCost(),
+                            *sysAdmin,
+                            login,
+                            *store,
                             "Freeze");
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_DISABLED_NOTIFIER::notify(const int & oldValue, const int & newValue)
+void UserImpl::onDisabledChange(int oldVal, int newVal)
 {
-if (oldValue && !newValue && user->GetConnected())
-    user->Disconnect(false, "disabled");
-else if (!oldValue && newValue && user->IsInetable())
-    user->Connect(false);
+    if (oldVal && !newVal && GetConnected())
+        Disconnect(false, "disabled");
+    else if (!oldVal && newVal && IsInetable())
+        Connect(false);
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_TARIFF_NOTIFIER::notify(const std::string &, const std::string & newTariff)
+void UserImpl::onTariffChange(const std::string& /*oldVal*/, const std::string& newVal)
 {
-STG_LOCKER lock(&user->mutex);
-if (user->settings->GetReconnectOnTariffChange() && user->connected)
-    user->Disconnect(false, "Change tariff");
-user->tariff = user->tariffs->FindByName(newTariff);
-if (user->settings->GetReconnectOnTariffChange() &&
-    !user->authorizedBy.empty() &&
-    user->IsInetable())
+    STG_LOCKER lock(&mutex);
+    if (settings->GetReconnectOnTariffChange() && m_connected)
+        Disconnect(false, "Change tariff");
+    tariff = tariffs->FindByName(newVal);
+    if (settings->GetReconnectOnTariffChange() &&
+        !authorizedBy.empty() &&
+        IsInetable())
     {
-    // This notifier gets called *before* changing the tariff, and in Connect we want to see new tariff name.
-    user->properties.Conf().tariffName = newTariff;
-    user->Connect(false);
+        // This notifier gets called *before* changing the tariff, and in Connect we want to see new tariff name.
+        properties.Conf().tariffName = newVal;
+        Connect(false);
     }
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_CASH_NOTIFIER::notify(const double & oldCash, const double & newCash)
+void UserImpl::onCashChange(double oldVal, double newVal)
 {
-user->lastCashAddTime = *const_cast<time_t *>(&stgTime);
-user->lastCashAdd = newCash - oldCash;
+    time_t now = stgTime;
+    lastCashAddTime = now;
+    lastCashAdd = newVal - oldVal;
 }
 //-----------------------------------------------------------------------------
-void STG::CHG_IPS_NOTIFIER::notify(const UserIPs & from, const UserIPs & to)
+void UserImpl::onIPChange(const UserIPs& oldVal, const UserIPs& newVal)
 {
-printfd(__FILE__, "Change IP from '%s' to '%s'\n", from.toString().c_str(), to.toString().c_str());
-if (user->connected)
-    user->Disconnect(false, "Change IP");
-if (!user->authorizedBy.empty() && user->IsInetable())
-    user->Connect(false);
+    printfd(__FILE__, "Change IP from '%s' to '%s'\n", oldVal.toString().c_str(), newVal.toString().c_str());
+    if (m_connected)
+        Disconnect(false, "Change IP");
+    if (!authorizedBy.empty() && IsInetable())
+        Connect(false);
 }

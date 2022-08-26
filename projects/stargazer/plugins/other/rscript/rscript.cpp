@@ -45,20 +45,8 @@
 
 extern volatile time_t stgTime;
 
+namespace RS = STG::RS;
 using RS::REMOTE_SCRIPT;
-
-namespace {
-
-template<typename T>
-struct USER_IS
-{
-    explicit USER_IS(RS::UserPtr u) : user(u) {}
-    bool operator()(const T & notifier) { return notifier.GetUser() == user; }
-
-    RS::UserPtr user;
-};
-
-} // namespace anonymous
 
 extern "C" STG::Plugin* GetPlugin()
 {
@@ -74,10 +62,10 @@ RS::SETTINGS::SETTINGS()
 {
 }
 //-----------------------------------------------------------------------------
-int RS::SETTINGS::ParseSettings(const STG::ModuleSettings & s)
+int RS::SETTINGS::ParseSettings(const ModuleSettings & s)
 {
 int p;
-STG::ParamValue pv;
+ParamValue pv;
 netRouters.clear();
 ///////////////////////////
 pv.param = "Port";
@@ -147,7 +135,7 @@ NRMapParser nrMapParser;
 if (!nrMapParser.ReadFile(subnetFile))
     netRouters = nrMapParser.GetMap();
 else
-    STG::PluginLogger::get("rscript")("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
+    PluginLogger::get("rscript")("mod_rscript: error opening subnets file '%s'", subnetFile.c_str());
 
 return 0;
 }
@@ -160,7 +148,7 @@ REMOTE_SCRIPT::REMOTE_SCRIPT()
       isRunning(false),
       users(nullptr),
       sock(0),
-      logger(STG::PluginLogger::get("rscript"))
+      logger(PluginLogger::get("rscript"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -223,10 +211,10 @@ if (!IsRunning())
 m_thread.request_stop();
 
 std::for_each(
-        authorizedUsers.begin(),
-        authorizedUsers.end(),
-        DisconnectUser(*this)
-        );
+    authorizedUsers.begin(),
+    authorizedUsers.end(),
+    [this](auto& kv){ Send(kv.second, true); }
+);
 
 FinalizeNet();
 
@@ -251,7 +239,7 @@ else
 return 0;
 }
 //-----------------------------------------------------------------------------
-int REMOTE_SCRIPT::Reload(const STG::ModuleSettings & /*ms*/)
+int REMOTE_SCRIPT::Reload(const ModuleSettings & /*ms*/)
 {
 NRMapParser nrMapParser;
 
@@ -469,20 +457,18 @@ return {};
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::SetUserNotifiers(UserPtr u)
 {
-ipNotifierList.push_front(RS::IP_NOTIFIER(*this, u));
-connNotifierList.push_front(RS::CONNECTED_NOTIFIER(*this, u));
+    m_conns.emplace_back(
+        u->GetID(),
+        u->afterCurrIPChange([this, u](auto, auto newVal){ addDelUser(u, newVal != 0); }),
+        u->afterConnectedChange([this, u](auto, auto newVal){ addDelUser(u, newVal); })
+    );
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::UnSetUserNotifiers(UserPtr u)
 {
-ipNotifierList.erase(std::remove_if(ipNotifierList.begin(),
-                                    ipNotifierList.end(),
-                                    USER_IS<IP_NOTIFIER>(u)),
-                     ipNotifierList.end());
-connNotifierList.erase(std::remove_if(connNotifierList.begin(),
-                                      connNotifierList.end(),
-                                      USER_IS<CONNECTED_NOTIFIER>(u)),
-                       connNotifierList.end());
+    m_conns.erase(std::remove_if(m_conns.begin(), m_conns.end(),
+                  [u](const auto& c){ return std::get<0>(c) == u->GetID(); }),
+                  m_conns.end());
 
 }
 //-----------------------------------------------------------------------------
@@ -517,20 +503,12 @@ if (it != authorizedUsers.end())
     }*/
 }
 //-----------------------------------------------------------------------------
-void RS::IP_NOTIFIER::notify(const uint32_t & /*oldValue*/, const uint32_t & newValue)
+void REMOTE_SCRIPT::addDelUser(UserPtr user, bool toAdd)
 {
-if (newValue != 0)
-    rs.AddRSU(user);
-else
-    rs.DelRSU(user);
-}
-//-----------------------------------------------------------------------------
-void RS::CONNECTED_NOTIFIER::notify(const bool & /*oldValue*/, const bool & newValue)
-{
-if (newValue)
-    rs.AddRSU(user);
-else
-    rs.DelRSU(user);
+    if (toAdd)
+        AddRSU(user);
+    else
+        DelRSU(user);
 }
 //-----------------------------------------------------------------------------
 void REMOTE_SCRIPT::InitEncrypt(const std::string & password) const

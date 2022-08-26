@@ -10,24 +10,23 @@ namespace STG
 class Connection
 {
     public:
-        Connection() noexcept : m_connected(false) {}
+        Connection() = default;
 
         Connection(const Connection&) = delete;
         Connection& operator=(const Connection&) = delete;
         Connection(Connection&&) = default;
         Connection& operator=(Connection&&) = default;
 
-        Connection(const std::function<void ()>& f) noexcept : m_disconnect(f), m_connected(true) {}
+        Connection(const std::function<void ()>& f) noexcept : m_disconnect(f) {}
         void disconnect() noexcept
         {
-            if (!m_connected)
+            if (!m_disconnect)
                 return;
             m_disconnect();
-            m_connected = false;
+            m_disconnect = {};
         }
     private:
         std::function<void ()> m_disconnect;
-        bool m_connected;
 };
 
 class ScopedConnection

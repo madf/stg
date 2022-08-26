@@ -87,7 +87,7 @@ private:
     bool                FinalizeNet();
     bool                RecvPacket(const std::stop_token& token);
     // Parsing stuff
-    bool                CheckHeader(const RS::PACKET_HEADER & header) const;
+    bool                CheckHeader(const STG::RS::PACKET_HEADER & header) const;
     bool                GetParams(char * buffer, UserData & data);
     // Processing stuff
     void                ProcessPending();

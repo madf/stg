@@ -23,7 +23,6 @@
 #include "stg/auth.h"
 #include "stg/module_settings.h"
 #include "stg/store.h"
-#include "stg/notifer.h"
 #include "stg/subscriptions.h"
 #include "stg/user_ips.h"
 #include "stg/user.h"
@@ -38,98 +37,58 @@
 namespace STG
 {
 struct Users;
-}
 
 class AUTH_AO;
 
-using UserPtr = STG::User*;
-using ConstUserPtr = const STG::User*;
-
-template <typename T>
-class CHG_BEFORE_NOTIFIER : public STG::PropertyNotifierBase<T> {
-public:
-                CHG_BEFORE_NOTIFIER(AUTH_AO & a, UserPtr u)
-                    : user(u), auth(a) {}
-                CHG_BEFORE_NOTIFIER(const CHG_BEFORE_NOTIFIER<T> & rvalue)
-                    : user(rvalue.user), auth(rvalue.auth) {}
-    void        notify(const T & oldValue, const T & newValue) override;
-    UserPtr    GetUser() const { return user; }
-
-private:
-    CHG_BEFORE_NOTIFIER<T> & operator=(const CHG_BEFORE_NOTIFIER<T> & rvalue);
-
-    UserPtr        user;
-    const AUTH_AO & auth;
-};
+using UserPtr = User*;
+using ConstUserPtr = const User*;
 //-----------------------------------------------------------------------------
-template <typename T>
-class CHG_AFTER_NOTIFIER : public STG::PropertyNotifierBase<T> {
-public:
-                CHG_AFTER_NOTIFIER(AUTH_AO & a, UserPtr u)
-                    : user(u), auth(a) {}
-                CHG_AFTER_NOTIFIER(const CHG_AFTER_NOTIFIER<T> & rvalue)
-                    : user(rvalue.user), auth(rvalue.auth) {}
-    void        notify(const T & oldValue, const T & newValue) override;
-    UserPtr    GetUser() const { return user; }
+class AUTH_AO : public Auth
+{
+    public:
+        AUTH_AO();
 
-private:
-    CHG_AFTER_NOTIFIER<T> & operator=(const CHG_AFTER_NOTIFIER<T> & rvalue);
+        void                SetUsers(Users * u) override { users = u; }
 
-    UserPtr        user;
-    const AUTH_AO & auth;
+        int                 Start() override;
+        int                 Stop() override;
+        int                 Reload(const ModuleSettings & /*ms*/) override { return 0; }
+        bool                IsRunning() override { return isRunning; }
+        void                SetSettings(const ModuleSettings &) override {}
+        int                 ParseSettings() override { return 0; }
+        const std::string & GetStrError() const override { return errorStr; }
+        std::string         GetVersion() const override;
+        uint16_t            GetStartPosition() const override { return 30; }
+        uint16_t            GetStopPosition() const override { return 30; }
+
+        int                 SendMessage(const Message & msg, uint32_t ip) const override;
+
+    private:
+        AUTH_AO(const AUTH_AO & rvalue);
+        AUTH_AO & operator=(const AUTH_AO & rvalue);
+
+        void                AddUser(UserPtr u);
+        void                DelUser(UserPtr u);
+
+        void                GetUsers();
+        void                SetUserNotifiers(UserPtr u);
+        void                UnSetUserNotifiers(UserPtr u);
+        void                UpdateUserAuthorization(ConstUserPtr u) const;
+        void                Unauthorize(UserPtr u);
+
+        mutable std::string errorStr;
+        Users *             users;
+        std::vector<UserPtr> userList;
+        bool                isRunning;
+        ModuleSettings     settings;
+
+        using ConnHolder = std::tuple<int, ScopedConnection, ScopedConnection, ScopedConnection, ScopedConnection>;
+        std::vector<ConnHolder> m_conns;
+
+        ScopedConnection m_onAddUserConn;
+        ScopedConnection m_onDelUserConn;
+
+        PluginLogger logger;
 };
-//-----------------------------------------------------------------------------
-class AUTH_AO : public STG::Auth {
-public:
-    AUTH_AO();
 
-    void                SetUsers(STG::Users * u) override { users = u; }
-
-    int                 Start() override;
-    int                 Stop() override;
-    int                 Reload(const STG::ModuleSettings & /*ms*/) override { return 0; }
-    bool                IsRunning() override { return isRunning; }
-    void                SetSettings(const STG::ModuleSettings &) override {}
-    int                 ParseSettings() override { return 0; }
-    const std::string & GetStrError() const override { return errorStr; }
-    std::string         GetVersion() const override;
-    uint16_t            GetStartPosition() const override { return 30; }
-    uint16_t            GetStopPosition() const override { return 30; }
-
-    int                 SendMessage(const STG::Message & msg, uint32_t ip) const override;
-
-private:
-    AUTH_AO(const AUTH_AO & rvalue);
-    AUTH_AO & operator=(const AUTH_AO & rvalue);
-
-    void                AddUser(UserPtr u);
-    void                DelUser(UserPtr u);
-
-    void                GetUsers();
-    void                SetUserNotifiers(UserPtr u);
-    void                UnSetUserNotifiers(UserPtr u);
-    void                UpdateUserAuthorization(ConstUserPtr u) const;
-
-    mutable std::string errorStr;
-    STG::Users *             users;
-    std::vector<UserPtr> userList;
-    bool                isRunning;
-    STG::ModuleSettings     settings;
-
-    std::list<CHG_BEFORE_NOTIFIER<int> >      BeforeChgAONotifierList;
-    std::list<CHG_AFTER_NOTIFIER<int> >       AfterChgAONotifierList;
-
-    std::list<CHG_BEFORE_NOTIFIER<STG::UserIPs> > BeforeChgIPNotifierList;
-    std::list<CHG_AFTER_NOTIFIER<STG::UserIPs> >  AfterChgIPNotifierList;
-
-    STG::ScopedConnection m_onAddUserConn;
-    STG::ScopedConnection m_onDelUserConn;
-
-    STG::PluginLogger logger;
-
-    friend class CHG_BEFORE_NOTIFIER<int>;
-    friend class CHG_AFTER_NOTIFIER<int>;
-    friend class CHG_BEFORE_NOTIFIER<STG::UserIPs>;
-    friend class CHG_AFTER_NOTIFIER<STG::UserIPs>;
-
-};
+}

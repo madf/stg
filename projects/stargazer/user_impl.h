@@ -51,57 +51,8 @@ struct Settings;
 class SettingsImpl;
 #endif
 //-----------------------------------------------------------------------------
-class CHG_PASSIVE_NOTIFIER : public PropertyNotifierBase<int> {
-    public:
-        explicit CHG_PASSIVE_NOTIFIER(UserImpl * u) : user(u) {}
-        void notify(const int & oldPassive, const int & newPassive) override;
-
-    private:
-        UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class CHG_DISABLED_NOTIFIER : public PropertyNotifierBase<int> {
-public:
-    explicit CHG_DISABLED_NOTIFIER(UserImpl * u) : user(u) {}
-    void notify(const int & oldValue, const int & newValue) override;
-
-private:
-    UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class CHG_TARIFF_NOTIFIER : public PropertyNotifierBase<std::string> {
-public:
-    explicit CHG_TARIFF_NOTIFIER(UserImpl * u) : user(u) {}
-    void notify(const std::string & oldTariff, const std::string & newTariff) override;
-
-private:
-    UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class CHG_CASH_NOTIFIER : public PropertyNotifierBase<double> {
-public:
-    explicit CHG_CASH_NOTIFIER(UserImpl * u) : user(u) {}
-    void notify(const double & oldCash, const double & newCash) override;
-
-private:
-    UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class CHG_IPS_NOTIFIER : public PropertyNotifierBase<UserIPs> {
-public:
-    explicit CHG_IPS_NOTIFIER(UserImpl * u) : user(u) {}
-    void notify(const UserIPs & oldIPs, const UserIPs & newIPs) override;
-
-private:
-    UserImpl * user;
-};
-//-----------------------------------------------------------------------------
-class UserImpl : public User {
-    friend class CHG_PASSIVE_NOTIFIER;
-    friend class CHG_DISABLED_NOTIFIER;
-    friend class CHG_TARIFF_NOTIFIER;
-    friend class CHG_CASH_NOTIFIER;
-    friend class CHG_IPS_NOTIFIER;
+class UserImpl : public User
+{
     public:
 #ifdef USE_ABSTRACT_SETTINGS
         using Settings = STG::Settings;
@@ -125,21 +76,6 @@ class UserImpl : public User {
 
         const std::string & GetLogin() const override { return login; }
         void            SetLogin(std::string const & l);
-
-        uint32_t        GetCurrIP() const override{ return currIP; }
-        time_t          GetCurrIPModificationTime() const override { return currIP.ModificationTime(); }
-
-        void            AddCurrIPBeforeNotifier(CURR_IP_NOTIFIER * notifier) override;
-        void            DelCurrIPBeforeNotifier(const CURR_IP_NOTIFIER * notifier) override;
-
-        void            AddCurrIPAfterNotifier(CURR_IP_NOTIFIER * notifier) override;
-        void            DelCurrIPAfterNotifier(const CURR_IP_NOTIFIER * notifier) override;
-
-        void            AddConnectedBeforeNotifier(CONNECTED_NOTIFIER * notifier) override;
-        void            DelConnectedBeforeNotifier(const CONNECTED_NOTIFIER * notifier) override;
-
-        void            AddConnectedAfterNotifier(CONNECTED_NOTIFIER * notifier) override;
-        void            DelConnectedAfterNotifier(const CONNECTED_NOTIFIER * notifier) override;
 
         int             GetID() const override { return id; }
 
@@ -165,8 +101,6 @@ class UserImpl : public User {
         time_t GetSessionUploadModificationTime() const override { return sessionUploadModTime; }
         time_t GetSessionDownloadModificationTime() const override { return sessionDownloadModTime; }
 
-        bool            GetConnected() const override { return connected; }
-        time_t          GetConnectedModificationTime() const override { return connected.ModificationTime(); }
         const std::string & GetLastDisconnectReason() const override { return lastDisconnectReason; }
         int             GetAuthorized() const override { return static_cast<int>(authorizedBy.size()); }
         time_t          GetAuthorizedModificationTime() const override { return authorizedModificationTime; }
@@ -230,13 +164,8 @@ class UserImpl : public User {
 
         std::string     login;
         int             id;
-        bool            __connected;
-        UserProperty<bool> connected;
 
         bool            enabledDirs[DIR_NUM];
-
-        uint32_t        __currIP; // Current user's ip
-        UserProperty<uint32_t> currIP;
 
         uint32_t        lastIPForDisconnect; // User's ip after unauth but before disconnect
         std::string     lastDisconnectReason;
@@ -309,11 +238,20 @@ class UserImpl : public User {
         time_t                   sessionUploadModTime;
         time_t                   sessionDownloadModTime;
 
-        CHG_PASSIVE_NOTIFIER     passiveNotifier;
-        CHG_DISABLED_NOTIFIER    disabledNotifier;
-        CHG_TARIFF_NOTIFIER      tariffNotifier;
-        CHG_CASH_NOTIFIER        cashNotifier;
-        CHG_IPS_NOTIFIER         ipNotifier;
+        ScopedConnection m_beforePassiveConn;
+        void onPassiveChange(int oldVal, int newVal);
+
+        ScopedConnection m_afterDisabledConn;
+        void onDisabledChange(int oldVal, int newVal);
+
+        ScopedConnection m_beforeTariffConn;
+        void onTariffChange(const std::string& oldVal, const std::string& newVal);
+
+        ScopedConnection m_beforeCashConn;
+        void onCashChange(double oldVal, double newVal);
+
+        ScopedConnection m_afterIPConn;
+        void onIPChange(const UserIPs& oldVal, const UserIPs& newVal);
 
         mutable pthread_mutex_t  mutex;
 

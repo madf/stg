@@ -22,7 +22,6 @@
 #include "stg/auth.h"
 #include "stg/store.h"
 #include "stg/module_settings.h"
-#include "stg/notifer.h"
 #include "stg/user_ips.h"
 #include "stg/user.h"
 #include "stg/users.h"

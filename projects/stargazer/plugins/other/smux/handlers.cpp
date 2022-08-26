@@ -10,6 +10,8 @@
 #include "utils.h"
 #include "smux.h"
 
+using STG::SMUX;
+
 #ifdef SMUX_DEBUG
 bool SMUX::CloseHandler(const SMUX_PDUs_t * pdus)
 {

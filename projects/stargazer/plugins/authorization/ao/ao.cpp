@@ -32,6 +32,8 @@
 
 #include <unistd.h>
 
+using STG::AUTH_AO;
+
 extern "C" STG::Plugin* GetPlugin()
 {
     static AUTH_AO plugin;
@@ -48,7 +50,7 @@ return "Always Online authorizator v.1.0";
 AUTH_AO::AUTH_AO()
     : users(NULL),
       isRunning(false),
-      logger(STG::PluginLogger::get("auth_ao"))
+      logger(PluginLogger::get("auth_ao"))
 {
 }
 //-----------------------------------------------------------------------------
@@ -76,88 +78,28 @@ if (!isRunning)
 m_onAddUserConn.disconnect();
 m_onDelUserConn.disconnect();
 
-auto it = userList.begin();
-while (it != userList.end())
-    {
-    if ((*it)->IsAuthorizedBy(this))
-        users->Unauthorize((*it)->GetLogin(), this);
-    UnSetUserNotifiers(*it);
-    ++it;
-    }
+m_conns.clear();
+
 isRunning = false;
 return 0;
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::SetUserNotifiers(UserPtr u)
 {
-// ---------- AlwaysOnline -------------------
-CHG_BEFORE_NOTIFIER<int> BeforeChgAONotifier(*this, u);
-CHG_AFTER_NOTIFIER<int>  AfterChgAONotifier(*this, u);
-
-BeforeChgAONotifierList.push_front(BeforeChgAONotifier);
-AfterChgAONotifierList.push_front(AfterChgAONotifier);
-
-u->GetProperties().alwaysOnline.AddBeforeNotifier(&BeforeChgAONotifierList.front());
-u->GetProperties().alwaysOnline.AddAfterNotifier(&AfterChgAONotifierList.front());
-// ---------- AlwaysOnline end ---------------
-
-// ---------- IP -------------------
-CHG_BEFORE_NOTIFIER<STG::UserIPs> BeforeChgIPNotifier(*this, u);
-CHG_AFTER_NOTIFIER<STG::UserIPs>  AfterChgIPNotifier(*this, u);
-
-BeforeChgIPNotifierList.push_front(BeforeChgIPNotifier);
-AfterChgIPNotifierList.push_front(AfterChgIPNotifier);
-
-u->GetProperties().ips.AddBeforeNotifier(&BeforeChgIPNotifierList.front());
-u->GetProperties().ips.AddAfterNotifier(&AfterChgIPNotifierList.front());
-// ---------- IP end ---------------
+    m_conns.emplace_back(
+        u->GetID(),
+        u->GetProperties().alwaysOnline.beforeChange([this, u](auto, auto){ Unauthorize(u); }),
+        u->GetProperties().alwaysOnline.afterChange([this, u](auto, auto){ UpdateUserAuthorization(u); }),
+        u->GetProperties().ips.beforeChange([this, u](const auto&, const auto&){ Unauthorize(u); }),
+        u->GetProperties().ips.afterChange([this, u](const auto&, const auto&){ UpdateUserAuthorization(u); })
+    );
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::UnSetUserNotifiers(UserPtr u)
 {
-// ---      AlwaysOnline        ---
-auto aoBIter = find_if(BeforeChgAONotifierList.begin(),
-                       BeforeChgAONotifierList.end(),
-                       [u](auto notifier){ return notifier.GetUser() == u; });
-
-if (aoBIter != BeforeChgAONotifierList.end())
-    {
-    aoBIter->GetUser()->GetProperties().alwaysOnline.DelBeforeNotifier(&(*aoBIter));
-    BeforeChgAONotifierList.erase(aoBIter);
-    }
-
-auto aoAIter = find_if(AfterChgAONotifierList.begin(),
-                       AfterChgAONotifierList.end(),
-                       [u](auto notifier){ return notifier.GetUser() == u; });
-
-if (aoAIter != AfterChgAONotifierList.end())
-    {
-    aoAIter->GetUser()->GetProperties().alwaysOnline.DelAfterNotifier(&(*aoAIter));
-    AfterChgAONotifierList.erase(aoAIter);
-    }
-// ---      AlwaysOnline end    ---
-
-// ---          IP              ---
-auto ipBIter = std::find_if(BeforeChgIPNotifierList.begin(),
-                            BeforeChgIPNotifierList.end(),
-                            [u](auto notifier){ return notifier.GetUser() == u; });
-
-if (ipBIter != BeforeChgIPNotifierList.end())
-    {
-    ipBIter->GetUser()->GetProperties().ips.DelBeforeNotifier(&(*ipBIter));
-    BeforeChgIPNotifierList.erase(ipBIter);
-    }
-
-auto ipAIter = find_if(AfterChgIPNotifierList.begin(),
-                       AfterChgIPNotifierList.end(),
-                       [u](auto notifier){ return notifier.GetUser() == u; });
-
-if (ipAIter != AfterChgIPNotifierList.end())
-    {
-    ipAIter->GetUser()->GetProperties().ips.DelAfterNotifier(&(*ipAIter));
-    AfterChgIPNotifierList.erase(ipAIter);
-    }
-// ---          IP end          ---
+    m_conns.erase(std::remove_if(m_conns.begin(), m_conns.end(),
+                                 [u](const auto& c){ return std::get<0>(c) == u->GetID(); }),
+                  m_conns.end());
 }
 //-----------------------------------------------------------------------------
 void AUTH_AO::GetUsers()
@@ -202,22 +144,14 @@ UnSetUserNotifiers(u);
 userList.erase(std::remove(userList.begin(), userList.end(), u), userList.end());
 }
 //-----------------------------------------------------------------------------
-int AUTH_AO::SendMessage(const STG::Message &, uint32_t) const
+int AUTH_AO::SendMessage(const Message &, uint32_t) const
 {
 errorStr = "Authorization modele \'AlwaysOnline\' does not support sending messages";
 return -1;
 }
 //-----------------------------------------------------------------------------
-template <typename varParamType>
-void CHG_BEFORE_NOTIFIER<varParamType>::notify(const varParamType &, const varParamType &)
+void AUTH_AO::Unauthorize(UserPtr user)
 {
-if (user->IsAuthorizedBy(&auth))
-    auth.users->Unauthorize(user->GetLogin(), &auth);
+    if (user->IsAuthorizedBy(this))
+        users->Unauthorize(user->GetLogin(), this);
 }
-//-----------------------------------------------------------------------------
-template <typename varParamType>
-void CHG_AFTER_NOTIFIER<varParamType>::notify(const varParamType &, const varParamType &)
-{
-auth.UpdateUserAuthorization(user);
-}
-//-----------------------------------------------------------------------------

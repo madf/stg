@@ -20,7 +20,14 @@
 
 #pragma once
 
-#include <pthread.h>
+#include "settings_impl.h"
+#include "user_impl.h"
+#include "stg/store.h"
+#include "stg/users.h"
+#include "stg/user.h"
+#include "stg/tariffs.h"
+#include "stg/logger.h"
+#include "stg/noncopyable.h"
 
 #include <string>
 #include <map>
@@ -33,16 +40,6 @@
 #pragma GCC diagnostic pop
 #include <ctime>
 #include <cstdint>
-
-#include "stg/store.h"
-#include "stg/users.h"
-#include "stg/user.h"
-#include "stg/tariffs.h"
-#include "stg/logger.h"
-#include "stg/notifer.h"
-#include "stg/noncopyable.h"
-#include "settings_impl.h"
-#include "user_impl.h"
 
 namespace STG
 {

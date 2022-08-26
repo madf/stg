@@ -51,8 +51,6 @@
 #define REMOVE_TIME  (31)
 
 using STG::TraffCounterImpl;
-using STG::TRF_IP_BEFORE;
-using STG::TRF_IP_AFTER;
 
 namespace AsyncPoolST = STG::AsyncPoolST;
 
@@ -82,8 +80,7 @@ m_onAddUserConn = users->onImplAdd([this](auto user){
     AsyncPoolST::enqueue([this, user](){ SetUserNotifiers(user); });
 });
 m_onDelUserConn = users->onImplDel([this](auto user){
-    AsyncPoolST::enqueue([this, user](){ UnSetUserNotifiers(user); });
-    AsyncPoolST::enqueue([this, user](){ DelUser(user->GetCurrIP()); });
+    AsyncPoolST::enqueue([this, user](){ UnSetUserNotifiers(user); DelUser(user->GetCurrIP()); });
 });
 }
 //-----------------------------------------------------------------------------
@@ -128,10 +125,7 @@ m_thread.request_stop();
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
-UserImpl * u;
-while (users->SearchNext(h, &u) == 0)
-    UnSetUserNotifiers(u);
-users->CloseSearch(h);
+m_onIPConns.clear();
 
 //5 seconds to thread stops itself
 struct timespec ts = {0, 200000000};
@@ -446,47 +440,22 @@ while (pi.first != pi.second)
 ip2packets.erase(pi.first, pi.second);
 }
 //-----------------------------------------------------------------------------
-void TraffCounterImpl::SetUserNotifiers(UserImpl * user)
+void TraffCounterImpl::SetUserNotifiers(UserImpl* user)
 {
-// Adding user. Adding notifiers to user.
-TRF_IP_BEFORE ipBNotifier(*this, user);
-ipBeforeNotifiers.push_front(ipBNotifier);
-user->AddCurrIPBeforeNotifier(&(*ipBeforeNotifiers.begin()));
-
-TRF_IP_AFTER ipANotifier(*this, user);
-ipAfterNotifiers.push_front(ipANotifier);
-user->AddCurrIPAfterNotifier(&(*ipAfterNotifiers.begin()));
+    // Adding user. Adding notifiers to user.
+    m_onIPConns.emplace_back(
+        user->GetID(),
+        user->beforeCurrIPChange([this](auto oldVal, auto /*newVal*/){ beforeIPChange(oldVal); }),
+        user->afterCurrIPChange([this, user](auto /*oldVal*/, auto newVal){ afterIPChange(user, newVal); })
+    );
 }
 //-----------------------------------------------------------------------------
 void TraffCounterImpl::UnSetUserNotifiers(UserImpl * user)
 {
-// Removing user. Removing notifiers from user.
-std::list<TRF_IP_BEFORE>::iterator bi;
-std::list<TRF_IP_AFTER>::iterator ai;
-
-bi = ipBeforeNotifiers.begin();
-while (bi != ipBeforeNotifiers.end())
-    {
-    if (user->GetLogin() == bi->GetUser()->GetLogin())
-        {
-        user->DelCurrIPBeforeNotifier(&(*bi));
-        ipBeforeNotifiers.erase(bi);
-        break;
-        }
-    ++bi;
-    }
-
-ai = ipAfterNotifiers.begin();
-while (ai != ipAfterNotifiers.end())
-    {
-    if (user->GetLogin() == ai->GetUser()->GetLogin())
-        {
-        user->DelCurrIPAfterNotifier(&(*ai));
-        ipAfterNotifiers.erase(ai);
-        break;
-        }
-    ++ai;
-    }
+    // Removing user. Removing notifiers from user.
+    m_onIPConns.erase(std::remove_if(m_onIPConns.begin(), m_onIPConns.end(),
+                                     [user](const auto& cs){ return std::get<0>(cs) == user->GetID(); }),
+                      m_onIPConns.end());
 }
 //-----------------------------------------------------------------------------
 void TraffCounterImpl::DeterminateDir(const RawPacket & packet,
@@ -851,21 +820,21 @@ monitorDir = dir;
 monitoring = !monitorDir.empty();
 }
 //-----------------------------------------------------------------------------
-void TRF_IP_BEFORE::notify(const uint32_t & oldValue, const uint32_t &)
+void TraffCounterImpl::beforeIPChange(uint32_t oldVal)
 {
-// User changes his address. Remove old IP
-if (!oldValue)
-    return;
+    // User changes his address. Remove old IP
+    if (!oldVal)
+        return;
 
-AsyncPoolST::enqueue([this, oldValue](){ traffCnt.DelUser(oldValue); });
+    AsyncPoolST::enqueue([this, oldVal](){ DelUser(oldVal); });
 }
 //-----------------------------------------------------------------------------
-void TRF_IP_AFTER::notify(const uint32_t &, const uint32_t & newValue)
+void TraffCounterImpl::afterIPChange(UserImpl* user, uint32_t newVal)
 {
-// User changes his address. Add new IP
-if (!newValue)
-    return;
+    // User changes his address. Add new IP
+    if (!newVal)
+        return;
 
-AsyncPoolST::enqueue([this](){ traffCnt.AddUser(user); });
+    AsyncPoolST::enqueue([this, user](){ AddUser(user); });
 }
 //-----------------------------------------------------------------------------

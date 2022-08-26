@@ -19,6 +19,9 @@
 #include "smux.h"
 #include "utils.h"
 
+using STG::SMUX;
+using STG::SMUX_SETTINGS;
+
 namespace
 {
 
@@ -41,9 +44,9 @@ SMUX_SETTINGS::SMUX_SETTINGS()
       port(0)
 {}
 
-int SMUX_SETTINGS::ParseSettings(const STG::ModuleSettings & s)
+int SMUX_SETTINGS::ParseSettings(const ModuleSettings & s)
 {
-STG::ParamValue pv;
+ParamValue pv;
 int p;
 
 pv.param = "Port";
@@ -100,7 +103,7 @@ SMUX::SMUX()
       lastReconnectTry(0),
       reconnectTimeout(1),
       sock(-1),
-      logger(STG::PluginLogger::get("smux"))
+      logger(PluginLogger::get("smux"))
 {
 smuxHandlers[SMUX_PDUs_PR_close] = &SMUX::CloseHandler;
 smuxHandlers[SMUX_PDUs_PR_registerResponse] = &SMUX::RegisterResponseHandler;
@@ -226,7 +229,7 @@ printfd(__FILE__, "SMUX::Stop() - After\n");
 return 0;
 }
 
-int SMUX::Reload(const STG::ModuleSettings & /*ms*/)
+int SMUX::Reload(const ModuleSettings & /*ms*/)
 {
 if (Stop() != 0)
     return -1;
@@ -411,23 +414,17 @@ return true;
 
 void SMUX::SetNotifier(UserPtr userPtr)
 {
-notifiers.emplace_back(*this, userPtr);
-userPtr->GetProperties().tariffName.AddAfterNotifier(&notifiers.back());
+    m_conns.emplace_back(
+        userPtr->GetID(),
+        userPtr->GetProperties().tariffName.afterChange([this](const auto&, const auto&){ UpdateTables(); })
+    );
 }
 
 void SMUX::UnsetNotifier(UserPtr userPtr)
 {
-auto it = notifiers.begin();
-while (it != notifiers.end())
-    {
-    if (it->GetUserPtr() == userPtr)
-        {
-        userPtr->GetProperties().tariffName.DelAfterNotifier(&(*it));
-        notifiers.erase(it);
-        break;
-        }
-    ++it;
-    }
+    m_conns.erase(std::remove_if(m_conns.begin(), m_conns.end(),
+                                 [userPtr](const auto& c){ return std::get<0>(c) == userPtr->GetID(); }),
+                  m_conns.end());
 }
 
 void SMUX::SetNotifiers()
@@ -450,7 +447,7 @@ m_onDelUserConn = users->onDel([this](auto user){
     UpdateTables();
 });
 
-auto updateTables = [this](const STG::TariffData&){ UpdateTables(); };
+auto updateTables = [this](const TariffData&){ UpdateTables(); };
 m_onAddTariffConn = tariffs->onAdd(updateTables);
 m_onDelTariffConn = tariffs->onDel(updateTables);
 }
@@ -463,11 +460,5 @@ m_onDelTariffConn.disconnect();
 m_onAddUserConn.disconnect();
 m_onDelUserConn.disconnect();
 
-auto it = notifiers.begin();
-while (it != notifiers.end())
-    {
-    it->GetUserPtr()->GetProperties().tariffName.DelAfterNotifier(&(*it));
-    ++it;
-    }
-notifiers.clear();
+m_conns.clear();
 }

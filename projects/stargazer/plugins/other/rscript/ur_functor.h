@@ -18,8 +18,7 @@
  *    Author : Maxim Mamontov <faust@stargazer.dp.ua>
  */
 
-#ifndef __UR_FUNCTOR_H__
-#define __UR_FUNCTOR_H__
+#pragma once
 
 #include "rscript.h"
 
@@ -30,60 +29,58 @@
 #include <utility>
 #include <cstdint>
 
-namespace RS
+namespace STG::RS
 {
 
 class UpdateRouter : public std::unary_function<std::pair<const uint32_t, RS::USER>, void>
 {
-public:
-    explicit UpdateRouter(REMOTE_SCRIPT & t)
-        : obj(t) {}
+    public:
+        explicit UpdateRouter(REMOTE_SCRIPT & t)
+            : obj(t) {}
 
-    void operator() (std::pair<const uint32_t, USER> & val)
-        {
-        std::vector<uint32_t> newRouters = obj.IP2Routers(val.second.ip);
-        std::vector<uint32_t>::const_iterator oldIt(val.second.routers.begin());
-        std::vector<uint32_t>::const_iterator newIt(newRouters.begin());
-        val.second.shortPacketsCount = 0;
-        while (oldIt != val.second.routers.end() ||
-               newIt != newRouters.end())
+        void operator() (std::pair<const uint32_t, USER> & val)
             {
-            if (oldIt == val.second.routers.end())
+            std::vector<uint32_t> newRouters = obj.IP2Routers(val.second.ip);
+            std::vector<uint32_t>::const_iterator oldIt(val.second.routers.begin());
+            std::vector<uint32_t>::const_iterator newIt(newRouters.begin());
+            val.second.shortPacketsCount = 0;
+            while (oldIt != val.second.routers.end() ||
+                   newIt != newRouters.end())
                 {
-                if (newIt != newRouters.end())
+                if (oldIt == val.second.routers.end())
+                    {
+                    if (newIt != newRouters.end())
+                        {
+                        obj.SendDirect(val.second, *newIt); // Connect on new router
+                        ++newIt;
+                        }
+                    }
+                else if (newIt == newRouters.end())
+                    {
+                    obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
+                    ++oldIt;
+                    }
+                else if (*oldIt < *newIt)
+                    {
+                    obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
+                    ++oldIt;
+                    }
+                else if (*oldIt > *newIt)
                     {
                     obj.SendDirect(val.second, *newIt); // Connect on new router
                     ++newIt;
                     }
+                else
+                    {
+                    ++oldIt;
+                    if (newIt != newRouters.end())
+                        ++newIt;
+                    }
                 }
-            else if (newIt == newRouters.end())
-                {
-                obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
-                ++oldIt;
-                }
-            else if (*oldIt < *newIt)
-                {
-                obj.SendDirect(val.second, *oldIt, true); // Disconnect on old router
-                ++oldIt;
-                }
-            else if (*oldIt > *newIt)
-                {
-                obj.SendDirect(val.second, *newIt); // Connect on new router
-                ++newIt;
-                }
-            else
-                {
-                ++oldIt;
-                if (newIt != newRouters.end())
-                    ++newIt;
-                }
+            val.second.routers = newRouters;
             }
-        val.second.routers = newRouters;
-        }
-private:
-    REMOTE_SCRIPT & obj;
+    private:
+        REMOTE_SCRIPT & obj;
 };
 
 } // namespace RS
-
-#endif
