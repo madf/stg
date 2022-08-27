@@ -26,8 +26,8 @@ namespace STG
 {
 
 struct Admins;
-struct Tariffs;
-struct Users;
+class Tariffs;
+class Users;
 struct Store;
 
 }

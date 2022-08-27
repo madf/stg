@@ -336,7 +336,7 @@ try
     st->Execute();
 
     st->Prepare("insert into tb_allowed_ip (fk_user, ip, mask) values (?, ?, ?)");
-    for(size_t j = 0; i < conf.ips.count(); j++)
+    for(size_t j = 0; j < conf.ips.count(); j++)
         {
         st->Set(1, uid);
         st->Set(2, (int32_t)conf.ips[j].ip);

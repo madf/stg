@@ -37,7 +37,7 @@ namespace
 {
 
 template <class C>
-void ReadConfigFile(const std::string & filePath, void (C::* callback)(const std::string&, const std::string&), C * obj)
+void ReadConfigFile(const std::string& filePath, void (C::* callback)(const std::string&, const std::string&), C* obj)
 {
     std::ifstream stream(filePath.c_str());
     std::string line;
@@ -70,10 +70,10 @@ using SGCONF::OPTION_BLOCKS;
 using SGCONF::ACTION;
 using SGCONF::PARSER_STATE;
 
-OPTION::OPTION(const std::string & shortName,
-               const std::string & longName,
+OPTION::OPTION(const std::string& shortName,
+               const std::string& longName,
                std::unique_ptr<ACTION> action,
-               const std::string & description)
+               const std::string& description)
     : m_shortName(shortName),
       m_longName(longName),
       m_action(std::move(action)),
@@ -81,9 +81,9 @@ OPTION::OPTION(const std::string & shortName,
 {
 }
 
-OPTION::OPTION(const std::string & longName,
+OPTION::OPTION(const std::string& longName,
                std::unique_ptr<ACTION> action,
-               const std::string & description)
+               const std::string& description)
     : m_longName(longName),
       m_action(std::move(action)),
       m_description(description)
@@ -103,7 +103,7 @@ void OPTION::Help(size_t level) const
     m_action->Suboptions().Help(level);
 }
 
-bool OPTION::Check(const char * arg) const
+bool OPTION::Check(const char* arg) const
 {
     if (arg == NULL)
         return false;
@@ -117,7 +117,7 @@ bool OPTION::Check(const char * arg) const
     return m_shortName == arg;
 }
 
-PARSER_STATE OPTION::Parse(int argc, char ** argv, void * data)
+PARSER_STATE OPTION::Parse(int argc, char** argv, void* data)
 {
     if (!m_action)
         throw ERROR("Option is not defined.");
@@ -125,7 +125,7 @@ PARSER_STATE OPTION::Parse(int argc, char ** argv, void * data)
     {
         return m_action->Parse(argc, argv, data);
     }
-    catch (const ACTION::ERROR & ex)
+    catch (const ACTION::ERROR& ex)
     {
         if (m_longName.empty())
             throw ERROR("-" + m_shortName + ": " + ex.what());
@@ -135,7 +135,7 @@ PARSER_STATE OPTION::Parse(int argc, char ** argv, void * data)
     }
 }
 
-void OPTION::ParseValue(const std::string & value)
+void OPTION::ParseValue(const std::string& value)
 {
     if (!m_action)
         throw ERROR("Option is not defined.");
@@ -143,24 +143,24 @@ void OPTION::ParseValue(const std::string & value)
     {
         return m_action->ParseValue(value);
     }
-    catch (const ACTION::ERROR & ex)
+    catch (const ACTION::ERROR& ex)
     {
         throw ERROR(m_longName + ": " + ex.what());
     }
 }
 
-OPTION_BLOCK & OPTION_BLOCK::Add(const std::string & shortName,
-                                 const std::string & longName,
-                                 std::unique_ptr<ACTION> action,
-                                 const std::string & description)
+OPTION_BLOCK& OPTION_BLOCK::Add(const std::string& shortName,
+                                const std::string& longName,
+                                std::unique_ptr<ACTION> action,
+                                const std::string& description)
 {
     m_options.emplace_back(shortName, longName, std::move(action), description);
     return *this;
 }
 
-OPTION_BLOCK & OPTION_BLOCK::Add(const std::string & longName,
-                                 std::unique_ptr<ACTION> action,
-                                 const std::string & description)
+OPTION_BLOCK& OPTION_BLOCK::Add(const std::string& longName,
+                                std::unique_ptr<ACTION> action,
+                                const std::string& description)
 {
     m_options.emplace_back(longName, std::move(action), description);
     return *this;
@@ -176,7 +176,7 @@ void OPTION_BLOCK::Help(size_t level) const
         option.Help(level + 1);
 }
 
-PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv, void * data)
+PARSER_STATE OPTION_BLOCK::Parse(int argc, char** argv, void* data)
 {
     PARSER_STATE state(false, argc, argv);
     if (state.argc == 0)
@@ -192,14 +192,14 @@ PARSER_STATE OPTION_BLOCK::Parse(int argc, char ** argv, void * data)
     return state;
 }
 
-void OPTION_BLOCK::ParseFile(const std::string & filePath)
+void OPTION_BLOCK::ParseFile(const std::string& filePath)
 {
     if (access(filePath.c_str(), R_OK))
         throw ERROR("File '" + filePath + "' does not exists.");
     ReadConfigFile(filePath, &OPTION_BLOCK::OptionCallback, this);
 }
 
-void OPTION_BLOCK::OptionCallback(const std::string & key, const std::string & value)
+void OPTION_BLOCK::OptionCallback(const std::string& key, const std::string& value)
 {
     for (auto& option : m_options)
         if (option.Name() == key)
@@ -215,7 +215,7 @@ void OPTION_BLOCKS::Help(size_t level) const
     }
 }
 
-PARSER_STATE OPTION_BLOCKS::Parse(int argc, char ** argv)
+PARSER_STATE OPTION_BLOCKS::Parse(int argc, char** argv)
 {
     PARSER_STATE state(false, argc, argv);
     auto it = m_blocks.begin();

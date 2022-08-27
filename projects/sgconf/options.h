@@ -36,26 +36,26 @@ struct PARSER_STATE;
 class OPTION
 {
     public:
-        OPTION(const std::string & shortName,
-               const std::string & longName,
+        OPTION(const std::string& shortName,
+               const std::string& longName,
                std::unique_ptr<ACTION> action,
-               const std::string & description);
-        OPTION(const std::string & longName,
+               const std::string& description);
+        OPTION(const std::string& longName,
                std::unique_ptr<ACTION> action,
-               const std::string & description);
+               const std::string& description);
 
         OPTION(OPTION&& rhs) = default;
-        OPTION& operator=(OPTION& rhs) = default;
+        OPTION& operator=(OPTION&& rhs) = default;
 
         void Help(size_t level = 0) const;
-        PARSER_STATE Parse(int argc, char ** argv, void * data);
+        PARSER_STATE Parse(int argc, char** argv, void* data);
         void ParseValue(const std::string & value);
-        bool Check(const char * arg) const;
-        const std::string & Name() const { return m_longName; }
+        bool Check(const char* arg) const;
+        const std::string& Name() const { return m_longName; }
 
         struct ERROR : std::runtime_error
         {
-            explicit ERROR(const std::string & message)
+            explicit ERROR(const std::string & message) noexcept
                 : std::runtime_error(message.c_str()) {}
         };
 
@@ -70,28 +70,28 @@ class OPTION_BLOCK
 {
     public:
         OPTION_BLOCK() {}
-        explicit OPTION_BLOCK(const std::string & description)
+        explicit OPTION_BLOCK(const std::string& description)
             : m_description(description) {}
 
         OPTION_BLOCK(OPTION_BLOCK&&) = default;
         OPTION_BLOCK& operator=(OPTION_BLOCK&&) = default;
 
-        OPTION_BLOCK & Add(const std::string & shortName,
-                           const std::string & longName,
-                           std::unique_ptr<ACTION> action,
-                           const std::string & description);
-        OPTION_BLOCK & Add(const std::string & longName,
-                           std::unique_ptr<ACTION> action,
-                           const std::string & description);
+        OPTION_BLOCK& Add(const std::string& shortName,
+                          const std::string& longName,
+                          std::unique_ptr<ACTION> action,
+                          const std::string& description);
+        OPTION_BLOCK& Add(const std::string& longName,
+                          std::unique_ptr<ACTION> action,
+                          const std::string& description);
 
         void Help(size_t level) const;
 
-        PARSER_STATE Parse(int argc, char ** argv, void * data = NULL);
-        void ParseFile(const std::string & filePath);
+        PARSER_STATE Parse(int argc, char** argv, void* data = NULL);
+        void ParseFile(const std::string& filePath);
 
         struct ERROR : std::runtime_error
         {
-            explicit ERROR(const std::string & message)
+            explicit ERROR(const std::string & message) noexcept
                 : std::runtime_error(message.c_str()) {}
         };
 
@@ -99,17 +99,17 @@ class OPTION_BLOCK
         std::vector<OPTION> m_options;
         std::string m_description;
 
-        void OptionCallback(const std::string & key, const std::string & value);
+        void OptionCallback(const std::string& key, const std::string& value);
 };
 
 class OPTION_BLOCKS
 {
     public:
-        OPTION_BLOCK & Add(const std::string & description)
+        OPTION_BLOCK& Add(const std::string& description)
         { m_blocks.push_back(OPTION_BLOCK(description)); return m_blocks.back(); }
         void Add(OPTION_BLOCK&& block) { m_blocks.push_back(std::move(block)); }
         void Help(size_t level) const;
-        PARSER_STATE Parse(int argc, char ** argv);
+        PARSER_STATE Parse(int argc, char** argv);
 
     private:
         std::vector<OPTION_BLOCK> m_blocks;

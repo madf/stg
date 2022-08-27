@@ -4,8 +4,11 @@
 #include "tables.h"
 #include "types.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/SMUX-PDUs.h"
 #include "stg/ObjectSyntax.h"
+#pragma GCC diagnostic pop
 
 #include "stg/plugin.h"
 #include "stg/module_settings.h"
@@ -25,10 +28,10 @@
 
 namespace STG
 {
-struct User;
+class User;
 struct Settings;
-struct Users;
-struct Tariffs;
+class Users;
+class Tariffs;
 struct Services;
 struct Corporations;
 struct TraffCounter;

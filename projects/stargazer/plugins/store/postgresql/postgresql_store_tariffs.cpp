@@ -603,7 +603,7 @@ for (int i = 0; i < std::min(tuples, DIR_NUM); ++i)
         {
         td->dirPrice[dir].singlePrice = false;
         }
-    if (td->dirPrice[dir].threshold == (int)0xffFFffFF)
+    if (td->dirPrice[dir].threshold == static_cast<int>(0xffFFffFF))
         {
         td->dirPrice[dir].noDiscount = true;
         }

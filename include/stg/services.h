@@ -25,7 +25,7 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct ServiceConf;
 struct ServiceConfOpt;
 

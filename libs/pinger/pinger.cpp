@@ -26,54 +26,46 @@ extern volatile time_t stgTime;
 
 //-----------------------------------------------------------------------------
 STG_PINGER::STG_PINGER(time_t d)
-    : delay(d),
-      nonstop(false),
-      isRunningRecver(false),
-      isRunningSender(false),
-      sendSocket(-1),
-      recvSocket(-1),
-      sendThread(),
-      recvThread(),
-      pmSend(),
-      pid(0),
-      errorStr(),
-      pingIP(),
-      ipToAdd(),
-      ipToDel(),
-      mutex()
+    : m_delay(d),
+      m_nonstop(false),
+      m_isRunningRecver(false),
+      m_isRunningSender(false),
+      m_sendSocket(-1),
+      m_recvSocket(-1),
+      m_pid(0)
 {
-pthread_mutex_init(&mutex, NULL);
-memset(&pmSend, 0, sizeof(pmSend));
+pthread_mutex_init(&m_mutex, NULL);
+memset(&m_pmSend, 0, sizeof(m_pmSend));
 }
 //-----------------------------------------------------------------------------
 STG_PINGER::~STG_PINGER()
 {
-pthread_mutex_destroy(&mutex);
+pthread_mutex_destroy(&m_mutex);
 }
 //-----------------------------------------------------------------------------
 int STG_PINGER::Start()
 {
 struct protoent *proto = NULL;
 proto = getprotobyname("ICMP");
-sendSocket = socket(PF_INET, SOCK_RAW, proto->p_proto);
-recvSocket = socket(PF_INET, SOCK_RAW, proto->p_proto);
-nonstop = true;
-pid = (int) getpid() % 65535;
-if (sendSocket < 0 || recvSocket < 0)
+m_sendSocket = socket(PF_INET, SOCK_RAW, proto->p_proto);
+m_recvSocket = socket(PF_INET, SOCK_RAW, proto->p_proto);
+m_nonstop = true;
+m_pid = static_cast<uint32_t>(getpid()) % 65535;
+if (m_sendSocket < 0 || m_recvSocket < 0)
     {
-    errorStr = "Cannot create socket.";
+    m_errorStr = "Cannot create socket.";
     return -1;
     }
 
-if (pthread_create(&sendThread, NULL, RunSendPing, this))
+if (pthread_create(&m_sendThread, NULL, RunSendPing, this))
     {
-    errorStr = "Cannot create send thread.";
+    m_errorStr = "Cannot create send thread.";
     return -1;
     }
 
-if (pthread_create(&recvThread, NULL, RunRecvPing, this))
+if (pthread_create(&m_recvThread, NULL, RunRecvPing, this))
     {
-    errorStr = "Cannot create recv thread.";
+    m_errorStr = "Cannot create recv thread.";
     return -1;
     }
 
@@ -82,9 +74,9 @@ return 0;
 //-----------------------------------------------------------------------------
 int STG_PINGER::Stop()
 {
-close(recvSocket);
-nonstop = false;
-if (isRunningRecver)
+close(m_recvSocket);
+m_nonstop = false;
+if (m_isRunningRecver)
     {
     //5 seconds to thread stops itself
     for (size_t i = 0; i < 25; i++)
@@ -92,7 +84,7 @@ if (isRunningRecver)
         if (i % 5 == 0)
             SendPing(0x0100007f);//127.0.0.1
 
-        if (!isRunningRecver)
+        if (!m_isRunningRecver)
             break;
 
         struct timespec ts = {0, 200000000};
@@ -100,12 +92,12 @@ if (isRunningRecver)
         }
     }
 
-if (isRunningSender)
+if (m_isRunningSender)
     {
     //5 seconds to thread stops itself
     for (size_t i = 0; i < 25; i++)
         {
-        if (!isRunningSender)
+        if (!m_isRunningSender)
             break;
 
         struct timespec ts = {0, 200000000};
@@ -113,9 +105,9 @@ if (isRunningSender)
         }
     }
 
-close(sendSocket);
+close(m_sendSocket);
 
-if (isRunningSender || isRunningRecver)
+if (m_isRunningSender || m_isRunningRecver)
     return -1;
 
 return 0;
@@ -123,54 +115,50 @@ return 0;
 //-----------------------------------------------------------------------------
 void STG_PINGER::AddIP(uint32_t ip)
 {
-STG_LOCKER lock(&mutex);
-ipToAdd.push_back(ip);
+STG_LOCKER lock(&m_mutex);
+m_ipToAdd.push_back(ip);
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::DelIP(uint32_t ip)
 {
-STG_LOCKER lock(&mutex);
-ipToDel.push_back(ip);
+STG_LOCKER lock(&m_mutex);
+m_ipToDel.push_back(ip);
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::RealAddIP()
 {
-STG_LOCKER lock(&mutex);
+STG_LOCKER lock(&m_mutex);
 
-std::list<uint32_t>::iterator iter;
-iter = ipToAdd.begin();
-while (iter != ipToAdd.end())
+auto iter = m_ipToAdd.begin();
+while (iter != m_ipToAdd.end())
     {
-    pingIP.insert(std::make_pair(*iter, 0));
+    m_pingIP.insert(std::make_pair(*iter, 0));
     ++iter;
     }
-ipToAdd.erase(ipToAdd.begin(), ipToAdd.end());
+m_ipToAdd.erase(m_ipToAdd.begin(), m_ipToAdd.end());
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::RealDelIP()
 {
-STG_LOCKER lock(&mutex);
+STG_LOCKER lock(&m_mutex);
 
-std::list<uint32_t>::iterator iter;
-std::multimap<uint32_t, time_t>::iterator treeIter;
-iter = ipToDel.begin();
-while (iter != ipToDel.end())
+auto iter = m_ipToDel.begin();
+while (iter != m_ipToDel.end())
     {
-    treeIter = pingIP.find(*iter);
-    if (treeIter != pingIP.end())
-        pingIP.erase(treeIter);
+    auto treeIter = m_pingIP.find(*iter);
+    if (treeIter != m_pingIP.end())
+        m_pingIP.erase(treeIter);
 
     ++iter;
     }
-ipToDel.erase(ipToDel.begin(), ipToDel.end());
+m_ipToDel.erase(m_ipToDel.begin(), m_ipToDel.end());
 }
 //-----------------------------------------------------------------------------
 void STG_PINGER::PrintAllIP()
 {
-STG_LOCKER lock(&mutex);
-std::multimap<uint32_t, time_t>::iterator iter;
-iter = pingIP.begin();
-while (iter != pingIP.end())
+STG_LOCKER lock(&m_mutex);
+auto iter = m_pingIP.begin();
+while (iter != m_pingIP.end())
     {
     uint32_t ip = iter->first;
     time_t t = iter->second;
@@ -183,11 +171,10 @@ while (iter != pingIP.end())
 //-----------------------------------------------------------------------------
 int STG_PINGER::GetIPTime(uint32_t ip, time_t * t) const
 {
-STG_LOCKER lock(&mutex);
-std::multimap<uint32_t, time_t>::const_iterator treeIter;
+STG_LOCKER lock(&m_mutex);
 
-treeIter = pingIP.find(ip);
-if (treeIter == pingIP.end())
+auto treeIter = m_pingIP.find(ip);
+if (treeIter == m_pingIP.end())
     return -1;
 
 *t = treeIter->second;
@@ -220,16 +207,16 @@ addr.sin_family = AF_INET;
 addr.sin_port = 0;
 addr.sin_addr.s_addr = ip;
 
-memset(&pmSend, 0, sizeof(pmSend));
-pmSend.hdr.type = ICMP_ECHO;
-pmSend.hdr.un.echo.id = static_cast<uint16_t>(pid);
-memcpy(pmSend.msg, &ip, sizeof(ip));
+memset(&m_pmSend, 0, sizeof(m_pmSend));
+m_pmSend.hdr.type = ICMP_ECHO;
+m_pmSend.hdr.un.echo.id = static_cast<uint16_t>(m_pid);
+memcpy(m_pmSend.msg, &ip, sizeof(ip));
 
-pmSend.hdr.checksum = PingCheckSum(&pmSend, sizeof(pmSend));
+m_pmSend.hdr.checksum = PingCheckSum(&m_pmSend, sizeof(m_pmSend));
 
-if (sendto(sendSocket, &pmSend, sizeof(pmSend), 0, (sockaddr *)&addr, sizeof(addr)) <= 0 )
+if (sendto(m_sendSocket, &m_pmSend, sizeof(m_pmSend), 0, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) <= 0 )
     {
-    errorStr = "Send ping error: " + std::string(strerror(errno));
+    m_errorStr = "Send ping error: " + std::string(strerror(errno));
     return -1;
     }
 
@@ -246,12 +233,12 @@ char buf[128];
 memset(buf, 0, sizeof(buf));
 socklen_t len = sizeof(addr);
 
-if (recvfrom(recvSocket, &buf, sizeof(buf), 0, reinterpret_cast<struct sockaddr*>(&addr), &len))
+if (recvfrom(m_recvSocket, &buf, sizeof(buf), 0, reinterpret_cast<struct sockaddr*>(&addr), &len))
     {
     struct IP_HDR * ip = static_cast<struct IP_HDR *>(static_cast<void *>(buf));
     struct ICMP_HDR *icmp = static_cast<struct ICMP_HDR *>(static_cast<void *>(buf + ip->ihl * 4));
 
-    if (icmp->un.echo.id != pid)
+    if (icmp->un.echo.id != m_pid)
         return 0;
 
     ipAddr = *static_cast<uint32_t*>(static_cast<void *>(buf + sizeof(ICMP_HDR) + ip->ihl * 4));
@@ -266,18 +253,18 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-STG_PINGER * pinger = static_cast<STG_PINGER *>(d);
+auto* pinger = static_cast<STG_PINGER *>(d);
 
-pinger->isRunningSender = true;
+pinger->m_isRunningSender = true;
 time_t lastPing = 0;
-while (pinger->nonstop)
+while (pinger->m_nonstop)
     {
     pinger->RealAddIP();
     pinger->RealDelIP();
 
     std::multimap<uint32_t, time_t>::iterator iter;
-    iter = pinger->pingIP.begin();
-    while (iter != pinger->pingIP.end())
+    iter = pinger->m_pingIP.begin();
+    while (iter != pinger->m_pingIP.end())
         {
         pinger->SendPing(iter->first);
         ++iter;
@@ -292,7 +279,7 @@ while (pinger->nonstop)
     currTime = lastPing = time(NULL);
     #endif
 
-    while (currTime - lastPing < pinger->delay && pinger->nonstop)
+    while (currTime - lastPing < pinger->m_delay && pinger->m_nonstop)
         {
         #ifdef STG_TIME
         currTime = stgTime;
@@ -304,7 +291,7 @@ while (pinger->nonstop)
         }
     }
 
-pinger->isRunningSender = false;
+pinger->m_isRunningSender = false;
 
 return NULL;
 }
@@ -315,18 +302,18 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-STG_PINGER * pinger = static_cast<STG_PINGER *>(d);
+auto* pinger = static_cast<STG_PINGER *>(d);
 
-pinger->isRunningRecver = true;
+pinger->m_isRunningRecver = true;
 
-while (pinger->nonstop)
+while (pinger->m_nonstop)
     {
     uint32_t ip = pinger->RecvPing();
 
     if (ip)
         {
-        std::multimap<uint32_t, time_t>::iterator treeIterUpper = pinger->pingIP.upper_bound(ip);
-        std::multimap<uint32_t, time_t>::iterator treeIterLower = pinger->pingIP.lower_bound(ip);
+        auto treeIterUpper = pinger->m_pingIP.upper_bound(ip);
+        auto treeIterLower = pinger->m_pingIP.lower_bound(ip);
         while (treeIterUpper != treeIterLower)
             {
             #ifdef STG_TIME
@@ -339,7 +326,7 @@ while (pinger->nonstop)
         }
 
     }
-pinger->isRunningRecver = false;
+pinger->m_isRunningRecver = false;
 return NULL;
 }
 //-----------------------------------------------------------------------------

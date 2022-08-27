@@ -23,6 +23,12 @@
  $Date: 2007/12/17 08:39:08 $
  */
 
+#include "stg/const.h"
+#include "stg/ia_packets.h"
+
+#include <string>
+#include <list>
+
 #ifndef WIN32
 #include <pthread.h>
 #include <sys/types.h>
@@ -36,53 +42,47 @@
 #include <winsock2.h>
 #endif
 
-#include <string>
-#include <list>
-
-#include "stg/const.h"
-#include "stg/ia_packets.h"
-
 #define MAX_MESSAGES    (10)
 //-----------------------------------------------------------------------------
 struct STG_MESSAGE
 {
-std::string  msg;
-std::string  recvTime;
-int     type;
+    std::string  msg;
+    std::string  recvTime;
+    int     type;
 };
 //-----------------------------------------------------------------------------
 class WEB
 {
-public:
-    WEB();
-    void Run();
-    void SetDirName(const std::string & dn, int n);
-    void SetRefreshPagePeriod(int p);
-    void SetListenAddr(uint32_t ip);
-    void AddMessage(const std::string & message, int type);
-    void UpdateStat(const LOADSTAT & ls);
-    void Start();
-private:
-    void PrepareNet();
-    int SendReply();
-    int SendCSS();
-    int Redirect(const char * url);
+    public:
+        WEB();
+        void Run();
+        void SetDirName(const std::string & dn, int n);
+        void SetRefreshPagePeriod(int p);
+        void SetListenAddr(uint32_t ip);
+        void AddMessage(const std::string & message, int type);
+        void UpdateStat(const LOADSTAT & ls);
+        void Start();
+    private:
+        void PrepareNet();
+        int SendReply();
+        int SendCSS();
+        int Redirect(const char * url);
 
-    #ifdef WIN32
-    WSADATA wsaData;
-    #else
-    pthread_t thread;
-    #endif
+        #ifdef WIN32
+        WSADATA m_wsaData;
+        #else
+        pthread_t m_thread;
+        #endif
 
-    std::string dirName[DIR_NUM];
-    int res;
-    int listenSocket;
-    int outerSocket;
-    int refreshPeriod;
+        std::string m_dirName[DIR_NUM];
+        int m_res;
+        int m_listenSocket;
+        int m_outerSocket;
+        int m_refreshPeriod;
 
-    uint32_t listenWebAddr;
-    LOADSTAT ls;
+        uint32_t m_listenWebAddr;
+        LOADSTAT m_ls;
 
-    std::list<STG_MESSAGE> messages;
+        std::list<STG_MESSAGE> m_messages;
 };
 //-----------------------------------------------------------------------------

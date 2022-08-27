@@ -60,7 +60,7 @@ class AdminsImpl : public Admins
 
         size_t       count() const override { return m_data.size(); }
 
-        void fmap(std::function<void (const Admin&)> callback) const
+        void fmap(std::function<void (const Admin&)> callback) const override
         {
             for (const auto& admin : m_data)
                 callback(admin);

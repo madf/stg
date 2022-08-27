@@ -6,8 +6,8 @@
 namespace STG
 {
 
-struct Tariffs;
-struct Users;
+class Tariffs;
+class Users;
 struct Admins;
 
 }

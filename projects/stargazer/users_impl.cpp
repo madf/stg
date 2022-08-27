@@ -450,7 +450,7 @@ void UsersImpl::DayResetTraff(const struct tm & t1)
 auto dayResetTraff = settings->GetDayResetTraff();
 if (dayResetTraff == 0)
     dayResetTraff = DaysInCurrentMonth();
-if (t1.tm_mday == dayResetTraff)
+if (static_cast<unsigned>(t1.tm_mday) == dayResetTraff)
     {
     printfd(__FILE__, "ResetTraff\n");
     for_each(users.begin(), users.end(), [](auto& user){ user.ProcessNewMonth(); });

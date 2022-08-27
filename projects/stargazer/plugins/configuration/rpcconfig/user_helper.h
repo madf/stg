@@ -7,11 +7,11 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct Store;
-struct Tariffs;
-struct User;
-struct Users;
+class Tariffs;
+class User;
+class Users;
 
 }
 

@@ -32,7 +32,7 @@ namespace STG
 {
 
 struct Admins;
-struct Admin;
+class Admin;
 
 namespace PARSER
 {

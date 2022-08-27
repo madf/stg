@@ -29,7 +29,7 @@
 namespace STG
 {
 
-struct Users;
+class Users;
 
 namespace PARSER
 {

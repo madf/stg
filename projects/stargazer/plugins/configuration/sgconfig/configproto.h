@@ -42,8 +42,8 @@ namespace STG
 
 struct Settings;
 struct Admins;
-struct Tariffs;
-struct Users;
+class Tariffs;
+class Users;
 struct Services;
 struct Corporations;
 struct Store;

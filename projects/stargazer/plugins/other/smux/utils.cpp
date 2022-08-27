@@ -1,18 +1,21 @@
-#include <unistd.h> // write
-
-#include <cstring> // memset
-#include <cerrno>
+#include "utils.h"
+#include "pen.h"
 
 #include "stg/common.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/OpenPDU.h"
 #include "stg/ClosePDU.h"
 #include "stg/RReqPDU.h"
 #include "stg/ber_decoder.h"
 #include "stg/der_encoder.h"
+#pragma GCC diagnostic pop
 
-#include "pen.h"
-#include "utils.h"
+#include <cstring> // memset
+#include <cerrno>
+
+#include <unistd.h> // write
 
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi)
 {
@@ -168,12 +171,13 @@ size_t length = read(fd, buffer, sizeof(buffer));
 if (length < 1)
     return NULL;
 asn_dec_rval_t error;
-error = ber_decode(0, &asn_DEF_SMUX_PDUs, (void **)&pdus, buffer, length);
+void* p = pdus;
+error = ber_decode(0, &asn_DEF_SMUX_PDUs, &p, buffer, length);
 
 if(error.code != RC_OK)
     {
     printfd(__FILE__, "Failed to decode PDUs at byte %ld\n",
-            (long)error.consumed);
+            static_cast<long>(error.consumed));
     return NULL;
     }
 return pdus;

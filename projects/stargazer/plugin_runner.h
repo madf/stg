@@ -33,8 +33,8 @@ namespace STG
 struct ModuleSettings;
 struct Settings;
 struct Admins;
-struct Tariffs;
-struct Users;
+class Tariffs;
+class Users;
 struct Services;
 struct Corporations;
 struct TraffCounter;

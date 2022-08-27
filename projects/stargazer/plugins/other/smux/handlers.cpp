@@ -1,14 +1,17 @@
-#include <cassert>
+#include "smux.h"
+#include "utils.h"
 
+#include "stg/common.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/GetRequest-PDU.h"
 #include "stg/GetResponse-PDU.h"
 #include "stg/VarBindList.h"
 #include "stg/VarBind.h"
+#pragma GCC diagnostic pop
 
-#include "stg/common.h"
-
-#include "utils.h"
-#include "smux.h"
+#include <cassert>
 
 using STG::SMUX;
 

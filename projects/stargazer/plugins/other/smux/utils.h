@@ -1,11 +1,13 @@
-#ifndef __UTILS_H__
-#define __UTILS_H__
+#pragma once
 
-#include <string>
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/OBJECT_IDENTIFIER.h"
 #include "stg/SMUX-PDUs.h"
 #include "stg/GetResponse-PDU.h"
+#pragma GCC diagnostic pop
+
+#include <string>
 
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi);
 bool SendOpenPDU(int fd);
@@ -17,5 +19,3 @@ bool SendGetResponseErrorPDU(int fd,
                              const PDU_t * getRequest,
                              int errorStatus,
                              int errorIndex);
-
-#endif

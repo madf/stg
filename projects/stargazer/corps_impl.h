@@ -33,7 +33,7 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct Store;
 
 class CorporationsImpl : public Corporations {

@@ -28,10 +28,10 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct Settings;
-struct Users;
-struct Tariffs;
+class Users;
+class Tariffs;
 
 namespace PARSER
 {

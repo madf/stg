@@ -4,13 +4,13 @@
  $Author: nobunaga $
  */
 
-#ifndef PINGER_H
-#define PINGER_H
+#pragma once
 
-#include <ctime>
 #include <string>
 #include <list>
 #include <map>
+#include <ctime>
+#include <cstdint>
 
 #ifdef LINUX
 #include <sys/types.h>
@@ -27,26 +27,24 @@
 #include <arpa/inet.h>
 #endif
 
-#include <cstdint>
-
 //-----------------------------------------------------------------------------
 struct ICMP_HDR
 {
-uint8_t       type;
-uint8_t       code;
-uint16_t      checksum;
-union
+    uint8_t       type;
+    uint8_t       code;
+    uint16_t      checksum;
+    union
     {
-    struct
+        struct
         {
-        uint16_t    id;
-        uint16_t    sequence;
+            uint16_t    id;
+            uint16_t    sequence;
         } echo;
-    uint32_t  gateway;
-    struct
+        uint32_t  gateway;
+        struct
         {
-        uint16_t    unused;
-        uint16_t    mtu;
+            uint16_t    unused;
+            uint16_t    mtu;
         } frag;
     } un;
 };
@@ -68,8 +66,8 @@ struct IP_HDR
 //-----------------------------------------------------------------------------
 struct PING_IP_TIME
 {
-uint32_t    ip;
-time_t      pingTime;
+    uint32_t    ip;
+    time_t      pingTime;
 };
 //-----------------------------------------------------------------------------
 
@@ -83,53 +81,51 @@ struct PING_MESSAGE
 //-----------------------------------------------------------------------------
 class STG_PINGER
 {
-public:
-    typedef std::multimap<uint32_t, time_t> PingIPs;
-    typedef PingIPs::size_type SizeType;
+    public:
+        typedef std::multimap<uint32_t, time_t> PingIPs;
+        typedef PingIPs::size_type SizeType;
 
-            explicit STG_PINGER(time_t delay = 15);
-            ~STG_PINGER();
+                explicit STG_PINGER(time_t delay = 15);
+                ~STG_PINGER();
 
-    int     Start();
-    int     Stop();
-    void    AddIP(uint32_t ip);
-    void    DelIP(uint32_t ip);
-    SizeType GetPingIPNum() const { return pingIP.size(); }
-    void    PrintAllIP();
-    int     GetIPTime(uint32_t ip, time_t * t) const;
-    void    SetDelayTime(time_t d) { delay = d; }
-    time_t  GetDelayTime() const { return delay; }
-    const std::string & GetStrError() const { return errorStr; }
+        int     Start();
+        int     Stop();
+        void    AddIP(uint32_t ip);
+        void    DelIP(uint32_t ip);
+        SizeType GetPingIPNum() const { return m_pingIP.size(); }
+        void    PrintAllIP();
+        int     GetIPTime(uint32_t ip, time_t * t) const;
+        void    SetDelayTime(time_t d) { m_delay = d; }
+        time_t  GetDelayTime() const { return m_delay; }
+        const std::string & GetStrError() const { return m_errorStr; }
 
-private:
-    uint16_t    PingCheckSum(void * data, int len);
-    int         SendPing(uint32_t ip);
-    uint32_t    RecvPing();
-    void        RealAddIP();
-    void        RealDelIP();
+    private:
+        uint16_t    PingCheckSum(void * data, int len);
+        int         SendPing(uint32_t ip);
+        uint32_t    RecvPing();
+        void        RealAddIP();
+        void        RealDelIP();
 
-    static void * RunSendPing(void * d);
-    static void * RunRecvPing(void * d);
+        static void * RunSendPing(void * d);
+        static void * RunRecvPing(void * d);
 
-    time_t      delay;
-    bool        nonstop;
-    bool        isRunningRecver;
-    bool        isRunningSender;
-    int         sendSocket;
-    int         recvSocket;
-    pthread_t   sendThread;
-    pthread_t   recvThread;
+        time_t      m_delay;
+        bool        m_nonstop;
+        bool        m_isRunningRecver;
+        bool        m_isRunningSender;
+        int         m_sendSocket;
+        int         m_recvSocket;
+        pthread_t   m_sendThread;
+        pthread_t   m_recvThread;
 
-    PING_MESSAGE pmSend;
-    uint32_t    pid;
+        PING_MESSAGE m_pmSend;
+        uint32_t    m_pid;
 
-    std::string errorStr;
+        std::string m_errorStr;
 
-    std::multimap<uint32_t, time_t> pingIP;
-    std::list<uint32_t>          ipToAdd;
-    std::list<uint32_t>          ipToDel;
+        std::multimap<uint32_t, time_t> m_pingIP;
+        std::list<uint32_t>          m_ipToAdd;
+        std::list<uint32_t>          m_ipToDel;
 
-    mutable pthread_mutex_t mutex;
+        mutable pthread_mutex_t m_mutex;
 };
-//-----------------------------------------------------------------------------
-#endif

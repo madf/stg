@@ -1,16 +1,14 @@
-#ifndef __TABLES_H__
-#define __TABLES_H__
+#pragma once
+
+#include "sensors.h"
 
 #include <string>
 #include <map>
 
-#include "sensors.h"
-
 namespace STG
 {
-struct Tariffs;
-struct Users;
-}
+class Tariffs;
+class Users;
 
 class TableSensor {
     public:
@@ -42,5 +40,4 @@ class TariffUsersTable : public TableSensor {
 };
 
 typedef std::map<std::string, TableSensor *> Tables;
-
-#endif
+}

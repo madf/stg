@@ -10,8 +10,8 @@ namespace STG
 {
 
 struct Settings;
-struct Users;
-struct Tariffs;
+class Users;
+class Tariffs;
 
 }
 

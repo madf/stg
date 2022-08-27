@@ -1,13 +1,16 @@
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#pragma once
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#include "stg/OBJECT_IDENTIFIER.h"
+#pragma GCC diagnostic pop
 
 #include <string>
 #include <vector>
 #include <iostream>
 
-#include "stg/OBJECT_IDENTIFIER.h"
-
-class OID {
+class OID
+{
     public:
         explicit OID(const std::string & str);
         OID(const char * str, size_t length);
@@ -53,5 +56,3 @@ bool PrefixLess(const OID & a, const OID & b)
 {
 return a.PrefixLess(b);
 }
-
-#endif

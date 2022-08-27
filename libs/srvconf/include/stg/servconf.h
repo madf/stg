@@ -101,7 +101,7 @@ class ServConf
 
     private:
         class Impl;
-        Impl* pImpl;
+        Impl* m_impl;
 };
 
 } // namespace STG

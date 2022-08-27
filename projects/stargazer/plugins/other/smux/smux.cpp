@@ -1,12 +1,7 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#include "smux.h"
+#include "utils.h"
 
-#include <cstring>
-#include <cerrno>
-#include <ctime>
-#include <csignal>
-#include <cassert>
+#include "stg/common.h"
 
 #include <vector>
 #include <algorithm>
@@ -14,10 +9,15 @@
 #include <stdexcept>
 #include <utility>
 
-#include "stg/common.h"
+#include <cstring>
+#include <cerrno>
+#include <ctime>
+#include <csignal>
+#include <cassert>
 
-#include "smux.h"
-#include "utils.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 using STG::SMUX;
 using STG::SMUX_SETTINGS;

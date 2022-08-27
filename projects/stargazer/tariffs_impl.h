@@ -39,7 +39,7 @@ namespace STG
 
 struct Store;
 class Logger;
-struct Admin;
+class Admin;
 
 class TariffsImpl : public Tariffs {
     public:

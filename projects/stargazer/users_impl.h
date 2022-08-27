@@ -49,7 +49,6 @@ const int userDeleteDelayTime = 120;
 typedef std::list<UserImpl>::iterator user_iter;
 typedef std::list<UserImpl>::const_iterator const_user_iter;
 
-class UsersImpl;
 //-----------------------------------------------------------------------------
 struct USER_TO_DEL {
 USER_TO_DEL()
@@ -63,9 +62,6 @@ time_t  delTime;
 //-----------------------------------------------------------------------------
 class UsersImpl : public Users
 {
-    friend class PROPERTY_NOTIFER_IP_BEFORE;
-    friend class PROPERTY_NOTIFER_IP_AFTER;
-
     public:
         using UserImplPtr = UserImpl*;
 

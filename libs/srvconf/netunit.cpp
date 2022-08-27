@@ -80,25 +80,25 @@ const char RECV_HEADER_ANSWER_ERROR[] = "Error receiving header answer.";
 //---------------------------------------------------------------------------
 NetTransact::NetTransact(const std::string& s, uint16_t p,
                          const std::string& l, const std::string& pwd)
-    : server(s),
-      port(p),
-      localPort(0),
-      login(l),
-      password(pwd),
-      sock(-1)
+    : m_server(s),
+      m_port(p),
+      m_localPort(0),
+      m_login(l),
+      m_password(pwd),
+      m_sock(-1)
 {
 }
 //---------------------------------------------------------------------------
 NetTransact::NetTransact(const std::string& s, uint16_t p,
                          const std::string& la, uint16_t lp,
                          const std::string& l, const std::string& pwd)
-    : server(s),
-      port(p),
-      localAddress(la),
-      localPort(lp),
-      login(l),
-      password(pwd),
-      sock(-1)
+    : m_server(s),
+      m_port(p),
+      m_localAddress(la),
+      m_localPort(lp),
+      m_login(l),
+      m_password(pwd),
+      m_sock(-1)
 {
 }
 //---------------------------------------------------------------------------
@@ -109,43 +109,43 @@ NetTransact::~NetTransact()
 //---------------------------------------------------------------------------
 int NetTransact::Connect()
 {
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (sock < 0)
+    m_sock = socket(PF_INET, SOCK_STREAM, 0);
+    if (m_sock < 0)
     {
-        errorMsg = CREATE_SOCKET_ERROR;
+        m_errorMsg = CREATE_SOCKET_ERROR;
         return st_conn_fail;
     }
 
-    if (!localAddress.empty())
+    if (!m_localAddress.empty())
     {
-        if (localPort == 0)
-            localPort = port;
+        if (m_localPort == 0)
+            m_localPort = m_port;
 
-        unsigned long ip = inet_addr(localAddress.c_str());
+        uint32_t ip = inet_addr(m_localAddress.c_str());
 
         if (ip == INADDR_NONE)
         {
-            auto phe = gethostbyname(localAddress.c_str());
+            auto phe = gethostbyname(m_localAddress.c_str());
             if (phe == NULL)
             {
-                errorMsg = "Can not reslove '" + localAddress + "'";
+                m_errorMsg = "Can not reslove '" + m_localAddress + "'";
                 return st_dns_err;
             }
 
             struct hostent he;
             memcpy(&he, phe, sizeof(he));
-            ip = *((long *)he.h_addr_list[0]);
+            ip = *reinterpret_cast<uint32_t*>(he.h_addr_list[0]);
         }
 
         struct sockaddr_in localAddr;
         memset(&localAddr, 0, sizeof(localAddr));
         localAddr.sin_family = AF_INET;
-        localAddr.sin_port = htons(localPort);
+        localAddr.sin_port = htons(m_localPort);
         localAddr.sin_addr.s_addr = ip;
 
-        if (bind(sock, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0)
+        if (bind(m_sock, reinterpret_cast<sockaddr*>(&localAddr), sizeof(localAddr)) < 0)
         {
-            errorMsg = BIND_FAILED;
+            m_errorMsg = BIND_FAILED;
             return st_conn_fail;
         }
     }
@@ -153,29 +153,29 @@ int NetTransact::Connect()
     struct sockaddr_in outerAddr;
     memset(&outerAddr, 0, sizeof(outerAddr));
 
-    unsigned long ip = inet_addr(server.c_str());
+    uint32_t ip = inet_addr(m_server.c_str());
 
     if (ip == INADDR_NONE)
     {
-        auto phe = gethostbyname(server.c_str());
+        auto phe = gethostbyname(m_server.c_str());
         if (phe == NULL)
         {
-            errorMsg = "Can not reslove '" + server + "'";
+            m_errorMsg = "Can not reslove '" + m_server + "'";
             return st_dns_err;
         }
 
         struct hostent he;
         memcpy(&he, phe, sizeof(he));
-        ip = *((long *)he.h_addr_list[0]);
+        ip = *reinterpret_cast<uint32_t*>(he.h_addr_list[0]);
     }
 
     outerAddr.sin_family = AF_INET;
-    outerAddr.sin_port = htons(port);
+    outerAddr.sin_port = htons(m_port);
     outerAddr.sin_addr.s_addr = ip;
 
-    if (connect(sock, (struct sockaddr *)&outerAddr, sizeof(outerAddr)) < 0)
+    if (connect(m_sock, reinterpret_cast<sockaddr *>(&outerAddr), sizeof(outerAddr)) < 0)
     {
-        errorMsg = CONNECT_FAILED;
+        m_errorMsg = CONNECT_FAILED;
         return st_conn_fail;
     }
 
@@ -184,11 +184,11 @@ int NetTransact::Connect()
 //---------------------------------------------------------------------------
 void NetTransact::Disconnect()
 {
-    if (sock != -1)
+    if (m_sock != -1)
     {
-        shutdown(sock, SHUT_RDWR);
-        close(sock);
-        sock = -1;
+        shutdown(m_sock, SHUT_RDWR);
+        close(m_sock);
+        m_sock = -1;
     }
 }
 //---------------------------------------------------------------------------
@@ -224,9 +224,9 @@ int NetTransact::Transact(const std::string& request, Callback callback, void* d
 //---------------------------------------------------------------------------
 int NetTransact::TxHeader()
 {
-    if (!WriteAll(sock, STG_HEADER, strlen(STG_HEADER)))
+    if (!WriteAll(m_sock, STG_HEADER, strlen(STG_HEADER)))
     {
-        errorMsg = SEND_HEADER_ERROR;
+        m_errorMsg = SEND_HEADER_ERROR;
         return st_send_fail;
     }
 
@@ -237,9 +237,9 @@ int NetTransact::RxHeaderAnswer()
 {
     char buffer[sizeof(STG_HEADER) + 1];
 
-    if (!ReadAll(sock, buffer, strlen(OK_HEADER)))
+    if (!ReadAll(m_sock, buffer, strlen(OK_HEADER)))
     {
-        errorMsg = RECV_HEADER_ANSWER_ERROR;
+        m_errorMsg = RECV_HEADER_ANSWER_ERROR;
         return st_recv_fail;
     }
 
@@ -248,11 +248,11 @@ int NetTransact::RxHeaderAnswer()
 
     if (strncmp(ERR_HEADER, buffer, strlen(ERR_HEADER)) == 0)
     {
-        errorMsg = INCORRECT_HEADER;
+        m_errorMsg = INCORRECT_HEADER;
         return st_header_err;
     }
 
-    errorMsg = UNKNOWN_ERROR;
+    m_errorMsg = UNKNOWN_ERROR;
     return st_unknown_err;
 }
 //---------------------------------------------------------------------------
@@ -260,11 +260,11 @@ int NetTransact::TxLogin()
 {
     char loginZ[ADM_LOGIN_LEN + 1];
     memset(loginZ, 0, ADM_LOGIN_LEN + 1);
-    strncpy(loginZ, login.c_str(), ADM_LOGIN_LEN);
+    strncpy(loginZ, m_login.c_str(), ADM_LOGIN_LEN);
 
-    if (!WriteAll(sock, loginZ, ADM_LOGIN_LEN))
+    if (!WriteAll(m_sock, loginZ, ADM_LOGIN_LEN))
     {
-        errorMsg = SEND_LOGIN_ERROR;
+        m_errorMsg = SEND_LOGIN_ERROR;
         return st_send_fail;
     }
 
@@ -275,9 +275,9 @@ int NetTransact::RxLoginAnswer()
 {
     char buffer[sizeof(OK_LOGIN) + 1];
 
-    if (!ReadAll(sock, buffer, strlen(OK_LOGIN)))
+    if (!ReadAll(m_sock, buffer, strlen(OK_LOGIN)))
     {
-        errorMsg = RECV_LOGIN_ANSWER_ERROR;
+        m_errorMsg = RECV_LOGIN_ANSWER_ERROR;
         return st_recv_fail;
     }
 
@@ -286,11 +286,11 @@ int NetTransact::RxLoginAnswer()
 
     if (strncmp(ERR_LOGIN, buffer, strlen(ERR_LOGIN)) == 0)
     {
-        errorMsg = INCORRECT_LOGIN;
+        m_errorMsg = INCORRECT_LOGIN;
         return st_login_err;
     }
 
-    errorMsg = UNKNOWN_ERROR;
+    m_errorMsg = UNKNOWN_ERROR;
     return st_unknown_err;
 }
 //---------------------------------------------------------------------------
@@ -300,11 +300,11 @@ int NetTransact::TxLoginS()
     memset(loginZ, 0, ADM_LOGIN_LEN + 1);
 
     BLOWFISH_CTX ctx;
-    InitContext(password.c_str(), PASSWD_LEN, &ctx);
-    EncryptString(loginZ, login.c_str(), std::min<size_t>(login.length() + 1, ADM_LOGIN_LEN), &ctx);
-    if (!WriteAll(sock, loginZ, ADM_LOGIN_LEN))
+    InitContext(m_password.c_str(), PASSWD_LEN, &ctx);
+    EncryptString(loginZ, m_login.c_str(), std::min<size_t>(m_login.length() + 1, ADM_LOGIN_LEN), &ctx);
+    if (!WriteAll(m_sock, loginZ, ADM_LOGIN_LEN))
     {
-        errorMsg = SEND_LOGIN_ERROR;
+        m_errorMsg = SEND_LOGIN_ERROR;
         return st_send_fail;
     }
 
@@ -315,9 +315,9 @@ int NetTransact::RxLoginSAnswer()
 {
     char buffer[sizeof(OK_LOGINS) + 1];
 
-    if (!ReadAll(sock, buffer, strlen(OK_LOGINS)))
+    if (!ReadAll(m_sock, buffer, strlen(OK_LOGINS)))
     {
-        errorMsg = RECV_LOGIN_ANSWER_ERROR;
+        m_errorMsg = RECV_LOGIN_ANSWER_ERROR;
         return st_recv_fail;
     }
 
@@ -326,21 +326,21 @@ int NetTransact::RxLoginSAnswer()
 
     if (strncmp(ERR_LOGINS, buffer, strlen(ERR_LOGINS)) == 0)
     {
-        errorMsg = INCORRECT_LOGIN;
+        m_errorMsg = INCORRECT_LOGIN;
         return st_logins_err;
     }
 
-    errorMsg = UNKNOWN_ERROR;
+    m_errorMsg = UNKNOWN_ERROR;
     return st_unknown_err;
 }
 //---------------------------------------------------------------------------
 int NetTransact::TxData(const std::string& text)
 {
-    STG::ENCRYPT_STREAM stream(password, TxCrypto, this);
+    STG::ENCRYPT_STREAM stream(m_password, TxCrypto, this);
     stream.Put(text.c_str(), text.length() + 1, true);
     if (!stream.IsOk())
     {
-        errorMsg = SEND_DATA_ERROR;
+        m_errorMsg = SEND_DATA_ERROR;
         return st_send_fail;
     }
 
@@ -350,14 +350,14 @@ int NetTransact::TxData(const std::string& text)
 int NetTransact::RxDataAnswer(Callback callback, void* data)
 {
     ReadState state = {false, callback, data, this};
-    STG::DECRYPT_STREAM stream(password, RxCrypto, &state);
+    STG::DECRYPT_STREAM stream(m_password, RxCrypto, &state);
     while (!state.last)
     {
         char buffer[1024];
-        ssize_t res = read(sock, buffer, sizeof(buffer));
+        ssize_t res = read(m_sock, buffer, sizeof(buffer));
         if (res < 0)
         {
-            errorMsg = RECV_DATA_ANSWER_ERROR;
+            m_errorMsg = RECV_DATA_ANSWER_ERROR;
             return st_recv_fail;
         }
         stream.Put(buffer, res, res == 0);
@@ -372,7 +372,7 @@ bool NetTransact::TxCrypto(const void* block, size_t size, void* data)
 {
     assert(data != NULL);
     auto& nt = *static_cast<NetTransact*>(data);
-    if (!WriteAll(nt.sock, block, size))
+    if (!WriteAll(nt.m_sock, block, size))
         return false;
     return true;
 }

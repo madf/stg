@@ -28,7 +28,6 @@
 
 #include "firebird_store.h"
 
-#include "stg/ibpp.h"
 #include "stg/admin_conf.h"
 #include "stg/blowfish.h"
 #include "stg/common.h"
@@ -149,13 +148,13 @@ try
         {
         st->Get(2, ac->login);
         st->Get(3, ac->password);
-        st->Get(4, (int16_t &)ac->priv.userConf);
-        st->Get(5, (int16_t &)ac->priv.userPasswd);
-        st->Get(6, (int16_t &)ac->priv.userStat);
-        st->Get(7, (int16_t &)ac->priv.userCash);
-        st->Get(8, (int16_t &)ac->priv.userAddDel);
-        st->Get(9, (int16_t &)ac->priv.tariffChg);
-        st->Get(10, (int16_t &)ac->priv.adminChg);
+        st->Get(4, reinterpret_cast<int16_t &>(ac->priv.userConf));
+        st->Get(5, reinterpret_cast<int16_t &>(ac->priv.userPasswd));
+        st->Get(6, reinterpret_cast<int16_t &>(ac->priv.userStat));
+        st->Get(7, reinterpret_cast<int16_t &>(ac->priv.userCash));
+        st->Get(8, reinterpret_cast<int16_t &>(ac->priv.userAddDel));
+        st->Get(9, reinterpret_cast<int16_t &>(ac->priv.tariffChg));
+        st->Get(10, reinterpret_cast<int16_t &>(ac->priv.adminChg));
         }
     else
         {

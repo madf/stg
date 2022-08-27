@@ -6,7 +6,7 @@
 namespace STG
 {
 
-struct Users;
+class Users;
 
 }
 

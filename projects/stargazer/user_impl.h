@@ -42,8 +42,8 @@ namespace STG
 
 //-----------------------------------------------------------------------------
 struct Tariff;
-struct Tariffs;
-struct Admin;
+class Tariffs;
+class Admin;
 class UserImpl;
 #ifdef USE_ABSTRACT_SETTINGS
 struct Settings;

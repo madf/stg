@@ -29,8 +29,8 @@
 namespace STG
 {
 
-struct Admin;
-struct User;
+class Admin;
+class User;
 struct Auth;
 
 class Users

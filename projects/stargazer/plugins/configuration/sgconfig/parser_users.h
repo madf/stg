@@ -33,10 +33,10 @@
 namespace STG
 {
 
-struct Users;
-struct User;
-struct Tariffs;
-struct Admin;
+class Users;
+class User;
+class Tariffs;
+class Admin;
 struct Store;
 
 namespace PARSER

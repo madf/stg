@@ -31,9 +31,9 @@
 namespace STG
 {
 
-struct Tariffs;
-struct Users;
-struct Admin;
+class Tariffs;
+class Users;
+class Admin;
 
 namespace PARSER
 {

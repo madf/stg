@@ -1,9 +1,9 @@
+#include "types.h"
+
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
 #include <sstream>
-
-#include "types.h"
 
 namespace
 {

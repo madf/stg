@@ -246,7 +246,7 @@ if (sockUDP <= 0)
 sin.sin_family = AF_INET;
 sin.sin_port = htons(portU);
 sin.sin_addr.s_addr = inet_addr("0.0.0.0");
-if (bind(sockUDP, (struct sockaddr *)&sin, sizeof(sin)))
+if (bind(sockUDP, reinterpret_cast<const sockaddr*>(&sin), sizeof(sin)))
     {
     errorStr = "Error binding UDP socket";
     logger("Cannot bind UDP socket: %s", strerror(errno));
@@ -270,7 +270,7 @@ if (sockTCP <= 0)
 sin.sin_family = AF_INET;
 sin.sin_port = htons(portT);
 sin.sin_addr.s_addr = inet_addr("0.0.0.0");
-if (bind(sockTCP, (struct sockaddr *)&sin, sizeof(sin)))
+if (bind(sockTCP, reinterpret_cast<const sockaddr*>(&sin), sizeof(sin)))
     {
     errorStr = "Error binding TCP socket";
     logger("Cannot bind TCP socket: %s", strerror(errno));

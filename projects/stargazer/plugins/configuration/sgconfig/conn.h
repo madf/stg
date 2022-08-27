@@ -39,9 +39,9 @@ namespace STG
 
 struct Settings;
 struct Admins;
-struct Users;
-struct Tariffs;
-struct Admin;
+class Users;
+class Tariffs;
+class Admin;
 class PluginLogger;
 
 class DECRYPT_STREAM;

@@ -1,16 +1,26 @@
-#include <cassert>
-#include <utility>
-#include <iterator>
-#include <algorithm>
+#include "tables.h"
 
 #include "stg/user_property.h"
 #include "stg/tariffs.h"
 #include "stg/tariff_conf.h"
 #include "stg/users.h"
 
-#include "tables.h"
+#include <utility>
+#include <iterator>
+#include <algorithm>
+#include <cassert>
 
-std::pair<std::string, size_t> TD2Info(const STG::TariffData & td);
+using STG::TariffUsersTable;
+
+namespace
+{
+
+std::pair<std::string, size_t> TD2Info(const STG::TariffData & td)
+{
+    return std::make_pair(td.tariffConf.name, 0);
+}
+
+}
 
 void TariffUsersTable::UpdateSensors(Sensors & sensors) const
 {
@@ -57,9 +67,4 @@ while (it != data.end())
     ++idx;
     ++it;
     }
-}
-
-std::pair<std::string, size_t> TD2Info(const STG::TariffData & td)
-{
-return std::make_pair(td.tariffConf.name, 0);
 }

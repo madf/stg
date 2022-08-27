@@ -29,6 +29,14 @@
 
 //---------------------------------------------------------------------------
 
+#include "stg/common.h"
+#include "stg/ia.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
+
 #ifdef WIN32
 #include <winsock2.h>
 #include <windows.h>
@@ -41,14 +49,6 @@
 #include <unistd.h>
 #include <csignal>
 #endif
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-
-#include "stg/common.h"
-#include "stg/ia.h"
 
 #define IA_NONE            (0)
 #define IA_CONNECT         (1)
@@ -75,7 +75,7 @@ sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-IA_CLIENT_PROT * c = (IA_CLIENT_PROT *)data;
+auto* c = static_cast<IA_CLIENT_PROT*>(data);
 static int a = 0;
 
 if (a == 0)
@@ -101,7 +101,7 @@ return tv.tv_sec*1000 + tv.tv_usec/1000;
 //---------------------------------------------------------------------------
 unsigned long WINAPI RunW(void * data)
 {
-IA_CLIENT_PROT * c = (IA_CLIENT_PROT *)data;
+auto* c = static_cast<IA_CLIENT_PROT*>(data);
 while (c->GetNonstop())
     c->Run();
 return 0;
@@ -120,7 +120,7 @@ if (ip == INADDR_NONE)
     hostent * phe = gethostbyname(hostName.c_str());
     if (phe)
         {
-        ip = *((uint32_t *)phe->h_addr_list[0]);
+        ip = *reinterpret_cast<uint32_t*>(phe->h_addr_list[0]);
         }
     else
         {
@@ -138,81 +138,79 @@ return true;
 //---------------------------------------------------------------------------
 IA_CLIENT_PROT::IA_CLIENT_PROT(const std::string & sn, unsigned short p,
                                const std::string & ln, uint16_t lp)
-    : action(IA_NONE),
-      phase(1),
-      phaseTime(0),
-      codeError(0),
-      nonstop(false),
-      isNetPrepared(false),
-      proxyMode(false),
-      serverName(sn),
-      port(p),
-      ip(0),
-      localName(ln),
-      localPort(lp),
-      firstConnect(true),
-      reconnect(0),
-      sockr(0),
-      protNum(0),
-      userTimeout(60),
-      aliveTimeout(5),
-      rnd(0),
-      pStatusChangedCb(NULL),
-      pStatChangedCb(NULL),
-      pInfoCb(NULL),
-      pErrorCb(NULL),
-      pDirNameCb(NULL),
-      statusChangedCbData(NULL),
-      statChangedCbData(NULL),
-      infoCbData(NULL),
-      errorCbData(NULL),
-      dirNameCbData(NULL),
-      connSyn8(NULL),
-      connSynAck8(NULL),
-      connAck8(NULL),
-      aliveSyn8(NULL),
-      aliveAck8(NULL),
-      disconnSyn8(NULL),
-      disconnSynAck8(NULL),
-      disconnAck8(NULL),
-      info(NULL)
+    : m_action(IA_NONE),
+      m_phase(1),
+      m_phaseTime(0),
+      m_codeError(0),
+      m_nonstop(false),
+      m_isNetPrepared(false),
+      m_proxyMode(false),
+      m_serverName(sn),
+      m_port(p),
+      m_ip(0),
+      m_localName(ln),
+      m_localPort(lp),
+      m_firstConnect(true),
+      m_reconnect(0),
+      m_sockr(0),
+      m_protNum(0),
+      m_userTimeout(60),
+      m_aliveTimeout(5),
+      m_rnd(0),
+      m_pStatusChangedCb(NULL),
+      m_pStatChangedCb(NULL),
+      m_pInfoCb(NULL),
+      m_pErrorCb(NULL),
+      m_pDirNameCb(NULL),
+      m_statusChangedCbData(NULL),
+      m_statChangedCbData(NULL),
+      m_infoCbData(NULL),
+      m_errorCbData(NULL),
+      m_dirNameCbData(NULL),
+      m_connSyn8(NULL),
+      m_connSynAck8(NULL),
+      m_connAck8(NULL),
+      m_aliveSyn8(NULL),
+      m_aliveAck8(NULL),
+      m_disconnSyn8(NULL),
+      m_disconnSynAck8(NULL),
+      m_disconnAck8(NULL),
+      m_info(NULL)
 {
-memset(&stat, 0, sizeof(stat));
+memset(&m_stat, 0, sizeof(m_stat));
 
 #ifdef WIN32
-WSAStartup(MAKEWORD(2, 0), &wsaData);
+WSAStartup(MAKEWORD(2, 0), &m_wsaData);
 #endif
 
-packetTypes["CONN_SYN"] = CONN_SYN_N;
-packetTypes["CONN_SYN_ACK"] = CONN_SYN_ACK_N;
-packetTypes["CONN_ACK"] = CONN_ACK_N;
-packetTypes["ALIVE_SYN"] = ALIVE_SYN_N;
-packetTypes["ALIVE_ACK"] = ALIVE_ACK_N;
-packetTypes["DISCONN_SYN"] = DISCONN_SYN_N;
-packetTypes["DISCONN_SYN_ACK"] = DISCONN_SYN_ACK_N;
-packetTypes["DISCONN_ACK"] = DISCONN_ACK_N;
-packetTypes["FIN"] = FIN_N;
-packetTypes["ERR"] = ERROR_N;
-packetTypes["INFO"] = INFO_N;
-packetTypes["INFO_7"] = INFO_7_N;
-packetTypes["INFO_8"] = INFO_8_N;
+m_packetTypes["CONN_SYN"] = CONN_SYN_N;
+m_packetTypes["CONN_SYN_ACK"] = CONN_SYN_ACK_N;
+m_packetTypes["CONN_ACK"] = CONN_ACK_N;
+m_packetTypes["ALIVE_SYN"] = ALIVE_SYN_N;
+m_packetTypes["ALIVE_ACK"] = ALIVE_ACK_N;
+m_packetTypes["DISCONN_SYN"] = DISCONN_SYN_N;
+m_packetTypes["DISCONN_SYN_ACK"] = DISCONN_SYN_ACK_N;
+m_packetTypes["DISCONN_ACK"] = DISCONN_ACK_N;
+m_packetTypes["FIN"] = FIN_N;
+m_packetTypes["ERR"] = ERROR_N;
+m_packetTypes["INFO"] = INFO_N;
+m_packetTypes["INFO_7"] = INFO_7_N;
+m_packetTypes["INFO_8"] = INFO_8_N;
 
-unsigned char key[IA_PASSWD_LEN];
+char key[IA_PASSWD_LEN];
 memset(key, 0, IA_PASSWD_LEN);
-strncpy((char *)key, "pr7Hhen", 8);
-Blowfish_Init(&ctxHdr, key, IA_PASSWD_LEN);
+strncpy(key, "pr7Hhen", 8);
+Blowfish_Init(&m_ctxHdr, key, IA_PASSWD_LEN);
 
 memset(key, 0, IA_PASSWD_LEN);
-Blowfish_Init(&ctxPass, key, IA_PASSWD_LEN);
+Blowfish_Init(&m_ctxPass, key, IA_PASSWD_LEN);
 
 for (size_t i = 0; i < DIR_NUM; ++i)
-    {
-    selectedDirs[i] = false;
-    }
+    m_selectedDirs[i] = false;
 
-servAddr.sin_family = AF_INET;
-servAddr.sin_port = htons(port);
-servAddr.sin_addr.s_addr = ip;
+m_servAddr.sin_family = AF_INET;
+m_servAddr.sin_port = htons(m_port);
+m_servAddr.sin_addr.s_addr = m_ip;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::PrepareNet()
@@ -237,74 +235,74 @@ if (ip == INADDR_NONE)
         }
     }*/
 
-if (!HostNameToIP(serverName, ip))
+if (!HostNameToIP(m_serverName, m_ip))
     {
-    ip = 0;
-    strError = std::string("Unknown host ") + "\'" + serverName + "\'";
-    codeError = IA_GETHOSTBYNAME_ERROR;
-    if (pErrorCb != NULL)
-        pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
+    m_ip = 0;
+    m_strError = std::string("Unknown host ") + "\'" + m_serverName + "\'";
+    m_codeError = IA_GETHOSTBYNAME_ERROR;
+    if (m_pErrorCb != NULL)
+        m_pErrorCb(m_strError, IA_GETHOSTBYNAME_ERROR, m_errorCbData);
     return;
     }
 
 #ifndef WIN32
-close(sockr);
+close(m_sockr);
 #else
-closesocket(sockr);
+closesocket(m_sockr);
 #endif
 
-sockr = socket(AF_INET, SOCK_DGRAM, 0);
+m_sockr = socket(AF_INET, SOCK_DGRAM, 0);
 
 struct sockaddr_in  localAddrR;
 localAddrR.sin_family = AF_INET;
 
-if (localPort)
-    localAddrR.sin_port = htons(localPort);
+if (m_localPort)
+    localAddrR.sin_port = htons(m_localPort);
 else
-    localAddrR.sin_port = htons(port);
+    localAddrR.sin_port = htons(m_port);
 
-if (!localName.empty())
+if (!m_localName.empty())
     {
-    if (!HostNameToIP(localName, localIP))
+    if (!HostNameToIP(m_localName, m_localIP))
         {
-        strError = std::string("Unknown host ") + "\'" + serverName + "\'";
-        codeError = IA_GETHOSTBYNAME_ERROR;
-        if (pErrorCb != NULL)
-            pErrorCb(strError, IA_GETHOSTBYNAME_ERROR, errorCbData);
-        localIP = INADDR_ANY;
+        m_strError = std::string("Unknown host ") + "\'" + m_serverName + "\'";
+        m_codeError = IA_GETHOSTBYNAME_ERROR;
+        if (m_pErrorCb != NULL)
+            m_pErrorCb(m_strError, IA_GETHOSTBYNAME_ERROR, m_errorCbData);
+        m_localIP = INADDR_ANY;
         }
     }
 else
     {
-    localIP = INADDR_ANY;
+    m_localIP = INADDR_ANY;
     }
 
-localAddrR.sin_addr.s_addr = localIP;
+localAddrR.sin_addr.s_addr = m_localIP;
 
-servAddr.sin_family = AF_INET;
-servAddr.sin_port = htons(port);
-servAddr.sin_addr.s_addr = ip;
+m_servAddr.sin_family = AF_INET;
+m_servAddr.sin_port = htons(m_port);
+m_servAddr.sin_addr.s_addr = m_ip;
 
-int res = bind(sockr, (struct sockaddr*)&localAddrR, sizeof(localAddrR));
+int res = bind(m_sockr, reinterpret_cast<sockaddr*>(&localAddrR), sizeof(localAddrR));
 if (res == -1)
     {
-    strError = "bind error";
-    codeError = IA_BIND_ERROR;
-    if (pErrorCb != NULL)
-        pErrorCb(strError, IA_BIND_ERROR, errorCbData);
+    m_strError = "bind error";
+    m_codeError = IA_BIND_ERROR;
+    if (m_pErrorCb != NULL)
+        m_pErrorCb(m_strError, IA_BIND_ERROR, m_errorCbData);
     return;
     }
 
 #ifdef WIN32
 unsigned long arg = 1;
-ioctlsocket(sockr, FIONBIO, &arg);
+ioctlsocket(m_sockr, FIONBIO, &arg);
 #else
-if (0 != fcntl(sockr, F_SETFL, O_NONBLOCK))
+if (0 != fcntl(m_sockr, F_SETFL, O_NONBLOCK))
     {
-    strError = "fcntl error";
-    codeError = IA_FCNTL_ERROR;
-    if (pErrorCb != NULL)
-        pErrorCb(strError, IA_FCNTL_ERROR, errorCbData);
+    m_strError = "fcntl error";
+    m_codeError = IA_FCNTL_ERROR;
+    if (m_pErrorCb != NULL)
+        m_pErrorCb(m_strError, IA_FCNTL_ERROR, m_errorCbData);
     }
 #endif
 
@@ -313,9 +311,9 @@ if (0 != fcntl(sockr, F_SETFL, O_NONBLOCK))
 IA_CLIENT_PROT::~IA_CLIENT_PROT()
 {
 #ifndef WIN32
-close(sockr);
+close(m_sockr);
 #else
-closesocket(sockr);
+closesocket(m_sockr);
 WSACleanup();
 #endif
 }
@@ -323,8 +321,8 @@ WSACleanup();
 int IA_CLIENT_PROT::DeterminatePacketType(const char * buffer)
 {
 std::map<std::string, int>::iterator pi;
-pi = packetTypes.find(buffer);
-if (pi == packetTypes.end())
+pi = m_packetTypes.find(buffer);
+if (pi == m_packetTypes.end())
     {
     return -1;
     }
@@ -334,30 +332,30 @@ else
     }
 }
 //---------------------------------------------------------------------------
-void IA_CLIENT_PROT::FillHdr8(char * buffer, unsigned long)
+void IA_CLIENT_PROT::FillHdr8(char* buffer, unsigned long)
 {
 strncpy(buffer, IA_ID, 6);
 buffer[IA_MAGIC_LEN] = 0;
 buffer[IA_MAGIC_LEN + 1] = IA_PROTO_VER;
-strncpy(buffer + sizeof(HDR_8), login.c_str(), IA_LOGIN_LEN);
+strncpy(buffer + sizeof(HDR_8), m_login.c_str(), IA_LOGIN_LEN);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Send(char * buffer, int len)
 {
-if (!isNetPrepared)
+if (!m_isNetPrepared)
     {
     PrepareNet();
-    isNetPrepared = true;
+    m_isNetPrepared = true;
     }
 
 int db = sizeof(HDR_8);
-EncryptString(buffer + db, buffer + db, IA_LOGIN_LEN, &ctxHdr);
+EncryptString(buffer + db, buffer + db, IA_LOGIN_LEN, &m_ctxHdr);
 
 db += IA_LOGIN_LEN;
 int encLen = (len - sizeof(HDR_8) - IA_LOGIN_LEN);
-EncryptString(buffer + db, buffer + db, encLen, &ctxPass);
+EncryptString(buffer + db, buffer + db, encLen, &m_ctxPass);
 
-return sendto(sockr, buffer, len, 0, (struct sockaddr*)&servAddr, sizeof(servAddr));
+return sendto(m_sockr, buffer, len, 0, reinterpret_cast<sockaddr*>(&m_servAddr), sizeof(m_servAddr));
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Recv(char * buffer, int len)
@@ -370,13 +368,13 @@ socklen_t fromLen;
 
 struct sockaddr_in addr;
 fromLen = sizeof(addr);
-int res = recvfrom(sockr, buffer, len, 0, (struct sockaddr*)&addr, &fromLen);
+int res = recvfrom(m_sockr, buffer, len, 0, reinterpret_cast<sockaddr*>(&addr), &fromLen);
 
 if (res == -1)
     return res;
 
 if (strcmp(buffer + 4 + sizeof(HDR_8), "ERR"))
-    DecryptString(buffer, buffer, len, &ctxPass);
+    DecryptString(buffer, buffer, len, &m_ctxPass);
 
 return 0;
 }
@@ -467,113 +465,113 @@ return ret;
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Start()
 {
-nonstop = true;
+m_nonstop = true;
 #ifdef WIN32
 unsigned long pt;
 CreateThread(NULL, 16384, RunW, this, 0, &pt);
 #else
-pthread_create(&thread, NULL, RunL, this);
+pthread_create(&m_thread, NULL, RunL, this);
 #endif
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Stop()
 {
-nonstop = false;
+m_nonstop = false;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Run()
 {
 NetRecv();
 
-switch (phase)
+switch (m_phase)
     {
     case 1:
-        if (action == IA_CONNECT)
+        if (m_action == IA_CONNECT)
             {
-            action = IA_NONE;
+            m_action = IA_NONE;
             NetSend(CONN_SYN_N);
-            phase = 2;
-            phaseTime = GetTickCount();
+            m_phase = 2;
+            m_phaseTime = GetTickCount();
             }
-        if (reconnect && !firstConnect)
+        if (m_reconnect && !m_firstConnect)
             {
-            action = IA_CONNECT;
+            m_action = IA_CONNECT;
             }
         break;
 
     case 2:
-        if ((int)(GetTickCount() - phaseTime)/1000 > aliveTimeout)
+        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
             {
-            phase = 1;
-            phaseTime = GetTickCount();
-            if (pStatusChangedCb != NULL)
-                pStatusChangedCb(0, statusChangedCbData);
+            m_phase = 1;
+            m_phaseTime = GetTickCount();
+            if (m_pStatusChangedCb != NULL)
+                m_pStatusChangedCb(0, m_statusChangedCbData);
             }
 
-        if (action == IA_DISCONNECT)
+        if (m_action == IA_DISCONNECT)
             {
-            action = IA_NONE;
+            m_action = IA_NONE;
             NetSend(DISCONN_SYN_N);
-            phase = 4;
-            phaseTime = GetTickCount();
+            m_phase = 4;
+            m_phaseTime = GetTickCount();
             }
 
         break;
 
     case 3:
-        if ((int)(GetTickCount() - phaseTime)/1000 > userTimeout)
+        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_userTimeout)
             {
-            phase = 1;
-            phaseTime = GetTickCount();
-            if (pStatusChangedCb != NULL)
-                pStatusChangedCb(0, statusChangedCbData);
-            firstConnect = false;
+            m_phase = 1;
+            m_phaseTime = GetTickCount();
+            if (m_pStatusChangedCb != NULL)
+                m_pStatusChangedCb(0, m_statusChangedCbData);
+            m_firstConnect = false;
             }
 
-        if (action == IA_DISCONNECT)
+        if (m_action == IA_DISCONNECT)
             {
-            action = IA_NONE;
+            m_action = IA_NONE;
             NetSend(DISCONN_SYN_N);
-            phase = 4;
-            phaseTime = GetTickCount();
+            m_phase = 4;
+            m_phaseTime = GetTickCount();
             }
 
         break;
 
     case 4:
-        if ((int)(GetTickCount() - phaseTime)/1000 > aliveTimeout)
+        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
             {
-            phase=1;
-            phaseTime = GetTickCount();
-            if (pStatusChangedCb != NULL)
-                pStatusChangedCb(0, statusChangedCbData);
+            m_phase=1;
+            m_phaseTime = GetTickCount();
+            if (m_pStatusChangedCb != NULL)
+                m_pStatusChangedCb(0, m_statusChangedCbData);
             }
 
-        if (action == IA_CONNECT)
+        if (m_action == IA_CONNECT)
             {
-            action = IA_NONE;
+            m_action = IA_NONE;
             NetSend(CONN_SYN_N);
-            phase = 2;
-            phaseTime = GetTickCount();
+            m_phase = 2;
+            m_phaseTime = GetTickCount();
             }
 
         break;
 
     case 5:
-        if ((int)(GetTickCount() - phaseTime)/1000 > aliveTimeout)
+        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
             {
-            phase = 1;
-            phaseTime = GetTickCount();
-            if (pStatusChangedCb != NULL)
-                pStatusChangedCb(0, statusChangedCbData);
+            m_phase = 1;
+            m_phaseTime = GetTickCount();
+            if (m_pStatusChangedCb != NULL)
+                m_pStatusChangedCb(0, m_statusChangedCbData);
             }
 
-        if (action == IA_CONNECT)
+        if (m_action == IA_CONNECT)
             {
-            action = IA_NONE;
+            m_action = IA_NONE;
             NetSend(CONN_SYN_N);
-            phase = 2;
-            phaseTime = GetTickCount();
+            m_phase = 2;
+            m_phaseTime = GetTickCount();
             }
 
         break;
@@ -584,164 +582,162 @@ return;
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::GetStat(LOADSTAT * ls)
 {
-memcpy(ls, &stat, sizeof(stat));
+memcpy(ls, &m_stat, sizeof(m_stat));
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetServer(const std::string & sn, unsigned short p)
 {
-serverName = sn;
-port = p;
+m_serverName = sn;
+m_port = p;
 PrepareNet();
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetLogin(const std::string & l)
 {
-login = l;
+m_login = l;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetPassword(const std::string & p)
 {
-password = p;
+m_password = p;
 
-unsigned char keyL[IA_PASSWD_LEN];
+char keyL[IA_PASSWD_LEN];
 memset(keyL, 0, IA_PASSWD_LEN);
-strncpy((char *)keyL, password.c_str(), IA_PASSWD_LEN);
-Blowfish_Init(&ctxPass, keyL, IA_PASSWD_LEN);
+strncpy(keyL, m_password.c_str(), IA_PASSWD_LEN);
+Blowfish_Init(&m_ctxPass, keyL, IA_PASSWD_LEN);
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetEnabledDirs(const bool * selectedDirs)
 {
-memcpy(IA_CLIENT_PROT::selectedDirs, selectedDirs, sizeof(bool) * DIR_NUM);
+memcpy(m_selectedDirs, selectedDirs, sizeof(bool) * DIR_NUM);
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Connect()
 {
-action = IA_CONNECT;
+m_action = IA_CONNECT;
 return 0;
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::Disconnect()
 {
-firstConnect = true;
-action = IA_DISCONNECT;
+m_firstConnect = true;
+m_action = IA_DISCONNECT;
 return 0;
 }
 //---------------------------------------------------------------------------
 int IA_CLIENT_PROT::GetStrError(std::string * error) const
 {
-int ret = codeError;
-*error = strError;
-strError = "";
-codeError = 0;
+int ret = m_codeError;
+*error = m_strError;
+m_strError = "";
+m_codeError = 0;
 return ret;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_CONN_SYN_ACK_8(const char * buffer)
+int IA_CLIENT_PROT::Process_CONN_SYN_ACK_8(const void* buffer)
 {
 std::vector<std::string> dirNames;
-connSynAck8 = (CONN_SYN_ACK_8*)buffer;
+m_connSynAck8 = static_cast<const CONN_SYN_ACK_8*>(buffer);
 
 #ifdef ARCH_BE
-SwapBytes(connSynAck8->len);
-SwapBytes(connSynAck8->rnd);
-SwapBytes(connSynAck8->userTimeOut);
-SwapBytes(connSynAck8->aliveDelay);
+SwapBytes(m_connSynAck8->len);
+SwapBytes(m_connSynAck8->rnd);
+SwapBytes(m_connSynAck8->userTimeOut);
+SwapBytes(m_connSynAck8->aliveDelay);
 #endif
 
-rnd = connSynAck8->rnd;
-userTimeout = connSynAck8->userTimeOut;
-aliveTimeout = connSynAck8->aliveDelay;
+m_rnd = m_connSynAck8->rnd;
+m_userTimeout = m_connSynAck8->userTimeOut;
+m_aliveTimeout = m_connSynAck8->aliveDelay;
 
 for (int i = 0; i < DIR_NUM; i++)
-    {
-    dirNames.push_back((const char*)connSynAck8->dirName[i]);
-    }
+    dirNames.push_back(reinterpret_cast<const char*>(m_connSynAck8->dirName[i]));
 
-if (pDirNameCb != NULL)
-    pDirNameCb(dirNames, dirNameCbData);
+if (m_pDirNameCb != NULL)
+    m_pDirNameCb(dirNames, m_dirNameCbData);
 
 NetSend(CONN_ACK_N);
-phase = 3;
-phaseTime = GetTickCount();
+m_phase = 3;
+m_phaseTime = GetTickCount();
 
 return CONN_SYN_ACK_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_ALIVE_SYN_8(const char * buffer)
+int IA_CLIENT_PROT::Process_ALIVE_SYN_8(const void* buffer)
 {
-aliveSyn8 = (ALIVE_SYN_8*)buffer;
+m_aliveSyn8 = static_cast<const ALIVE_SYN_8*>(buffer);
 
 #ifdef ARCH_BE
-SwapBytes(aliveSyn8->len);
-SwapBytes(aliveSyn8->rnd);
-SwapBytes(aliveSyn8->cash);
-SwapBytes(aliveSyn8->status);
+SwapBytes(m_aliveSyn8->len);
+SwapBytes(m_aliveSyn8->rnd);
+SwapBytes(m_aliveSyn8->cash);
+SwapBytes(m_aliveSyn8->status);
 for (int i = 0; i < DIR_NUM; ++i)
     {
-    SwapBytes(aliveSyn8->mu[i]);
-    SwapBytes(aliveSyn8->md[i]);
-    SwapBytes(aliveSyn8->su[i]);
-    SwapBytes(aliveSyn8->sd[i]);
+    SwapBytes(m_aliveSyn8->mu[i]);
+    SwapBytes(m_aliveSyn8->md[i]);
+    SwapBytes(m_aliveSyn8->su[i]);
+    SwapBytes(m_aliveSyn8->sd[i]);
     }
 #endif
 
-rnd = aliveSyn8->rnd;
-memcpy(&stat, (char*)aliveSyn8->mu, sizeof(stat));
+m_rnd = m_aliveSyn8->rnd;
+memcpy(&m_stat, m_aliveSyn8->mu, sizeof(m_stat));
 
-if (pStatChangedCb != NULL)
-    pStatChangedCb(stat, statChangedCbData);
+if (m_pStatChangedCb != NULL)
+    m_pStatChangedCb(m_stat, m_statChangedCbData);
 
-if (pStatusChangedCb != NULL)
-    pStatusChangedCb(1, statusChangedCbData);
+if (m_pStatusChangedCb != NULL)
+    m_pStatusChangedCb(1, m_statusChangedCbData);
 NetSend(ALIVE_ACK_N);
-phaseTime = GetTickCount();
+m_phaseTime = GetTickCount();
 
 return ALIVE_SYN_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_DISCONN_SYN_ACK_8(const char * buffer)
+int IA_CLIENT_PROT::Process_DISCONN_SYN_ACK_8(const void* buffer)
 {
-disconnSynAck8 = (DISCONN_SYN_ACK_8*)buffer;
+m_disconnSynAck8 = static_cast<const DISCONN_SYN_ACK_8*>(buffer);
 
 #ifdef ARCH_BE
-SwapBytes(disconnSynAck8->len);
-SwapBytes(disconnSynAck8->rnd);
+SwapBytes(m_disconnSynAck8->len);
+SwapBytes(m_disconnSynAck8->rnd);
 #endif
 
-rnd = disconnSynAck8->rnd;
+m_rnd = m_disconnSynAck8->rnd;
 
 NetSend(DISCONN_ACK_N);
-phase = 5;
-phaseTime = GetTickCount();
+m_phase = 5;
+m_phaseTime = GetTickCount();
 
 return DISCONN_SYN_ACK_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_FIN_8(const char *)
+int IA_CLIENT_PROT::Process_FIN_8(const void*)
 {
-phase = 1;
-phaseTime = GetTickCount();
-if (pStatusChangedCb != NULL)
-    pStatusChangedCb(0, statusChangedCbData);
+m_phase = 1;
+m_phaseTime = GetTickCount();
+if (m_pStatusChangedCb != NULL)
+    m_pStatusChangedCb(0, m_statusChangedCbData);
 
 return FIN_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_INFO_8(const char * buffer)
+int IA_CLIENT_PROT::Process_INFO_8(const void* buffer)
 {
-info = (INFO_8*)buffer;
+m_info = static_cast<const INFO_8*>(buffer);
 
 #ifdef ARCH_BE
-SwapBytes(info->len);
-SwapBytes(info->sendTime);
+SwapBytes(m_info->len);
+SwapBytes(m_info->sendTime);
 #endif
 
-if (pInfoCb != NULL)
-    pInfoCb((char*)info->text, info->infoType, info->showTime, info->sendTime, infoCbData);
+if (m_pInfoCb != NULL)
+    m_pInfoCb(reinterpret_cast<const char*>(m_info->text), m_info->infoType, m_info->showTime, m_info->sendTime, m_infoCbData);
 return INFO_8_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Process_ERROR(const char * buffer)
+int IA_CLIENT_PROT::Process_ERROR(const void* buffer)
 {
 ERR_8 err;
 memcpy(&err, buffer, sizeof(err));
@@ -750,142 +746,139 @@ memcpy(&err, buffer, sizeof(err));
 SwapBytes(err.len);
 #endif
 
-KOIToWin((const char*)err.text, &messageText);
-if (pErrorCb != NULL)
-    pErrorCb(messageText, IA_SERVER_ERROR, errorCbData);
-phase = 1;
-phaseTime = GetTickCount();
-codeError = IA_SERVER_ERROR;
+KOIToWin(reinterpret_cast<const char*>(err.text), &m_messageText);
+if (m_pErrorCb != NULL)
+    m_pErrorCb(m_messageText, IA_SERVER_ERROR, m_errorCbData);
+m_phase = 1;
+m_phaseTime = GetTickCount();
+m_codeError = IA_SERVER_ERROR;
 
 return ERROR_N;
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Prepare_CONN_SYN_8(char * buffer)
+int IA_CLIENT_PROT::Prepare_CONN_SYN_8(void* buffer)
 {
-connSyn8 = (CONN_SYN_8*)buffer;
+m_connSyn8 = static_cast<CONN_SYN_8*>(buffer);
 
 assert(sizeof(CONN_SYN_8) == Min8(sizeof(CONN_SYN_8)) && "CONN_SYN_8 is not aligned to 8 bytes");
 
-connSyn8->len = sizeof(CONN_SYN_8);
+m_connSyn8->len = sizeof(CONN_SYN_8);
 
 #ifdef ARCH_BE
-SwapBytes(connSyn8->len);
+SwapBytes(m_connSyn8->len);
 #endif
 
-strncpy((char*)connSyn8->type, "CONN_SYN", IA_MAX_TYPE_LEN);
-strncpy((char*)connSyn8->login, login.c_str(), IA_LOGIN_LEN);
-connSyn8->dirs = 0;
+strncpy(reinterpret_cast<char*>(m_connSyn8->type), "CONN_SYN", IA_MAX_TYPE_LEN);
+strncpy(reinterpret_cast<char*>(m_connSyn8->login), m_login.c_str(), IA_LOGIN_LEN);
+m_connSyn8->dirs = 0;
 for (int i = 0; i < DIR_NUM; i++)
-    {
-    connSyn8->dirs |= (selectedDirs[i] << i);
-    }
+    m_connSyn8->dirs |= (m_selectedDirs[i] << i);
 return sizeof(CONN_SYN_8);
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Prepare_CONN_ACK_8(char * buffer)
+int IA_CLIENT_PROT::Prepare_CONN_ACK_8(void* buffer)
 {
-connAck8 = (CONN_ACK_8*)buffer;
+m_connAck8 = static_cast<CONN_ACK_8*>(buffer);
 
 assert(sizeof(CONN_ACK_8) == Min8(sizeof(CONN_ACK_8)) && "CONN_ACK_8 is not aligned to 8 bytes");
 
-connAck8->len = sizeof(CONN_ACK_8);
-strncpy((char*)connAck8->loginS, login.c_str(), IA_LOGIN_LEN);
-strncpy((char*)connAck8->type, "CONN_ACK", IA_MAX_TYPE_LEN);
-rnd++;
-connAck8->rnd = rnd;
+m_connAck8->len = sizeof(CONN_ACK_8);
+strncpy(reinterpret_cast<char*>(m_connAck8->loginS), m_login.c_str(), IA_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(m_connAck8->type), "CONN_ACK", IA_MAX_TYPE_LEN);
+m_rnd++;
+m_connAck8->rnd = m_rnd;
 
 #ifdef ARCH_BE
-SwapBytes(connAck8->len);
-SwapBytes(connAck8->rnd);
+SwapBytes(m_connAck8->len);
+SwapBytes(m_connAck8->rnd);
 #endif
 
 return sizeof(CONN_ACK_8);
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Prepare_ALIVE_ACK_8(char * buffer)
+int IA_CLIENT_PROT::Prepare_ALIVE_ACK_8(void* buffer)
 {
-aliveAck8 = (ALIVE_ACK_8*)buffer;
+m_aliveAck8 = static_cast<ALIVE_ACK_8*>(buffer);
 
 assert(Min8(sizeof(ALIVE_ACK_8)) == sizeof(ALIVE_ACK_8) && "ALIVE_ACK_8 is not aligned to 8 bytes");
 
-aliveAck8 = (ALIVE_ACK_8*)buffer;
-aliveAck8->len = sizeof(ALIVE_ACK_8);
-strncpy((char*)aliveAck8->loginS, login.c_str(), IA_LOGIN_LEN);
-strncpy((char*)aliveAck8->type, "ALIVE_ACK", IA_MAX_TYPE_LEN);
-aliveAck8->rnd = ++rnd;
+m_aliveAck8->len = sizeof(ALIVE_ACK_8);
+strncpy(reinterpret_cast<char*>(m_aliveAck8->loginS), m_login.c_str(), IA_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(m_aliveAck8->type), "ALIVE_ACK", IA_MAX_TYPE_LEN);
+m_aliveAck8->rnd = ++m_rnd;
 
 #ifdef ARCH_BE
-SwapBytes(aliveAck8->len);
-SwapBytes(aliveAck8->rnd);
+SwapBytes(m_aliveAck8->len);
+SwapBytes(m_aliveAck8->rnd);
 #endif
 
 return sizeof(ALIVE_ACK_8);
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Prepare_DISCONN_SYN_8(char * buffer)
+int IA_CLIENT_PROT::Prepare_DISCONN_SYN_8(void* buffer)
 {
-disconnSyn8 = (DISCONN_SYN_8*)buffer;
+m_disconnSyn8 = static_cast<DISCONN_SYN_8*>(buffer);
 
 assert(Min8(sizeof(DISCONN_SYN_8)) == sizeof(DISCONN_SYN_8) && "DISCONN_SYN_8 is not aligned to 8 bytes");
 
-disconnSyn8->len = sizeof(DISCONN_SYN_8);
+m_disconnSyn8->len = sizeof(DISCONN_SYN_8);
 
 #ifdef ARCH_BE
-SwapBytes(disconnSyn8->len);
+SwapBytes(m_disconnSyn8->len);
 #endif
 
-strncpy((char*)disconnSyn8->loginS, login.c_str(), IA_LOGIN_LEN);
-strncpy((char*)disconnSyn8->type, "DISCONN_SYN", IA_MAX_TYPE_LEN);
-strncpy((char*)disconnSyn8->login, login.c_str(), IA_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(m_disconnSyn8->loginS), m_login.c_str(), IA_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(m_disconnSyn8->type), "DISCONN_SYN", IA_MAX_TYPE_LEN);
+strncpy(reinterpret_cast<char*>(m_disconnSyn8->login), m_login.c_str(), IA_LOGIN_LEN);
 return sizeof(DISCONN_SYN_8);
 }
 //---------------------------------------------------------------------------
-int IA_CLIENT_PROT::Prepare_DISCONN_ACK_8(char * buffer)
+int IA_CLIENT_PROT::Prepare_DISCONN_ACK_8(void* buffer)
 {
-disconnAck8 = (DISCONN_ACK_8*)buffer;
+m_disconnAck8 = static_cast<DISCONN_ACK_8*>(buffer);
 
 assert(Min8(sizeof(DISCONN_ACK_8)) == sizeof(DISCONN_ACK_8) && "DISCONN_ACK_8 is not aligned to 8 bytes");
 
-disconnAck8->len = Min8(sizeof(DISCONN_ACK_8));
-disconnAck8->rnd = rnd + 1;
+m_disconnAck8->len = Min8(sizeof(DISCONN_ACK_8));
+m_disconnAck8->rnd = m_rnd + 1;
 
 #ifdef ARCH_BE
-SwapBytes(disconnAck8->len);
-SwapBytes(disconnAck8->rnd);
+SwapBytes(m_disconnAck8->len);
+SwapBytes(m_disconnAck8->rnd);
 #endif
 
-strncpy((char*)disconnAck8->loginS, login.c_str(), IA_LOGIN_LEN);
-strncpy((char*)disconnAck8->type, "DISCONN_ACK", IA_MAX_TYPE_LEN);
+strncpy(reinterpret_cast<char*>(m_disconnAck8->loginS), m_login.c_str(), IA_LOGIN_LEN);
+strncpy(reinterpret_cast<char*>(m_disconnAck8->type), "DISCONN_ACK", IA_MAX_TYPE_LEN);
 return Min8(sizeof(DISCONN_ACK_8));
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetStatusChangedCb(tpStatusChangedCb p, void * data)
 {
-pStatusChangedCb = p;
-statusChangedCbData = data;
+m_pStatusChangedCb = p;
+m_statusChangedCbData = data;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetStatChangedCb(tpStatChangedCb p, void * data)
 {
-pStatChangedCb = p;
-statChangedCbData = data;
+m_pStatChangedCb = p;
+m_statChangedCbData = data;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetInfoCb(tpCallBackInfoFn p, void * data)
 {
-pInfoCb = p;
-infoCbData = data;
+m_pInfoCb = p;
+m_infoCbData = data;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetDirNameCb(tpCallBackDirNameFn p, void * data)
 {
-pDirNameCb = p;
-dirNameCbData = data;
+m_pDirNameCb = p;
+m_dirNameCbData = data;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::SetErrorCb(tpCallBackErrorFn p, void * data)
 {
-pErrorCb = p;
-errorCbData = data;
+m_pErrorCb = p;
+m_errorCbData = data;
 }
 //---------------------------------------------------------------------------

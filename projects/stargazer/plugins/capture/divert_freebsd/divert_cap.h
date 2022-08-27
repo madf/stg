@@ -31,8 +31,8 @@
 
 namespace STG
 {
-struct Users;
-struct Tariffs;
+class Users;
+class Tariffs;
 struct Admins;
 struct TraffCounter;
 struct Settings;

@@ -1,64 +1,61 @@
-#ifndef __VALUE_2_OS_H__
-#define __VALUE_2_OS_H__
+#pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/ObjectSyntax.h"
+#pragma GCC diagnostic pop
+
+#include <string>
 
 template <typename T>
-bool ValueToOS(const T & value, ObjectSyntax * objectSyntax);
+void ValueToOS(const T & value, ObjectSyntax * objectSyntax);
 
 template <>
 inline
-bool ValueToOS<int>(const int & value, ObjectSyntax * objectSyntax)
+void ValueToOS<int>(const int & value, ObjectSyntax * objectSyntax)
 {
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_number;
 asn_long2INTEGER(&simpleSyntax->choice.number, value);
-return true;
 }
 
 template <>
 inline
-bool ValueToOS<unsigned int>(const unsigned int & value, ObjectSyntax * objectSyntax)
+void ValueToOS<unsigned int>(const unsigned int & value, ObjectSyntax * objectSyntax)
 {
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_number;
 asn_long2INTEGER(&simpleSyntax->choice.number, value);
-return true;
 }
 
 template <>
 inline
-bool ValueToOS<long>(const long & value, ObjectSyntax * objectSyntax)
+void ValueToOS<long>(const long & value, ObjectSyntax * objectSyntax)
 {
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_number;
 asn_long2INTEGER(&simpleSyntax->choice.number, value);
-return true;
 }
 
 template <>
 inline
-bool ValueToOS<unsigned long>(const unsigned long & value, ObjectSyntax * objectSyntax)
+void ValueToOS<unsigned long>(const unsigned long & value, ObjectSyntax * objectSyntax)
 {
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_number;
 asn_long2INTEGER(&simpleSyntax->choice.number, value);
-return true;
 }
 
 template <>
 inline
-bool ValueToOS<std::string>(const std::string & value, ObjectSyntax * objectSyntax)
+void ValueToOS<std::string>(const std::string & value, ObjectSyntax * objectSyntax)
 {
 objectSyntax->present = ObjectSyntax_PR_simple;
 SimpleSyntax_t * simpleSyntax = &objectSyntax->choice.simple;
 simpleSyntax->present = SimpleSyntax_PR_string;
 OCTET_STRING_fromBuf(&simpleSyntax->choice.string, value.c_str(), static_cast<int>(value.length()));
-return true;
 }
-
-#endif

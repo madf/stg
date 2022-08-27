@@ -32,8 +32,8 @@
 namespace STG
 {
 
-struct Users;
-struct User;
+class Users;
+class User;
 
 namespace PARSER
 {

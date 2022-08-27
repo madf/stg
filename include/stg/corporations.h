@@ -25,7 +25,7 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct CorpConf;
 
 struct Corporations {

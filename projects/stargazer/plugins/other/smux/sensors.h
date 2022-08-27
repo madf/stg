@@ -1,7 +1,7 @@
-#ifndef __SENSORS_H__
-#define __SENSORS_H__
+#pragma once
 
-#include <map>
+#include "value2os.h"
+#include "types.h"
 
 #include "stg/users.h"
 #include "stg/user.h"
@@ -12,15 +12,17 @@
 #include "stg/traffcounter.h"
 #include "stg/user_property.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/ObjectSyntax.h"
+#pragma GCC diagnostic pop
 
-#include "value2os.h"
-#include "types.h"
+#include <map>
 
 class Sensor {
     public:
         virtual ~Sensor() = default;
-        virtual bool GetValue(ObjectSyntax_t * objectSyntax) const = 0;
+        virtual void GetValue(ObjectSyntax_t * objectSyntax) const = 0;
 #ifdef DEBUG
         virtual std::string ToString() const = 0;
 #endif
@@ -32,10 +34,9 @@ class TotalUsersSensor : public Sensor {
     public:
         explicit TotalUsersSensor(const STG::Users & u) : users(u) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(users.Count(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -51,7 +52,7 @@ class UsersSensor : public Sensor {
     public:
         explicit UsersSensor(STG::Users & u) : users(u) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override;
+        void GetValue(ObjectSyntax_t * objectSyntax) const override;
 #ifdef DEBUG
         std::string ToString() const override;
 #endif
@@ -164,10 +165,9 @@ class TotalTariffsSensor : public Sensor {
     public:
         explicit TotalTariffsSensor(const STG::Tariffs & t) : tariffs(t) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(tariffs.Count(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -183,10 +183,9 @@ class TotalAdminsSensor : public Sensor {
     public:
         explicit TotalAdminsSensor(const STG::Admins & a) : admins(a) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(admins.count(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -202,10 +201,9 @@ class TotalServicesSensor : public Sensor {
     public:
         explicit TotalServicesSensor(const STG::Services & s) : services(s) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(services.Count(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -221,10 +219,9 @@ class TotalCorporationsSensor : public Sensor {
     public:
         explicit TotalCorporationsSensor(const STG::Corporations & c) : corporations(c) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(corporations.Count(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -240,10 +237,9 @@ class TotalRulesSensor : public Sensor {
     public:
         explicit TotalRulesSensor(const STG::TraffCounter & t) : traffcounter(t) {}
 
-        bool GetValue(ObjectSyntax_t * objectSyntax) const override
+        void GetValue(ObjectSyntax_t * objectSyntax) const override
         {
         ValueToOS(traffcounter.rulesCount(), objectSyntax);
-        return true;
         }
 
 #ifdef DEBUG
@@ -260,8 +256,10 @@ class ConstSensor : public Sensor {
     public:
         explicit ConstSensor(const T & v) : value(v) {}
 
-        bool GetValue(ObjectSyntax * objectSyntax) const override
-        { return ValueToOS(value, objectSyntax); }
+        void GetValue(ObjectSyntax * objectSyntax) const override
+        {
+            ValueToOS(value, objectSyntax);
+        }
 
 #ifdef DEBUG
         std::string ToString() const override
@@ -279,6 +277,4 @@ std::string ConstSensor<std::string>::ToString() const
 {
 return value;
 }
-#endif
-
 #endif

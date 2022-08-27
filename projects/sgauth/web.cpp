@@ -59,22 +59,22 @@ return NULL;
 }
 //---------------------------------------------------------------------------
 WEB::WEB()
-    : res(0),
-      listenSocket(0),
-      outerSocket(0),
-      refreshPeriod(0),
-      listenWebAddr(0)
+    : m_res(0),
+      m_listenSocket(0),
+      m_outerSocket(0),
+      m_refreshPeriod(0),
+      m_listenWebAddr(0)
 {
 #ifdef WIN32
-res = WSAStartup(MAKEWORD(2,0), &wsaData);
+m_res = WSAStartup(MAKEWORD(2,0), &m_wsaData);
 #endif
 
 for (int i = 0; i < DIR_NUM; i++)
-    dirName[i] = "-";
+    m_dirName[i] = "-";
 
-refreshPeriod = 5;
+m_refreshPeriod = 5;
 
-memset(&ls, 0, sizeof(ls));
+memset(&m_ls, 0, sizeof(m_ls));
 }
 //---------------------------------------------------------------------------
 void WEB::Start()
@@ -90,22 +90,22 @@ CreateThread(
     &pt     // pointer to returned thread identifier
    );
 #else
-pthread_create(&thread, NULL, RunWeb, NULL);
+pthread_create(&m_thread, NULL, RunWeb, NULL);
 #endif
 }
 //---------------------------------------------------------------------------
 void WEB::PrepareNet()
 {
-listenSocket = socket(PF_INET, SOCK_STREAM, 0);
+m_listenSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 struct sockaddr_in listenAddr;
 listenAddr.sin_family = AF_INET;
 listenAddr.sin_port = htons(LISTEN_PORT);
-listenAddr.sin_addr.s_addr = listenWebAddr;
+listenAddr.sin_addr.s_addr = m_listenWebAddr;
 
 #ifndef WIN32
 int lng = 1;
-if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
+if (0 != setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
     {
     printf("Setsockopt Fail\n");
     printf(">>> Error %s\n", strerror(errno));
@@ -115,16 +115,16 @@ if (0 != setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &lng, 4))
 #endif
 
 
-res = bind(listenSocket, (struct sockaddr*)&listenAddr, sizeof(listenAddr));
+m_res = bind(m_listenSocket, reinterpret_cast<sockaddr*>(&listenAddr), sizeof(listenAddr));
 
-if (res == -1)
+if (m_res == -1)
     {
     printf("Bind failed.\n");
     exit(0);
     }
 
-res = listen(listenSocket, 0);
-if (res == -1)
+m_res = listen(m_listenSocket, 0);
+if (m_res == -1)
     {
     printf("Listen failed.\n");
     exit(0);
@@ -133,14 +133,14 @@ if (res == -1)
 //---------------------------------------------------------------------------
 void WEB::SetRefreshPagePeriod(int p)
 {
-refreshPeriod = p;
-if (refreshPeriod <= 0 || refreshPeriod > 24*3600)
-    refreshPeriod = 5;
+m_refreshPeriod = p;
+if (m_refreshPeriod <= 0 || m_refreshPeriod > 24*3600)
+    m_refreshPeriod = 5;
 }
 //---------------------------------------------------------------------------
 void WEB::SetListenAddr(uint32_t ip)
 {
-listenWebAddr = ip;
+m_listenWebAddr = ip;
 }
 //---------------------------------------------------------------------------
 void WEB::Run()
@@ -157,13 +157,13 @@ while (1)
     int outerAddrLen = sizeof(outerAddr);
     #endif
 
-    outerSocket = accept(listenSocket, (struct sockaddr*)&outerAddr, &outerAddrLen);
-    if (outerSocket == -1)
+    m_outerSocket = accept(m_listenSocket, reinterpret_cast<sockaddr*>(&outerAddr), &outerAddrLen);
+    if (m_outerSocket == -1)
         {
         printf(">>> Error %s\n", strerror(errno));
         continue;
         }
-    recv(outerSocket, recvBuffer, sizeof(recvBuffer), 0);
+    recv(m_outerSocket, recvBuffer, sizeof(recvBuffer), 0);
 
     if (strncmp(recvBuffer, "GET /sgauth.css", strlen("GET /sgauth.css")) == 0)
         {
@@ -201,9 +201,9 @@ while (1)
        }
 
     #ifdef WIN32
-    closesocket(outerSocket);
+    closesocket(m_outerSocket);
     #else
-    close(outerSocket);
+    close(m_outerSocket);
     #endif
     }
 }
@@ -224,7 +224,7 @@ const char * redirect =
 
 char buff[2000];
 sprintf(buff, redirect, url);
-send(outerSocket, buff, strlen(buff), 0);
+send(m_outerSocket, buff, strlen(buff), 0);
 
 return 0;
 }
@@ -251,167 +251,167 @@ const char * replyHeader =
 const char * replyFooter = "</body></html>\n\n";
 
 char replyHeaderBuffer[2000];
-sprintf(replyHeaderBuffer, replyHeader, refreshPeriod);
+sprintf(replyHeaderBuffer, replyHeader, m_refreshPeriod);
 
-send(outerSocket, replyHeaderBuffer, strlen(replyHeaderBuffer), 0);
+send(m_outerSocket, replyHeaderBuffer, strlen(replyHeaderBuffer), 0);
 
 char str[512];
 
 int st = clnp->GetAuthorized();
 
 sprintf(str, "<a href=\"connect\">%s</a><p>\n", gettext("Connect"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<a href=\"disconnect\">%s</a><p>\n", gettext("Disconnect"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<a href=\"/\">%s</a><p>\n", gettext("Refresh"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<a href=\"exit\">%s</a><p>\n", gettext("Exit"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<div id=\"%s\">%s</div><p>\n" , st ? "ConnectionStateOnline":"ConnectionStateOffline", st ? "Online":"Offline");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
-sprintf(str, "<div id=\"Cash\">%s: %.3f</div><p>\n" , gettext("Cash"), ls.cash / 1000.0);
-res = send(outerSocket, str, strlen(str), 0);
+sprintf(str, "<div id=\"Cash\">%s: %.3f</div><p>\n" , gettext("Cash"), m_ls.cash / 1000.0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<div id=\"Prepaid Traffic\">%s: %s</div><p>\n" ,
         gettext("PrepaidTraffic"),
-        ls.freeMb[0] == 'C' ? ls.freeMb + 1 : ls.freeMb);
-res = send(outerSocket, str, strlen(str), 0);
+        m_ls.freeMb[0] == 'C' ? m_ls.freeMb + 1 : m_ls.freeMb);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str, "<TABLE id=\"TraffTable\">\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str, "    <TR id=\"TraffTableCaptionRow\">\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str, "       <TD id=\"TraffTableCaptionCellC\">&nbsp;</TD>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 rowNum = 0;
 for (j = 0; j < DIR_NUM; j++)
     {
-    if (dirName[j][0] == 0)
+    if (m_dirName[j][0] == 0)
         continue;
     std::string s;
-    KOIToWin(dirName[j], &s);// +++++++++ sigsegv ==========   TODO too long dir name crashes sgauth
+    KOIToWin(m_dirName[j], &s);// +++++++++ sigsegv ==========   TODO too long dir name crashes sgauth
     sprintf(str, "       <TD id=\"TraffTableCaptionCell%d\">%s</TD>\n", rowNum++, s.c_str());
-    send(outerSocket, str, strlen(str), 0);
+    send(m_outerSocket, str, strlen(str), 0);
     }
 
 sprintf(str,"    </TR>\n");
-send(outerSocket, str, strlen(str), 0);
+send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str,"    <TR id=\"TraffTableUMRow\">\n");
-send(outerSocket, str, strlen(str), 0);
+send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str,"        <TD id=\"TraffTableUMCellC\">%s</TD>\n", gettext("Month Upload"));
-send(outerSocket, str, strlen(str), 0);
+send(m_outerSocket, str, strlen(str), 0);
 
 rowNum = 0;
 for (j = 0; j < DIR_NUM; j++)
     {
-    if (dirName[j][0] == 0)
+    if (m_dirName[j][0] == 0)
         continue;
-    sprintf(str,"        <TD id=\"TraffTableUMCell%d\">%s</TD>\n", rowNum++, IntToKMG(ls.mu[j], ST_F));
-    res = send(outerSocket, str, strlen(str), 0);
+    sprintf(str,"        <TD id=\"TraffTableUMCell%d\">%s</TD>\n", rowNum++, IntToKMG(m_ls.mu[j], ST_F));
+    m_res = send(m_outerSocket, str, strlen(str), 0);
     }
 
 sprintf(str,"    </TR>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str,"    <TR id=\"TraffTableDMRow\">\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str,"        <TD id=\"TraffTableDMCellC\">%s</TD>\n", gettext("Month Download"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 rowNum = 0;
 for (j = 0; j < DIR_NUM; j++)
     {
-    if (dirName[j][0] == 0)
+    if (m_dirName[j][0] == 0)
         continue;
-    sprintf(str,"        <TD id=\"TraffTableDMCell%d\">%s</TD>\n", rowNum++, IntToKMG(ls.md[j], ST_F));
-    res = send(outerSocket, str, strlen(str), 0);
+    sprintf(str,"        <TD id=\"TraffTableDMCell%d\">%s</TD>\n", rowNum++, IntToKMG(m_ls.md[j], ST_F));
+    m_res = send(m_outerSocket, str, strlen(str), 0);
     }
 sprintf(str,"    </TR>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 
 sprintf(str,"    <TR id=\"TraffTableUSRow\">\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str,"        <TD id=\"TraffTableUSCellC\">%s</TD>\n", gettext("Session Upload"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 rowNum = 0;
 for (j = 0; j < DIR_NUM; j++)
     {
-    if (dirName[j][0] == 0)
+    if (m_dirName[j][0] == 0)
         continue;
-    sprintf(str,"        <TD id=\"TraffTableUSCell%d\">%s</TD>\n", rowNum++, IntToKMG(ls.su[j], ST_F));
-    res = send(outerSocket, str, strlen(str), 0);
+    sprintf(str,"        <TD id=\"TraffTableUSCell%d\">%s</TD>\n", rowNum++, IntToKMG(m_ls.su[j], ST_F));
+    m_res = send(m_outerSocket, str, strlen(str), 0);
     }
 
 sprintf(str,"    </TR>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str,"    <TR id=\"TraffTableDSRow\">\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 sprintf(str,"        <TD id=\"TraffTableDSCellC\">%s</TD>\n", gettext("Session Download"));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 for (j = 0; j < DIR_NUM; j++)
     {
-    if (dirName[j][0] == 0)
+    if (m_dirName[j][0] == 0)
         continue;
-    sprintf(str,"        <TD id=\"TraffTableDSCell%d\">%s</TD>\n", j, IntToKMG(ls.sd[j], ST_F));
-    res = send(outerSocket, str, strlen(str), 0);
+    sprintf(str,"        <TD id=\"TraffTableDSCell%d\">%s</TD>\n", j, IntToKMG(m_ls.sd[j], ST_F));
+    m_res = send(m_outerSocket, str, strlen(str), 0);
     }
 
 sprintf(str,"    </TR>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 sprintf(str,"</TABLE>\n");
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
 rowNum = 0;
-if (!messages.empty())
+if (!m_messages.empty())
     {
     sprintf(str,"    <TABLE id=\"MessagesTable\">\n");
-    res = send(outerSocket, str, strlen(str), 0);
+    m_res = send(m_outerSocket, str, strlen(str), 0);
 
     sprintf(str,"        <TR id=\"MessagesTableRowC\">\n");
-    send(outerSocket, str, strlen(str), 0);
+    send(m_outerSocket, str, strlen(str), 0);
     sprintf(str,"            <TD>Date</TD>\n");
-    send(outerSocket, str, strlen(str), 0);
+    send(m_outerSocket, str, strlen(str), 0);
     sprintf(str,"            <TD>Text</TD>\n");
-    send(outerSocket, str, strlen(str), 0);
+    send(m_outerSocket, str, strlen(str), 0);
     sprintf(str,"        </TR>\n");
-    send(outerSocket, str, strlen(str), 0);
+    send(m_outerSocket, str, strlen(str), 0);
 
     std::list<STG_MESSAGE>::reverse_iterator it;
-    it = messages.rbegin();
-    while (it != messages.rend())
+    it = m_messages.rbegin();
+    while (it != m_messages.rend())
         {
         sprintf(str,"        <TR id=\"MessagesTableRow%d\">\n", rowNum);
-        send(outerSocket, str, strlen(str), 0);
+        send(m_outerSocket, str, strlen(str), 0);
         sprintf(str,"            <TD>%s</TD>\n", it->recvTime.c_str());
-        send(outerSocket, str, strlen(str), 0);
+        send(m_outerSocket, str, strlen(str), 0);
         sprintf(str,"            <TD>%s</TD>\n", it->msg.c_str());
-        send(outerSocket, str, strlen(str), 0);
+        send(m_outerSocket, str, strlen(str), 0);
         sprintf(str,"        </TR>\n");
-        send(outerSocket, str, strlen(str), 0);
+        send(m_outerSocket, str, strlen(str), 0);
         ++it;
         ++rowNum;
         }
 
     sprintf(str,"   </TABLE>\n");
-    res = send(outerSocket, str, strlen(str), 0);
+    m_res = send(m_outerSocket, str, strlen(str), 0);
     }
 
 time_t t = time(NULL);
 sprintf(str,"Обновлено: %s</b>" , ctime(&t));
-res = send(outerSocket, str, strlen(str), 0);
+m_res = send(m_outerSocket, str, strlen(str), 0);
 
-send(outerSocket, replyFooter, strlen(replyFooter), 0);
+send(m_outerSocket, replyFooter, strlen(replyFooter), 0);
 
 return 0;
 }
@@ -425,16 +425,16 @@ const char * replyHeader =
 
 const char * replyFooter= "\n\n";
 
-send(outerSocket, replyHeader, strlen(replyHeader), 0);
-send(outerSocket, SGAuth::css, strlen(SGAuth::css), 0);
-send(outerSocket, replyFooter, strlen(replyFooter), 0);
+send(m_outerSocket, replyHeader, strlen(replyHeader), 0);
+send(m_outerSocket, SGAuth::css, strlen(SGAuth::css), 0);
+send(m_outerSocket, replyFooter, strlen(replyFooter), 0);
 
 return 0;
 }
 //---------------------------------------------------------------------------
 void WEB::SetDirName(const std::string & dn, int n)
 {
-web->dirName[n] =  dn;
+web->m_dirName[n] =  dn;
 }
 //---------------------------------------------------------------------------
 void WEB::AddMessage(const std::string & message, int type)
@@ -446,16 +446,16 @@ m.msg = message;
 m.type = type;
 m.recvTime = ctime(&t);
 
-messages.push_back(m);
+m_messages.push_back(m);
 
-if (messages.size() > MAX_MESSAGES)
-    messages.pop_front();
+if (m_messages.size() > MAX_MESSAGES)
+    m_messages.pop_front();
 
 }
 //---------------------------------------------------------------------------
 void WEB::UpdateStat(const LOADSTAT & ls)
 {
-memcpy((void*)&(WEB::ls), &ls, sizeof(LOADSTAT));
+memcpy(&m_ls, &ls, sizeof(LOADSTAT));
 }
 //---------------------------------------------------------------------------
 

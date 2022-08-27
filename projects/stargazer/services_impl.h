@@ -34,7 +34,7 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct Store;
 
 class ServicesImpl : public Services {

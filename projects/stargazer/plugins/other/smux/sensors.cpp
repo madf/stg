@@ -1,12 +1,15 @@
-#include <cassert>
-
-#include "stg/INTEGER.h"
+#include "sensors.h"
 
 #include "stg/user.h"
 
-#include "sensors.h"
+#include <cassert>
 
-bool UsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#include "stg/INTEGER.h"
+#pragma GCC diagnostic pop
+
+void UsersSensor::GetValue(ObjectSyntax_t * objectSyntax) const
 {
 int handle = users.OpenSearch();
 assert(handle && "USERS::OpenSearch is always correct");
@@ -22,7 +25,6 @@ while (!users.SearchNext(handle, &user))
 users.CloseSearch(handle);
 
 ValueToOS(count, objectSyntax);
-return true;
 }
 
 #ifdef DEBUG

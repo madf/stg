@@ -29,8 +29,8 @@
 namespace STG
 {
 
-struct Admin;
-struct Users;
+class Admin;
+class Users;
 
 namespace PARSER
 {

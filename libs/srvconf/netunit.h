@@ -39,7 +39,7 @@ class NetTransact
         ~NetTransact();
 
         int Transact(const std::string& request, Callback f, void* data);
-        const std::string & GetError() const { return errorMsg; }
+        const std::string & GetError() const { return m_errorMsg; }
 
         int  Connect();
         void Disconnect();
@@ -57,14 +57,14 @@ class NetTransact
         int  TxData(const std::string& text);
         int  RxDataAnswer(Callback f, void* data);
 
-        std::string server;
-        uint16_t  port;
-        std::string localAddress;
-        uint16_t localPort;
-        std::string login;
-        std::string password;
-        int sock;
-        std::string errorMsg;
+        std::string m_server;
+        uint16_t  m_port;
+        std::string m_localAddress;
+        uint16_t m_localPort;
+        std::string m_login;
+        std::string m_password;
+        int m_sock;
+        std::string m_errorMsg;
 
         static bool TxCrypto(const void * block, size_t size, void * data);
         static bool RxCrypto(const void * block, size_t size, void * data);

@@ -36,9 +36,7 @@
 
 namespace STG
 {
-struct Users;
-
-class AUTH_AO;
+class Users;
 
 using UserPtr = User*;
 using ConstUserPtr = const User*;

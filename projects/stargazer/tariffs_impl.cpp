@@ -28,16 +28,16 @@
  $Author: faust $
  */
 
-#include <cassert>
-#include <algorithm>
-#include <vector>
+#include "tariffs_impl.h"
 
 #include "stg/locker.h"
 #include "stg/logger.h"
 #include "stg/store.h"
 #include "stg/admin.h"
 #include "stg/admin_conf.h"
-#include "tariffs_impl.h"
+
+#include <cassert>
+#include <algorithm>
 
 using STG::TariffsImpl;
 

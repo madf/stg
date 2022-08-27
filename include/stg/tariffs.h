@@ -28,7 +28,7 @@
 namespace STG
 {
 
-struct Admin;
+class Admin;
 struct Tariff;
 struct TariffData;
 
