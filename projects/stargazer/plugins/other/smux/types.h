@@ -14,26 +14,26 @@ class OID
     public:
         explicit OID(const std::string & str);
         OID(const char * str, size_t length);
-        explicit OID(const std::vector<unsigned> & arcs);
-        OID(const unsigned * arcs, size_t length);
+        explicit OID(const std::vector<uint32_t> & arcs);
+        OID(const uint32_t * arcs, size_t length);
         explicit OID(OBJECT_IDENTIFIER_t * oid);
         OID(const OID & rvalue);
         ~OID();
 
         bool addSuffix(const char * suffix, size_t length);
         bool addSuffix(const std::string & suffix);
-        bool addSuffix(const unsigned * suffix, size_t length);
-        bool addSuffix(const std::vector<unsigned> & suffix);
-        bool addSuffix(unsigned a, unsigned b);
+        bool addSuffix(const uint32_t * suffix, size_t length);
+        bool addSuffix(const std::vector<uint32_t> & suffix);
+        bool addSuffix(uint32_t a, uint32_t b);
 
         OID copyWithSuffix(const char * suffix, size_t length) const;
         OID copyWithSuffix(const std::string & suffix) const;
-        OID copyWithSuffix(const unsigned * suffix, size_t length) const;
-        OID copyWithSuffix(const std::vector<unsigned> & suffix) const;
-        OID copyWithSuffix(unsigned a, unsigned b) const;
+        OID copyWithSuffix(const uint32_t * suffix, size_t length) const;
+        OID copyWithSuffix(const std::vector<uint32_t> & suffix) const;
+        OID copyWithSuffix(uint32_t a, uint32_t b) const;
 
         std::string ToString() const;
-        const std::vector<unsigned> & ToVector() const { return arcs; }
+        const std::vector<uint32_t> & ToVector() const { return arcs; }
         void ToOID(OBJECT_IDENTIFIER_t * oid) const;
 
         OID & operator=(const OID & rvalue);
@@ -48,7 +48,7 @@ class OID
         friend std::ostream & operator<<(std::ostream & stream, const OID & oid);
 
     private:
-        std::vector<unsigned> arcs;
+        std::vector<uint32_t> arcs;
 };
 
 inline

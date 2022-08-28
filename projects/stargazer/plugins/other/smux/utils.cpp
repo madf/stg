@@ -20,7 +20,7 @@
 bool String2OI(const std::string & str, OBJECT_IDENTIFIER_t * oi)
 {
 size_t left = 0, pos = 0, arcPos = 0;
-int arcs[1024];
+uint32_t arcs[1024];
 pos = str.find_first_of('.', left);
 if (pos == 0)
     {
@@ -47,7 +47,7 @@ if (left < str.length())
         }
     arcs[arcPos++] = arc;
     }
-OBJECT_IDENTIFIER_set_arcs(oi, arcs, sizeof(arcs[0]), static_cast<unsigned int>(arcPos));
+OBJECT_IDENTIFIER_set_arcs(oi, arcs, static_cast<unsigned int>(arcPos));
 return true;
 }
 
@@ -125,7 +125,7 @@ return true;
 
 bool SendRReqPDU(int fd)
 {
-int oid[] = {1, 3, 6, 1, 4, 1, 38313, 1};
+uint32_t oid[] = {1, 3, 6, 1, 4, 1, 38313, 1};
 asn_enc_rval_t error;
 RReqPDU_t msg;
 
@@ -135,7 +135,6 @@ msg.priority = 0;
 asn_long2INTEGER(&msg.operation, RReqPDU__operation_readOnly);
 OBJECT_IDENTIFIER_set_arcs(&msg.subtree,
                            oid,
-                           sizeof(oid[0]),
                            8);
 
 char buffer[1024];

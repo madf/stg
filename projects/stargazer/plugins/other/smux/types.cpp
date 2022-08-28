@@ -8,11 +8,11 @@
 namespace
 {
 
-bool ParseArcs(const char * str, ptrdiff_t length, unsigned * a, size_t * pos);
-bool StringToArcs(const char * str, size_t length, std::vector<unsigned> & arcs);
-bool AppendToArcs(const char * str, size_t length, std::vector<unsigned> & arcs);
+bool ParseArcs(const char * str, ptrdiff_t length, uint32_t * a, size_t * pos);
+bool StringToArcs(const char * str, size_t length, std::vector<uint32_t> & arcs);
+bool AppendToArcs(const char * str, size_t length, std::vector<uint32_t> & arcs);
 
-bool ParseArcs(const char * str, ptrdiff_t length, unsigned * a, size_t * pos)
+bool ParseArcs(const char * str, ptrdiff_t length, uint32_t * a, size_t * pos)
 {
 if (length == 0)
     return false;
@@ -23,7 +23,7 @@ size_t arcPos = 0;
 while ((left - str) < length)
     {
     char * p = NULL;
-    unsigned arc = static_cast<unsigned int>(strtoul(left, &p, 10));
+    uint32_t arc = static_cast<uint32_t>(strtoul(left, &p, 10));
     if (p == left)
         return false;
     a[arcPos++] = arc;
@@ -35,9 +35,9 @@ while ((left - str) < length)
 return true;
 }
 
-bool StringToArcs(const char * str, size_t length, std::vector<unsigned> & arcs)
+bool StringToArcs(const char * str, size_t length, std::vector<uint32_t> & arcs)
 {
-unsigned a[1024];
+uint32_t a[1024];
 size_t pos = 0;
 
 if (!ParseArcs(str, length, a, &pos))
@@ -47,9 +47,9 @@ arcs.assign(a, a + pos);
 return true;
 }
 
-bool AppendToArcs(const char * str, size_t length, std::vector<unsigned> & arcs)
+bool AppendToArcs(const char * str, size_t length, std::vector<uint32_t> & arcs)
 {
-unsigned a[1024];
+uint32_t a[1024];
 size_t pos = 0;
 
 if (!ParseArcs(str, length, a, &pos))
@@ -75,28 +75,28 @@ if (!StringToArcs(str, length, arcs))
     throw std::runtime_error("Invalid oid");
 }
 
-OID::OID(const std::vector<unsigned> & a)
+OID::OID(const std::vector<uint32_t> & a)
     : arcs(a)
 {
 }
 
-OID::OID(const unsigned * a, size_t length)
+OID::OID(const uint32_t * a, size_t length)
     : arcs()
 {
-std::vector<unsigned> newArcs(a, a + length);
+std::vector<uint32_t> newArcs(a, a + length);
 arcs.swap(newArcs);
 }
 
 OID::OID(OBJECT_IDENTIFIER_t * oid)
     : arcs()
 {
-unsigned a[1024];
-int count = OBJECT_IDENTIFIER_get_arcs(oid, a, sizeof(a[0]), 1024);
+uint32_t a[1024];
+int count = OBJECT_IDENTIFIER_get_arcs(oid, a, 1024);
 
 if (count > 1024)
     throw std::runtime_error("OID is too long");
 
-std::vector<unsigned> newArcs(a, a + count);
+std::vector<uint32_t> newArcs(a, a + count);
 arcs.swap(newArcs);
 }
 
@@ -123,19 +123,19 @@ if (!AppendToArcs(suffix.c_str(), suffix.length(), arcs))
 return true;
 }
 
-bool OID::addSuffix(const unsigned * suffix, size_t length)
+bool OID::addSuffix(const uint32_t * suffix, size_t length)
 {
 std::copy(suffix, suffix + length, std::back_inserter(arcs));
 return true;
 }
 
-bool OID::addSuffix(const std::vector<unsigned> & suffix)
+bool OID::addSuffix(const std::vector<uint32_t> & suffix)
 {
 std::copy(suffix.begin(), suffix.end(), std::back_inserter(arcs));
 return true;
 }
 
-bool OID::addSuffix(unsigned a, unsigned b)
+bool OID::addSuffix(uint32_t a, uint32_t b)
 {
 arcs.push_back(a);
 arcs.push_back(b);
@@ -158,7 +158,7 @@ if (!oid.addSuffix(suffix))
 return oid;
 }
 
-OID OID::copyWithSuffix(const unsigned * suffix, size_t length) const
+OID OID::copyWithSuffix(const uint32_t * suffix, size_t length) const
 {
 OID oid(*this);
 if (!oid.addSuffix(suffix, length))
@@ -166,7 +166,7 @@ if (!oid.addSuffix(suffix, length))
 return oid;
 }
 
-OID OID::copyWithSuffix(const std::vector<unsigned> & suffix) const
+OID OID::copyWithSuffix(const std::vector<uint32_t> & suffix) const
 {
 OID oid(*this);
 if (!oid.addSuffix(suffix))
@@ -174,7 +174,7 @@ if (!oid.addSuffix(suffix))
 return oid;
 }
 
-OID OID::copyWithSuffix(unsigned a, unsigned b) const
+OID OID::copyWithSuffix(uint32_t a, uint32_t b) const
 {
 OID oid(*this);
 oid.addSuffix(a, b);
@@ -191,7 +191,7 @@ return stream.str();
 
 void OID::ToOID(OBJECT_IDENTIFIER_t * oid) const
 {
-OBJECT_IDENTIFIER_set_arcs(oid, &arcs.front(), sizeof(unsigned), static_cast<unsigned int>(arcs.size()));
+OBJECT_IDENTIFIER_set_arcs(oid, &arcs.front(), static_cast<uint32_t>(arcs.size()));
 }
 
 OID & OID::operator=(const OID & rvalue)
