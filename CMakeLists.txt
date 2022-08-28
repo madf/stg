@@ -39,6 +39,9 @@ option ( BUILD_TESTS "Build tests." OFF )
 option ( BUILD_ALL "Build binaries, libraries and tests." OFF )
 option ( ENABLE_COVERAGE "Enable code coverage analysis." OFF )
 
+# CPPCheck-related
+option ( CPPCHECK_FOREIGN "Run cppcheck over foreign lib code" OFF )
+
 if ( BUILD_ALL )
     set ( BUILD_ALL_MODS ON )
     set ( BUILD_ALL_LIBS ON )
