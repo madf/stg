@@ -28,9 +28,12 @@
 
 #include <string>
 #include <list>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 #ifndef WIN32
-#include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -55,7 +58,6 @@ class WEB
 {
     public:
         WEB();
-        void Run();
         void SetDirName(const std::string & dn, int n);
         void SetRefreshPagePeriod(int p);
         void SetListenAddr(uint32_t ip);
@@ -63,6 +65,7 @@ class WEB
         void UpdateStat(const LOADSTAT & ls);
         void Start();
     private:
+        void Run(std::stop_token token) noexcept;
         void PrepareNet();
         int SendReply();
         int SendCSS();
@@ -70,9 +73,9 @@ class WEB
 
         #ifdef WIN32
         WSADATA m_wsaData;
-        #else
-        pthread_t m_thread;
         #endif
+
+        std::jthread m_thread;
 
         std::string m_dirName[DIR_NUM];
         int m_res;

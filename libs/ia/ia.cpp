@@ -32,6 +32,7 @@
 #include "stg/common.h"
 #include "stg/ia.h"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -62,34 +63,6 @@
 //---------------------------------------------------------------------------
 #ifndef WIN32
 #include <sys/time.h>
-void Sleep(int ms)
-{
-long long res = ms * 1000000;
-struct timespec ts = {res / 1000000000, res % 1000000000};
-nanosleep(&ts, NULL);
-}
-//---------------------------------------------------------------------------
-void * RunL(void * data)
-{
-sigset_t signalSet;
-sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
-
-auto* c = static_cast<IA_CLIENT_PROT*>(data);
-static int a = 0;
-
-if (a == 0)
-    {
-    Sleep(50);
-    a = 1;
-    }
-
-while (c->GetNonstop())
-    {
-    c->Run();
-    }
-return NULL;
-}
 //---------------------------------------------------------------------------
 long GetTickCount()
 {
@@ -97,17 +70,8 @@ struct timeval tv;
 gettimeofday(&tv, NULL);
 return tv.tv_sec*1000 + tv.tv_usec/1000;
 }
-#else
-//---------------------------------------------------------------------------
-unsigned long WINAPI RunW(void * data)
-{
-auto* c = static_cast<IA_CLIENT_PROT*>(data);
-while (c->GetNonstop())
-    c->Run();
-return 0;
-}
-//---------------------------------------------------------------------------
 #endif
+//---------------------------------------------------------------------------
 
 namespace
 {
@@ -142,7 +106,6 @@ IA_CLIENT_PROT::IA_CLIENT_PROT(const std::string & sn, unsigned short p,
       m_phase(1),
       m_phaseTime(0),
       m_codeError(0),
-      m_nonstop(false),
       m_isNetPrepared(false),
       m_proxyMode(false),
       m_serverName(sn),
@@ -465,119 +428,116 @@ return ret;
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Start()
 {
-m_nonstop = true;
-#ifdef WIN32
-unsigned long pt;
-CreateThread(NULL, 16384, RunW, this, 0, &pt);
-#else
-pthread_create(&m_thread, NULL, RunL, this);
-#endif
+    m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::Stop()
 {
-m_nonstop = false;
+    if (m_thread.joinable())
+        m_thread.request_stop();
 }
 //---------------------------------------------------------------------------
-void IA_CLIENT_PROT::Run()
+void IA_CLIENT_PROT::Run(std::stop_token token)
 {
-NetRecv();
-
-switch (m_phase)
+    while (!token.stop_requested())
     {
-    case 1:
-        if (m_action == IA_CONNECT)
-            {
-            m_action = IA_NONE;
-            NetSend(CONN_SYN_N);
-            m_phase = 2;
-            m_phaseTime = GetTickCount();
-            }
-        if (m_reconnect && !m_firstConnect)
-            {
-            m_action = IA_CONNECT;
-            }
-        break;
+        NetRecv();
 
-    case 2:
-        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
-            {
-            m_phase = 1;
-            m_phaseTime = GetTickCount();
-            if (m_pStatusChangedCb != NULL)
-                m_pStatusChangedCb(0, m_statusChangedCbData);
-            }
+        switch (m_phase)
+        {
+            case 1:
+                if (m_action == IA_CONNECT)
+                {
+                    m_action = IA_NONE;
+                    NetSend(CONN_SYN_N);
+                    m_phase = 2;
+                    m_phaseTime = GetTickCount();
+                }
+                if (m_reconnect && !m_firstConnect)
+                {
+                    m_action = IA_CONNECT;
+                }
+                break;
 
-        if (m_action == IA_DISCONNECT)
-            {
-            m_action = IA_NONE;
-            NetSend(DISCONN_SYN_N);
-            m_phase = 4;
-            m_phaseTime = GetTickCount();
-            }
+            case 2:
+                if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
+                {
+                    m_phase = 1;
+                    m_phaseTime = GetTickCount();
+                    if (m_pStatusChangedCb != NULL)
+                        m_pStatusChangedCb(0, m_statusChangedCbData);
+                }
 
-        break;
+                if (m_action == IA_DISCONNECT)
+                {
+                    m_action = IA_NONE;
+                    NetSend(DISCONN_SYN_N);
+                    m_phase = 4;
+                    m_phaseTime = GetTickCount();
+                }
 
-    case 3:
-        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_userTimeout)
-            {
-            m_phase = 1;
-            m_phaseTime = GetTickCount();
-            if (m_pStatusChangedCb != NULL)
-                m_pStatusChangedCb(0, m_statusChangedCbData);
-            m_firstConnect = false;
-            }
+                break;
 
-        if (m_action == IA_DISCONNECT)
-            {
-            m_action = IA_NONE;
-            NetSend(DISCONN_SYN_N);
-            m_phase = 4;
-            m_phaseTime = GetTickCount();
-            }
+            case 3:
+                if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_userTimeout)
+                {
+                    m_phase = 1;
+                    m_phaseTime = GetTickCount();
+                    if (m_pStatusChangedCb != NULL)
+                        m_pStatusChangedCb(0, m_statusChangedCbData);
+                    m_firstConnect = false;
+                }
 
-        break;
+                if (m_action == IA_DISCONNECT)
+                {
+                    m_action = IA_NONE;
+                    NetSend(DISCONN_SYN_N);
+                    m_phase = 4;
+                    m_phaseTime = GetTickCount();
+                }
 
-    case 4:
-        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
-            {
-            m_phase=1;
-            m_phaseTime = GetTickCount();
-            if (m_pStatusChangedCb != NULL)
-                m_pStatusChangedCb(0, m_statusChangedCbData);
-            }
+                break;
 
-        if (m_action == IA_CONNECT)
-            {
-            m_action = IA_NONE;
-            NetSend(CONN_SYN_N);
-            m_phase = 2;
-            m_phaseTime = GetTickCount();
-            }
+            case 4:
+                if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
+                {
+                    m_phase=1;
+                    m_phaseTime = GetTickCount();
+                    if (m_pStatusChangedCb != NULL)
+                        m_pStatusChangedCb(0, m_statusChangedCbData);
+                }
 
-        break;
+                if (m_action == IA_CONNECT)
+                {
+                    m_action = IA_NONE;
+                    NetSend(CONN_SYN_N);
+                    m_phase = 2;
+                    m_phaseTime = GetTickCount();
+                }
 
-    case 5:
-        if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
-            {
-            m_phase = 1;
-            m_phaseTime = GetTickCount();
-            if (m_pStatusChangedCb != NULL)
-                m_pStatusChangedCb(0, m_statusChangedCbData);
-            }
+                break;
 
-        if (m_action == IA_CONNECT)
-            {
-            m_action = IA_NONE;
-            NetSend(CONN_SYN_N);
-            m_phase = 2;
-            m_phaseTime = GetTickCount();
-            }
+            case 5:
+                if (static_cast<int>(GetTickCount() - m_phaseTime)/1000 > m_aliveTimeout)
+                {
+                    m_phase = 1;
+                    m_phaseTime = GetTickCount();
+                    if (m_pStatusChangedCb != NULL)
+                        m_pStatusChangedCb(0, m_statusChangedCbData);
+                }
 
-        break;
+                if (m_action == IA_CONNECT)
+                {
+                    m_action = IA_NONE;
+                    NetSend(CONN_SYN_N);
+                    m_phase = 2;
+                    m_phaseTime = GetTickCount();
+                }
+
+                break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
     }
-Sleep(20);
-return;
 }
 //---------------------------------------------------------------------------
 void IA_CLIENT_PROT::GetStat(LOADSTAT * ls)

@@ -40,23 +40,6 @@ extern IA_CLIENT_PROT * clnp;
 #define LISTEN_PORT (5580)
 
 #include "css.h"
-
-//---------------------------------------------------------------------------
-#ifndef WIN32
-void * RunWeb(void *)
-{
-sigset_t signalSet;
-sigfillset(&signalSet);
-pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
-
-#else
-unsigned long WINAPI RunWeb(void *)
-{
-#endif
-while (1)
-    web->Run();
-return NULL;
-}
 //---------------------------------------------------------------------------
 WEB::WEB()
     : m_res(0),
@@ -79,19 +62,7 @@ memset(&m_ls, 0, sizeof(m_ls));
 //---------------------------------------------------------------------------
 void WEB::Start()
 {
-#ifdef WIN32
-unsigned long pt;
-CreateThread(
-    NULL,   // pointer to thread security attributes
-    16384,  // initial thread stack size, in bytes
-    RunWeb, // pointer to thread function
-    NULL,   // argument for new thread
-    0,      // CREATE_SUSPENDED, // creation flags
-    &pt     // pointer to returned thread identifier
-   );
-#else
-pthread_create(&m_thread, NULL, RunWeb, NULL);
-#endif
+m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 }
 //---------------------------------------------------------------------------
 void WEB::PrepareNet()
@@ -143,11 +114,15 @@ void WEB::SetListenAddr(uint32_t ip)
 m_listenWebAddr = ip;
 }
 //---------------------------------------------------------------------------
-void WEB::Run()
+void WEB::Run(std::stop_token token) noexcept
 {
+sigset_t signalSet;
+sigfillset(&signalSet);
+pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
+
 PrepareNet();
 char recvBuffer[4096];
-while (1)
+while (!token.stop_requested())
     {
     struct sockaddr_in outerAddr;
 

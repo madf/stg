@@ -71,8 +71,8 @@ GetUsers();
 m_onAddUserConn = users->onAdd([this](auto user){ AddUser(user); });
 m_onDelUserConn = users->onDel([this](auto user){ DelUser(user); });
 
-pinger.SetDelayTime(pingSettings.GetPingDelay());
-pinger.Start();
+m_pinger.SetDelayTime(pingSettings.GetPingDelay());
+m_pinger.Start();
 
 m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
 
@@ -86,7 +86,7 @@ std::lock_guard lock(m_mutex);
 if (!m_thread.joinable())
     return 0;
 
-pinger.Stop();
+m_pinger.Stop();
 m_thread.request_stop();
 //5 seconds to thread stops itself
 struct timespec ts = {0, 200000000};
@@ -137,7 +137,7 @@ while (!token.stop_requested())
                 {
                 uint32_t ip = (*iter)->GetProperties().ips.ConstData()[0].ip;
                 time_t t;
-                if (pinger.GetIPTime(ip, &t) == 0)
+                if (m_pinger.GetIPTime(ip, t) == 0)
                     {
                     if (t != 0)
                         (*iter)->UpdatePingTime(t);
@@ -149,7 +149,7 @@ while (!token.stop_requested())
                 if (ip != 0)
                     {
                     time_t t;
-                    if (pinger.GetIPTime(ip, &t) == 0)
+                    if (m_pinger.GetIPTime(ip, t) == 0)
                         {
                         if (t != 0)
                             (*iter)->UpdatePingTime(t);
@@ -202,13 +202,13 @@ while (users->SearchNext(h, &u) == 0)
     SetUserNotifiers(u);
     if (u->GetProperties().ips.ConstData().onlyOneIP())
         {
-        pinger.AddIP(u->GetProperties().ips.ConstData()[0].ip);
+        m_pinger.AddIP(u->GetProperties().ips.ConstData()[0].ip);
         }
     else
         {
         uint32_t ip = u->GetCurrIP();
         if (ip != 0)
-            pinger.AddIP(ip);
+            m_pinger.AddIP(ip);
         }
     }
 
@@ -245,16 +245,16 @@ while (users_iter != usersList.end())
 //-----------------------------------------------------------------------------
 void PING::updateCurrIP(uint32_t oldVal, uint32_t newVal)
 {
-    pinger.DelIP(oldVal);
+    m_pinger.DelIP(oldVal);
     if (newVal != 0)
-        pinger.AddIP(newVal);
+        m_pinger.AddIP(newVal);
 }
 //-----------------------------------------------------------------------------
 void PING::updateIPs(const UserIPs& oldVal, const UserIPs& newVal)
 {
     if (oldVal.onlyOneIP())
-        pinger.DelIP(oldVal[0].ip);
+        m_pinger.DelIP(oldVal[0].ip);
 
     if (newVal.onlyOneIP())
-        pinger.AddIP(newVal[0].ip);
+        m_pinger.AddIP(newVal[0].ip);
 }

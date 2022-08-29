@@ -32,12 +32,15 @@
 #include <string>
 #include <vector>
 #include <map>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 #ifndef WIN32
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <pthread.h>
 #else
 #include <winsock2.h>
 #endif
@@ -59,12 +62,6 @@ typedef void (*tpCallBackDirNameFn)(const std::vector<std::string> & dirName, vo
 //---------------------------------------------------------------------------
 class IA_CLIENT_PROT
 {
-#ifdef WIN32
-friend unsigned long WINAPI RunW(void * data);
-#else
-friend void * RunL(void * data);
-#endif
-
     public:
         IA_CLIENT_PROT(const std::string & sn, uint16_t p, const std::string & localName = "", uint16_t localPort = 0);
         ~IA_CLIENT_PROT();
@@ -103,10 +100,9 @@ friend void * RunL(void * data);
         uint32_t    GetIP() const { return m_ip; };
 
     private:
-        void            Run();
+        void            Run(std::stop_token token);
         int             NetRecv();
         int             NetSend(int n);
-        bool            GetNonstop() const { return m_nonstop; };
         void            PrepareNet();
         int             DeterminatePacketType(const char * buffer);
 
@@ -135,7 +131,6 @@ friend void * RunL(void * data);
         std::string     m_infoText;
         mutable std::string m_strError;
         mutable int     m_codeError;
-        bool            m_nonstop;
         bool            m_isNetPrepared;
         bool            m_proxyMode;
 
@@ -150,7 +145,7 @@ friend void * RunL(void * data);
         #ifdef WIN32
         WSADATA m_wsaData;
         #else
-        pthread_t m_thread;
+        std::jthread m_thread;
         #endif
 
         std::string     m_serverName;
@@ -185,18 +180,13 @@ friend void * RunL(void * data);
         std::map<std::string, int> m_packetTypes;
 
         CONN_SYN_8        * m_connSyn8;
-        const CONN_SYN_ACK_8    * m_connSynAck8;
+        const CONN_SYN_ACK_8 * m_connSynAck8;
         CONN_ACK_8        * m_connAck8;
-        const ALIVE_SYN_8       * m_aliveSyn8;
+        const ALIVE_SYN_8 * m_aliveSyn8;
         ALIVE_ACK_8       * m_aliveAck8;
         DISCONN_SYN_8     * m_disconnSyn8;
         const DISCONN_SYN_ACK_8 * m_disconnSynAck8;
         DISCONN_ACK_8     * m_disconnAck8;
-        const INFO_8            * m_info;
+        const INFO_8      * m_info;
 };
 //---------------------------------------------------------------------------
-#ifdef WIN32
-unsigned long WINAPI RunW(void *);
-#else
-void * RunW(void *);
-#endif

@@ -81,7 +81,6 @@ return "cap_divert v.1.0";
 DIVERT_CAP::DIVERT_CAP()
     : port(0),
       disableForwarding(false),
-      nonstop(false),
       isRunning(false),
       traffCnt(NULL),
       logger(STG::PluginLogger::get("cap_divert"))
@@ -100,15 +99,7 @@ if (DivertCapOpen() < 0)
     return -1;
     }
 
-nonstop = true;
-
-if (pthread_create(&thread, NULL, Run, this))
-    {
-    errorStr = "Cannot create thread.";
-    logger("Cannot create thread.");
-    printfd(__FILE__, "Cannot create thread\n");
-    return -1;
-    }
+m_thread = std::jthread([](auto token){ Run(std::move(token)); });
 
 return 0;
 }
@@ -120,11 +111,9 @@ if (!isRunning)
 
 DivertCapClose();
 
-nonstop = false;
-
+m_thread.request_stop();
 //5 seconds to thread stops itself
-int i;
-for (i = 0; i < 25; i++)
+for (size_t i = 0; i < 25; i++)
     {
     if (!isRunning)
         break;
@@ -135,44 +124,36 @@ for (i = 0; i < 25; i++)
 
 //after 5 seconds waiting thread still running. now killing it
 if (isRunning)
-    {
-    if (pthread_kill(thread, SIGINT))
-        {
-        errorStr = "Cannot kill thread.";
-        logger("Cannot send signal to thread.");
-        printfd(__FILE__, "Cannot kill thread\n");
-        return -1;
-        }
-    }
+    m_thread.detach();
+else
+    m_thread.join();
 
 return 0;
 }
 //-----------------------------------------------------------------------------
-void * DIVERT_CAP::Run(void * d)
+void DIVERT_CAP::Run(std::stop_token token) noexcept
 {
 sigset_t signalSet;
 sigfillset(&signalSet);
 pthread_sigmask(SIG_BLOCK, &signalSet, NULL);
 
-DIVERT_CAP * dc = static_cast<DIVERT_CAP *>(d);
-dc->isRunning = true;
+isRunning = true;
 
 char buffer[STG::packetSize + 14];
-while (dc->nonstop)
+while (!token.stop_requested())
     {
     STG::RawPacket rp;
-    dc->DivertCapRead(buffer, sizeof(buffer), NULL);
+    DivertCapRead(buffer, sizeof(buffer), NULL);
 
     if (buffer[12] != 0x8)
         continue;
 
     memcpy(&rp.rawPacket, &buffer[14], STG::packetSize);
 
-    dc->traffCnt->process(rp);
+    traffCnt->process(rp);
     }
 
-dc->isRunning = false;
-return NULL;
+isRunning = false;
 }
 //-----------------------------------------------------------------------------
 int DIVERT_CAP::DivertCapOpen()

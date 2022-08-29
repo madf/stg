@@ -26,8 +26,10 @@
 #include "stg/logger.h"
 
 #include <string>
-
-#include <pthread.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 
 namespace STG
 {
@@ -61,7 +63,7 @@ private:
     DIVERT_CAP(const DIVERT_CAP & rvalue);
     DIVERT_CAP & operator=(const DIVERT_CAP & rvalue);
 
-    static void *       Run(void *);
+    void                Run(std::stop_token token) noexcept;
 
     int                 DivertCapOpen();
     int                 DivertCapOpen(int n);
@@ -76,9 +78,8 @@ private:
 
     mutable std::string errorStr;
 
-    pthread_t           thread;
+    std::jthread        m_thread;
 
-    bool                nonstop;
     bool                isRunning;
 
     STG::TraffCounter *      traffCnt;

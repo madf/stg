@@ -7,8 +7,12 @@
 #pragma once
 
 #include <string>
-#include <list>
 #include <map>
+#include <mutex>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#include <jthread.hpp>
+#pragma GCC diagnostic pop
 #include <ctime>
 #include <cstdint>
 
@@ -82,50 +86,43 @@ struct PING_MESSAGE
 class STG_PINGER
 {
     public:
-        typedef std::multimap<uint32_t, time_t> PingIPs;
-        typedef PingIPs::size_type SizeType;
+        using PingIPs = std::multimap<uint32_t, time_t>;
 
-                explicit STG_PINGER(time_t delay = 15);
-                ~STG_PINGER();
+                explicit STG_PINGER(unsigned delay = 15);
 
-        int     Start();
-        int     Stop();
+        bool    Start();
+        bool    Stop();
         void    AddIP(uint32_t ip);
         void    DelIP(uint32_t ip);
-        SizeType GetPingIPNum() const { return m_pingIP.size(); }
+        auto    GetPingIPNum() const { std::lock_guard lock(m_mutex); return m_pingIPs.size(); }
         void    PrintAllIP();
-        int     GetIPTime(uint32_t ip, time_t * t) const;
-        void    SetDelayTime(time_t d) { m_delay = d; }
-        time_t  GetDelayTime() const { return m_delay; }
-        const std::string & GetStrError() const { return m_errorStr; }
+        bool    GetIPTime(uint32_t ip, time_t& t) const;
+        void    SetDelayTime(unsigned d) { m_delay = d; }
+        unsigned GetDelayTime() const { return m_delay; }
+        const std::string& GetStrError() const { return m_errorStr; }
 
     private:
-        uint16_t    PingCheckSum(void * data, int len);
-        int         SendPing(uint32_t ip);
+        uint16_t    PingCheckSum(const void* data, int len);
+        bool        SendPing(uint32_t ip);
         uint32_t    RecvPing();
-        void        RealAddIP();
-        void        RealDelIP();
 
-        static void * RunSendPing(void * d);
-        static void * RunRecvPing(void * d);
+        void RunSendPing(std::stop_token token);
+        void RunRecvPing(std::stop_token token);
 
-        time_t      m_delay;
-        bool        m_nonstop;
+        mutable std::mutex m_mutex;
+
+        unsigned    m_delay;
         bool        m_isRunningRecver;
         bool        m_isRunningSender;
         int         m_sendSocket;
         int         m_recvSocket;
-        pthread_t   m_sendThread;
-        pthread_t   m_recvThread;
+        std::jthread m_sendThread;
+        std::jthread m_recvThread;
 
         PING_MESSAGE m_pmSend;
         uint32_t    m_pid;
 
         std::string m_errorStr;
 
-        std::multimap<uint32_t, time_t> m_pingIP;
-        std::list<uint32_t>          m_ipToAdd;
-        std::list<uint32_t>          m_ipToDel;
-
-        mutable pthread_mutex_t m_mutex;
+        PingIPs m_pingIPs;
 };

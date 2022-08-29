@@ -128,9 +128,8 @@ assert(h && "USERS::OpenSearch is always correct");
 m_onIPConns.clear();
 
 //5 seconds to thread stops itself
-struct timespec ts = {0, 200000000};
 for (int i = 0; i < 25 && !stopped; i++)
-    nanosleep(&ts, NULL);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
 if (!stopped)
 {
@@ -155,10 +154,9 @@ stopped = false;
 int c = 0;
 
 time_t touchTime = stgTime - MONITOR_TIME_DELAY_SEC;
-struct timespec ts = {0, 500000000};
 while (!token.stop_requested())
     {
-    nanosleep(&ts, 0);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     if (token.stop_requested())
         {
         FlushAndRemove();

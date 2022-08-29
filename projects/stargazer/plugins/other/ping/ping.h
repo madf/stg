@@ -69,7 +69,7 @@ class PING : public Plugin
         void UnSetUserNotifiers(UserPtr u);
         void Run(std::stop_token token);
 
-        mutable std::string errorStr;
+        std::string errorStr;
         PING_SETTINGS pingSettings;
         ModuleSettings settings;
         Users * users;
@@ -78,7 +78,7 @@ class PING : public Plugin
         std::jthread m_thread;
         std::mutex m_mutex;
         bool isRunning;
-        mutable STG_PINGER pinger;
+        STG_PINGER m_pinger;
 
         void updateCurrIP(uint32_t oldVal, uint32_t newVal);
         void updateIPs(const UserIPs& oldVal, const UserIPs& newVal);
