@@ -27,9 +27,9 @@
 #include "stg/logger.h"
 
 #include <string>
+#include <mutex>
 
 #include <sys/types.h>
-#include <pthread.h>
 
 //-----------------------------------------------------------------------------
 class FILES_STORE_SETTINGS
@@ -201,7 +201,7 @@ class FILES_STORE: public STG::Store
         std::string m_version;
         FILES_STORE_SETTINGS m_storeSettings;
         STG::ModuleSettings m_settings;
-        mutable pthread_mutex_t m_mutex;
+        mutable std::mutex m_mutex;
 
         STG::PluginLogger m_logger;
 };

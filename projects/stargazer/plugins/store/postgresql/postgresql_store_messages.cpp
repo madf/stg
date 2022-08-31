@@ -30,7 +30,6 @@
 #include "postgresql_store.h"
 
 #include "stg/common.h"
-#include "stg/locker.h"
 #include "stg/message.h"
 
 #include <string>
@@ -42,7 +41,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -145,7 +144,7 @@ return 0;
 int POSTGRESQL_STORE::EditMessage(const STG::Message & msg,
                                   const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -231,7 +230,7 @@ int POSTGRESQL_STORE::GetMessage(uint64_t id,
                                  STG::Message * msg,
                                  const std::string &) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -309,7 +308,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelMessage(uint64_t id, const std::string &) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -361,7 +360,7 @@ return 0;
 int POSTGRESQL_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList,
                                    const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

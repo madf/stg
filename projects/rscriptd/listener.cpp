@@ -22,7 +22,6 @@
 #include "listener.h"
 
 #include "stg/scriptexecuter.h"
-#include "stg/locker.h"
 #include "stg/common.h"
 #include "stg/const.h"
 

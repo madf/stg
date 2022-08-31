@@ -30,7 +30,6 @@
 
 #include "tariffs_impl.h"
 
-#include "stg/locker.h"
 #include "stg/logger.h"
 #include "stg/store.h"
 #include "stg/admin.h"

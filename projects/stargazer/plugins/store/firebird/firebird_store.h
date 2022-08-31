@@ -21,7 +21,6 @@
 #pragma once
 
 #include "stg/store.h"
-#include "stg/locker.h"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #include "stg/ibpp.h"
@@ -32,6 +31,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <mutex>
 
 class FIREBIRD_STORE : public STG::Store
 {
@@ -114,7 +114,7 @@ class FIREBIRD_STORE : public STG::Store
         std::string db_server, db_database, db_user, db_password;
         STG::ModuleSettings settings;
         mutable IBPP::Database db;
-        mutable pthread_mutex_t mutex;
+        mutable std::mutex m_mutex;
         IBPP::TIL til;
         IBPP::TLR tlr;
         int schemaVersion;

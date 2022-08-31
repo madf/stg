@@ -36,7 +36,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddMessage(STG::Message * msg, const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -73,7 +73,7 @@ return 0;
 int FIREBIRD_STORE::EditMessage(const STG::Message & msg,
                                 const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -111,7 +111,7 @@ int FIREBIRD_STORE::GetMessage(uint64_t id,
                                STG::Message * msg,
                                const std::string &) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -157,7 +157,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelMessage(uint64_t id, const std::string &) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -185,7 +185,7 @@ return 0;
 int FIREBIRD_STORE::GetMessageHdrs(std::vector<STG::Message::Header> * hdrsList,
                                    const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);

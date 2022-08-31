@@ -35,7 +35,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -66,7 +66,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveCorp(const STG::CorpConf & cc) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -94,7 +94,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreCorp(STG::CorpConf * cc, const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -132,7 +132,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -159,7 +159,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);

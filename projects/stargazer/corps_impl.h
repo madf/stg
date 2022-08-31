@@ -22,7 +22,6 @@
 
 #include "stg/corporations.h"
 #include "stg/corp_conf.h"
-#include "stg/locker.h"
 #include "stg/logger.h"
 
 #include <vector>

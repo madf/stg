@@ -25,7 +25,6 @@
 #include "inetaccess.h"
 
 #include "stg/common.h"
-#include "stg/locker.h"
 #include "stg/tariff.h"
 #include "stg/settings.h"
 

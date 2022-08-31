@@ -24,7 +24,6 @@
 #include "ur_functor.h"
 
 #include "stg/common.h"
-#include "stg/locker.h"
 #include "stg/users.h"
 #include "stg/user_property.h"
 #include "stg/logger.h"

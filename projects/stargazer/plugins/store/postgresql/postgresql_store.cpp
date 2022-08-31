@@ -66,7 +66,6 @@ POSTGRESQL_STORE::POSTGRESQL_STORE()
       connection(NULL),
       logger(STG::PluginLogger::get("store_postgresql"))
 {
-pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 POSTGRESQL_STORE::~POSTGRESQL_STORE()
@@ -75,7 +74,6 @@ if (connection)
     {
     PQfinish(connection);
     }
-pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::ParseSettings()

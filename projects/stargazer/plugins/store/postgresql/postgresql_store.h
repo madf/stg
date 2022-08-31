@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include <libpq-fe.h>
 
@@ -148,7 +149,7 @@ class POSTGRESQL_STORE : public STG::Store
         std::string password;
         std::string clientEncoding;
         STG::ModuleSettings settings;
-        mutable pthread_mutex_t mutex;
+        mutable std::mutex m_mutex;
         mutable int version;
         int retries;
 

@@ -28,7 +28,6 @@
 
 #include "postgresql_store.h"
 
-#include "stg/locker.h"
 #include "stg/common.h"
 #include "stg/admin_conf.h"
 #include "stg/blowfish.h"
@@ -44,7 +43,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetAdminsList(std::vector<std::string> * adminsList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -100,7 +99,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -199,7 +198,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -320,7 +319,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -390,7 +389,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

@@ -22,7 +22,6 @@
 
 #include "stg/services.h"
 #include "stg/service_conf.h"
-#include "stg/locker.h"
 #include "stg/noncopyable.h"
 #include "stg/logger.h"
 

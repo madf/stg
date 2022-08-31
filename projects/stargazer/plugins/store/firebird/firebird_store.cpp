@@ -52,7 +52,6 @@ FIREBIRD_STORE::FIREBIRD_STORE()
       schemaVersion(0),
       logger(STG::PluginLogger::get("store_firebird"))
 {
-pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 FIREBIRD_STORE::~FIREBIRD_STORE()

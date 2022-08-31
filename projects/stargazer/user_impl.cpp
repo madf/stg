@@ -154,11 +154,6 @@ m_afterDisabledConn = properties.disabled.afterChange([this](auto oldVal, auto n
 m_beforeTariffConn = properties.tariffName.beforeChange([this](const auto& oldVal, const auto& newVal){ onTariffChange(oldVal, newVal); });
 m_beforeCashConn = properties.cash.beforeChange([this](auto oldVal, auto newVal){ onCashChange(oldVal, newVal); });
 m_afterIPConn = ips.afterChange([this](const auto& oldVal, const auto& newVal){ onIPChange(oldVal, newVal); });
-
-pthread_mutexattr_t attr;
-pthread_mutexattr_init(&attr);
-pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-pthread_mutex_init(&mutex, &attr);
 }
 //-----------------------------------------------------------------------------
 UserImpl::UserImpl(const UserImpl & u)
@@ -232,21 +227,11 @@ UserImpl::UserImpl(const UserImpl & u)
     m_afterIPConn = ips.afterChange([this](const auto& oldVal, const auto& newVal){ onIPChange(oldVal, newVal); });
 
     properties.SetProperties(u.properties);
-
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&mutex, &attr);
-}
-//-----------------------------------------------------------------------------
-UserImpl::~UserImpl()
-{
-pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 void UserImpl::SetLogin(const std::string & l)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 static int idGen = 0;
 assert(login.empty() && "Login is already set");
 login = l;
@@ -255,7 +240,7 @@ id = idGen++;
 //-----------------------------------------------------------------------------
 int UserImpl::ReadConf()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 UserConf conf;
 
 if (store->RestoreUserConf(&conf, login))
@@ -303,7 +288,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int UserImpl::ReadStat()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 UserStat stat;
 
 if (store->RestoreUserStat(&stat, login))
@@ -322,7 +307,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int UserImpl::WriteConf()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 UserConf conf(properties.GetConf());
 
 printfd(__FILE__, "UserImpl::WriteConf()\n");
@@ -341,7 +326,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int UserImpl::WriteStat()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 UserStat stat(properties.GetStat());
 
 if (store->SaveUserStat(stat, login))
@@ -360,7 +345,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int UserImpl::WriteMonthStat()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 time_t tt = stgTime - 3600;
 struct tm t1;
 localtime_r(&tt, &t1);
@@ -380,7 +365,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int UserImpl::Authorize(uint32_t ip, uint32_t dirs, const Auth * auth)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 /*
  *  Authorize user. It only means that user will be authorized. Nothing more.
  *  User can be connected or disconnected while authorized.
@@ -458,7 +443,7 @@ return 0;
 //-----------------------------------------------------------------------------
 void UserImpl::Unauthorize(const Auth * auth, const std::string & reason)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 /*
  *  Authorizer tries to unauthorize user, that was not authorized by it
  */
@@ -480,14 +465,14 @@ if (authorizedBy.empty())
 //-----------------------------------------------------------------------------
 bool UserImpl::IsAuthorizedBy(const Auth * auth) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 // Is this user authorized by specified authorizer?
 return authorizedBy.find(auth) != authorizedBy.end();
 }
 //-----------------------------------------------------------------------------
 std::vector<std::string> UserImpl::GetAuthorizers() const
 {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard lock(m_mutex);
     std::vector<std::string> list;
     std::transform(authorizedBy.begin(), authorizedBy.end(), std::back_inserter(list), [](const auto auth){ return auth->GetVersion(); });
     return list;
@@ -498,8 +483,6 @@ void UserImpl::Connect(bool fakeConnect)
 /*
  * Connect user to Internet. This function is differ from Authorize() !!!
  */
-
-STG_LOCKER lock(&mutex);
 
 if (!fakeConnect)
     {
@@ -551,8 +534,6 @@ void UserImpl::Disconnect(bool fakeDisconnect, const std::string & reason)
 /*
  *  Disconnect user from Internet. This function is differ from UnAuthorize() !!!
  */
-
-STG_LOCKER lock(&mutex);
 
 if (!lastIPForDisconnect)
     {
@@ -618,7 +599,7 @@ sessionDownloadModTime = stgTime;
 //-----------------------------------------------------------------------------
 void UserImpl::Run()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (stgTime > lastWriteStat + settings->GetStatWritePeriod())
     {
@@ -675,7 +656,7 @@ else
 //-----------------------------------------------------------------------------
 void UserImpl::UpdatePingTime(time_t t)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 if (t)
     pingTime = t;
 else
@@ -710,7 +691,7 @@ void UserImpl::AddTraffStatU(int dir, uint32_t ip, uint16_t port, uint32_t len)
 void UserImpl::AddTraffStatU(int dir, uint32_t ip, uint32_t len)
 #endif
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (!m_connected || tariff == NULL)
     return;
@@ -803,7 +784,7 @@ void UserImpl::AddTraffStatD(int dir, uint32_t ip, uint16_t port, uint32_t len)
 void UserImpl::AddTraffStatD(int dir, uint32_t ip, uint32_t len)
 #endif
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (!m_connected || tariff == NULL)
     return;
@@ -891,7 +872,7 @@ else
 //-----------------------------------------------------------------------------
 void UserImpl::OnAdd()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 std::string scriptOnAdd = settings->GetScriptsDir() + "/OnUserAdd";
 
@@ -909,7 +890,7 @@ else
 //-----------------------------------------------------------------------------
 void UserImpl::OnDelete()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 std::string scriptOnDel = settings->GetScriptsDir() + "/OnUserDel";
 
@@ -946,7 +927,7 @@ if (!traffStatSaved.second.empty())
 TraffStat ts;
 
     {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard lock(m_mutex);
     ts.swap(traffStat);
     }
 
@@ -962,7 +943,7 @@ if (ts.size() && !disabledDetailStat)
         if (!hard)
             {
             printfd(__FILE__, "UserImpl::WriteDetailStat() - pushing detail stat to queue\n");
-            STG_LOCKER lock(&mutex);
+            std::lock_guard lock(m_mutex);
             traffStatSaved.second.swap(ts);
             traffStatSaved.first = lastWriteDetailedStat;
             }
@@ -975,8 +956,12 @@ return 0;
 //-----------------------------------------------------------------------------
 double UserImpl::GetPassiveTimePart() const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
+return getPassiveTimePart();
+}
 
+double UserImpl::getPassiveTimePart() const
+{
 static const std::array<unsigned, 12> daysInMonth{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 struct tm tms;
@@ -1001,7 +986,7 @@ return static_cast<double>(dt) / secMonth;
 //-----------------------------------------------------------------------------
 void UserImpl::SetPassiveTimeAsNewUser()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 time_t t = stgTime;
 struct tm tm;
@@ -1015,7 +1000,7 @@ passiveTime = static_cast<time_t>(pt * 24 * 3600 * daysCurrMon);
 //-----------------------------------------------------------------------------
 void UserImpl::MidnightResetSessionStat()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (m_connected)
     {
@@ -1026,7 +1011,7 @@ if (m_connected)
 //-----------------------------------------------------------------------------
 void UserImpl::ProcessNewMonth()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 //  Reset traff
 if (m_connected)
     Disconnect(true, "fake");
@@ -1069,7 +1054,7 @@ if (nextTariff.ConstData() != "")
 //-----------------------------------------------------------------------------
 void UserImpl::ProcessDayFeeSpread()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (passive.ConstData() || tariff == NULL)
     return;
@@ -1106,7 +1091,7 @@ ResetPassiveTime();
 //-----------------------------------------------------------------------------
 void UserImpl::ProcessDayFee()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (tariff == NULL)
     return;
@@ -1117,7 +1102,7 @@ if (tariff->GetPeriod() != Tariff::MONTH)
 double passiveTimePart = 1.0;
 if (!settings->GetFullFee())
     {
-    passiveTimePart = GetPassiveTimePart();
+    passiveTimePart = getPassiveTimePart();
     }
 else
     {
@@ -1177,7 +1162,7 @@ switch (settings->GetFeeChargeType())
 //-----------------------------------------------------------------------------
 void UserImpl::ProcessDailyFee()
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (passive.ConstData() || tariff == NULL)
     return;
@@ -1214,10 +1199,12 @@ struct tm tms;
 time_t t = stgTime;
 localtime_r(&t, &tms);
 
+std::lock_guard lock(m_mutex);
+
 double passiveTimePart = 1.0;
 if (!settings->GetFullFee())
     {
-    passiveTimePart = GetPassiveTimePart();
+    passiveTimePart = getPassiveTimePart();
     }
 else
     {
@@ -1285,7 +1272,7 @@ if (tariff != NULL)
 //-----------------------------------------------------------------------------
 int UserImpl::AddMessage(Message * msg)
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (SendMessage(*msg))
     {
@@ -1425,6 +1412,7 @@ std::string UserImpl::GetParamValue(const std::string & name) const
 //-----------------------------------------------------------------------------
 void UserImpl::onPassiveChange(int oldVal, int newVal)
 {
+    std::lock_guard lock(m_mutex);
     if (newVal && !oldVal && tariff != NULL)
         properties.cash.Set(cash - tariff->GetPassiveCost(),
                             *sysAdmin,
@@ -1435,6 +1423,7 @@ void UserImpl::onPassiveChange(int oldVal, int newVal)
 //-----------------------------------------------------------------------------
 void UserImpl::onDisabledChange(int oldVal, int newVal)
 {
+    std::lock_guard lock(m_mutex);
     if (oldVal && !newVal && GetConnected())
         Disconnect(false, "disabled");
     else if (!oldVal && newVal && IsInetable())
@@ -1443,7 +1432,7 @@ void UserImpl::onDisabledChange(int oldVal, int newVal)
 //-----------------------------------------------------------------------------
 void UserImpl::onTariffChange(const std::string& /*oldVal*/, const std::string& newVal)
 {
-    STG_LOCKER lock(&mutex);
+    std::lock_guard lock(m_mutex);
     if (settings->GetReconnectOnTariffChange() && m_connected)
         Disconnect(false, "Change tariff");
     tariff = tariffs->FindByName(newVal);
@@ -1466,6 +1455,7 @@ void UserImpl::onCashChange(double oldVal, double newVal)
 //-----------------------------------------------------------------------------
 void UserImpl::onIPChange(const UserIPs& oldVal, const UserIPs& newVal)
 {
+    std::lock_guard lock(m_mutex);
     printfd(__FILE__, "Change IP from '%s' to '%s'\n", oldVal.toString().c_str(), newVal.toString().c_str());
     if (m_connected)
         Disconnect(false, "Change IP");

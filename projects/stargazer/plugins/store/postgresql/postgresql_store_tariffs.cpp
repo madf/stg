@@ -30,7 +30,6 @@
 
 #include "stg/tariff_conf.h"
 #include "stg/common.h"
-#include "stg/locker.h"
 
 #include <string>
 #include <vector>
@@ -49,7 +48,7 @@ const int pt_mega = 1024 * 1024;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetTariffsList(std::vector<std::string> * tariffsList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -105,7 +104,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -168,7 +167,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelTariff(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -232,7 +231,7 @@ return 0;
 int POSTGRESQL_STORE::SaveTariff(const STG::TariffData & td,
                                  const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -417,7 +416,7 @@ return 0;
 int POSTGRESQL_STORE::RestoreTariff(STG::TariffData * td,
                                     const std::string & tariffName) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

@@ -1,7 +1,6 @@
 #include "ping.h"
 
 #include "stg/user.h"
-#include "stg/locker.h"
 #include "stg/user_property.h"
 
 #include <algorithm>

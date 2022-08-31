@@ -40,7 +40,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetAdminsList(std::vector<std::string> * adminsList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -71,7 +71,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveAdmin(const STG::AdminConf & ac) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -129,7 +129,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::RestoreAdmin(STG::AdminConf * ac, const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -192,7 +192,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -230,7 +230,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelAdmin(const std::string & login) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);

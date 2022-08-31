@@ -31,7 +31,6 @@
 
 #include "stg/service_conf.h"
 #include "stg/common.h"
-#include "stg/locker.h"
 
 #include <string>
 #include <vector>
@@ -42,7 +41,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetServicesList(std::vector<std::string> * servicesList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -98,7 +97,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveService(const STG::ServiceConf & sc) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -178,7 +177,7 @@ return 0;
 int POSTGRESQL_STORE::RestoreService(STG::ServiceConf * sc,
                                      const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -265,7 +264,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddService(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -332,7 +331,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelService(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

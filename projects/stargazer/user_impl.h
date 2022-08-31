@@ -33,6 +33,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <mutex>
 
 #include <ctime>
 #include <cstdint>
@@ -66,7 +67,6 @@ class UserImpl : public User
                   const Users * u,
                   const Services & svcs);
         UserImpl(const UserImpl & u);
-        virtual ~UserImpl();
 
         int             ReadConf();
         int             ReadStat();
@@ -253,9 +253,11 @@ class UserImpl : public User
         ScopedConnection m_afterIPConn;
         void onIPChange(const UserIPs& oldVal, const UserIPs& newVal);
 
-        mutable pthread_mutex_t  mutex;
+        mutable std::mutex  m_mutex;
 
         std::string              errorStr;
+
+        double getPassiveTimePart() const;
 };
 //-----------------------------------------------------------------------------
 

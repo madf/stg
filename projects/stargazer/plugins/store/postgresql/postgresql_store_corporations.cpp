@@ -29,7 +29,6 @@
 #include "postgresql_store.h"
 
 #include "stg/corp_conf.h"
-#include "stg/locker.h"
 #include "stg/common.h"
 
 #include <string>
@@ -41,7 +40,7 @@
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::GetCorpsList(std::vector<std::string> * corpsList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -97,7 +96,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::SaveCorp(const STG::CorpConf & cc) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -163,7 +162,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::RestoreCorp(STG::CorpConf * cc, const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -246,7 +245,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::AddCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {
@@ -313,7 +312,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int POSTGRESQL_STORE::DelCorp(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 if (PQstatus(connection) != CONNECTION_OK)
     {

@@ -7,7 +7,6 @@
 #include "stg/subscriptions.h"
 #include "stg/admin_conf.h"
 #include "stg/logger.h"
-#include "stg/locker.h"
 #include "stg/settings.h"
 #include "stg/scriptexecuter.h"
 #include "stg/common.h"

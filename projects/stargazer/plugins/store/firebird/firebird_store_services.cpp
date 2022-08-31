@@ -36,7 +36,7 @@
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::GetServicesList(std::vector<std::string> * servicesList) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -67,7 +67,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::SaveService(const STG::ServiceConf & sc) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -102,7 +102,7 @@ return 0;
 int FIREBIRD_STORE::RestoreService(STG::ServiceConf * sc,
                                    const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amRead, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -144,7 +144,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::AddService(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
@@ -172,7 +172,7 @@ return 0;
 //-----------------------------------------------------------------------------
 int FIREBIRD_STORE::DelService(const std::string & name) const
 {
-STG_LOCKER lock(&mutex);
+std::lock_guard lock(m_mutex);
 
 IBPP::Transaction tr = IBPP::TransactionFactory(db, IBPP::amWrite, til, tlr);
 IBPP::Statement st = IBPP::StatementFactory(db, tr);
