@@ -32,6 +32,9 @@ option ( BUILD_MOD_RPCCONFIG "Build XML-RPC configuretion STG module." OFF )
 option ( BUILD_MOD_CAP_PCAP "Build PCap capture STG module." OFF )
 option ( BUILD_MOD_CAP_NFQUEUE "Build NFQueue capture STG module." OFF )
 
+# Firebird is getting deprecated, negation option
+option ( BUILD_NO_MOD_STORE_FIREBIRD "Do not build Firebird store STG module." OFF )
+
 # Grouping
 option ( BUILD_ALL_MODS "Build all modules." OFF )
 option ( BUILD_ALL_LIBS "Build all libraries." OFF )
@@ -91,6 +94,10 @@ if ( BUILD_ALL_MODS )
     set ( BUILD_MOD_RPCCONFIG ON )
     set ( BUILD_MOD_CAP_PCAP ON )
 endif ( BUILD_ALL_MODS )
+
+if ( BUILD_NO_MOD_STORE_FIREBIRD )
+    set ( BUILD_MOD_STORE_FIREBIRD OFF )
+endif ( BUILD_NO_MOD_STORE_FIREBIRD )
 
 if ( BUILD_MOD_STORE_FIREBIRD OR BUILD_ALL_LIBS )
     set ( BUILD_LIB_IBPP ON )
