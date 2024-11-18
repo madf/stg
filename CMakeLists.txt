@@ -11,6 +11,7 @@ option ( BUILD_SGAUTH "Build SGAuth client." OFF )
 
 # General modules
 option ( BUILD_MOD_AO "Build AlwaysOnline STG module." ON )
+option ( BUILD_MOD_RADIUS "Build Radius STG module." ON )
 option ( BUILD_MOD_IA "Buils InetAccess STG module." ON )
 option ( BUILD_MOD_SGCONFIG "Build SGConfig STG module." ON )
 option ( BUILD_MOD_PING "Build Ping STG module." ON )
