@@ -12,10 +12,16 @@ extern "C" STG::Plugin* GetPlugin()
 
 std::string RADIUS::GetVersion() const
 {
-return "Always Online authorizator v.1.0";
+return "Radius authorizator v.1.0";
 }
 
 RADIUS::RADIUS()
 {
+}
+
+int RADIUS::SendMessage(const Message &, uint32_t) const
+{
+errorStr = "Authorization modele \'Radius\' does not support sending messages";
+return -1;
 }
 
