@@ -15,4 +15,13 @@ class RADIUS : public Auth
 {
     public:
         RADIUS();
+
+        std::string GetVersion() const override;
+        int SendMessage(const Message & msg, uint32_t ip) const override;
+
+        void SetUsers(Users * u) override { users = u; }
+
+        int Start() override;
+
+
 };
