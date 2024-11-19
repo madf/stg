@@ -28,11 +28,12 @@ namespace STG
 
             int SendMessage(const Message & msg, uint32_t ip) const override;
         private:
-
             void AddUser(UserPtr u);
             void DelUser(UserPtr u);
 
             void GetUsers();
+            void SetUserNotifiers(UserPtr u);
+            void UnSetUserNotifiers(UserPtr u);
             void UpdateUserAuthorization(ConstUserPtr u) const;
 
             mutable std::string errorStr;
@@ -45,6 +46,8 @@ namespace STG
 
             ScopedConnection m_onAddUserConn;
             ScopedConnection m_onDelUserConn;
+
+
 
     };
 
