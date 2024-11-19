@@ -4,24 +4,48 @@
 #include "stg/user.h"
 #include "stg/logger.h"
 
+#include <string>
+#include <vector>
+#include <list>
+
 namespace STG
 {
-class Users;
+    class Users;
 
-using UserPtr = User*;
-using ConstUserPtr = const User*;
+    using UserPtr = User*;
+    using ConstUserPtr = const User*;
 
-class RADIUS : public Auth
-{
-    public:
-        RADIUS();
+    class RADIUS : public Auth
+    {
+        public:
+            RADIUS();
 
-        std::string GetVersion() const override;
-        int SendMessage(const Message & msg, uint32_t ip) const override;
+            void SetUsers(Users * u) override { users = u; }
 
-        void SetUsers(Users * u) override { users = u; }
+            int Start() override;
+            int Stop() override;
+            std::string GetVersion() const override;
 
-        int Start() override;
+            int SendMessage(const Message & msg, uint32_t ip) const override;
+        private:
 
+            void AddUser(UserPtr u);
+            void DelUser(UserPtr u);
 
-};
+            void GetUsers();
+            void UpdateUserAuthorization(ConstUserPtr u) const;
+
+            mutable std::string errorStr;
+            Users* users;
+            std::vector<UserPtr> userList;
+            bool isRunning;
+
+            using ConnHolder = std::tuple<int, ScopedConnection, ScopedConnection, ScopedConnection, ScopedConnection>;
+            std::vector<ConnHolder> m_conns;
+
+            ScopedConnection m_onAddUserConn;
+            ScopedConnection m_onDelUserConn;
+
+    };
+
+}
