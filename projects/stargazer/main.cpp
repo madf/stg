@@ -41,6 +41,7 @@
 
 #include <fstream>
 #include <vector>
+#include <string>
 #include <set>
 #include <csignal>
 #include <cerrno>
@@ -208,6 +209,21 @@ void KillExecuters()
         ++pid;
     }
 }
+
+void PrintHelp(const std::string& programName)
+{
+    std::cout << "Usage: " << programName << "[-h/--help] [-v/--version] [-f/--foreground] [../dist]\n"
+              << "\t --help, -h            - print this help;\n"
+              << "\t --version, -v         - print version;\n"
+              << "\t --foreground, -f      - do not go into background;\n"
+              << "\t ../dist               - path to the directory where the configuration file is located .\n";
+}
+
+void PrintVersion(const std::string& programName)
+{
+    std::cout << programName << "\n"
+              << "Stargazer version" <<  " " << SERVER_VERSION << "\n";
+}
 //-----------------------------------------------------------------------------
 } // namespace anonymous
 //-----------------------------------------------------------------------------
@@ -223,7 +239,29 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    SettingsImpl settings(argc == 2 ? argv[1] : "");
+    std::string path;
+
+    if (argc == 1)
+        path = "";
+
+    for (int i = 1; i < argc; ++i)
+    {
+        const std::string arg(argv[i]);
+        if (arg == "--help" || arg == "-h")
+        {
+            PrintHelp(argv[0]);
+            return 0;
+        }
+         if (arg == "--version" || arg == "-v")
+        {
+            PrintVersion(argv[0]);
+            return 0;
+        }
+         if (arg == "../dist")
+            path = arg;
+    }
+
+    SettingsImpl settings(path);
 
     if (settings.ReadSettings())
     {
