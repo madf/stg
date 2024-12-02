@@ -240,6 +240,7 @@ int main(int argc, char* argv[])
     }
 
     std::string path;
+    bool noDaemon = false;
 
     if (argc == 1)
         path = "";
@@ -252,13 +253,16 @@ int main(int argc, char* argv[])
             PrintHelp(argv[0]);
             return 0;
         }
-         if (arg == "--version" || arg == "-v")
+        if (arg == "--version" || arg == "-v")
         {
             PrintVersion(argv[0]);
             return 0;
         }
-         if (arg == "../dist")
+        if (arg == "../dist")
             path = arg;
+
+        if (arg == "--f" || arg == "-f")
+            noDaemon = true;
     }
 
     SettingsImpl settings(path);
@@ -278,10 +282,13 @@ int main(int argc, char* argv[])
     const auto startFile = settings.GetConfDir() + START_FILE;
 #endif
 
-    if (ForkAndWait(settings.GetConfDir()) < 0)
+    if (!noDaemon)
     {
-        STG::Logger::get()("Fork error!");
-        return -1;
+        if (ForkAndWait(settings.GetConfDir()) < 0)
+        {
+            STG::Logger::get()("Fork error!");
+            return -1;
+        }
     }
 
     auto& WriteServLog = STG::Logger::get();
