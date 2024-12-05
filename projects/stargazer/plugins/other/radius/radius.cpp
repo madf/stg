@@ -10,7 +10,7 @@ extern "C" STG::Plugin* GetPlugin()
 
 std::string RADIUS::GetVersion() const
 {
-    return "Radius authorizator v.1.0";
+    return "Radius v.1.0";
 }
 
 RADIUS::RADIUS()
