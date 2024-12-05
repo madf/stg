@@ -212,11 +212,11 @@ void KillExecuters()
 
 void PrintHelp(const std::string& programName)
 {
-    std::cout << "Usage: " << programName << "[-h/--help] [-v/--version] [-f/--foreground] [../dist]\n"
+    std::cout << "Usage: " << programName << "[-h/--help] [-v/--version] [-f/--foreground] [<conf-dir-path>]\n"
               << "\t --help, -h            - print this help;\n"
               << "\t --version, -v         - print version;\n"
               << "\t --foreground, -f      - do not go into background;\n"
-              << "\t ../dist               - path to the directory where the configuration file is located .\n";
+              << "\t <conf-dir-path>       - path to the directory where the configuration file is located .\n";
 }
 
 void PrintVersion(const std::string& programName)
@@ -240,29 +240,35 @@ int main(int argc, char* argv[])
     }
 
     std::string path;
-    bool noDaemon = false;
+    bool noDaemon(false);
 
     if (argc == 1)
         path = "";
-
-    for (int i = 1; i < argc; ++i)
+    else
     {
-        const std::string arg(argv[i]);
-        if (arg == "--help" || arg == "-h")
+        for (int i = 1; i < argc; ++i)
         {
-            PrintHelp(argv[0]);
-            return 0;
-        }
-        if (arg == "--version" || arg == "-v")
-        {
-            PrintVersion(argv[0]);
-            return 0;
-        }
-        if (arg == "../dist")
-            path = arg;
+            const std::string arg(argv[i]);
+            if (arg == "--help" || arg == "-h")
+            {
+                PrintHelp(argv[0]);
+                return 0;
+            }
+            if (arg == "--version" || arg == "-v")
+            {
+                PrintVersion(argv[0]);
+                return 0;
+            }
+            if (arg == "--foreground" || arg == "-f")
+            {
+                noDaemon = true;
 
-        if (arg == "--f" || arg == "-f")
-            noDaemon = true;
+                if (argc == i + 2)
+                    path = argv[i + 1];
+            }
+            else
+                path = arg;
+        }
     }
 
     SettingsImpl settings(path);
