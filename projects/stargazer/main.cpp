@@ -216,7 +216,7 @@ void PrintHelp(const std::string& programName)
               << "\t --help, -h            - print this help;\n"
               << "\t --version, -v         - print version;\n"
               << "\t --foreground, -f      - do not go into background;\n"
-              << "\t <conf-dir-path>       - path to the directory where the configuration file is located .\n";
+              << "\t <conf-dir-path>       - path to the directory where the configuration file is located.\n";
 }
 
 void PrintVersion(const std::string& programName)
@@ -260,12 +260,7 @@ int main(int argc, char* argv[])
                 return 0;
             }
             if (arg == "--foreground" || arg == "-f")
-            {
                 noDaemon = true;
-
-                if (argc == i + 2)
-                    path = argv[i + 1];
-            }
             else
                 path = arg;
         }
