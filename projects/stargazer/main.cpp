@@ -56,10 +56,6 @@
 #include <sys/stat.h> // S_IRUSR
 #include <fcntl.h> // create
 
-#ifdef DEBUG
-    #define NO_DAEMON  (1)
-#endif
-
 #define START_FILE "/._ST_ART_ED_"
 
 using STG::SettingsImpl;
@@ -156,13 +152,8 @@ int StartScriptExecuter(char*, int msgKey, int* msgID)
     return 0;
 }
 //-----------------------------------------------------------------------------
-#ifndef NO_DAEMON
 int ForkAndWait(const std::string& confDir)
-#else
-int ForkAndWait(const std::string&)
-#endif
 {
-#ifndef NO_DAEMON
     const auto pid = fork();
     const auto startFile = confDir + START_FILE;
     unlink(startFile.c_str());
@@ -195,9 +186,9 @@ int ForkAndWait(const std::string&)
             exit(1);
             break;
     }
-#endif
     return 0;
 }
+
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
@@ -279,9 +270,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-#ifndef NO_DAEMON
     const auto startFile = settings.GetConfDir() + START_FILE;
-#endif
 
     if (!noDaemon)
     {
@@ -367,9 +356,7 @@ int main(int argc, char* argv[])
     WriteServLog("Stg started successfully.");
     WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-#ifndef NO_DAEMON
     creat(startFile.c_str(), S_IRUSR);
-#endif
 
     bool running = true;
     while (running)
