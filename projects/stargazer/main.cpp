@@ -270,8 +270,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    const auto startFile = settings.GetConfDir() + START_FILE;
-
     if (!noDaemon)
     {
         if (ForkAndWait(settings.GetConfDir()) < 0)
@@ -356,7 +354,10 @@ int main(int argc, char* argv[])
     WriteServLog("Stg started successfully.");
     WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-    creat(startFile.c_str(), S_IRUSR);
+    const auto startFile = settings.GetConfDir() + START_FILE;
+
+    if (!noDaemon)
+        creat(startFile.c_str(), S_IRUSR);
 
     bool running = true;
     while (running)
