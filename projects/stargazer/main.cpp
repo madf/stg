@@ -354,10 +354,11 @@ int main(int argc, char* argv[])
     WriteServLog("Stg started successfully.");
     WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-    const auto startFile = settings.GetConfDir() + START_FILE;
-
     if (!noDaemon)
+    {
+        const auto startFile = settings.GetConfDir() + START_FILE;
         creat(startFile.c_str(), S_IRUSR);
+    }
 
     bool running = true;
     while (running)
