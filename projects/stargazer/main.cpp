@@ -41,6 +41,7 @@
 
 #include <fstream>
 #include <vector>
+#include <string>
 #include <set>
 #include <csignal>
 #include <cerrno>
@@ -54,10 +55,6 @@
 #include <sys/wait.h>
 #include <sys/stat.h> // S_IRUSR
 #include <fcntl.h> // create
-
-#ifdef DEBUG
-    #define NO_DAEMON  (1)
-#endif
 
 #define START_FILE "/._ST_ART_ED_"
 
@@ -155,13 +152,8 @@ int StartScriptExecuter(char*, int msgKey, int* msgID)
     return 0;
 }
 //-----------------------------------------------------------------------------
-#ifndef NO_DAEMON
 int ForkAndWait(const std::string& confDir)
-#else
-int ForkAndWait(const std::string&)
-#endif
 {
-#ifndef NO_DAEMON
     const auto pid = fork();
     const auto startFile = confDir + START_FILE;
     unlink(startFile.c_str());
@@ -194,9 +186,9 @@ int ForkAndWait(const std::string&)
             exit(1);
             break;
     }
-#endif
     return 0;
 }
+
 //-----------------------------------------------------------------------------
 void KillExecuters()
 {
@@ -207,6 +199,21 @@ void KillExecuters()
         kill(*pid, SIGUSR1);
         ++pid;
     }
+}
+
+void PrintHelp(const std::string& programName)
+{
+    std::cout << "Usage: " << programName << "[-h/--help] [-v/--version] [-f/--foreground] [<conf-dir-path>]\n"
+              << "\t --help, -h            - print this help;\n"
+              << "\t --version, -v         - print version;\n"
+              << "\t --foreground, -f      - do not go into background;\n"
+              << "\t <conf-dir-path>       - path to the directory where the configuration file is located.\n";
+}
+
+void PrintVersion(const std::string& programName)
+{
+    std::cout << programName << "\n"
+              << "Stargazer version" <<  " " << SERVER_VERSION << "\n";
 }
 //-----------------------------------------------------------------------------
 } // namespace anonymous
@@ -223,7 +230,34 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    SettingsImpl settings(argc == 2 ? argv[1] : "");
+    std::string path;
+    bool noDaemon(false);
+
+    if (argc == 1)
+        path = "";
+    else
+    {
+        for (int i = 1; i < argc; ++i)
+        {
+            const std::string arg(argv[i]);
+            if (arg == "--help" || arg == "-h")
+            {
+                PrintHelp(argv[0]);
+                return 0;
+            }
+            if (arg == "--version" || arg == "-v")
+            {
+                PrintVersion(argv[0]);
+                return 0;
+            }
+            if (arg == "--foreground" || arg == "-f")
+                noDaemon = true;
+            else
+                path = arg;
+        }
+    }
+
+    SettingsImpl settings(path);
 
     if (settings.ReadSettings())
     {
@@ -236,14 +270,13 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-#ifndef NO_DAEMON
-    const auto startFile = settings.GetConfDir() + START_FILE;
-#endif
-
-    if (ForkAndWait(settings.GetConfDir()) < 0)
+    if (!noDaemon)
     {
-        STG::Logger::get()("Fork error!");
-        return -1;
+        if (ForkAndWait(settings.GetConfDir()) < 0)
+        {
+            STG::Logger::get()("Fork error!");
+            return -1;
+        }
     }
 
     auto& WriteServLog = STG::Logger::get();
@@ -321,9 +354,11 @@ int main(int argc, char* argv[])
     WriteServLog("Stg started successfully.");
     WriteServLog("+++++++++++++++++++++++++++++++++++++++++++++");
 
-#ifndef NO_DAEMON
-    creat(startFile.c_str(), S_IRUSR);
-#endif
+    if (!noDaemon)
+    {
+        const auto startFile = settings.GetConfDir() + START_FILE;
+        creat(startFile.c_str(), S_IRUSR);
+    }
 
     bool running = true;
     while (running)
