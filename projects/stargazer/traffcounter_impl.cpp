@@ -28,23 +28,24 @@
  $Author: faust $
  */
 
-/* inet_aton */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#include <csignal>
-#include <cassert>
-#include <cstdio> // fopen and similar
-#include <cstdlib> // strtol
-
 #include "stg/common.h"
 #include "stg/const.h" // MONITOR_TIME_DELAY_SEC
 #include "traffcounter_impl.h"
 #include "stg_timer.h"
 #include "users_impl.h"
 #include "async_pool.h"
+
+#include <algorithm>
+#include <csignal>
+#include <cassert>
+#include <cstdio> // fopen and similar
+#include <cstdlib> // strtol
+
+/* inet_aton */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define FLUSH_TIME  (10)
 #define REMOVE_TIME  (31)
