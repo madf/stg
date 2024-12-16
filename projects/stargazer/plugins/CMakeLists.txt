@@ -12,9 +12,29 @@ if ( BUILD_MOD_AO )
 endif ( BUILD_MOD_AO )
 
 if ( BUILD_MOD_RADIUS )
+    find_package ( Boost REQUIRED )
+
     add_library ( mod_radius MODULE other/radius/radius.cpp )
-    target_link_libraries ( mod_radius scriptexecuter logger common )
+    target_link_libraries ( mod_radius PRIVATE scriptexecuter logger common )
     set_target_properties ( mod_radius PROPERTIES PREFIX "" )
+
+    include ( ExternalProject )
+
+    ExternalProject_Add ( async-radius
+                          GIT_REPOSITORY https://github.com/madf/async-radius.git
+                          GIT_TAG 1.1.0
+                          GIT_SHALLOW true
+                          INSTALL_COMMAND ""
+                          CMAKE_ARGS -DCMAKE_CXX_FLAGS=-fPIC )
+
+    ExternalProject_Get_property ( async-radius SOURCE_DIR BINARY_DIR )
+
+    target_include_directories ( mod_radius PRIVATE "${SOURCE_DIR}/include" )
+    target_link_directories ( mod_radius PRIVATE "${BINARY_DIR}/src" )
+
+    add_dependencies ( mod_radius async-radius )
+
+    target_link_libraries ( mod_radius PRIVATE radproto Boost::boost )
 
     if ( CLANG_TIDY_EXE )
         set_target_properties ( mod_radius PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}" )
