@@ -2,6 +2,8 @@
 
 #include "stg/auth.h"
 #include <string>
+#include <mutex>
+#include <jthread.hpp>
 
 namespace STG
 {
@@ -10,8 +12,8 @@ namespace STG
         public:
             RADIUS();
 
-            int Start() override { return 0; }
-            int Stop() override { return 0; }
+            int Start() override;
+            int Stop() override;
             int Reload(const ModuleSettings & /*ms*/) override { return 0; }
             bool IsRunning() override { return isRunning; }
             int ParseSettings() override { return 0; }
@@ -24,7 +26,10 @@ namespace STG
 
         private:
             mutable std::string errorStr;
+            std::jthread m_thread;
+            std::mutex m_mutex;
             bool isRunning;
 
+            int Run();
     };
 }
