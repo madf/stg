@@ -37,9 +37,9 @@ int RADIUS::Stop()
     return 0;
 }
 
-int Run()
+int RADIUS::Run()
 {
-    std::string secret;
+    std::string secret("secret");
     uint16_t port = 1812;
 
     try
