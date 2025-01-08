@@ -25,32 +25,46 @@ RADIUS::RADIUS()
 
 int RADIUS::Start()
 {
-    isRunning = true;
-    m_thread = std::jthread([this](){ Run(); });
+    m_thread = std::jthread([this](auto token){ Run(std::move(token)); });
     return 0;
 }
 
 int RADIUS::Stop()
 {
     std::lock_guard lock(m_mutex);
-    isRunning = false;
+
+    if (!m_thread.joinable())
+        return 0;
+
+    m_thread.request_stop();
+
+
+    if (isRunning)
+        m_thread.detach();
+    else
+        m_thread.join();
+
     return 0;
 }
 
-int RADIUS::Run()
+int RADIUS::Run(std::stop_token token)
 {
-    std::string secret("secret");
-    uint16_t port = 1812;
+    std::lock_guard lock(m_mutex);
+    isRunning = true;
 
-    try
+    while (!token.stop_requested())
     {
-        boost::asio::io_service io_service;
-        Server server(io_service, secret, port, "/usr/share/freeradius/dictionary");
-        io_service.run();
+        try
+        {
+            boost::asio::io_service io_service;
+            Server server(io_service, "secret", 1812, "/usr/share/freeradius/dictionary");
+            io_service.run();
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Exception: " << e.what() <<"\n";
+        }
     }
-    catch (const std::exception& e)
-    {
-        std::cerr << "Exception: " << e.what() <<"\n";
-    }
+    isRunning = false;
     return 0;
 }
