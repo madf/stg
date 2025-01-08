@@ -30,6 +30,6 @@ namespace STG
             std::mutex m_mutex;
             bool isRunning;
 
-            int Run();
+            int Run(std::stop_token token);
     };
 }
