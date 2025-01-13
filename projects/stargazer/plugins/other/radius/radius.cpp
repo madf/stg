@@ -31,19 +31,10 @@ int RADIUS::Start()
 
 int RADIUS::Stop()
 {
-    std::lock_guard lock(m_mutex);
-
-    if (!m_thread.joinable())
-        return 0;
-
-    m_thread.request_stop();
-
-
-    if (isRunning)
-        m_thread.detach();
-    else
+    if (m_thread.joinable())
         m_thread.join();
 
+    m_thread.request_stop();
     return 0;
 }
 
