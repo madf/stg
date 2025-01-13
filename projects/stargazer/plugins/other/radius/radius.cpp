@@ -41,7 +41,7 @@ int RADIUS::Stop()
 int RADIUS::Run(std::stop_token token)
 {
     std::lock_guard lock(m_mutex);
-    isRunning = true;
+    m_running = true;
 
     try
     {
@@ -54,6 +54,6 @@ int RADIUS::Run(std::stop_token token)
         std::cerr << "Exception: " << e.what() <<"\n";
     }
 
-    isRunning = false;
+    m_running = false;
     return 0;
 }
