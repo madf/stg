@@ -45,9 +45,9 @@ int RADIUS::Run(std::stop_token token)
 
     try
     {
-        boost::asio::io_service io_service;
-        Server server(io_service, "secret", 1812, "/usr/share/freeradius/dictionary");
-        io_service.run();
+        boost::asio::io_service ioService;
+        Server server(ioService, "secret", 1812, "/usr/share/freeradius/dictionary");
+        ioService.run();
     }
     catch (const std::exception& e)
     {
