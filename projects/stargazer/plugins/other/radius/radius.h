@@ -15,9 +15,9 @@ namespace STG
             int Start() override;
             int Stop() override;
             int Reload(const ModuleSettings & /*ms*/) override { return 0; }
-            bool IsRunning() override { return isRunning; }
+            bool IsRunning() override { return m_running; }
             int ParseSettings() override { return 0; }
-            const std::string & GetStrError() const override { return errorStr; }
+            const std::string & GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
             uint16_t GetStartPosition() const override { return 0; }
             uint16_t GetStopPosition() const override { return 0; }
@@ -25,10 +25,10 @@ namespace STG
             int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
 
         private:
-            mutable std::string errorStr;
+            mutable std::string m_errorStr;
             std::jthread m_thread;
             std::mutex m_mutex;
-            bool isRunning;
+            bool m_running;
 
             int Run(std::stop_token token);
     };
