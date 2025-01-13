@@ -43,19 +43,17 @@ int RADIUS::Run(std::stop_token token)
     std::lock_guard lock(m_mutex);
     isRunning = true;
 
-    while (!token.stop_requested())
+    try
     {
-        try
-        {
-            boost::asio::io_service io_service;
-            Server server(io_service, "secret", 1812, "/usr/share/freeradius/dictionary");
-            io_service.run();
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Exception: " << e.what() <<"\n";
-        }
+        boost::asio::io_service io_service;
+        Server server(io_service, "secret", 1812, "/usr/share/freeradius/dictionary");
+        io_service.run();
     }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Exception: " << e.what() <<"\n";
+    }
+
     isRunning = false;
     return 0;
 }
