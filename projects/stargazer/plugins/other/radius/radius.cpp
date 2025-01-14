@@ -38,10 +38,15 @@ int RADIUS::Stop()
     return 0;
 }
 
-int RADIUS::Run(std::stop_token token)
+void RADIUS::SetRunning(bool val)
 {
     std::lock_guard lock(m_mutex);
-    m_running = true;
+    m_running = val;
+}
+
+int RADIUS::Run(std::stop_token token)
+{
+    SetRunning(true);
 
     try
     {
@@ -54,6 +59,6 @@ int RADIUS::Run(std::stop_token token)
         std::cerr << "Exception: " << e.what() <<"\n";
     }
 
-    m_running = false;
+    SetRunning(false);
     return 0;
 }
