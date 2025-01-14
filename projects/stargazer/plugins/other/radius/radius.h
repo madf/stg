@@ -16,6 +16,7 @@ namespace STG
             int Stop() override;
             int Reload(const ModuleSettings & /*ms*/) override { return 0; }
             bool IsRunning() override { return m_running; }
+            void SetRunning(bool val);
             int ParseSettings() override { return 0; }
             const std::string & GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
