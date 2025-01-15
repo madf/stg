@@ -1,6 +1,9 @@
 #include "radius.h"
 #include "server.h"
 #include "radproto/error.h"
+
+#include "stg/common.h"
+
 #include <boost/asio.hpp>
 #include <string>
 #include <iostream>
@@ -20,6 +23,7 @@ std::string RADIUS::GetVersion() const
 }
 
 RADIUS::RADIUS()
+    : m_logger(PluginLogger::get("radius"))
 {
 }
 
@@ -56,7 +60,9 @@ int RADIUS::Run(std::stop_token token)
     }
     catch (const std::exception& e)
     {
-        std::cerr << "Exception: " << e.what() <<"\n";
+        m_errorStr = "Exceptoin by Run()";
+        m_logger("Exception by Run: %s", e.what());
+        printfd(__FILE__, "Exception by Run. Message: '%s'\n", e.what());
     }
 
     SetRunning(false);
