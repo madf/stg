@@ -1,6 +1,8 @@
 #pragma once
 
 #include "stg/auth.h"
+#include "stg/logger.h"
+
 #include <string>
 #include <mutex>
 #include <jthread.hpp>
@@ -32,5 +34,6 @@ namespace STG
             bool m_running;
 
             int Run(std::stop_token token);
+            PluginLogger m_logger;
     };
 }
