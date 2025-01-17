@@ -35,10 +35,12 @@ int RADIUS::Start()
 
 int RADIUS::Stop()
 {
-    if (m_thread.joinable())
-        m_thread.join();
+    if (!m_thread.joinable())
+        return 0;
 
     m_thread.request_stop();
+
+    m_thread. join();
     return 0;
 }
 
