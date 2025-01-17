@@ -46,7 +46,7 @@ int RADIUS::Stop()
 
 void RADIUS::SetRunning(bool val)
 {
-    std::lock_guard lock(m_mutex);
+    const std::lock_guard lock(m_mutex);
     m_running = val;
 }
 
