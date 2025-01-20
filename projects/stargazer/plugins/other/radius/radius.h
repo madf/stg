@@ -32,8 +32,8 @@ namespace STG
             mutable std::string m_errorStr;
             std::jthread m_thread;
             bool m_running;
+            PluginLogger m_logger;
 
             int Run(std::stop_token token);
-            PluginLogger m_logger;
     };
 }
