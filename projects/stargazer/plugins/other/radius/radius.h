@@ -28,9 +28,9 @@ namespace STG
             int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
 
         private:
+            std::mutex m_mutex;
             mutable std::string m_errorStr;
             std::jthread m_thread;
-            std::mutex m_mutex;
             bool m_running;
 
             int Run(std::stop_token token);
