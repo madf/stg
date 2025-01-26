@@ -62,8 +62,7 @@ int RADIUS::Run(std::stop_token token)
     }
     catch (const std::exception& e)
     {
-        std::string except(e.what());
-        m_errorStr = "Exception in RADIUS::Run(): " + except;
+        m_errorStr = "Exception in RADIUS::Run(): " + std::string(e.what());
         m_logger("Exception in RADIUS:: Run(): %s", e.what());
         printfd(__FILE__, "Exception in RADIUS:: Run(). Message: '%s'\n", e.what());
     }
