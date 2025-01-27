@@ -40,7 +40,7 @@ int RADIUS::Stop()
 
     m_thread.request_stop();
 
-    m_thread. join();
+    m_thread.join();
     return 0;
 }
 
@@ -49,6 +49,12 @@ void RADIUS::SetRunning(bool val)
     const std::lock_guard lock(m_mutex);
     m_running = val;
 }
+
+bool RADIUS::IsRunning()
+    {
+        const std::lock_guard lock(m_mutex);
+        return m_running;
+    }
 
 int RADIUS::Run(std::stop_token token)
 {
