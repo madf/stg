@@ -51,10 +51,10 @@ void RADIUS::SetRunning(bool val)
 }
 
 bool RADIUS::IsRunning()
-    {
-        const std::lock_guard lock(m_mutex);
-        return m_running;
-    }
+{
+    const std::lock_guard lock(m_mutex);
+    return m_running;
+}
 
 int RADIUS::Run(std::stop_token token)
 {
