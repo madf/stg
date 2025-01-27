@@ -23,7 +23,8 @@ std::string RADIUS::GetVersion() const
 }
 
 RADIUS::RADIUS()
-    : m_logger(PluginLogger::get("radius"))
+    : m_logger(PluginLogger::get("radius")),
+      m_running(false)
 {
 }
 
