@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 #include <optional>
 #include <cstdint> //uint8_t, uint32_t
-                   //
+
 namespace STG
 {
     class Server
