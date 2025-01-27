@@ -118,21 +118,7 @@ if ( TIDY )
         message( STATUS "clang-tidy not found." )
     else ()
         message( STATUS "clang-tidy found: ${CLANG_TIDY_EXE}" )
-        set( DO_CLANG_TIDY "${CLANG_TIDY_EXE}"
-             "-checks=-*,\
-clang-analyzer-*,\
-misc-*,\
-modernize-*,\
-performance-*,\
-portability-*,\
-readability-*,\
-bugprone-*,\
--modernize-avoid-bind,\
--modernize-use-trailing-return-type,\
--readability-braces-around-statements, \
--readability-magic-numbers, \
--readability-identifier-length, \
--bugprone-easily-swappable-parameters" )
+        set( DO_CLANG_TIDY "${CLANG_TIDY_EXE}" )
     endif ()
 endif ()
 
@@ -149,6 +135,7 @@ endif ()
 enable_language (CXX)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Wextra -Wshadow -Wno-long-long -Wold-style-cast -Wstrict-aliasing -pedantic")
+set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 if ( CMAKE_COMPILER_IS_GNUCC )
     # GCC-specific
