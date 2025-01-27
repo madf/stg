@@ -14,7 +14,8 @@ endif ( BUILD_MOD_AO )
 if ( BUILD_MOD_RADIUS )
     find_package ( Boost REQUIRED )
 
-    add_library ( mod_radius MODULE other/radius/radius.cpp )
+    add_library ( mod_radius MODULE other/radius/radius.cpp
+                                    other/radius/server.cpp)
     target_link_libraries ( mod_radius PRIVATE scriptexecuter logger common )
     set_target_properties ( mod_radius PROPERTIES PREFIX "" )
 
@@ -34,7 +35,8 @@ if ( BUILD_MOD_RADIUS )
 
     add_dependencies ( mod_radius async-radius )
 
-    target_link_libraries ( mod_radius PRIVATE radproto Boost::boost )
+    find_package ( OpenSSL 1.0.0 REQUIRED )
+    target_link_libraries ( mod_radius PRIVATE radproto Boost::boost OpenSSL::Crypto)
 
     if ( CLANG_TIDY_EXE )
         set_target_properties ( mod_radius PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}" )
