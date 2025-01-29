@@ -2,6 +2,7 @@
 
 #include "stg/auth.h"
 #include "stg/logger.h"
+#include "stg/module_settings.h"
 
 #include <string>
 #include <mutex>
@@ -14,6 +15,7 @@ namespace STG
         public:
             RADIUS();
 
+            void SetSettings(const ModuleSettings & s) override { m_settings = s; }
             int Start() override;
             int Stop() override;
             int Reload(const ModuleSettings & /*ms*/) override { return 0; }
@@ -33,6 +35,7 @@ namespace STG
             std::jthread m_thread;
             bool m_running;
             PluginLogger m_logger;
+            ModuleSettings m_settings;
 
             int Run(std::stop_token token);
     };
