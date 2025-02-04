@@ -41,7 +41,7 @@ class TotalUsersSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(users.Count(), res); return res; }
+        { return std::to_string(users.Count()); }
 #endif
 
     private:
@@ -172,7 +172,7 @@ class TotalTariffsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(tariffs.Count(), res); return res; }
+        { return std::to_string(tariffs.Count()); }
 #endif
 
     private:
@@ -190,7 +190,7 @@ class TotalAdminsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(admins.Count(), res); return res; }
+        { return std::to_string(admins.count()); }
 #endif
 
     private:
@@ -208,7 +208,7 @@ class TotalServicesSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(services.Count(), res); return res; }
+        { return std::to_string(services.Count()); }
 #endif
 
     private:
@@ -226,7 +226,7 @@ class TotalCorporationsSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(corporations.Count(), res); return res; }
+        { return std::to_string(corporations.Count()); }
 #endif
 
     private:
@@ -244,7 +244,7 @@ class TotalRulesSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(traffcounter.rulesCount(), res); return res; }
+        { return std::to_string(traffcounter.rulesCount()); }
 #endif
 
     private:
@@ -263,7 +263,7 @@ class ConstSensor : public Sensor {
 
 #ifdef DEBUG
         std::string ToString() const override
-        { std::string res; std::to_string(value, res); return res; }
+        { return std::to_string(value); }
 #endif
 
     private:
