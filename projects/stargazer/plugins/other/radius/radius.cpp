@@ -19,7 +19,8 @@ extern "C" STG::Plugin* GetPlugin()
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
-    : m_port(0)
+    : m_port(1812),
+      m_dictionaries("/usr/share/freeradius/dictionary")
 {}
 
 int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
