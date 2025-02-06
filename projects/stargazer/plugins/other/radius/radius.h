@@ -38,6 +38,8 @@ namespace STG
     {
         public:
             RADIUS();
+            RADIUS(const RADIUS&) = delete;
+            RADIUS& operator=(const RADIUS&) = delete;
 
             void SetSettings(const ModuleSettings & s) override { m_settings = s; }
             int ParseSettings() override;
@@ -57,9 +59,6 @@ namespace STG
             int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
 
         private:
-            RADIUS(const RADIUS & rhs);
-            RADIUS & operator=(const RADIUS & rhs);
-
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
