@@ -59,6 +59,8 @@ namespace STG
             int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
 
         private:
+            std::mutex m_mutex;
+
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
@@ -68,7 +70,6 @@ namespace STG
             bool m_running;
 
             std::jthread m_thread;
-            std::mutex m_mutex;
 
             PluginLogger m_logger;
     };
