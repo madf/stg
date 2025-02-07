@@ -30,19 +30,16 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
 
     pv.param = "Port";
     auto pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi == s.moduleParams.end() || pvi->value.empty())
+    if (pvi != s.moduleParams.end() && !pvi->value.empty())
     {
-        m_errorStr = "Parameter \'Port\' not found.";
-        printfd(__FILE__, "Parameter 'Port' not found\n");
-        return -1;
+        if (ParseIntInRange(pvi->value[0], 2, 65535, &p) != 0)
+        {
+            m_errorStr = "Cannot parse parameter \'Port\': " + m_errorStr;
+            printfd(__FILE__, "Cannot parse parameter 'Port'\n");
+            return -1;
+        }
+        m_port = static_cast<uint16_t>(p);
     }
-    if (ParseIntInRange(pvi->value[0], 2, 65535, &p) != 0)
-    {
-        m_errorStr = "Cannot parse parameter \'Port\': " + m_errorStr;
-        printfd(__FILE__, "Cannot parse parameter 'Port'\n");
-        return -1;
-    }
-    m_port = static_cast<uint16_t>(p);
 
     pv.param = "Secret";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -59,16 +56,8 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
 
     pv.param = "Dictionaries";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi == s.moduleParams.end() || pvi->value.empty())
-    {
-        m_errorStr = "Parameter \'Dictionaries\' not found.";
-        printfd(__FILE__, "Parameter 'Dictionaries' not found\n");
-        m_dictionaries = "";
-    }
-    else
-    {
+    if (pvi != s.moduleParams.end() && !pvi->value.empty())
         m_dictionaries = pvi->value[0];
-    }
     return 0;
 }
 
