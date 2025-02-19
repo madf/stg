@@ -23,7 +23,7 @@ if ( BUILD_MOD_RADIUS )
 
     ExternalProject_Add ( async-radius
                           GIT_REPOSITORY https://github.com/madf/async-radius.git
-                          GIT_TAG 1.1.0
+                          GIT_TAG 1.1.1
                           GIT_SHALLOW true
                           INSTALL_COMMAND ""
                           CMAKE_ARGS -DCMAKE_CXX_FLAGS=-fPIC )
