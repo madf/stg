@@ -10,7 +10,18 @@ Server::Server(boost::asio::io_service& io_service, const std::string& secret, u
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath)
 {
+    start();
+}
+
+void Server::start()
+{
     startReceive();
+}
+
+void Server::stop()
+{
+    error_code ec;
+    m_radius.close(ec);
 }
 
 void Server::startReceive()
