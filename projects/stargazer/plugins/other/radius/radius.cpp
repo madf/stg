@@ -88,8 +88,10 @@ int RADIUS::Stop()
     if (!m_thread.joinable())
         return 0;
 
-    m_server->stop();
     m_thread.request_stop();
+
+    if (m_server)
+        m_server->stop();
 
     m_thread.join();
     return 0;
@@ -114,7 +116,7 @@ int RADIUS::Run(std::stop_token token)
     try
     {
         if (!m_server)
-           m_server = std::make_unique<Server> (m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries());
+           m_server = std::make_unique<Server> (m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), token);
         m_ioService.run();
     }
     catch (const std::exception& e)
