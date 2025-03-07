@@ -6,9 +6,10 @@
 using STG::Server;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath)
+Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token)
     : m_radius(io_service, secret, port),
-      m_dictionaries(filePath)
+      m_dictionaries(filePath),
+      m_token(token)
 {
     start();
 }
@@ -56,7 +57,8 @@ void Server::handleSend(const error_code& ec)
     if (ec)
         std::cout << "Error asyncSend: " << ec.message() << "\n";
 
-    startReceive();
+    if (!m_token.stop_requested())
+        startReceive();
 }
 
 void Server::handleReceive(const error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source)
