@@ -77,6 +77,6 @@ namespace STG
 
             PluginLogger m_logger;
 
-            std::unique_ptr<Server> m_server{};
+            std::unique_ptr<Server> m_server;
     };
 }
