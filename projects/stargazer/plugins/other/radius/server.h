@@ -3,6 +3,7 @@
 #include "radproto/socket.h"
 #include "radproto/packet.h"
 #include "radproto/dictionaries.h"
+#include "stg/logger.h"
 #include <boost/asio.hpp>
 #include <stop_token>
 #include <jthread.hpp>
@@ -26,5 +27,7 @@ namespace STG
             RadProto::Socket m_radius;
             RadProto::Dictionaries m_dictionaries;
             std::stop_token m_token;
+
+            PluginLogger m_logger;
     };
 }
