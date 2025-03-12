@@ -10,7 +10,7 @@ Server::Server(boost::asio::io_service& io_service, const std::string& secret, u
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
       m_token(token),
-      m_logger(PluginLogger::get("radius"))
+      m_logger(PluginLogger::get("RADIUS"))
 {
     start();
 }
@@ -55,14 +55,14 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
 
 void Server::handleSend(const error_code& ec)
 {
+    if (!m_token.stop_requested())
+        startReceive();
+
     if (ec)
     {
         m_logger("Error asyncSend: %s", ec.message());
         printfd(__FILE__, "Error asyncSend: '%s'\n", ec.message());
     }
-
-    if (!m_token.stop_requested())
-        startReceive();
 }
 
 void Server::handleReceive(const error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source)
