@@ -5,8 +5,7 @@
 #include "radproto/dictionaries.h"
 #include "stg/logger.h"
 #include <boost/asio.hpp>
-#include <stop_token>
-#include <jthread.hpp>
+#include <stop_token.hpp>
 #include <optional>
 #include <cstdint> //uint8_t, uint32_t
 
