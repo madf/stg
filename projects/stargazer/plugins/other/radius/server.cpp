@@ -6,11 +6,11 @@
 using STG::Server;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token)
+Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
       m_token(token),
-      m_logger(PluginLogger::get("RADIUS"))
+      m_logger(logger)
 {
     start();
 }
