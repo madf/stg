@@ -14,7 +14,7 @@ namespace STG
     class Server
     {
         public:
-            Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token);
+            Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger);
             void stop();
         private:
             RadProto::Packet makeResponse(const RadProto::Packet& request);
@@ -27,6 +27,6 @@ namespace STG
             RadProto::Dictionaries m_dictionaries;
             std::stop_token m_token;
 
-            PluginLogger m_logger;
+            PluginLogger& m_logger;
     };
 }
