@@ -116,7 +116,7 @@ int RADIUS::Run(std::stop_token token)
     try
     {
         if (!m_server)
-           m_server = std::make_unique<Server> (m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), token);
+           m_server = std::make_unique<Server> (m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), token, m_logger);
         m_ioService.run();
     }
     catch (const std::exception& e)
