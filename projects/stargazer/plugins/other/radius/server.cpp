@@ -68,24 +68,22 @@ void Server::handleSend(const error_code& ec)
 
 void Server::handleReceive(const error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source)
 {
-    if (!m_token.stop_requested())
-    {
-        if (error)
-        {
-            m_logger("Error asyncReceive: %s", error.message());
-            printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message());
-            return;
-        }
+    if (m_token.stop_requested())
+        return;
 
-        if (packet == std::nullopt)
-        {
-            m_logger("Error asyncReceive: the request packet is missing\n");
-            printfd(__FILE__, "Error asyncReceive: the request packet is missing\n");
-            return;
-        }
-        else
-        {
-            m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
-        }
+    if (error)
+    {
+        m_logger("Error asyncReceive: %s", error.message());
+        printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message());
+        return;
     }
+
+    if (packet == std::nullopt)
+    {
+        m_logger("Error asyncReceive: the request packet is missing\n");
+        printfd(__FILE__, "Error asyncReceive: the request packet is missing\n");
+        return;
+    }
+    else
+        m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
 }
