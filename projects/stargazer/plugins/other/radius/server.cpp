@@ -55,14 +55,15 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
 
 void Server::handleSend(const error_code& ec)
 {
-    if (!m_token.stop_requested())
-        startReceive();
+    if (m_token.stop_requested())
+        return;
 
     if (ec)
     {
         m_logger("Error asyncSend: %s", ec.message());
         printfd(__FILE__, "Error asyncSend: '%s'\n", ec.message());
     }
+    startReceive();
 }
 
 void Server::handleReceive(const error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source)
