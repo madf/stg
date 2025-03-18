@@ -5,8 +5,11 @@
 #include "stg/module_settings.h"
 #include "stg/subscriptions.h"
 #include "stg/logger.h"
+#include "server.h"
 
+#include <boost/asio.hpp>
 #include <string>
+#include <memory>
 #include <mutex>
 #include <jthread.hpp>
 #include <cstdint> //uint8_t, uint32_t
@@ -61,6 +64,7 @@ namespace STG
         private:
             std::mutex m_mutex;
 
+            boost::asio::io_service m_ioService;
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
@@ -72,5 +76,7 @@ namespace STG
             std::jthread m_thread;
 
             PluginLogger m_logger;
+
+            std::unique_ptr<Server> m_server;
     };
 }

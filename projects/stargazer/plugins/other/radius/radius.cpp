@@ -1,11 +1,7 @@
 #include "radius.h"
-#include "server.h"
 #include "radproto/error.h"
-
 #include "stg/common.h"
 
-#include <boost/asio.hpp>
-#include <string>
 #include <iterator>
 #include <iostream>
 
@@ -67,27 +63,6 @@ RADIUS::RADIUS()
 {
 }
 
-int RADIUS::Run(std::stop_token token)
-{
-    SetRunning(true);
-
-    try
-    {
-        boost::asio::io_service ioService;
-        Server server(ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries());
-        ioService.run();
-    }
-    catch (const std::exception& e)
-    {
-        m_errorStr = "Exception in RADIUS::Run(): " + std::string(e.what());
-        m_logger("Exception in RADIUS:: Run(): %s", e.what());
-        printfd(__FILE__, "Exception in RADIUS:: Run(). Message: '%s'\n", e.what());
-    }
-
-    SetRunning(false);
-    return 0;
-}
-
 int RADIUS::ParseSettings()
 {
     auto ret = m_radSettings.ParseSettings(m_settings);
@@ -115,6 +90,9 @@ int RADIUS::Stop()
 
     m_thread.request_stop();
 
+    if (m_server)
+        m_server->stop();
+
     m_thread.join();
     return 0;
 }
@@ -129,4 +107,25 @@ void RADIUS::SetRunning(bool val)
 {
     const std::lock_guard lock(m_mutex);
     m_running = val;
+}
+
+int RADIUS::Run(std::stop_token token)
+{
+    SetRunning(true);
+
+    try
+    {
+        if (!m_server)
+           m_server = std::make_unique<Server>(m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), std::move(token), m_logger);
+        m_ioService.run();
+    }
+    catch (const std::exception& e)
+    {
+        m_errorStr = "Exception in RADIUS::Run(): " + std::string(e.what());
+        m_logger("Exception in RADIUS:: Run(): %s", e.what());
+        printfd(__FILE__, "Exception in RADIUS:: Run(). Message: '%s'\n", e.what());
+    }
+
+    SetRunning(false);
+    return 0;
 }
