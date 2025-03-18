@@ -9,7 +9,7 @@ using boost::system::error_code;
 Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
-      m_token(token),
+      m_token(std::move(token)),
       m_logger(logger)
 {
     start();
