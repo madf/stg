@@ -1,6 +1,7 @@
 #include "server.h"
 #include "radproto/packet_codes.h"
 #include "stg/common.h"
+#include <cstring>
 #include <functional>
 
 using STG::Server;
