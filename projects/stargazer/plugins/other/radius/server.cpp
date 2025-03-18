@@ -60,8 +60,8 @@ void Server::handleSend(const error_code& ec)
 
     if (ec)
     {
-        m_logger("Error asyncSend: %s", ec.message());
-        printfd(__FILE__, "Error asyncSend: '%s'\n", ec.message());
+        m_logger("Error asyncSend: %s", ec.message().c_str());
+        printfd(__FILE__, "Error asyncSend: '%s'\n", ec.message().c_str());
     }
     startReceive();
 }
@@ -73,8 +73,8 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
     if (error)
     {
-        m_logger("Error asyncReceive: %s", error.message());
-        printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message());
+        m_logger("Error asyncReceive: %s", error.message().c_str());
+        printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message().c_str());
     }
 
     if (packet == std::nullopt)
