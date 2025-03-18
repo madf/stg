@@ -75,7 +75,6 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
     {
         m_logger("Error asyncReceive: %s", error.message());
         printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message());
-        return;
     }
 
     if (packet == std::nullopt)
@@ -84,6 +83,5 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
         printfd(__FILE__, "Error asyncReceive: the request packet is missing\n");
         return;
     }
-    else
-        m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
+    m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
 }
