@@ -1,8 +1,10 @@
 #include "server.h"
 #include "radproto/packet_codes.h"
+#include "radproto/attribute_types.h"
 #include "stg/common.h"
 #include <cstring>
 #include <functional>
+#include <cstdint> //uint8_t, uint32_t
 
 using STG::Server;
 using boost::system::error_code;
@@ -10,6 +12,7 @@ using boost::system::error_code;
 Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
+      m_users(NULL),
       m_token(std::move(token)),
       m_logger(logger)
 {
@@ -48,6 +51,13 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<uint8_t> vendorValue {0, 0, 0, 3};
     vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
 
+    if (findUser(request))
+    {
+        m_logger("Error findUser\n");
+        printfd(__FILE__, "Error findUser\n");
+        return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
+    }
+
     if (request.type() == RadProto::ACCESS_REQUEST)
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
 
@@ -84,5 +94,41 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
         printfd(__FILE__, "Error asyncReceive: the request packet is missing\n");
         return;
     }
+
     m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
+}
+
+int Server::findUser(const RadProto::Packet& packet)
+{
+    STG::User* user;
+    std::string login;
+    std::string password;
+    for (const auto& a : packet.attributes())
+    {
+        if (a->type() == RadProto::USER_NAME)
+            login = m_dictionaries.attributeValueName(m_dictionaries.attributeName(RadProto::USER_NAME), RadProto::USER_NAME);
+
+        if (a->type() == RadProto::USER_PASSWORD)
+            password = m_dictionaries.attributeValueName(m_dictionaries.attributeName(RadProto::USER_PASSWORD), RadProto::USER_PASSWORD);
+    }
+
+    if (m_users->FindByName(login, &user))
+    {
+        m_logger("User's connect failed: user '%s' not found. %s", login);
+        printfd(__FILE__, "User '%s' NOT found!\n", login);
+        return -1;
+    }
+
+    printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
+
+    if (password != user->GetProperties().password.Get())
+    {
+        m_logger("Password user is incorrect. %s", password);
+        printfd(__FILE__, "Password user is incorrect.\n", password);
+        return -1;
+    }
+
+    printfd(__FILE__, "User FOUND!\n");
+
+    return 0;
 }
