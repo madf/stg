@@ -51,12 +51,20 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<uint8_t> vendorValue {0, 0, 0, 3};
     vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
 
+        printfd(__FILE__, "MakeResponse before findUser\n");
     if (findUser(request))
     {
+        printfd(__FILE__, "MakeResponse reject findUser\n");
+
+
         m_logger("Error findUser\n");
         printfd(__FILE__, "Error findUser\n");
         return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
     }
+
+
+        printfd(__FILE__, "MakeResponse accept findUser\n");
+
 
     if (request.type() == RadProto::ACCESS_REQUEST)
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
@@ -100,17 +108,36 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 int Server::findUser(const RadProto::Packet& packet)
 {
+
+        printfd(__FILE__, "findUser start\n");
+
     STG::User* user;
     std::string login;
     std::string password;
-    for (const auto& a : packet.attributes())
+    for (const auto& attribute : packet.attributes())
     {
-        if (a->type() == RadProto::USER_NAME)
-            login = m_dictionaries.attributeValueName(m_dictionaries.attributeName(RadProto::USER_NAME), RadProto::USER_NAME);
+        printfd(__FILE__, "findUser cycle start\n");
 
-        if (a->type() == RadProto::USER_PASSWORD)
-            password = m_dictionaries.attributeValueName(m_dictionaries.attributeName(RadProto::USER_PASSWORD), RadProto::USER_PASSWORD);
+        if (attribute->type() == RadProto::USER_NAME)
+        {
+
+        printfd(__FILE__, "findUser cycle start if\n");
+            login = attribute->toString();
+
+            printfd(__FILE__, "findUser login '%s'\n", login.c_str());
+        }
+
+        if (attribute->type() == RadProto::USER_PASSWORD)
+        {
+            password = attribute->toString();
+
+
+            printfd(__FILE__, "findUser password '%s'\n", password.c_str());
+        }
     }
+
+
+        printfd(__FILE__, "findUser after cycle\n");
 
     if (m_users->FindByName(login, &user))
     {
