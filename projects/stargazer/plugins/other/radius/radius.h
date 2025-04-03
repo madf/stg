@@ -18,6 +18,12 @@ namespace STG
 {
     struct Settings;
 
+    class Users;
+
+    using UserPtr = STG::User*;
+    using ConstUserPtr = const User*;
+
+
     class RAD_SETTINGS
     {
         public:
@@ -44,6 +50,7 @@ namespace STG
             RADIUS(const RADIUS&) = delete;
             RADIUS& operator=(const RADIUS&) = delete;
 
+            void SetUsers(STG::Users* u) { m_users = u; }
             void SetSettings(const ModuleSettings & s) override { m_settings = s; }
             int ParseSettings() override;
 
@@ -74,7 +81,7 @@ namespace STG
             bool m_running;
 
             std::jthread m_thread;
-
+            STG::Users* m_users;
             PluginLogger m_logger;
 
             std::unique_ptr<Server> m_server;
