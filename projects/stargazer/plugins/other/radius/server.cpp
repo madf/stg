@@ -9,10 +9,10 @@
 using STG::Server;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger)
+Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, STG::Users* users)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
-      m_users(NULL),
+      m_users(users),
       m_token(std::move(token)),
       m_logger(logger)
 {
@@ -51,20 +51,12 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<uint8_t> vendorValue {0, 0, 0, 3};
     vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
 
-        printfd(__FILE__, "MakeResponse before findUser\n");
     if (findUser(request))
     {
-        printfd(__FILE__, "MakeResponse reject findUser\n");
-
-
         m_logger("Error findUser\n");
         printfd(__FILE__, "Error findUser\n");
         return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
     }
-
-
-        printfd(__FILE__, "MakeResponse accept findUser\n");
-
 
     if (request.type() == RadProto::ACCESS_REQUEST)
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
@@ -108,36 +100,23 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 int Server::findUser(const RadProto::Packet& packet)
 {
-
-        printfd(__FILE__, "findUser start\n");
-
     STG::User* user;
     std::string login;
     std::string password;
     for (const auto& attribute : packet.attributes())
     {
-        printfd(__FILE__, "findUser cycle start\n");
-
         if (attribute->type() == RadProto::USER_NAME)
         {
-
-        printfd(__FILE__, "findUser cycle start if\n");
             login = attribute->toString();
-
             printfd(__FILE__, "findUser login '%s'\n", login.c_str());
         }
 
         if (attribute->type() == RadProto::USER_PASSWORD)
         {
             password = attribute->toString();
-
-
             printfd(__FILE__, "findUser password '%s'\n", password.c_str());
         }
     }
-
-
-        printfd(__FILE__, "findUser after cycle\n");
 
     if (m_users->FindByName(login, &user))
     {
@@ -145,6 +124,8 @@ int Server::findUser(const RadProto::Packet& packet)
         printfd(__FILE__, "User '%s' NOT found!\n", login);
         return -1;
     }
+
+        printfd(__FILE__, "findUser FindByName yes\n");
 
     printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
 
