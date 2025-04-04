@@ -120,8 +120,8 @@ int Server::findUser(const RadProto::Packet& packet)
 
     if (m_users->FindByName(login, &user))
     {
-        m_logger("User's connect failed: user '%s' not found. %s", login);
-        printfd(__FILE__, "User '%s' NOT found!\n", login);
+        m_logger("User's connect failed: user '%s' not found. %s", login.c_str());
+        printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
         return -1;
     }
 
@@ -131,8 +131,8 @@ int Server::findUser(const RadProto::Packet& packet)
 
     if (password != user->GetProperties().password.Get())
     {
-        m_logger("Password user is incorrect. %s", password);
-        printfd(__FILE__, "Password user is incorrect.\n", password);
+        m_logger("Password user is incorrect. %s", password.c_str());
+        printfd(__FILE__, "Password user is incorrect.\n", password.c_str());
         return -1;
     }
 
