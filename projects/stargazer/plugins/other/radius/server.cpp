@@ -106,26 +106,18 @@ int Server::findUser(const RadProto::Packet& packet)
     for (const auto& attribute : packet.attributes())
     {
         if (attribute->type() == RadProto::USER_NAME)
-        {
             login = attribute->toString();
-            printfd(__FILE__, "findUser login '%s'\n", login.c_str());
-        }
 
         if (attribute->type() == RadProto::USER_PASSWORD)
-        {
             password = attribute->toString();
-            printfd(__FILE__, "findUser password '%s'\n", password.c_str());
-        }
     }
 
     if (m_users->FindByName(login, &user))
     {
-        m_logger("User's connect failed: user '%s' not found. %s", login.c_str());
+        m_logger("User's connect failed: user '%s' not found.", login.c_str());
         printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
         return -1;
     }
-
-        printfd(__FILE__, "findUser FindByName yes\n");
 
     printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
 
