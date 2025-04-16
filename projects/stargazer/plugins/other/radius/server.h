@@ -3,9 +3,6 @@
 #include "radproto/socket.h"
 #include "radproto/packet.h"
 #include "radproto/dictionaries.h"
-#include "stg/users.h"
-#include "stg/user.h"
-#include "stg/user_property.h"
 #include "stg/logger.h"
 #include <boost/asio.hpp>
 #include <stop_token.hpp>
@@ -15,9 +12,6 @@
 namespace STG
 {
     class Users;
-
-    using UserPtr = STG::User*;
-    using ConstUserPtr = const User*;
 
     class Server
     {
