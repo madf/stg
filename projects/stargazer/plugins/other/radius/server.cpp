@@ -55,7 +55,7 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
 
     if (request.type() == RadProto::ACCESS_REQUEST)
     {
-        if (!findUser(request))
+        if (findUser(request))
             return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
         else
         {
@@ -101,7 +101,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
     m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
 }
 
-int Server::findUser(const RadProto::Packet& packet)
+bool Server::findUser(const RadProto::Packet& packet)
 {
     STG::User* user;
     std::string login;
@@ -119,7 +119,7 @@ int Server::findUser(const RadProto::Packet& packet)
     {
         m_logger("User's connect failed: user '%s' not found.", login.c_str());
         printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
-        return -1;
+        return false;
     }
 
     printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
@@ -128,10 +128,10 @@ int Server::findUser(const RadProto::Packet& packet)
     {
         m_logger("Password user is incorrect. %s", password.c_str());
         printfd(__FILE__, "Password user is incorrect.\n", password.c_str());
-        return -1;
+        return false;
     }
 
     printfd(__FILE__, "User FOUND!\n");
 
-    return 0;
+    return true;
 }
