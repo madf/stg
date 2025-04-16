@@ -1,6 +1,8 @@
 #include "server.h"
 #include "radproto/packet_codes.h"
 #include "radproto/attribute_types.h"
+#include "stg/user.h"
+#include "stg/users.h"
 #include "stg/common.h"
 #include <cstring>
 #include <functional>
