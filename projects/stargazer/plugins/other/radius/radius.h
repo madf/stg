@@ -20,10 +20,6 @@ namespace STG
 
     class Users;
 
-    using UserPtr = STG::User*;
-    using ConstUserPtr = const User*;
-
-
     class RAD_SETTINGS
     {
         public:
