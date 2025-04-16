@@ -17,10 +17,10 @@ namespace STG
     {
         public:
             Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, STG::Users* users);
-            int findUser(const RadProto::Packet& packet);
             void stop();
         private:
             RadProto::Packet makeResponse(const RadProto::Packet& request);
+            int findUser(const RadProto::Packet& packet);
             void handleReceive(const boost::system::error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source);
             void handleSend(const boost::system::error_code& ec);
             void start();
