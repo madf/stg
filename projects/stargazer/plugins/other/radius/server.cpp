@@ -53,6 +53,9 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<uint8_t> vendorValue {0, 0, 0, 3};
     vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
 
+    std::vector<RadProto::Attribute*> attributesEmpty;
+    std::vector<RadProto::VendorSpecific> vendorSpecificEmpty;
+
     if (request.type() == RadProto::ACCESS_REQUEST)
     {
         if (findUser(request))
@@ -61,10 +64,10 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
         {
             m_logger("Error findUser\n");
             printfd(__FILE__, "Error findUser\n");
-            return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
+            return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributesEmpty, vendorSpecificEmpty);
         }
     }
-    return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
+    return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributesEmpty, vendorSpecificEmpty);
 }
 
 void Server::handleSend(const error_code& ec)
