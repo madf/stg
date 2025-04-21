@@ -100,7 +100,6 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 bool Server::findUser(const RadProto::Packet& packet)
 {
-    STG::User* user;
     std::string login;
     std::string password;
     for (const auto& attribute : packet.attributes())
@@ -112,6 +111,7 @@ bool Server::findUser(const RadProto::Packet& packet)
             password = attribute->toString();
     }
 
+    User* user(nullptr);
     if (m_users->FindByName(login, &user))
     {
         m_logger("User's connect failed: user '%s' not found.", login.c_str());
