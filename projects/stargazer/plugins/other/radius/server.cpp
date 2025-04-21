@@ -11,7 +11,7 @@
 using STG::Server;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, STG::Users* users)
+Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
       m_users(users),
