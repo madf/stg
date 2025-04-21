@@ -56,17 +56,14 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<RadProto::Attribute*> attributesEmpty;
     std::vector<RadProto::VendorSpecific> vendorSpecificEmpty;
 
-    if (request.type() == RadProto::ACCESS_REQUEST)
-    {
-        if (findUser(request))
-            return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
-        else
-        {
-            m_logger("Error findUser\n");
-            printfd(__FILE__, "Error findUser\n");
-            return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributesEmpty, vendorSpecificEmpty);
-        }
-    }
+    if (request.type() != RadProto::ACCESS_REQUEST)
+        return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributesEmpty, vendorSpecificEmpty);
+
+    if (findUser(request))
+        return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
+
+    m_logger("Error findUser\n");
+    printfd(__FILE__, "Error findUser\n");
     return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributesEmpty, vendorSpecificEmpty);
 }
 
