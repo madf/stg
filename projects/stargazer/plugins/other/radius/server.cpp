@@ -127,8 +127,5 @@ bool Server::findUser(const RadProto::Packet& packet)
         printfd(__FILE__, "Password user is incorrect.\n", password.c_str());
         return false;
     }
-
-    printfd(__FILE__, "User FOUND!\n");
-
     return true;
 }
