@@ -59,7 +59,6 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     if (findUser(request))
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
 
-    m_logger("Error findUser\n");
     printfd(__FILE__, "Error findUser\n");
     return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
 }
@@ -111,7 +110,7 @@ bool Server::findUser(const RadProto::Packet& packet)
             password = attribute->toString();
     }
 
-    User* user(nullptr);
+    User* user = nullptr;
     if (m_users->FindByName(login, &user))
     {
         m_logger("User's connect failed: user '%s' not found.", login.c_str());
