@@ -1,15 +1,20 @@
 #include "server.h"
 #include "radproto/packet_codes.h"
+#include "radproto/attribute_types.h"
+#include "stg/user.h"
+#include "stg/users.h"
 #include "stg/common.h"
 #include <cstring>
 #include <functional>
+#include <cstdint> //uint8_t, uint32_t
 
 using STG::Server;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger)
+Server::Server(boost::asio::io_service& io_service, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users)
     : m_radius(io_service, secret, port),
       m_dictionaries(filePath),
+      m_users(users),
       m_token(std::move(token)),
       m_logger(logger)
 {
@@ -48,10 +53,14 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
     std::vector<uint8_t> vendorValue {0, 0, 0, 3};
     vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
 
-    if (request.type() == RadProto::ACCESS_REQUEST)
+    if (request.type() != RadProto::ACCESS_REQUEST)
+        return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
+
+    if (findUser(request))
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
 
-    return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), attributes, vendorSpecific);
+    printfd(__FILE__, "Error findUser\n");
+    return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
 }
 
 void Server::handleSend(const error_code& ec)
@@ -84,5 +93,38 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
         printfd(__FILE__, "Error asyncReceive: the request packet is missing\n");
         return;
     }
+
     m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
+}
+
+bool Server::findUser(const RadProto::Packet& packet)
+{
+    std::string login;
+    std::string password;
+    for (const auto& attribute : packet.attributes())
+    {
+        if (attribute->type() == RadProto::USER_NAME)
+            login = attribute->toString();
+
+        if (attribute->type() == RadProto::USER_PASSWORD)
+            password = attribute->toString();
+    }
+
+    User* user = nullptr;
+    if (m_users->FindByName(login, &user))
+    {
+        m_logger("User '%s' not found.", login.c_str());
+        printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
+        return false;
+    }
+
+    printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
+
+    if (password != user->GetProperties().password.Get())
+    {
+        m_logger("User's password is incorrect. %s", password.c_str());
+        printfd(__FILE__, "User's password is incorrect.\n", password.c_str());
+        return false;
+    }
+    return true;
 }

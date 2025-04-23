@@ -59,6 +59,7 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
 
 RADIUS::RADIUS()
     : m_running(false),
+      m_users(NULL),
       m_logger(PluginLogger::get("radius"))
 {
 }
@@ -116,7 +117,7 @@ int RADIUS::Run(std::stop_token token)
     try
     {
         if (!m_server)
-           m_server = std::make_unique<Server>(m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), std::move(token), m_logger);
+           m_server = std::make_unique<Server>(m_ioService, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), std::move(token), m_logger, m_users);
         m_ioService.run();
     }
     catch (const std::exception& e)
