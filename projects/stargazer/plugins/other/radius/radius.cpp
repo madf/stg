@@ -55,17 +55,12 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
 
     pv.param = "auth";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi != s.moduleParams.end() )
+    if (pvi != s.moduleParams.end())
     {
         pv.param = "send";
-        std::string sendValue;
-        std::vector<ParamValue> sectionsParams = pvi->sections;
-        auto pva = std::find(sectionsParams.begin(), sectionsParams.end(), pv);
-        if (pva != sectionsParams.end() && !pva->value.empty())
-        {
-            sendValue = pva->value[0];
-            printfd(__FILE__, "ParseSettings Value of send: '%s'\n", sendValue.c_str());
-        }
+        auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
+        if (pva != pvi->sections.end() && !pva->value.empty())
+            printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
     }
     return 0;
 }
