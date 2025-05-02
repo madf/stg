@@ -46,14 +46,22 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         m_secret = "";
     }
     else
-    {
         m_secret = pvi->value[0];
-    }
 
     pv.param = "Dictionaries";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
     if (pvi != s.moduleParams.end() && !pvi->value.empty())
         m_dictionaries = pvi->value[0];
+
+    pv.param = "auth";
+    pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+    if (pvi != s.moduleParams.end())
+    {
+        pv.param = "send";
+        auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
+        if (pva != pvi->sections.end() && !pva->value.empty())
+            printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
+    }
     return 0;
 }
 
