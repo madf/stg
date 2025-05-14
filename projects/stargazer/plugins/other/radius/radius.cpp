@@ -1,7 +1,10 @@
 #include "radius.h"
 #include "radproto/error.h"
 #include "stg/common.h"
+#include <boost/tokenizer.hpp>
 
+#include <vector>
+#include <utility>
 #include <iterator>
 #include <iostream>
 
@@ -61,6 +64,62 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
+
+        using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
+        boost::char_separator<char> sep(",");
+
+        tokenizer tokens(pva->value[0], sep);
+
+        for (const auto& token : tokens)
+        {
+            printfd(__FILE__, "Tok: '%s'\n", token.c_str());
+            boost::char_separator<char> sp(" =");
+            tokenizer tok(token, sp);
+
+            std::vector<std::string> attribute;
+            for (const auto& t : tok)
+            {
+                printfd(__FILE__, "T: '%s'\n", t.c_str());
+                attribute.push_back(t);
+            }
+
+            if (!attribute.empty())
+            {
+                std::string key = attribute[0];
+                printfd(__FILE__, "T attr key: '%s'\n", attribute[0].c_str());
+
+                std::string valueName = attribute[1];
+                printfd(__FILE__, "T attr value: '%s'\n", attribute[1].c_str());
+
+                AttrValue attrValue;
+                std::vector<std::pair<std::string, AttrValue>> attrSend;
+
+                if (valueName[0] == '\'')
+                {
+                    valueName.erase(0, 1);
+                    valueName.erase(valueName.length() - 1, 1);
+
+                    attrValue.value = valueName;
+                    attrValue.sign = AttrValue::Sign::IS;
+
+                    attrSend.emplace_back(key, attrValue);
+
+                    printfd(__FILE__, "Key: '%s'\n", key.c_str());
+                    printfd(__FILE__, "Value: '%s'\n", valueName.c_str());
+                }
+                else
+                {
+                    attrValue.value = valueName;
+                    attrValue.sign = AttrValue::Sign::NO;
+
+                    attrSend.emplace_back(key, attrValue);
+
+                    printfd(__FILE__, "No \'\n");
+                    printfd(__FILE__, "Key: '%s'\n", key.c_str());
+                    printfd(__FILE__, "Value: '%s'\n", valueName.c_str());
+                }
+            }
+        }
     }
     return 0;
 }
