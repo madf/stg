@@ -20,11 +20,23 @@ namespace STG
 
     class Users;
 
+    struct AttrValue
+    {
+        enum class Sign
+        {
+            NO,
+            IS
+        };
+        std::string value;
+        Sign sign;
+    };
+
     class RAD_SETTINGS
     {
         public:
             RAD_SETTINGS();
             virtual ~RAD_SETTINGS() {}
+
             const std::string & GetStrError() const { return m_errorStr; }
             int ParseSettings(const ModuleSettings & s);
 
