@@ -10,11 +10,53 @@
 
 using STG::RADIUS;
 using STG::RAD_SETTINGS;
+using STG::AttrValue;
 
 extern "C" STG::Plugin* GetPlugin()
 {
     static RADIUS plugin;
     return &plugin;
+}
+
+std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSendAttr)
+{
+    using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
+    boost::char_separator<char> sep(",");
+
+    tokenizer tokens(fieldSendAttr, sep);
+
+    AttrValue attrValue;
+    std::vector<std::pair<std::string, AttrValue>> keyValuePairs;
+
+    for (const auto& token : tokens)
+    {
+        boost::char_separator<char> sp(" =");
+        tokenizer tok(token, sp);
+
+        std::vector<std::string> parsedSendAttr;
+        for (const auto& t : tok)
+            parsedSendAttr.push_back(t);
+
+        std::string key = parsedSendAttr[0];
+        std::string valueName = parsedSendAttr[1];
+
+        if (valueName[0] == '\'')
+        {
+            valueName.erase(0, 1);
+            valueName.erase(valueName.length() - 1, 1);
+
+            attrValue.value = valueName;
+            attrValue.sign = AttrValue::Sign::IS_VALUE;
+            keyValuePairs.emplace_back(key, attrValue);
+        }
+        else
+        {
+            attrValue.value = valueName;
+            attrValue.sign = AttrValue::Sign::NOT_VALUE;
+            keyValuePairs.emplace_back(key, attrValue);
+        }
+    }
+    return keyValuePairs;
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
@@ -66,46 +108,9 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
 
-            using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
-            boost::char_separator<char> sep(",");
+            std::vector<std::pair<std::string, AttrValue>> keyValuePairs = ParseSendAttr(pva->value[0]);
 
-            tokenizer tokens(pva->value[0], sep);
-
-            AttrValue attrValue;
-            std::vector<std::pair<std::string, AttrValue>> attrSend;
-
-            for (const auto& token : tokens)
-            {
-                boost::char_separator<char> sp(" =");
-                tokenizer tok(token, sp);
-
-                std::vector<std::string> attribute;
-                for (const auto& t : tok)
-                    attribute.push_back(t);
-
-                if (!attribute.empty())
-                {
-                    std::string key = attribute[0];
-                    std::string valueName = attribute[1];
-
-                    if (valueName[0] == '\'')
-                    {
-                        valueName.erase(0, 1);
-                        valueName.erase(valueName.length() - 1, 1);
-
-                        attrValue.value = valueName;
-                        attrValue.sign = AttrValue::Sign::IS;
-                        attrSend.emplace_back(key, attrValue);
-                    }
-                    else
-                    {
-                        attrValue.value = valueName;
-                        attrValue.sign = AttrValue::Sign::NO;
-                        attrSend.emplace_back(key, attrValue);
-                    }
-                }
-            }
-            for (const auto& at : attrSend)
+            for (const auto& at : keyValuePairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Sign: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.sign);
         }
     }
