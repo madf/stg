@@ -24,8 +24,8 @@ namespace STG
     {
         enum class Sign
         {
-            NO,
-            IS
+            NOT_VALUE,
+            IS_VALUE
         };
         std::string value;
         Sign sign;
