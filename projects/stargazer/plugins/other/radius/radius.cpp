@@ -46,13 +46,13 @@ std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSe
             valueName.erase(valueName.length() - 1, 1);
 
             attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::IS_VALUE;
+            attrValue.type = AttrValue::Type::VALUE;
             keyValuePairs.emplace_back(key, attrValue);
         }
         else
         {
             attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::NOT_VALUE;
+            attrValue.type = AttrValue::Type::PARAM_NAME;
             keyValuePairs.emplace_back(key, attrValue);
         }
     }
