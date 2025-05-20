@@ -24,8 +24,8 @@ namespace STG
     {
         enum class Type
         {
-            NOT_VALUE,
-            IS_VALUE
+            PARAM_NAME,
+            VALUE
         };
         std::string value;
         Type type;
