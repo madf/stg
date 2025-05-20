@@ -46,13 +46,13 @@ std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSe
             valueName.erase(valueName.length() - 1, 1);
 
             attrValue.value = valueName;
-            attrValue.sign = AttrValue::Sign::IS_VALUE;
+            attrValue.type = AttrValue::Type::IS_VALUE;
             keyValuePairs.emplace_back(key, attrValue);
         }
         else
         {
             attrValue.value = valueName;
-            attrValue.sign = AttrValue::Sign::NOT_VALUE;
+            attrValue.type = AttrValue::Type::NOT_VALUE;
             keyValuePairs.emplace_back(key, attrValue);
         }
     }
@@ -111,7 +111,7 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
             std::vector<std::pair<std::string, AttrValue>> keyValuePairs = ParseSendAttr(pva->value[0]);
 
             for (const auto& at : keyValuePairs)
-                printfd(__FILE__, "Key: '%s', Value: '%s', Sign: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.sign);
+                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
         }
     }
     return 0;
