@@ -10,7 +10,7 @@
 
 using STG::RADIUS;
 using STG::RAD_SETTINGS;
-using STG::AttrValue;
+using AttrValue = RAD_SETTINGS::AttrValue;
 
 extern "C" STG::Plugin* GetPlugin()
 {
