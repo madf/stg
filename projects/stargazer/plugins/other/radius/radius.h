@@ -20,22 +20,22 @@ namespace STG
 
     class Users;
 
-    struct AttrValue
-    {
-        enum class Type
-        {
-            PARAM_NAME,
-            VALUE
-        };
-        std::string value;
-        Type type;
-    };
-
     class RAD_SETTINGS
     {
         public:
             RAD_SETTINGS();
             virtual ~RAD_SETTINGS() {}
+
+            struct AttrValue
+            {
+                enum class Type
+                {
+                    PARAM_NAME,
+                    VALUE
+                };
+                std::string value;
+                Type type;
+            };
 
             const std::string & GetStrError() const { return m_errorStr; }
             int ParseSettings(const ModuleSettings & s);
