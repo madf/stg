@@ -22,13 +22,13 @@ namespace STG
 
     struct AttrValue
     {
-        enum class Sign
+        enum class Type
         {
             NOT_VALUE,
             IS_VALUE
         };
         std::string value;
-        Sign sign;
+        Type type;
     };
 
     class RAD_SETTINGS
