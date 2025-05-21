@@ -37,23 +37,26 @@ std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSe
         for (const auto& t : tok)
             parsedSendAttr.push_back(t);
 
-        std::string key = parsedSendAttr[0];
-        std::string valueName = parsedSendAttr[1];
-
-        if (valueName[0] == '\'')
+        if (!parsedSendAttr.empty())
         {
-            valueName.erase(0, 1);
-            valueName.erase(valueName.length() - 1, 1);
+            std::string key = parsedSendAttr[0];
+            std::string valueName = parsedSendAttr[1];
 
-            attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::VALUE;
-            keyValuePairs.emplace_back(key, attrValue);
-        }
-        else
-        {
-            attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::PARAM_NAME;
-            keyValuePairs.emplace_back(key, attrValue);
+            if (valueName[0] == '\'')
+            {
+                valueName.erase(0, 1);
+                valueName.erase(valueName.length() - 1, 1);
+
+                attrValue.value = valueName;
+                attrValue.type = AttrValue::Type::VALUE;
+                keyValuePairs.emplace_back(key, attrValue);
+            }
+            else
+            {
+                attrValue.value = valueName;
+                attrValue.type = AttrValue::Type::PARAM_NAME;
+                keyValuePairs.emplace_back(key, attrValue);
+            }
         }
     }
     return keyValuePairs;
