@@ -18,7 +18,7 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSendAttr)
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::string fieldSendAttr)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep(",");
@@ -37,26 +37,37 @@ std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSe
         for (const auto& t : tok)
             parsedSendAttr.push_back(t);
 
-        if (!parsedSendAttr.empty())
+        if (parsedSendAttr.empty())
         {
-            std::string key = parsedSendAttr[0];
-            std::string valueName = parsedSendAttr[1];
+            m_logger("Error ParseSendAttr: send parameter attribute is missing.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is missing.\n");
+            return keyValuePairs;
+        }
 
-            if (valueName[0] == '\'')
-            {
-                valueName.erase(0, 1);
-                valueName.erase(valueName.length() - 1, 1);
+        if (parsedSendAttr.size() < 2)
+        {
+            m_logger("Error ParseSendAttr: send parameter attribute is invalid.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is invalid.\n");
+            return keyValuePairs;
+        }
 
-                attrValue.value = valueName;
-                attrValue.type = AttrValue::Type::VALUE;
-                keyValuePairs.emplace_back(key, attrValue);
-            }
-            else
-            {
-                attrValue.value = valueName;
-                attrValue.type = AttrValue::Type::PARAM_NAME;
-                keyValuePairs.emplace_back(key, attrValue);
-            }
+        std::string key = parsedSendAttr[0];
+        std::string valueName = parsedSendAttr[1];
+
+        if (valueName[0] == '\'')
+        {
+            valueName.erase(0, 1);
+            valueName.erase(valueName.length() - 1, 1);
+
+            attrValue.value = valueName;
+            attrValue.type = AttrValue::Type::VALUE;
+            keyValuePairs.emplace_back(key, attrValue);
+        }
+        else
+        {
+            attrValue.value = valueName;
+            attrValue.type = AttrValue::Type::PARAM_NAME;
+            keyValuePairs.emplace_back(key, attrValue);
         }
     }
     return keyValuePairs;
@@ -64,7 +75,8 @@ std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSe
 
 RAD_SETTINGS::RAD_SETTINGS()
     : m_port(1812),
-      m_dictionaries("/usr/share/freeradius/dictionary")
+      m_dictionaries("/usr/share/freeradius/dictionary"),
+      m_logger(PluginLogger::get("radius"))
 {}
 
 int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
