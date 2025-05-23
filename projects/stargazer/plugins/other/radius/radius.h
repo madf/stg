@@ -25,8 +25,21 @@ namespace STG
         public:
             RAD_SETTINGS();
             virtual ~RAD_SETTINGS() {}
+
+            struct AttrValue
+            {
+                enum class Type
+                {
+                    PARAM_NAME,
+                    VALUE
+                };
+                std::string value;
+                Type type;
+            };
+
             const std::string & GetStrError() const { return m_errorStr; }
             int ParseSettings(const ModuleSettings & s);
+            std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(std::string fieldSendAttr);
 
             uint16_t GetPort() const { return m_port; }
             const std::string & GetDictionaries() const { return m_dictionaries; }
@@ -37,6 +50,7 @@ namespace STG
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
+            PluginLogger m_logger;
     };
 
     class RADIUS : public Auth

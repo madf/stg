@@ -1,12 +1,16 @@
 #include "radius.h"
 #include "radproto/error.h"
 #include "stg/common.h"
+#include <boost/tokenizer.hpp>
 
+#include <vector>
+#include <utility>
 #include <iterator>
 #include <iostream>
 
 using STG::RADIUS;
 using STG::RAD_SETTINGS;
+using AttrValue = RAD_SETTINGS::AttrValue;
 
 extern "C" STG::Plugin* GetPlugin()
 {
@@ -14,9 +18,65 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::string fieldSendAttr)
+{
+    using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
+    boost::char_separator<char> sep(",");
+
+    tokenizer tokens(fieldSendAttr, sep);
+
+    AttrValue attrValue;
+    std::vector<std::pair<std::string, AttrValue>> keyValuePairs;
+
+    for (const auto& token : tokens)
+    {
+        boost::char_separator<char> sp(" =");
+        tokenizer tok(token, sp);
+
+        std::vector<std::string> parsedSendAttr;
+        for (const auto& t : tok)
+            parsedSendAttr.push_back(t);
+
+        if (parsedSendAttr.empty())
+        {
+            m_logger("Error ParseSendAttr: send parameter attribute is missing.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is missing.\n");
+            return keyValuePairs;
+        }
+
+        if (parsedSendAttr.size() < 2)
+        {
+            m_logger("Error ParseSendAttr: send parameter attribute is invalid.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is invalid.\n");
+            return keyValuePairs;
+        }
+
+        std::string key = parsedSendAttr[0];
+        std::string valueName = parsedSendAttr[1];
+
+        if  (valueName[0] == '\'' && valueName[valueName.length() - 1] == '\'')
+        {
+            valueName.erase(0, 1);
+            valueName.erase(valueName.length() - 1, 1);
+
+            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::VALUE});
+        }
+        else if (valueName[0] != '\'' && valueName[valueName.length() - 1] != '\'')
+            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::PARAM_NAME});
+        else
+        {
+            m_logger("Error ParseSendAttr: send parameter attribute value is invalid.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute value is invalid.\n");
+            return keyValuePairs;
+        }
+    }
+    return keyValuePairs;
+}
+
 RAD_SETTINGS::RAD_SETTINGS()
     : m_port(1812),
-      m_dictionaries("/usr/share/freeradius/dictionary")
+      m_dictionaries("/usr/share/freeradius/dictionary"),
+      m_logger(PluginLogger::get("radius"))
 {}
 
 int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
@@ -46,14 +106,29 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         m_secret = "";
     }
     else
-    {
         m_secret = pvi->value[0];
-    }
 
     pv.param = "Dictionaries";
     pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
     if (pvi != s.moduleParams.end() && !pvi->value.empty())
         m_dictionaries = pvi->value[0];
+
+    pv.param = "auth";
+    pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+    if (pvi != s.moduleParams.end())
+    {
+        pv.param = "send";
+        auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
+        if (pva != pvi->sections.end() && !pva->value.empty())
+        {
+            printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
+
+            std::vector<std::pair<std::string, AttrValue>> keyValuePairs = ParseSendAttr(pva->value[0]);
+
+            for (const auto& at : keyValuePairs)
+                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
+        }
+    }
     return 0;
 }
 
