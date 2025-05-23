@@ -59,16 +59,10 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::
             valueName.erase(0, 1);
             valueName.erase(valueName.length() - 1, 1);
 
-            attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::VALUE;
-            keyValuePairs.emplace_back(key, attrValue);
+            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::VALUE});
         }
         else if (valueName[0] != '\'' && valueName[valueName.length() - 1] != '\'')
-        {
-            attrValue.value = valueName;
-            attrValue.type = AttrValue::Type::PARAM_NAME;
-            keyValuePairs.emplace_back(key, attrValue);
-        }
+            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::PARAM_NAME});
         else
         {
             m_logger("Error ParseSendAttr: send parameter attribute value is invalid.\n");
