@@ -36,38 +36,28 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::
         for (const auto& t : tok)
             parsedSendAttr.push_back(t);
 
-        if (parsedSendAttr.empty())
+        if (parsedSendAttr.size() != 2)
         {
-            m_logger("Error ParseSendAttr: send parameter attribute is missing.\n");
-            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is missing.\n");
-            return keyValuePairs;
+            m_logger("Send attribute specification has an incorrect format: '%s'.", token.c_str());
+            printfd(__FILE__, "Send attribute specification has an incorrect format: '%s'.", token.c_str());
+            return {};
         }
 
-        if (parsedSendAttr.size() < 2)
-        {
-            m_logger("Error ParseSendAttr: send parameter attribute is invalid.\n");
-            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute is invalid.\n");
-            return keyValuePairs;
-        }
-
-        std::string key = parsedSendAttr[0];
+        auto type = AttrValue::Type::PARAM_NAME;
         std::string valueName = parsedSendAttr[1];
-
-        if  (valueName[0] == '\'' && valueName[valueName.length() - 1] == '\'')
+        if (valueName[0] == '\'' && valueName[valueName.length() - 1] == '\'')
         {
+            type = AttrValue::Type::VALUE;
             valueName.erase(0, 1);
             valueName.erase(valueName.length() - 1, 1);
-
-            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::VALUE});
         }
-        else if (valueName[0] != '\'' && valueName[valueName.length() - 1] != '\'')
-            keyValuePairs.emplace_back(key, AttrValue{valueName, AttrValue::Type::PARAM_NAME});
-        else
+        else if ((valueName[0] == '\'' && valueName[valueName.length() - 1] != '\'') || (valueName[0] != '\'' && valueName[valueName.length() - 1] == '\''))
         {
-            m_logger("Error ParseSendAttr: send parameter attribute value is invalid.\n");
-            printfd(__FILE__, "Error ParseSendAttr: send parameter attribute value is invalid.\n");
-            return keyValuePairs;
+            m_logger("Error ParseSendAttr: send attribute parameter value is invalid.\n");
+            printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
+            return {};
         }
+        keyValuePairs.emplace_back(parsedSendAttr[0], AttrValue{valueName, type});
     }
     return keyValuePairs;
 }
