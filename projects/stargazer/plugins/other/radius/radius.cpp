@@ -25,7 +25,6 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::
 
     tokenizer tokens(fieldSendAttr, sep);
 
-    AttrValue attrValue;
     std::vector<std::pair<std::string, AttrValue>> keyValuePairs;
 
     for (const auto& token : tokens)
