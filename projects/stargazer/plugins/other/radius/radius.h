@@ -37,12 +37,13 @@ namespace STG
                 Type type;
             };
 
-            const std::string & GetStrError() const { return m_errorStr; }
-            int ParseSettings(const ModuleSettings & s);
+            const std::string& GetStrError() const { return m_errorStr; }
+            int ParseSettings(const ModuleSettings& s);
 
             uint16_t GetPort() const { return m_port; }
-            const std::string & GetDictionaries() const { return m_dictionaries; }
-            const std::string & GetSecret() const { return m_secret; }
+            const std::string& GetDictionaries() const { return m_dictionaries; }
+            const std::string& GetSecret() const { return m_secret; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetRes() const { return m_res; }
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
@@ -51,6 +52,7 @@ namespace STG
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
+            std::vector<std::pair<std::string, AttrValue>> m_res;
             PluginLogger m_logger;
     };
 
@@ -62,22 +64,22 @@ namespace STG
             RADIUS& operator=(const RADIUS&) = delete;
 
             void SetUsers(Users* u) { m_users = u; }
-            void SetSettings(const ModuleSettings & s) override { m_settings = s; }
+            void SetSettings(const ModuleSettings& s) override { m_settings = s; }
             int ParseSettings() override;
 
             int Start() override;
             int Stop() override;
-            int Reload(const ModuleSettings & /*ms*/) override { return 0; }
+            int Reload(const ModuleSettings& /*ms*/) override { return 0; }
             bool IsRunning() override;
             void SetRunning(bool val);
 
-            const std::string & GetStrError() const override { return m_errorStr; }
+            const std::string& GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
 
             uint16_t GetStartPosition() const override { return 0; }
             uint16_t GetStopPosition() const override { return 0; }
 
-            int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
+            int SendMessage(const Message& msg, uint32_t ip) const override { return 0; }
 
         private:
             std::mutex m_mutex;
