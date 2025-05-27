@@ -18,14 +18,14 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::string fieldSendAttr)
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const std::string& value)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep(",");
 
-    tokenizer tokens(fieldSendAttr, sep);
+    tokenizer tokens(value, sep);
 
-    std::vector<std::pair<std::string, AttrValue>> keyValuePairs;
+    std::vector<std::pair<std::string, AttrValue>> res;
 
     for (const auto& token : tokens)
     {
@@ -57,9 +57,9 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(std::
             printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
             return {};
         }
-        keyValuePairs.emplace_back(parsedSendAttr[0], AttrValue{valueName, type});
+        res.emplace_back(parsedSendAttr[0], AttrValue{valueName, type});
     }
-    return keyValuePairs;
+    return res;
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
@@ -112,9 +112,9 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
 
-            std::vector<std::pair<std::string, AttrValue>> keyValuePairs = ParseSendAttr(pva->value[0]);
+            std::vector<std::pair<std::string, AttrValue>> res = ParseSendAttr(pva->value[0]);
 
-            for (const auto& at : keyValuePairs)
+            for (const auto& at : res)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
         }
     }
