@@ -32,11 +32,11 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
         boost::char_separator<char> sp(" =");
         tokenizer tok(token, sp);
 
-        std::vector<std::string> parsedSendAttr;
+        std::vector<std::string> keyValue;
         for (const auto& t : tok)
-            parsedSendAttr.push_back(t);
+            keyValue.push_back(t);
 
-        if (parsedSendAttr.size() != 2)
+        if (keyValue.size() != 2)
         {
             m_logger("Send attribute specification has an incorrect format: '%s'.", token.c_str());
             printfd(__FILE__, "Send attribute specification has an incorrect format: '%s'.", token.c_str());
@@ -44,7 +44,7 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
         }
 
         auto type = AttrValue::Type::PARAM_NAME;
-        std::string valueName = parsedSendAttr[1];
+        std::string valueName = keyValue[1];
         if (valueName[0] == '\'' && valueName[valueName.length() - 1] == '\'')
         {
             type = AttrValue::Type::VALUE;
@@ -57,7 +57,7 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
             printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
             return {};
         }
-        res.emplace_back(parsedSendAttr[0], AttrValue{valueName, type});
+        res.emplace_back(keyValue[0], AttrValue{valueName, type});
     }
     return res;
 }
