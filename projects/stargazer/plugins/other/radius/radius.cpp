@@ -25,8 +25,6 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
 
     tokenizer tokens(value, sep);
 
-    std::vector<std::pair<std::string, AttrValue>> res;
-
     for (const auto& token : tokens)
     {
         boost::char_separator<char> sp(" =");
@@ -57,9 +55,9 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
             printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
             return {};
         }
-        res.emplace_back(keyValue[0], AttrValue{valueName, type});
+        m_res.emplace_back(keyValue[0], AttrValue{valueName, type});
     }
-    return res;
+    return m_res;
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
@@ -112,9 +110,9 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
 
-            std::vector<std::pair<std::string, AttrValue>> res = ParseSendAttr(pva->value[0]);
+            m_res = ParseSendAttr(pva->value[0]);
 
-            for (const auto& at : res)
+            for (const auto& at : m_res)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
         }
     }
