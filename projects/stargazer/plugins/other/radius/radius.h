@@ -39,13 +39,14 @@ namespace STG
 
             const std::string & GetStrError() const { return m_errorStr; }
             int ParseSettings(const ModuleSettings & s);
-            std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
 
             uint16_t GetPort() const { return m_port; }
             const std::string & GetDictionaries() const { return m_dictionaries; }
             const std::string & GetSecret() const { return m_secret; }
 
         private:
+            std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
+
             std::string m_errorStr;
             uint16_t m_port;
             std::string m_dictionaries;
