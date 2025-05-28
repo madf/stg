@@ -43,7 +43,7 @@ namespace STG
             uint16_t GetPort() const { return m_port; }
             const std::string& GetDictionaries() const { return m_dictionaries; }
             const std::string& GetSecret() const { return m_secret; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetRes() const { return m_res; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairs() const { return m_sendPairs; }
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
@@ -52,7 +52,7 @@ namespace STG
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
-            std::vector<std::pair<std::string, AttrValue>> m_res;
+            std::vector<std::pair<std::string, AttrValue>> m_sendPairs;
             PluginLogger m_logger;
     };
 
