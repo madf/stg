@@ -111,9 +111,9 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
 
-            m_res = ParseSendAttr(pva->value[0]);
+            m_sendPairs = ParseSendAttr(pva->value[0]);
 
-            for (const auto& at : m_res)
+            for (const auto& at : m_sendPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
         }
     }
