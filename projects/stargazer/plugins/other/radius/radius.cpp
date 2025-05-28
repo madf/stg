@@ -25,6 +25,7 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
 
     tokenizer tokens(value, sep);
 
+    std::vector<std::pair<std::string, AttrValue>> res;
     for (const auto& token : tokens)
     {
         boost::char_separator<char> sp(" =");
@@ -55,9 +56,9 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
             printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
             return {};
         }
-        m_res.emplace_back(keyValue[0], AttrValue{valueName, type});
+        res.emplace_back(keyValue[0], AttrValue{valueName, type});
     }
-    return m_res;
+    return res;
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
