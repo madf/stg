@@ -47,12 +47,14 @@ namespace STG
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
+            std::vector<std::pair<std::string, AttrValue>> ParseMatchAttr(const std::string& value);
 
             std::string m_errorStr;
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
             std::vector<std::pair<std::string, AttrValue>> m_sendPairs;
+            std::vector<std::pair<std::string, AttrValue>> m_matchPairs;
             PluginLogger m_logger;
     };
 
