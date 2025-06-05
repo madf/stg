@@ -18,7 +18,7 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const std::string& value)
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseAuthAttr(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep(",");
@@ -37,8 +37,8 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
 
         if (keyValue.size() != 2)
         {
-            m_logger("Send attribute specification has an incorrect format: '%s'.", token.c_str());
-            printfd(__FILE__, "Send attribute specification has an incorrect format: '%s'.", token.c_str());
+            m_logger("The '%s' attribute specification has an incorrect format: '%s'.", paramName.c_str(),  token.c_str());
+            printfd(__FILE__, "The '%s' attribute specification has an incorrect format: '%s'.", paramName.c_str(), token.c_str());
             return {};
         }
 
@@ -52,51 +52,8 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSendAttr(const
         }
         else if ((valueName.front() == '\'' && valueName.back() != '\'') || (valueName.front() != '\'' && valueName.back() == '\''))
         {
-            m_logger("Error ParseSendAttr: send attribute parameter value is invalid.\n");
-            printfd(__FILE__, "Error ParseSendAttr: send attribute parameter value is invalid.\n");
-            return {};
-        }
-        res.emplace_back(keyValue[0], AttrValue{valueName, type});
-    }
-    return res;
-}
-
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseMatchAttr(const std::string& value)
-{
-    using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
-    boost::char_separator<char> sep(",");
-
-    tokenizer tokens(value, sep);
-
-    std::vector<std::pair<std::string, AttrValue>> res;
-    for (const auto& token : tokens)
-    {
-        boost::char_separator<char> sp(" =");
-        tokenizer tok(token, sp);
-
-        std::vector<std::string> keyValue;
-        for (const auto& t : tok)
-            keyValue.push_back(t);
-
-        if (keyValue.size() != 2)
-        {
-            m_logger("Match attribute specification has an incorrect format: '%s'.", token.c_str());
-            printfd(__FILE__, "Match attribute specification has an incorrect format: '%s'.", token.c_str());
-            return {};
-        }
-
-        auto type = AttrValue::Type::PARAM_NAME;
-        std::string valueName = keyValue[1];
-        if (valueName.front() == '\'' && valueName.back() == '\'')
-        {
-            type = AttrValue::Type::VALUE;
-            valueName.erase(0, 1);
-            valueName.erase(valueName.length() - 1, 1);
-        }
-        else if ((valueName.front() == '\'' && valueName.back() != '\'') || (valueName.front() != '\'' && valueName.back() == '\''))
-        {
-            m_logger("Error ParseMatchAttr: match attribute parameter value is invalid.\n");
-            printfd(__FILE__, "Error ParseMatchAttr: match attribute parameter value is invalid.\n");
+            m_logger("Error ParseAuthAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
+            printfd(__FILE__, "Error ParseAuthAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
             return {};
         }
         res.emplace_back(keyValue[0], AttrValue{valueName, type});
@@ -154,7 +111,7 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
 
-            m_sendPairs = ParseSendAttr(pva->value[0]);
+            m_sendPairs = ParseAuthAttr(pva->value[0], pv.param);
 
             for (const auto& at : m_sendPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
@@ -166,7 +123,7 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         {
             printfd(__FILE__, "ParseSettings Value of match: '%s'\n", pva->value[0].c_str());
 
-            m_matchPairs = ParseMatchAttr(pva->value[0]);
+            m_matchPairs = ParseAuthAttr(pva->value[0], pv.param.c_str());
 
             for (const auto& at : m_matchPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
