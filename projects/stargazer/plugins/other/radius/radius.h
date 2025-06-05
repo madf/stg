@@ -46,8 +46,7 @@ namespace STG
             const std::vector<std::pair<std::string, AttrValue>>& GetSendPairs() const { return m_sendPairs; }
 
         private:
-            std::vector<std::pair<std::string, AttrValue>> ParseSendAttr(const std::string& value);
-            std::vector<std::pair<std::string, AttrValue>> ParseMatchAttr(const std::string& value);
+            std::vector<std::pair<std::string, AttrValue>> ParseAuthAttr(const std::string& value, const std::string& paramName);
 
             std::string m_errorStr;
             uint16_t m_port;
