@@ -18,7 +18,7 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseAuthAttr(const std::string& value, const std::string& paramName)
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseAuthAutzAttr(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep(",");
@@ -52,8 +52,8 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseAuthAttr(const
         }
         else if ((valueName.front() == '\'' && valueName.back() != '\'') || (valueName.front() != '\'' && valueName.back() == '\''))
         {
-            m_logger("Error ParseAuthAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
-            printfd(__FILE__, "Error ParseAuthAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
+            m_logger("Error ParseAuthAutzAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
+            printfd(__FILE__, "Error ParseAuthAutzAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
             return {};
         }
         res.emplace_back(keyValue[0], AttrValue{valueName, type});
@@ -109,9 +109,9 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            printfd(__FILE__, "ParseSettings Value of send: '%s'\n", pva->value[0].c_str());
+            printfd(__FILE__, "ParseSettings Value of auth/send: '%s'\n", pva->value[0].c_str());
 
-            m_sendPairs = ParseAuthAttr(pva->value[0], pv.param);
+            m_sendPairs = ParseAuthAutzAttr(pva->value[0], pv.param);
 
             for (const auto& at : m_sendPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
@@ -121,9 +121,38 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
         pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            printfd(__FILE__, "ParseSettings Value of match: '%s'\n", pva->value[0].c_str());
+            printfd(__FILE__, "ParseSettings Value of auth/match: '%s'\n", pva->value[0].c_str());
 
-            m_matchPairs = ParseAuthAttr(pva->value[0], pv.param.c_str());
+            m_matchPairs = ParseAuthAutzAttr(pva->value[0], pv.param.c_str());
+
+            for (const auto& at : m_matchPairs)
+                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
+        }
+    }
+
+    pv.param = "autz";
+    pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
+    if (pvi != s.moduleParams.end())
+    {
+        pv.param = "send";
+        auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
+        if (pva != pvi->sections.end() && !pva->value.empty())
+        {
+            printfd(__FILE__, "ParseSettings Value of autz/send: '%s'\n", pva->value[0].c_str());
+
+            m_sendPairs = ParseAuthAutzAttr(pva->value[0], pv.param);
+
+            for (const auto& at : m_sendPairs)
+                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
+        }
+
+        pv.param = "match";
+        pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
+        if (pva != pvi->sections.end() && !pva->value.empty())
+        {
+            printfd(__FILE__, "ParseSettings Value of autz/match: '%s'\n", pva->value[0].c_str());
+
+            m_matchPairs = ParseAuthAutzAttr(pva->value[0], pv.param.c_str());
 
             for (const auto& at : m_matchPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
