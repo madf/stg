@@ -46,7 +46,7 @@ namespace STG
             const std::vector<std::pair<std::string, AttrValue>>& GetSendPairs() const { return m_sendPairs; }
 
         private:
-            std::vector<std::pair<std::string, AttrValue>> ParseSectionsAttr(const std::string& value, const std::string& paramName);
+            std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
             void MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName);
 
             std::string m_errorStr;
