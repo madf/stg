@@ -18,7 +18,7 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSectionsAttr(const std::string& value, const std::string& paramName)
+std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep(",");
@@ -52,8 +52,8 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseSectionsAttr(c
         }
         else if ((valueName.front() == '\'' && valueName.back() != '\'') || (valueName.front() != '\'' && valueName.back() == '\''))
         {
-            m_logger("Error ParseSectionsAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
-            printfd(__FILE__, "Error ParseSectionsAttr: '%s' attribute parameter value is invalid.\n", paramName.c_str());
+            m_logger("Error ParseRules: '%s' attribute parameter value is invalid.\n", paramName.c_str());
+            printfd(__FILE__, "Error ParseRules: '%s' attribute parameter value is invalid.\n", paramName.c_str());
             return {};
         }
         res.emplace_back(keyValue[0], AttrValue{valueName, type});
@@ -72,7 +72,7 @@ void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, co
         {
             printfd(__FILE__, "ParseSettings: The send value of param '%s': '%s'\n", paramName.c_str(), pva->value[0].c_str());
 
-            m_sendPairs = ParseSectionsAttr(pva->value[0], pv.param);
+            m_sendPairs = ParseRules(pva->value[0], pv.param);
 
             for (const auto& at : m_sendPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
@@ -84,7 +84,7 @@ void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, co
         {
             printfd(__FILE__, "ParseSettings: The match value of param '%s': '%s'\n", paramName.c_str(), pva->value[0].c_str());
 
-            m_matchPairs = ParseSectionsAttr(pva->value[0], pv.param.c_str());
+            m_matchPairs = ParseRules(pva->value[0], pv.param.c_str());
 
             for (const auto& at : m_matchPairs)
                 printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
