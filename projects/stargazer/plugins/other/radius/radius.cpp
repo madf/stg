@@ -70,8 +70,6 @@ void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, co
         auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            printfd(__FILE__, "ParseSettings: The send value of param '%s': '%s'\n", paramName.c_str(), pva->value[0].c_str());
-
             m_sendPairs = ParseRules(pva->value[0], pv.param);
 
             for (const auto& at : m_sendPairs)
@@ -82,8 +80,6 @@ void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, co
         pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            printfd(__FILE__, "ParseSettings: The match value of param '%s': '%s'\n", paramName.c_str(), pva->value[0].c_str());
-
             m_matchPairs = ParseRules(pva->value[0], pv.param.c_str());
 
             for (const auto& at : m_matchPairs)
