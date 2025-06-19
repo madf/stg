@@ -61,6 +61,24 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
     return res;
 }
 
+std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, AttrValue>> mvector)
+{
+    std::string strRules;
+    size_t i = 0;
+    for (const auto& at : mvector)
+    {
+        if (at.second.type == AttrValue::Type::PARAM_NAME)
+            strRules.append(at.first + " = " + at.second.value);
+        else
+            strRules.append(at.first + " = " + "'" + at.second.value + "'");
+
+        if (i != mvector.size() - 1)
+            strRules.append(", ");
+        ++i;
+    }
+    return strRules;
+}
+
 void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName)
 {
     auto pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
@@ -70,20 +88,32 @@ void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, co
         auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            m_sendPairs = ParseRules(pva->value[0], pv.param);
-
-            for (const auto& at : m_sendPairs)
-                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
+            if (paramName == "auth")
+            {
+                m_sendPairsAuth = ParseRules(pva->value[0], pv.param);
+                printfd(__FILE__," auth.send = \"%s\"\n", ShowRules(m_sendPairsAuth).c_str());
+            }
+            else if (paramName == "autz")
+            {
+                m_sendPairsAutz = ParseRules(pva->value[0], pv.param);
+                printfd(__FILE__," autz.send = \"%s\"\n", ShowRules(m_sendPairsAutz).c_str());
+            }
         }
 
         pv.param = "match";
         pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
         if (pva != pvi->sections.end() && !pva->value.empty())
         {
-            m_matchPairs = ParseRules(pva->value[0], pv.param.c_str());
-
-            for (const auto& at : m_matchPairs)
-                printfd(__FILE__, "Key: '%s', Value: '%s', Type: %d\n", at.first.c_str(), at.second.value.c_str(), at.second.type);
+            if (paramName == "auth")
+            {
+                m_matchPairsAuth = ParseRules(pva->value[0], pv.param);
+                printfd(__FILE__," auth.match = \"%s\"\n", ShowRules(m_matchPairsAuth).c_str());
+            }
+            else if (paramName == "autz")
+            {
+                m_matchPairsAutz = ParseRules(pva->value[0], pv.param);
+                printfd(__FILE__," autz.match = \"%s\"\n", ShowRules(m_matchPairsAutz).c_str());
+            }
         }
     }
 }
