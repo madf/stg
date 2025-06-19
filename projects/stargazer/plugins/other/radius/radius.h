@@ -43,18 +43,24 @@ namespace STG
             uint16_t GetPort() const { return m_port; }
             const std::string& GetDictionaries() const { return m_dictionaries; }
             const std::string& GetSecret() const { return m_secret; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairs() const { return m_sendPairs; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairsAuth() const { return m_sendPairsAuth; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetMatchPairsAuth() const { return m_matchPairsAuth; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairsAutz() const { return m_sendPairsAutz; }
+            const std::vector<std::pair<std::string, AttrValue>>& GetMatchPairsAutz() const { return m_matchPairsAuth; }
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
+            std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>> mvector);
             void MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName);
 
             std::string m_errorStr;
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
-            std::vector<std::pair<std::string, AttrValue>> m_sendPairs;
-            std::vector<std::pair<std::string, AttrValue>> m_matchPairs;
+            std::vector<std::pair<std::string, AttrValue>> m_sendPairsAuth;
+            std::vector<std::pair<std::string, AttrValue>> m_matchPairsAuth;
+            std::vector<std::pair<std::string, AttrValue>> m_sendPairsAutz;
+            std::vector<std::pair<std::string, AttrValue>> m_matchPairsAutz;
             PluginLogger m_logger;
     };
 
