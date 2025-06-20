@@ -50,7 +50,7 @@ namespace STG
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
-            std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>> mvector);
+            std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes);
             void MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName);
 
             std::string m_errorStr;
