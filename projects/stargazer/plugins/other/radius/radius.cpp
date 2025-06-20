@@ -63,20 +63,20 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
 
 std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, AttrValue>> mvector)
 {
-    std::string strRules;
+    std::string result;
     size_t i = 0;
     for (const auto& at : mvector)
     {
         if (at.second.type == AttrValue::Type::PARAM_NAME)
-            strRules.append(at.first + " = " + at.second.value);
+            result.append(at.first + " = " + at.second.value);
         else
-            strRules.append(at.first + " = " + "'" + at.second.value + "'");
+            result.append(at.first + " = '" + at.second.value + "'");
 
         if (i != mvector.size() - 1)
-            strRules.append(", ");
+            result.append(", ");
         ++i;
     }
-    return strRules;
+    return result;
 }
 
 void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName)
