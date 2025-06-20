@@ -61,20 +61,21 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
     return res;
 }
 
-std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, AttrValue>> mvector)
+std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
 {
     std::string result;
-    size_t i = 0;
-    for (const auto& at : mvector)
+    bool first = true;
+    for (const auto& at : attributes)
     {
+        if (first)
+            first = false;
+        else
+            result += ", ";
+
         if (at.second.type == AttrValue::Type::PARAM_NAME)
             result.append(at.first + " = " + at.second.value);
         else
             result.append(at.first + " = '" + at.second.value + "'");
-
-        if (i != mvector.size() - 1)
-            result.append(", ");
-        ++i;
     }
     return result;
 }
