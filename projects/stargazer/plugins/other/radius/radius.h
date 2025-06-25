@@ -37,30 +37,35 @@ namespace STG
                 Type type;
             };
 
+            struct ASection
+            {
+                using Pairs = std::vector<std::pair<std::string, AttrValue>>;
+                Pairs match;
+                Pairs send;
+            };
+
             const std::string& GetStrError() const { return m_errorStr; }
             int ParseSettings(const ModuleSettings& s);
 
             uint16_t GetPort() const { return m_port; }
             const std::string& GetDictionaries() const { return m_dictionaries; }
             const std::string& GetSecret() const { return m_secret; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairsAuth() const { return m_sendPairsAuth; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetMatchPairsAuth() const { return m_matchPairsAuth; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetSendPairsAutz() const { return m_sendPairsAutz; }
-            const std::vector<std::pair<std::string, AttrValue>>& GetMatchPairsAutz() const { return m_matchPairsAuth; }
+            const ASection& getAuth() const { return m_auth; }
+            const ASection& getAutz() const { return m_autz; }
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
             std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes);
-            void MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName);
+            ASection parseASection(const std::vector<ParamValue>& conf);
 
             std::string m_errorStr;
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
-            std::vector<std::pair<std::string, AttrValue>> m_sendPairsAuth;
-            std::vector<std::pair<std::string, AttrValue>> m_matchPairsAuth;
-            std::vector<std::pair<std::string, AttrValue>> m_sendPairsAutz;
-            std::vector<std::pair<std::string, AttrValue>> m_matchPairsAutz;
+
+            ASection m_auth;
+            ASection m_autz;
+
             PluginLogger m_logger;
     };
 
