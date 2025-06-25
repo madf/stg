@@ -11,6 +11,7 @@
 using STG::RADIUS;
 using STG::RAD_SETTINGS;
 using AttrValue = RAD_SETTINGS::AttrValue;
+using ASection = RAD_SETTINGS::ASection;
 
 extern "C" STG::Plugin* GetPlugin()
 {
@@ -58,6 +59,7 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
         }
         res.emplace_back(keyValue[0], AttrValue{valueName, type});
     }
+            printfd(__FILE__, "Extra. parseRules end\n");
     return res;
 }
 
@@ -80,43 +82,26 @@ std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, Att
     return result;
 }
 
-void RAD_SETTINGS::MakeKeyValuePairs(const ModuleSettings & s, ParamValue pv, const std::string& paramName)
+ASection RAD_SETTINGS::parseASection(const std::vector<ParamValue>& conf)
 {
-    auto pvi = std::find(s.moduleParams.begin(), s.moduleParams.end(), pv);
-    if (pvi != s.moduleParams.end())
+            printfd(__FILE__, "Extra. parseASection start\n");
+    ASection res;
+    const auto mit = std::find(conf.begin(), conf.end(), ParamValue("match", {}));
+    if (mit != conf.end())
     {
-        pv.param = "send";
-        auto pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
-        if (pva != pvi->sections.end() && !pva->value.empty())
-        {
-            if (paramName == "auth")
-            {
-                m_sendPairsAuth = ParseRules(pva->value[0], pv.param);
-                printfd(__FILE__," auth.send = \"%s\"\n", ShowRules(m_sendPairsAuth).c_str());
-            }
-            else if (paramName == "autz")
-            {
-                m_sendPairsAutz = ParseRules(pva->value[0], pv.param);
-                printfd(__FILE__," autz.send = \"%s\"\n", ShowRules(m_sendPairsAutz).c_str());
-            }
-        }
-
-        pv.param = "match";
-        pva = std::find(pvi->sections.begin(), pvi->sections.end(), pv);
-        if (pva != pvi->sections.end() && !pva->value.empty())
-        {
-            if (paramName == "auth")
-            {
-                m_matchPairsAuth = ParseRules(pva->value[0], pv.param);
-                printfd(__FILE__," auth.match = \"%s\"\n", ShowRules(m_matchPairsAuth).c_str());
-            }
-            else if (paramName == "autz")
-            {
-                m_matchPairsAutz = ParseRules(pva->value[0], pv.param);
-                printfd(__FILE__," autz.match = \"%s\"\n", ShowRules(m_matchPairsAutz).c_str());
-            }
-        }
+            printfd(__FILE__, "Extra. parseASection into if for match before\n");
+        res.match = ParseRules(mit->value[0], mit->param);
+            printfd(__FILE__, "Extra. parseASection into if for match after\n");
+            printfd(__FILE__, "Extra. parseASection into if mit->param: '%s'\n", mit->param.c_str());
+            printfd(__FILE__, "Extra. parseASection into if mit->value[0]: '%s'\n", mit->value[0].c_str());
     }
+
+            printfd(__FILE__, "Extra. parseASection after match\n");
+    const auto sit = std::find(conf.begin(), conf.end(), ParamValue("send", {}));
+    if (sit != conf.end())
+        res.send = ParseRules(sit->value[0], sit->param);
+
+            printfd(__FILE__, "Extra. parseASection end\n");
 }
 
 RAD_SETTINGS::RAD_SETTINGS()
@@ -159,11 +144,23 @@ int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
     if (pvi != s.moduleParams.end() && !pvi->value.empty())
         m_dictionaries = pvi->value[0];
 
-    pv.param = "auth";
-    MakeKeyValuePairs(s, pv, pv.param);
+    const auto authIt = std::find(s.moduleParams.begin(), s.moduleParams.end(), ParamValue("auth", {}));
+                printfd(__FILE__, "Extra. ParseSettings before parseASection call for m_ayth\n");
+    if (authIt != s.moduleParams.end())
+    {
+                printfd(__FILE__, "Extra. ParseSettings into if before parseASection call for m_ayth\n");
+        m_auth = parseASection(authIt->sections);
 
-    pv.param = "autz";
-    MakeKeyValuePairs(s, pv, pv.param);
+                printfd(__FILE__, "Extra. ParseSettings into if after parseASection call for m_ayth\n");
+    }
+                printfd(__FILE__, "Extra. ParseSettings after parseASection call for m_ayth\n");
+    const auto autzIt = std::find(s.moduleParams.begin(), s.moduleParams.end(), ParamValue("autz", {}));
+    if (autzIt != s.moduleParams.end())
+        m_autz = parseASection(autzIt->sections);
+    printfd(__FILE__, " auth.match = \"%s\"\n", ShowRules(m_auth.match).c_str());
+    printfd(__FILE__, " auth.send = \"%s\"\n", ShowRules(m_auth.send).c_str());
+    printfd(__FILE__, " autz.match = \"%s\"\n", ShowRules(m_autz.match).c_str());
+    printfd(__FILE__, " autz.send = \"%s\"\n", ShowRules(m_autz.send).c_str());
 
     return 0;
 }
