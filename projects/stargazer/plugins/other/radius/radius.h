@@ -97,7 +97,7 @@ namespace STG
         private:
             std::mutex m_mutex;
 
-            boost::asio::io_service m_ioService;
+            boost::asio::io_context m_ioContext;
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
