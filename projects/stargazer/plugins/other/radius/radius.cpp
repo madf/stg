@@ -22,7 +22,7 @@ extern "C" STG::Plugin* GetPlugin()
 std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
-    boost::char_separator<char> sep(",");
+    const boost::char_separator<char> sep(",");
 
     tokenizer tokens(value, sep);
 
