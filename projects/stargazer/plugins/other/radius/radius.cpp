@@ -24,13 +24,13 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     const boost::char_separator<char> sep(",");
 
-    tokenizer tokens(value, sep);
+    const tokenizer tokens(value, sep);
 
     std::vector<std::pair<std::string, AttrValue>> res;
     for (const auto& token : tokens)
     {
-        boost::char_separator<char> sp(" =");
-        tokenizer tok(token, sp);
+        const boost::char_separator<char> sp(" =");
+        const tokenizer tok(token, sp);
 
         std::vector<std::string> keyValue;
         for (const auto& t : tok)
