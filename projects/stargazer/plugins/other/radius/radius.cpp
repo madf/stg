@@ -19,6 +19,25 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
+std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
+{
+    std::string result;
+    bool first = true;
+    for (const auto& at : attributes)
+    {
+        if (first)
+            first = false;
+        else
+            result += ", ";
+
+        if (at.second.type == AttrValue::Type::PARAM_NAME)
+            result.append(at.first + " = " + at.second.value);
+        else
+            result.append(at.first + " = '" + at.second.value + "'");
+    }
+    return result;
+}
+
 std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
@@ -60,25 +79,6 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
         res.emplace_back(keyValue[0], AttrValue{valueName, type});
     }
     return res;
-}
-
-std::string RAD_SETTINGS::ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
-{
-    std::string result;
-    bool first = true;
-    for (const auto& at : attributes)
-    {
-        if (first)
-            first = false;
-        else
-            result += ", ";
-
-        if (at.second.type == AttrValue::Type::PARAM_NAME)
-            result.append(at.first + " = " + at.second.value);
-        else
-            result.append(at.first + " = '" + at.second.value + "'");
-    }
-    return result;
 }
 
 ASection RAD_SETTINGS::parseASection(const std::vector<ParamValue>& conf)
