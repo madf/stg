@@ -92,7 +92,7 @@ namespace STG
             uint16_t GetStartPosition() const override { return 0; }
             uint16_t GetStopPosition() const override { return 0; }
 
-            int SendMessage(const Message& msg, uint32_t ip) const override { return 0; }
+            int SendMessage(const Message& /*msg*/, uint32_t /*ip*/) const override { return 0; }
 
         private:
             std::mutex m_mutex;
