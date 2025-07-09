@@ -55,7 +55,6 @@ namespace STG
 
         private:
             std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
-            std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes);
             ASection parseASection(const std::vector<ParamValue>& conf);
 
             std::string m_errorStr;
