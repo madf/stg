@@ -75,7 +75,7 @@ namespace STG
             RADIUS(const RADIUS&) = delete;
             RADIUS& operator=(const RADIUS&) = delete;
 
-            void SetUsers(Users* u) { m_users = u; }
+            void SetUsers(Users* u) override { m_users = u; }
             void SetSettings(const ModuleSettings& s) override { m_settings = s; }
             int ParseSettings() override;
 
