@@ -6,6 +6,7 @@
 #include <vector>
 #include <utility>
 #include <iterator>
+#include <algorithm>
 #include <iostream>
 
 using STG::RADIUS;
