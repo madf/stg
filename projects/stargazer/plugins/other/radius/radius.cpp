@@ -19,23 +19,26 @@ extern "C" STG::Plugin* GetPlugin()
     return &plugin;
 }
 
-std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
+namespace
 {
-    std::string result;
-    bool first = true;
-    for (const auto& at : attributes)
+    std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
     {
-        if (first)
-            first = false;
-        else
-            result += ", ";
+        std::string result;
+        bool first = true;
+        for (const auto& at : attributes)
+        {
+            if (first)
+                first = false;
+            else
+                result += ", ";
 
-        if (at.second.type == AttrValue::Type::PARAM_NAME)
-            result.append(at.first + " = " + at.second.value);
-        else
-            result.append(at.first + " = '" + at.second.value + "'");
+            if (at.second.type == AttrValue::Type::PARAM_NAME)
+                result.append(at.first + " = " + at.second.value);
+            else
+                result.append(at.first + " = '" + at.second.value + "'");
+        }
+        return result;
     }
-    return result;
 }
 
 std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const std::string& value, const std::string& paramName)
