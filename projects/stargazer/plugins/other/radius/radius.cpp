@@ -24,12 +24,9 @@ namespace
     std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
     {
         std::string result;
-        bool first = true;
         for (const auto& at : attributes)
         {
-            if (first)
-                first = false;
-            else
+            if (!result.empty())
                 result += ", ";
 
             if (at.second.type == AttrValue::Type::PARAM_NAME)
