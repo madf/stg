@@ -25,18 +25,47 @@ namespace STG
         public:
             RAD_SETTINGS();
             virtual ~RAD_SETTINGS() {}
-            const std::string & GetStrError() const { return m_errorStr; }
-            int ParseSettings(const ModuleSettings & s);
+
+            struct AttrValue
+            {
+                enum class Type
+                {
+                    PARAM_NAME,
+                    VALUE
+                };
+                std::string value;
+                Type type;
+            };
+
+            struct ASection
+            {
+                using Pairs = std::vector<std::pair<std::string, AttrValue>>;
+                Pairs match;
+                Pairs send;
+            };
+
+            const std::string& GetStrError() const { return m_errorStr; }
+            int ParseSettings(const ModuleSettings& s);
 
             uint16_t GetPort() const { return m_port; }
-            const std::string & GetDictionaries() const { return m_dictionaries; }
-            const std::string & GetSecret() const { return m_secret; }
+            const std::string& GetDictionaries() const { return m_dictionaries; }
+            const std::string& GetSecret() const { return m_secret; }
+            const ASection& getAuth() const { return m_auth; }
+            const ASection& getAutz() const { return m_autz; }
 
         private:
+            std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
+            ASection parseASection(const std::vector<ParamValue>& conf);
+
             std::string m_errorStr;
             uint16_t m_port;
             std::string m_dictionaries;
             std::string m_secret;
+
+            ASection m_auth;
+            ASection m_autz;
+
+            PluginLogger m_logger;
     };
 
     class RADIUS : public Auth
@@ -46,28 +75,28 @@ namespace STG
             RADIUS(const RADIUS&) = delete;
             RADIUS& operator=(const RADIUS&) = delete;
 
-            void SetUsers(Users* u) { m_users = u; }
-            void SetSettings(const ModuleSettings & s) override { m_settings = s; }
+            void SetUsers(Users* u) override { m_users = u; }
+            void SetSettings(const ModuleSettings& s) override { m_settings = s; }
             int ParseSettings() override;
 
             int Start() override;
             int Stop() override;
-            int Reload(const ModuleSettings & /*ms*/) override { return 0; }
+            int Reload(const ModuleSettings& /*ms*/) override { return 0; }
             bool IsRunning() override;
             void SetRunning(bool val);
 
-            const std::string & GetStrError() const override { return m_errorStr; }
+            const std::string& GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
 
             uint16_t GetStartPosition() const override { return 0; }
             uint16_t GetStopPosition() const override { return 0; }
 
-            int SendMessage(const Message & msg, uint32_t ip) const override { return 0; }
+            int SendMessage(const Message& /*msg*/, uint32_t /*ip*/) const override { return 0; }
 
         private:
             std::mutex m_mutex;
 
-            boost::asio::io_service m_ioService;
+            boost::asio::io_context m_ioContext;
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
