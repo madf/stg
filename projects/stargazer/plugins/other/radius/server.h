@@ -13,15 +13,17 @@
 namespace STG
 {
     class Users;
+    class User;
 
     class Server
     {
         public:
-            Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, RAD_SETTINGS& radSettings);
+            Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const RAD_SETTINGS& radSettings);
             void stop();
         private:
+            std::vector<RadProto::Attribute*> makeAttributes(const User* user);
             RadProto::Packet makeResponse(const RadProto::Packet& request);
-            bool findUser(const RadProto::Packet& packet);
+            const User* findUser(const RadProto::Packet& packet);
             void handleReceive(const boost::system::error_code& error, const std::optional<RadProto::Packet>& packet, const boost::asio::ip::udp::endpoint& source);
             void handleSend(const boost::system::error_code& ec);
             void start();
