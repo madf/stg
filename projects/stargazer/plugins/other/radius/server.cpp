@@ -4,14 +4,19 @@
 #include "stg/user.h"
 #include "stg/users.h"
 #include "stg/common.h"
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm> // для std::replace
 #include <cstring>
 #include <functional>
 #include <cstdint> //uint8_t, uint32_t
 
 using STG::Server;
+using STG::User;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, RAD_SETTINGS& radSettings)
+Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const RAD_SETTINGS& radSettings)
     : m_radius(io_context, secret, port),
       m_dictionaries(filePath),
       m_users(users),
@@ -38,27 +43,78 @@ void Server::startReceive()
     m_radius.asyncReceive([this](const auto& error, const auto& packet, const boost::asio::ip::udp::endpoint& source){ handleReceive(error, packet, source); });
 }
 
-RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
+std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
 {
     std::vector<RadProto::Attribute*> attributes;
-    attributes.push_back(new RadProto::String(m_dictionaries.attributeCode("User-Name"), "test"));
-    attributes.push_back(new RadProto::Integer(m_dictionaries.attributeCode("NAS-Port"), 20));
-    std::array<uint8_t, 4> address {127, 104, 22, 17};
-    attributes.push_back(new RadProto::IpAddress(m_dictionaries.attributeCode("NAS-IP-Address"), address));
-    std::vector<uint8_t> bytes {'1', '2', '3', 'a', 'b', 'c'};
-    attributes.push_back(new RadProto::Bytes(m_dictionaries.attributeCode("Callback-Number"), bytes));
-    std::vector<uint8_t> chapPassword {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
-    attributes.push_back(new RadProto::ChapPassword(m_dictionaries.attributeCode("CHAP-Password"), 1, chapPassword));
+    std::string attrName;
+    std::string attrValue;
+    uint8_t attrCode;
 
-    std::vector<RadProto::VendorSpecific> vendorSpecific;
-    std::vector<uint8_t> vendorValue {0, 0, 0, 3};
-    vendorSpecific.push_back(RadProto::VendorSpecific(m_dictionaries.vendorCode("Dlink"), m_dictionaries.vendorAttributeCode("Dlink", "Dlink-User-Level"), vendorValue));
+    for (const auto& at : m_radSettings.getAuth().send)
+    {
+        attrName = at.first;
+        attrCode = m_dictionaries.attributeCode(attrName);
+        if (at.second.type == RAD_SETTINGS::AttrValue::Type::PARAM_NAME)
+            attrValue = user->GetParamValue(at.second.value);
+        else
+            attrValue = at.second.value;
+
+        if (attrCode == 1 || attrCode == 11 || attrCode == 18 || attrCode == 22 || attrCode == 34 || attrCode == 35 || attrCode == 60 || attrCode == 63)
+        {
+            attributes.push_back(new RadProto::String(attrCode, attrValue));
+        }
+        else if (attrCode == 4 || attrCode == 8 || attrCode == 9 || attrCode == 14)
+        {
+            std::array<uint8_t, 4> attrValueIP;
+            if (attrValue == "0")
+                attrValueIP = {0};
+            else
+            {
+                std::replace(attrValue.begin(), attrValue.end(), '.', ' ');
+
+                std::stringstream ss(attrValue);
+                int temp_num;
+
+                for (size_t i = 0; i < 4; ++i)
+                {
+                    ss >> temp_num;
+                    attrValueIP[i] = temp_num;
+                }
+            }
+            attributes.push_back(new RadProto::IpAddress(attrCode, attrValueIP));
+        }
+        else if (attrCode == 5 || attrCode == 6 || attrCode == 7 || attrCode == 10 || attrCode == 12 || attrCode == 13 || attrCode == 15 || attrCode == 16 || attrCode == 27 || attrCode == 28 || attrCode == 29 || attrCode == 37 || attrCode == 38 || attrCode == 61 || attrCode == 62)
+        {
+            uint32_t attrValueInt;
+            if (attrCode == 6 || attrCode == 7 || attrCode == 10 || attrCode == 13 || attrCode == 15 || attrCode == 16 || attrCode == 29 || attrCode == 61) 
+                attrValueInt = m_dictionaries.attributeValueCode(attrName, attrValue);
+            else
+                attrValueInt = std::stoi(attrValue);
+            attributes.push_back(new RadProto::Integer(attrCode, attrValueInt));
+        }
+        else if (attrCode == 19 || attrCode == 20 || attrCode == 24 || attrCode == 25 || attrCode == 30 || attrCode == 31 || attrCode == 32 || attrCode == 33 || attrCode == 36 || attrCode == 39 || attrCode == 79 || attrCode == 80)
+        {
+            std::vector<uint8_t> attrValueBytes;
+            if (!attrValue.empty())
+                for (char c : attrValue)
+                    attrValueBytes.push_back(static_cast<uint8_t>(c));
+            attributes.push_back(new RadProto::Bytes(attrCode, attrValueBytes));
+        }
+    }
+    return attributes;
+}
+
+RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
+{
+    const User* user;
+
+    user = findUser(request);
 
     if (request.type() != RadProto::ACCESS_REQUEST)
         return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
 
-    if (findUser(request))
-        return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), attributes, vendorSpecific);
+    if (user != nullptr)
+        return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), makeAttributes(user), {});
 
     printfd(__FILE__, "Error findUser\n");
     return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
@@ -98,7 +154,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
     m_radius.asyncSend(makeResponse(*packet), source, [this](const auto& ec){ handleSend(ec); });
 }
 
-bool Server::findUser(const RadProto::Packet& packet)
+const User* Server::findUser(const RadProto::Packet& packet)
 {
     std::string login;
     std::string password;
@@ -116,7 +172,7 @@ bool Server::findUser(const RadProto::Packet& packet)
     {
         m_logger("User '%s' not found.", login.c_str());
         printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
-        return false;
+        return nullptr;
     }
 
     printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
@@ -125,7 +181,7 @@ bool Server::findUser(const RadProto::Packet& packet)
     {
         m_logger("User's password is incorrect. %s", password.c_str());
         printfd(__FILE__, "User's password is incorrect.\n", password.c_str());
-        return false;
+        return nullptr;
     }
-    return true;
+    return user;
 }
