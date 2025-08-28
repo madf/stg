@@ -1,6 +1,7 @@
 #include "radius.h"
 #include "radproto/error.h"
 #include "stg/common.h"
+#include <boost/tokenizer.hpp>
 
 #include <utility>
 
