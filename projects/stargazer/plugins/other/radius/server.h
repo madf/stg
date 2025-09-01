@@ -2,7 +2,7 @@
 
 #include "radproto/socket.h"
 #include "radproto/packet.h"
-#include "rad_settings.h"
+#include "settings.h"
 #include "radproto/dictionaries.h"
 #include "stg/logger.h"
 #include <boost/asio.hpp>
