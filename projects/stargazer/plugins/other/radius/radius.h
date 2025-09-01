@@ -2,7 +2,7 @@
 
 #include "stg/auth.h"
 #include "stg/plugin.h"
-#include "rad_settings.h"
+#include "settings.h"
 #include "stg/module_settings.h"
 #include "stg/subscriptions.h"
 #include "stg/logger.h"
