@@ -11,10 +11,10 @@ namespace STG
 {
     struct Settings;
 
-    class RAD_SETTINGS
+    class Config
     {
         public:
-            RAD_SETTINGS();
+            Config();
 
             struct AttrValue
             {
