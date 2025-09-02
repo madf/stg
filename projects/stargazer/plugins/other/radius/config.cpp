@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <iostream>
 
-using STG::RAD_SETTINGS;
-using AttrValue = RAD_SETTINGS::AttrValue;
-using ASection = RAD_SETTINGS::ASection;
+using STG::Config;
+using AttrValue = Config::AttrValue;
+using ASection = Config::ASection;
 
 namespace
 {
@@ -32,7 +32,7 @@ namespace
     }
 }
 
-std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const std::string& value, const std::string& paramName)
+std::vector<std::pair<std::string, AttrValue>> Config::ParseRules(const std::string& value, const std::string& paramName)
 {
     using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
     const boost::char_separator<char> sep(",");
@@ -75,7 +75,7 @@ std::vector<std::pair<std::string, AttrValue>> RAD_SETTINGS::ParseRules(const st
     return res;
 }
 
-ASection RAD_SETTINGS::parseASection(const std::vector<ParamValue>& conf)
+ASection Config::parseASection(const std::vector<ParamValue>& conf)
 {
     ASection res;
     const auto mit = std::find(conf.begin(), conf.end(), ParamValue("match", {}));
@@ -89,13 +89,13 @@ ASection RAD_SETTINGS::parseASection(const std::vector<ParamValue>& conf)
     return res;
 }
 
-RAD_SETTINGS::RAD_SETTINGS()
+Config::Config()
     : m_port(1812),
       m_dictionaries("/usr/share/freeradius/dictionary"),
       m_logger(PluginLogger::get("radius"))
 {}
 
-int RAD_SETTINGS::ParseSettings(const ModuleSettings & s)
+int Config::ParseSettings(const ModuleSettings & s)
 {
     ParamValue pv;
     int p;
