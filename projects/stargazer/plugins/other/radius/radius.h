@@ -51,7 +51,7 @@ namespace STG
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
-            RAD_SETTINGS m_radSettings;
+            Config m_config;
             ModuleSettings m_settings;
 
             bool m_running;
