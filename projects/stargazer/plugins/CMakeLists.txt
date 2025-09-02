@@ -16,7 +16,7 @@ if ( BUILD_MOD_RADIUS )
 
     add_library ( mod_radius MODULE other/radius/radius.cpp
                                     other/radius/server.cpp
-                                    other/radius/settings.cpp)
+                                    other/radius/config.cpp)
     target_link_libraries ( mod_radius PRIVATE scriptexecuter logger common )
     set_target_properties ( mod_radius PROPERTIES PREFIX "" )
 
