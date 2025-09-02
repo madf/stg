@@ -22,9 +22,9 @@ RADIUS::RADIUS()
 
 int RADIUS::ParseSettings()
 {
-    auto ret = m_radSettings.ParseSettings(m_settings);
+    auto ret = m_config.ParseSettings(m_settings);
     if (ret != 0)
-        m_errorStr = m_radSettings.GetStrError();
+        m_errorStr = m_config.GetStrError();
 
     return ret;
 }
@@ -73,7 +73,7 @@ int RADIUS::Run(std::stop_token token)
     try
     {
         if (!m_server)
-           m_server = std::make_unique<Server>(m_ioContext, m_radSettings.GetSecret(), m_radSettings.GetPort(), m_radSettings.GetDictionaries(), std::move(token), m_logger, m_users, m_radSettings);
+           m_server = std::make_unique<Server>(m_ioContext, m_config.GetSecret(), m_config.GetPort(), m_config.GetDictionaries(), std::move(token), m_logger, m_users, m_config);
         m_ioContext.run();
     }
     catch (const std::exception& e)
