@@ -1,4 +1,4 @@
-#include "settings.h"
+#include "config.h"
 #include "radproto/error.h"
 #include "stg/common.h"
 #include <boost/tokenizer.hpp>
