@@ -16,11 +16,11 @@ using STG::Server;
 using STG::User;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const RAD_SETTINGS& radSettings)
+Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
     : m_radius(io_context, secret, port),
       m_dictionaries(filePath),
       m_users(users),
-      m_radSettings(radSettings),
+      m_config(config),
       m_token(std::move(token)),
       m_logger(logger)
 {
@@ -50,11 +50,11 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
     std::string attrValue;
     uint8_t attrCode;
 
-    for (const auto& at : m_radSettings.getAuth().send)
+    for (const auto& at : m_config.getAuth().send)
     {
         attrName = at.first;
         attrCode = m_dictionaries.attributeCode(attrName);
-        if (at.second.type == RAD_SETTINGS::AttrValue::Type::PARAM_NAME)
+        if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             attrValue = user->GetParamValue(at.second.value);
         else
             attrValue = at.second.value;
