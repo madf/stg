@@ -4,6 +4,7 @@
 #include "radproto/packet.h"
 #include "config.h"
 #include "radproto/dictionaries.h"
+#include "radproto/attribute.h"
 #include "stg/logger.h"
 #include <boost/asio.hpp>
 #include <stop_token.hpp>
@@ -31,6 +32,7 @@ namespace STG
 
             RadProto::Socket m_radius;
             RadProto::Dictionaries m_dictionaries;
+            RadProto::Attribute* m_attribute;
             Users* m_users;
             const Config& m_config;
             std::stop_token m_token;
