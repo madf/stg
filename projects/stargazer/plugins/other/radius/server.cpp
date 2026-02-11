@@ -1,6 +1,6 @@
 #include "server.h"
 #include "radproto/packet_codes.h"
-#include "radproto/attribute_types.h"
+#include "radproto/attribute_codes.h"
 #include "stg/user.h"
 #include "stg/users.h"
 #include "stg/common.h"
@@ -19,6 +19,7 @@ using boost::system::error_code;
 Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
     : m_radius(io_context, secret, port),
       m_dictionaries(filePath),
+      m_attribute(0),
       m_users(users),
       m_config(config),
       m_token(std::move(token)),
@@ -48,58 +49,27 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
     std::vector<RadProto::Attribute*> attributes;
     std::string attrName;
     std::string attrValue;
+    std::string attrType;
     uint8_t attrCode;
 
     for (const auto& at : m_config.getAuth().send)
     {
         attrName = at.first;
         attrCode = m_dictionaries.attributeCode(attrName);
+        attrType = m_dictionaries.attributeType(attrCode);
+
         if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             attrValue = user->GetParamValue(at.second.value);
         else
             attrValue = at.second.value;
 
-        if (attrCode == 1 || attrCode == 11 || attrCode == 18 || attrCode == 22 || attrCode == 34 || attrCode == 35 || attrCode == 60 || attrCode == 63)
+        if (attrType == "integer")
         {
-            attributes.push_back(new RadProto::String(attrCode, attrValue));
+            if (m_dictionaries.attributeValueFindByName(attrName, attrValue))
+                attributes.push_back(m_attribute->make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
         }
-        else if (attrCode == 4 || attrCode == 8 || attrCode == 9 || attrCode == 14)
-        {
-            std::array<uint8_t, 4> attrValueIP;
-            if (attrValue == "0")
-                attrValueIP = {0};
-            else
-            {
-                std::replace(attrValue.begin(), attrValue.end(), '.', ' ');
-
-                std::stringstream ss(attrValue);
-                int temp_num;
-
-                for (size_t i = 0; i < 4; ++i)
-                {
-                    ss >> temp_num;
-                    attrValueIP[i] = temp_num;
-                }
-            }
-            attributes.push_back(new RadProto::IpAddress(attrCode, attrValueIP));
-        }
-        else if (attrCode == 5 || attrCode == 6 || attrCode == 7 || attrCode == 10 || attrCode == 12 || attrCode == 13 || attrCode == 15 || attrCode == 16 || attrCode == 27 || attrCode == 28 || attrCode == 29 || attrCode == 37 || attrCode == 38 || attrCode == 61 || attrCode == 62)
-        {
-            uint32_t attrValueInt;
-            if (attrCode == 6 || attrCode == 7 || attrCode == 10 || attrCode == 13 || attrCode == 15 || attrCode == 16 || attrCode == 29 || attrCode == 61) 
-                attrValueInt = m_dictionaries.attributeValueCode(attrName, attrValue);
-            else
-                attrValueInt = std::stoi(attrValue);
-            attributes.push_back(new RadProto::Integer(attrCode, attrValueInt));
-        }
-        else if (attrCode == 19 || attrCode == 20 || attrCode == 24 || attrCode == 25 || attrCode == 30 || attrCode == 31 || attrCode == 32 || attrCode == 33 || attrCode == 36 || attrCode == 39 || attrCode == 79 || attrCode == 80)
-        {
-            std::vector<uint8_t> attrValueBytes;
-            if (!attrValue.empty())
-                for (char c : attrValue)
-                    attrValueBytes.push_back(static_cast<uint8_t>(c));
-            attributes.push_back(new RadProto::Bytes(attrCode, attrValueBytes));
-        }
+        else
+            attributes.push_back(m_attribute->make(attrCode, attrType, attrValue));
     }
     return attributes;
 }
@@ -110,7 +80,7 @@ RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
 
     user = findUser(request);
 
-    if (request.type() != RadProto::ACCESS_REQUEST)
+    if (request.code() != RadProto::ACCESS_REQUEST)
         return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
 
     if (user != nullptr)
@@ -160,10 +130,10 @@ const User* Server::findUser(const RadProto::Packet& packet)
     std::string password;
     for (const auto& attribute : packet.attributes())
     {
-        if (attribute->type() == RadProto::USER_NAME)
+        if (attribute->code() == RadProto::USER_NAME)
             login = attribute->toString();
 
-        if (attribute->type() == RadProto::USER_PASSWORD)
+        if (attribute->code() == RadProto::USER_PASSWORD)
             password = attribute->toString();
     }
 
