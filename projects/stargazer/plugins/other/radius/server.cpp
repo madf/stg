@@ -1,4 +1,5 @@
 #include "server.h"
+#include "radproto/attribute.h"
 #include "radproto/packet_codes.h"
 #include "radproto/attribute_codes.h"
 #include "stg/user.h"
@@ -19,7 +20,6 @@ using boost::system::error_code;
 Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
     : m_radius(io_context, secret, port),
       m_dictionaries(filePath),
-      m_attribute(0),
       m_users(users),
       m_config(config),
       m_token(std::move(token)),
@@ -54,22 +54,19 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
 
     for (const auto& at : m_config.getAuth().send)
     {
-        attrName = at.first;
-        attrCode = m_dictionaries.attributeCode(attrName);
-        attrType = m_dictionaries.attributeType(attrCode);
-
         if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             attrValue = user->GetParamValue(at.second.value);
         else
             attrValue = at.second.value;
 
-        if (attrType == "integer")
-        {
-            if (m_dictionaries.attributeValueFindByName(attrName, attrValue))
-                attributes.push_back(m_attribute->make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
-        }
+        attrName = at.first;
+        attrCode = m_dictionaries.attributeCode(attrName);
+        attrType = m_dictionaries.attributeType(attrCode);
+
+        if ((attrType == "integer") && (m_dictionaries.attributeValueFindByName(attrName, attrValue)))
+            attributes.push_back(RadProto::Attribute::make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
         else
-            attributes.push_back(m_attribute->make(attrCode, attrType, attrValue));
+            attributes.push_back(RadProto::Attribute::make(attrCode, attrType, attrValue));
     }
     return attributes;
 }
