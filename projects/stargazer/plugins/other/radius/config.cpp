@@ -15,10 +15,10 @@ using ASection = Config::ASection;
 
 namespace
 {
-    std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& attributes)
+    std::string ShowRules(const std::vector<std::pair<std::string, AttrValue>>& rules)
     {
         std::string result;
-        for (const auto& at : attributes)
+        for (const auto& at : rules)
         {
             if (!result.empty())
                 result += ", ";
