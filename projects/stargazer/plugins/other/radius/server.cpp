@@ -47,17 +47,19 @@ void Server::startReceive()
 std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
 {
     std::vector<RadProto::Attribute*> attributes;
-    std::string attrName;
-    std::string attrValue;
-    std::string attrType;
-    uint8_t attrCode;
 
     for (const auto& at : m_config.getAuth().send)
     {
+        std::string attrValue;
+
         if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             attrValue = user->GetParamValue(at.second.value);
         else
             attrValue = at.second.value;
+
+        std::string attrName;
+        uint8_t attrCode;
+        std::string attrType;
 
         attrName = at.first;
         attrCode = m_dictionaries.attributeCode(attrName);
