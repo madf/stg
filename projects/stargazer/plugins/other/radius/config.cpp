@@ -2,6 +2,9 @@
 #include "radproto/error.h"
 #include "stg/common.h"
 #include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <vector>
 #include <utility>
@@ -34,20 +37,18 @@ namespace
 
 std::vector<std::pair<std::string, AttrValue>> Config::ParseRules(const std::string& value, const std::string& paramName)
 {
-    using tokenizer =  boost::tokenizer<boost::char_separator<char>>;
+    using tokenizer = boost::tokenizer<boost::char_separator<char>>;
     const boost::char_separator<char> sep(",");
 
     const tokenizer tokens(value, sep);
 
     std::vector<std::pair<std::string, AttrValue>> res;
+
     for (const auto& token : tokens)
     {
-        const boost::char_separator<char> sp(" =");
-        const tokenizer tok(token, sp);
-
         std::vector<std::string> keyValue;
-        for (const auto& t : tok)
-            keyValue.push_back(t);
+
+        split(keyValue, boost::algorithm::trim_copy_if(token, boost::is_any_of(" \t\r\n\xA0")), boost::is_any_of(" ="), boost::token_compress_on);
 
         if (keyValue.size() != 2)
         {
