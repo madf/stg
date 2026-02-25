@@ -3,8 +3,6 @@
 #include "stg/common.h"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 
 #include <vector>
 #include <utility>
