@@ -46,7 +46,7 @@ std::vector<std::pair<std::string, AttrValue>> Config::ParseRules(const std::str
     {
         std::vector<std::string> keyValue;
 
-        split(keyValue, boost::algorithm::trim_copy_if(token, boost::is_any_of(" \t\r\n\xA0")), boost::is_any_of(" ="), boost::token_compress_on);
+        split(keyValue, boost::algorithm::trim_copy_if(token, boost::is_any_of(" \t")), boost::is_any_of(" ="), boost::token_compress_on);
 
         if (keyValue.size() != 2)
         {
