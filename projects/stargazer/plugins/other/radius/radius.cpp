@@ -15,7 +15,7 @@ extern "C" STG::Plugin* GetPlugin()
 
 RADIUS::RADIUS()
     : m_running(false),
-      m_users(NULL),
+      m_users(nullptr),
       m_logger(PluginLogger::get("radius"))
 {
 }
