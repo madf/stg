@@ -144,7 +144,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     if (password != user->GetProperties().password.Get())
     {
-        m_logger("User's password is incorrect. %s", password.c_str());
+        m_logger("User's password is incorrect.");
         printfd(__FILE__, "User's password is incorrect.\n", password.c_str());
         return nullptr;
     }
