@@ -34,7 +34,6 @@ namespace STG
             int Stop() override;
             int Reload(const ModuleSettings& /*ms*/) override { return 0; }
             bool IsRunning() override;
-            void SetRunning(bool val);
 
             const std::string& GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
@@ -48,6 +47,7 @@ namespace STG
             std::mutex m_mutex;
 
             boost::asio::io_context m_ioContext;
+            void SetRunning(bool val);
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
