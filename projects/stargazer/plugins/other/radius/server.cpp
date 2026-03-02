@@ -71,12 +71,12 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
 
 RadProto::Packet Server::makeResponse(const RadProto::Packet& request)
 {
+    if (request.code() != RadProto::ACCESS_REQUEST)
+        return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
+
     const User* user;
 
     user = findUser(request);
-
-    if (request.code() != RadProto::ACCESS_REQUEST)
-        return RadProto::Packet(RadProto::ACCESS_REJECT, request.id(), request.auth(), {}, {});
 
     if (user != nullptr)
         return RadProto::Packet(RadProto::ACCESS_ACCEPT, request.id(), request.auth(), makeAttributes(user), {});
