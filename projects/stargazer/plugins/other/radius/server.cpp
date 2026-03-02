@@ -107,6 +107,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
     {
         m_logger("Error asyncReceive: %s", error.message().c_str());
         printfd(__FILE__, "Error asyncReceive: '%s'\n", error.message().c_str());
+        return;
     }
 
     if (packet == std::nullopt)
