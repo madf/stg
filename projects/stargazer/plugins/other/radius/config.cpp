@@ -118,7 +118,7 @@ int Config::ParseSettings(const ModuleSettings & s)
     {
         m_errorStr = "Parameter \'Secret\' not found.";
         printfd(__FILE__, "Parameter 'Secret' not found\n");
-        m_secret = -1;
+        return -1;
     }
     else
         m_secret = pvi->value[0];
