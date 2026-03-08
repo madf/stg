@@ -2,6 +2,7 @@
 
 #include "stg/auth.h"
 #include "stg/plugin.h"
+#include "config.h"
 #include "stg/module_settings.h"
 #include "stg/subscriptions.h"
 #include "stg/logger.h"
@@ -16,57 +17,7 @@
 
 namespace STG
 {
-    struct Settings;
-
     class Users;
-
-    class RAD_SETTINGS
-    {
-        public:
-            RAD_SETTINGS();
-            virtual ~RAD_SETTINGS() {}
-
-            struct AttrValue
-            {
-                enum class Type
-                {
-                    PARAM_NAME,
-                    VALUE
-                };
-                std::string value;
-                Type type;
-            };
-
-            struct ASection
-            {
-                using Pairs = std::vector<std::pair<std::string, AttrValue>>;
-                Pairs match;
-                Pairs send;
-            };
-
-            const std::string& GetStrError() const { return m_errorStr; }
-            int ParseSettings(const ModuleSettings& s);
-
-            uint16_t GetPort() const { return m_port; }
-            const std::string& GetDictionaries() const { return m_dictionaries; }
-            const std::string& GetSecret() const { return m_secret; }
-            const ASection& getAuth() const { return m_auth; }
-            const ASection& getAutz() const { return m_autz; }
-
-        private:
-            std::vector<std::pair<std::string, AttrValue>> ParseRules(const std::string& value, const std::string& paramName);
-            ASection parseASection(const std::vector<ParamValue>& conf);
-
-            std::string m_errorStr;
-            uint16_t m_port;
-            std::string m_dictionaries;
-            std::string m_secret;
-
-            ASection m_auth;
-            ASection m_autz;
-
-            PluginLogger m_logger;
-    };
 
     class RADIUS : public Auth
     {
@@ -83,7 +34,6 @@ namespace STG
             int Stop() override;
             int Reload(const ModuleSettings& /*ms*/) override { return 0; }
             bool IsRunning() override;
-            void SetRunning(bool val);
 
             const std::string& GetStrError() const override { return m_errorStr; }
             std::string GetVersion() const override;
@@ -97,10 +47,11 @@ namespace STG
             std::mutex m_mutex;
 
             boost::asio::io_context m_ioContext;
+            void SetRunning(bool val);
             int Run(std::stop_token token);
 
             mutable std::string m_errorStr;
-            RAD_SETTINGS m_radSettings;
+            Config m_config;
             ModuleSettings m_settings;
 
             bool m_running;

@@ -15,7 +15,8 @@ if ( BUILD_MOD_RADIUS )
     find_package ( Boost REQUIRED )
 
     add_library ( mod_radius MODULE other/radius/radius.cpp
-                                    other/radius/server.cpp)
+                                    other/radius/server.cpp
+                                    other/radius/config.cpp)
     target_link_libraries ( mod_radius PRIVATE scriptexecuter logger common )
     set_target_properties ( mod_radius PROPERTIES PREFIX "" )
 
@@ -23,7 +24,7 @@ if ( BUILD_MOD_RADIUS )
 
     ExternalProject_Add ( async-radius
                           GIT_REPOSITORY https://github.com/madf/async-radius.git
-                          GIT_TAG 1.1.3
+                          GIT_TAG 1.3.0
                           GIT_SHALLOW true
                           INSTALL_COMMAND ""
                           CMAKE_ARGS -DCMAKE_CXX_FLAGS=-fPIC )
