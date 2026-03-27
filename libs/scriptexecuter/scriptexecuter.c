@@ -22,7 +22,7 @@ struct SCRIPT_DATA
     char    script[MAX_SCRIPT_LEN];
 } sd;
 //-----------------------------------------------------------------------------
-static void CatchUSR1Executer()
+static void CatchUSR1Executer(int /*unused*/)
 {
 nonstop = 0;
 }
