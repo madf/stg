@@ -438,7 +438,7 @@ UserPtr u;
 int h = users->OpenSearch();
 assert(h && "USERS::OpenSearch is always correct");
 
-while (users->SearchNext(h, &u) != 0)
+while (users->SearchNext(h, &u) == 0)
     SetUserNotifiers(u);
 
 users->CloseSearch(h);
