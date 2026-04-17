@@ -15,6 +15,8 @@ namespace STG
     class Users;
     class User;
 
+    using UserPtr = User*;
+
     class Server
     {
         public:
