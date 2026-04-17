@@ -57,8 +57,8 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
             attrValue = at.second.value;
 
         const auto attrName = at.first;
-        const auto attrCode = m_dictionaries.attributeCode(attrName);
-        const auto attrType = m_dictionaries.attributeType(attrCode);
+        uint32_t attrCode = m_dictionaries.attributeCode(attrName);
+        std::string attrType = m_dictionaries.attributeType(attrCode);
 
         if ((attrType == "integer") && (m_dictionaries.attributeValueFindByName(attrName, attrValue)))
             attributes.push_back(RadProto::Attribute::make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
@@ -121,32 +121,77 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::string login;
-    std::string password;
+    std::vector<std::pair<std::string, std::string>> requestAttr;
+
     for (const auto& attribute : packet.attributes())
     {
-        if (attribute->code() == RadProto::USER_NAME)
-            login = attribute->toString();
+        std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+        std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
+        const std::string reqAttrValue = attribute->toString();
+        std::string requestAttrValue;
 
-        if (attribute->code() == RadProto::USER_PASSWORD)
-            password = attribute->toString();
+        if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, reqAttrValue)))
+            requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, reqAttrValue));
+        else
+            requestAttrValue = reqAttrValue;
+
+        requestAttr.push_back(std::make_pair(requestAttrName, requestAttrValue));
     }
 
-    User* user = nullptr;
-    if (m_users->FindByName(login, &user))
+    UserPtr u;
+    int h = m_users->OpenSearch();
+
+    while (m_users->SearchNext(h, &u) == 0)
     {
-        m_logger("User '%s' not found.", login.c_str());
-        printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
-        return nullptr;
-    }
+        bool nextUser = false;
 
-    printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
+        for (const auto& at : m_config.getAuth().match)
+        {
+            bool nextMatchAttr = false;
 
-    if (password != user->GetProperties().password.Get())
-    {
-        m_logger("User's password is incorrect.");
-        printfd(__FILE__, "User's password is incorrect.\n");
-        return nullptr;
-    }
-    return user;
+            std::string matchAttrValue;
+            const auto secondValue = at.second.value;
+
+            if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
+                matchAttrValue = u->GetParamValue(secondValue);
+            else
+                matchAttrValue = secondValue;
+
+            const std::string userAttrValue = matchAttrValue;
+            const auto matchAttrName = at.first;
+//            uint32_t matchAttrCode = m_dictionaries.attributeCode(matchAttrName);
+//            std::string matchAttrType = m_dictionaries.attributeType(matchAttrCode);
+
+            for (const auto& p : requestAttr)
+            {
+                if (matchAttrName != p.first)
+                    continue;
+
+                const std::string reqValue = p.second;
+                const std::string usValue = userAttrValue;
+
+                if (reqValue == usValue)
+                {
+                    nextMatchAttr = true;
+                    break; //go to next match attr
+                }
+                nextUser = true;
+                break;//go to next user
+
+            }// end cycle for request
+            if (nextMatchAttr)
+                continue;
+
+        }// end cycle for match
+        if (nextUser)
+            continue;
+
+        m_users->CloseSearch(h);
+        return u;
+
+    }//end while
+    printfd(__FILE__, "User not found.\n");
+
+    m_users->CloseSearch(h);
+    return nullptr;
 }
