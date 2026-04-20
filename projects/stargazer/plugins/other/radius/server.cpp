@@ -125,8 +125,8 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     for (const auto& attribute : packet.attributes())
     {
-        std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
-        std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
+        const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+        const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
         const std::string reqAttrValue = attribute->toString();
         std::string requestAttrValue;
 
