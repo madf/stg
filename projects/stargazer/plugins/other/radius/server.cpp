@@ -127,13 +127,10 @@ const User* Server::findUser(const RadProto::Packet& packet)
     {
         const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
         const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
-        const std::string reqAttrValue = attribute->toString();
-        std::string requestAttrValue;
+        auto requestAttrValue = attribute->toString();
 
-        if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, reqAttrValue)))
-            requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, reqAttrValue));
-        else
-            requestAttrValue = reqAttrValue;
+        if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, requestAttrValue)))
+            requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, requestAttrValue));
 
         requestAttr.push_back(std::make_pair(requestAttrName, requestAttrValue));
     }
