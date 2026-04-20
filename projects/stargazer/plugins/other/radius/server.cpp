@@ -135,7 +135,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
         requestAttr.emplace_back(requestAttrName, requestAttrValue);
     }
 
-    UserPtr u;
+    User* u;
     int h = m_users->OpenSearch();
 
     while (m_users->SearchNext(h, &u) == 0)
