@@ -132,7 +132,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
         if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, requestAttrValue)))
             requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, requestAttrValue));
 
-        requestAttr.push_back(std::make_pair(requestAttrName, requestAttrValue));
+        requestAttr.emplace_back(requestAttrName, requestAttrValue);
     }
 
     UserPtr u;
@@ -154,7 +154,6 @@ const User* Server::findUser(const RadProto::Packet& packet)
             else
                 matchAttrValue = secondValue;
 
-            const std::string userAttrValue = matchAttrValue;
             const auto matchAttrName = at.first;
 //            uint32_t matchAttrCode = m_dictionaries.attributeCode(matchAttrName);
 //            std::string matchAttrType = m_dictionaries.attributeType(matchAttrCode);
@@ -165,9 +164,8 @@ const User* Server::findUser(const RadProto::Packet& packet)
                     continue;
 
                 const std::string reqValue = p.second;
-                const std::string usValue = userAttrValue;
 
-                if (reqValue == usValue)
+                if (reqValue == matchAttrValue)
                 {
                     nextMatchAttr = true;
                     break; //go to next match attr
