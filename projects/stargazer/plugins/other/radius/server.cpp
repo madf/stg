@@ -145,12 +145,11 @@ const User* Server::findUser(const RadProto::Packet& packet)
         for (const auto& at : m_config.getAuth().match)
         {
             std::string matchAttrValue;
-            const auto secondValue = at.second.value;
 
             if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
-                matchAttrValue = u->GetParamValue(secondValue);
+                matchAttrValue = u->GetParamValue(at.second.value);
             else
-                matchAttrValue = secondValue;
+                matchAttrValue = at.second.value;
 
             const auto matchAttrName = at.first;
 //            uint32_t matchAttrCode = m_dictionaries.attributeCode(matchAttrName);
