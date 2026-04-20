@@ -144,8 +144,6 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
         for (const auto& at : m_config.getAuth().match)
         {
-            bool nextMatchAttr = false;
-
             std::string matchAttrValue;
             const auto secondValue = at.second.value;
 
@@ -166,16 +164,12 @@ const User* Server::findUser(const RadProto::Packet& packet)
                 const std::string reqValue = p.second;
 
                 if (reqValue == matchAttrValue)
-                {
-                    nextMatchAttr = true;
                     break; //go to next match attr
-                }
+
                 nextUser = true;
                 break;//go to next user
 
             }// end cycle for request
-            if (nextMatchAttr)
-                continue;
 
         }// end cycle for match
         if (nextUser)
