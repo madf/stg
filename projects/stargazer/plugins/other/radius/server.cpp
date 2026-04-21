@@ -126,14 +126,24 @@ const User* Server::findUser(const RadProto::Packet& packet)
     for (const auto& attribute : packet.attributes())
     {
         const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
-        const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
-        auto requestAttrValue = attribute->toString();
 
-        if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, requestAttrValue)))
-            requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, requestAttrValue));
+        for (const auto& at : m_config.getAuth().match)
+        {
+            if (requestAttrName != at.first)
+                continue;
 
-        requestAttr.emplace_back(requestAttrName, requestAttrValue);
+            const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
+            auto requestAttrValue = attribute->toString();
+
+            if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, requestAttrValue)))
+                requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, requestAttrValue));
+
+            requestAttr.emplace_back(requestAttrName, requestAttrValue);
+        }
     }
+
+    if (requestAttr.empty())
+        return nullptr;
 
     User* u;
     int h = m_users->OpenSearch();
