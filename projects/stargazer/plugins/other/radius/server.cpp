@@ -121,29 +121,33 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<std::pair<std::string, std::string>> requestAttr;
+    std::vector<std::pair<std::string, STG::Config::AttrValue>> valuesForCompare;
 
-    for (const auto& attribute : packet.attributes())
+    for (const auto& at : m_config.getAuth().match)
     {
-        const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
-
-        for (const auto& at : m_config.getAuth().match)
+        for (const auto& attribute : packet.attributes())
         {
+            const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+
             if (requestAttrName != at.first)
                 continue;
 
-            const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
             auto requestAttrValue = attribute->toString();
+
+            if (at.second.type == Config::AttrValue::Type::VALUE && at.second.value != requestAttrValue)
+                return nullptr;
+
+            const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
 
             if ((requestAttrType == "integer") && (m_dictionaries.attributeValueFindByName(requestAttrName, requestAttrValue)))
                 requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, requestAttrValue));
 
-            requestAttr.emplace_back(requestAttrName, requestAttrValue);
+            valuesForCompare.emplace_back(requestAttrValue, at.second);
+            break;
         }
+        if (valuesForCompare.empty())
+            return nullptr;
     }
-
-    if (requestAttr.empty())
-        return nullptr;
 
     User* u;
     int h = m_users->OpenSearch();
@@ -152,44 +156,27 @@ const User* Server::findUser(const RadProto::Packet& packet)
     {
         bool nextUser = false;
 
-        for (const auto& at : m_config.getAuth().match)
+        for (const auto& p : valuesForCompare)
         {
-            std::string matchAttrValue;
+            std::string paramValue;
 
-            if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
-                matchAttrValue = u->GetParamValue(at.second.value);
+            if (p.second.type == Config::AttrValue::Type::PARAM_NAME)
+                paramValue = u->GetParamValue(p.second.value);
             else
-                matchAttrValue = at.second.value;
+                paramValue = p.second.value;
 
-            const auto matchAttrName = at.first;
-//            uint32_t matchAttrCode = m_dictionaries.attributeCode(matchAttrName);
-//            std::string matchAttrType = m_dictionaries.attributeType(matchAttrCode);
-
-            for (const auto& p : requestAttr)
+            if (paramValue != p.first)
             {
-                if (matchAttrName != p.first)
-                    continue;
-
-                const std::string reqValue = p.second;
-
-                if (reqValue == matchAttrValue)
-                    break; //go to next match attr
-
                 nextUser = true;
-                break;//go to next user
-
-            }// end cycle for request
-
-        }// end cycle for match
+                break;
+            }
+        }
         if (nextUser)
             continue;
 
         m_users->CloseSearch(h);
         return u;
-
-    }//end while
-    printfd(__FILE__, "User not found.\n");
-
+    }
     m_users->CloseSearch(h);
     return nullptr;
 }
