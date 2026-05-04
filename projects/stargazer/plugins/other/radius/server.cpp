@@ -121,7 +121,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<std::pair<std::string, STG::Config::AttrValue>> valuesForCompare;
+    std::vector<std::pair<std::string, std::string>> valuesForCompare;
 
     for (const auto& at : m_config.getAuth().match)
     {
@@ -132,21 +132,24 @@ const User* Server::findUser(const RadProto::Packet& packet)
             if (requestAttrName != at.first)
                 continue;
 
-            auto requestAttrValue = attribute->toString();
-
+            auto requestAttrVal = attribute->toString();
             const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
+            std::string requestAttrValue;
 
             if (requestAttrType == "integer" && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
                 requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
+            else
+                requestAttrValue = requestAttrVal;
 
             if (at.second.type == Config::AttrValue::Type::VALUE && at.second.value != requestAttrValue)
                 return nullptr;
 
-            valuesForCompare.emplace_back(requestAttrValue, at.second);
-            break;
+            if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
+            {
+                valuesForCompare.emplace_back(requestAttrValue, at.second.value);
+                break;
+            }
         }
-        if (valuesForCompare.empty())
-            return nullptr;
     }
 
     User* u;
@@ -158,14 +161,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
         for (const auto& p : valuesForCompare)
         {
-            std::string paramValue;
-
-            if (p.second.type == Config::AttrValue::Type::PARAM_NAME)
-                paramValue = u->GetParamValue(p.second.value);
-            else
-                paramValue = p.second.value;
-
-            if (paramValue != p.first)
+            if (u->GetParamValue(p.second) != p.first)
             {
                 nextUser = true;
                 break;
