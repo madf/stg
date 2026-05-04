@@ -121,32 +121,58 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::string login;
-    std::string password;
-    for (const auto& attribute : packet.attributes())
-    {
-        if (attribute->code() == RadProto::USER_NAME)
-            login = attribute->toString();
+    std::vector<std::pair<std::string, std::string>> valuesForCompare;
 
-        if (attribute->code() == RadProto::USER_PASSWORD)
-            password = attribute->toString();
+    for (const auto& at : m_config.getAuth().match)
+    {
+        for (const auto& attribute : packet.attributes())
+        {
+            const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+
+            if (requestAttrName != at.first)
+                continue;
+
+            auto requestAttrVal = attribute->toString();
+            const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
+            std::string requestAttrValue;
+
+            if (requestAttrType == "integer" && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
+                requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
+            else
+                requestAttrValue = requestAttrVal;
+
+            if (at.second.type == Config::AttrValue::Type::VALUE && at.second.value != requestAttrValue)
+                return nullptr;
+
+            if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
+            {
+                valuesForCompare.emplace_back(requestAttrValue, at.second.value);
+                break;
+            }
+        }
     }
 
-    User* user = nullptr;
-    if (m_users->FindByName(login, &user))
-    {
-        m_logger("User '%s' not found.", login.c_str());
-        printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
-        return nullptr;
-    }
+    User* u;
+    int h = m_users->OpenSearch();
 
-    printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
-
-    if (password != user->GetProperties().password.Get())
+    while (m_users->SearchNext(h, &u) == 0)
     {
-        m_logger("User's password is incorrect.");
-        printfd(__FILE__, "User's password is incorrect.\n");
-        return nullptr;
+        bool nextUser = false;
+
+        for (const auto& p : valuesForCompare)
+        {
+            if (u->GetParamValue(p.second) != p.first)
+            {
+                nextUser = true;
+                break;
+            }
+        }
+        if (nextUser)
+            continue;
+
+        m_users->CloseSearch(h);
+        return u;
     }
-    return user;
+    m_users->CloseSearch(h);
+    return nullptr;
 }
