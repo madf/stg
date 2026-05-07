@@ -132,21 +132,22 @@ const User* Server::findUser(const RadProto::Packet& packet)
             if (requestAttrName != at.first)
                 continue;
 
-            auto requestAttrVal = attribute->toString();
-            const std::string requestAttrType = m_dictionaries.attributeType(requestAttrName);
-            std::string requestAttrValue;
+            auto requestAttrValue = attribute->toString();
 
-            if (requestAttrType == "integer" && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
-                requestAttrValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
+            std::string secondVal = at.second.value;
+            std::string secondValue;
+
+            if (at.second.type != Config::AttrValue::Type::PARAM_NAME && m_dictionaries.attributeValueFindByName(requestAttrName, secondVal))
+                secondValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, secondVal));
             else
-                requestAttrValue = requestAttrVal;
+                secondValue = secondVal;
 
-            if (at.second.type == Config::AttrValue::Type::VALUE && at.second.value != requestAttrValue)
+            if (at.second.type == Config::AttrValue::Type::VALUE && secondValue != requestAttrValue)
                 return nullptr;
 
             if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             {
-                valuesForCompare.emplace_back(requestAttrValue, at.second.value);
+                valuesForCompare.emplace_back(requestAttrValue, secondValue);
                 break;
             }
         }
