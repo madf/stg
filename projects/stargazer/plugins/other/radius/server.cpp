@@ -157,21 +157,18 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     while (m_users->SearchNext(h, &u) == 0)
     {
-        bool nextUser = false;
-
-        for (const auto& p : valuesForCompare)
+        bool allParamsMatch = true;
+        for (const auto& kv : valuesForCompare)
         {
-            if (u->GetParamValue(p.second) != p.first)
-            {
-                nextUser = true;
+            allParamsMatch = allParamsMatch && kv.first == u->GetParamValue(kv.second);
+            if (!allParamsMatch)
                 break;
-            }
         }
-        if (nextUser)
-            continue;
-
-        m_users->CloseSearch(h);
-        return u;
+        if (allParamsMatch)
+        {
+            m_users->CloseSearch(h);
+            return u;
+        }
     }
     m_users->CloseSearch(h);
     return nullptr;
