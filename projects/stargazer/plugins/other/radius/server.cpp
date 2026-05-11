@@ -134,20 +134,19 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
             auto requestAttrValue = attribute->toString();
 
-            std::string secondVal = at.second.value;
-            std::string secondValue;
+            std::string matchValue;
 
-            if (at.second.type != Config::AttrValue::Type::PARAM_NAME && m_dictionaries.attributeValueFindByName(requestAttrName, secondVal))
-                secondValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, secondVal));
+            if (at.second.type != Config::AttrValue::Type::PARAM_NAME && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
+                matchValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
             else
-                secondValue = secondVal;
+                matchValue = at.second.value;
 
-            if (at.second.type == Config::AttrValue::Type::VALUE && secondValue != requestAttrValue)
+            if (at.second.type == Config::AttrValue::Type::VALUE && matchValue != requestAttrValue)
                 return nullptr;
 
             if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
             {
-                valuesForCompare.emplace_back(requestAttrValue, secondValue);
+                valuesForCompare.emplace_back(requestAttrValue, matchValue);
                 break;
             }
         }
