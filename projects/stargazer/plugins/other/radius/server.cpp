@@ -136,7 +136,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
             auto matchValue = at.second.value;
 
-            if (at.second.type != Config::AttrValue::Type::PARAM_NAME && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
+            if (at.second.type != Config::AttrValue::Type::VALUE && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
                 matchValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
 
             if (at.second.type == Config::AttrValue::Type::VALUE && matchValue != requestAttrValue)
