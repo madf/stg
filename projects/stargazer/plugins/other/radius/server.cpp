@@ -10,6 +10,7 @@
 #include <sstream>
 #include <cstring>
 #include <functional>
+#include <algorithm>
 #include <cstdint> //uint8_t, uint32_t
 
 using STG::Server;
@@ -125,28 +126,30 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     for (const auto& at : m_config.getAuth().match)
     {
-        for (const auto& attribute : packet.attributes())
+        std::string matchName = at.first;
+
+        auto it = std::find_if(packet.attributes().begin(), packet.attributes().end(), [this, matchName](const auto& atr){return matchName == m_dictionaries.attributeName(atr->code());});
+
+        if (it == packet.attributes().end())
+            return nullptr;
+        auto* attribute = *it;
+
+        const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+        auto requestAttrValue = attribute->toString();
+        auto matchValue = at.second.value;
+
+        if (at.second.type != Config::AttrValue::Type::PARAM_NAME)
         {
-            const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
-
-            if (requestAttrName != at.first)
-                continue;
-
-            auto requestAttrValue = attribute->toString();
-
-            auto matchValue = at.second.value;
-
-            if (at.second.type == Config::AttrValue::Type::VALUE && m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
+            if (m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
                 matchValue =  std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
 
-            if (at.second.type == Config::AttrValue::Type::VALUE && matchValue != requestAttrValue)
+            if (matchValue != requestAttrValue)
                 return nullptr;
-
-            if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
-            {
-                valuesForCompare.emplace_back(requestAttrValue, matchValue);
-                break;
-            }
+        }
+        else
+        {
+            valuesForCompare.emplace_back(requestAttrValue, matchValue);
+            continue;
         }
     }
 
