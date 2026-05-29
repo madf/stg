@@ -122,7 +122,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<std::pair<std::string, std::string>> valuesForCompare;
+    std::vector<std::pair<std::pair<std::string, std::string>, std::string>> valuesForCompare;
 
     for (const auto& at : m_config.getAuth().match)
     {
@@ -132,9 +132,9 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
         if (it == packet.attributes().end())
             return nullptr;
-        const auto* attribute = *it;
+        auto* attribute = *it;
 
-        const std::string requestAttrName = m_dictionaries.attributeName(attribute->code());
+        const auto requestAttrName = m_dictionaries.attributeName(attribute->code());
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
 
@@ -152,7 +152,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
                 return nullptr;
         }
         else
-            valuesForCompare.emplace_back(requestAttrValue, matchValue);
+            valuesForCompare.emplace_back(std::make_pair(requestAttrName, requestAttrValue), matchValue);
     }
 
     User* u;
@@ -163,7 +163,14 @@ const User* Server::findUser(const RadProto::Packet& packet)
         bool allParamsMatch = true;
         for (const auto& kv : valuesForCompare)
         {
-            allParamsMatch = allParamsMatch && kv.first == u->GetParamValue(kv.second);
+            std::string paramValue = u->GetParamValue(kv.second);
+            const auto paramType = m_dictionaries.attributeType(kv.first.first);
+
+            if (paramType == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, kv.second))
+                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.first, kv.second));
+
+            allParamsMatch = allParamsMatch && kv.first.second == paramValue;
+
             if (!allParamsMatch)
                 break;
         }
