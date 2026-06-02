@@ -137,11 +137,10 @@ const User* Server::findUser(const RadProto::Packet& packet)
         attrName = m_dictionaries.attributeName(attribute->code());
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
+        const auto matchType = m_dictionaries.attributeType(attrName);
 
         if (at.second.type == Config::AttrValue::Type::VALUE)
         {
-            const auto matchType = m_dictionaries.attributeType(attrName);
-
             if (matchType == "integer" && m_dictionaries.attributeValueFindByName(attrName, matchValue))
                 matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, matchValue));
 
@@ -149,7 +148,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
                 return nullptr;
         }
         else
-            valuesForCompare.emplace_back(std::make_pair(attrName, requestAttrValue), matchValue);
+            valuesForCompare.emplace_back(std::make_pair(matchType, requestAttrValue), matchValue);
     }
 
     User* u;
@@ -161,9 +160,8 @@ const User* Server::findUser(const RadProto::Packet& packet)
         for (const auto& kv : valuesForCompare)
         {
             std::string paramValue = u->GetParamValue(kv.second);
-            const auto paramType = m_dictionaries.attributeType(kv.first.first);
 
-            if (paramType == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, kv.second))
+            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, kv.second))
                 paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.first, kv.second));
 
             allParamsMatch = allParamsMatch && kv.first.second == paramValue;
