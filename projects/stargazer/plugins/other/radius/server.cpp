@@ -142,11 +142,11 @@ const User* Server::findUser(const RadProto::Packet& packet)
         {
             const auto matchType = m_dictionaries.attributeType(attrName);
 
-            if (matchType == "integer" && m_dictionaries.attributeValueFindByName(attrName, at.second.value))
-                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, at.second.value));
+            if (matchType == "integer" && m_dictionaries.attributeValueFindByName(attrName, matchValue))
+                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, matchValue));
 
-            if (m_dictionaries.attributeValueFindByName(attrName, at.second.value))
-                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, at.second.value));
+            if (m_dictionaries.attributeValueFindByName(attrName, matchValue))
+                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, matchValue));
 
             if (matchValue != requestAttrValue)
                 return nullptr;
