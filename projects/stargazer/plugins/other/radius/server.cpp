@@ -126,33 +126,33 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     for (const auto& at : m_config.getAuth().match)
     {
-        std::string matchName = at.first;
+        std::string attrName = at.first;
 
-        auto it = std::find_if(packet.attributes().begin(), packet.attributes().end(), [this, matchName](const auto& atr){return matchName == m_dictionaries.attributeName(atr->code());});
+        auto it = std::find_if(packet.attributes().begin(), packet.attributes().end(), [this, attrName](const auto& atr){return attrName == m_dictionaries.attributeName(atr->code());});
 
         if (it == packet.attributes().end())
             return nullptr;
         auto* attribute = *it;
 
-        const auto requestAttrName = m_dictionaries.attributeName(attribute->code());
+        attrName = m_dictionaries.attributeName(attribute->code());
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
 
         if (at.second.type == Config::AttrValue::Type::VALUE)
         {
-            const auto matchType = m_dictionaries.attributeType(matchName);
+            const auto matchType = m_dictionaries.attributeType(attrName);
 
-            if (matchType == "integer" && m_dictionaries.attributeValueFindByName(matchName, at.second.value))
-                matchValue = std::to_string(m_dictionaries.attributeValueCode(matchName, at.second.value));
+            if (matchType == "integer" && m_dictionaries.attributeValueFindByName(attrName, at.second.value))
+                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, at.second.value));
 
-            if (m_dictionaries.attributeValueFindByName(requestAttrName, at.second.value))
-                matchValue = std::to_string(m_dictionaries.attributeValueCode(requestAttrName, at.second.value));
+            if (m_dictionaries.attributeValueFindByName(attrName, at.second.value))
+                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, at.second.value));
 
             if (matchValue != requestAttrValue)
                 return nullptr;
         }
         else
-            valuesForCompare.emplace_back(std::make_pair(requestAttrName, requestAttrValue), matchValue);
+            valuesForCompare.emplace_back(std::make_pair(attrName, requestAttrValue), matchValue);
     }
 
     User* u;
