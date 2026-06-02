@@ -161,8 +161,8 @@ const User* Server::findUser(const RadProto::Packet& packet)
         {
             std::string paramValue = u->GetParamValue(kv.second);
 
-            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, kv.second))
-                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.first, kv.second));
+            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, paramValue))
+                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.first, paramValue));
 
             allParamsMatch = allParamsMatch && kv.first.second == paramValue;
 
