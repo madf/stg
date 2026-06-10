@@ -134,7 +134,6 @@ const User* Server::findUser(const RadProto::Packet& packet)
             return nullptr;
         auto* attribute = *it;
 
-        attrName = m_dictionaries.attributeName(attribute->code());
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
         const auto matchType = m_dictionaries.attributeType(attrName);
