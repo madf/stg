@@ -122,7 +122,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<std::pair<std::pair<std::string, std::string>, std::string>> valuesForCompare;
+    std::vector<std::pair<std::pair<std::string,std::string>, std::pair<std::string, std::string>>> valuesForCompare;
 
     for (const auto& at : m_config.getAuth().match)
     {
@@ -136,18 +136,18 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
-        const auto matchType = m_dictionaries.attributeType(attrName);
+        const auto attrType = m_dictionaries.attributeType(attrName);
 
         if (at.second.type == Config::AttrValue::Type::VALUE)
         {
-            if (matchType == "integer" && m_dictionaries.attributeValueFindByName(attrName, matchValue))
+            if (attrType == "integer" && m_dictionaries.attributeValueFindByName(attrName, matchValue))
                 matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, matchValue));
 
             if (matchValue != requestAttrValue)
                 return nullptr;
         }
         else
-            valuesForCompare.emplace_back(std::make_pair(matchType, requestAttrValue), matchValue);
+            valuesForCompare.emplace_back(std::make_pair(std::make_pair(attrType, attrName), std::make_pair(requestAttrValue, matchValue)));
     }
 
     User* u;
@@ -158,12 +158,12 @@ const User* Server::findUser(const RadProto::Packet& packet)
         bool allParamsMatch = true;
         for (const auto& kv : valuesForCompare)
         {
-            std::string paramValue = u->GetParamValue(kv.second);
+            std::string paramValue = u->GetParamValue(kv.second.second);
 
-            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.first, paramValue))
-                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.first, paramValue));
+            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.second, paramValue))
+                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.second, paramValue));
 
-            allParamsMatch = allParamsMatch && kv.first.second == paramValue;
+            allParamsMatch = allParamsMatch && kv.second.first == paramValue;
 
             if (!allParamsMatch)
                 break;
