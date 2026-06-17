@@ -150,8 +150,8 @@ const User* Server::findUser(const RadProto::Packet& packet)
             valuesForCompare.emplace_back(std::make_pair(std::make_pair(attrType, attrName), std::make_pair(requestAttrValue, matchValue)));
     }
 
-    User* u;
-    int h = m_users->OpenSearch();
+    User* u = nullptr;
+    const auto h = m_users->OpenSearch();
 
     while (m_users->SearchNext(h, &u) == 0)
     {
