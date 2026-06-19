@@ -122,7 +122,7 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<std::pair<std::pair<std::string,std::string>, std::pair<std::string, std::string>>> valuesForCompare;
+    std::vector<DataVector> valuesForCompare;
 
     for (const auto& at : m_config.getAuth().match)
     {
@@ -147,7 +147,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
                 return nullptr;
         }
         else
-            valuesForCompare.emplace_back(std::make_pair(std::make_pair(attrType, attrName), std::make_pair(requestAttrValue, matchValue)));
+            valuesForCompare.push_back({attrType, attrName, requestAttrValue, matchValue});
     }
 
     User* u = nullptr;
@@ -158,12 +158,12 @@ const User* Server::findUser(const RadProto::Packet& packet)
         bool allParamsMatch = true;
         for (const auto& kv : valuesForCompare)
         {
-            std::string paramValue = u->GetParamValue(kv.second.second);
+            std::string paramValue = u->GetParamValue(kv.matchValue);
 
-            if (kv.first.first == "integer" && m_dictionaries.attributeValueFindByName(kv.first.second, paramValue))
-                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.first.second, paramValue));
+            if (kv.attrType == "integer" && m_dictionaries.attributeValueFindByName(kv.attrName, paramValue))
+                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.attrName, paramValue));
 
-            allParamsMatch = allParamsMatch && kv.second.first == paramValue;
+            allParamsMatch = allParamsMatch && kv.requestAttrValue == paramValue;
 
             if (!allParamsMatch)
                 break;
