@@ -21,14 +21,6 @@ namespace STG
             Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config);
             void stop();
 
-            struct DataVector
-            {
-                std::string attrType;
-                std::string attrName;
-                std::string requestAttrValue;
-                std::string matchValue;
-            };
-
         private:
             std::vector<RadProto::Attribute*> makeAttributes(const User* user);
             RadProto::Packet makeResponse(const RadProto::Packet& request);
