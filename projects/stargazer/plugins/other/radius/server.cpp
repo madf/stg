@@ -122,7 +122,15 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::vector<DataVector> valuesForCompare;
+    struct DataForCompare
+    {
+        std::string attrType;
+        std::string attrName;
+        std::string requestAttrValue;
+        std::string matchValue;
+    };
+
+    std::vector<DataForCompare> valuesForCompare;
 
     for (const auto& at : m_config.getAuth().match)
     {
