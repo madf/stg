@@ -145,7 +145,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
         const auto requestAttrValue = attribute->toString();
         auto matchValue = at.second.value;
-        const auto attrType = m_dictionaries.attributeType(attrName);
+        const auto attrType = m_dictionaries.attributeType(attrCode);
 
         if (at.second.type == Config::AttrValue::Type::VALUE)
         {
