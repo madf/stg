@@ -127,7 +127,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
         std::string attrType;
         std::string attrName;
         std::string requestAttrValue;
-        std::string matchValue;
+        std::string paramName;
     };
 
     std::vector<DataForCompare> valuesForCompare;
@@ -144,19 +144,19 @@ const User* Server::findUser(const RadProto::Packet& packet)
         const auto* attribute = *it;
 
         const auto requestAttrValue = attribute->toString();
-        auto matchValue = at.second.value;
+        auto paramName = at.second.value;
         const auto attrType = m_dictionaries.attributeType(attrCode);
 
         if (at.second.type == Config::AttrValue::Type::VALUE)
         {
-            if (attrType == "integer" && m_dictionaries.attributeValueFindByName(attrName, matchValue))
-                matchValue = std::to_string(m_dictionaries.attributeValueCode(attrName, matchValue));
+            if (attrType == "integer" && m_dictionaries.attributeValueFindByName(attrName, paramName))
+                paramName = std::to_string(m_dictionaries.attributeValueCode(attrName, paramName));
 
-            if (matchValue != requestAttrValue)
+            if (paramName != requestAttrValue)
                 return nullptr;
         }
         else
-            valuesForCompare.push_back({attrType, attrName, requestAttrValue, matchValue});
+            valuesForCompare.push_back({attrType, attrName, requestAttrValue, paramName});
     }
 
     User* u = nullptr;
@@ -167,7 +167,7 @@ const User* Server::findUser(const RadProto::Packet& packet)
         bool allParamsMatch = true;
         for (const auto& kv : valuesForCompare)
         {
-            std::string paramValue = u->GetParamValue(kv.matchValue);
+            std::string paramValue = u->GetParamValue(kv.paramName);
 
             if (kv.attrType == "integer" && m_dictionaries.attributeValueFindByName(kv.attrName, paramValue))
                 paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.attrName, paramValue));
