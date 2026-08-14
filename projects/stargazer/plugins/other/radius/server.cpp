@@ -52,12 +52,12 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
     {
         std::string attrValue;
 
-        if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
-            attrValue = user->GetParamValue(at.second.value);
+        if (at.value.type == Config::AttrValue::Type::PARAM_NAME)
+            attrValue = user->GetParamValue(at.value.value);
         else
-            attrValue = at.second.value;
+            attrValue = at.value.value;
 
-        const auto attrName = at.first;
+        const auto attrName = at.attrName;
         const auto attrCode = m_dictionaries.attributeCode(attrName);
         const auto attrType = m_dictionaries.attributeType(attrCode);
 
@@ -134,20 +134,22 @@ const User* Server::findUser(const RadProto::Packet& packet)
 
     for (const auto& at : m_config.getAuth().match)
     {
-        const std::string attrName = at.first;
-        const uint32_t attrCode = m_dictionaries.attributeCode(attrName);
+        const std::string attrName = at.attrName;
+        const uint32_t attrCode = at.attrCode;
 
         const auto it = std::find_if(packet.attributes().begin(), packet.attributes().end(), [this, attrCode](const auto& atr){return attrCode == atr->code();});
 
         if (it == packet.attributes().end())
             return nullptr;
+
         const auto* attribute = *it;
 
         const auto requestAttrValue = attribute->toString();
-        auto paramName = at.second.value;
-        const auto attrType = m_dictionaries.attributeType(attrCode);
 
-        if (at.second.type == Config::AttrValue::Type::VALUE)
+        auto paramName = at.value.value;
+        const auto attrType = at.attrType;
+
+        if (at.value.type == Config::AttrValue::Type::VALUE)
         {
             if (attrType == "integer" && m_dictionaries.attributeValueFindByName(attrName, paramName))
                 paramName = std::to_string(m_dictionaries.attributeValueCode(attrName, paramName));
