@@ -58,8 +58,8 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
             attrValue = at.value.value;
 
         const auto attrName = at.attrName;
-        const auto attrCode = m_dictionaries.attributeCode(attrName);
-        const auto attrType = m_dictionaries.attributeType(attrCode);
+        const auto attrCode = at.attrCode;
+        const auto attrType = at.attrType;
 
         if ((attrType == "integer") && (m_dictionaries.attributeValueFindByName(attrName, attrValue)))
             attributes.push_back(RadProto::Attribute::make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
