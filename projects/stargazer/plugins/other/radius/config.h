@@ -28,19 +28,20 @@ namespace STG
                 Type type;
             };
 
-            struct ASectionData
-            {
-                std::string attrName;
-                uint32_t attrCode;
-                std::string attrType;
-                AttrValue value;
-            };
-
             struct ASection
             {
-                using ASectionDataVect = std::vector<ASectionData>;
-                ASectionDataVect match;
-                ASectionDataVect send;
+               struct Data
+                {
+                    std::string attrName;
+                    uint32_t attrCode;
+                    std::string attrType;
+                    AttrValue value;
+                };
+
+                Data data;
+                using Datas = std::vector<Data>;
+                Datas match;
+                Datas send;
             };
 
             const std::string& GetStrError() const { return m_errorStr; }
@@ -53,7 +54,7 @@ namespace STG
             const ASection& getAutz() const { return m_autz; }
 
         private:
-            std::vector<ASectionData> ParseRules(const std::string& value, const std::string& paramName);
+            std::vector<ASection::Data> ParseRules(const std::string& value, const std::string& paramName);
             ASection parseASection(const std::vector<ParamValue>& conf);
 
             std::string m_errorStr;
