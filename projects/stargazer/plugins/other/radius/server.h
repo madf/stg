@@ -18,7 +18,7 @@ namespace STG
     class Server
     {
         public:
-            Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config);
+            Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, std::stop_token token, PluginLogger& logger, Users* users, const Config& config);
             void stop();
 
         private:
@@ -31,9 +31,9 @@ namespace STG
             void startReceive();
 
             RadProto::Socket m_radius;
-            RadProto::Dictionaries m_dictionaries;
-            Users* m_users;
             const Config& m_config;
+            const RadProto::Dictionaries& m_dictionaries;
+            Users* m_users;
             std::stop_token m_token;
 
             PluginLogger& m_logger;
