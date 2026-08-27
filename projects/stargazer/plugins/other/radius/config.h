@@ -48,7 +48,7 @@ namespace STG
             int ParseSettings(const ModuleSettings& s);
 
             uint16_t GetPort() const { return m_port; }
-            const std::string& GetDictionariesPath() const { return m_dictionariesPath; }
+            const RadProto::Dictionaries& GetDictionaries() const { return m_dictionaries; }
             const std::string& GetSecret() const { return m_secret; }
             const ASection& getAuth() const { return m_auth; }
             const ASection& getAutz() const { return m_autz; }
