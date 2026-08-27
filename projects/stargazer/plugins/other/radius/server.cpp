@@ -17,11 +17,11 @@ using STG::Server;
 using STG::User;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
+Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
     : m_radius(io_context, secret, port),
-      m_dictionaries(filePath),
-      m_users(users),
       m_config(config),
+      m_dictionaries(m_config.GetDictionaries()),
+      m_users(users),
       m_token(std::move(token)),
       m_logger(logger)
 {
