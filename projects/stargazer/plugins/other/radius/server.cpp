@@ -10,17 +10,18 @@
 #include <sstream>
 #include <cstring>
 #include <functional>
+#include <algorithm>
 #include <cstdint> //uint8_t, uint32_t
 
 using STG::Server;
 using STG::User;
 using boost::system::error_code;
 
-Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, const std::string& filePath, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
+Server::Server(boost::asio::io_context& io_context, const std::string& secret, uint16_t port, std::stop_token token, PluginLogger& logger, Users* users, const Config& config)
     : m_radius(io_context, secret, port),
-      m_dictionaries(filePath),
-      m_users(users),
       m_config(config),
+      m_dictionaries(m_config.GetDictionaries()),
+      m_users(users),
       m_token(std::move(token)),
       m_logger(logger)
 {
@@ -51,14 +52,14 @@ std::vector<RadProto::Attribute*> Server::makeAttributes(const User* user)
     {
         std::string attrValue;
 
-        if (at.second.type == Config::AttrValue::Type::PARAM_NAME)
-            attrValue = user->GetParamValue(at.second.value);
+        if (at.value.type == Config::AttrValue::Type::PARAM_NAME)
+            attrValue = user->GetParamValue(at.value.value);
         else
-            attrValue = at.second.value;
+            attrValue = at.value.value;
 
-        const auto attrName = at.first;
-        const auto attrCode = m_dictionaries.attributeCode(attrName);
-        const auto attrType = m_dictionaries.attributeType(attrCode);
+        const auto attrName = at.attrName;
+        const auto attrCode = at.attrCode;
+        const auto attrType = at.attrType;
 
         if ((attrType == "integer") && (m_dictionaries.attributeValueFindByName(attrName, attrValue)))
             attributes.push_back(RadProto::Attribute::make(attrCode, attrType, std::to_string(m_dictionaries.attributeValueCode(attrName, attrValue))));
@@ -121,32 +122,69 @@ void Server::handleReceive(const error_code& error, const std::optional<RadProto
 
 const User* Server::findUser(const RadProto::Packet& packet)
 {
-    std::string login;
-    std::string password;
-    for (const auto& attribute : packet.attributes())
+    struct DataForCompare
     {
-        if (attribute->code() == RadProto::USER_NAME)
-            login = attribute->toString();
+        std::string attrType;
+        std::string attrName;
+        std::string requestAttrValue;
+        std::string paramName;
+    };
 
-        if (attribute->code() == RadProto::USER_PASSWORD)
-            password = attribute->toString();
+    std::vector<DataForCompare> valuesForCompare;
+
+    for (const auto& at : m_config.getAuth().match)
+    {
+        const std::string attrName = at.attrName;
+        const uint32_t attrCode = at.attrCode;
+
+        const auto it = std::find_if(packet.attributes().begin(), packet.attributes().end(), [this, attrCode](const auto& atr){return attrCode == atr->code();});
+
+        if (it == packet.attributes().end())
+            return nullptr;
+
+        const auto* attribute = *it;
+
+        const auto requestAttrValue = attribute->toString();
+
+        auto paramName = at.value.value;
+        const auto attrType = at.attrType;
+
+        if (at.value.type == Config::AttrValue::Type::VALUE)
+        {
+            if (attrType == "integer" && m_dictionaries.attributeValueFindByName(attrName, paramName))
+                paramName = std::to_string(m_dictionaries.attributeValueCode(attrName, paramName));
+
+            if (paramName != requestAttrValue)
+                return nullptr;
+        }
+        else
+            valuesForCompare.push_back({attrType, attrName, requestAttrValue, paramName});
     }
 
-    User* user = nullptr;
-    if (m_users->FindByName(login, &user))
-    {
-        m_logger("User '%s' not found.", login.c_str());
-        printfd(__FILE__, "User '%s' NOT found!\n", login.c_str());
-        return nullptr;
-    }
+    User* u = nullptr;
+    const auto h = m_users->OpenSearch();
 
-    printfd(__FILE__, "User '%s' FOUND!\n", user->GetLogin().c_str());
-
-    if (password != user->GetProperties().password.Get())
+    while (m_users->SearchNext(h, &u) == 0)
     {
-        m_logger("User's password is incorrect.");
-        printfd(__FILE__, "User's password is incorrect.\n");
-        return nullptr;
+        bool allParamsMatch = true;
+        for (const auto& kv : valuesForCompare)
+        {
+            std::string paramValue = u->GetParamValue(kv.paramName);
+
+            if (kv.attrType == "integer" && m_dictionaries.attributeValueFindByName(kv.attrName, paramValue))
+                paramValue = std::to_string(m_dictionaries.attributeValueCode(kv.attrName, paramValue));
+
+            allParamsMatch = allParamsMatch && kv.requestAttrValue == paramValue;
+
+            if (!allParamsMatch)
+                break;
+        }
+        if (allParamsMatch)
+        {
+            m_users->CloseSearch(h);
+            return u;
+        }
     }
-    return user;
+    m_users->CloseSearch(h);
+    return nullptr;
 }
