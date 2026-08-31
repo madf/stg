@@ -38,7 +38,6 @@ namespace STG
                     AttrValue value;
                 };
 
-                Data data;
                 using Datas = std::vector<Data>;
                 Datas match;
                 Datas send;
